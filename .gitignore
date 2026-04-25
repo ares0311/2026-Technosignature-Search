@@ -25,3 +25,4 @@ rad.json
 #Test results file
 TestResults.xml.DS_Store
 >>>>>>> 47c2340 (Replace README and add technosignature documentation foundation)
+.venv/
