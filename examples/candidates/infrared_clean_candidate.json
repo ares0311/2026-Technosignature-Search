@@ -1,0 +1,31 @@
+{
+  "candidate_id": "example-infrared-clean",
+  "track": "infrared",
+  "source_ids": ["Gaia DR3 synthetic infrared example"],
+  "features": {
+    "gaia_source_id": "Gaia DR3 synthetic infrared example",
+    "ra": 10.0,
+    "dec": -2.0,
+    "parallax": 4.5,
+    "proper_motion": 30.0,
+    "w1": 10.0,
+    "w2": 9.7,
+    "w3": 7.0,
+    "w4": 6.8,
+    "ir_excess_score": 0.9,
+    "sed_fit_residual_score": 0.82,
+    "stellar_solution_quality": 0.94,
+    "galaxy_agn_indicator_score": 0.02,
+    "dust_indicator_score": 0.04,
+    "confusion_score": 0.02,
+    "photometric_quality_score": 0.92,
+    "catalog_artifact_score": 0.02,
+    "data_quality_score": 0.9,
+    "provenance_completeness_score": 0.9
+  },
+  "provenance": {
+    "source_dataset": "synthetic-example",
+    "processing_version": "v0",
+    "config_version": "scoring_v0"
+  }
+}

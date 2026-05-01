@@ -119,12 +119,20 @@ def test_write_candidate_reports_uses_safe_filenames(tmp_path) -> None:
 
     assert paths.markdown_path == tmp_path / "radio-report-with-spaces.md"
     assert paths.json_path == tmp_path / "radio-report-with-spaces.json"
+    assert paths.manifest_path == tmp_path / "radio-report-with-spaces.manifest.json"
     assert paths.markdown_path.exists()
     assert paths.json_path.exists()
+    assert paths.manifest_path.exists()
     assert REQUIRED_DISCLAIMER in paths.markdown_path.read_text(encoding="utf-8")
     assert json.loads(paths.json_path.read_text(encoding="utf-8"))["candidate_id"] == (
         "../radio report/with spaces"
     )
+    manifest = json.loads(paths.manifest_path.read_text(encoding="utf-8"))
+    assert manifest["candidate_id"] == "../radio report/with spaces"
+    assert manifest["track"] == "radio"
+    assert manifest["markdown_path"].endswith("radio-report-with-spaces.md")
+    assert manifest["json_path"].endswith("radio-report-with-spaces.json")
+    assert manifest["generated_at_utc"]
 
 
 def test_candidate_markdown_report_includes_diagnostic_paths() -> None:

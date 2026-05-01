@@ -8,6 +8,8 @@ from techno_search.reporting import (
     candidate_markdown_report,
     candidate_packet,
     candidate_packet_json,
+    report_manifest,
+    report_manifest_json,
     write_candidate_reports,
 )
 from techno_search.schemas import Candidate, Pathway, ScoredCandidate, Track
@@ -27,6 +29,8 @@ __all__ = [
     "classify_pathway",
     "load_scoring_config",
     "load_track_config",
+    "report_manifest",
+    "report_manifest_json",
     "score_candidate",
     "write_candidate_reports",
 ]

@@ -129,6 +129,7 @@ Generate reproducible candidate reports.
 - [x] Negative evidence list
 - [x] Blocking issues list
 - [x] Provenance block
+- [x] Persistence manifest
 
 ## Done When
 
@@ -193,6 +194,7 @@ Make scores empirically meaningful.
 ## Tasks
 
 - [ ] Build validation datasets
+- [x] Synthetic false-positive fixture set
 - [ ] Reliability curves
 - [ ] Precision-recall analysis
 - [ ] False-positive class analysis

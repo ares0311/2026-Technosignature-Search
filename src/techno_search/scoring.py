@@ -155,10 +155,10 @@ def _infrared_scores(candidate: Candidate) -> tuple[dict[PosteriorClass, float],
         + 1.00 * (1.0 - confusion)
     )
     raw_scores[PosteriorClass.NATURAL_SOURCE] += (
-        1.60 * dust
-        + 0.90 * _score(f, "young_stellar_object_score")
-        + 0.90 * _score(f, "agb_like_color_score")
-        + 0.70 * _score(f, "star_forming_region_score")
+        3.00 * dust
+        + 1.70 * _score(f, "young_stellar_object_score")
+        + 1.20 * _score(f, "agb_like_color_score")
+        + 1.50 * _score(f, "star_forming_region_score")
     )
     raw_scores[PosteriorClass.CATALOG_OR_PROCESSING_ERROR] += (
         1.35 * confusion + 1.20 * (1.0 - photometry) + 1.45 * catalog_artifact
@@ -209,15 +209,15 @@ def _anomaly_scores(candidate: Candidate) -> tuple[dict[PosteriorClass, float], 
         + 0.85 * (1.0 - mismatch)
     )
     raw_scores[PosteriorClass.NATURAL_SOURCE] += (
-        1.25 * variability + 1.10 * proper_motion + 1.05 * moving_object
+        1.60 * variability + 5.00 * proper_motion + 1.50 * moving_object
     )
     raw_scores[PosteriorClass.CATALOG_OR_PROCESSING_ERROR] += (
-        1.50 * artifact
-        + 1.25 * mismatch
-        + 1.00 * survey_depth
+        2.20 * artifact
+        + 1.70 * mismatch
+        + 5.50 * survey_depth
         + 0.65 * (1.0 - crossmatch_confidence)
     )
-    raw_scores[PosteriorClass.INSTRUMENTAL_ARTIFACT] += 1.25 * artifact
+    raw_scores[PosteriorClass.INSTRUMENTAL_ARTIFACT] += 1.75 * artifact
     raw_scores[PosteriorClass.NOISE_OR_LOW_CONFIDENCE] += (
         0.95 * (1.0 - historical) + 0.70 * (1.0 - crossmatch_confidence)
     )

@@ -1,0 +1,27 @@
+{
+  "candidate_id": "example-radio-clean",
+  "track": "radio",
+  "source_ids": ["example-radio-hit-table"],
+  "features": {
+    "snr": 38.0,
+    "bandwidth_hz": 1.5,
+    "drift_rate_hz_per_sec": 2.0,
+    "on_target_presence_score": 0.95,
+    "off_target_presence_score": 0.05,
+    "rfi_band_overlap_score": 0.02,
+    "frequency_persistence_score": 0.05,
+    "nearby_target_recurrence_score": 0.02,
+    "instrumental_artifact_score": 0.02,
+    "injection_recovery_score": 0.85,
+    "repeat_observation_score": 0.0,
+    "metadata_completeness_score": 0.95,
+    "data_quality_score": 0.92,
+    "provenance_completeness_score": 0.9,
+    "diagnostic_placeholder": "waterfall_not_generated_v0"
+  },
+  "provenance": {
+    "source_dataset": "synthetic-example",
+    "processing_version": "v0",
+    "config_version": "scoring_v0"
+  }
+}

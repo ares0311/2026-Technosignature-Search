@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +25,7 @@ class ReportPaths:
 
     markdown_path: Path
     json_path: Path
+    manifest_path: Path
 
 
 def candidate_packet(scored: ScoredCandidate) -> dict[str, Any]:
@@ -58,11 +61,56 @@ def write_candidate_reports(
     stem = _safe_filename(filename_prefix or scored.candidate.candidate_id)
     markdown_path = destination / f"{stem}.md"
     json_path = destination / f"{stem}.json"
+    manifest_path = destination / f"{stem}.manifest.json"
 
     markdown_path.write_text(candidate_markdown_report(scored), encoding="utf-8")
     json_path.write_text(candidate_packet_json(scored) + "\n", encoding="utf-8")
+    manifest_path.write_text(
+        report_manifest_json(scored, markdown_path=markdown_path, json_path=json_path) + "\n",
+        encoding="utf-8",
+    )
 
-    return ReportPaths(markdown_path=markdown_path, json_path=json_path)
+    return ReportPaths(
+        markdown_path=markdown_path,
+        json_path=json_path,
+        manifest_path=manifest_path,
+    )
+
+
+def report_manifest(
+    scored: ScoredCandidate,
+    *,
+    markdown_path: Path,
+    json_path: Path,
+) -> dict[str, Any]:
+    """Return a persistence manifest for written candidate reports."""
+
+    return {
+        "candidate_id": scored.candidate.candidate_id,
+        "track": scored.candidate.track.value,
+        "recommended_pathway": scored.recommended_pathway.value,
+        "markdown_path": str(markdown_path),
+        "json_path": str(json_path),
+        "config_version": str(scored.candidate.provenance.get("config_version", "unknown")),
+        "code_commit": _git_commit(),
+        "generated_at_utc": datetime.now(UTC).isoformat(),
+    }
+
+
+def report_manifest_json(
+    scored: ScoredCandidate,
+    *,
+    markdown_path: Path,
+    json_path: Path,
+    indent: int = 2,
+) -> str:
+    """Serialize a report persistence manifest."""
+
+    return json.dumps(
+        report_manifest(scored, markdown_path=markdown_path, json_path=json_path),
+        indent=indent,
+        sort_keys=True,
+    )
 
 
 def candidate_markdown_report(scored: ScoredCandidate) -> str:
@@ -182,3 +230,20 @@ def _safe_filename(value: str) -> str:
     if not normalized:
         return "candidate-report"
     return normalized[:120]
+
+
+def _git_commit() -> str | None:
+    repo_root = Path(__file__).resolve().parents[2]
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            cwd=repo_root,
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=2.0,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    commit = result.stdout.strip()
+    return commit or None

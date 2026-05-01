@@ -48,22 +48,26 @@ The project will support three tracks from day one:
 - [x] Synthetic radio injection helpers added
 - [x] Synthetic infrared prototype added
 - [x] Synthetic archival anomaly prototype added
+- [x] Example synthetic review packets added
+- [x] Calibration false-positive fixtures added
+- [x] CLI entry point for synthetic candidate scoring added
+- [x] Report manifest generation added
 
 ---
 
 ## In Progress
 
-- [ ] Add real report artifact examples
-- [ ] Add calibration fixtures
+- [ ] Add calibration fixture documentation and expansion plan
+- [ ] Add CLI usage documentation
 - [ ] Add live-data integration interfaces behind mocks
 
 ---
 
 ## Next 3 Actions
 
-1. Add small example review packets generated from synthetic candidates.
-2. Add calibration fixture sets for known false-positive classes.
-3. Add CLI entry points for scoring synthetic JSON candidate packets.
+1. Add CLI usage documentation with a complete example command.
+2. Add calibration fixture documentation and expansion plan.
+3. Add validation tests for CLI-installed console script behavior.
 
 ---
 

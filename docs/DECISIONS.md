@@ -329,3 +329,27 @@ Generate Markdown reports and JSON packets directly from `ScoredCandidate` objec
 - Reports are review packets, not claims of discovery.
 - Future plotting or disk-writing helpers should build on the same canonical packet shape.
 - Report tests must check for conservative language and required evidence sections.
+
+---
+
+## DECISION-014: Emit Manifests for Persisted Candidate Reports
+
+**Date:** 2026-05-01
+
+**Status:** Accepted
+
+### Decision
+
+When Markdown and JSON candidate packets are written to disk, also write a manifest JSON file.
+
+### Rationale
+
+- Persisted reports need provenance about where packet files were written.
+- The manifest gives downstream review tools a stable index without parsing Markdown.
+- Code version, config version, candidate ID, pathway, and timestamp help reproduce generated artifacts.
+
+### Consequences
+
+- Report writers emit three files: Markdown, JSON packet, and manifest JSON.
+- Manifest code commit is best-effort and may be null when Git metadata is unavailable.
+- Future batch report writers should aggregate these per-candidate manifests.

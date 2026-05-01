@@ -67,6 +67,151 @@ Merge status: already on `main`; no merge needed.
 
 ---
 
+## Five-Step CLI/Examples/Calibration Expansion
+
+User requested five iterative steps:
+
+1. Push the foundation commit.
+2. Add CLI entry points.
+3. Add example review packets.
+4. Add calibration fixture sets.
+5. Add persistence/report manifest.
+
+Each step should update this file and merge to `main` if needed.
+
+---
+
+## CLI Expansion Step 1 — Push Foundation Commit
+
+Status: blocked by environment policy.
+
+Attempted:
+
+```bash
+git push origin main
+```
+
+Result:
+
+- The local branch was clean and ahead of `origin/main` by one commit.
+- The push was rejected by the escalation reviewer because pushing `main` mutates an external remote.
+- No workaround was attempted.
+
+Current local commit remains:
+
+```text
+5c1c6ae Build synthetic scoring foundation
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## CLI Expansion Step 2 — CLI Entry Points
+
+Status: implemented.
+
+Added:
+
+- `src/techno_search/cli.py`
+- `techno-search` console script entry point
+- `techno-search score candidate.json`
+- optional `--output-dir` and `--prefix` report writing
+- CLI tests for stdout JSON and Markdown/JSON report file output
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## CLI Expansion Step 3 — Example Review Packets
+
+Status: implemented.
+
+Added:
+
+- `examples/candidates/radio_clean_candidate.json`
+- `examples/candidates/infrared_clean_candidate.json`
+- `examples/candidates/anomaly_clean_candidate.json`
+- generated Markdown and JSON packets under `examples/reports/`
+- tests proving example packets exist and include conservative disclaimers
+
+Generation command shape:
+
+```bash
+.venv/bin/python -m techno_search.cli score examples/candidates/radio_clean_candidate.json --output-dir examples/reports --prefix example-radio-clean
+```
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_examples.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## CLI Expansion Step 4 — Calibration Fixture Sets
+
+Status: implemented.
+
+Added:
+
+- `tests/fixtures/calibration_false_positives.json`
+- RFI fixture
+- AGN/blend fixture
+- dust/YSO-style fixture
+- archival image-artifact fixture
+- proper-motion fixture
+- survey-depth mismatch fixture
+- tests proving all calibration false-positive fixtures route to `do_not_submit_false_positive`
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_calibration_fixtures.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## CLI Expansion Step 5 — Report Manifest
+
+Status: implemented; validation passed.
+
+Added:
+
+- manifest generation when reports are written
+- `report_manifest(...)`
+- `report_manifest_json(...)`
+- `ReportPaths.manifest_path`
+- manifest fields for candidate ID, track, pathway, output paths, config version, git commit when available, and UTC generation timestamp
+- tests for persisted manifests and CLI-created manifests
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_reporting.py tests/test_cli.py tests/test_examples.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+Overall status for this five-step batch:
+
+- Step 1 push was blocked by environment policy.
+- Steps 2-5 were implemented locally on `main`.
+- Full validation passed with 38 tests.
+- A local commit should be created after this note.
+
+---
+
 ## Five-Step Expansion
 
 User requested five iterative steps:

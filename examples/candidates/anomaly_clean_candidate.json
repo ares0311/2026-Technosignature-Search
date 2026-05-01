@@ -1,0 +1,33 @@
+{
+  "candidate_id": "example-anomaly-clean",
+  "track": "anomaly",
+  "source_ids": ["synthetic historical source"],
+  "features": {
+    "historical_source_id": "synthetic historical source",
+    "modern_source_id": null,
+    "ra": 10.0,
+    "dec": -2.0,
+    "historical_epoch": 1950.0,
+    "modern_epoch": 2020.0,
+    "historical_magnitude": 14.0,
+    "modern_limit_magnitude": 20.0,
+    "crossmatch_distance_arcsec": 0.4,
+    "crossmatch_confidence": 0.9,
+    "historical_detection_score": 0.9,
+    "modern_non_detection_score": 1.0,
+    "magnitude_change": 6.0,
+    "proper_motion_explanation_score": 0.03,
+    "survey_depth_explanation_score": 0.03,
+    "artifact_score": 0.02,
+    "moving_object_score": 0.02,
+    "variability_score": 0.1,
+    "catalog_mismatch_score": 0.05,
+    "data_quality_score": 0.9,
+    "provenance_completeness_score": 0.9
+  },
+  "provenance": {
+    "source_dataset": "synthetic-example",
+    "processing_version": "v0",
+    "config_version": "scoring_v0"
+  }
+}

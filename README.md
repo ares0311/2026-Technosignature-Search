@@ -120,6 +120,10 @@ Completed:
 - synthetic infrared catalog prototype
 - synthetic archival anomaly prototype
 - track-specific v0 configs
+- example candidate review packets
+- CLI scoring entry point
+- calibration false-positive fixtures
+- report persistence manifests
 
 Next major milestone:
 

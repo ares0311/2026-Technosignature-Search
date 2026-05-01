@@ -1,0 +1,10 @@
+{
+  "candidate_id": "example-radio-clean",
+  "code_commit": "5c1c6ae",
+  "config_version": "scoring_v0",
+  "generated_at_utc": "2026-05-01T15:06:58.161514+00:00",
+  "json_path": "examples/reports/example-radio-clean.json",
+  "markdown_path": "examples/reports/example-radio-clean.md",
+  "recommended_pathway": "candidate_review_packet",
+  "track": "radio"
+}
