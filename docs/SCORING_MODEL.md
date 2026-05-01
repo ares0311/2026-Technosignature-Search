@@ -383,3 +383,18 @@ Outputs:
 - explanation
 
 No live data required for v0.
+
+---
+
+# 13. Future AI Research Direction
+
+After the v0 interpretable scoring model, reporting system, injection-recovery tests, and calibration datasets exist, the project should evaluate modern AI methods for candidate triage and feature extraction.
+
+Potential future approaches include:
+
+- CNNs for radio waterfalls, survey cutouts, artifact morphology, and image-like diagnostic products
+- Transformers for time series, multi-epoch catalog histories, candidate evidence packets, and cross-track context
+- Self-supervised, contrastive, or multimodal representation learning for large unlabeled astronomical datasets
+- Hybrid systems that combine learned embeddings with explicit scientific features, provenance, and false-positive evidence
+
+Any learned model must remain conservative and auditable. It should expose uncertainty, be calibrated on known contaminants and synthetic injections, preserve negative evidence, and feed into the pathway system rather than bypassing it.

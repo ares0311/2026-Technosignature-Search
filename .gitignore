@@ -1,28 +1,30 @@
-<<<<<<< HEAD
 .DS_Store
-=======
-### AL ###
-#Template for AL projects for Dynamics 365 Business Central
-#launch.json folder
-.vscode/
-#Cache folder
-.alcache/
-#Symbols folder
-.alpackages/
-#Snapshots folder
-.snapshots/
-#Testing Output folder
-.output/
-#Extension App-file
-*.app
-#Rapid Application Development File
-rad.json
-#Translation Base-file
-*.g.xlf
-#License-files
-*.bclicense
-*.flf
-#Test results file
-TestResults.xml.DS_Store
->>>>>>> 47c2340 (Replace README and add technosignature documentation foundation)
+
+# Local Python environment
 .venv/
+
+# Python build and test artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Local data and generated products
+data/raw/
+data/interim/
+data/external/
+data/processed/
+cache/
+artifacts/
+
+# Secrets and local configuration
+.env
+.env.*
+*.key
+*.pem

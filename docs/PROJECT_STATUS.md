@@ -4,10 +4,10 @@
 Technosignature Search
 
 ## Status
-Foundation / Planning
+Initial v0 Implementation
 
 ## Current Phase
-Phase 0 — Documentation, Architecture, and Scientific Guardrails
+Phase 1 — Synthetic Scoring Core
 
 ## Package Name
 `techno_search`
@@ -36,35 +36,42 @@ The project will support three tracks from day one:
 - [x] Scientific language policy defined
 - [x] Testing policy defined
 - [x] Agent operating rules defined
+- [x] Local system profile documented
+- [x] Initial Python package scaffold created
+- [x] Development tool configuration added
+- [x] First scoring and pathway modules implemented
+- [x] Synthetic unit tests added for multi-modal scoring
+- [x] Candidate Markdown and JSON reporting implemented
+- [x] Candidate report file writers implemented
+- [x] Track-specific v0 config files added
+- [x] Synthetic radio prototype added
+- [x] Synthetic radio injection helpers added
+- [x] Synthetic infrared prototype added
+- [x] Synthetic archival anomaly prototype added
 
 ---
 
 ## In Progress
 
-- [ ] Add documentation files to repository
-- [ ] Create initial Python package scaffold
-- [ ] Add development tool configuration
-- [ ] Create first scoring and pathway modules
-- [ ] Add synthetic unit tests for multi-modal scoring
+- [ ] Add real report artifact examples
+- [ ] Add calibration fixtures
+- [ ] Add live-data integration interfaces behind mocks
 
 ---
 
 ## Next 3 Actions
 
-1. Add documentation files to repo root and `docs/`.
-2. Create package scaffold:
-   ```text
-   src/techno_search/
-   tests/
-   configs/
-   ```
-3. Implement first scoring core using synthetic candidate inputs.
+1. Add small example review packets generated from synthetic candidates.
+2. Add calibration fixture sets for known false-positive classes.
+3. Add CLI entry points for scoring synthetic JSON candidate packets.
 
 ---
 
 ## Next Milestone
 
 **Milestone 1 — Multi-Modal Scoring Core**
+
+Status: initial v0 implemented.
 
 Input:
 - synthetic radio candidate
@@ -120,6 +127,8 @@ The project is ready for development when:
 ```bash
 git checkout -b feature/multimodal-scoring-core
 ```
+
+Note: the initial scoring core is currently implemented on the working branch.
 
 ---
 

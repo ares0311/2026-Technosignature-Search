@@ -1,0 +1,32 @@
+{
+  "track": "anomaly",
+  "config_version": "anomaly_search_v0",
+  "description": "Initial synthetic archival/catalog anomaly thresholds and feature defaults.",
+  "thresholds": {
+    "historical_detection_interest": 0.7,
+    "modern_non_detection_interest": 0.7,
+    "large_magnitude_change": 0.6,
+    "proper_motion_explanation_reject": 0.4,
+    "survey_depth_explanation_reject": 0.4,
+    "artifact_reject": 0.4,
+    "moving_object_reject": 0.4,
+    "crossmatch_confidence_minimum": 0.5
+  },
+  "feature_defaults": {
+    "historical_detection_score": 0.5,
+    "modern_non_detection_score": 0.0,
+    "proper_motion_explanation_score": 0.0,
+    "survey_depth_explanation_score": 0.0,
+    "artifact_score": 0.0,
+    "moving_object_score": 0.0,
+    "variability_score": 0.0,
+    "catalog_mismatch_score": 0.0,
+    "crossmatch_confidence": 0.5,
+    "provenance_completeness_score": 0.6
+  },
+  "assumptions": [
+    "Synthetic v0 anomaly inputs are precomputed cross-match and artifact features.",
+    "Proper motion, survey-depth mismatch, moving objects, and artifacts are first-class false-positive explanations.",
+    "No live survey, plate archive, or minor-planet lookups are required by default tests."
+  ]
+}

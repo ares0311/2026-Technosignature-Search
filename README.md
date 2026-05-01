@@ -111,10 +111,19 @@ Completed:
 - multi-modal project scope selected
 - package name selected: `techno_search`
 - testing and agent standards established
+- initial Python package scaffold
+- v0 synthetic scoring and pathway core
+- Markdown and JSON candidate review packets
+- report file writers
+- synthetic radio hit-table prototype
+- synthetic radio injection helpers
+- synthetic infrared catalog prototype
+- synthetic archival anomaly prototype
+- track-specific v0 configs
 
 Next major milestone:
 
-> Implement the multi-modal scoring core using synthetic inputs.
+> Expand from synthetic scoring into the first track-specific prototypes.
 
 See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md).
 
@@ -188,6 +197,7 @@ docs/
   PIPELINE_SPEC.md
   SCORING_MODEL.md
   DATA_POLICY.md
+  LOCAL_SYSTEM_PROFILE.md
   RADIO_SEARCH_SPEC.md
   INFRARED_SEARCH_SPEC.md
   ANOMALY_SEARCH_SPEC.md

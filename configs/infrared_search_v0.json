@@ -1,0 +1,29 @@
+{
+  "track": "infrared",
+  "config_version": "infrared_search_v0",
+  "description": "Initial synthetic infrared-excess thresholds and feature defaults.",
+  "thresholds": {
+    "ir_excess_interest": 0.6,
+    "sed_residual_interest": 0.6,
+    "stellar_solution_quality_minimum": 0.7,
+    "galaxy_agn_indicator_reject": 0.4,
+    "dust_indicator_reject": 0.4,
+    "confusion_reject": 0.4,
+    "photometric_quality_minimum": 0.5
+  },
+  "feature_defaults": {
+    "ir_excess_score": 0.0,
+    "sed_fit_residual_score": 0.0,
+    "stellar_solution_quality": 0.5,
+    "galaxy_agn_indicator_score": 0.0,
+    "dust_indicator_score": 0.0,
+    "confusion_score": 0.0,
+    "photometric_quality_score": 0.5,
+    "provenance_completeness_score": 0.6
+  },
+  "assumptions": [
+    "Synthetic v0 infrared inputs are precomputed catalog-like features.",
+    "Galaxy, AGN, dust, and confusion indicators are treated as explicit negative evidence.",
+    "No live Gaia, WISE, 2MASS, IRSA, VizieR, or SIMBAD queries are required by default tests."
+  ]
+}

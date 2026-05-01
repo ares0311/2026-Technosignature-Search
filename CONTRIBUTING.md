@@ -40,6 +40,7 @@ pip install -e ".[dev]"
 - Do not use system Python
 - Work only inside `.venv`
 - Track dependencies via config files
+- Consult `docs/LOCAL_SYSTEM_PROFILE.md` before choosing default worker counts, batch sizes, memory budgets, cache paths, or hardware acceleration behavior
 
 ---
 

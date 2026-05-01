@@ -1,0 +1,43 @@
+{
+  "track": "radio",
+  "config_version": "radio_search_v0",
+  "description": "Initial synthetic radio search thresholds and feature defaults.",
+  "thresholds": {
+    "snr_reliable": 10.0,
+    "narrowband_max_hz": 10.0,
+    "on_target_presence_review": 0.7,
+    "off_target_presence_reject": 0.4,
+    "rfi_band_overlap_reject": 0.4,
+    "frequency_persistence_reject": 0.4,
+    "metadata_completeness_minimum": 0.5
+  },
+  "feature_defaults": {
+    "injection_recovery_score": 0.5,
+    "repeat_observation_score": 0.0,
+    "metadata_completeness_score": 0.5,
+    "data_quality_score": 0.7,
+    "provenance_completeness_score": 0.6
+  },
+  "rfi_bands_hz": [
+    {
+      "name": "gps_l1",
+      "low_hz": 1575000000.0,
+      "high_hz": 1576000000.0
+    },
+    {
+      "name": "gps_l2",
+      "low_hz": 1227000000.0,
+      "high_hz": 1228000000.0
+    },
+    {
+      "name": "aircraft_ads_b",
+      "low_hz": 1089500000.0,
+      "high_hz": 1090500000.0
+    }
+  ],
+  "assumptions": [
+    "Synthetic v0 radio inputs are small hit tables, not raw filterbank or HDF5 data.",
+    "RFI overlap is a conservative binary feature until calibrated frequency masks exist.",
+    "OFF-target presence is negative evidence, not automatic proof of a specific false-positive class."
+  ]
+}

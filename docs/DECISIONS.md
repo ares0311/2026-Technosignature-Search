@@ -232,3 +232,100 @@ configs/scoring_v0.yaml
 - Makes scientific choices auditable.
 - Supports reproducibility.
 - Avoids hardcoded threshold drift.
+
+---
+
+## DECISION-010: Document Local System Profile for Performance Defaults
+
+**Date:** 2026-05-01
+
+**Status:** Accepted
+
+### Decision
+
+Maintain `docs/LOCAL_SYSTEM_PROFILE.md` as the source of truth for local workstation capabilities and default performance guidance.
+
+### Rationale
+
+- The project will eventually process synthetic search grids, catalog-like tables, and array-heavy radio or image products.
+- Local defaults should make practical use of the available Apple Silicon workstation without starving the OS or interactive tools.
+- Hardware-aware defaults help development speed, but scientific behavior must remain portable and reproducible.
+
+### Consequences
+
+- Worker counts, batch sizes, memory budgets, cache paths, and hardware acceleration must be configurable.
+- Code may choose local defaults informed by `docs/LOCAL_SYSTEM_PROFILE.md`.
+- Scoring thresholds, scientific claims, candidate provenance, and false-positive handling must not depend on this local hardware profile.
+
+---
+
+## DECISION-011: Defer Advanced AI Until Baselines and Calibration Exist
+
+**Date:** 2026-05-01
+
+**Status:** Accepted
+
+### Decision
+
+The project should eventually evaluate CNNs, Transformers, self-supervised learning, multimodal embeddings, and other state-of-the-art AI methods for candidate triage and feature extraction.
+
+These methods must be deferred until interpretable baselines, candidate schemas, provenance, reporting, synthetic injection tests, and calibration datasets are in place.
+
+### Rationale
+
+- Modern AI may help identify subtle morphology, temporal structure, cross-survey patterns, and clusters of similar candidates.
+- The project needs strong false-positive discipline before adding high-capacity models.
+- Learned scores are useful only if they are calibrated, reproducible, and explained alongside conventional evidence.
+
+### Consequences
+
+- Initial implementations should remain interpretable and testable.
+- Future AI models must record training data, model version, evaluation metrics, and runtime configuration.
+- AI outputs must support, not replace, conservative pathway classification and human review.
+
+---
+
+## DECISION-012: Use JSON for Initial v0 Runtime Config
+
+**Date:** 2026-05-01
+
+**Status:** Accepted
+
+### Decision
+
+Use JSON for the initial v0 scoring config in `configs/scoring_v0.json`.
+
+### Rationale
+
+- JSON can be read with the Python standard library.
+- The first implementation should avoid adding YAML parsing before the package scaffold and tests are stable.
+- Thresholds and local performance defaults still remain versioned and auditable.
+
+### Consequences
+
+- Future YAML config files remain possible when a parser dependency is justified.
+- Config readers should keep the public schema simple enough to migrate between JSON and YAML later.
+
+---
+
+## DECISION-013: Generate Conservative Reports From Scored Candidates
+
+**Date:** 2026-05-01
+
+**Status:** Accepted
+
+### Decision
+
+Generate Markdown reports and JSON packets directly from `ScoredCandidate` objects.
+
+### Rationale
+
+- Reporting should preserve the exact scores, pathway, evidence, and provenance emitted by the scoring core.
+- Every packet must include the required disclaimer and false-positive discussion.
+- The first reporting implementation should be deterministic and dependency-free.
+
+### Consequences
+
+- Reports are review packets, not claims of discovery.
+- Future plotting or disk-writing helpers should build on the same canonical packet shape.
+- Report tests must check for conservative language and required evidence sections.

@@ -1,0 +1,17 @@
+{
+  "description": "Initial conservative pathway thresholds for synthetic v0 scoring.",
+  "pathway_thresholds": {
+    "known_object_probability": 0.8,
+    "false_positive_probability": 0.8,
+    "minimum_signal_reality_for_review": 0.4,
+    "candidate_interest_probability": 0.6,
+    "candidate_max_false_positive_probability": 0.4,
+    "candidate_signal_reality": 0.7,
+    "candidate_review_readiness": 0.7
+  },
+  "local_performance_defaults": {
+    "cpu_heavy_workers": 12,
+    "light_io_workers": 16,
+    "memory_budget_gb": 48
+  }
+}

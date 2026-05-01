@@ -19,6 +19,7 @@ Before making meaningful changes, agents must read:
 5. `docs/ROADMAP.md`
 6. `docs/DECISIONS.md`
 7. `CONTRIBUTING.md`
+8. `docs/LOCAL_SYSTEM_PROFILE.md`
 
 If files conflict, prioritize:
 
@@ -53,6 +54,7 @@ If files conflict, prioritize:
 - Do not rely on system Python packages
 - Install dependencies via project configuration (`requirements.txt` or `pyproject.toml`)
 - All tests must run inside the virtual environment
+- Use `docs/LOCAL_SYSTEM_PROFILE.md` for local performance defaults, while keeping worker counts, memory budgets, cache paths, and hardware acceleration configurable
 
 If dependencies are missing:
 - install them locally inside `.venv`
