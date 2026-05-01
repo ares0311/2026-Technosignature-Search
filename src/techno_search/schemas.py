@@ -60,6 +60,18 @@ class Candidate:
     provenance: ProvenanceMap = field(default_factory=dict)
 
 
+def candidate_from_mapping(data: Mapping[str, Any]) -> Candidate:
+    """Convert a JSON-like mapping into a normalized candidate."""
+
+    return Candidate(
+        candidate_id=str(data["candidate_id"]),
+        track=Track(str(data["track"])),
+        features=_feature_mapping(data.get("features", {})),
+        source_ids=tuple(str(item) for item in data.get("source_ids", ())),
+        provenance=_feature_mapping(data.get("provenance", {})),
+    )
+
+
 @dataclass(frozen=True)
 class EvidenceSummary:
     """Human-readable evidence lists for a candidate."""
@@ -118,3 +130,14 @@ class ScoredCandidate:
             **self.evidence.as_dict(),
             "provenance": dict(self.candidate.provenance),
         }
+
+
+def _feature_mapping(data: Mapping[str, Any]) -> dict[str, FeatureValue]:
+    return {str(key): _feature_value(value) for key, value in data.items()}
+
+
+def _feature_value(value: Any) -> FeatureValue:
+    if value is None or isinstance(value, bool | int | float | str):
+        return value
+    msg = f"Unsupported candidate JSON value: {value!r}"
+    raise TypeError(msg)

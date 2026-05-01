@@ -1,7 +1,7 @@
 import json
 from io import StringIO
 
-from techno_search.cli import main
+from techno_search.cli import main, score_batch
 
 
 def _candidate_json() -> dict[str, object]:
@@ -81,3 +81,31 @@ def test_cli_scores_batch_directory(tmp_path) -> None:
     assert (output_dir / "batch-cli-radio.md").exists()
     assert (output_dir / "batch-cli-radio-b.md").exists()
     assert len(manifest["reports"]) == 2
+
+
+def test_score_batch_regenerates_expected_example_candidate_set(tmp_path) -> None:
+    manifest_path = score_batch("examples/candidates", tmp_path)
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    assert manifest["candidate_count"] == 3
+    assert {report["candidate_id"] for report in manifest["reports"]} == {
+        "example-radio-clean",
+        "example-infrared-clean",
+        "example-anomaly-clean",
+    }
+    for report in manifest["reports"]:
+        assert (tmp_path / f"{report['candidate_id']}.md").exists()
+        assert (tmp_path / f"{report['candidate_id']}.json").exists()
+        assert (tmp_path / f"{report['candidate_id']}.manifest.json").exists()
+
+
+def test_cli_calibration_summary_outputs_fixture_counts() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["calibration-summary"], stdout=stdout)
+    summary = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert summary["total"] == 12
+    assert summary["by_track"] == {"anomaly": 5, "infrared": 4, "radio": 3}
+    assert summary["by_expected_pathway"] == {"do_not_submit_false_positive": 12}

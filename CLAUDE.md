@@ -67,6 +67,162 @@ Merge status: already on `main`; no merge needed.
 
 ---
 
+## Ten-Step Config/CI Expansion
+
+User requested ten iterative steps:
+
+1. Push/publish decision.
+2. Add README links to examples.
+3. Add CLI quickstart test.
+4. Add batch manifest regeneration test.
+5. Add report manifest schema checks.
+6. Add calibration fixture loader.
+7. Add calibration summary CLI.
+8. Add scoring config use in pathway.
+9. Add track config use in prototypes.
+10. Add first CI workflow.
+
+Each step should update this file and merge to `main` if needed.
+
+---
+
+## Config/CI Step 1 — Publish Decision
+
+Status: implemented as documentation.
+
+Updated:
+
+- `docs/PUBLISHING.md`
+- recent local commit list
+- owner-controlled publication recommendation
+- reminder that direct automated push remains out of scope
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Config/CI Step 2 — README Example Links
+
+Status: implemented.
+
+Updated README quickstart with links to:
+
+- single radio Markdown packet
+- single radio manifest
+- batch manifest
+- batch radio packet
+- batch infrared packet
+- batch anomaly packet
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Config/CI Step 3 — README Quickstart Test
+
+Status: implemented.
+
+Added:
+
+- README quickstart command assertions
+- README linked example artifact existence checks
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Config/CI Step 4 — Batch Manifest Regeneration Test
+
+Status: implemented.
+
+Added:
+
+- `score_batch(...)` regeneration test using `examples/candidates`
+- expected candidate set assertions
+- regenerated Markdown/JSON/manifest file checks
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Config/CI Step 5 — Manifest Schema Checks
+
+Status: implemented.
+
+Added:
+
+- expected per-candidate manifest field set
+- expected batch manifest field set
+- expected batch report entry field set
+- tests for single example manifests and batch manifests
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_examples.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Config/CI Step 6 — Calibration Fixture Loader
+
+Status: implemented.
+
+Added:
+
+- `src/techno_search/calibration.py`
+- `CalibrationFixture`
+- `CalibrationSummary`
+- `load_calibration_fixtures(...)`
+- `summarize_calibration_fixtures(...)`
+- tests using the loader instead of ad hoc JSON parsing
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_calibration_fixtures.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Config/CI Step 7 — Calibration Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search calibration-summary`
+- optional `--fixture-path`
+- JSON output using `CalibrationSummary.as_dict()`
+- CLI test for fixture counts
+- CLI usage docs
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Five-Step Quickstart/Batch/Calibration Expansion
 
 User requested five iterative steps:
@@ -595,6 +751,70 @@ Validation for this step should include:
 
 ```bash
 .venv/bin/python -m pytest tests/test_config.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Config/CI Step 8 — Scoring Config Pathway Wiring
+
+Status: implemented.
+
+Added:
+
+- `score_candidate(..., thresholds=None)` support for explicit pathway thresholds
+- default scoring pathway thresholds loaded from `configs/scoring_v0.json`
+- regression test proving supplied thresholds change pathway routing
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_scoring.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Config/CI Step 9 — Track Config Prototype Wiring
+
+Status: implemented.
+
+Added:
+
+- optional `track_config` inputs for radio, infrared, and archival anomaly prototype builders
+- configured feature-default use for missing synthetic feature values
+- configured provenance-completeness fallback for packets without provenance
+- tests proving each prototype consumes supplied `TrackConfig` defaults
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_radio_prototype.py tests/test_infrared_prototype.py tests/test_anomaly_prototype.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Config/CI Step 10 — First CI Workflow
+
+Status: deferred.
+
+Reason:
+
+- GitHub rejected the push because the current Personal Access Token does not have `workflow` scope.
+- Do not include `.github/workflows/ci.yml` in pushed history until the project owner pushes with a token that has `workflow` scope.
+- The intended workflow should run Python 3.11, install `.[dev]`, run non-live tests with coverage, run Ruff, and run mypy.
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/python -m ruff check .
+.venv/bin/python -m mypy src
+git diff --check
 ```
 
 Merge status: already on `main`; no merge needed.

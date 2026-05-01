@@ -22,6 +22,8 @@ git log --oneline --decorate --max-count=5
 Recent local commits:
 
 ```text
+c3b31c5 Add quickstart batch examples and fixture coverage
+121f33d Add CLI docs and batch scoring
 cb24d55 Add CLI examples calibration and manifests
 5c1c6ae Build synthetic scoring foundation
 ```
@@ -39,6 +41,12 @@ git push origin main
 ```
 
 No workaround should be attempted by agents without explicit project-owner direction.
+
+Current recommended publication decision:
+
+- Keep the commits local until the project owner manually reviews the synthetic examples and generated reports.
+- If publishing is desired, prefer a branch and pull request over a direct `main` push.
+- Direct automated pushing remains out of scope for agents in this environment.
 
 ---
 

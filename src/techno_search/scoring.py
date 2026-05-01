@@ -6,7 +6,8 @@ import math
 from collections.abc import Iterable, Mapping
 from typing import Final
 
-from techno_search.pathway import classify_pathway
+from techno_search.config import load_scoring_config
+from techno_search.pathway import PathwayThresholds, classify_pathway
 from techno_search.schemas import (
     Candidate,
     CandidateScores,
@@ -29,7 +30,9 @@ _LOG_PRIORS: Final[dict[PosteriorClass, float]] = {
 DictLike = Mapping[str, object]
 
 
-def score_candidate(candidate: Candidate) -> ScoredCandidate:
+def score_candidate(
+    candidate: Candidate, thresholds: PathwayThresholds | None = None
+) -> ScoredCandidate:
     """Score a synthetic candidate and assign a conservative pathway."""
 
     raw_scores, evidence = _track_scores(candidate)
@@ -40,7 +43,11 @@ def score_candidate(candidate: Candidate) -> ScoredCandidate:
         }
     )
     scores = _derived_scores(candidate, posterior)
-    pathway = classify_pathway(posterior, scores)
+    pathway = classify_pathway(
+        posterior,
+        scores,
+        thresholds or load_scoring_config().pathway_thresholds,
+    )
 
     return ScoredCandidate(
         candidate=candidate,

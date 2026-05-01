@@ -7,10 +7,11 @@ import json
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, TextIO
+from typing import TextIO
 
+from techno_search.calibration import load_calibration_fixtures, summarize_calibration_fixtures
 from techno_search.reporting import candidate_packet_json, write_candidate_reports
-from techno_search.schemas import Candidate, FeatureValue, Track
+from techno_search.schemas import Candidate, candidate_from_mapping
 from techno_search.scoring import score_candidate
 
 
@@ -38,6 +39,12 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(str(manifest_path), file=out)
         return 0
 
+    if args.command == "calibration-summary":
+        fixtures = load_calibration_fixtures(args.fixture_path)
+        summary = summarize_calibration_fixtures(fixtures)
+        print(json.dumps(summary.as_dict(), indent=2, sort_keys=True), file=out)
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -48,18 +55,6 @@ def load_candidate_json(path: Path | str) -> Candidate:
     with Path(path).open(encoding="utf-8") as handle:
         data = json.load(handle)
     return candidate_from_mapping(data)
-
-
-def candidate_from_mapping(data: dict[str, Any]) -> Candidate:
-    """Convert a JSON mapping into a candidate."""
-
-    return Candidate(
-        candidate_id=str(data["candidate_id"]),
-        track=Track(str(data["track"])),
-        features=_feature_mapping(data.get("features", {})),
-        source_ids=tuple(str(item) for item in data.get("source_ids", ())),
-        provenance=_feature_mapping(data.get("provenance", {})),
-    )
 
 
 def score_batch(input_dir: Path | str, output_dir: Path | str, *, prefix: str = "") -> Path:
@@ -131,18 +126,16 @@ def _build_parser() -> argparse.ArgumentParser:
         default="",
         help="Optional filename prefix prepended to each candidate ID.",
     )
+    calibration_parser = subparsers.add_parser(
+        "calibration-summary",
+        help="Summarize synthetic calibration fixture coverage.",
+    )
+    calibration_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional calibration fixture JSON path.",
+    )
     return parser
-
-
-def _feature_mapping(data: dict[str, Any]) -> dict[str, FeatureValue]:
-    return {str(key): _feature_value(value) for key, value in data.items()}
-
-
-def _feature_value(value: Any) -> FeatureValue:
-    if value is None or isinstance(value, bool | int | float | str):
-        return value
-    msg = f"Unsupported candidate JSON value: {value!r}"
-    raise TypeError(msg)
 
 
 if __name__ == "__main__":

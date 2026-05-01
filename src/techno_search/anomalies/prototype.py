@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
+from techno_search.config import TrackConfig, load_track_config
 from techno_search.schemas import Candidate, FeatureValue, Track
 
 
@@ -37,13 +38,17 @@ def build_anomaly_candidate(
     *,
     source_ids: Sequence[str] = (),
     provenance: Mapping[str, FeatureValue] | None = None,
+    track_config: TrackConfig | None = None,
 ) -> Candidate:
     """Build a shared candidate from a synthetic archival anomaly row."""
 
-    anomaly = _parse_anomaly(row)
+    defaults = _feature_defaults(track_config)
+    anomaly = _parse_anomaly(row, defaults)
     magnitude_change = _magnitude_change(anomaly)
     modern_non_detection = _modern_non_detection_score(anomaly)
-    historical_detection = _score_or(row, "historical_detection_score", 0.8)
+    historical_detection = _score_or(
+        row, "historical_detection_score", defaults["historical_detection_score"]
+    )
 
     features: dict[str, FeatureValue] = {
         "historical_source_id": anomaly.historical_source_id,
@@ -67,7 +72,9 @@ def build_anomaly_candidate(
         "variability_score": anomaly.variability_score,
         "catalog_mismatch_score": anomaly.catalog_mismatch_score,
         "data_quality_score": _data_quality_score(anomaly, historical_detection),
-        "provenance_completeness_score": 1.0 if provenance else 0.4,
+        "provenance_completeness_score": (
+            1.0 if provenance else defaults.get("provenance_completeness_score", 0.4)
+        ),
     }
 
     default_sources = tuple(
@@ -85,7 +92,10 @@ def build_anomaly_candidate(
     )
 
 
-def _parse_anomaly(row: Mapping[str, FeatureValue]) -> ArchivalAnomaly:
+def _parse_anomaly(
+    row: Mapping[str, FeatureValue],
+    defaults: Mapping[str, float],
+) -> ArchivalAnomaly:
     return ArchivalAnomaly(
         historical_source_id=str(row.get("historical_source_id", "unknown")),
         modern_source_id=_optional_str(row.get("modern_source_id")),
@@ -97,13 +107,29 @@ def _parse_anomaly(row: Mapping[str, FeatureValue]) -> ArchivalAnomaly:
         modern_magnitude=_optional_float(row.get("modern_magnitude")),
         modern_limit_magnitude=_optional_float(row.get("modern_limit_magnitude")),
         crossmatch_distance_arcsec=_float(row.get("crossmatch_distance_arcsec", 0.0)),
-        crossmatch_confidence=_score_or(row, "crossmatch_confidence", 0.5),
-        proper_motion_explanation_score=_score_or(row, "proper_motion_explanation_score", 0.0),
-        survey_depth_explanation_score=_score_or(row, "survey_depth_explanation_score", 0.0),
-        artifact_score=_score_or(row, "artifact_score", 0.0),
-        moving_object_score=_score_or(row, "moving_object_score", 0.0),
-        variability_score=_score_or(row, "variability_score", 0.0),
-        catalog_mismatch_score=_score_or(row, "catalog_mismatch_score", 0.0),
+        crossmatch_confidence=_score_or(
+            row,
+            "crossmatch_confidence",
+            defaults["crossmatch_confidence"],
+        ),
+        proper_motion_explanation_score=_score_or(
+            row,
+            "proper_motion_explanation_score",
+            defaults["proper_motion_explanation_score"],
+        ),
+        survey_depth_explanation_score=_score_or(
+            row,
+            "survey_depth_explanation_score",
+            defaults["survey_depth_explanation_score"],
+        ),
+        artifact_score=_score_or(row, "artifact_score", defaults["artifact_score"]),
+        moving_object_score=_score_or(
+            row, "moving_object_score", defaults["moving_object_score"]
+        ),
+        variability_score=_score_or(row, "variability_score", defaults["variability_score"]),
+        catalog_mismatch_score=_score_or(
+            row, "catalog_mismatch_score", defaults["catalog_mismatch_score"]
+        ),
     )
 
 
@@ -172,3 +198,18 @@ def _float(value: FeatureValue) -> float:
 
 def _clamp(value: float) -> float:
     return min(1.0, max(0.0, value))
+
+
+def _feature_defaults(track_config: TrackConfig | None) -> dict[str, float]:
+    config = track_config or load_track_config(Track.ANOMALY)
+    defaults = dict(config.feature_defaults)
+    defaults.setdefault("historical_detection_score", 0.8)
+    defaults.setdefault("crossmatch_confidence", 0.5)
+    defaults.setdefault("proper_motion_explanation_score", 0.0)
+    defaults.setdefault("survey_depth_explanation_score", 0.0)
+    defaults.setdefault("artifact_score", 0.0)
+    defaults.setdefault("moving_object_score", 0.0)
+    defaults.setdefault("variability_score", 0.0)
+    defaults.setdefault("catalog_mismatch_score", 0.0)
+    defaults.setdefault("provenance_completeness_score", 0.4)
+    return defaults

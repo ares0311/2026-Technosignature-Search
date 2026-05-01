@@ -1,6 +1,7 @@
 import pytest
 
 from techno_search import score_candidate
+from techno_search.config import TrackConfig
 from techno_search.radio import (
     RadioDiagnosticPaths,
     RfiBand,
@@ -93,6 +94,40 @@ def test_radio_candidate_accepts_diagnostic_placeholders() -> None:
     )
     assert candidate.features["hit_table_path"] == "reports/radio-diagnostics-hits.json"
     assert candidate.features["diagnostic_placeholder"] == "waterfall_not_generated_v0"
+
+
+def test_radio_candidate_uses_track_config_feature_defaults() -> None:
+    track_config = TrackConfig(
+        track=Track.RADIO,
+        config_version="test_radio",
+        thresholds={},
+        feature_defaults={
+            "injection_recovery_score": 0.25,
+            "repeat_observation_score": 0.15,
+            "provenance_completeness_score": 0.72,
+        },
+        assumptions=(),
+        raw={},
+    )
+
+    candidate = build_radio_candidate(
+        "radio-config-defaults",
+        [
+            {
+                "frequency_hz": 1_420_000_000.0,
+                "drift_rate_hz_per_sec": 1.8,
+                "snr": 36.0,
+                "bandwidth_hz": 1.5,
+                "scan_role": "on",
+                "target_id": "target-a",
+            }
+        ],
+        track_config=track_config,
+    )
+
+    assert candidate.features["injection_recovery_score"] == 0.25
+    assert candidate.features["repeat_observation_score"] == 0.15
+    assert candidate.features["provenance_completeness_score"] == 0.72
 
 
 def test_radio_prototype_candidate_scores_better_than_rfi_candidate() -> None:

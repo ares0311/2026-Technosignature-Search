@@ -2,6 +2,7 @@ import pytest
 
 from techno_search import score_candidate
 from techno_search.anomalies import build_anomaly_candidate
+from techno_search.config import TrackConfig
 from techno_search.schemas import PosteriorClass, Track
 
 
@@ -31,6 +32,49 @@ def test_build_anomaly_candidate_normalizes_crossmatch_features() -> None:
     assert candidate.features["modern_non_detection_score"] == 1.0
     assert candidate.features["crossmatch_confidence"] == 0.86
     assert candidate.provenance["source_dataset"] == "synthetic-anomaly"
+
+
+def test_anomaly_candidate_uses_track_config_feature_defaults() -> None:
+    track_config = TrackConfig(
+        track=Track.ANOMALY,
+        config_version="test_anomaly",
+        thresholds={},
+        feature_defaults={
+            "historical_detection_score": 0.66,
+            "crossmatch_confidence": 0.77,
+            "proper_motion_explanation_score": 0.11,
+            "survey_depth_explanation_score": 0.12,
+            "artifact_score": 0.13,
+            "moving_object_score": 0.14,
+            "variability_score": 0.15,
+            "catalog_mismatch_score": 0.16,
+            "provenance_completeness_score": 0.76,
+        },
+        assumptions=(),
+        raw={},
+    )
+
+    candidate = build_anomaly_candidate(
+        "anomaly-config-defaults",
+        {
+            "historical_source_id": "plate-config",
+            "historical_epoch": 1950.0,
+            "modern_epoch": 2020.0,
+            "historical_magnitude": 14.0,
+            "modern_limit_magnitude": 20.0,
+        },
+        track_config=track_config,
+    )
+
+    assert candidate.features["historical_detection_score"] == 0.66
+    assert candidate.features["crossmatch_confidence"] == 0.77
+    assert candidate.features["proper_motion_explanation_score"] == 0.11
+    assert candidate.features["survey_depth_explanation_score"] == 0.12
+    assert candidate.features["artifact_score"] == 0.13
+    assert candidate.features["moving_object_score"] == 0.14
+    assert candidate.features["variability_score"] == 0.15
+    assert candidate.features["catalog_mismatch_score"] == 0.16
+    assert candidate.features["provenance_completeness_score"] == 0.76
 
 
 def test_clean_anomaly_candidate_scores_above_artifact_false_positive() -> None:

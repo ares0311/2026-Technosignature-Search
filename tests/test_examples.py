@@ -13,6 +13,32 @@ EXPECTED_BATCH_CANDIDATES = {
     "example-infrared-clean": "infrared",
     "example-anomaly-clean": "anomaly",
 }
+PER_CANDIDATE_MANIFEST_FIELDS = {
+    "candidate_id",
+    "track",
+    "recommended_pathway",
+    "markdown_path",
+    "json_path",
+    "config_version",
+    "code_commit",
+    "generated_at_utc",
+}
+BATCH_MANIFEST_FIELDS = {
+    "generated_at_utc",
+    "input_dir",
+    "output_dir",
+    "candidate_count",
+    "reports",
+}
+BATCH_REPORT_FIELDS = {
+    "candidate_id",
+    "track",
+    "recommended_pathway",
+    "input_path",
+    "markdown_path",
+    "json_path",
+    "manifest_path",
+}
 
 
 def test_example_candidate_reports_exist_and_are_conservative() -> None:
@@ -25,6 +51,7 @@ def test_example_candidate_reports_exist_and_are_conservative() -> None:
             (reports_dir / f"{stem}.manifest.json").read_text(encoding="utf-8")
         )
 
+        assert set(manifest) == PER_CANDIDATE_MANIFEST_FIELDS
         assert REQUIRED_DISCLAIMER in markdown
         assert packet["disclaimer"] == REQUIRED_DISCLAIMER
         assert manifest["candidate_id"] == packet["candidate_id"]
@@ -38,12 +65,14 @@ def test_batch_example_manifest_covers_all_candidates() -> None:
     manifest = json.loads((reports_dir / "batch_manifest.json").read_text(encoding="utf-8"))
     reports = manifest["reports"]
 
+    assert set(manifest) == BATCH_MANIFEST_FIELDS
     assert manifest["candidate_count"] == 3
     assert manifest["input_dir"] == "examples/candidates"
     assert manifest["output_dir"] == "examples/batch_reports"
     assert {report["candidate_id"] for report in reports} == set(EXPECTED_BATCH_CANDIDATES)
 
     for report in reports:
+        assert set(report) == BATCH_REPORT_FIELDS
         candidate_id = report["candidate_id"]
         assert report["track"] == EXPECTED_BATCH_CANDIDATES[candidate_id]
         assert report["recommended_pathway"] == "candidate_review_packet"
@@ -59,5 +88,6 @@ def test_batch_example_manifest_covers_all_candidates() -> None:
 
         packet = json.loads(json_path.read_text(encoding="utf-8"))
         per_candidate_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        assert set(per_candidate_manifest) == PER_CANDIDATE_MANIFEST_FIELDS
         assert packet["candidate_id"] == candidate_id
         assert per_candidate_manifest["candidate_id"] == candidate_id

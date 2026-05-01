@@ -12,6 +12,28 @@ def test_cli_usage_references_existing_example_paths() -> None:
     assert Path("examples/reports/example-radio-clean.manifest.json").exists()
 
 
+def test_readme_quickstart_references_existing_examples() -> None:
+    readme = Path("README.md").read_text(encoding="utf-8")
+
+    assert "pip install -e \".[dev]\"" in readme
+    assert ".venv/bin/techno-search score examples/candidates/radio_clean_candidate.json" in readme
+    assert (
+        ".venv/bin/techno-search score-batch examples/candidates examples/batch_reports"
+        in readme
+    )
+
+    linked_paths = (
+        "examples/reports/example-radio-clean.md",
+        "examples/reports/example-radio-clean.manifest.json",
+        "examples/batch_reports/batch_manifest.json",
+        "examples/batch_reports/example-radio-clean.md",
+        "examples/batch_reports/example-infrared-clean.md",
+        "examples/batch_reports/example-anomaly-clean.md",
+    )
+    for path in linked_paths:
+        assert Path(path).exists()
+
+
 def test_publishing_docs_reference_current_validation_commands() -> None:
     doc = Path("docs/PUBLISHING.md").read_text(encoding="utf-8")
 

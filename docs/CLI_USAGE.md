@@ -81,6 +81,16 @@ The aggregate manifest records:
 
 ---
 
+## Summarize Calibration Fixtures
+
+Print counts by track, false-positive class, and expected pathway:
+
+```bash
+.venv/bin/techno-search calibration-summary
+```
+
+---
+
 ## Input Candidate JSON Shape
 
 The CLI expects a normalized synthetic candidate packet:

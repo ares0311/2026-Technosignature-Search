@@ -10,6 +10,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
+from techno_search.config import TrackConfig, load_track_config
 from techno_search.schemas import Candidate, FeatureValue, Track
 
 
@@ -64,10 +65,15 @@ DEFAULT_RFI_BANDS_HZ: tuple[RfiBand, ...] = (
 )
 
 
-def parse_hit_table(rows: Sequence[Mapping[str, FeatureValue]]) -> tuple[RadioHit, ...]:
+def parse_hit_table(
+    rows: Sequence[Mapping[str, FeatureValue]],
+    *,
+    track_config: TrackConfig | None = None,
+) -> tuple[RadioHit, ...]:
     """Parse synthetic hit-table rows into normalized radio hits."""
 
-    return tuple(_parse_hit(row) for row in rows)
+    defaults = _feature_defaults(track_config)
+    return tuple(_parse_hit(row, defaults) for row in rows)
 
 
 def rfi_band_overlap_score(
@@ -87,10 +93,12 @@ def build_radio_candidate(
     provenance: Mapping[str, FeatureValue] | None = None,
     rfi_bands: Sequence[RfiBand] = DEFAULT_RFI_BANDS_HZ,
     diagnostics: RadioDiagnosticPaths | None = None,
+    track_config: TrackConfig | None = None,
 ) -> Candidate:
     """Build a shared candidate from synthetic radio hit rows."""
 
-    hits = parse_hit_table(rows)
+    defaults = _feature_defaults(track_config)
+    hits = parse_hit_table(rows, track_config=track_config)
     best_hit = _best_hit(hits)
     on_hits = [hit for hit in hits if hit.scan_role == "on"]
     off_hits = [hit for hit in hits if hit.scan_role == "off"]
@@ -122,7 +130,9 @@ def build_radio_candidate(
         ),
         "metadata_completeness_score": _metadata_completeness_score(hits),
         "data_quality_score": _data_quality_score(hits),
-        "provenance_completeness_score": 1.0 if provenance else 0.4,
+        "provenance_completeness_score": (
+            1.0 if provenance else defaults.get("provenance_completeness_score", 0.4)
+        ),
         "hit_count": len(hits),
         "on_hit_count": len(on_hits),
         "off_hit_count": len(off_hits),
@@ -139,7 +149,7 @@ def build_radio_candidate(
     )
 
 
-def _parse_hit(row: Mapping[str, FeatureValue]) -> RadioHit:
+def _parse_hit(row: Mapping[str, FeatureValue], defaults: Mapping[str, float]) -> RadioHit:
     scan_role = str(row.get("scan_role", "on")).lower()
     if scan_role not in {"on", "off"}:
         msg = f"scan_role must be 'on' or 'off', got {scan_role!r}"
@@ -154,8 +164,12 @@ def _parse_hit(row: Mapping[str, FeatureValue]) -> RadioHit:
         target_id=str(row.get("target_id", "unknown")),
         metadata_complete=_bool(row.get("metadata_complete", True)),
         instrumental_artifact_score=_clamp(_float(row.get("instrumental_artifact_score", 0.0))),
-        injection_recovery_score=_clamp(_float(row.get("injection_recovery_score", 0.5))),
-        repeat_observation_score=_clamp(_float(row.get("repeat_observation_score", 0.0))),
+        injection_recovery_score=_clamp(
+            _float(row.get("injection_recovery_score", defaults["injection_recovery_score"]))
+        ),
+        repeat_observation_score=_clamp(
+            _float(row.get("repeat_observation_score", defaults["repeat_observation_score"]))
+        ),
     )
 
 
@@ -219,3 +233,12 @@ def _bool(value: FeatureValue) -> bool:
 
 def _clamp(value: float) -> float:
     return min(1.0, max(0.0, value))
+
+
+def _feature_defaults(track_config: TrackConfig | None) -> dict[str, float]:
+    config = track_config or load_track_config(Track.RADIO)
+    defaults = dict(config.feature_defaults)
+    defaults.setdefault("injection_recovery_score", 0.5)
+    defaults.setdefault("repeat_observation_score", 0.0)
+    defaults.setdefault("provenance_completeness_score", 0.4)
+    return defaults

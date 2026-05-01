@@ -1,6 +1,7 @@
 import pytest
 
 from techno_search import score_candidate
+from techno_search.config import TrackConfig
 from techno_search.infrared import build_infrared_candidate
 from techno_search.schemas import PosteriorClass, Track
 
@@ -30,6 +31,42 @@ def test_build_infrared_candidate_normalizes_catalog_features() -> None:
     assert candidate.features["ir_excess_score"] > 0.8
     assert candidate.features["stellar_solution_quality"] > 0.5
     assert candidate.provenance["source_dataset"] == "synthetic-infrared"
+
+
+def test_infrared_candidate_uses_track_config_feature_defaults() -> None:
+    track_config = TrackConfig(
+        track=Track.INFRARED,
+        config_version="test_infrared",
+        thresholds={},
+        feature_defaults={
+            "photometric_quality_score": 0.77,
+            "confusion_score": 0.11,
+            "galaxy_agn_indicator_score": 0.12,
+            "dust_indicator_score": 0.13,
+            "catalog_artifact_score": 0.14,
+            "provenance_completeness_score": 0.75,
+        },
+        assumptions=(),
+        raw={},
+    )
+
+    candidate = build_infrared_candidate(
+        "ir-config-defaults",
+        {
+            "gaia_source_id": "Gaia DR3 config",
+            "w1": 10.0,
+            "w2": 9.8,
+            "w3": 7.2,
+        },
+        track_config=track_config,
+    )
+
+    assert candidate.features["photometric_quality_score"] == 0.77
+    assert candidate.features["confusion_score"] == 0.11
+    assert candidate.features["galaxy_agn_indicator_score"] == 0.12
+    assert candidate.features["dust_indicator_score"] == 0.13
+    assert candidate.features["catalog_artifact_score"] == 0.14
+    assert candidate.features["provenance_completeness_score"] == 0.75
 
 
 def test_clean_infrared_candidate_scores_above_agn_confused_source() -> None:

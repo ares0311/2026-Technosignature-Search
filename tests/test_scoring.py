@@ -1,4 +1,5 @@
 from techno_search import Candidate, Pathway, Track, score_candidate
+from techno_search.pathway import PathwayThresholds
 from techno_search.schemas import PosteriorClass
 
 
@@ -173,3 +174,29 @@ def test_known_object_routes_to_annotation() -> None:
     scored = score_candidate(candidate)
 
     assert scored.recommended_pathway == Pathway.KNOWN_OBJECT_ANNOTATION
+
+
+def test_score_candidate_uses_supplied_pathway_thresholds() -> None:
+    candidate = Candidate(
+        candidate_id="threshold-check",
+        track=Track.INFRARED,
+        features={
+            "ir_excess_score": 0.82,
+            "sed_fit_residual_score": 0.76,
+            "stellar_solution_quality": 0.88,
+            "galaxy_agn_indicator_score": 0.05,
+            "dust_indicator_score": 0.07,
+            "confusion_score": 0.05,
+            "photometric_quality_score": 0.9,
+            "catalog_artifact_score": 0.02,
+            "data_quality_score": 0.9,
+            "provenance_completeness_score": 0.88,
+        },
+    )
+
+    scored = score_candidate(
+        candidate,
+        thresholds=PathwayThresholds(false_positive_probability=0.0),
+    )
+
+    assert scored.recommended_pathway == Pathway.DO_NOT_SUBMIT_FALSE_POSITIVE

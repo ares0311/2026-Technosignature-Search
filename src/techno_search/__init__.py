@@ -1,5 +1,6 @@
 """Technosignature-interest candidate search tools."""
 
+from techno_search.calibration import load_calibration_fixtures
 from techno_search.config import TrackConfig, load_scoring_config, load_track_config
 from techno_search.pathway import classify_pathway
 from techno_search.reporting import (
@@ -27,6 +28,7 @@ __all__ = [
     "candidate_packet",
     "candidate_packet_json",
     "classify_pathway",
+    "load_calibration_fixtures",
     "load_scoring_config",
     "load_track_config",
     "report_manifest",

@@ -164,6 +164,15 @@ Score every candidate in a directory:
 .venv/bin/techno-search score-batch examples/candidates examples/batch_reports
 ```
 
+Example outputs:
+
+- Single radio packet: [`example-radio-clean.md`](examples/reports/example-radio-clean.md)
+- Single radio manifest: [`example-radio-clean.manifest.json`](examples/reports/example-radio-clean.manifest.json)
+- Batch manifest: [`batch_manifest.json`](examples/batch_reports/batch_manifest.json)
+- Batch radio packet: [`example-radio-clean.md`](examples/batch_reports/example-radio-clean.md)
+- Batch infrared packet: [`example-infrared-clean.md`](examples/batch_reports/example-infrared-clean.md)
+- Batch anomaly packet: [`example-anomaly-clean.md`](examples/batch_reports/example-anomaly-clean.md)
+
 Review packets are conservative artifacts. They are not discovery claims, and they always retain false-positive discussion, negative evidence, blocking issues, and the required disclaimer.
 
 ---

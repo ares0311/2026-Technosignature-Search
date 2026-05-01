@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
+from techno_search.config import TrackConfig, load_track_config
 from techno_search.schemas import Candidate, FeatureValue, Track
 
 
@@ -36,10 +37,12 @@ def build_infrared_candidate(
     *,
     source_ids: Sequence[str] = (),
     provenance: Mapping[str, FeatureValue] | None = None,
+    track_config: TrackConfig | None = None,
 ) -> Candidate:
     """Build a shared candidate from a synthetic infrared catalog row."""
 
-    source = _parse_source(row)
+    defaults = _feature_defaults(track_config)
+    source = _parse_source(row, defaults)
     w1_w3 = source.w1 - source.w3
     w2_w3 = source.w2 - source.w3
     w3_w4 = 0.0 if source.w4 is None else source.w3 - source.w4
@@ -73,7 +76,9 @@ def build_infrared_candidate(
         "photometric_quality_score": source.photometric_quality_score,
         "catalog_artifact_score": source.catalog_artifact_score,
         "data_quality_score": source.photometric_quality_score,
-        "provenance_completeness_score": 1.0 if provenance else 0.4,
+        "provenance_completeness_score": (
+            1.0 if provenance else defaults.get("provenance_completeness_score", 0.4)
+        ),
     }
 
     return Candidate(
@@ -85,7 +90,7 @@ def build_infrared_candidate(
     )
 
 
-def _parse_source(row: Mapping[str, FeatureValue]) -> InfraredSource:
+def _parse_source(row: Mapping[str, FeatureValue], defaults: Mapping[str, float]) -> InfraredSource:
     return InfraredSource(
         gaia_source_id=str(row.get("gaia_source_id", "unknown")),
         ra=_float(row.get("ra", 0.0)),
@@ -98,11 +103,21 @@ def _parse_source(row: Mapping[str, FeatureValue]) -> InfraredSource:
         w2=_required_float(row, "w2"),
         w3=_required_float(row, "w3"),
         w4=_optional_float(row.get("w4")),
-        photometric_quality_score=_score_or(row, "photometric_quality_score", 0.5),
-        confusion_score=_score_or(row, "confusion_score", 0.0),
-        galaxy_agn_indicator_score=_score_or(row, "galaxy_agn_indicator_score", 0.0),
-        dust_indicator_score=_score_or(row, "dust_indicator_score", 0.0),
-        catalog_artifact_score=_score_or(row, "catalog_artifact_score", 0.0),
+        photometric_quality_score=_score_or(
+            row, "photometric_quality_score", defaults["photometric_quality_score"]
+        ),
+        confusion_score=_score_or(row, "confusion_score", defaults["confusion_score"]),
+        galaxy_agn_indicator_score=_score_or(
+            row,
+            "galaxy_agn_indicator_score",
+            defaults["galaxy_agn_indicator_score"],
+        ),
+        dust_indicator_score=_score_or(
+            row, "dust_indicator_score", defaults["dust_indicator_score"]
+        ),
+        catalog_artifact_score=_score_or(
+            row, "catalog_artifact_score", defaults["catalog_artifact_score"]
+        ),
     )
 
 
@@ -150,3 +165,15 @@ def _float(value: FeatureValue) -> float:
 
 def _clamp(value: float) -> float:
     return min(1.0, max(0.0, value))
+
+
+def _feature_defaults(track_config: TrackConfig | None) -> dict[str, float]:
+    config = track_config or load_track_config(Track.INFRARED)
+    defaults = dict(config.feature_defaults)
+    defaults.setdefault("photometric_quality_score", 0.5)
+    defaults.setdefault("confusion_score", 0.0)
+    defaults.setdefault("galaxy_agn_indicator_score", 0.0)
+    defaults.setdefault("dust_indicator_score", 0.0)
+    defaults.setdefault("catalog_artifact_score", 0.0)
+    defaults.setdefault("provenance_completeness_score", 0.4)
+    return defaults
