@@ -164,6 +164,18 @@ Score every candidate in a directory:
 .venv/bin/techno-search score-batch examples/candidates examples/batch_reports
 ```
 
+Validate a normalized candidate JSON file:
+
+```bash
+.venv/bin/techno-search validate-candidate examples/candidates/radio_clean_candidate.json
+```
+
+Validate generated report packets and manifests:
+
+```bash
+.venv/bin/techno-search validate-reports examples/reports
+```
+
 Example outputs:
 
 - Single radio packet: [`example-radio-clean.md`](examples/reports/example-radio-clean.md)
@@ -174,6 +186,12 @@ Example outputs:
 - Batch anomaly packet: [`example-anomaly-clean.md`](examples/batch_reports/example-anomaly-clean.md)
 
 Review packets are conservative artifacts. They are not discovery claims, and they always retain false-positive discussion, negative evidence, blocking issues, and the required disclaimer.
+
+Machine-readable schemas:
+
+- Candidate packet schema: [`candidate_packet.schema.json`](schemas/candidate_packet.schema.json)
+- Report manifest schema: [`report_manifest.schema.json`](schemas/report_manifest.schema.json)
+- Batch manifest schema: [`batch_manifest.schema.json`](schemas/batch_manifest.schema.json)
 
 ---
 

@@ -130,6 +130,9 @@ Generate reproducible candidate reports.
 - [x] Blocking issues list
 - [x] Provenance block
 - [x] Persistence manifest
+- [x] Candidate/report validation commands
+- [x] JSON schema artifacts
+- [x] Golden example regression checks
 
 ## Done When
 
@@ -181,7 +184,9 @@ Add real data ingestion behind tested abstractions.
 - [ ] Gaia/IRSA/VizieR query wrappers
 - [ ] Catalog caching
 - [ ] Provenance tracking
-- [ ] Live integration tests marked separately
+- [x] Live integration tests marked separately
+- [x] Opt-in live-data scaffold
+- [ ] Provider adapters behind mocks
 
 ---
 
@@ -195,6 +200,8 @@ Make scores empirically meaningful.
 
 - [ ] Build validation datasets
 - [x] Synthetic false-positive fixture set
+- [x] Score regression snapshots
+- [x] False-positive class summary tooling
 - [ ] Reliability curves
 - [ ] Precision-recall analysis
 - [ ] False-positive class analysis

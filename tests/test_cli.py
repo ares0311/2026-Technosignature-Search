@@ -153,3 +153,26 @@ def test_cli_validate_reports_accepts_generated_reports(tmp_path) -> None:
     assert exit_code == 0
     assert result["ok"] is True
     assert result["errors"] == []
+
+
+def test_cli_schema_paths_outputs_schema_artifacts() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["schema-paths"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert set(result) == {"batch_manifest", "candidate_packet", "report_manifest"}
+    assert result["candidate_packet"].endswith("schemas/candidate_packet.schema.json")
+
+
+def test_cli_score_regression_summary_outputs_snapshot_counts() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["score-regression-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["candidate_count"] == 3
+    assert result["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 1}
+    assert result["by_recommended_pathway"] == {"candidate_review_packet": 3}

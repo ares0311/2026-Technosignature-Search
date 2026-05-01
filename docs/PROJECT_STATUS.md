@@ -57,22 +57,27 @@ The project will support three tracks from day one:
 - [x] Batch example artifacts added
 - [x] CLI and publishing docs drift tests added
 - [x] Expanded calibration false-positive fixtures added
+- [x] Candidate and report validation CLI commands added
+- [x] JSON schema artifacts added
+- [x] Score regression snapshots added
+- [x] Opt-in live-data integration scaffold added
+- [x] Conservative release checklist added
 
 ---
 
 ## In Progress
 
 - [x] Add calibration fixture documentation and expansion plan
-- [ ] Add CLI usage documentation
+- [x] Add CLI usage documentation
 - [ ] Add live-data integration interfaces behind mocks
 
 ---
 
 ## Next 3 Actions
 
-1. Add aggregate manifest regression examples.
-2. Add README quickstart for CLI scoring.
-3. Add README links to example reports and batch manifests.
+1. Push the latest validation/release documentation batch to GitHub from an approved local environment.
+2. Add provider-specific live-data adapter interfaces behind mocks.
+3. Add CI workflow only after the publishing token has GitHub `workflow` scope.
 
 ---
 

@@ -91,6 +91,56 @@ Print counts by track, false-positive class, and expected pathway:
 
 ---
 
+## Validate Candidate JSON
+
+Validate a normalized synthetic candidate packet before scoring:
+
+```bash
+.venv/bin/techno-search validate-candidate examples/candidates/radio_clean_candidate.json
+```
+
+The command prints JSON with:
+
+- `ok`
+- `errors`
+- `warnings`
+
+It returns exit code `0` when the candidate is valid and `1` when validation errors are present.
+
+---
+
+## Validate Generated Reports
+
+Validate generated candidate JSON packets and per-candidate manifests in a report directory:
+
+```bash
+.venv/bin/techno-search validate-reports examples/reports
+```
+
+The validator checks required packet fields, required disclaimers, report manifest fields, supported tracks, and unsupported sensational phrases.
+
+---
+
+## Print Schema Paths
+
+Print local JSON schema artifact paths:
+
+```bash
+.venv/bin/techno-search schema-paths
+```
+
+---
+
+## Summarize Score Regression Snapshots
+
+Print stable score-regression fixture coverage:
+
+```bash
+.venv/bin/techno-search score-regression-summary
+```
+
+---
+
 ## Input Candidate JSON Shape
 
 The CLI expects a normalized synthetic candidate packet:

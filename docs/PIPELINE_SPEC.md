@@ -224,6 +224,24 @@ Every scored candidate should include:
 }
 ```
 
+Machine-readable schema:
+
+```text
+schemas/candidate_packet.schema.json
+```
+
+Per-candidate report manifests should follow:
+
+```text
+schemas/report_manifest.schema.json
+```
+
+Batch report manifests should follow:
+
+```text
+schemas/batch_manifest.schema.json
+```
+
 ---
 
 # 7. Recommended Package Layout

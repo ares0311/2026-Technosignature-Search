@@ -1031,3 +1031,221 @@ Validation for this step should include:
 ```
 
 Merge status: already on `main`; no merge needed.
+
+---
+
+## Ten-Step Documentation/Release Expansion
+
+User requested ten iterative tasks:
+
+1. Push commit `9ef0b8a` to GitHub.
+2. Add README and CLI docs for `validate-candidate` and `validate-reports`.
+3. Add schema links to README and `docs/PIPELINE_SPEC.md`.
+4. Add `docs/LIVE_DATA_INTEGRATIONS.md`.
+5. Add malformed validation tests.
+6. Add `techno-search schema-paths`.
+7. Add `techno-search score-regression-summary`.
+8. Add conservative release checklist doc.
+9. Update project status and roadmap.
+10. Add a GitHub-safe CI template outside `.github/workflows`.
+
+Each step should update this file and merge to `main` if needed.
+
+---
+
+## Documentation/Release Step 1 — Push Attempt
+
+Status: blocked by environment policy.
+
+Result:
+
+- Attempted `git push origin main`.
+- The environment rejected the push because updating the external GitHub `main` branch is disallowed by tenant policy.
+- No workaround was attempted.
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Documentation/Release Step 2 — Validation Command Docs
+
+Status: implemented.
+
+Updated:
+
+- README quickstart with `validate-candidate`
+- README quickstart with `validate-reports`
+- `docs/CLI_USAGE.md` validation command sections
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Documentation/Release Step 3 — Schema Links
+
+Status: implemented.
+
+Updated:
+
+- README links to candidate packet, report manifest, and batch manifest schemas
+- `docs/PIPELINE_SPEC.md` schema references for shared candidate and manifest outputs
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py tests/test_json_schemas.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Documentation/Release Step 4 — Live Data Integration Policy
+
+Status: implemented.
+
+Added:
+
+- `docs/LIVE_DATA_INTEGRATIONS.md`
+- opt-in guard documentation for `TECHNO_SEARCH_ENABLE_LIVE_DATA`
+- `integration_live` test policy
+- provenance and cache/credential guardrails
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Documentation/Release Step 5 — Malformed Validation Tests
+
+Status: implemented.
+
+Added:
+
+- bad candidate track validation test
+- non-mapping feature validation test
+- missing report manifest validation test
+- empty report directory validation test
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_validation.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Documentation/Release Step 6 — Schema Paths CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search schema-paths`
+- deterministic schema path JSON output
+- CLI test for schema path keys and candidate packet schema path
+- CLI usage documentation
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Documentation/Release Step 7 — Score Regression Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search score-regression-summary`
+- optional `--snapshot-path`
+- snapshot counts by track and recommended pathway
+- CLI test for current regression fixture coverage
+- CLI usage documentation
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Documentation/Release Step 8 — Conservative Release Checklist
+
+Status: implemented.
+
+Added:
+
+- `docs/RELEASE_CHECKLIST.md`
+- required local validation commands
+- artifact and schema release checks
+- scientific-language release guardrails
+- live-data and GitHub workflow-token caveats
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Documentation/Release Step 9 — Status And Roadmap Updates
+
+Status: implemented.
+
+Updated:
+
+- `docs/PROJECT_STATUS.md` completed items and next actions
+- `docs/ROADMAP.md` reporting, calibration, and live-data milestones
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Documentation/Release Step 10 — GitHub-Safe CI Template
+
+Status: implemented.
+
+Added:
+
+- `docs/templates/ci.yml`
+- note that it should only be copied into `.github/workflows/` with a token that has `workflow` scope
+- release checklist link to the template
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py
+```
+
+Merge status: already on `main`; no merge needed.

@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import TextIO
@@ -18,6 +19,12 @@ from techno_search.reporting import (
 from techno_search.schemas import Candidate, candidate_from_mapping
 from techno_search.scoring import score_candidate
 from techno_search.validation import validate_candidate_file, validate_report_directory
+
+SCHEMA_FILENAMES = {
+    "batch_manifest": "batch_manifest.schema.json",
+    "candidate_packet": "candidate_packet.schema.json",
+    "report_manifest": "report_manifest.schema.json",
+}
 
 
 def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
@@ -59,6 +66,17 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         result = validate_report_directory(args.report_dir)
         print(json.dumps(result.as_dict(), indent=2, sort_keys=True), file=out)
         return 0 if result.ok else 1
+
+    if args.command == "schema-paths":
+        print(json.dumps(schema_paths(), indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "score-regression-summary":
+        print(
+            json.dumps(score_regression_summary(args.snapshot_path), indent=2, sort_keys=True),
+            file=out,
+        )
+        return 0
 
     parser.error(f"Unknown command: {args.command}")
     return 2
@@ -111,6 +129,49 @@ def score_batch(input_dir: Path | str, output_dir: Path | str, *, prefix: str = 
     manifest_path = destination / "batch_manifest.json"
     manifest_path.write_text(json.dumps(batch_manifest, indent=2, sort_keys=True) + "\n")
     return manifest_path
+
+
+def schema_paths() -> dict[str, str]:
+    """Return repository-local schema artifact paths."""
+
+    schema_dir = Path(__file__).resolve().parents[2] / "schemas"
+    return {
+        schema_name: str(schema_dir / filename)
+        for schema_name, filename in sorted(SCHEMA_FILENAMES.items())
+    }
+
+
+def default_score_regression_snapshot_path() -> Path:
+    """Return the repository-local score regression snapshot path."""
+
+    return Path(__file__).resolve().parents[2] / "tests" / "fixtures" / (
+        "score_regressions.json"
+    )
+
+
+def score_regression_summary(snapshot_path: Path | None = None) -> dict[str, object]:
+    """Summarize score regression snapshot coverage."""
+
+    path = snapshot_path or default_score_regression_snapshot_path()
+    with path.open(encoding="utf-8") as handle:
+        data = json.load(handle)
+
+    candidates = data["candidates"]
+    return {
+        "snapshot_path": str(path),
+        "candidate_count": len(candidates),
+        "by_track": dict(
+            sorted(Counter(candidate["track"] for candidate in candidates.values()).items())
+        ),
+        "by_recommended_pathway": dict(
+            sorted(
+                Counter(
+                    candidate["recommended_pathway"] for candidate in candidates.values()
+                ).items()
+            )
+        ),
+        "candidate_ids": sorted(candidates),
+    }
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -167,6 +228,19 @@ def _build_parser() -> argparse.ArgumentParser:
         "report_dir",
         type=Path,
         help="Directory containing generated candidate reports.",
+    )
+    subparsers.add_parser(
+        "schema-paths",
+        help="Print local JSON schema artifact paths.",
+    )
+    score_regression_parser = subparsers.add_parser(
+        "score-regression-summary",
+        help="Summarize score regression snapshot coverage.",
+    )
+    score_regression_parser.add_argument(
+        "--snapshot-path",
+        type=Path,
+        help="Optional score regression snapshot JSON path.",
     )
     return parser
 
