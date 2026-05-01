@@ -1249,3 +1249,222 @@ Validation for this step should include:
 ```
 
 Merge status: already on `main`; no merge needed.
+
+---
+
+## Ten-Step Validation Tooling Expansion
+
+User requested ten iterative items:
+
+1. Push local commits to GitHub.
+2. Add `docs/VALIDATION.md`.
+3. Add `techno-search validate-all`.
+4. Add `techno-search regenerate-examples`.
+5. Add deterministic regenerate-example tests.
+6. Add docs for example regeneration.
+7. Add schema versioning policy.
+8. Add explicit `schema_version` fields.
+9. Add tests enforcing `schema_version`.
+10. Update project status, roadmap, and this file.
+
+Each step should update this file and merge to `main` if needed.
+
+---
+
+## Validation Tooling Step 1 — Push Attempt
+
+Status: blocked by environment policy.
+
+Result:
+
+- Attempted `git push origin main`.
+- The environment rejected the push because updating the external GitHub `main` branch is disallowed by tenant policy.
+- No workaround was attempted.
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation Tooling Step 2 — Validation Guide
+
+Status: implemented.
+
+Added:
+
+- `docs/VALIDATION.md`
+- local validation gate commands
+- candidate/report validation command docs
+- schema, score regression, and example regeneration notes
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation Tooling Step 3 — Validate-All CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search validate-all`
+- candidate validation summary
+- report validation summary
+- schema path existence checks
+- calibration and score regression summaries
+- CLI test coverage
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation Tooling Step 4 — Regenerate Examples CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search regenerate-examples`
+- regeneration of `examples/reports`
+- regeneration of `examples/batch_reports`
+- relative output paths for committed artifacts
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py tests/test_examples.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation Tooling Step 5 — Deterministic Regeneration Tests
+
+Status: implemented.
+
+Added:
+
+- CLI test that regenerates examples in an isolated temporary directory
+- existing golden example stable-field test continues to compare regenerated report fields against committed artifacts
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py tests/test_examples.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation Tooling Step 6 — Example Regeneration Docs
+
+Status: implemented.
+
+Updated:
+
+- `docs/CLI_USAGE.md`
+- `docs/VALIDATION.md`
+- README validation links
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation Tooling Step 7 — Schema Versioning Policy
+
+Status: implemented.
+
+Added:
+
+- `docs/SCHEMA_VERSIONING.md`
+- schema compatibility policy
+- current `techno_search_packet_v1` documentation
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py tests/test_json_schemas.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation Tooling Step 8 — Schema Version Fields
+
+Status: implemented.
+
+Added:
+
+- `schema_version` in candidate packets
+- `schema_version` in per-candidate report manifests
+- `schema_version` in batch manifests
+- regenerated committed example artifacts
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_reporting.py tests/test_examples.py tests/test_json_schemas.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation Tooling Step 9 — Schema Version Tests
+
+Status: implemented.
+
+Added:
+
+- example artifact assertions for `schema_version`
+- schema required-field assertions for `schema_version`
+- reporting assertions for `schema_version`
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_reporting.py tests/test_examples.py tests/test_json_schemas.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation Tooling Step 10 — Status And Roadmap Updates
+
+Status: implemented.
+
+Updated:
+
+- `docs/PROJECT_STATUS.md`
+- `docs/ROADMAP.md`
+- `docs/RELEASE_CHECKLIST.md`
+- this file
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py
+```
+
+Merge status: already on `main`; no merge needed.

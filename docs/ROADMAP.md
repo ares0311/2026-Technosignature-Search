@@ -133,6 +133,8 @@ Generate reproducible candidate reports.
 - [x] Candidate/report validation commands
 - [x] JSON schema artifacts
 - [x] Golden example regression checks
+- [x] Example regeneration CLI
+- [x] Schema versioning policy
 
 ## Done When
 
@@ -202,6 +204,7 @@ Make scores empirically meaningful.
 - [x] Synthetic false-positive fixture set
 - [x] Score regression snapshots
 - [x] False-positive class summary tooling
+- [x] Local validation summary command
 - [ ] Reliability curves
 - [ ] Precision-recall analysis
 - [ ] False-positive class analysis

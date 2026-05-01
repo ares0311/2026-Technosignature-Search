@@ -32,6 +32,7 @@ Before release, verify:
 - score regression snapshots are reviewed when scores change
 - calibration fixtures still route expected false positives conservatively
 - generated packets include `config_version`
+- generated packets include `schema_version`
 - generated packets include the required disclaimer
 - generated packets expose negative evidence and blocking issues
 

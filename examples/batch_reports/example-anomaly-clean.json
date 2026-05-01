@@ -50,6 +50,7 @@
     "source_dataset": "synthetic-example"
   },
   "recommended_pathway": "candidate_review_packet",
+  "schema_version": "techno_search_packet_v1",
   "scores": {
     "false_positive_probability": 0.008554,
     "followup_value": 0.989983,

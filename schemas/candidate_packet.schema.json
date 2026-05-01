@@ -15,6 +15,7 @@
     "negative_evidence",
     "blocking_issues",
     "provenance",
+    "schema_version",
     "config_version",
     "disclaimer",
     "false_positive_discussion"
@@ -65,6 +66,7 @@
       "items": { "type": "string" }
     },
     "provenance": { "type": "object" },
+    "schema_version": { "type": "string", "minLength": 1 },
     "config_version": { "type": "string", "minLength": 1 },
     "disclaimer": { "type": "string", "minLength": 1 },
     "false_positive_discussion": { "type": "string", "minLength": 1 }

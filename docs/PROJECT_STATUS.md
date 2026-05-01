@@ -62,6 +62,10 @@ The project will support three tracks from day one:
 - [x] Score regression snapshots added
 - [x] Opt-in live-data integration scaffold added
 - [x] Conservative release checklist added
+- [x] Validation guide added
+- [x] Example regeneration CLI added
+- [x] Schema versioning policy added
+- [x] Explicit schema version fields added to generated artifacts
 
 ---
 
@@ -75,7 +79,7 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Push the latest validation/release documentation batch to GitHub from an approved local environment.
+1. Push the latest validation/schema-version documentation batch to GitHub from an approved local environment.
 2. Add provider-specific live-data adapter interfaces behind mocks.
 3. Add CI workflow only after the publishing token has GitHub `workflow` scope.
 

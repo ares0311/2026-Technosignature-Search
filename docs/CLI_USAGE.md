@@ -141,6 +141,30 @@ Print stable score-regression fixture coverage:
 
 ---
 
+## Run Local Validation Summary
+
+Run the non-network validation summaries used for quick release checks:
+
+```bash
+.venv/bin/techno-search validate-all
+```
+
+This includes example candidate validation, report validation, schema path checks, calibration fixture summary, and score regression summary.
+
+---
+
+## Regenerate Example Reports
+
+Refresh committed example reports from `examples/candidates`:
+
+```bash
+.venv/bin/techno-search regenerate-examples
+```
+
+Regeneration is expected when reporting fields, schema versions, or example candidate inputs change. Stable score and evidence fields should remain unchanged unless the scoring model or inputs changed intentionally.
+
+---
+
 ## Input Candidate JSON Shape
 
 The CLI expects a normalized synthetic candidate packet:

@@ -12,6 +12,7 @@ from typing import TextIO
 
 from techno_search.calibration import load_calibration_fixtures, summarize_calibration_fixtures
 from techno_search.reporting import (
+    DEFAULT_SCHEMA_VERSION,
     DEFAULT_SCORING_CONFIG_VERSION,
     candidate_packet_json,
     write_candidate_reports,
@@ -78,6 +79,16 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "validate-all":
+        all_result = validate_all()
+        print(json.dumps(all_result, indent=2, sort_keys=True), file=out)
+        return 0 if all_result["ok"] else 1
+
+    if args.command == "regenerate-examples":
+        regeneration_result = regenerate_examples()
+        print(json.dumps(regeneration_result, indent=2, sort_keys=True), file=out)
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -122,6 +133,7 @@ def score_batch(input_dir: Path | str, output_dir: Path | str, *, prefix: str = 
         "generated_at_utc": datetime.now(UTC).isoformat(),
         "input_dir": str(source_dir),
         "output_dir": str(destination),
+        "schema_version": DEFAULT_SCHEMA_VERSION,
         "config_version": DEFAULT_SCORING_CONFIG_VERSION,
         "candidate_count": len(entries),
         "reports": entries,
@@ -171,6 +183,72 @@ def score_regression_summary(snapshot_path: Path | None = None) -> dict[str, obj
             )
         ),
         "candidate_ids": sorted(candidates),
+    }
+
+
+def default_project_root() -> Path:
+    """Return the repository root."""
+
+    return Path(__file__).resolve().parents[2]
+
+
+def regenerate_examples() -> dict[str, object]:
+    """Regenerate committed example reports from example candidate JSON files."""
+
+    candidate_dir = Path("examples/candidates")
+    reports_dir = Path("examples/reports")
+    batch_reports_dir = Path("examples/batch_reports")
+
+    report_paths: list[str] = []
+    for candidate_path in sorted(candidate_dir.glob("*.json")):
+        candidate = load_candidate_json(candidate_path)
+        scored = score_candidate(candidate)
+        paths = write_candidate_reports(
+            scored,
+            reports_dir,
+            filename_prefix=candidate.candidate_id,
+        )
+        report_paths.extend(
+            [str(paths.markdown_path), str(paths.json_path), str(paths.manifest_path)]
+        )
+
+    batch_manifest_path = score_batch(candidate_dir, batch_reports_dir)
+    return {
+        "candidate_count": len(list(candidate_dir.glob("*.json"))),
+        "reports_dir": str(reports_dir),
+        "batch_reports_dir": str(batch_reports_dir),
+        "report_paths": sorted(report_paths),
+        "batch_manifest_path": str(batch_manifest_path),
+    }
+
+
+def validate_all() -> dict[str, object]:
+    """Run local validation summaries that do not require network access."""
+
+    root = default_project_root()
+    candidate_results = {
+        str(path): validate_candidate_file(path).as_dict()
+        for path in sorted((root / "examples" / "candidates").glob("*.json"))
+    }
+    report_result = validate_report_directory(root / "examples" / "reports").as_dict()
+    schemas = schema_paths()
+    schema_results = {path: Path(path).exists() for path in schemas.values()}
+    calibration = summarize_calibration_fixtures(load_calibration_fixtures()).as_dict()
+    regression = score_regression_summary()
+
+    ok = (
+        all(result["ok"] for result in candidate_results.values())
+        and bool(report_result["ok"])
+        and all(schema_results.values())
+    )
+    return {
+        "ok": ok,
+        "candidates": candidate_results,
+        "reports": report_result,
+        "schemas": schemas,
+        "schema_paths_exist": schema_results,
+        "calibration_summary": calibration,
+        "score_regression_summary": regression,
     }
 
 
@@ -241,6 +319,17 @@ def _build_parser() -> argparse.ArgumentParser:
         "--snapshot-path",
         type=Path,
         help="Optional score regression snapshot JSON path.",
+    )
+    subparsers.add_parser(
+        "validate-all",
+        help=(
+            "Run local validation summaries for examples, reports, schemas, "
+            "calibration, and score snapshots."
+        ),
+    )
+    subparsers.add_parser(
+        "regenerate-examples",
+        help="Regenerate committed example reports from examples/candidates.",
     )
     return parser
 

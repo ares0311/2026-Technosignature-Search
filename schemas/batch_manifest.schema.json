@@ -7,6 +7,7 @@
     "generated_at_utc",
     "input_dir",
     "output_dir",
+    "schema_version",
     "config_version",
     "candidate_count",
     "reports"
@@ -15,6 +16,7 @@
     "generated_at_utc": { "type": "string", "minLength": 1 },
     "input_dir": { "type": "string", "minLength": 1 },
     "output_dir": { "type": "string", "minLength": 1 },
+    "schema_version": { "type": "string", "minLength": 1 },
     "config_version": { "type": "string", "minLength": 1 },
     "candidate_count": { "type": "integer", "minimum": 0 },
     "reports": {

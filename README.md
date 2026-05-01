@@ -193,6 +193,11 @@ Machine-readable schemas:
 - Report manifest schema: [`report_manifest.schema.json`](schemas/report_manifest.schema.json)
 - Batch manifest schema: [`batch_manifest.schema.json`](schemas/batch_manifest.schema.json)
 
+Validation and schema policy:
+
+- Validation guide: [`docs/VALIDATION.md`](docs/VALIDATION.md)
+- Schema versioning: [`docs/SCHEMA_VERSIONING.md`](docs/SCHEMA_VERSIONING.md)
+
 ---
 
 ## Roadmap

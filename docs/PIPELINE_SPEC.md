@@ -210,6 +210,7 @@ Every scored candidate should include:
 
 ```json
 {
+  "schema_version": "string",
   "candidate_id": "string",
   "track": "radio | infrared | anomaly",
   "source_ids": [],
@@ -240,6 +241,12 @@ Batch report manifests should follow:
 
 ```text
 schemas/batch_manifest.schema.json
+```
+
+Current schema version policy:
+
+```text
+docs/SCHEMA_VERSIONING.md
 ```
 
 ---

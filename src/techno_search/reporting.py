@@ -18,6 +18,7 @@ REQUIRED_DISCLAIMER = (
     "independent validation are required."
 )
 DEFAULT_SCORING_CONFIG_VERSION = "scoring_v0"
+DEFAULT_SCHEMA_VERSION = "techno_search_packet_v1"
 
 
 @dataclass(frozen=True)
@@ -33,6 +34,7 @@ def candidate_packet(scored: ScoredCandidate) -> dict[str, Any]:
     """Return the canonical JSON-serializable candidate packet."""
 
     packet = scored.as_dict()
+    packet["schema_version"] = DEFAULT_SCHEMA_VERSION
     packet["config_version"] = _config_version(scored)
     packet["disclaimer"] = REQUIRED_DISCLAIMER
     packet["false_positive_discussion"] = _false_positive_discussion(scored)
@@ -91,6 +93,7 @@ def report_manifest(
         "candidate_id": scored.candidate.candidate_id,
         "track": scored.candidate.track.value,
         "recommended_pathway": scored.recommended_pathway.value,
+        "schema_version": DEFAULT_SCHEMA_VERSION,
         "markdown_path": str(markdown_path),
         "json_path": str(json_path),
         "config_version": _config_version(scored),

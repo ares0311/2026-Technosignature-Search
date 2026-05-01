@@ -1,10 +1,11 @@
 {
   "candidate_id": "example-anomaly-clean",
-  "code_commit": "96d3043",
+  "code_commit": "eab7b65",
   "config_version": "scoring_v0",
-  "generated_at_utc": "2026-05-01T21:33:28.969356+00:00",
+  "generated_at_utc": "2026-05-01T22:02:24.285532+00:00",
   "json_path": "examples/batch_reports/example-anomaly-clean.json",
   "markdown_path": "examples/batch_reports/example-anomaly-clean.md",
   "recommended_pathway": "candidate_review_packet",
+  "schema_version": "techno_search_packet_v1",
   "track": "anomaly"
 }

@@ -18,6 +18,7 @@ PER_CANDIDATE_MANIFEST_FIELDS = {
     "candidate_id",
     "track",
     "recommended_pathway",
+    "schema_version",
     "markdown_path",
     "json_path",
     "config_version",
@@ -28,6 +29,7 @@ BATCH_MANIFEST_FIELDS = {
     "generated_at_utc",
     "input_dir",
     "output_dir",
+    "schema_version",
     "config_version",
     "candidate_count",
     "reports",
@@ -57,7 +59,9 @@ def test_example_candidate_reports_exist_and_are_conservative() -> None:
         assert set(manifest) == PER_CANDIDATE_MANIFEST_FIELDS
         assert REQUIRED_DISCLAIMER in markdown
         assert packet["disclaimer"] == REQUIRED_DISCLAIMER
+        assert packet["schema_version"] == "techno_search_packet_v1"
         assert manifest["candidate_id"] == packet["candidate_id"]
+        assert manifest["schema_version"] == "techno_search_packet_v1"
         assert packet["candidate_id"].startswith("example-")
         assert packet["positive_evidence"]
         assert packet["negative_evidence"] is not None
@@ -70,6 +74,7 @@ def test_batch_example_manifest_covers_all_candidates() -> None:
 
     assert set(manifest) == BATCH_MANIFEST_FIELDS
     assert manifest["candidate_count"] == 3
+    assert manifest["schema_version"] == "techno_search_packet_v1"
     assert manifest["input_dir"] == "examples/candidates"
     assert manifest["output_dir"] == "examples/batch_reports"
     assert {report["candidate_id"] for report in reports} == set(EXPECTED_BATCH_CANDIDATES)
@@ -93,7 +98,9 @@ def test_batch_example_manifest_covers_all_candidates() -> None:
         per_candidate_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         assert set(per_candidate_manifest) == PER_CANDIDATE_MANIFEST_FIELDS
         assert packet["candidate_id"] == candidate_id
+        assert packet["schema_version"] == "techno_search_packet_v1"
         assert per_candidate_manifest["candidate_id"] == candidate_id
+        assert per_candidate_manifest["schema_version"] == "techno_search_packet_v1"
 
 
 def test_golden_example_reports_match_regenerated_stable_fields(tmp_path) -> None:
@@ -102,6 +109,7 @@ def test_golden_example_reports_match_regenerated_stable_fields(tmp_path) -> Non
     stable_fields = {
         "candidate_id",
         "track",
+        "schema_version",
         "config_version",
         "posterior",
         "scores",

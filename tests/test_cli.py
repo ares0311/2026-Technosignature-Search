@@ -36,6 +36,7 @@ def test_cli_scores_candidate_json_to_stdout(tmp_path) -> None:
 
     assert exit_code == 0
     assert packet["candidate_id"] == "cli-radio"
+    assert packet["schema_version"] == "techno_search_packet_v1"
     assert packet["recommended_pathway"]
     assert packet["disclaimer"]
 
@@ -78,6 +79,7 @@ def test_cli_scores_batch_directory(tmp_path) -> None:
     assert exit_code == 0
     assert stdout.getvalue().strip() == str(manifest_path)
     assert manifest["candidate_count"] == 2
+    assert manifest["schema_version"] == "techno_search_packet_v1"
     assert manifest["config_version"] == "scoring_v0"
     assert (output_dir / "batch-cli-radio.md").exists()
     assert (output_dir / "batch-cli-radio-b.md").exists()
@@ -176,3 +178,33 @@ def test_cli_score_regression_summary_outputs_snapshot_counts() -> None:
     assert result["candidate_count"] == 3
     assert result["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 1}
     assert result["by_recommended_pathway"] == {"candidate_review_packet": 3}
+
+
+def test_cli_validate_all_outputs_local_summary() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["validate-all"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["ok"] is True
+    assert result["calibration_summary"]["total"] == 15
+    assert result["score_regression_summary"]["candidate_count"] == 3
+    assert all(result["schema_paths_exist"].values())
+
+
+def test_cli_regenerate_examples_writes_relative_example_outputs(tmp_path, monkeypatch) -> None:
+    candidate_dir = tmp_path / "examples" / "candidates"
+    candidate_dir.mkdir(parents=True)
+    (candidate_dir / "candidate.json").write_text(json.dumps(_candidate_json()), encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    stdout = StringIO()
+
+    exit_code = main(["regenerate-examples"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["candidate_count"] == 1
+    assert result["reports_dir"] == "examples/reports"
+    assert (tmp_path / "examples" / "reports" / "cli-radio.json").exists()
+    assert (tmp_path / "examples" / "batch_reports" / "batch_manifest.json").exists()
