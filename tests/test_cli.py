@@ -56,3 +56,28 @@ def test_cli_writes_reports(tmp_path) -> None:
     assert (output_dir / "cli-radio.json").exists()
     assert (output_dir / "cli-radio.manifest.json").exists()
     assert "cli-radio.md" in stdout.getvalue()
+
+
+def test_cli_scores_batch_directory(tmp_path) -> None:
+    input_dir = tmp_path / "candidates"
+    output_dir = tmp_path / "reports"
+    input_dir.mkdir()
+    (input_dir / "candidate-a.json").write_text(json.dumps(_candidate_json()), encoding="utf-8")
+    candidate_b = _candidate_json() | {"candidate_id": "cli-radio-b"}
+    (input_dir / "candidate-b.json").write_text(json.dumps(candidate_b), encoding="utf-8")
+    stdout = StringIO()
+
+    exit_code = main(
+        ["score-batch", str(input_dir), str(output_dir), "--prefix", "batch-"],
+        stdout=stdout,
+    )
+
+    manifest_path = output_dir / "batch_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert stdout.getvalue().strip() == str(manifest_path)
+    assert manifest["candidate_count"] == 2
+    assert (output_dir / "batch-cli-radio.md").exists()
+    assert (output_dir / "batch-cli-radio-b.md").exists()
+    assert len(manifest["reports"]) == 2

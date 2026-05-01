@@ -67,6 +67,114 @@ Merge status: already on `main`; no merge needed.
 
 ---
 
+## Five-Step Docs/Batch CLI Expansion
+
+User requested five iterative steps:
+
+1. Push or publish safely.
+2. Add CLI usage docs.
+3. Add calibration documentation.
+4. Add batch scoring CLI.
+5. Add installed-console-script test.
+
+Each step should update this file and merge to `main` if needed.
+
+---
+
+## Docs/Batch Step 1 — Safe Publish Options
+
+Status: implemented locally.
+
+Added:
+
+- `docs/PUBLISHING.md`
+- current local commit state
+- note that automated `git push origin main` was blocked by environment policy
+- safe owner-controlled publication options
+- pre-publish validation checklist
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Docs/Batch Step 2 — CLI Usage Docs
+
+Status: implemented.
+
+Added:
+
+- `docs/CLI_USAGE.md`
+- install and help instructions
+- single-candidate scoring examples
+- report writing examples
+- normalized input JSON shape
+- output and manifest expectations
+- conservative CLI guardrails
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Docs/Batch Step 3 — Calibration Documentation
+
+Status: implemented.
+
+Added:
+
+- `docs/CALIBRATION_FIXTURES.md`
+- fixture table by false-positive class
+- expected pathway documentation
+- requirements for adding future fixtures
+- future fixture expansion list
+- calibration guardrails
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Docs/Batch Step 4 — Batch Scoring CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search score-batch INPUT_DIR OUTPUT_DIR`
+- per-candidate Markdown, JSON, and manifest output
+- aggregate `batch_manifest.json`
+- optional batch filename prefix
+- batch CLI docs
+- tests for batch scoring two synthetic candidate packets
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Docs/Batch Step 5 — Installed Console-Script Smoke Test
+
+Status: implemented.
+
+Added:
+
+- `tests/test_console_script.py`
+- direct `.venv/bin/techno-search score ...` subprocess smoke test
+- JSON parse assertion for installed console script output
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_console_script.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Five-Step CLI/Examples/Calibration Expansion
 
 User requested five iterative steps:

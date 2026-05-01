@@ -52,12 +52,14 @@ The project will support three tracks from day one:
 - [x] Calibration false-positive fixtures added
 - [x] CLI entry point for synthetic candidate scoring added
 - [x] Report manifest generation added
+- [x] Batch scoring CLI added
+- [x] Installed console-script smoke test added
 
 ---
 
 ## In Progress
 
-- [ ] Add calibration fixture documentation and expansion plan
+- [x] Add calibration fixture documentation and expansion plan
 - [ ] Add CLI usage documentation
 - [ ] Add live-data integration interfaces behind mocks
 
@@ -65,9 +67,9 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Add CLI usage documentation with a complete example command.
-2. Add calibration fixture documentation and expansion plan.
-3. Add validation tests for CLI-installed console script behavior.
+1. Add aggregate manifest regression examples.
+2. Add README quickstart for CLI scoring.
+3. Add batch CLI examples under `examples/batch_reports/`.
 
 ---
 
