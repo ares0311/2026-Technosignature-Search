@@ -34,6 +34,12 @@ Validation test:
 | `anomaly_image_artifact` | anomaly | `do_not_submit_false_positive` |
 | `anomaly_proper_motion` | anomaly | `do_not_submit_false_positive` |
 | `anomaly_survey_depth` | anomaly | `do_not_submit_false_positive` |
+| `radio_band_edge_artifact` | radio | `do_not_submit_false_positive` |
+| `radio_instrumental_artifact` | radio | `do_not_submit_false_positive` |
+| `infrared_agb_like_colors` | infrared | `do_not_submit_false_positive` |
+| `infrared_bad_photometry` | infrared | `do_not_submit_false_positive` |
+| `anomaly_moving_object` | anomaly | `do_not_submit_false_positive` |
+| `anomaly_catalog_mismatch` | anomaly | `do_not_submit_false_positive` |
 
 ---
 
@@ -71,14 +77,11 @@ Every fixture should preserve negative evidence. Do not use a fixture that only 
 
 Near-term fixture classes to add:
 
-- radio band-edge artifacts
-- radio gain-instability or backend-pattern artifacts
-- infrared AGB-like colors
-- infrared poor photometric flags
 - infrared saturation or duplicate source association
-- archival moving-object overlaps
-- archival crowded-field catalog mismatches
+- archival crowded-field catalog mismatches with multiple plausible counterparts
 - weak low-SNR radio noise cases
+- radio gain-instability or backend-pattern artifact variants
+- moving-object fixtures tied to future ephemeris metadata
 
 Longer-term calibration should use:
 

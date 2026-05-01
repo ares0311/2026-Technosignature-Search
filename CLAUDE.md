@@ -67,6 +67,126 @@ Merge status: already on `main`; no merge needed.
 
 ---
 
+## Five-Step Quickstart/Batch/Calibration Expansion
+
+User requested five iterative steps:
+
+1. Add README quickstart.
+2. Add batch example artifacts.
+3. Add aggregate manifest tests.
+4. Add CLI docs tests.
+5. Add calibration expansion fixtures.
+
+Each step should update this file and merge to `main` if needed.
+
+---
+
+## Quickstart Step 1 — README Quickstart
+
+Status: implemented.
+
+Added:
+
+- local environment install command
+- single-candidate CLI scoring command
+- report-writing command
+- batch scoring command
+- conservative review-packet warning
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Quickstart Step 2 — Batch Example Artifacts
+
+Status: implemented.
+
+Generated with:
+
+```bash
+.venv/bin/techno-search score-batch examples/candidates examples/batch_reports
+```
+
+Added:
+
+- per-candidate Markdown/JSON/manifest artifacts in `examples/batch_reports/`
+- aggregate `examples/batch_reports/batch_manifest.json`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Quickstart Step 3 — Aggregate Manifest Tests
+
+Status: implemented.
+
+Added:
+
+- tests for `examples/batch_reports/batch_manifest.json`
+- candidate coverage assertions
+- per-candidate path existence assertions
+- pathway and track assertions
+- conservative disclaimer checks for batch Markdown reports
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_examples.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Quickstart Step 4 — CLI Docs Tests
+
+Status: implemented.
+
+Added:
+
+- `tests/test_docs.py`
+- `docs/CLI_USAGE.md` path/command checks
+- `docs/PUBLISHING.md` validation-command checks
+- existence checks for referenced example files
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Quickstart Step 5 — Calibration Expansion Fixtures
+
+Status: implemented.
+
+Added false-positive fixtures for:
+
+- radio band-edge artifact
+- radio instrumental artifact
+- infrared AGB-like colors
+- infrared bad photometry
+- archival moving object
+- archival catalog mismatch
+
+Updated:
+
+- `tests/fixtures/calibration_false_positives.json`
+- `docs/CALIBRATION_FIXTURES.md`
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_calibration_fixtures.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Five-Step Docs/Batch CLI Expansion
 
 User requested five iterative steps:

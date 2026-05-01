@@ -133,6 +133,41 @@ See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md).
 
 ---
 
+## Quickstart
+
+Create and install the local development environment:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+```
+
+Score one synthetic candidate and print the JSON packet:
+
+```bash
+.venv/bin/techno-search score examples/candidates/radio_clean_candidate.json
+```
+
+Write Markdown, JSON, and manifest review packets:
+
+```bash
+.venv/bin/techno-search score \
+  examples/candidates/radio_clean_candidate.json \
+  --output-dir examples/reports \
+  --prefix example-radio-clean
+```
+
+Score every candidate in a directory:
+
+```bash
+.venv/bin/techno-search score-batch examples/candidates examples/batch_reports
+```
+
+Review packets are conservative artifacts. They are not discovery claims, and they always retain false-positive discussion, negative evidence, blocking issues, and the required disclaimer.
+
+---
+
 ## Roadmap
 
 | Milestone | Goal |

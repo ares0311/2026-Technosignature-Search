@@ -8,6 +8,11 @@ EXAMPLE_REPORTS = (
     "example-infrared-clean",
     "example-anomaly-clean",
 )
+EXPECTED_BATCH_CANDIDATES = {
+    "example-radio-clean": "radio",
+    "example-infrared-clean": "infrared",
+    "example-anomaly-clean": "anomaly",
+}
 
 
 def test_example_candidate_reports_exist_and_are_conservative() -> None:
@@ -26,3 +31,33 @@ def test_example_candidate_reports_exist_and_are_conservative() -> None:
         assert packet["candidate_id"].startswith("example-")
         assert packet["positive_evidence"]
         assert packet["negative_evidence"] is not None
+
+
+def test_batch_example_manifest_covers_all_candidates() -> None:
+    reports_dir = Path("examples/batch_reports")
+    manifest = json.loads((reports_dir / "batch_manifest.json").read_text(encoding="utf-8"))
+    reports = manifest["reports"]
+
+    assert manifest["candidate_count"] == 3
+    assert manifest["input_dir"] == "examples/candidates"
+    assert manifest["output_dir"] == "examples/batch_reports"
+    assert {report["candidate_id"] for report in reports} == set(EXPECTED_BATCH_CANDIDATES)
+
+    for report in reports:
+        candidate_id = report["candidate_id"]
+        assert report["track"] == EXPECTED_BATCH_CANDIDATES[candidate_id]
+        assert report["recommended_pathway"] == "candidate_review_packet"
+
+        markdown_path = Path(report["markdown_path"])
+        json_path = Path(report["json_path"])
+        manifest_path = Path(report["manifest_path"])
+
+        assert markdown_path.exists()
+        assert json_path.exists()
+        assert manifest_path.exists()
+        assert REQUIRED_DISCLAIMER in markdown_path.read_text(encoding="utf-8")
+
+        packet = json.loads(json_path.read_text(encoding="utf-8"))
+        per_candidate_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        assert packet["candidate_id"] == candidate_id
+        assert per_candidate_manifest["candidate_id"] == candidate_id

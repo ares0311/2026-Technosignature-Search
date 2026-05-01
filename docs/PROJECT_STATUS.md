@@ -54,6 +54,9 @@ The project will support three tracks from day one:
 - [x] Report manifest generation added
 - [x] Batch scoring CLI added
 - [x] Installed console-script smoke test added
+- [x] Batch example artifacts added
+- [x] CLI and publishing docs drift tests added
+- [x] Expanded calibration false-positive fixtures added
 
 ---
 
@@ -69,7 +72,7 @@ The project will support three tracks from day one:
 
 1. Add aggregate manifest regression examples.
 2. Add README quickstart for CLI scoring.
-3. Add batch CLI examples under `examples/batch_reports/`.
+3. Add README links to example reports and batch manifests.
 
 ---
 

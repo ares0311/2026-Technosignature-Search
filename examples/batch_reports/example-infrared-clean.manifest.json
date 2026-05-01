@@ -1,0 +1,10 @@
+{
+  "candidate_id": "example-infrared-clean",
+  "code_commit": "121f33d",
+  "config_version": "scoring_v0",
+  "generated_at_utc": "2026-05-01T15:24:53.040248+00:00",
+  "json_path": "examples/batch_reports/example-infrared-clean.json",
+  "markdown_path": "examples/batch_reports/example-infrared-clean.md",
+  "recommended_pathway": "candidate_review_packet",
+  "track": "infrared"
+}
