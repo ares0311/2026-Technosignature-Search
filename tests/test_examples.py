@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+from techno_search.cli import score_batch
 from techno_search.reporting import REQUIRED_DISCLAIMER
 
 EXAMPLE_REPORTS = (
@@ -27,6 +28,7 @@ BATCH_MANIFEST_FIELDS = {
     "generated_at_utc",
     "input_dir",
     "output_dir",
+    "config_version",
     "candidate_count",
     "reports",
 }
@@ -34,6 +36,7 @@ BATCH_REPORT_FIELDS = {
     "candidate_id",
     "track",
     "recommended_pathway",
+    "config_version",
     "input_path",
     "markdown_path",
     "json_path",
@@ -91,3 +94,28 @@ def test_batch_example_manifest_covers_all_candidates() -> None:
         assert set(per_candidate_manifest) == PER_CANDIDATE_MANIFEST_FIELDS
         assert packet["candidate_id"] == candidate_id
         assert per_candidate_manifest["candidate_id"] == candidate_id
+
+
+def test_golden_example_reports_match_regenerated_stable_fields(tmp_path) -> None:
+    score_batch("examples/candidates", tmp_path)
+
+    stable_fields = {
+        "candidate_id",
+        "track",
+        "config_version",
+        "posterior",
+        "scores",
+        "recommended_pathway",
+        "positive_evidence",
+        "negative_evidence",
+        "blocking_issues",
+        "disclaimer",
+        "false_positive_discussion",
+    }
+    for stem in EXAMPLE_REPORTS:
+        committed = json.loads(Path(f"examples/batch_reports/{stem}.json").read_text())
+        regenerated = json.loads((tmp_path / f"{stem}.json").read_text())
+
+        assert {field: committed[field] for field in stable_fields} == {
+            field: regenerated[field] for field in stable_fields
+        }

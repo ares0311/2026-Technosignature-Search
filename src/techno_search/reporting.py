@@ -17,6 +17,7 @@ REQUIRED_DISCLAIMER = (
     "pipeline. It is not evidence of a confirmed technosignature. Further review and "
     "independent validation are required."
 )
+DEFAULT_SCORING_CONFIG_VERSION = "scoring_v0"
 
 
 @dataclass(frozen=True)
@@ -32,6 +33,7 @@ def candidate_packet(scored: ScoredCandidate) -> dict[str, Any]:
     """Return the canonical JSON-serializable candidate packet."""
 
     packet = scored.as_dict()
+    packet["config_version"] = _config_version(scored)
     packet["disclaimer"] = REQUIRED_DISCLAIMER
     packet["false_positive_discussion"] = _false_positive_discussion(scored)
     return packet
@@ -91,7 +93,7 @@ def report_manifest(
         "recommended_pathway": scored.recommended_pathway.value,
         "markdown_path": str(markdown_path),
         "json_path": str(json_path),
-        "config_version": str(scored.candidate.provenance.get("config_version", "unknown")),
+        "config_version": _config_version(scored),
         "code_commit": _git_commit(),
         "generated_at_utc": datetime.now(UTC).isoformat(),
     }
@@ -247,3 +249,7 @@ def _git_commit() -> str | None:
         return None
     commit = result.stdout.strip()
     return commit or None
+
+
+def _config_version(scored: ScoredCandidate) -> str:
+    return str(scored.candidate.provenance.get("config_version", DEFAULT_SCORING_CONFIG_VERSION))

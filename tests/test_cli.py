@@ -78,6 +78,7 @@ def test_cli_scores_batch_directory(tmp_path) -> None:
     assert exit_code == 0
     assert stdout.getvalue().strip() == str(manifest_path)
     assert manifest["candidate_count"] == 2
+    assert manifest["config_version"] == "scoring_v0"
     assert (output_dir / "batch-cli-radio.md").exists()
     assert (output_dir / "batch-cli-radio-b.md").exists()
     assert len(manifest["reports"]) == 2
@@ -94,6 +95,7 @@ def test_score_batch_regenerates_expected_example_candidate_set(tmp_path) -> Non
         "example-anomaly-clean",
     }
     for report in manifest["reports"]:
+        assert report["config_version"] == "scoring_v0"
         assert (tmp_path / f"{report['candidate_id']}.md").exists()
         assert (tmp_path / f"{report['candidate_id']}.json").exists()
         assert (tmp_path / f"{report['candidate_id']}.manifest.json").exists()
@@ -106,6 +108,48 @@ def test_cli_calibration_summary_outputs_fixture_counts() -> None:
     summary = json.loads(stdout.getvalue())
 
     assert exit_code == 0
-    assert summary["total"] == 12
-    assert summary["by_track"] == {"anomaly": 5, "infrared": 4, "radio": 3}
-    assert summary["by_expected_pathway"] == {"do_not_submit_false_positive": 12}
+    assert summary["total"] == 15
+    assert summary["by_track"] == {"anomaly": 6, "infrared": 5, "radio": 4}
+    assert summary["by_expected_pathway"] == {"do_not_submit_false_positive": 15}
+
+
+def test_cli_validate_candidate_accepts_normalized_candidate(tmp_path) -> None:
+    input_path = tmp_path / "candidate.json"
+    input_path.write_text(json.dumps(_candidate_json()), encoding="utf-8")
+    stdout = StringIO()
+
+    exit_code = main(["validate-candidate", str(input_path)], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["ok"] is True
+    assert result["errors"] == []
+
+
+def test_cli_validate_candidate_rejects_unsupported_language(tmp_path) -> None:
+    input_path = tmp_path / "candidate.json"
+    candidate = _candidate_json() | {"candidate_id": "alien signal claim"}
+    input_path.write_text(json.dumps(candidate), encoding="utf-8")
+    stdout = StringIO()
+
+    exit_code = main(["validate-candidate", str(input_path)], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 1
+    assert result["ok"] is False
+    assert "alien signal" in result["errors"][0]
+
+
+def test_cli_validate_reports_accepts_generated_reports(tmp_path) -> None:
+    input_path = tmp_path / "candidate.json"
+    output_dir = tmp_path / "reports"
+    input_path.write_text(json.dumps(_candidate_json()), encoding="utf-8")
+    main(["score", str(input_path), "--output-dir", str(output_dir)], stdout=StringIO())
+    stdout = StringIO()
+
+    exit_code = main(["validate-reports", str(output_dir)], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["ok"] is True
+    assert result["errors"] == []

@@ -818,3 +818,216 @@ git diff --check
 ```
 
 Merge status: already on `main`; no merge needed.
+
+---
+
+## Ten-Step Validation/Regression Expansion
+
+User requested ten iterative steps:
+
+1. Confirm GitHub push succeeds after the amended commit.
+2. Keep CI workflow deferred until a token with `workflow` scope is available.
+3. Add candidate JSON validation CLI.
+4. Add generated report validation CLI.
+5. Add JSON schema files for candidate packets and manifests.
+6. Expand calibration false-positive edge cases.
+7. Add score regression snapshots.
+8. Add config-version provenance into scored packets and batch manifests.
+9. Add golden example stable-field tests.
+10. Add opt-in live-data integration scaffold.
+
+Each step should update this file and merge to `main` if needed.
+
+---
+
+## Validation/Regression Step 1 — GitHub Push Confirmation
+
+Status: confirmed.
+
+Observation:
+
+- Local `main` is even with `origin/main`, so the amended workflow-free history appears pushed.
+- No merge was needed because work is already on `main`.
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Regression Step 2 — CI Workflow Deferred
+
+Status: documented as deferred.
+
+Reason:
+
+- GitHub rejects workflow-file pushes unless the active token has `workflow` scope.
+- Keep CI as a future separate commit once the project owner has a suitable token.
+- Local validation remains the required gate: pytest with coverage, Ruff, mypy, and `git diff --check`.
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Regression Step 3 — Candidate Validation CLI
+
+Status: implemented.
+
+Added:
+
+- `src/techno_search/validation.py`
+- `ValidationResult`
+- candidate mapping/file validation
+- conservative-language checks for unsupported phrases
+- `techno-search validate-candidate`
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Regression Step 4 — Report Validation CLI
+
+Status: implemented.
+
+Added:
+
+- generated report packet validation
+- per-candidate report manifest validation
+- required disclaimer and evidence-section checks
+- `techno-search validate-reports`
+- CLI tests for generated report directories
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Regression Step 5 — JSON Schema Artifacts
+
+Status: implemented.
+
+Added:
+
+- `schemas/candidate_packet.schema.json`
+- `schemas/report_manifest.schema.json`
+- `schemas/batch_manifest.schema.json`
+- schema parseability and example-field coverage tests
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_json_schemas.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Regression Step 6 — Expanded Calibration Edge Cases
+
+Status: implemented.
+
+Added false-positive fixtures for:
+
+- radio satellite-like recurrence
+- infrared extragalactic contamination
+- archival anomaly variable-star behavior
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_calibration_fixtures.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Regression Step 7 — Score Regression Snapshots
+
+Status: implemented.
+
+Added:
+
+- `tests/fixtures/score_regressions.json`
+- stable score/pathway snapshots for the three example candidates
+- regression test comparing example scores and posteriors to snapshots
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_score_regressions.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Regression Step 8 — Config-Version Provenance
+
+Status: implemented.
+
+Added:
+
+- top-level `config_version` in candidate JSON packets
+- config-version fallback of `scoring_v0` for sparse provenance
+- `config_version` in batch manifests and batch report entries
+- updated schema and example artifact checks
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_reporting.py tests/test_cli.py tests/test_examples.py tests/test_json_schemas.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Regression Step 9 — Golden Example Stable Fields
+
+Status: implemented.
+
+Added:
+
+- temporary regeneration of example batch reports in tests
+- stable-field comparison against committed example packets
+- timestamp/path-independent golden coverage for scores, pathways, evidence, disclaimer, and config version
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_examples.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Regression Step 10 — Opt-In Live-Data Scaffold
+
+Status: implemented.
+
+Added:
+
+- `src/techno_search/live_data.py`
+- `TECHNO_SEARCH_ENABLE_LIVE_DATA` opt-in guard
+- base `LiveDataClient` scaffold with no default network access
+- default disabled test and skipped `integration_live` scaffold test
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.

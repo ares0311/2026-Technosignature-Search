@@ -15,8 +15,11 @@ def test_false_positive_calibration_fixtures_are_suppressed() -> None:
 def test_calibration_fixture_summary_counts_expected_classes() -> None:
     summary = summarize_calibration_fixtures(load_calibration_fixtures())
 
-    assert summary.total == 12
-    assert summary.by_expected_pathway == {Pathway.DO_NOT_SUBMIT_FALSE_POSITIVE.value: 12}
-    assert summary.by_track == {"anomaly": 5, "infrared": 4, "radio": 3}
+    assert summary.total == 15
+    assert summary.by_expected_pathway == {Pathway.DO_NOT_SUBMIT_FALSE_POSITIVE.value: 15}
+    assert summary.by_track == {"anomaly": 6, "infrared": 5, "radio": 4}
     assert summary.by_false_positive_class["rfi"] == 1
     assert summary.by_false_positive_class["catalog_mismatch"] == 1
+    assert summary.by_false_positive_class["satellite_like_recurrence"] == 1
+    assert summary.by_false_positive_class["extragalactic_contaminant"] == 1
+    assert summary.by_false_positive_class["variable_star"] == 1

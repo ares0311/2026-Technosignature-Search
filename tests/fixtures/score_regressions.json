@@ -1,0 +1,65 @@
+{
+  "candidates": {
+    "example-anomaly-clean": {
+      "posterior": {
+        "catalog_or_processing_error": 0.00188,
+        "human_interference": 0.00138,
+        "instrumental_artifact": 0.00136,
+        "known_object": 0.000757,
+        "natural_source": 0.001844,
+        "noise_or_low_confidence": 0.001333,
+        "technosignature_interest": 0.991446
+      },
+      "recommended_pathway": "candidate_review_packet",
+      "scores": {
+        "false_positive_probability": 0.008554,
+        "followup_value": 0.989983,
+        "novelty_score": 0.99812,
+        "review_readiness": 0.920064,
+        "signal_reality_confidence": 0.980256
+      },
+      "track": "anomaly"
+    },
+    "example-infrared-clean": {
+      "posterior": {
+        "catalog_or_processing_error": 0.003439,
+        "human_interference": 0.003105,
+        "instrumental_artifact": 0.003005,
+        "known_object": 0.001704,
+        "natural_source": 0.003331,
+        "noise_or_low_confidence": 0.00287,
+        "technosignature_interest": 0.982547
+      },
+      "recommended_pathway": "candidate_review_packet",
+      "scores": {
+        "false_positive_probability": 0.017453,
+        "followup_value": 0.98353,
+        "novelty_score": 0.996561,
+        "review_readiness": 0.918817,
+        "signal_reality_confidence": 0.975269
+      },
+      "track": "infrared"
+    },
+    "example-radio-clean": {
+      "posterior": {
+        "catalog_or_processing_error": 0.001326,
+        "human_interference": 0.002576,
+        "instrumental_artifact": 0.001407,
+        "known_object": 0.000757,
+        "natural_source": 0.001603,
+        "noise_or_low_confidence": 0.001644,
+        "technosignature_interest": 0.990687
+      },
+      "recommended_pathway": "candidate_review_packet",
+      "scores": {
+        "false_positive_probability": 0.009313,
+        "followup_value": 0.990055,
+        "novelty_score": 0.997424,
+        "review_readiness": 0.927692,
+        "signal_reality_confidence": 0.982768
+      },
+      "track": "radio"
+    }
+  },
+  "description": "Stable v0 score snapshots for synthetic example candidates."
+}

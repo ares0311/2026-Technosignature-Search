@@ -2,6 +2,7 @@
 
 from techno_search.calibration import load_calibration_fixtures
 from techno_search.config import TrackConfig, load_scoring_config, load_track_config
+from techno_search.live_data import live_data_enabled, require_live_data_enabled
 from techno_search.pathway import classify_pathway
 from techno_search.reporting import (
     REQUIRED_DISCLAIMER,
@@ -31,8 +32,10 @@ __all__ = [
     "load_calibration_fixtures",
     "load_scoring_config",
     "load_track_config",
+    "live_data_enabled",
     "report_manifest",
     "report_manifest_json",
+    "require_live_data_enabled",
     "score_candidate",
     "write_candidate_reports",
 ]

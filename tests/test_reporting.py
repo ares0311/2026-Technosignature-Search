@@ -54,6 +54,7 @@ def test_candidate_packet_contains_required_report_fields() -> None:
     assert packet["negative_evidence"]
     assert packet["blocking_issues"] == []
     assert packet["provenance"]["source_dataset"] == "synthetic-fixture"
+    assert packet["config_version"] == "scoring_v0"
     assert packet["disclaimer"] == REQUIRED_DISCLAIMER
     assert "negative evidence item(s)" in packet["false_positive_discussion"]
 
@@ -130,6 +131,7 @@ def test_write_candidate_reports_uses_safe_filenames(tmp_path) -> None:
     manifest = json.loads(paths.manifest_path.read_text(encoding="utf-8"))
     assert manifest["candidate_id"] == "../radio report/with spaces"
     assert manifest["track"] == "radio"
+    assert manifest["config_version"] == "scoring_v0"
     assert manifest["markdown_path"].endswith("radio-report-with-spaces.md")
     assert manifest["json_path"].endswith("radio-report-with-spaces.json")
     assert manifest["generated_at_utc"]

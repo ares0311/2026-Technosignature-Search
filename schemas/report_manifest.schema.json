@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ares0311/Technosignature-Search/schemas/report_manifest.schema.json",
+  "title": "Technosignature Search Report Manifest",
+  "type": "object",
+  "required": [
+    "candidate_id",
+    "track",
+    "recommended_pathway",
+    "markdown_path",
+    "json_path",
+    "config_version",
+    "code_commit",
+    "generated_at_utc"
+  ],
+  "properties": {
+    "candidate_id": { "type": "string", "minLength": 1 },
+    "track": { "enum": ["radio", "infrared", "anomaly"] },
+    "recommended_pathway": { "type": "string", "minLength": 1 },
+    "markdown_path": { "type": "string", "minLength": 1 },
+    "json_path": { "type": "string", "minLength": 1 },
+    "config_version": { "type": "string", "minLength": 1 },
+    "code_commit": { "type": ["string", "null"] },
+    "generated_at_utc": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": true
+}

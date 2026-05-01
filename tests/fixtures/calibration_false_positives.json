@@ -311,6 +311,82 @@
           "false_positive_class": "catalog_mismatch"
         }
       }
+    },
+    {
+      "name": "radio_satellite_like_recurrence",
+      "expected_pathway": "do_not_submit_false_positive",
+      "candidate": {
+        "candidate_id": "cal-radio-satellite-like",
+        "track": "radio",
+        "features": {
+          "snr": 50.0,
+          "bandwidth_hz": 2.0,
+          "drift_rate_hz_per_sec": 0.0,
+          "on_target_presence_score": 0.85,
+          "off_target_presence_score": 0.8,
+          "rfi_band_overlap_score": 0.7,
+          "frequency_persistence_score": 1.0,
+          "nearby_target_recurrence_score": 1.0,
+          "instrumental_artifact_score": 0.2,
+          "metadata_completeness_score": 0.85,
+          "data_quality_score": 0.75,
+          "provenance_completeness_score": 0.9
+        },
+        "provenance": {
+          "source_dataset": "synthetic-calibration",
+          "false_positive_class": "satellite_like_recurrence"
+        }
+      }
+    },
+    {
+      "name": "infrared_extragalactic_contaminant",
+      "expected_pathway": "do_not_submit_false_positive",
+      "candidate": {
+        "candidate_id": "cal-ir-extragalactic",
+        "track": "infrared",
+        "features": {
+          "ir_excess_score": 0.88,
+          "sed_fit_residual_score": 0.82,
+          "stellar_solution_quality": 0.05,
+          "galaxy_agn_indicator_score": 1.0,
+          "dust_indicator_score": 0.6,
+          "confusion_score": 1.0,
+          "photometric_quality_score": 0.05,
+          "catalog_artifact_score": 1.0,
+          "data_quality_score": 0.1,
+          "provenance_completeness_score": 0.9
+        },
+        "provenance": {
+          "source_dataset": "synthetic-calibration",
+          "false_positive_class": "extragalactic_contaminant"
+        }
+      }
+    },
+    {
+      "name": "anomaly_variable_star",
+      "expected_pathway": "do_not_submit_false_positive",
+      "candidate": {
+        "candidate_id": "cal-anomaly-variable-star",
+        "track": "anomaly",
+        "features": {
+          "historical_detection_score": 0.82,
+          "modern_non_detection_score": 0.7,
+          "magnitude_change": 4.5,
+          "proper_motion_explanation_score": 0.45,
+          "survey_depth_explanation_score": 0.8,
+          "artifact_score": 0.55,
+          "moving_object_score": 0.2,
+          "variability_score": 1.0,
+          "catalog_mismatch_score": 0.85,
+          "crossmatch_confidence": 0.25,
+          "data_quality_score": 0.25,
+          "provenance_completeness_score": 0.9
+        },
+        "provenance": {
+          "source_dataset": "synthetic-calibration",
+          "false_positive_class": "variable_star"
+        }
+      }
     }
   ]
 }

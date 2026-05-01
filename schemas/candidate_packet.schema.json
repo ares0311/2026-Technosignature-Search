@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ares0311/Technosignature-Search/schemas/candidate_packet.schema.json",
+  "title": "Technosignature Search Candidate Packet",
+  "type": "object",
+  "required": [
+    "candidate_id",
+    "track",
+    "source_ids",
+    "features",
+    "posterior",
+    "scores",
+    "recommended_pathway",
+    "positive_evidence",
+    "negative_evidence",
+    "blocking_issues",
+    "provenance",
+    "config_version",
+    "disclaimer",
+    "false_positive_discussion"
+  ],
+  "properties": {
+    "candidate_id": { "type": "string", "minLength": 1 },
+    "track": { "enum": ["radio", "infrared", "anomaly"] },
+    "source_ids": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "features": { "type": "object" },
+    "posterior": {
+      "type": "object",
+      "required": [
+        "technosignature_interest",
+        "natural_source",
+        "human_interference",
+        "instrumental_artifact",
+        "catalog_or_processing_error",
+        "known_object",
+        "noise_or_low_confidence"
+      ],
+      "additionalProperties": { "type": "number" }
+    },
+    "scores": {
+      "type": "object",
+      "required": [
+        "false_positive_probability",
+        "signal_reality_confidence",
+        "novelty_score",
+        "followup_value",
+        "review_readiness"
+      ],
+      "additionalProperties": { "type": "number" }
+    },
+    "recommended_pathway": { "type": "string", "minLength": 1 },
+    "positive_evidence": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "negative_evidence": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "blocking_issues": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "provenance": { "type": "object" },
+    "config_version": { "type": "string", "minLength": 1 },
+    "disclaimer": { "type": "string", "minLength": 1 },
+    "false_positive_discussion": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": true
+}

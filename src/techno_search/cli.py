@@ -10,9 +10,14 @@ from pathlib import Path
 from typing import TextIO
 
 from techno_search.calibration import load_calibration_fixtures, summarize_calibration_fixtures
-from techno_search.reporting import candidate_packet_json, write_candidate_reports
+from techno_search.reporting import (
+    DEFAULT_SCORING_CONFIG_VERSION,
+    candidate_packet_json,
+    write_candidate_reports,
+)
 from techno_search.schemas import Candidate, candidate_from_mapping
 from techno_search.scoring import score_candidate
+from techno_search.validation import validate_candidate_file, validate_report_directory
 
 
 def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
@@ -45,6 +50,16 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(summary.as_dict(), indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "validate-candidate":
+        result = validate_candidate_file(args.input)
+        print(json.dumps(result.as_dict(), indent=2, sort_keys=True), file=out)
+        return 0 if result.ok else 1
+
+    if args.command == "validate-reports":
+        result = validate_report_directory(args.report_dir)
+        print(json.dumps(result.as_dict(), indent=2, sort_keys=True), file=out)
+        return 0 if result.ok else 1
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -75,6 +90,9 @@ def score_batch(input_dir: Path | str, output_dir: Path | str, *, prefix: str = 
                 "candidate_id": candidate.candidate_id,
                 "track": candidate.track.value,
                 "recommended_pathway": scored.recommended_pathway.value,
+                "config_version": str(
+                    candidate.provenance.get("config_version", DEFAULT_SCORING_CONFIG_VERSION)
+                ),
                 "input_path": str(candidate_path),
                 "markdown_path": str(paths.markdown_path),
                 "json_path": str(paths.json_path),
@@ -86,6 +104,7 @@ def score_batch(input_dir: Path | str, output_dir: Path | str, *, prefix: str = 
         "generated_at_utc": datetime.now(UTC).isoformat(),
         "input_dir": str(source_dir),
         "output_dir": str(destination),
+        "config_version": DEFAULT_SCORING_CONFIG_VERSION,
         "candidate_count": len(entries),
         "reports": entries,
     }
@@ -134,6 +153,20 @@ def _build_parser() -> argparse.ArgumentParser:
         "--fixture-path",
         type=Path,
         help="Optional calibration fixture JSON path.",
+    )
+    validate_candidate_parser = subparsers.add_parser(
+        "validate-candidate",
+        help="Validate a normalized synthetic candidate JSON file.",
+    )
+    validate_candidate_parser.add_argument("input", type=Path, help="Input candidate JSON path.")
+    validate_reports_parser = subparsers.add_parser(
+        "validate-reports",
+        help="Validate generated candidate report packets and manifests in a directory.",
+    )
+    validate_reports_parser.add_argument(
+        "report_dir",
+        type=Path,
+        help="Directory containing generated candidate reports.",
     )
     return parser
 

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ares0311/Technosignature-Search/schemas/batch_manifest.schema.json",
+  "title": "Technosignature Search Batch Manifest",
+  "type": "object",
+  "required": [
+    "generated_at_utc",
+    "input_dir",
+    "output_dir",
+    "config_version",
+    "candidate_count",
+    "reports"
+  ],
+  "properties": {
+    "generated_at_utc": { "type": "string", "minLength": 1 },
+    "input_dir": { "type": "string", "minLength": 1 },
+    "output_dir": { "type": "string", "minLength": 1 },
+    "config_version": { "type": "string", "minLength": 1 },
+    "candidate_count": { "type": "integer", "minimum": 0 },
+    "reports": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "track",
+          "recommended_pathway",
+          "config_version",
+          "input_path",
+          "markdown_path",
+          "json_path",
+          "manifest_path"
+        ],
+        "properties": {
+          "candidate_id": { "type": "string", "minLength": 1 },
+          "track": { "enum": ["radio", "infrared", "anomaly"] },
+          "recommended_pathway": { "type": "string", "minLength": 1 },
+          "config_version": { "type": "string", "minLength": 1 },
+          "input_path": { "type": "string", "minLength": 1 },
+          "markdown_path": { "type": "string", "minLength": 1 },
+          "json_path": { "type": "string", "minLength": 1 },
+          "manifest_path": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

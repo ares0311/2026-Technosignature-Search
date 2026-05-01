@@ -1,11 +1,13 @@
 {
   "candidate_count": 3,
-  "generated_at_utc": "2026-05-01T15:24:53.048237+00:00",
+  "config_version": "scoring_v0",
+  "generated_at_utc": "2026-05-01T21:33:29.017300+00:00",
   "input_dir": "examples/candidates",
   "output_dir": "examples/batch_reports",
   "reports": [
     {
       "candidate_id": "example-anomaly-clean",
+      "config_version": "scoring_v0",
       "input_path": "examples/candidates/anomaly_clean_candidate.json",
       "json_path": "examples/batch_reports/example-anomaly-clean.json",
       "manifest_path": "examples/batch_reports/example-anomaly-clean.manifest.json",
@@ -15,6 +17,7 @@
     },
     {
       "candidate_id": "example-infrared-clean",
+      "config_version": "scoring_v0",
       "input_path": "examples/candidates/infrared_clean_candidate.json",
       "json_path": "examples/batch_reports/example-infrared-clean.json",
       "manifest_path": "examples/batch_reports/example-infrared-clean.manifest.json",
@@ -24,6 +27,7 @@
     },
     {
       "candidate_id": "example-radio-clean",
+      "config_version": "scoring_v0",
       "input_path": "examples/candidates/radio_clean_candidate.json",
       "json_path": "examples/batch_reports/example-radio-clean.json",
       "manifest_path": "examples/batch_reports/example-radio-clean.manifest.json",
