@@ -165,6 +165,16 @@ Regeneration is expected when reporting fields, schema versions, or example cand
 
 ---
 
+## Summarize Report Provenance
+
+Summarize per-candidate report manifests in a generated report directory:
+
+```bash
+.venv/bin/techno-search provenance-summary examples/reports
+```
+
+---
+
 ## Input Candidate JSON Shape
 
 The CLI expects a normalized synthetic candidate packet:

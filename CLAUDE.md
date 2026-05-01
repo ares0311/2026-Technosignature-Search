@@ -1468,3 +1468,228 @@ Validation for this step should include:
 ```
 
 Merge status: already on `main`; no merge needed.
+
+---
+
+## Ten-Step Live Provider/Provenance Expansion
+
+User requested ten iterative tasks:
+
+1. Push local commits to GitHub.
+2. Add provider-specific live-data adapter interfaces for Gaia, IRSA, VizieR, SIMBAD, and Breakthrough Listen behind the opt-in guard.
+3. Add mocked tests proving provider adapters do not perform network access by default.
+4. Add `docs/LIVE_PROVIDER_INTERFACES.md`.
+5. Add provenance helper module.
+6. Wire provenance helper output into report manifests and live-data request scaffolds.
+7. Add `techno-search provenance-summary`.
+8. Add tests for provenance summary across `examples/reports` and `examples/batch_reports`.
+9. Update schemas with provenance summary expectations.
+10. Update project status, roadmap, and this file.
+
+Each step should update this file and merge to `main` if needed.
+
+---
+
+## Live Provider/Provenance Step 1 — Push Attempt
+
+Status: blocked by environment policy.
+
+Result:
+
+- Attempted `git push origin main`.
+- The environment rejected the push because updating the external GitHub `main` branch is disallowed by tenant policy.
+- No workaround was attempted.
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider/Provenance Step 2 — Provider Adapter Interfaces
+
+Status: implemented.
+
+Added:
+
+- `LiveProviderAdapter`
+- Gaia adapter scaffold
+- IRSA adapter scaffold
+- VizieR adapter scaffold
+- SIMBAD adapter scaffold
+- Breakthrough Listen adapter scaffold
+- shared constants module for schema and scoring config versions
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider/Provenance Step 3 — Provider Adapter Default-Off Tests
+
+Status: implemented.
+
+Added:
+
+- provider adapter request-building test
+- provider-name coverage for Gaia, IRSA, VizieR, SIMBAD, and Breakthrough Listen
+- assertions that adapter fetches raise `LiveDataDisabledError` by default
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider/Provenance Step 4 — Live Provider Interface Docs
+
+Status: implemented.
+
+Added:
+
+- `docs/LIVE_PROVIDER_INTERFACES.md`
+- adapter responsibilities
+- provenance fields
+- cache policy
+- conservative scientific guardrails
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider/Provenance Step 5 — Provenance Helper Module
+
+Status: implemented.
+
+Added:
+
+- `src/techno_search/provenance.py`
+- `ProvenanceRecord`
+- `build_provenance_record(...)`
+- `candidate_provenance_record(...)`
+- provenance unit tests
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_provenance.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider/Provenance Step 6 — Provenance Wiring
+
+Status: implemented.
+
+Added:
+
+- `provenance_summary` in report manifests
+- shared git commit helper usage
+- live-data request provenance record generation
+- tests for report and live-data provenance summaries
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_reporting.py tests/test_live_data.py tests/test_provenance.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider/Provenance Step 7 — Provenance Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search provenance-summary`
+- manifest counts
+- counts by track, schema version, config version, and source dataset
+- CLI usage docs
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider/Provenance Step 8 — Provenance Summary Tests
+
+Status: implemented.
+
+Added:
+
+- provenance summary test for `examples/reports`
+- provenance summary test for `examples/batch_reports`
+- example manifest assertions for `provenance_summary`
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py tests/test_examples.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider/Provenance Step 9 — Provenance Summary Schema
+
+Status: implemented.
+
+Added:
+
+- required `provenance_summary` in report manifest schema
+- validation required-field update
+- schema tests for `provenance_summary`
+- pipeline spec note for provenance summaries
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_json_schemas.py tests/test_examples.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider/Provenance Step 10 — Status And Roadmap Updates
+
+Status: implemented.
+
+Updated:
+
+- `docs/PROJECT_STATUS.md`
+- `docs/ROADMAP.md`
+- `docs/RELEASE_CHECKLIST.md`
+- this file
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py
+```
+
+Merge status: already on `main`; no merge needed.

@@ -12,7 +12,8 @@
     "json_path",
     "config_version",
     "code_commit",
-    "generated_at_utc"
+    "generated_at_utc",
+    "provenance_summary"
   ],
   "properties": {
     "candidate_id": { "type": "string", "minLength": 1 },
@@ -23,7 +24,33 @@
     "json_path": { "type": "string", "minLength": 1 },
     "config_version": { "type": "string", "minLength": 1 },
     "code_commit": { "type": ["string", "null"] },
-    "generated_at_utc": { "type": "string", "minLength": 1 }
+    "generated_at_utc": { "type": "string", "minLength": 1 },
+    "provenance_summary": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "config_version",
+        "generated_at_utc",
+        "code_commit",
+        "query_parameters",
+        "source_ids"
+      ],
+      "properties": {
+        "schema_version": { "type": "string", "minLength": 1 },
+        "config_version": { "type": "string", "minLength": 1 },
+        "generated_at_utc": { "type": "string", "minLength": 1 },
+        "code_commit": { "type": ["string", "null"] },
+        "input_path": { "type": ["string", "null"] },
+        "provider_name": { "type": ["string", "null"] },
+        "query_parameters": { "type": "object" },
+        "source_ids": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "source_dataset": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
+    }
   },
   "additionalProperties": true
 }

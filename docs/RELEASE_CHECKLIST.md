@@ -33,6 +33,7 @@ Before release, verify:
 - calibration fixtures still route expected false positives conservatively
 - generated packets include `config_version`
 - generated packets include `schema_version`
+- report manifests include `provenance_summary`
 - generated packets include the required disclaimer
 - generated packets expose negative evidence and blocking issues
 

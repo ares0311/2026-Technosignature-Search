@@ -135,6 +135,7 @@ Generate reproducible candidate reports.
 - [x] Golden example regression checks
 - [x] Example regeneration CLI
 - [x] Schema versioning policy
+- [x] Provenance summaries in report manifests
 
 ## Done When
 
@@ -188,6 +189,7 @@ Add real data ingestion behind tested abstractions.
 - [ ] Provenance tracking
 - [x] Live integration tests marked separately
 - [x] Opt-in live-data scaffold
+- [x] Provider adapter interfaces behind opt-in guard
 - [ ] Provider adapters behind mocks
 
 ---
@@ -205,6 +207,7 @@ Make scores empirically meaningful.
 - [x] Score regression snapshots
 - [x] False-positive class summary tooling
 - [x] Local validation summary command
+- [x] Provenance summary command
 - [ ] Reliability curves
 - [ ] Precision-recall analysis
 - [ ] False-positive class analysis

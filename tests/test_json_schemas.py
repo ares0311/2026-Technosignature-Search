@@ -40,8 +40,10 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     assert "schema_version" in packet_schema["required"]
     assert "schema_version" in manifest_schema["required"]
     assert "schema_version" in batch_schema["required"]
+    assert "provenance_summary" in manifest_schema["required"]
     assert packet["schema_version"] == "techno_search_packet_v1"
     assert manifest["schema_version"] == "techno_search_packet_v1"
+    assert manifest["provenance_summary"]["source_dataset"] == "synthetic-example"
     assert batch["schema_version"] == "techno_search_packet_v1"
     assert packet["config_version"] == "scoring_v0"
     assert batch["config_version"] == "scoring_v0"

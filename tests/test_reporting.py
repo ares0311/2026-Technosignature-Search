@@ -134,6 +134,11 @@ def test_write_candidate_reports_uses_safe_filenames(tmp_path) -> None:
     assert manifest["track"] == "radio"
     assert manifest["schema_version"] == "techno_search_packet_v1"
     assert manifest["config_version"] == "scoring_v0"
+    assert manifest["provenance_summary"]["source_dataset"] == "synthetic-fixture"
+    assert manifest["provenance_summary"]["source_ids"] == [
+        "synthetic-on-001",
+        "synthetic-off-001",
+    ]
     assert manifest["markdown_path"].endswith("radio-report-with-spaces.md")
     assert manifest["json_path"].endswith("radio-report-with-spaces.json")
     assert manifest["generated_at_utc"]

@@ -1,10 +1,23 @@
 {
   "candidate_id": "example-radio-clean",
-  "code_commit": "eab7b65",
+  "code_commit": "3ab8183",
   "config_version": "scoring_v0",
-  "generated_at_utc": "2026-05-01T22:02:24.275950+00:00",
+  "generated_at_utc": "2026-05-01T22:20:09.076506+00:00",
   "json_path": "examples/reports/example-radio-clean.json",
   "markdown_path": "examples/reports/example-radio-clean.md",
+  "provenance_summary": {
+    "code_commit": "3ab8183",
+    "config_version": "scoring_v0",
+    "generated_at_utc": "2026-05-01T22:20:09.076534+00:00",
+    "input_path": null,
+    "provider_name": null,
+    "query_parameters": {},
+    "schema_version": "techno_search_packet_v1",
+    "source_dataset": "synthetic-example",
+    "source_ids": [
+      "example-radio-hit-table"
+    ]
+  },
   "recommended_pathway": "candidate_review_packet",
   "schema_version": "techno_search_packet_v1",
   "track": "radio"

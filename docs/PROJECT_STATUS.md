@@ -66,6 +66,10 @@ The project will support three tracks from day one:
 - [x] Example regeneration CLI added
 - [x] Schema versioning policy added
 - [x] Explicit schema version fields added to generated artifacts
+- [x] Live provider adapter scaffolds added
+- [x] Provenance helper module added
+- [x] Provenance summaries added to report manifests
+- [x] Provenance summary CLI added
 
 ---
 
@@ -80,7 +84,7 @@ The project will support three tracks from day one:
 ## Next 3 Actions
 
 1. Push the latest validation/schema-version documentation batch to GitHub from an approved local environment.
-2. Add provider-specific live-data adapter interfaces behind mocks.
+2. Add provider-specific live-data adapter implementations behind mocks.
 3. Add CI workflow only after the publishing token has GitHub `workflow` scope.
 
 ---

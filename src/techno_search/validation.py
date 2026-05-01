@@ -46,6 +46,7 @@ REQUIRED_MANIFEST_FIELDS = {
     "config_version",
     "code_commit",
     "generated_at_utc",
+    "provenance_summary",
 }
 
 

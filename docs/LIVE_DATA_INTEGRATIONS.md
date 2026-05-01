@@ -65,3 +65,9 @@ src/techno_search/live_data.py
 ```
 
 No provider adapter performs network access by default.
+
+Provider interface responsibilities are documented in:
+
+```text
+docs/LIVE_PROVIDER_INTERFACES.md
+```

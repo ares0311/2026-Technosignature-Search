@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import json
 import re
-import subprocess
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
+from techno_search.provenance import candidate_provenance_record, git_commit
 from techno_search.schemas import ScoredCandidate
 
 REQUIRED_DISCLAIMER = (
@@ -17,10 +18,6 @@ REQUIRED_DISCLAIMER = (
     "pipeline. It is not evidence of a confirmed technosignature. Further review and "
     "independent validation are required."
 )
-DEFAULT_SCORING_CONFIG_VERSION = "scoring_v0"
-DEFAULT_SCHEMA_VERSION = "techno_search_packet_v1"
-
-
 @dataclass(frozen=True)
 class ReportPaths:
     """Paths written for a candidate review packet."""
@@ -97,8 +94,9 @@ def report_manifest(
         "markdown_path": str(markdown_path),
         "json_path": str(json_path),
         "config_version": _config_version(scored),
-        "code_commit": _git_commit(),
+        "code_commit": git_commit(),
         "generated_at_utc": datetime.now(UTC).isoformat(),
+        "provenance_summary": candidate_provenance_record(scored.candidate).as_dict(),
     }
 
 
@@ -235,23 +233,6 @@ def _safe_filename(value: str) -> str:
     if not normalized:
         return "candidate-report"
     return normalized[:120]
-
-
-def _git_commit() -> str | None:
-    repo_root = Path(__file__).resolve().parents[2]
-    try:
-        result = subprocess.run(
-            ["git", "rev-parse", "--short", "HEAD"],
-            cwd=repo_root,
-            check=True,
-            capture_output=True,
-            text=True,
-            timeout=2.0,
-        )
-    except (OSError, subprocess.SubprocessError):
-        return None
-    commit = result.stdout.strip()
-    return commit or None
 
 
 def _config_version(scored: ScoredCandidate) -> str:

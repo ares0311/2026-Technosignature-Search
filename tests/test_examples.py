@@ -24,6 +24,7 @@ PER_CANDIDATE_MANIFEST_FIELDS = {
     "config_version",
     "code_commit",
     "generated_at_utc",
+    "provenance_summary",
 }
 BATCH_MANIFEST_FIELDS = {
     "generated_at_utc",
@@ -62,6 +63,7 @@ def test_example_candidate_reports_exist_and_are_conservative() -> None:
         assert packet["schema_version"] == "techno_search_packet_v1"
         assert manifest["candidate_id"] == packet["candidate_id"]
         assert manifest["schema_version"] == "techno_search_packet_v1"
+        assert manifest["provenance_summary"]["source_dataset"] == "synthetic-example"
         assert packet["candidate_id"].startswith("example-")
         assert packet["positive_evidence"]
         assert packet["negative_evidence"] is not None
@@ -101,6 +103,9 @@ def test_batch_example_manifest_covers_all_candidates() -> None:
         assert packet["schema_version"] == "techno_search_packet_v1"
         assert per_candidate_manifest["candidate_id"] == candidate_id
         assert per_candidate_manifest["schema_version"] == "techno_search_packet_v1"
+        assert per_candidate_manifest["provenance_summary"]["source_dataset"] == (
+            "synthetic-example"
+        )
 
 
 def test_golden_example_reports_match_regenerated_stable_fields(tmp_path) -> None:

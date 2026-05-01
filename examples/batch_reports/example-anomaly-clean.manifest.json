@@ -1,10 +1,23 @@
 {
   "candidate_id": "example-anomaly-clean",
-  "code_commit": "eab7b65",
+  "code_commit": "3ab8183",
   "config_version": "scoring_v0",
-  "generated_at_utc": "2026-05-01T22:02:24.285532+00:00",
+  "generated_at_utc": "2026-05-01T22:20:09.092161+00:00",
   "json_path": "examples/batch_reports/example-anomaly-clean.json",
   "markdown_path": "examples/batch_reports/example-anomaly-clean.md",
+  "provenance_summary": {
+    "code_commit": "3ab8183",
+    "config_version": "scoring_v0",
+    "generated_at_utc": "2026-05-01T22:20:09.092183+00:00",
+    "input_path": null,
+    "provider_name": null,
+    "query_parameters": {},
+    "schema_version": "techno_search_packet_v1",
+    "source_dataset": "synthetic-example",
+    "source_ids": [
+      "synthetic historical source"
+    ]
+  },
   "recommended_pathway": "candidate_review_packet",
   "schema_version": "techno_search_packet_v1",
   "track": "anomaly"

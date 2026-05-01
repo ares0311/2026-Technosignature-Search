@@ -11,9 +11,8 @@ from pathlib import Path
 from typing import TextIO
 
 from techno_search.calibration import load_calibration_fixtures, summarize_calibration_fixtures
+from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.reporting import (
-    DEFAULT_SCHEMA_VERSION,
-    DEFAULT_SCORING_CONFIG_VERSION,
     candidate_packet_json,
     write_candidate_reports,
 )
@@ -87,6 +86,13 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
     if args.command == "regenerate-examples":
         regeneration_result = regenerate_examples()
         print(json.dumps(regeneration_result, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "provenance-summary":
+        print(
+            json.dumps(provenance_summary(args.report_dir), indent=2, sort_keys=True),
+            file=out,
+        )
         return 0
 
     parser.error(f"Unknown command: {args.command}")
@@ -252,6 +258,38 @@ def validate_all() -> dict[str, object]:
     }
 
 
+def provenance_summary(report_dir: Path | str) -> dict[str, object]:
+    """Summarize provenance across per-candidate report manifests."""
+
+    directory = Path(report_dir)
+    manifest_paths = sorted(directory.glob("*.manifest.json"))
+    manifests = []
+    for path in manifest_paths:
+        with path.open(encoding="utf-8") as handle:
+            manifests.append(json.load(handle))
+
+    return {
+        "report_dir": str(directory),
+        "manifest_count": len(manifests),
+        "candidate_ids": sorted(str(manifest["candidate_id"]) for manifest in manifests),
+        "by_track": dict(sorted(Counter(str(manifest["track"]) for manifest in manifests).items())),
+        "by_schema_version": dict(
+            sorted(Counter(str(manifest["schema_version"]) for manifest in manifests).items())
+        ),
+        "by_config_version": dict(
+            sorted(Counter(str(manifest["config_version"]) for manifest in manifests).items())
+        ),
+        "by_source_dataset": dict(
+            sorted(
+                Counter(
+                    str(manifest.get("provenance_summary", {}).get("source_dataset", "unknown"))
+                    for manifest in manifests
+                ).items()
+            )
+        ),
+    }
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="techno-search",
@@ -330,6 +368,15 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "regenerate-examples",
         help="Regenerate committed example reports from examples/candidates.",
+    )
+    provenance_parser = subparsers.add_parser(
+        "provenance-summary",
+        help="Summarize provenance fields across report manifests in a directory.",
+    )
+    provenance_parser.add_argument(
+        "report_dir",
+        type=Path,
+        help="Directory containing per-candidate report manifests.",
     )
     return parser
 

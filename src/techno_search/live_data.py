@@ -8,6 +8,9 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from typing import Any
+
+from techno_search.provenance import ProvenanceRecord, build_provenance_record
 
 LIVE_DATA_ENV_VAR = "TECHNO_SEARCH_ENABLE_LIVE_DATA"
 
@@ -19,6 +22,16 @@ class LiveDataRequest:
     source_name: str
     query: str
     purpose: str
+    parameters: dict[str, str] | None = None
+
+    def provenance_record(self) -> ProvenanceRecord:
+        """Return a provenance record for this request without network access."""
+
+        return build_provenance_record(
+            provider_name=self.source_name,
+            query_parameters={"query": self.query, "purpose": self.purpose}
+            | (self.parameters or {}),
+        )
 
 
 class LiveDataDisabledError(RuntimeError):
@@ -55,3 +68,71 @@ class LiveDataClient:
         require_live_data_enabled()
         msg = f"No live-data adapter is implemented for {request.source_name!r}."
         raise NotImplementedError(msg)
+
+
+@dataclass(frozen=True)
+class LiveProviderAdapter:
+    """Provider-specific interface that remains guarded by default."""
+
+    provider_name: str
+    service_url: str
+
+    def build_request(
+        self,
+        query: str,
+        *,
+        purpose: str,
+        parameters: dict[str, str] | None = None,
+    ) -> LiveDataRequest:
+        """Build a provider-scoped live-data request without network access."""
+
+        return LiveDataRequest(
+            source_name=self.provider_name,
+            query=query,
+            purpose=purpose,
+            parameters=parameters,
+        )
+
+    def fetch_metadata(self, request: LiveDataRequest) -> dict[str, Any]:
+        """Guard future provider access behind explicit opt-in."""
+
+        require_live_data_enabled()
+        msg = f"No live-data adapter is implemented for {self.provider_name!r}."
+        raise NotImplementedError(msg)
+
+
+class GaiaAdapter(LiveProviderAdapter):
+    def __init__(self) -> None:
+        super().__init__("gaia", "https://gea.esac.esa.int/archive/")
+
+
+class IrsaAdapter(LiveProviderAdapter):
+    def __init__(self) -> None:
+        super().__init__("irsa", "https://irsa.ipac.caltech.edu/")
+
+
+class VizierAdapter(LiveProviderAdapter):
+    def __init__(self) -> None:
+        super().__init__("vizier", "https://vizier.cds.unistra.fr/")
+
+
+class SimbadAdapter(LiveProviderAdapter):
+    def __init__(self) -> None:
+        super().__init__("simbad", "https://simbad.cds.unistra.fr/")
+
+
+class BreakthroughListenAdapter(LiveProviderAdapter):
+    def __init__(self) -> None:
+        super().__init__("breakthrough_listen", "https://breakthroughinitiatives.org/")
+
+
+def provider_adapters() -> tuple[LiveProviderAdapter, ...]:
+    """Return known provider adapters without performing network access."""
+
+    return (
+        GaiaAdapter(),
+        IrsaAdapter(),
+        VizierAdapter(),
+        SimbadAdapter(),
+        BreakthroughListenAdapter(),
+    )
