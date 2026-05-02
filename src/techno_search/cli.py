@@ -22,6 +22,7 @@ from techno_search.live_data import (
     live_data_enabled,
     live_metadata_fixture_summary,
     provider_adapters,
+    provider_normalization_regression_summary,
     validate_catalog_cache_commit_paths,
 )
 from techno_search.reporting import (
@@ -295,12 +296,16 @@ def validate_all() -> dict[str, object]:
     calibration = summarize_calibration_fixtures(load_calibration_fixtures()).as_dict()
     regression = score_regression_summary()
     catalog_cache = catalog_cache_validation_summary(git_tracked_paths(root), project_root=root)
+    provider_normalization = provider_normalization_regression_summary()
+    provider_normalization_case_count = provider_normalization["case_count"]
 
     ok = (
         all(result["ok"] for result in candidate_results.values())
         and bool(report_result["ok"])
         and all(schema_results.values())
         and bool(catalog_cache["ok"])
+        and isinstance(provider_normalization_case_count, int)
+        and provider_normalization_case_count >= 5
     )
     return {
         "ok": ok,
@@ -311,6 +316,7 @@ def validate_all() -> dict[str, object]:
         "calibration_summary": calibration,
         "score_regression_summary": regression,
         "catalog_cache_validation": catalog_cache,
+        "provider_normalization_summary": provider_normalization,
     }
 
 

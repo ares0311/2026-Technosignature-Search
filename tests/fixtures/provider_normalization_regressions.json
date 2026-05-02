@@ -1,0 +1,67 @@
+{
+  "cases": [
+    {
+      "case_id": "gaia-tap-metadata",
+      "expected_response_metadata_fields": [
+        "content_bytes",
+        "provider_status",
+        "query_endpoint",
+        "raw_field_names",
+        "response_format",
+        "row_count",
+        "row_field_names"
+      ],
+      "provider_name": "gaia"
+    },
+    {
+      "case_id": "irsa-catalog-metadata",
+      "expected_response_metadata_fields": [
+        "content_bytes",
+        "provider_status",
+        "query_endpoint",
+        "response_format",
+        "row_count",
+        "row_field_names"
+      ],
+      "provider_name": "irsa"
+    },
+    {
+      "case_id": "vizier-catalog-metadata",
+      "expected_response_metadata_fields": [
+        "provider_status",
+        "query_endpoint",
+        "response_format",
+        "row_count",
+        "row_field_names"
+      ],
+      "provider_name": "vizier"
+    },
+    {
+      "case_id": "simbad-object-metadata",
+      "expected_response_metadata_fields": [
+        "provider_status",
+        "query_endpoint",
+        "response_format",
+        "row_count",
+        "row_field_names"
+      ],
+      "provider_name": "simbad"
+    },
+    {
+      "case_id": "breakthrough-listen-local-file-metadata",
+      "expected_response_metadata_fields": [
+        "content_read",
+        "file_exists",
+        "file_name",
+        "file_suffix",
+        "provider_status",
+        "query_endpoint",
+        "response_format",
+        "row_count",
+        "size_bytes"
+      ],
+      "provider_name": "breakthrough_listen"
+    }
+  ],
+  "schema_version": "provider_normalization_regressions_v1"
+}

@@ -27,6 +27,7 @@ CATALOG_CACHE_DIR_ENV_VAR = "TECHNO_SEARCH_CATALOG_CACHE_DIR"
 DEFAULT_LIVE_CACHE_DIR = Path("cache/live_providers")
 DEFAULT_CATALOG_CACHE_DIR = Path("cache/catalog_metadata")
 LIVE_METADATA_FIXTURE_SCHEMA_VERSION = "live_metadata_fixture_v1"
+PROVIDER_NORMALIZATION_REGRESSION_SCHEMA_VERSION = "provider_normalization_regressions_v1"
 DEFAULT_CATALOG_CACHE_METADATA_MAX_BYTES = 1_048_576
 DEFAULT_CATALOG_CACHE_ALLOWED_SUFFIXES = (".metadata.json", ".json")
 DEFAULT_CATALOG_CACHE_REQUIRED_PROVENANCE_FIELDS = (
@@ -71,6 +72,15 @@ def default_live_metadata_fixture_dir(project_root: Path | str | None = None) ->
     return root / "tests" / "fixtures" / "live_metadata"
 
 
+def default_provider_normalization_regression_path(
+    project_root: Path | str | None = None,
+) -> Path:
+    """Return the repository-local provider normalization regression fixture path."""
+
+    root = Path(__file__).resolve().parents[2] if project_root is None else Path(project_root)
+    return root / "tests" / "fixtures" / "provider_normalization_regressions.json"
+
+
 def load_live_metadata_fixture(path: Path | str) -> dict[str, Any]:
     """Load and validate a normalized live metadata fixture."""
 
@@ -82,6 +92,60 @@ def load_live_metadata_fixture(path: Path | str) -> dict[str, Any]:
         raise ValueError(msg)
     _validate_live_metadata_fixture(fixture, fixture_path)
     return fixture
+
+
+def load_provider_normalization_regressions(
+    path: Path | str | None = None,
+) -> dict[str, Any]:
+    """Load provider normalization regression fixture metadata."""
+
+    fixture_path = (
+        default_provider_normalization_regression_path() if path is None else Path(path)
+    )
+    with fixture_path.open(encoding="utf-8") as handle:
+        fixture = json.load(handle)
+    if not isinstance(fixture, dict):
+        msg = f"Provider normalization regression fixture is not an object: {fixture_path}"
+        raise ValueError(msg)
+    if fixture.get("schema_version") != PROVIDER_NORMALIZATION_REGRESSION_SCHEMA_VERSION:
+        msg = f"Unsupported provider normalization regression schema: {fixture_path}"
+        raise ValueError(msg)
+    cases = fixture.get("cases")
+    if not isinstance(cases, list):
+        msg = f"Provider normalization regression fixture missing cases: {fixture_path}"
+        raise ValueError(msg)
+    return fixture
+
+
+def provider_normalization_regression_summary(
+    path: Path | str | None = None,
+) -> dict[str, object]:
+    """Summarize provider normalization regression fixture coverage."""
+
+    fixture_path = (
+        default_provider_normalization_regression_path() if path is None else Path(path)
+    )
+    fixture = load_provider_normalization_regressions(fixture_path)
+    cases = fixture["cases"]
+    provider_counts: dict[str, int] = {}
+    expected_fields: set[str] = set()
+    for case in cases:
+        if not isinstance(case, dict):
+            continue
+        provider = str(case.get("provider_name", "unknown"))
+        provider_counts[provider] = provider_counts.get(provider, 0) + 1
+        fields = case.get("expected_response_metadata_fields", [])
+        if isinstance(fields, list):
+            expected_fields.update(str(field) for field in fields)
+
+    return {
+        "fixture_path": str(fixture_path),
+        "schema_version": fixture["schema_version"],
+        "case_count": len(cases),
+        "provider_count": len(provider_counts),
+        "by_provider": dict(sorted(provider_counts.items())),
+        "expected_response_metadata_fields": sorted(expected_fields),
+    }
 
 
 def iter_live_metadata_fixtures(
@@ -987,9 +1051,36 @@ def provider_response_metadata(response: Mapping[str, Any]) -> dict[str, object]
     rows = response.get("rows")
     if isinstance(rows, list):
         metadata["row_count"] = len(rows)
+        row_field_names: set[str] = set()
+        for row in rows:
+            if isinstance(row, dict):
+                row_field_names.update(str(key) for key in row)
+        if row_field_names:
+            metadata["row_field_names"] = sorted(row_field_names)
     provider_status = response.get("provider_status")
     if isinstance(provider_status, str):
         metadata["provider_status"] = provider_status
+    response_format = response.get("response_format")
+    if isinstance(response_format, str):
+        metadata["response_format"] = response_format
+    query_endpoint = response.get("query_endpoint")
+    if isinstance(query_endpoint, str):
+        metadata["query_endpoint"] = query_endpoint
+    content_bytes = response.get("content_bytes")
+    if isinstance(content_bytes, int):
+        metadata["content_bytes"] = content_bytes
+    raw_field_names = response.get("raw_field_names")
+    if isinstance(raw_field_names, list):
+        metadata["raw_field_names"] = sorted(str(field) for field in raw_field_names)
+    for field_name in (
+        "file_name",
+        "file_suffix",
+        "file_exists",
+        "content_read",
+        "size_bytes",
+    ):
+        if field_name in response:
+            metadata[field_name] = response[field_name]
     return metadata
 
 

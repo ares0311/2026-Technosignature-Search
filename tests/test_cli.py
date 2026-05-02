@@ -191,6 +191,14 @@ def test_cli_validate_all_outputs_local_summary() -> None:
     assert result["calibration_summary"]["total"] == 15
     assert result["score_regression_summary"]["candidate_count"] == 3
     assert result["catalog_cache_validation"]["ok"] is True
+    assert result["provider_normalization_summary"]["case_count"] == 5
+    assert result["provider_normalization_summary"]["by_provider"] == {
+        "breakthrough_listen": 1,
+        "gaia": 1,
+        "irsa": 1,
+        "simbad": 1,
+        "vizier": 1,
+    }
     assert result["catalog_cache_validation"]["forbidden_roots"] == [
         "data",
         "cache",

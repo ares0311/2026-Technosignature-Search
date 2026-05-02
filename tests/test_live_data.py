@@ -32,6 +32,7 @@ from techno_search.live_data import (
     live_data_enabled,
     load_live_metadata_fixture,
     provider_adapters,
+    provider_normalization_regression_summary,
     provider_response_metadata,
     require_live_data_enabled,
     validate_catalog_cache_commit_paths,
@@ -261,8 +262,113 @@ def test_provider_response_metadata_summarizes_rows_without_interpretation() -> 
         "field_names": ["provider_status", "rows"],
         "field_count": 2,
         "row_count": 2,
+        "row_field_names": ["source_id"],
         "provider_status": "mocked",
     }
+
+
+def test_gaia_response_metadata_preserves_tap_shape() -> None:
+    metadata = provider_response_metadata(
+        {
+            "provider_status": "mocked",
+            "query_endpoint": "https://gea.esac.esa.int/tap-server/tap/sync",
+            "response_format": "json",
+            "content_bytes": 128,
+            "raw_field_names": ["metadata", "data"],
+            "rows": [{"source_id": "gaia-1", "ra": 123.45}],
+        }
+    )
+
+    assert metadata["provider_status"] == "mocked"
+    assert metadata["response_format"] == "json"
+    assert metadata["content_bytes"] == 128
+    assert metadata["raw_field_names"] == ["data", "metadata"]
+    assert metadata["row_field_names"] == ["ra", "source_id"]
+
+
+def test_irsa_response_metadata_preserves_catalog_shape() -> None:
+    metadata = provider_response_metadata(
+        {
+            "provider_status": "mocked",
+            "query_endpoint": "https://irsa.ipac.caltech.edu/cgi-bin/Gator/nph-query",
+            "response_format": "csv",
+            "content_bytes": 64,
+            "rows": [{"source_id": "irsa-1", "ra": "123.45"}],
+        }
+    )
+
+    assert metadata["response_format"] == "csv"
+    assert metadata["query_endpoint"] == "https://irsa.ipac.caltech.edu/cgi-bin/Gator/nph-query"
+    assert metadata["row_count"] == 1
+    assert metadata["row_field_names"] == ["ra", "source_id"]
+
+
+def test_vizier_response_metadata_preserves_catalog_shape() -> None:
+    metadata = provider_response_metadata(
+        {
+            "provider_status": "mocked",
+            "query_endpoint": "https://vizier.cds.unistra.fr/viz-bin/asu-tsv",
+            "response_format": "tsv",
+            "rows": [{"AllWISE": "vizier-1", "RAJ2000": "123.45"}],
+        }
+    )
+
+    assert metadata["response_format"] == "tsv"
+    assert metadata["row_field_names"] == ["AllWISE", "RAJ2000"]
+
+
+def test_simbad_response_metadata_preserves_object_shape() -> None:
+    metadata = provider_response_metadata(
+        {
+            "provider_status": "mocked",
+            "query_endpoint": "https://simbad.cds.unistra.fr/simbad/sim-script",
+            "response_format": "tsv",
+            "rows": [{"main_id": "synthetic-target", "otype": "Star"}],
+        }
+    )
+
+    assert metadata["response_format"] == "tsv"
+    assert metadata["row_field_names"] == ["main_id", "otype"]
+
+
+def test_breakthrough_listen_response_metadata_preserves_file_shape() -> None:
+    metadata = provider_response_metadata(
+        {
+            "provider_status": "local_file_metadata",
+            "query_endpoint": "local-filesystem",
+            "response_format": "file-stat",
+            "file_name": "synthetic_observation.h5",
+            "file_suffix": ".h5",
+            "file_exists": True,
+            "content_read": False,
+            "size_bytes": 32,
+            "rows": [],
+        }
+    )
+
+    assert metadata["provider_status"] == "local_file_metadata"
+    assert metadata["response_format"] == "file-stat"
+    assert metadata["file_suffix"] == ".h5"
+    assert metadata["file_exists"] is True
+    assert metadata["content_read"] is False
+    assert metadata["size_bytes"] == 32
+    assert metadata["row_count"] == 0
+
+
+def test_provider_normalization_regression_summary_covers_all_providers() -> None:
+    summary = provider_normalization_regression_summary()
+
+    assert summary["schema_version"] == "provider_normalization_regressions_v1"
+    assert summary["case_count"] == 5
+    assert summary["provider_count"] == 5
+    assert summary["by_provider"] == {
+        "breakthrough_listen": 1,
+        "gaia": 1,
+        "irsa": 1,
+        "simbad": 1,
+        "vizier": 1,
+    }
+    assert "row_field_names" in summary["expected_response_metadata_fields"]
 
 
 def test_provenance_only_response_normalizer_preserves_request_context() -> None:
@@ -466,6 +572,114 @@ def test_live_provider_fetch_writes_and_reuses_configured_cache(tmp_path, monkey
     assert calls == [request.cache_key()]
     assert second == first
     assert cache.metadata_path(request).exists()
+
+
+def test_provider_clients_reuse_live_provider_cache_for_all_providers(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    local_file = tmp_path / "synthetic_observation.h5"
+    local_file.write_bytes(b"small local file")
+    cache = LiveProviderCache(tmp_path / "cache" / "live_providers")
+    calls_by_provider = {"gaia": 0, "irsa": 0, "simbad": 0, "vizier": 0}
+
+    def gaia_post_bytes(
+        url: str,
+        payload: bytes,
+        timeout_seconds: float,
+        max_response_bytes: int,
+    ) -> bytes:
+        calls_by_provider["gaia"] += 1
+        return json.dumps(
+            {"metadata": [{"name": "source_id"}], "data": [["gaia-1"]]}
+        ).encode("utf-8")
+
+    def irsa_get_bytes(url: str, timeout_seconds: float, max_response_bytes: int) -> bytes:
+        calls_by_provider["irsa"] += 1
+        return b"source_id,ra\nirsa-1,123.45\n"
+
+    def vizier_get_bytes(url: str, timeout_seconds: float, max_response_bytes: int) -> bytes:
+        calls_by_provider["vizier"] += 1
+        return b"AllWISE,RAJ2000\nvizier-1,123.45\n"
+
+    def simbad_get_bytes(url: str, timeout_seconds: float, max_response_bytes: int) -> bytes:
+        calls_by_provider["simbad"] += 1
+        return b"main_id\totype\nsimbad-1\tStar\n"
+
+    cases = (
+        (
+            LiveProviderAdapter.from_client(
+                provider_name="gaia",
+                service_url="https://gea.esac.esa.int/archive/",
+                client=GaiaLiveClient(http_post_bytes=gaia_post_bytes),
+            ),
+            GaiaAdapter().build_cone_search_request(
+                ra_deg=123.45,
+                dec_deg=-54.321,
+                radius_arcsec=5.0,
+            ),
+        ),
+        (
+            LiveProviderAdapter.from_client(
+                provider_name="irsa",
+                service_url="https://irsa.ipac.caltech.edu/",
+                client=IrsaLiveClient(http_get_bytes=irsa_get_bytes),
+            ),
+            IrsaAdapter().build_catalog_cone_request(
+                catalog="allwise_p3as_psd",
+                ra_deg=123.45,
+                dec_deg=-54.321,
+                radius_arcsec=10.0,
+            ),
+        ),
+        (
+            LiveProviderAdapter.from_client(
+                provider_name="vizier",
+                service_url="https://vizier.cds.unistra.fr/",
+                client=VizierLiveClient(http_get_bytes=vizier_get_bytes),
+            ),
+            VizierAdapter().build_catalog_cone_request(
+                catalog="II/328/allwise",
+                ra_deg=123.45,
+                dec_deg=-54.321,
+                radius_arcsec=10.0,
+            ),
+        ),
+        (
+            LiveProviderAdapter.from_client(
+                provider_name="simbad",
+                service_url="https://simbad.cds.unistra.fr/",
+                client=SimbadLiveClient(http_get_bytes=simbad_get_bytes),
+            ),
+            SimbadAdapter().build_object_lookup_request(object_name="synthetic-target"),
+        ),
+        (
+            LiveProviderAdapter.from_client(
+                provider_name="breakthrough_listen",
+                service_url="https://breakthroughinitiatives.org/",
+                client=BreakthroughListenLiveClient(),
+            ),
+            BreakthroughListenAdapter().build_local_file_metadata_request(local_file),
+        ),
+    )
+
+    monkeypatch.setenv(LIVE_DATA_ENV_VAR, "1")
+    for adapter, request in cases:
+        first = adapter.fetch_metadata(request, cache=cache)
+        second = adapter.fetch_metadata(request, cache=cache)
+
+        assert second == first
+        assert cache.metadata_path(request).exists()
+
+    assert calls_by_provider == {"gaia": 1, "irsa": 1, "simbad": 1, "vizier": 1}
+    assert cache.summary()["metadata_file_count"] == 5
+    assert cache.summary()["by_provider"] == {
+        "breakthrough_listen": 1,
+        "gaia": 1,
+        "irsa": 1,
+        "simbad": 1,
+        "vizier": 1,
+    }
 
 
 def test_provider_client_protocol_can_be_adapted_to_fetcher(monkeypatch) -> None:

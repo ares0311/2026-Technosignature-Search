@@ -162,6 +162,202 @@ Merge status: already on `main`; no merge needed.
 
 ---
 
+## Catalog Cache/Normalization Step 6 — Provider Cache Integration Tests
+
+Status: implemented.
+
+Added:
+
+- cache integration coverage for Gaia, IRSA, VizieR, SIMBAD, and Breakthrough Listen
+- injected transports for networked providers
+- local temporary file metadata for Breakthrough Listen
+- proof that a second fetch reuses `LiveProviderCache`
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Catalog Cache/Normalization Step 7 — Gaia Normalization Refinements
+
+Status: implemented.
+
+Added Gaia response metadata fields for:
+
+- TAP response format
+- query endpoint
+- content byte count
+- raw provider field names
+- normalized row field names
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Catalog Cache/Normalization Step 8 — IRSA Normalization Refinements
+
+Status: implemented.
+
+Added IRSA response metadata fields for:
+
+- catalog response format
+- query endpoint
+- content byte count
+- normalized row count
+- normalized row field names
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Catalog Cache/Normalization Step 9 — VizieR Normalization Refinements
+
+Status: implemented.
+
+Added VizieR response metadata fields for:
+
+- TSV response format
+- query endpoint
+- normalized row count
+- normalized row field names
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Catalog Cache/Normalization Step 10 — SIMBAD Normalization Refinements
+
+Status: implemented.
+
+Added SIMBAD response metadata fields for:
+
+- object lookup response format
+- query endpoint
+- normalized row count
+- normalized row field names
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Catalog Cache/Normalization Step 11 — Breakthrough Listen Normalization Refinements
+
+Status: implemented.
+
+Added Breakthrough Listen response metadata fields for:
+
+- local-file response format
+- file name and suffix
+- file existence
+- content-read flag
+- size bytes when available
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Catalog Cache/Normalization Step 12 — Provider Normalization Regression Fixtures
+
+Status: implemented.
+
+Added:
+
+- `tests/fixtures/provider_normalization_regressions.json`
+- regression summary loader
+- regression summary test covering all five providers
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Catalog Cache/Normalization Step 13 — Validate-All Provider Normalization Summary
+
+Status: implemented.
+
+Added:
+
+- provider normalization regression summary in `techno-search validate-all`
+- validation gate requiring the provider normalization summary to cover current cases
+- CLI assertion for provider normalization coverage
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Catalog Cache/Normalization Step 14 — Full Validation And Commit
+
+Status: implemented.
+
+Validation passed:
+
+- `.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing`
+- `.venv/bin/ruff check .`
+- `.venv/bin/mypy src`
+- `git diff --check`
+
+Result:
+
+- 131 tests passed
+- 5 tests skipped
+- total coverage: 92%
+
+Commit planned:
+
+```bash
+git commit -m "Add provider normalization regression summary"
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Remaining Provider Expansion
 
 User requested fifteen iterative steps:
