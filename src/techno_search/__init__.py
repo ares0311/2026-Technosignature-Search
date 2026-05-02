@@ -7,6 +7,7 @@ from techno_search.pathway import classify_pathway
 from techno_search.plotting import (
     PLOT_ARTIFACT_DISCLAIMER,
     PlotArtifact,
+    plot_artifact_summary,
     write_synthetic_plot_artifacts,
 )
 from techno_search.reporting import (
@@ -40,6 +41,7 @@ __all__ = [
     "load_scoring_config",
     "load_track_config",
     "live_data_enabled",
+    "plot_artifact_summary",
     "report_manifest",
     "report_manifest_json",
     "require_live_data_enabled",

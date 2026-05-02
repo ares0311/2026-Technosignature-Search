@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"
+  viewBox="0 0 400 300" role="img" aria-labelledby="title desc">
   <title id="title">Synthetic Radio Waterfall Diagnostic</title>
   <desc id="desc">Synthetic illustrative diagnostic for review context only; not evidence of a confirmed technosignature.</desc>
   <style>

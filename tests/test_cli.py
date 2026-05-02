@@ -284,6 +284,24 @@ def test_cli_provenance_summary_outputs_example_report_counts() -> None:
     assert result["by_config_version"] == {"scoring_v0": 3}
 
 
+def test_cli_plot_artifact_summary_outputs_example_counts() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["plot-artifact-summary", "examples/reports"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["manifest_count"] == 3
+    assert result["plot_artifact_count"] == 3
+    assert result["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 1}
+    assert result["by_kind"] == {
+        "synthetic_anomaly_crossmatch": 1,
+        "synthetic_infrared_sed": 1,
+        "synthetic_radio_waterfall": 1,
+    }
+    assert result["missing_path_count"] == 0
+
+
 def test_cli_provenance_summary_outputs_batch_report_counts() -> None:
     stdout = StringIO()
 

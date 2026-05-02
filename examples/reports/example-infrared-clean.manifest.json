@@ -1,8 +1,8 @@
 {
   "candidate_id": "example-infrared-clean",
-  "code_commit": "620b283",
+  "code_commit": "0e040e9",
   "config_version": "scoring_v0",
-  "generated_at_utc": "2026-05-02T21:54:12.515563+00:00",
+  "generated_at_utc": "2026-05-02T22:55:09.484196+00:00",
   "json_path": "examples/reports/example-infrared-clean.json",
   "markdown_path": "examples/reports/example-infrared-clean.md",
   "plot_artifacts": [
@@ -18,9 +18,9 @@
   ],
   "provenance_summary": {
     "cache_key": null,
-    "code_commit": "620b283",
+    "code_commit": "0e040e9",
     "config_version": "scoring_v0",
-    "generated_at_utc": "2026-05-02T21:54:12.515582+00:00",
+    "generated_at_utc": "2026-05-02T22:55:09.484216+00:00",
     "input_path": null,
     "provider_name": null,
     "query_parameters": {},

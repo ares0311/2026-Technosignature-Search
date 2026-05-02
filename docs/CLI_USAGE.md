@@ -194,6 +194,18 @@ Summarize per-candidate report manifests in a generated report directory:
 
 ---
 
+## Summarize Plot Artifacts
+
+Summarize generated SVG diagnostic artifact entries from per-candidate report manifests:
+
+```bash
+.venv/bin/techno-search plot-artifact-summary examples/reports
+```
+
+The summary reports counts by track and artifact kind, media types, synthetic artifact count, and any missing paths referenced by manifests.
+
+---
+
 ## Summarize Live Providers
 
 Print configured provider adapter names, service URLs, and live-enabled status without network access:

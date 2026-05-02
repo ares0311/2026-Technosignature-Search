@@ -58,6 +58,8 @@ No strong false-positive evidence is present in the synthetic v0 feature packet,
 
 Synthetic illustrative diagnostic for review context only; not evidence of a confirmed technosignature.
 
+- [Synthetic archival crossmatch diagnostic placeholder.](examples/batch_reports/example-anomaly-clean-anomaly-crossmatch.svg) `synthetic_anomaly_crossmatch` `image/svg+xml`
+
 ## Source IDs
 
 - synthetic historical source

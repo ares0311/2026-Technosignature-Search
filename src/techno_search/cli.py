@@ -25,6 +25,7 @@ from techno_search.live_data import (
     provider_normalization_regression_summary,
     validate_catalog_cache_commit_paths,
 )
+from techno_search.plotting import plot_artifact_summary
 from techno_search.reporting import (
     candidate_packet_json,
     write_candidate_reports,
@@ -121,6 +122,13 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
     if args.command == "provenance-summary":
         print(
             json.dumps(provenance_summary(args.report_dir), indent=2, sort_keys=True),
+            file=out,
+        )
+        return 0
+
+    if args.command == "plot-artifact-summary":
+        print(
+            json.dumps(plot_artifact_summary(args.report_dir), indent=2, sort_keys=True),
             file=out,
         )
         return 0
@@ -591,6 +599,15 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize provenance fields across report manifests in a directory.",
     )
     provenance_parser.add_argument(
+        "report_dir",
+        type=Path,
+        help="Directory containing per-candidate report manifests.",
+    )
+    plot_artifact_parser = subparsers.add_parser(
+        "plot-artifact-summary",
+        help="Summarize plot artifact entries across report manifests in a directory.",
+    )
+    plot_artifact_parser.add_argument(
         "report_dir",
         type=Path,
         help="Directory containing per-candidate report manifests.",

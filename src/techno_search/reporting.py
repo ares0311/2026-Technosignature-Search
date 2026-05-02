@@ -78,7 +78,10 @@ def write_candidate_reports(
         else ()
     )
 
-    markdown_path.write_text(candidate_markdown_report(scored), encoding="utf-8")
+    markdown_path.write_text(
+        candidate_markdown_report(scored, plot_artifacts=plot_artifacts),
+        encoding="utf-8",
+    )
     json_path.write_text(candidate_packet_json(scored) + "\n", encoding="utf-8")
     manifest_path.write_text(
         report_manifest_json(
@@ -145,7 +148,11 @@ def report_manifest_json(
     )
 
 
-def candidate_markdown_report(scored: ScoredCandidate) -> str:
+def candidate_markdown_report(
+    scored: ScoredCandidate,
+    *,
+    plot_artifacts: tuple[PlotArtifact, ...] = (),
+) -> str:
     """Render a conservative Markdown candidate review packet."""
 
     packet = candidate_packet(scored)
@@ -202,6 +209,8 @@ def candidate_markdown_report(scored: ScoredCandidate) -> str:
             "",
             PLOT_ARTIFACT_DISCLAIMER,
             "",
+            *_format_plot_artifacts(plot_artifacts),
+            "",
             "## Source IDs",
             "",
             *_format_list(packet["source_ids"]),
@@ -250,6 +259,16 @@ def _format_list(items: list[str]) -> list[str]:
     if not items:
         return ["- None recorded"]
     return [f"- {item}" for item in items]
+
+
+def _format_plot_artifacts(plot_artifacts: tuple[PlotArtifact, ...]) -> list[str]:
+    if not plot_artifacts:
+        return ["- None generated"]
+    return [
+        f"- [{artifact.description}]({artifact.path}) "
+        f"`{artifact.kind}` `{artifact.media_type}`"
+        for artifact in plot_artifacts
+    ]
 
 
 def _diagnostic_fields(features: dict[str, Any]) -> dict[str, Any]:

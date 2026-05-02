@@ -58,6 +58,8 @@ No strong false-positive evidence is present in the synthetic v0 feature packet,
 
 Synthetic illustrative diagnostic for review context only; not evidence of a confirmed technosignature.
 
+- [Synthetic infrared SED-style diagnostic placeholder.](examples/batch_reports/example-infrared-clean-infrared-sed.svg) `synthetic_infrared_sed` `image/svg+xml`
+
 ## Source IDs
 
 - Gaia DR3 synthetic infrared example

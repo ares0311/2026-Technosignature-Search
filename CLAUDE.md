@@ -24,6 +24,130 @@ Overall status: all three requested steps are implemented.
 
 ---
 
+## Fifteen-Step Plot Ergonomics And Injection-Recovery Expansion
+
+User requested fifteen iterative steps:
+
+1. Add a `plot-artifact-summary` CLI for generated report directories.
+2. Add tests for plot artifact summary counts by track/kind.
+3. Improve Markdown reports with explicit links to generated SVG diagnostics.
+4. Add tests proving Markdown links are present and conservative.
+5. Commit and push the plot review ergonomics pass.
+6. Add synthetic injection-recovery summary fixture schema.
+7. Add radio injection-recovery summary fixtures.
+8. Add infrared synthetic excess recovery fixtures.
+9. Add archival anomaly recovery simulation fixtures.
+10. Add `techno-search injection-recovery-summary`.
+11. Add tests for injection-recovery summary by track and outcome.
+12. Wire injection-recovery summary into `validate-all` and `validation-summary`.
+13. Update `docs/ROADMAP.md`, `docs/PROJECT_STATUS.md`, and `docs/VALIDATION.md`.
+14. Run full validation and commit.
+15. Push `main` and confirm clean sync.
+
+Each step should update this file and merge to `main` if needed.
+
+## Plot/Injection Step 1 — Plot Artifact Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `plot_artifact_summary(...)`
+- `techno-search plot-artifact-summary`
+- manifest-derived counts without parsing SVG content
+- missing path reporting for referenced plot artifacts
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_plotting.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Plot/Injection Step 2 — Plot Artifact Summary Tests
+
+Status: implemented.
+
+Added tests proving:
+
+- plot artifact summaries count entries from manifests
+- counts are grouped by track and artifact kind
+- generated synthetic SVG paths exist for all three current tracks
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_plotting.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Plot/Injection Step 3 — Markdown Plot Artifact Links
+
+Status: implemented.
+
+Added:
+
+- explicit Markdown links to generated SVG diagnostics when reports are written
+- "None generated" output when plot artifacts are intentionally skipped
+- regenerated example Markdown will include the SVG diagnostic links
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_reporting.py tests/test_examples.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Plot/Injection Step 4 — Conservative Markdown Link Tests
+
+Status: implemented.
+
+Added tests proving:
+
+- Markdown reports include generated SVG links
+- plot artifact language remains explicitly synthetic and illustrative
+- reports without generated plots still validate with an explicit "None generated" entry
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_reporting.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Plot/Injection Step 5 — Plot Review Ergonomics Commit
+
+Status: implemented.
+
+Validation passed:
+
+- `.venv/bin/python -m pytest tests/test_plotting.py tests/test_cli.py tests/test_reporting.py tests/test_examples.py tests/test_docs.py`
+- `.venv/bin/ruff check src/techno_search/plotting.py src/techno_search/reporting.py src/techno_search/cli.py tests/test_plotting.py tests/test_cli.py tests/test_reporting.py`
+- `.venv/bin/mypy src`
+- `git diff --check`
+
+Commit planned:
+
+```bash
+git commit -m "Add plot artifact summary and report links"
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Validation And Plot Artifact Expansion
 
 User requested fifteen iterative steps:

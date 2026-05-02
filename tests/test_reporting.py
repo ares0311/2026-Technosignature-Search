@@ -130,7 +130,11 @@ def test_write_candidate_reports_uses_safe_filenames(tmp_path) -> None:
     assert paths.json_path.exists()
     assert paths.manifest_path.exists()
     assert paths.plot_artifact_paths[0].exists()
-    assert REQUIRED_DISCLAIMER in paths.markdown_path.read_text(encoding="utf-8")
+    markdown = paths.markdown_path.read_text(encoding="utf-8")
+    assert REQUIRED_DISCLAIMER in markdown
+    assert "[Synthetic radio waterfall-style diagnostic placeholder.]" in markdown
+    assert "radio-report-with-spaces-radio-waterfall.svg" in markdown
+    assert "Synthetic illustrative diagnostic for review context only" in markdown
     assert json.loads(paths.json_path.read_text(encoding="utf-8"))["candidate_id"] == (
         "../radio report/with spaces"
     )
@@ -178,3 +182,4 @@ def test_write_candidate_reports_can_skip_plot_artifacts(tmp_path) -> None:
 
     assert paths.plot_artifact_paths == ()
     assert manifest["plot_artifacts"] == []
+    assert "- None generated" in paths.markdown_path.read_text(encoding="utf-8")

@@ -59,6 +59,8 @@ The v0 scorer estimates a false-positive probability of 0.009. The packet record
 
 Synthetic illustrative diagnostic for review context only; not evidence of a confirmed technosignature.
 
+- [Synthetic radio waterfall-style diagnostic placeholder.](examples/batch_reports/example-radio-clean-radio-waterfall.svg) `synthetic_radio_waterfall` `image/svg+xml`
+
 ## Source IDs
 
 - example-radio-hit-table

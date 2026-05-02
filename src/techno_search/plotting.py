@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import html
+import json
+from collections import Counter
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -90,6 +92,48 @@ def write_synthetic_plot_artifacts(
             ),
         )
     return ()
+
+
+def plot_artifact_summary(report_dir: Path | str) -> dict[str, object]:
+    """Summarize plot artifact manifest entries in a generated report directory."""
+
+    directory = Path(report_dir)
+    manifest_paths = sorted(directory.glob("*.manifest.json"))
+    artifacts: list[dict[str, object]] = []
+    missing_paths: list[str] = []
+    for manifest_path in manifest_paths:
+        with manifest_path.open(encoding="utf-8") as handle:
+            manifest = json.load(handle)
+        if not isinstance(manifest, dict):
+            continue
+        candidate_id = str(manifest.get("candidate_id", manifest_path.stem))
+        for artifact in _artifact_entries(manifest):
+            path = Path(str(artifact.get("path", "")))
+            artifacts.append(
+                {
+                    "candidate_id": candidate_id,
+                    "path": str(path),
+                    "kind": str(artifact.get("kind", "unknown")),
+                    "track": str(artifact.get("track", "unknown")),
+                    "media_type": str(artifact.get("media_type", "unknown")),
+                    "synthetic": bool(artifact.get("synthetic", False)),
+                }
+            )
+            if not path.exists():
+                missing_paths.append(str(path))
+
+    return {
+        "report_dir": str(directory),
+        "manifest_count": len(manifest_paths),
+        "plot_artifact_count": len(artifacts),
+        "by_track": _counter_to_dict(Counter(str(artifact["track"]) for artifact in artifacts)),
+        "by_kind": _counter_to_dict(Counter(str(artifact["kind"]) for artifact in artifacts)),
+        "media_types": sorted({str(artifact["media_type"]) for artifact in artifacts}),
+        "synthetic_count": sum(1 for artifact in artifacts if artifact["synthetic"]),
+        "missing_path_count": len(missing_paths),
+        "missing_paths": sorted(missing_paths),
+        "artifacts": artifacts,
+    }
 
 
 def _radio_waterfall_svg(scored: ScoredCandidate) -> str:
@@ -190,6 +234,17 @@ def _waterfall_rows(intensity: float) -> str:
             f'fill="rgb(20,{shade},180)" opacity="0.72"/>'
         )
     return "\n  ".join(rows)
+
+
+def _artifact_entries(manifest: Mapping[str, Any]) -> tuple[Mapping[str, Any], ...]:
+    artifacts = manifest.get("plot_artifacts", [])
+    if not isinstance(artifacts, list):
+        return ()
+    return tuple(artifact for artifact in artifacts if isinstance(artifact, Mapping))
+
+
+def _counter_to_dict(counter: Counter[str]) -> dict[str, int]:
+    return dict(sorted(counter.items()))
 
 
 def _float_feature(features: Mapping[str, Any], key: str, default: float) -> float:

@@ -1,4 +1,11 @@
-from techno_search import Candidate, Track, score_candidate, write_synthetic_plot_artifacts
+from techno_search import (
+    Candidate,
+    Track,
+    plot_artifact_summary,
+    score_candidate,
+    write_candidate_reports,
+    write_synthetic_plot_artifacts,
+)
 from techno_search.plotting import PLOT_ARTIFACT_DISCLAIMER
 
 
@@ -63,3 +70,49 @@ def test_anomaly_plot_artifact_writes_synthetic_crossmatch_svg(tmp_path) -> None
     assert "Synthetic Archival Crossmatch Diagnostic" in artifacts[0].path.read_text(
         encoding="utf-8"
     )
+
+
+def test_plot_artifact_summary_counts_manifest_entries_by_track_and_kind(tmp_path) -> None:
+    cases = (
+        (
+            Candidate(candidate_id="radio-plot", track=Track.RADIO, features={"snr": 30.0}),
+            "radio",
+            "synthetic_radio_waterfall",
+        ),
+        (
+            Candidate(
+                candidate_id="infrared-plot",
+                track=Track.INFRARED,
+                features={"ir_excess_significance": 4.0},
+            ),
+            "infrared",
+            "synthetic_infrared_sed",
+        ),
+        (
+            Candidate(
+                candidate_id="anomaly-plot",
+                track=Track.ANOMALY,
+                features={"crossmatch_confidence": 0.75},
+            ),
+            "anomaly",
+            "synthetic_anomaly_crossmatch",
+        ),
+    )
+
+    for candidate, _track, _kind in cases:
+        scored = score_candidate(candidate)
+        write_candidate_reports(scored, tmp_path, filename_prefix=candidate.candidate_id)
+
+    summary = plot_artifact_summary(tmp_path)
+
+    assert summary["manifest_count"] == 3
+    assert summary["plot_artifact_count"] == 3
+    assert summary["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 1}
+    assert summary["by_kind"] == {
+        "synthetic_anomaly_crossmatch": 1,
+        "synthetic_infrared_sed": 1,
+        "synthetic_radio_waterfall": 1,
+    }
+    assert summary["media_types"] == ["image/svg+xml"]
+    assert summary["synthetic_count"] == 3
+    assert summary["missing_path_count"] == 0
