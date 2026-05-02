@@ -350,6 +350,31 @@ Merge status: already on `main`; no merge needed.
 
 ---
 
+## Live Provider Expansion Step 15 — Push Provider Commits
+
+Status: implemented.
+
+Pushed to GitHub:
+
+- `6056039 Add guarded Gaia provider client`
+- `fd5d48c Add guarded IRSA provider client`
+
+Push result:
+
+```bash
+git push origin main
+```
+
+Remote update:
+
+```text
+27693f9..fd5d48c  main -> main
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Catalog Cache Guardrail Step 7 — Validator Tests
 
 Status: implemented.
