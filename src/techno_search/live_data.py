@@ -373,6 +373,7 @@ class LiveDataClient:
 
 ProviderFetch = Callable[[LiveDataRequest], Mapping[str, Any]]
 HttpPostBytes = Callable[[str, bytes, float, int], bytes]
+HttpGetBytes = Callable[[str, float, int], bytes]
 
 
 class LiveProviderClient(Protocol):
@@ -578,19 +579,53 @@ class IrsaAdapter(LiveProviderAdapter):
         )
 
 
+@dataclass(frozen=True)
 class IrsaLiveClient:
-    """Disabled IRSA live-client skeleton for future provider integration."""
+    """Guarded IRSA catalog client for provenance metadata requests."""
 
     provider_name = "irsa"
     service_url = "https://irsa.ipac.caltech.edu/"
-    implemented = False
+    implemented = True
+    gator_query_url: str = "https://irsa.ipac.caltech.edu/cgi-bin/Gator/nph-query"
+    http_get_bytes: HttpGetBytes | None = None
+    timeout_seconds: float = 30.0
+    max_response_bytes: int = DEFAULT_CATALOG_CACHE_METADATA_MAX_BYTES
 
     def fetch_metadata(self, request: LiveDataRequest) -> Mapping[str, Any]:
-        """Require live opt-in before future IRSA network implementation."""
+        """Fetch IRSA catalog metadata only when live-data access is enabled."""
 
         require_live_data_enabled()
-        msg = "IRSA live client is not implemented yet."
-        raise NotImplementedError(msg)
+        if request.source_name != self.provider_name:
+            msg = f"IRSA client cannot fetch request for {request.source_name!r}."
+            raise ValueError(msg)
+        if request.parameters is None:
+            msg = "IRSA request missing query parameters."
+            raise ValueError(msg)
+
+        radius_arcsec = float(request.parameters["radius_arcsec"])
+        query = parse.urlencode(
+            {
+                "catalog": request.parameters["catalog"],
+                "spatial": "Cone",
+                "objstr": (
+                    f"{request.parameters['ra_deg']} "
+                    f"{request.parameters['dec_deg']}"
+                ),
+                "radius": f"{radius_arcsec / 3600.0:.10f}",
+                "outfmt": "csv",
+            }
+        )
+        query_url = f"{self.gator_query_url}?{query}"
+        get_bytes = self.http_get_bytes or http_get_bytes
+        response_bytes = get_bytes(query_url, self.timeout_seconds, self.max_response_bytes)
+        decoded = response_bytes.decode("utf-8")
+        return {
+            "provider_status": "live",
+            "query_endpoint": self.gator_query_url,
+            "response_format": "csv",
+            "content_bytes": len(response_bytes),
+            "rows": delimited_text_rows(decoded),
+        }
 
 
 class VizierAdapter(LiveProviderAdapter):
@@ -786,6 +821,41 @@ def http_post_bytes(
         msg = f"Provider response exceeded {max_response_bytes} bytes."
         raise ValueError(msg)
     return data
+
+
+def http_get_bytes(
+    url: str,
+    timeout_seconds: float,
+    max_response_bytes: int,
+) -> bytes:
+    """GET from a provider endpoint and return bounded response bytes."""
+
+    with urlrequest.urlopen(url, timeout=timeout_seconds) as response:
+        data = bytes(response.read(max_response_bytes + 1))
+    if len(data) > max_response_bytes:
+        msg = f"Provider response exceeded {max_response_bytes} bytes."
+        raise ValueError(msg)
+    return data
+
+
+def delimited_text_rows(text: str) -> list[dict[str, object]]:
+    """Parse a tiny delimited provider table without interpreting values."""
+
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    if len(lines) < 2:
+        return []
+    delimiter = "," if "," in lines[0] else "\t"
+    field_names = [field.strip() for field in lines[0].split(delimiter)]
+    rows: list[dict[str, object]] = []
+    for line in lines[1:]:
+        values = [value.strip() for value in line.split(delimiter)]
+        rows.append(
+            {
+                field_name: value
+                for field_name, value in zip(field_names, values, strict=False)
+            }
+        )
+    return rows
 
 
 def gaia_tap_rows(response: Mapping[str, Any]) -> list[dict[str, object]]:

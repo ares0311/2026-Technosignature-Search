@@ -212,7 +212,7 @@ Add real data ingestion behind tested abstractions.
 - [x] Catalog cache commit-path validator
 - [x] Provider response normalization contract
 - [x] Guarded Gaia live client with mocked transport tests
-- [ ] Guarded IRSA live client with mocked transport tests
+- [x] Guarded IRSA live client with mocked transport tests
 - [ ] Remaining real provider client implementations
 - [ ] Catalog cache storage implementation
 

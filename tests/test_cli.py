@@ -285,11 +285,11 @@ def test_cli_live_fixture_summary_outputs_committed_fixture_counts() -> None:
 
     assert exit_code == 0
     assert result["fixture_schema_version"] == "live_metadata_fixture_v1"
-    assert result["fixture_count"] == 6
+    assert result["fixture_count"] == 7
     assert result["by_provider"] == {
         "breakthrough_listen": 1,
         "gaia": 2,
-        "irsa": 1,
+        "irsa": 2,
         "simbad": 1,
         "vizier": 1,
     }
@@ -318,7 +318,7 @@ def test_cli_live_client_summary_outputs_disabled_skeleton_status(monkeypatch) -
     assert implemented_by_provider == {
         "breakthrough_listen": False,
         "gaia": True,
-        "irsa": False,
+        "irsa": True,
         "simbad": False,
         "vizier": False,
     }

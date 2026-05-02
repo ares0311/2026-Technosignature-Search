@@ -314,6 +314,42 @@ Merge status: already on `main`; no merge needed.
 
 ---
 
+## Live Provider Expansion Step 14 — Guarded IRSA Provider Client
+
+Status: implemented.
+
+Added:
+
+- guarded IRSA catalog client using `TECHNO_SEARCH_ENABLE_LIVE_DATA`
+- injectable HTTP GET byte fetcher for non-networked tests
+- bounded response reads
+- small delimited table row normalization
+- mocked IRSA response fixture
+- opt-in `integration_live` marker coverage with injected transport
+- status, roadmap, and provider interface docs updates
+
+Validation passed:
+
+- `.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing`
+- `.venv/bin/ruff check .`
+- `.venv/bin/mypy src`
+- `git diff --check`
+
+Result:
+
+- 112 tests passed, 3 skipped
+- total coverage: 93%
+
+Commit planned:
+
+```bash
+git commit -m "Add guarded IRSA provider client"
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Catalog Cache Guardrail Step 7 — Validator Tests
 
 Status: implemented.
