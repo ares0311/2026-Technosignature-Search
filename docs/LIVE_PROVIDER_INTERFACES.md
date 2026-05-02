@@ -66,7 +66,9 @@ Current clients:
 `IrsaLiveClient` has a guarded catalog metadata implementation with injectable transport for tests.
 `VizierLiveClient` has a guarded catalog metadata implementation with injectable transport for tests.
 `SimbadLiveClient` has a guarded object-lookup metadata implementation with injectable transport for tests.
-The remaining skeletons require `TECHNO_SEARCH_ENABLE_LIVE_DATA=1` and then raise `NotImplementedError` until real provider implementations are added.
+`BreakthroughListenLiveClient` has a guarded local-file metadata implementation that does not read observation contents.
+
+The live-client summary reports whether each client is implemented, networked, or local-file-only.
 
 Inspect skeleton status without network access:
 

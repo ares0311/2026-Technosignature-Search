@@ -189,8 +189,8 @@ Add real data ingestion behind tested abstractions.
 
 ## Tasks
 
-- [ ] Breakthrough Listen style file ingestion
-- [ ] Gaia/IRSA/VizieR query wrappers
+- [x] Breakthrough Listen style file ingestion
+- [x] Gaia/IRSA/VizieR query wrappers
 - [ ] Catalog caching
 - [x] Provenance tracking scaffold
 - [x] Live integration tests marked separately
@@ -215,7 +215,9 @@ Add real data ingestion behind tested abstractions.
 - [x] Guarded IRSA live client with mocked transport tests
 - [x] Guarded VizieR live client with mocked transport tests
 - [x] Guarded SIMBAD live client with mocked transport tests
-- [ ] Remaining real provider client implementations
+- [x] Breakthrough Listen local-file metadata client
+- [x] Live client capability summary fields
+- [x] Remaining real provider client implementations
 - [ ] Catalog cache storage implementation
 
 ---

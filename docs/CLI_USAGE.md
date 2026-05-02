@@ -219,6 +219,7 @@ Print configured live-client implementation status without network access:
 ```
 
 The summary reports provider names, service URLs, implementation status, and whether live opt-in is required.
+It also distinguishes networked clients from local-file-only metadata clients.
 
 ---
 

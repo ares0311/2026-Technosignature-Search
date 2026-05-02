@@ -285,9 +285,9 @@ def test_cli_live_fixture_summary_outputs_committed_fixture_counts() -> None:
 
     assert exit_code == 0
     assert result["fixture_schema_version"] == "live_metadata_fixture_v1"
-    assert result["fixture_count"] == 9
+    assert result["fixture_count"] == 10
     assert result["by_provider"] == {
-        "breakthrough_listen": 1,
+        "breakthrough_listen": 2,
         "gaia": 2,
         "irsa": 2,
         "simbad": 2,
@@ -315,12 +315,32 @@ def test_cli_live_client_summary_outputs_disabled_skeleton_status(monkeypatch) -
     implemented_by_provider = {
         client["provider_name"]: client["implemented"] for client in result["clients"]
     }
+    networked_by_provider = {
+        client["provider_name"]: client["networked"] for client in result["clients"]
+    }
+    local_file_only_by_provider = {
+        client["provider_name"]: client["local_file_only"] for client in result["clients"]
+    }
     assert implemented_by_provider == {
+        "breakthrough_listen": True,
+        "gaia": True,
+        "irsa": True,
+        "simbad": True,
+        "vizier": True,
+    }
+    assert networked_by_provider == {
         "breakthrough_listen": False,
         "gaia": True,
         "irsa": True,
         "simbad": True,
         "vizier": True,
+    }
+    assert local_file_only_by_provider == {
+        "breakthrough_listen": True,
+        "gaia": False,
+        "irsa": False,
+        "simbad": False,
+        "vizier": False,
     }
     assert all(client["requires_live_opt_in"] is True for client in result["clients"])
 

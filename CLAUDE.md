@@ -250,6 +250,123 @@ Result:
 
 ---
 
+## Remaining Provider Expansion Step 10 — Breakthrough Listen Local Metadata Client
+
+Status: implemented.
+
+Added:
+
+- guarded Breakthrough Listen local-file metadata client
+- `TECHNO_SEARCH_ENABLE_LIVE_DATA` opt-in requirement
+- file `stat()` metadata without reading observation contents
+- local-file-only client metadata fields
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Remaining Provider Expansion Step 11 — Breakthrough Listen Local Fixture
+
+Status: implemented.
+
+Added:
+
+- `tests/fixtures/live_metadata/breakthrough_listen_local_file_mock_response.metadata.json`
+- fixture loader coverage for local-file metadata response
+- live fixture summary expected count update
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Remaining Provider Expansion Step 12 — Breakthrough Listen Local-File Tests
+
+Status: implemented.
+
+Added tests proving:
+
+- local-file metadata client is disabled by default
+- enabled client uses file `stat()` metadata only
+- missing files are reported without reading contents
+- local-file coverage uses temporary files rather than committed observation data
+- `content_read` remains false
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Remaining Provider Expansion Step 13 — Live Client Summary Capability Fields
+
+Status: implemented.
+
+Added:
+
+- `networked` field in `live-client-summary`
+- `local_file_only` field in `live-client-summary`
+- CLI tests for implemented/networked/local-file-only provider capability maps
+- docs noting networked versus local-file-only client summaries
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py tests/test_docs.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Remaining Provider Expansion Step 14 — Breakthrough/Summary Validation And Commit
+
+Status: implemented.
+
+Updated:
+
+- `docs/PROJECT_STATUS.md`
+- `docs/ROADMAP.md`
+- Breakthrough Listen local metadata tests and fixture
+- live-client summary capability tests and docs
+
+Validation passed:
+
+- `.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing`
+- `.venv/bin/ruff check .`
+- `.venv/bin/mypy src`
+- `git diff --check`
+
+Result:
+
+- 117 tests passed, 5 skipped
+- total coverage: 92%
+
+Commit planned:
+
+```bash
+git commit -m "Add Breakthrough Listen local metadata client"
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Live Provider Expansion
 
 User requested fifteen iterative steps:

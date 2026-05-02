@@ -101,6 +101,25 @@ def test_breakthrough_listen_live_metadata_fixture_loads_without_network(monkeyp
     assert fixture["request"]["cache_key"] == "fixture-breakthrough-listen-file-metadata-v1"
 
 
+def test_breakthrough_listen_local_file_mock_fixture_loads_without_network(
+    monkeypatch,
+) -> None:
+    monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
+
+    fixture = load_live_metadata_fixture(
+        default_live_metadata_fixture_dir()
+        / "breakthrough_listen_local_file_mock_response.metadata.json"
+    )
+
+    assert live_data_enabled() is False
+    assert fixture["provider_name"] == "breakthrough_listen"
+    assert fixture["request"]["cache_key"] == (
+        "fixture-breakthrough-listen-local-file-mock-response-v1"
+    )
+    assert fixture["response_metadata"]["provider_status"] == "local_file_metadata"
+    assert fixture["response_metadata"]["row_count"] == 0
+
+
 def test_breakthrough_listen_local_file_request_shape_does_not_read_file(
     tmp_path,
     monkeypatch,
@@ -123,14 +142,13 @@ def test_breakthrough_listen_local_file_request_shape_does_not_read_file(
         BreakthroughListenAdapter().fetch_metadata(request)
 
 
-def test_breakthrough_listen_live_client_skeleton_is_disabled_and_unimplemented(
+def test_breakthrough_listen_live_client_reads_only_local_file_metadata(
+    tmp_path,
     monkeypatch,
 ) -> None:
-    request = BreakthroughListenAdapter().build_request(
-        "synthetic_observation.h5",
-        purpose="breakthrough-listen-file-metadata",
-        parameters={"query_type": "local_file_metadata"},
-    )
+    local_file = tmp_path / "synthetic_observation.h5"
+    local_file.write_bytes(b"tiny synthetic placeholder")
+    request = BreakthroughListenAdapter().build_local_file_metadata_request(local_file)
     client = BreakthroughListenLiveClient()
 
     monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
@@ -138,8 +156,50 @@ def test_breakthrough_listen_live_client_skeleton_is_disabled_and_unimplemented(
         client.fetch_metadata(request)
 
     monkeypatch.setenv(LIVE_DATA_ENV_VAR, "1")
-    with pytest.raises(NotImplementedError):
-        client.fetch_metadata(request)
+    metadata = client.fetch_metadata(request)
+
+    assert metadata["provider_status"] == "local_file_metadata"
+    assert metadata["query_endpoint"] == "local-filesystem"
+    assert metadata["response_format"] == "file-stat"
+    assert metadata["file_name"] == "synthetic_observation.h5"
+    assert metadata["file_suffix"] == ".h5"
+    assert metadata["file_exists"] is True
+    assert metadata["size_bytes"] == len(b"tiny synthetic placeholder")
+    assert metadata["content_read"] is False
+    assert metadata["rows"] == []
+
+
+def test_breakthrough_listen_live_client_reports_missing_file_without_reading(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    missing_file = tmp_path / "missing_observation.h5"
+    request = BreakthroughListenAdapter().build_local_file_metadata_request(missing_file)
+    client = BreakthroughListenLiveClient()
+
+    monkeypatch.setenv(LIVE_DATA_ENV_VAR, "1")
+    metadata = client.fetch_metadata(request)
+
+    assert metadata["provider_status"] == "local_file_metadata"
+    assert metadata["file_exists"] is False
+    assert metadata["content_read"] is False
+    assert "size_bytes" not in metadata
+
+
+def test_breakthrough_listen_local_file_metadata_uses_tempfile_not_committed_data(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    local_file = tmp_path / "synthetic_observation.h5"
+    local_file.write_bytes(b"small temporary metadata test")
+    request = BreakthroughListenAdapter().build_local_file_metadata_request(local_file)
+
+    monkeypatch.setenv(LIVE_DATA_ENV_VAR, "1")
+    metadata = BreakthroughListenLiveClient().fetch_metadata(request)
+
+    assert tmp_path in local_file.parents
+    assert "tests/fixtures" not in local_file.as_posix()
+    assert metadata["content_read"] is False
 
 
 def test_injected_provider_fetcher_is_called_only_when_live_enabled(monkeypatch) -> None:

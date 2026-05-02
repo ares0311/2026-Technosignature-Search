@@ -799,21 +799,47 @@ class BreakthroughListenAdapter(LiveProviderAdapter):
         )
 
 
+@dataclass(frozen=True)
 class BreakthroughListenLiveClient:
-    """Disabled Breakthrough Listen client skeleton for future provider integration."""
+    """Guarded Breakthrough Listen local-file metadata client."""
 
     provider_name = "breakthrough_listen"
     service_url = "https://breakthroughinitiatives.org/"
-    implemented = False
+    implemented = True
     networked = False
-    local_file_only = False
+    local_file_only = True
 
     def fetch_metadata(self, request: LiveDataRequest) -> Mapping[str, Any]:
-        """Require live opt-in before future Breakthrough Listen implementation."""
+        """Inspect local file metadata without reading observation contents."""
 
         require_live_data_enabled()
-        msg = "Breakthrough Listen live client is not implemented yet."
-        raise NotImplementedError(msg)
+        if request.source_name != self.provider_name:
+            msg = (
+                "Breakthrough Listen client cannot fetch request for "
+                f"{request.source_name!r}."
+            )
+            raise ValueError(msg)
+        if request.parameters is None:
+            msg = "Breakthrough Listen request missing query parameters."
+            raise ValueError(msg)
+
+        path = Path(request.query).expanduser()
+        file_exists = path.exists()
+        metadata: dict[str, object] = {
+            "provider_status": "local_file_metadata",
+            "query_endpoint": "local-filesystem",
+            "response_format": "file-stat",
+            "file_name": request.parameters.get("file_name", path.name),
+            "file_suffix": request.parameters.get("file_suffix", path.suffix),
+            "file_exists": file_exists,
+            "content_read": False,
+            "rows": [],
+        }
+        if file_exists:
+            stat = path.stat()
+            metadata["size_bytes"] = stat.st_size
+            metadata["modified_unix_seconds"] = stat.st_mtime
+        return metadata
 
 
 def normalize_provider_response(

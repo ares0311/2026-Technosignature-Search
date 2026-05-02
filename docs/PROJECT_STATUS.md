@@ -92,6 +92,8 @@ The project will support three tracks from day one:
 - [x] Guarded IRSA live client added with mocked transport tests
 - [x] Guarded VizieR live client added with mocked transport tests
 - [x] Guarded SIMBAD live client added with mocked transport tests
+- [x] Breakthrough Listen local-file metadata client added
+- [x] Live client summary capability fields added
 - [x] Provenance helper module added
 - [x] Provenance summaries added to report manifests
 - [x] Provenance summary CLI added
@@ -113,15 +115,15 @@ The project will support three tracks from day one:
 - [x] Add guarded IRSA live provider client
 - [x] Add guarded VizieR live provider client
 - [x] Add guarded SIMBAD live provider client
-- [ ] Add real live-data provider clients behind explicit integration gates
+- [x] Add real live-data provider clients behind explicit integration gates
 
 ---
 
 ## Next 3 Actions
 
 1. Push local commits to GitHub from an approved local environment with the required token scopes.
-2. Add Breakthrough Listen local-file metadata client behind explicit integration gates.
-3. Wire live-client summaries to distinguish networked providers from local-file metadata support.
+2. Add catalog cache storage implementation after validator and policy checks remain green.
+3. Add VizieR/SIMBAD/Breakthrough Listen provider-specific normalization refinements only with mocked fixtures.
 
 ---
 
