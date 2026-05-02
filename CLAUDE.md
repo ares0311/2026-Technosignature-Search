@@ -367,6 +367,32 @@ Merge status: already on `main`; no merge needed.
 
 ---
 
+## Remaining Provider Expansion Step 15 — Push Provider Commits
+
+Status: implemented.
+
+Pushed to GitHub:
+
+- `d17205c Add guarded VizieR provider client`
+- `90f7fc1 Add guarded SIMBAD provider client`
+- `2dab9bd Add Breakthrough Listen local metadata client`
+
+Push result:
+
+```bash
+git push origin main
+```
+
+Remote update:
+
+```text
+d505b99..2dab9bd  main -> main
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Live Provider Expansion
 
 User requested fifteen iterative steps:
