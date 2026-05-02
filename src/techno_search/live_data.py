@@ -21,8 +21,23 @@ from techno_search.provenance import (
 
 LIVE_DATA_ENV_VAR = "TECHNO_SEARCH_ENABLE_LIVE_DATA"
 LIVE_CACHE_DIR_ENV_VAR = "TECHNO_SEARCH_LIVE_CACHE_DIR"
+CATALOG_CACHE_DIR_ENV_VAR = "TECHNO_SEARCH_CATALOG_CACHE_DIR"
 DEFAULT_LIVE_CACHE_DIR = Path("cache/live_providers")
+DEFAULT_CATALOG_CACHE_DIR = Path("cache/catalog_metadata")
 LIVE_METADATA_FIXTURE_SCHEMA_VERSION = "live_metadata_fixture_v1"
+DEFAULT_CATALOG_CACHE_METADATA_MAX_BYTES = 1_048_576
+DEFAULT_CATALOG_CACHE_ALLOWED_SUFFIXES = (".metadata.json", ".json")
+DEFAULT_CATALOG_CACHE_REQUIRED_PROVENANCE_FIELDS = (
+    "schema_version",
+    "provider_name",
+    "cache_key",
+    "source_query",
+    "query_parameters",
+    "created_at_utc",
+    "config_version",
+    "code_commit",
+)
+CATALOG_CACHE_FORBIDDEN_COMMITTED_ROOTS = ("data", "cache", "artifacts")
 
 
 def configured_live_cache_dir(project_root: Path | str | None = None) -> Path:
@@ -34,6 +49,17 @@ def configured_live_cache_dir(project_root: Path | str | None = None) -> Path:
 
     root = Path.cwd() if project_root is None else Path(project_root)
     return root / DEFAULT_LIVE_CACHE_DIR
+
+
+def configured_catalog_cache_dir(project_root: Path | str | None = None) -> Path:
+    """Return the configured catalog metadata cache directory without creating it."""
+
+    configured = os.environ.get(CATALOG_CACHE_DIR_ENV_VAR)
+    if configured:
+        return Path(configured).expanduser()
+
+    root = Path.cwd() if project_root is None else Path(project_root)
+    return root / DEFAULT_CATALOG_CACHE_DIR
 
 
 def default_live_metadata_fixture_dir(project_root: Path | str | None = None) -> Path:
@@ -113,6 +139,32 @@ def live_client_summary() -> dict[str, object]:
     }
 
 
+def validate_catalog_cache_commit_paths(
+    paths: list[Path | str],
+    *,
+    project_root: Path | str | None = None,
+) -> dict[str, object]:
+    """Validate that catalog cache paths are not being prepared for Git commits."""
+
+    root = None if project_root is None else Path(project_root).resolve()
+    errors: list[str] = []
+    checked_paths: list[str] = []
+    for path_value in paths:
+        path = Path(path_value)
+        checked_paths.append(str(path))
+        relative = _relative_to_project(path, root)
+        if relative.parts and relative.parts[0] in CATALOG_CACHE_FORBIDDEN_COMMITTED_ROOTS:
+            errors.append(f"Catalog cache path must not be committed: {relative.as_posix()}")
+
+    return {
+        "ok": not errors,
+        "checked_path_count": len(checked_paths),
+        "checked_paths": checked_paths,
+        "forbidden_roots": list(CATALOG_CACHE_FORBIDDEN_COMMITTED_ROOTS),
+        "errors": errors,
+    }
+
+
 @dataclass(frozen=True)
 class LiveDataRequest:
     """Minimal request descriptor for future live-data adapters."""
@@ -147,6 +199,36 @@ class LiveDataRequest:
 
 class LiveDataDisabledError(RuntimeError):
     """Raised when live-data access is requested without explicit opt-in."""
+
+
+@dataclass(frozen=True)
+class CatalogCachePolicy:
+    """Guardrails for future catalog cache metadata."""
+
+    cache_root: Path
+    max_metadata_file_size_bytes: int = DEFAULT_CATALOG_CACHE_METADATA_MAX_BYTES
+    allowed_suffixes: tuple[str, ...] = DEFAULT_CATALOG_CACHE_ALLOWED_SUFFIXES
+    required_provenance_fields: tuple[str, ...] = (
+        DEFAULT_CATALOG_CACHE_REQUIRED_PROVENANCE_FIELDS
+    )
+
+    @classmethod
+    def from_config(cls, project_root: Path | str | None = None) -> CatalogCachePolicy:
+        """Build the policy from environment or project-local defaults."""
+
+        return cls(cache_root=configured_catalog_cache_dir(project_root=project_root))
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a stable JSON-serializable representation."""
+
+        return {
+            "cache_root": str(self.cache_root),
+            "max_metadata_file_size_bytes": self.max_metadata_file_size_bytes,
+            "allowed_suffixes": list(self.allowed_suffixes),
+            "required_provenance_fields": list(self.required_provenance_fields),
+            "creates_directories": False,
+            "implements_catalog_ingestion": False,
+        }
 
 
 @dataclass(frozen=True)
@@ -235,6 +317,16 @@ def _safe_cache_component(value: str) -> str:
         character for character in normalized if character.isalnum() or character in "_-"
     )
     return safe or "unknown"
+
+
+def _relative_to_project(path: Path, project_root: Path | None) -> Path:
+    if project_root is None:
+        return path
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(project_root)
+    except ValueError:
+        return path
 
 
 def _validate_live_metadata_fixture(fixture: Mapping[str, Any], path: Path) -> None:

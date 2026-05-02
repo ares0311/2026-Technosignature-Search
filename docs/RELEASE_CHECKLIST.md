@@ -35,6 +35,7 @@ Before release, verify:
 - generated packets include `schema_version`
 - report manifests include `provenance_summary`
 - live-provider request provenance includes service URL and cache key when applicable
+- catalog cache policy and commit-path validator pass before real provider clients
 - generated packets include the required disclaimer
 - generated packets expose negative evidence and blocking issues
 
@@ -45,6 +46,7 @@ Useful commands:
 .venv/bin/techno-search validate-reports examples/reports
 .venv/bin/techno-search schema-paths
 .venv/bin/techno-search score-regression-summary
+.venv/bin/techno-search catalog-cache-policy
 ```
 
 ---

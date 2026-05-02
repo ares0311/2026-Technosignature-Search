@@ -308,3 +308,21 @@ def test_cli_live_client_summary_outputs_disabled_skeleton_status(monkeypatch) -
     }
     assert all(client["implemented"] is False for client in result["clients"])
     assert all(client["requires_live_opt_in"] is True for client in result["clients"])
+
+
+def test_cli_catalog_cache_policy_outputs_policy_without_creating_dir(tmp_path) -> None:
+    cache_root = tmp_path / "catalog-cache"
+    stdout = StringIO()
+
+    exit_code = main(
+        ["catalog-cache-policy", "--cache-root", str(cache_root)],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["cache_root"] == str(cache_root)
+    assert result["allowed_suffixes"] == [".metadata.json", ".json"]
+    assert result["creates_directories"] is False
+    assert result["implements_catalog_ingestion"] is False
+    assert not cache_root.exists()

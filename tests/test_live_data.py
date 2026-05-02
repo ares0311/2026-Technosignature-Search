@@ -3,10 +3,12 @@ import os
 import pytest
 
 from techno_search.live_data import (
+    CATALOG_CACHE_DIR_ENV_VAR,
     LIVE_CACHE_DIR_ENV_VAR,
     LIVE_DATA_ENV_VAR,
     BreakthroughListenAdapter,
     BreakthroughListenLiveClient,
+    CatalogCachePolicy,
     GaiaAdapter,
     GaiaLiveClient,
     IrsaAdapter,
@@ -20,6 +22,7 @@ from techno_search.live_data import (
     SimbadLiveClient,
     VizierAdapter,
     VizierLiveClient,
+    configured_catalog_cache_dir,
     configured_live_cache_dir,
     default_live_metadata_fixture_dir,
     fetcher_from_client,
@@ -27,6 +30,7 @@ from techno_search.live_data import (
     load_live_metadata_fixture,
     provider_adapters,
     require_live_data_enabled,
+    validate_catalog_cache_commit_paths,
 )
 
 
@@ -172,6 +176,71 @@ def test_configured_live_cache_dir_uses_env_or_project_default(tmp_path, monkeyp
     monkeypatch.setenv(LIVE_CACHE_DIR_ENV_VAR, str(explicit_cache_dir))
 
     assert configured_live_cache_dir(project_root=tmp_path) == explicit_cache_dir
+
+
+def test_catalog_cache_policy_defaults_do_not_create_cache_dirs(tmp_path, monkeypatch) -> None:
+    monkeypatch.delenv(CATALOG_CACHE_DIR_ENV_VAR, raising=False)
+
+    policy = CatalogCachePolicy.from_config(project_root=tmp_path)
+    data = policy.as_dict()
+
+    assert configured_catalog_cache_dir(project_root=tmp_path) == (
+        tmp_path / "cache/catalog_metadata"
+    )
+    assert policy.cache_root == tmp_path / "cache/catalog_metadata"
+    assert data["allowed_suffixes"] == [".metadata.json", ".json"]
+    assert data["max_metadata_file_size_bytes"] == 1_048_576
+    assert data["creates_directories"] is False
+    assert data["implements_catalog_ingestion"] is False
+    assert not policy.cache_root.exists()
+
+
+def test_catalog_cache_policy_uses_local_env_override(tmp_path, monkeypatch) -> None:
+    cache_dir = tmp_path / "local-catalog-cache"
+    monkeypatch.setenv(CATALOG_CACHE_DIR_ENV_VAR, str(cache_dir))
+
+    policy = CatalogCachePolicy.from_config(project_root=tmp_path)
+
+    assert configured_catalog_cache_dir(project_root=tmp_path) == cache_dir
+    assert policy.cache_root == cache_dir
+    assert not cache_dir.exists()
+
+
+def test_catalog_cache_commit_path_validator_rejects_cache_roots(tmp_path) -> None:
+    result = validate_catalog_cache_commit_paths(
+        [
+            tmp_path / "cache/catalog_metadata/gaia/example.metadata.json",
+            tmp_path / "data/raw/catalog.csv",
+            tmp_path / "artifacts/catalog-cache/rows.json",
+        ],
+        project_root=tmp_path,
+    )
+
+    assert result["ok"] is False
+    assert result["checked_path_count"] == 3
+    assert result["forbidden_roots"] == ["data", "cache", "artifacts"]
+    assert result["errors"] == [
+        (
+            "Catalog cache path must not be committed: "
+            "cache/catalog_metadata/gaia/example.metadata.json"
+        ),
+        "Catalog cache path must not be committed: data/raw/catalog.csv",
+        "Catalog cache path must not be committed: artifacts/catalog-cache/rows.json",
+    ]
+
+
+def test_catalog_cache_commit_path_validator_allows_small_fixture_paths(tmp_path) -> None:
+    result = validate_catalog_cache_commit_paths(
+        [
+            tmp_path / "tests/fixtures/live_metadata/gaia_cone_search.metadata.json",
+            tmp_path / "docs/CATALOG_CACHE_POLICY.md",
+        ],
+        project_root=tmp_path,
+    )
+
+    assert result["ok"] is True
+    assert result["errors"] == []
+    assert result["checked_path_count"] == 2
 
 
 def test_live_provider_cache_writes_metadata_outside_committed_report_paths(tmp_path) -> None:

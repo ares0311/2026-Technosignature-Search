@@ -24,6 +24,94 @@ Overall status: all three requested steps are implemented.
 
 ---
 
+## Catalog Cache Guardrail Step 7 — Validator Tests
+
+Status: implemented.
+
+Added tests for:
+
+- rejecting catalog cache paths under `cache/`
+- rejecting catalog data paths under `data/`
+- rejecting generated catalog artifacts under `artifacts/`
+- allowing small committed docs and fixture paths outside forbidden roots
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Catalog Cache Guardrail Step 8 — Release Checklist Gate
+
+Status: implemented.
+
+Updated:
+
+- `docs/RELEASE_CHECKLIST.md` artifact checks
+- release validation command list with `techno-search catalog-cache-policy`
+- release gate requiring catalog cache policy and commit-path validator before real provider clients
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Catalog Cache Guardrail Step 9 — Status And Roadmap Updates
+
+Status: implemented.
+
+Updated:
+
+- `docs/PROJECT_STATUS.md` completed and in-progress entries
+- `docs/PROJECT_STATUS.md` next actions for policy-gated catalog cache storage
+- `docs/ROADMAP.md` reporting and live-data milestones
+- `CLAUDE.md` handoff notes for this step
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py tests/test_cli.py tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Catalog Cache Guardrail Step 10 — Validation And Commit
+
+Status: implemented.
+
+Validation passed:
+
+- `.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing`
+- `.venv/bin/ruff check .`
+- `.venv/bin/mypy src`
+- `git diff --check`
+
+Result:
+
+- 106 tests passed, 1 skipped
+- total coverage: 94%
+
+Commit planned:
+
+```bash
+git commit -m "Add catalog cache guardrails"
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Step 1 — Report File Writers
 
 Status: implemented.
@@ -61,6 +149,148 @@ Validation for this step should include:
 
 ```bash
 .venv/bin/python -m pytest tests/test_radio_prototype.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Catalog Cache Guardrail Step 6 — Commit Path Validator
+
+Status: implemented.
+
+Added:
+
+- `CATALOG_CACHE_FORBIDDEN_COMMITTED_ROOTS`
+- `validate_catalog_cache_commit_paths(...)`
+- helper for project-relative path checks
+- rejection of paths under `data/`, `cache/`, and `artifacts/`
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Catalog Cache Guardrail Step 5 — Policy Docs Warning
+
+Status: implemented.
+
+Updated:
+
+- CLI docs for `catalog-cache-policy`
+- `docs/CATALOG_CACHE_POLICY.md` to state the policy command is informational only
+- data policy note for future catalog cache metadata versus live-provider metadata cache
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Catalog Cache Guardrail Step 4 — Catalog Cache Policy CLI
+
+Status: implemented.
+
+Added:
+
+- `catalog_cache_policy_summary(...)`
+- `techno-search catalog-cache-policy`
+- optional `--cache-root`
+- CLI test proving the command prints policy metadata without creating directories
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Catalog Cache Guardrail Step 3 — Policy Tests
+
+Status: implemented.
+
+Added tests for:
+
+- default catalog cache root under `cache/catalog_metadata`
+- allowed metadata suffixes
+- maximum metadata file size default
+- no directory creation
+- local `TECHNO_SEARCH_CATALOG_CACHE_DIR` override
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Catalog Cache Guardrail Step 2 — Catalog Cache Policy
+
+Status: implemented.
+
+Added:
+
+- `CATALOG_CACHE_DIR_ENV_VAR`
+- `DEFAULT_CATALOG_CACHE_DIR`
+- `configured_catalog_cache_dir(...)`
+- `CatalogCachePolicy`
+- JSON-serializable policy representation that does not create directories or implement ingestion
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Ten-Step Catalog Cache Guardrail Expansion
+
+User requested ten iterative steps:
+
+1. Add catalog cache metadata schema docs, separate from local live-provider metadata cache files.
+2. Add `CatalogCachePolicy` dataclass for cache root, max metadata file size, allowed suffixes, and provenance requirements.
+3. Add tests for catalog cache policy defaults and local override behavior.
+4. Add `techno-search catalog-cache-policy` to print policy without creating cache files.
+5. Add docs warning that catalog cache policy is not catalog ingestion yet.
+6. Add validation helper that rejects committed catalog cache paths under `data/`, `cache/`, and `artifacts/`.
+7. Add tests for the catalog cache path validator.
+8. Add release checklist item for catalog cache policy/validator before real provider clients.
+9. Update `PROJECT_STATUS`, `ROADMAP`, and `CLAUDE.md`.
+10. Run full validation, commit, and report branch state.
+
+## Catalog Cache Guardrail Step 1 — Metadata Schema Docs
+
+Status: implemented.
+
+Added:
+
+- `docs/CATALOG_CACHE_POLICY.md`
+- catalog cache metadata field list
+- storage boundary between live-provider metadata cache and future catalog cache metadata
+- explicit no-ingestion and no-interpretation guardrails
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py
 ```
 
 Merge status: already on `main`; no merge needed.

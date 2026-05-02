@@ -27,6 +27,8 @@ Do not commit:
 
 Live-provider metadata caches belong under `cache/live_providers/` by default or under the local directory named by `TECHNO_SEARCH_LIVE_CACHE_DIR`. These cache files are ignored local artifacts and should be regenerated from recorded provider request provenance when needed.
 
+Future catalog cache metadata belongs under `cache/catalog_metadata/` by default or under the local directory named by `TECHNO_SEARCH_CATALOG_CACHE_DIR`. This policy is not catalog ingestion; it only defines where future local metadata should live and what must stay out of Git.
+
 Tiny live metadata fixtures under `tests/fixtures/live_metadata/` are allowed only when they contain normalized metadata and provenance summaries, not bulk provider data or candidate interpretation.
 
 Small synthetic fixtures are allowed.

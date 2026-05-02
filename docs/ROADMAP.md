@@ -140,6 +140,7 @@ Generate reproducible candidate reports.
 - [x] Live-provider cache summary command
 - [x] Live-metadata fixture summary command
 - [x] Live-client summary command
+- [x] Catalog-cache policy command
 
 ## Done When
 
@@ -206,8 +207,10 @@ Add real data ingestion behind tested abstractions.
 - [x] Fixture-driven live-client normalization tests
 - [x] Disabled VizieR, SIMBAD, and Breakthrough Listen live-client skeletons
 - [x] Breakthrough Listen local file metadata request shape
+- [x] Catalog cache metadata policy
+- [x] Catalog cache commit-path validator
 - [ ] Real provider client implementations
-- [ ] Catalog cache storage policy and implementation
+- [ ] Catalog cache storage implementation
 
 ---
 

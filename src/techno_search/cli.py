@@ -13,6 +13,7 @@ from typing import TextIO
 from techno_search.calibration import load_calibration_fixtures, summarize_calibration_fixtures
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.live_data import (
+    CatalogCachePolicy,
     LiveProviderCache,
     live_client_summary,
     live_data_enabled,
@@ -122,6 +123,13 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
 
     if args.command == "live-client-summary":
         print(json.dumps(live_client_summary(), indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "catalog-cache-policy":
+        print(
+            json.dumps(catalog_cache_policy_summary(args.cache_root), indent=2, sort_keys=True),
+            file=out,
+        )
         return 0
 
     parser.error(f"Unknown command: {args.command}")
@@ -343,6 +351,17 @@ def live_cache_summary(cache_dir: Path | None = None) -> dict[str, object]:
     return cache.summary()
 
 
+def catalog_cache_policy_summary(cache_root: Path | None = None) -> dict[str, object]:
+    """Return catalog cache policy metadata without creating cache files."""
+
+    policy = (
+        CatalogCachePolicy.from_config()
+        if cache_root is None
+        else CatalogCachePolicy(cache_root)
+    )
+    return policy.as_dict()
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="techno-search",
@@ -456,6 +475,15 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "live-client-summary",
         help="Print configured live-client skeleton status without network access.",
+    )
+    catalog_cache_parser = subparsers.add_parser(
+        "catalog-cache-policy",
+        help="Print future catalog cache metadata policy without creating cache files.",
+    )
+    catalog_cache_parser.add_argument(
+        "--cache-root",
+        type=Path,
+        help="Optional catalog cache metadata root override.",
     )
     return parser
 

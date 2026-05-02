@@ -221,6 +221,18 @@ The summary reports provider names, service URLs, implementation status, and whe
 
 ---
 
+## Print Catalog Cache Policy
+
+Print the future catalog cache metadata policy without creating cache directories or ingesting catalogs:
+
+```bash
+.venv/bin/techno-search catalog-cache-policy
+```
+
+Use `--cache-root` to inspect a local override.
+
+---
+
 ## Input Candidate JSON Shape
 
 The CLI expects a normalized synthetic candidate packet:
