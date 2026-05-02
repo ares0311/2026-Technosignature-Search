@@ -9,6 +9,7 @@ from techno_search.live_data import (
     LIVE_DATA_ENV_VAR,
     BreakthroughListenAdapter,
     BreakthroughListenLiveClient,
+    CatalogCache,
     CatalogCachePolicy,
     GaiaAdapter,
     GaiaLiveClient,
@@ -35,6 +36,23 @@ from techno_search.live_data import (
     require_live_data_enabled,
     validate_catalog_cache_commit_paths,
 )
+
+
+def _catalog_cache_metadata(provider_name: str = "gaia") -> dict[str, object]:
+    return {
+        "schema_version": "catalog_cache_metadata_v1",
+        "provider_name": provider_name,
+        "cache_key": f"{provider_name}-synthetic-cache-v1",
+        "source_query": "synthetic catalog metadata query",
+        "query_parameters": {"query_type": "unit-test"},
+        "created_at_utc": "2026-05-02T00:00:00+00:00",
+        "config_version": "scoring_v0",
+        "code_commit": None,
+        "source_dataset": "synthetic-provider-fixture",
+        "row_count": 1,
+        "byte_count": 128,
+        "content_path": None,
+    }
 
 
 class FixtureMetadataClient:
@@ -305,6 +323,73 @@ def test_catalog_cache_policy_uses_local_env_override(tmp_path, monkeypatch) -> 
     assert configured_catalog_cache_dir(project_root=tmp_path) == cache_dir
     assert policy.cache_root == cache_dir
     assert not cache_dir.exists()
+
+
+def test_catalog_cache_writes_metadata_under_policy_root(tmp_path) -> None:
+    cache_root = tmp_path / "local-catalog-cache"
+    cache = CatalogCache(CatalogCachePolicy(cache_root=cache_root))
+    metadata = _catalog_cache_metadata("gaia")
+
+    path = cache.write_metadata(metadata)
+
+    assert path == cache.metadata_path("gaia", "gaia-synthetic-cache-v1")
+    assert path.parent == cache_root / "gaia"
+    assert path.name.endswith(".metadata.json")
+    assert cache.read_metadata("gaia", "gaia-synthetic-cache-v1") == metadata
+    assert cache.summary()["by_provider"] == {"gaia": 1}
+    assert cache.summary()["implements_catalog_ingestion"] is False
+
+
+def test_catalog_cache_rejects_missing_required_provenance(tmp_path) -> None:
+    cache = CatalogCache(CatalogCachePolicy(cache_root=tmp_path / "catalog-cache"))
+    metadata = _catalog_cache_metadata("gaia")
+    del metadata["source_query"]
+
+    with pytest.raises(ValueError, match="missing required fields"):
+        cache.write_metadata(metadata)
+
+
+def test_catalog_cache_rejects_oversized_metadata(tmp_path) -> None:
+    policy = CatalogCachePolicy(
+        cache_root=tmp_path / "catalog-cache",
+        max_metadata_file_size_bytes=64,
+    )
+    cache = CatalogCache(policy)
+
+    with pytest.raises(ValueError, match="exceeds"):
+        cache.write_metadata(_catalog_cache_metadata("gaia"))
+
+
+def test_catalog_cache_storage_paths_are_not_committable_when_under_project_cache(
+    tmp_path,
+) -> None:
+    project_root = tmp_path / "project"
+    cache_root = project_root / "cache" / "catalog_metadata"
+    cache = CatalogCache(CatalogCachePolicy(cache_root=cache_root))
+
+    metadata_path = cache.write_metadata(_catalog_cache_metadata("gaia"))
+    result = validate_catalog_cache_commit_paths([metadata_path], project_root=project_root)
+
+    assert metadata_path.is_relative_to(cache_root)
+    assert result["ok"] is False
+    assert result["errors"] == [
+        (
+            "Catalog cache path must not be committed: "
+            "cache/catalog_metadata/gaia/gaia-synthetic-cache-v1.metadata.json"
+        )
+    ]
+
+
+def test_catalog_cache_storage_can_use_local_override_outside_project(tmp_path) -> None:
+    project_root = tmp_path / "project"
+    cache_root = tmp_path / "outside-project-cache"
+    cache = CatalogCache(CatalogCachePolicy(cache_root=cache_root))
+
+    metadata_path = cache.write_metadata(_catalog_cache_metadata("irsa"))
+    result = validate_catalog_cache_commit_paths([metadata_path], project_root=project_root)
+
+    assert metadata_path.is_relative_to(cache_root)
+    assert result["ok"] is True
 
 
 def test_catalog_cache_commit_path_validator_rejects_cache_roots(tmp_path) -> None:

@@ -15,6 +15,7 @@ from typing import TextIO
 from techno_search.calibration import load_calibration_fixtures, summarize_calibration_fixtures
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.live_data import (
+    CatalogCache,
     CatalogCachePolicy,
     LiveProviderCache,
     live_client_summary,
@@ -131,6 +132,13 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
     if args.command == "catalog-cache-policy":
         print(
             json.dumps(catalog_cache_policy_summary(args.cache_root), indent=2, sort_keys=True),
+            file=out,
+        )
+        return 0
+
+    if args.command == "catalog-cache-summary":
+        print(
+            json.dumps(catalog_cache_summary(args.cache_root), indent=2, sort_keys=True),
             file=out,
         )
         return 0
@@ -373,6 +381,17 @@ def catalog_cache_policy_summary(cache_root: Path | None = None) -> dict[str, ob
     return policy.as_dict()
 
 
+def catalog_cache_summary(cache_root: Path | None = None) -> dict[str, object]:
+    """Return local catalog cache metadata counts without reading payloads."""
+
+    cache = (
+        CatalogCache.from_config()
+        if cache_root is None
+        else CatalogCache(CatalogCachePolicy(cache_root))
+    )
+    return cache.summary()
+
+
 def catalog_cache_validation_summary(
     paths: Sequence[Path | str],
     *,
@@ -518,6 +537,15 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Print future catalog cache metadata policy without creating cache files.",
     )
     catalog_cache_parser.add_argument(
+        "--cache-root",
+        type=Path,
+        help="Optional catalog cache metadata root override.",
+    )
+    catalog_cache_summary_parser = subparsers.add_parser(
+        "catalog-cache-summary",
+        help="Print catalog cache metadata counts without reading catalog payloads.",
+    )
+    catalog_cache_summary_parser.add_argument(
         "--cache-root",
         type=Path,
         help="Optional catalog cache metadata root override.",

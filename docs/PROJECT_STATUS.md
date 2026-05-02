@@ -87,6 +87,8 @@ The project will support three tracks from day one:
 - [x] Catalog cache commit-path validator added
 - [x] Catalog cache validator CLI added
 - [x] Catalog cache validation wired into `validate-all`
+- [x] Catalog cache metadata storage helper added
+- [x] Catalog cache summary CLI added
 - [x] Provider normalization contract added
 - [x] Guarded Gaia live client added with mocked transport tests
 - [x] Guarded IRSA live client added with mocked transport tests
@@ -122,8 +124,8 @@ The project will support three tracks from day one:
 ## Next 3 Actions
 
 1. Push local commits to GitHub from an approved local environment with the required token scopes.
-2. Add catalog cache storage implementation after validator and policy checks remain green.
-3. Add VizieR/SIMBAD/Breakthrough Listen provider-specific normalization refinements only with mocked fixtures.
+2. Add provider-specific normalization regression fixtures for live-client metadata.
+3. Wire provider normalization summaries into local validation.
 
 ---
 

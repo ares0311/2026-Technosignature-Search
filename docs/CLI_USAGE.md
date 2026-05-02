@@ -235,6 +235,19 @@ Use `--cache-root` to inspect a local override.
 
 ---
 
+## Summarize Catalog Cache
+
+Print local catalog cache metadata counts without reading catalog payloads:
+
+```bash
+.venv/bin/techno-search catalog-cache-summary
+```
+
+Use `--cache-root` to inspect a non-default local catalog metadata cache.
+The summary reports metadata counts only and does not ingest, score, or interpret catalog rows.
+
+---
+
 ## Validate Catalog Cache Commit Paths
 
 Validate paths before commit or release to prevent catalog cache files from entering Git:

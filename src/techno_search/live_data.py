@@ -236,6 +236,107 @@ class CatalogCachePolicy:
 
 
 @dataclass(frozen=True)
+class CatalogCache:
+    """Metadata-only storage for future catalog cache records."""
+
+    policy: CatalogCachePolicy
+
+    @classmethod
+    def from_config(cls, project_root: Path | str | None = None) -> CatalogCache:
+        """Build a catalog cache from configured local policy."""
+
+        return cls(CatalogCachePolicy.from_config(project_root=project_root))
+
+    def metadata_path(self, provider_name: str, cache_key: str) -> Path:
+        """Return a provider-scoped metadata path without creating it."""
+
+        return (
+            self.policy.cache_root
+            / _safe_cache_component(provider_name)
+            / f"{_safe_cache_component(cache_key)}.metadata.json"
+        )
+
+    def write_metadata(
+        self,
+        metadata: Mapping[str, Any],
+    ) -> Path:
+        """Write a small catalog cache metadata record after policy validation."""
+
+        provider_name = str(metadata.get("provider_name", ""))
+        cache_key = str(metadata.get("cache_key", ""))
+        if not provider_name or not cache_key:
+            msg = "Catalog cache metadata requires provider_name and cache_key."
+            raise ValueError(msg)
+
+        self._validate_metadata(metadata)
+        path = self.metadata_path(provider_name, cache_key)
+        if not path.name.endswith(self.policy.allowed_suffixes):
+            msg = f"Catalog cache metadata path has unsupported suffix: {path}"
+            raise ValueError(msg)
+        payload = json.dumps(dict(metadata), indent=2, sort_keys=True) + "\n"
+        size_bytes = len(payload.encode("utf-8"))
+        if size_bytes > self.policy.max_metadata_file_size_bytes:
+            msg = (
+                "Catalog cache metadata exceeds "
+                f"{self.policy.max_metadata_file_size_bytes} bytes."
+            )
+            raise ValueError(msg)
+
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(payload, encoding="utf-8")
+        return path
+
+    def read_metadata(self, provider_name: str, cache_key: str) -> dict[str, Any] | None:
+        """Read catalog cache metadata when present."""
+
+        path = self.metadata_path(provider_name, cache_key)
+        if not path.exists():
+            return None
+        if path.stat().st_size > self.policy.max_metadata_file_size_bytes:
+            msg = f"Catalog cache metadata exceeds policy size: {path}"
+            raise ValueError(msg)
+        with path.open(encoding="utf-8") as handle:
+            data = json.load(handle)
+        if not isinstance(data, dict):
+            msg = f"Catalog cache metadata is not an object: {path}"
+            raise ValueError(msg)
+        self._validate_metadata(data)
+        return data
+
+    def summary(self) -> dict[str, object]:
+        """Summarize cache metadata files without interpreting catalog contents."""
+
+        provider_counts: dict[str, int] = {}
+        total_bytes = 0
+        if self.policy.cache_root.exists():
+            for metadata_path in self.policy.cache_root.glob("*/*.metadata.json"):
+                provider = metadata_path.parent.name
+                provider_counts[provider] = provider_counts.get(provider, 0) + 1
+                total_bytes += metadata_path.stat().st_size
+
+        return {
+            "cache_root": str(self.policy.cache_root),
+            "exists": self.policy.cache_root.exists(),
+            "metadata_file_count": sum(provider_counts.values()),
+            "metadata_total_bytes": total_bytes,
+            "by_provider": dict(sorted(provider_counts.items())),
+            "max_metadata_file_size_bytes": self.policy.max_metadata_file_size_bytes,
+            "allowed_suffixes": list(self.policy.allowed_suffixes),
+            "implements_catalog_ingestion": False,
+        }
+
+    def _validate_metadata(self, metadata: Mapping[str, Any]) -> None:
+        missing = [
+            field
+            for field in self.policy.required_provenance_fields
+            if field not in metadata
+        ]
+        if missing:
+            msg = f"Catalog cache metadata missing required fields: {missing}"
+            raise ValueError(msg)
+
+
+@dataclass(frozen=True)
 class LiveProviderCache:
     """Small local cache for normalized live-provider metadata records."""
 

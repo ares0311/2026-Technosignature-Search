@@ -363,6 +363,47 @@ def test_cli_catalog_cache_policy_outputs_policy_without_creating_dir(tmp_path) 
     assert not cache_root.exists()
 
 
+def test_cli_catalog_cache_summary_outputs_empty_cache_without_creating_dir(tmp_path) -> None:
+    cache_root = tmp_path / "catalog-cache"
+    stdout = StringIO()
+
+    exit_code = main(
+        ["catalog-cache-summary", "--cache-root", str(cache_root)],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["cache_root"] == str(cache_root)
+    assert result["exists"] is False
+    assert result["metadata_file_count"] == 0
+    assert result["metadata_total_bytes"] == 0
+    assert result["by_provider"] == {}
+    assert result["implements_catalog_ingestion"] is False
+    assert not cache_root.exists()
+
+
+def test_cli_catalog_cache_summary_outputs_provider_counts(tmp_path) -> None:
+    cache_root = tmp_path / "catalog-cache"
+    provider_dir = cache_root / "gaia"
+    provider_dir.mkdir(parents=True)
+    (provider_dir / "abc.metadata.json").write_text("{}", encoding="utf-8")
+    stdout = StringIO()
+
+    exit_code = main(
+        ["catalog-cache-summary", "--cache-root", str(cache_root)],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["cache_root"] == str(cache_root)
+    assert result["exists"] is True
+    assert result["metadata_file_count"] == 1
+    assert result["metadata_total_bytes"] == 2
+    assert result["by_provider"] == {"gaia": 1}
+
+
 def test_cli_catalog_cache_validate_accepts_fixture_paths() -> None:
     stdout = StringIO()
 

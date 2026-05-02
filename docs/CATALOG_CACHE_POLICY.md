@@ -14,6 +14,12 @@ Print the current policy without creating files:
 .venv/bin/techno-search catalog-cache-policy
 ```
 
+Summarize local metadata records without reading catalog payloads:
+
+```bash
+.venv/bin/techno-search catalog-cache-summary
+```
+
 ---
 
 ## Metadata Schema
@@ -48,6 +54,8 @@ cache/catalog_metadata/
 The location may be overridden locally when needed, but cache products and catalog-like data must remain out of version control.
 
 The policy command is informational only. It does not create cache directories, download provider data, or validate real catalog contents.
+
+The storage helper writes small metadata records only after required provenance fields pass policy checks. It may create local cache directories on write, but it does not ingest, score, or interpret catalog rows.
 
 ---
 

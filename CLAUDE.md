@@ -24,6 +24,144 @@ Overall status: all three requested steps are implemented.
 
 ---
 
+## Fifteen-Step Catalog Cache And Normalization Expansion
+
+User requested fifteen iterative steps:
+
+1. Add catalog cache storage implementation behind `CatalogCachePolicy`.
+2. Add tests proving catalog cache storage never writes into committed paths.
+3. Add `techno-search catalog-cache-summary`.
+4. Add catalog cache summary tests.
+5. Update docs/status and commit catalog cache storage work.
+6. Add provider cache integration tests for Gaia, IRSA, VizieR, SIMBAD, and Breakthrough Listen.
+7. Add provider-specific normalization refinements for Gaia TAP metadata.
+8. Add provider-specific normalization refinements for IRSA catalog metadata.
+9. Add provider-specific normalization refinements for VizieR catalog metadata.
+10. Add provider-specific normalization refinements for SIMBAD object metadata.
+11. Add provider-specific normalization refinements for Breakthrough Listen file metadata.
+12. Add a provider normalization regression fixture set.
+13. Wire provider normalization summaries into `validate-all`.
+14. Run full validation and commit.
+15. Push `main` to GitHub and confirm clean sync.
+
+Each step should update this file and merge to `main` if needed.
+
+## Catalog Cache/Normalization Step 1 — Catalog Cache Storage
+
+Status: implemented.
+
+Added:
+
+- `CatalogCache` metadata-only storage helper
+- policy-backed metadata paths and suffix checks
+- required provenance field validation
+- metadata size enforcement
+- read/write/summary methods that do not implement catalog ingestion
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Catalog Cache/Normalization Step 2 — Catalog Cache Storage Tests
+
+Status: implemented.
+
+Added tests proving:
+
+- catalog cache writes only under the configured policy root
+- required provenance fields are enforced
+- oversized metadata is rejected
+- cache paths under project `cache/` are rejected by commit-path validation
+- local override paths outside the project are allowed by commit-path validation
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Catalog Cache/Normalization Step 3 — Catalog Cache Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search catalog-cache-summary`
+- optional `--cache-root`
+- metadata counts without reading catalog payloads
+- no directory creation for empty cache roots
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Catalog Cache/Normalization Step 4 — Catalog Cache Summary Tests
+
+Status: implemented.
+
+Added tests proving:
+
+- `catalog-cache-summary` reports empty cache roots without creating directories
+- populated metadata directories report provider counts and byte totals
+- summary output remains metadata-only and does not implement ingestion
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Catalog Cache/Normalization Step 5 — Catalog Cache Docs And Commit
+
+Status: implemented.
+
+Updated:
+
+- `docs/CLI_USAGE.md`
+- `docs/CATALOG_CACHE_POLICY.md`
+- `docs/PROJECT_STATUS.md`
+- `docs/ROADMAP.md`
+- `CLAUDE.md` handoff notes for catalog cache storage
+
+Commit planned:
+
+```bash
+git commit -m "Add catalog cache storage"
+```
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py tests/test_cli.py tests/test_docs.py
+.venv/bin/ruff check .
+.venv/bin/mypy src
+git diff --check
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Remaining Provider Expansion
 
 User requested fifteen iterative steps:

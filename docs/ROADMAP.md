@@ -142,6 +142,7 @@ Generate reproducible candidate reports.
 - [x] Live-client summary command
 - [x] Catalog-cache policy command
 - [x] Catalog-cache validator command
+- [x] Catalog-cache summary command
 
 ## Done When
 
@@ -191,7 +192,7 @@ Add real data ingestion behind tested abstractions.
 
 - [x] Breakthrough Listen style file ingestion
 - [x] Gaia/IRSA/VizieR query wrappers
-- [ ] Catalog caching
+- [x] Catalog caching
 - [x] Provenance tracking scaffold
 - [x] Live integration tests marked separately
 - [x] Opt-in live-data scaffold
@@ -210,6 +211,7 @@ Add real data ingestion behind tested abstractions.
 - [x] Breakthrough Listen local file metadata request shape
 - [x] Catalog cache metadata policy
 - [x] Catalog cache commit-path validator
+- [x] Catalog cache metadata storage helper
 - [x] Provider response normalization contract
 - [x] Guarded Gaia live client with mocked transport tests
 - [x] Guarded IRSA live client with mocked transport tests
@@ -218,7 +220,7 @@ Add real data ingestion behind tested abstractions.
 - [x] Breakthrough Listen local-file metadata client
 - [x] Live client capability summary fields
 - [x] Remaining real provider client implementations
-- [ ] Catalog cache storage implementation
+- [x] Catalog cache storage implementation
 
 ---
 
