@@ -334,6 +334,30 @@ Merge status: already on `main`; no merge needed.
 
 ---
 
+## Plot/Injection Step 15 — Push Main And Confirm Clean Sync
+
+Status: implemented.
+
+Pushed commits:
+
+- `e882ed0 Add plot artifact summary and report links`
+- `e512f7f Add injection recovery summaries`
+
+Remote sync:
+
+```bash
+git push origin main
+```
+
+Result:
+
+- `main` pushed to `origin/main`
+- remote advanced from `e882ed0` to `e512f7f`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Validation And Plot Artifact Expansion
 
 User requested fifteen iterative steps:
