@@ -209,6 +209,18 @@ Use `--fixture-dir` to inspect an alternate tiny fixture directory.
 
 ---
 
+## Summarize Live Clients
+
+Print configured live-client skeleton status without network access:
+
+```bash
+.venv/bin/techno-search live-client-summary
+```
+
+The summary reports provider names, service URLs, implementation status, and whether live opt-in is required.
+
+---
+
 ## Input Candidate JSON Shape
 
 The CLI expects a normalized synthetic candidate packet:

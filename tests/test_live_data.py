@@ -5,6 +5,8 @@ import pytest
 from techno_search.live_data import (
     LIVE_CACHE_DIR_ENV_VAR,
     LIVE_DATA_ENV_VAR,
+    BreakthroughListenAdapter,
+    BreakthroughListenLiveClient,
     GaiaAdapter,
     GaiaLiveClient,
     IrsaAdapter,
@@ -15,7 +17,9 @@ from techno_search.live_data import (
     LiveProviderAdapter,
     LiveProviderCache,
     SimbadAdapter,
+    SimbadLiveClient,
     VizierAdapter,
+    VizierLiveClient,
     configured_live_cache_dir,
     default_live_metadata_fixture_dir,
     fetcher_from_client,
@@ -24,6 +28,21 @@ from techno_search.live_data import (
     provider_adapters,
     require_live_data_enabled,
 )
+
+
+class FixtureMetadataClient:
+    def __init__(self, provider_name: str, fixture_name: str) -> None:
+        self.provider_name = provider_name
+        self.fixture_name = fixture_name
+
+    def fetch_metadata(self, request: LiveDataRequest) -> dict[str, object]:
+        fixture_path = default_live_metadata_fixture_dir() / self.fixture_name
+        fixture = load_live_metadata_fixture(fixture_path)
+        return {
+            "fixture_provider_name": fixture["provider_name"],
+            "fixture_cache_key": fixture["request"]["cache_key"],
+            "request_cache_key": request.cache_key(),
+        }
 
 
 def test_live_data_integrations_are_disabled_by_default(monkeypatch) -> None:
@@ -59,6 +78,61 @@ def test_provider_adapters_build_requests_without_network(monkeypatch) -> None:
         assert request.provenance_record().as_dict()["provider_name"] == adapter.provider_name
         with pytest.raises(LiveDataDisabledError):
             adapter.fetch_metadata(request)
+
+
+def test_breakthrough_listen_live_metadata_fixture_loads_without_network(monkeypatch) -> None:
+    monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
+
+    fixture = load_live_metadata_fixture(
+        default_live_metadata_fixture_dir()
+        / "breakthrough_listen_file_metadata.metadata.json"
+    )
+
+    assert live_data_enabled() is False
+    assert fixture["provider_name"] == "breakthrough_listen"
+    assert fixture["request"]["query_parameters"]["query_type"] == "local_file_metadata"
+    assert fixture["request"]["cache_key"] == "fixture-breakthrough-listen-file-metadata-v1"
+
+
+def test_breakthrough_listen_local_file_request_shape_does_not_read_file(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
+    missing_file = tmp_path / "synthetic_observation.h5"
+
+    request = BreakthroughListenAdapter().build_local_file_metadata_request(missing_file)
+
+    assert request.source_name == "breakthrough_listen"
+    assert request.query == str(missing_file)
+    assert request.parameters == {
+        "file_name": "synthetic_observation.h5",
+        "file_suffix": ".h5",
+        "query_type": "local_file_metadata",
+        "interpretation": "provenance_only",
+    }
+    assert not missing_file.exists()
+    with pytest.raises(LiveDataDisabledError):
+        BreakthroughListenAdapter().fetch_metadata(request)
+
+
+def test_breakthrough_listen_live_client_skeleton_is_disabled_and_unimplemented(
+    monkeypatch,
+) -> None:
+    request = BreakthroughListenAdapter().build_request(
+        "synthetic_observation.h5",
+        purpose="breakthrough-listen-file-metadata",
+        parameters={"query_type": "local_file_metadata"},
+    )
+    client = BreakthroughListenLiveClient()
+
+    monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
+    with pytest.raises(LiveDataDisabledError):
+        client.fetch_metadata(request)
+
+    monkeypatch.setenv(LIVE_DATA_ENV_VAR, "1")
+    with pytest.raises(NotImplementedError):
+        client.fetch_metadata(request)
 
 
 def test_injected_provider_fetcher_is_called_only_when_live_enabled(monkeypatch) -> None:
@@ -160,6 +234,30 @@ def test_provider_client_protocol_can_be_adapted_to_fetcher(monkeypatch) -> None
     assert fetcher_from_client(client)(request)["provider_name"] == "stub"
     assert metadata["provider_name"] == "stub"
     assert metadata["response_metadata"]["field_names"] == ["provider_name", "query"]
+
+
+def test_gaia_fixture_client_normalizes_through_adapter(monkeypatch) -> None:
+    request = GaiaAdapter().build_cone_search_request(
+        ra_deg=123.45,
+        dec_deg=-54.321,
+        radius_arcsec=5.0,
+    )
+    adapter = LiveProviderAdapter.from_client(
+        provider_name="gaia",
+        service_url="https://gea.esac.esa.int/archive/",
+        client=FixtureMetadataClient("gaia", "gaia_cone_search.metadata.json"),
+    )
+
+    monkeypatch.setenv(LIVE_DATA_ENV_VAR, "1")
+    metadata = adapter.fetch_metadata(request)
+
+    assert metadata["provider_name"] == "gaia"
+    assert metadata["request"]["provider_name"] == "gaia"
+    assert metadata["response_metadata"]["field_names"] == [
+        "fixture_cache_key",
+        "fixture_provider_name",
+        "request_cache_key",
+    ]
 
 
 def test_gaia_cone_search_query_shape_is_metadata_only(monkeypatch) -> None:
@@ -273,6 +371,27 @@ def test_irsa_live_client_skeleton_is_disabled_and_unimplemented(monkeypatch) ->
         client.fetch_metadata(request)
 
 
+def test_irsa_fixture_client_normalizes_through_adapter(monkeypatch) -> None:
+    request = IrsaAdapter().build_catalog_cone_request(
+        catalog="allwise_p3as_psd",
+        ra_deg=123.45,
+        dec_deg=-54.321,
+        radius_arcsec=10.0,
+    )
+    adapter = LiveProviderAdapter.from_client(
+        provider_name="irsa",
+        service_url="https://irsa.ipac.caltech.edu/",
+        client=FixtureMetadataClient("irsa", "irsa_catalog_cone.metadata.json"),
+    )
+
+    monkeypatch.setenv(LIVE_DATA_ENV_VAR, "1")
+    metadata = adapter.fetch_metadata(request)
+
+    assert metadata["provider_name"] == "irsa"
+    assert metadata["request"]["provider_name"] == "irsa"
+    assert metadata["response_metadata"]["field_count"] == 3
+
+
 def test_vizier_catalog_query_shape_uses_provenance_only_metadata(monkeypatch) -> None:
     monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
 
@@ -305,6 +424,45 @@ def test_vizier_live_metadata_fixture_loads_without_network(monkeypatch) -> None
     assert "candidate" not in fixture
 
 
+def test_vizier_fixture_client_normalizes_through_adapter(monkeypatch) -> None:
+    request = VizierAdapter().build_catalog_cone_request(
+        catalog="II/328/allwise",
+        ra_deg=123.45,
+        dec_deg=-54.321,
+        radius_arcsec=10.0,
+    )
+    adapter = LiveProviderAdapter.from_client(
+        provider_name="vizier",
+        service_url="https://vizier.cds.unistra.fr/",
+        client=FixtureMetadataClient("vizier", "vizier_catalog_cone.metadata.json"),
+    )
+
+    monkeypatch.setenv(LIVE_DATA_ENV_VAR, "1")
+    metadata = adapter.fetch_metadata(request)
+
+    assert metadata["provider_name"] == "vizier"
+    assert metadata["request"]["query_parameters"]["interpretation"] == "provenance_only"
+    assert metadata["response_metadata"]["field_count"] == 3
+
+
+def test_vizier_live_client_skeleton_is_disabled_and_unimplemented(monkeypatch) -> None:
+    request = VizierAdapter().build_catalog_cone_request(
+        catalog="II/328/allwise",
+        ra_deg=123.45,
+        dec_deg=-54.321,
+        radius_arcsec=10.0,
+    )
+    client = VizierLiveClient()
+
+    monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
+    with pytest.raises(LiveDataDisabledError):
+        client.fetch_metadata(request)
+
+    monkeypatch.setenv(LIVE_DATA_ENV_VAR, "1")
+    with pytest.raises(NotImplementedError):
+        client.fetch_metadata(request)
+
+
 def test_simbad_object_lookup_shape_uses_provenance_only_metadata(monkeypatch) -> None:
     monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
 
@@ -335,6 +493,39 @@ def test_simbad_live_metadata_fixture_loads_without_network(monkeypatch) -> None
     assert fixture["request"]["query_parameters"]["object_name"] == "synthetic-target"
     assert fixture["request"]["query_parameters"]["interpretation"] == "provenance_only"
     assert fixture["request"]["cache_key"] == "fixture-simbad-object-lookup-v1"
+
+
+def test_simbad_fixture_client_normalizes_through_adapter(monkeypatch) -> None:
+    request = SimbadAdapter().build_object_lookup_request(object_name="synthetic-target")
+    adapter = LiveProviderAdapter.from_client(
+        provider_name="simbad",
+        service_url="https://simbad.cds.unistra.fr/",
+        client=FixtureMetadataClient("simbad", "simbad_object_lookup.metadata.json"),
+    )
+
+    monkeypatch.setenv(LIVE_DATA_ENV_VAR, "1")
+    metadata = adapter.fetch_metadata(request)
+
+    assert metadata["provider_name"] == "simbad"
+    assert metadata["request"]["query_parameters"]["interpretation"] == "provenance_only"
+    assert metadata["response_metadata"]["field_names"] == [
+        "fixture_cache_key",
+        "fixture_provider_name",
+        "request_cache_key",
+    ]
+
+
+def test_simbad_live_client_skeleton_is_disabled_and_unimplemented(monkeypatch) -> None:
+    request = SimbadAdapter().build_object_lookup_request(object_name="synthetic-target")
+    client = SimbadLiveClient()
+
+    monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
+    with pytest.raises(LiveDataDisabledError):
+        client.fetch_metadata(request)
+
+    monkeypatch.setenv(LIVE_DATA_ENV_VAR, "1")
+    with pytest.raises(NotImplementedError):
+        client.fetch_metadata(request)
 
 
 @pytest.mark.integration_live

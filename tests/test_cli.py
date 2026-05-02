@@ -279,10 +279,32 @@ def test_cli_live_fixture_summary_outputs_committed_fixture_counts() -> None:
 
     assert exit_code == 0
     assert result["fixture_schema_version"] == "live_metadata_fixture_v1"
-    assert result["fixture_count"] == 4
+    assert result["fixture_count"] == 5
     assert result["by_provider"] == {
+        "breakthrough_listen": 1,
         "gaia": 1,
         "irsa": 1,
         "simbad": 1,
         "vizier": 1,
     }
+
+
+def test_cli_live_client_summary_outputs_disabled_skeleton_status(monkeypatch) -> None:
+    monkeypatch.delenv("TECHNO_SEARCH_ENABLE_LIVE_DATA", raising=False)
+    stdout = StringIO()
+
+    exit_code = main(["live-client-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["live_enabled"] is False
+    assert result["client_count"] == 5
+    assert {client["provider_name"] for client in result["clients"]} == {
+        "breakthrough_listen",
+        "gaia",
+        "irsa",
+        "simbad",
+        "vizier",
+    }
+    assert all(client["implemented"] is False for client in result["clients"])
+    assert all(client["requires_live_opt_in"] is True for client in result["clients"])

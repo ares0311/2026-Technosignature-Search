@@ -2355,3 +2355,225 @@ Validation for this step should include:
 ```
 
 Merge status: already on `main`; no merge needed.
+
+---
+
+## Ten-Step Live Client Completion Expansion
+
+User requested ten iterative steps:
+
+1. Add cached fixture-driven normalization tests for Gaia and IRSA client skeleton paths.
+2. Add cached fixture-driven normalization tests for VizieR and SIMBAD paths.
+3. Add `VizierLiveClient` disabled skeleton behind `TECHNO_SEARCH_ENABLE_LIVE_DATA=1`.
+4. Add `SimbadLiveClient` disabled skeleton behind `TECHNO_SEARCH_ENABLE_LIVE_DATA=1`.
+5. Add `BreakthroughListenLiveClient` disabled skeleton and a tiny metadata fixture.
+6. Add Breakthrough Listen request-shape builder for local file metadata, no file ingestion yet.
+7. Add `techno-search live-client-summary` for configured skeleton/client status.
+8. Add docs for the live-client lifecycle.
+9. Update `PROJECT_STATUS`, `ROADMAP`, and `CLAUDE.md`.
+10. Run full validation, commit, and report branch state.
+
+## Live Client Completion Step 1 — Gaia/IRSA Fixture Normalization Tests
+
+Status: implemented.
+
+Added:
+
+- fixture-backed client stub for adapter normalization tests
+- Gaia fixture-client normalization test
+- IRSA fixture-client normalization test
+- live opt-in scoped only to the tests
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Client Completion Step 2 — VizieR/SIMBAD Fixture Normalization Tests
+
+Status: implemented.
+
+Added:
+
+- VizieR fixture-client normalization test
+- SIMBAD fixture-client normalization test
+- provenance-only query parameter assertions on normalized request metadata
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Client Completion Step 3 — Disabled VizieR Client Skeleton
+
+Status: implemented.
+
+Added:
+
+- `VizierLiveClient`
+- explicit live opt-in guard
+- `NotImplementedError` after opt-in because no real network client exists yet
+- tests for disabled and unimplemented VizieR skeleton behavior
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Client Completion Step 4 — Disabled SIMBAD Client Skeleton
+
+Status: implemented.
+
+Added:
+
+- `SimbadLiveClient`
+- explicit live opt-in guard
+- `NotImplementedError` after opt-in because no real network client exists yet
+- tests for disabled and unimplemented SIMBAD skeleton behavior
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Client Completion Step 5 — Breakthrough Listen Fixture And Skeleton
+
+Status: implemented.
+
+Added:
+
+- `tests/fixtures/live_metadata/breakthrough_listen_file_metadata.metadata.json`
+- `BreakthroughListenLiveClient`
+- fixture loader test for Breakthrough Listen metadata
+- tests for disabled and unimplemented Breakthrough Listen skeleton behavior
+- updated fixture-summary expected count
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Client Completion Step 6 — Breakthrough Listen File Request Shape
+
+Status: implemented.
+
+Added:
+
+- `BreakthroughListenAdapter.build_local_file_metadata_request(...)`
+- provenance-only local file metadata descriptor
+- test proving request construction does not read or require the file
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Client Completion Step 7 — Live Client Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `live_client_summary(...)`
+- `techno-search live-client-summary`
+- client status fields for provider, service URL, implementation state, and live opt-in
+- CLI test proving all configured clients are disabled skeletons
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Client Completion Step 8 — Live Client Lifecycle Docs
+
+Status: implemented.
+
+Updated:
+
+- CLI docs for `live-client-summary`
+- provider interface docs with all disabled skeletons
+- live-client lifecycle: query shape, fixture, skeleton, normalization tests, real client
+- live-data integration docs for the guarded lifecycle
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Client Completion Step 9 — Status And Roadmap Updates
+
+Status: implemented.
+
+Updated:
+
+- `docs/PROJECT_STATUS.md` completed, in-progress, and next-action entries
+- `docs/ROADMAP.md` reporting and live-data milestone status
+- `CLAUDE.md` with step 9 handoff notes
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py tests/test_cli.py tests/test_docs.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Client Completion Step 10 — Validation And Commit
+
+Status: implemented.
+
+Validation passed:
+
+- full pytest with coverage
+- full Ruff check
+- `git diff --check`
+
+Commit planned:
+
+```bash
+git commit -m "Add live client skeleton completion"
+```
+
+Merge status: already on `main`; no merge needed.

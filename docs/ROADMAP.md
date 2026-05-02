@@ -139,6 +139,7 @@ Generate reproducible candidate reports.
 - [x] Provider service URL and cache-key provenance fields
 - [x] Live-provider cache summary command
 - [x] Live-metadata fixture summary command
+- [x] Live-client summary command
 
 ## Done When
 
@@ -202,6 +203,9 @@ Add real data ingestion behind tested abstractions.
 - [x] Cached live metadata fixtures
 - [x] Provider client protocol
 - [x] Disabled Gaia and IRSA live-client skeletons
+- [x] Fixture-driven live-client normalization tests
+- [x] Disabled VizieR, SIMBAD, and Breakthrough Listen live-client skeletons
+- [x] Breakthrough Listen local file metadata request shape
 - [ ] Real provider client implementations
 - [ ] Catalog cache storage policy and implementation
 

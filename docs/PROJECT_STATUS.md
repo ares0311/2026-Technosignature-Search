@@ -78,6 +78,10 @@ The project will support three tracks from day one:
 - [x] Live metadata fixture summary CLI added
 - [x] Live provider client protocol added
 - [x] Disabled Gaia and IRSA live-client skeletons added
+- [x] Fixture-driven live-client normalization tests added
+- [x] Disabled VizieR, SIMBAD, and Breakthrough Listen live-client skeletons added
+- [x] Breakthrough Listen local file metadata request shape added
+- [x] Live client summary CLI added
 - [x] Provenance helper module added
 - [x] Provenance summaries added to report manifests
 - [x] Provenance summary CLI added
@@ -93,6 +97,7 @@ The project will support three tracks from day one:
 - [x] Add non-networked provider query-shape builders
 - [x] Add cached live metadata fixture coverage
 - [x] Add disabled live provider client skeletons
+- [x] Add fixture-driven live-client normalization coverage
 - [ ] Add real live-data provider clients behind explicit integration gates
 
 ---
@@ -101,7 +106,7 @@ The project will support three tracks from day one:
 
 1. Push local commits to GitHub from an approved local environment with the required token scopes.
 2. Add real Gaia/IRSA/VizieR/SIMBAD/Breakthrough Listen clients behind explicit live-data integration gates.
-3. Add cached fixture-driven integration tests for future real-client normalization behavior.
+3. Add catalog cache storage policy and implementation for real-client metadata.
 
 ---
 

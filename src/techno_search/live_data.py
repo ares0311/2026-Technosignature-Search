@@ -88,6 +88,31 @@ def live_metadata_fixture_summary(
     }
 
 
+def live_client_summary() -> dict[str, object]:
+    """Return configured live-client skeleton status without network access."""
+
+    clients = (
+        GaiaLiveClient(),
+        IrsaLiveClient(),
+        VizierLiveClient(),
+        SimbadLiveClient(),
+        BreakthroughListenLiveClient(),
+    )
+    return {
+        "live_enabled": live_data_enabled(),
+        "client_count": len(clients),
+        "clients": [
+            {
+                "provider_name": client.provider_name,
+                "service_url": client.service_url,
+                "implemented": False,
+                "requires_live_opt_in": True,
+            }
+            for client in clients
+        ],
+    }
+
+
 @dataclass(frozen=True)
 class LiveDataRequest:
     """Minimal request descriptor for future live-data adapters."""
@@ -455,6 +480,20 @@ class VizierAdapter(LiveProviderAdapter):
         )
 
 
+class VizierLiveClient:
+    """Disabled VizieR live-client skeleton for future provider integration."""
+
+    provider_name = "vizier"
+    service_url = "https://vizier.cds.unistra.fr/"
+
+    def fetch_metadata(self, request: LiveDataRequest) -> Mapping[str, Any]:
+        """Require live opt-in before future VizieR network implementation."""
+
+        require_live_data_enabled()
+        msg = "VizieR live client is not implemented yet."
+        raise NotImplementedError(msg)
+
+
 class SimbadAdapter(LiveProviderAdapter):
     def __init__(self, fetcher: ProviderFetch | None = None) -> None:
         super().__init__("simbad", "https://simbad.cds.unistra.fr/", fetcher)
@@ -478,9 +517,57 @@ class SimbadAdapter(LiveProviderAdapter):
         )
 
 
+class SimbadLiveClient:
+    """Disabled SIMBAD live-client skeleton for future provider integration."""
+
+    provider_name = "simbad"
+    service_url = "https://simbad.cds.unistra.fr/"
+
+    def fetch_metadata(self, request: LiveDataRequest) -> Mapping[str, Any]:
+        """Require live opt-in before future SIMBAD network implementation."""
+
+        require_live_data_enabled()
+        msg = "SIMBAD live client is not implemented yet."
+        raise NotImplementedError(msg)
+
+
 class BreakthroughListenAdapter(LiveProviderAdapter):
     def __init__(self, fetcher: ProviderFetch | None = None) -> None:
         super().__init__("breakthrough_listen", "https://breakthroughinitiatives.org/", fetcher)
+
+    def build_local_file_metadata_request(
+        self,
+        file_path: Path | str,
+        *,
+        purpose: str = "breakthrough-listen-file-metadata",
+    ) -> LiveDataRequest:
+        """Build a local file metadata descriptor without reading the file."""
+
+        path = Path(file_path)
+        return self.build_request(
+            str(path),
+            purpose=purpose,
+            parameters={
+                "file_name": path.name,
+                "file_suffix": path.suffix,
+                "query_type": "local_file_metadata",
+                "interpretation": "provenance_only",
+            },
+        )
+
+
+class BreakthroughListenLiveClient:
+    """Disabled Breakthrough Listen client skeleton for future provider integration."""
+
+    provider_name = "breakthrough_listen"
+    service_url = "https://breakthroughinitiatives.org/"
+
+    def fetch_metadata(self, request: LiveDataRequest) -> Mapping[str, Any]:
+        """Require live opt-in before future Breakthrough Listen implementation."""
+
+        require_live_data_enabled()
+        msg = "Breakthrough Listen live client is not implemented yet."
+        raise NotImplementedError(msg)
 
 
 def normalize_provider_response(

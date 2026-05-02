@@ -58,8 +58,25 @@ Current disabled skeletons:
 
 - `GaiaLiveClient`
 - `IrsaLiveClient`
+- `VizierLiveClient`
+- `SimbadLiveClient`
+- `BreakthroughListenLiveClient`
 
 These skeletons require `TECHNO_SEARCH_ENABLE_LIVE_DATA=1` and then raise `NotImplementedError` until real provider implementations are added.
+
+Inspect skeleton status without network access:
+
+```bash
+.venv/bin/techno-search live-client-summary
+```
+
+Recommended live-client lifecycle:
+
+1. Add a non-networked query-shape builder.
+2. Add a tiny normalized live-metadata fixture.
+3. Add a disabled client skeleton that requires live opt-in.
+4. Add fixture-driven normalization tests through `LiveProviderAdapter.from_client(...)`.
+5. Only then add a real provider client, still behind explicit live opt-in and cache/provenance handling.
 
 ---
 
@@ -73,6 +90,7 @@ Current non-networked query-shape builders include:
 - IRSA catalog cone search
 - VizieR catalog cone search
 - SIMBAD object lookup
+- Breakthrough Listen local file metadata
 
 The request parameters should preserve catalog names, coordinates, radii, object names, purpose, and any provenance-only interpretation markers needed for downstream audit.
 

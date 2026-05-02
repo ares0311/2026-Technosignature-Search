@@ -14,6 +14,7 @@ from techno_search.calibration import load_calibration_fixtures, summarize_calib
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.live_data import (
     LiveProviderCache,
+    live_client_summary,
     live_data_enabled,
     live_metadata_fixture_summary,
     provider_adapters,
@@ -117,6 +118,10 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             json.dumps(live_metadata_fixture_summary(args.fixture_dir), indent=2, sort_keys=True),
             file=out,
         )
+        return 0
+
+    if args.command == "live-client-summary":
+        print(json.dumps(live_client_summary(), indent=2, sort_keys=True), file=out)
         return 0
 
     parser.error(f"Unknown command: {args.command}")
@@ -447,6 +452,10 @@ def _build_parser() -> argparse.ArgumentParser:
         "--fixture-dir",
         type=Path,
         help="Optional live-metadata fixture directory override.",
+    )
+    subparsers.add_parser(
+        "live-client-summary",
+        help="Print configured live-client skeleton status without network access.",
     )
     return parser
 

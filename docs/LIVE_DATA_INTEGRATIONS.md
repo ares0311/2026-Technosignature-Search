@@ -66,6 +66,24 @@ Live cache contents remain separate local artifacts under `cache/live_providers/
 
 ---
 
+## Live Client Lifecycle
+
+Live clients should advance through guarded stages:
+
+1. request-shape builder with no network access
+2. tiny normalized metadata fixture
+3. disabled client skeleton
+4. fixture-driven normalization tests
+5. real client behind `TECHNO_SEARCH_ENABLE_LIVE_DATA=1`
+
+The current client skeleton status can be inspected without network access:
+
+```bash
+.venv/bin/techno-search live-client-summary
+```
+
+---
+
 ## Scientific Guardrails
 
 - Preserve provenance for every live query and response.

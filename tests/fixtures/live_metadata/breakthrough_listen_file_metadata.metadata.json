@@ -1,0 +1,37 @@
+{
+  "fixture_notes": [
+    "Synthetic normalized metadata fixture only.",
+    "Does not contain Breakthrough Listen data products or candidate interpretation."
+  ],
+  "fixture_schema_version": "live_metadata_fixture_v1",
+  "provider_name": "breakthrough_listen",
+  "request": {
+    "cache_key": "fixture-breakthrough-listen-file-metadata-v1",
+    "code_commit": null,
+    "config_version": "scoring_v0",
+    "generated_at_utc": "2026-05-01T00:00:00+00:00",
+    "input_path": null,
+    "provider_name": "breakthrough_listen",
+    "query_parameters": {
+      "file_name": "synthetic_observation.h5",
+      "file_suffix": ".h5",
+      "interpretation": "provenance_only",
+      "purpose": "breakthrough-listen-file-metadata",
+      "query": "synthetic_observation.h5",
+      "query_type": "local_file_metadata"
+    },
+    "schema_version": "techno_search_packet_v1",
+    "service_url": "https://breakthroughinitiatives.org/",
+    "source_dataset": null,
+    "source_ids": []
+  },
+  "response_metadata": {
+    "field_count": 2,
+    "field_names": [
+      "mock_file_metadata",
+      "provider_status"
+    ],
+    "response_type": "dict"
+  },
+  "service_url": "https://breakthroughinitiatives.org/"
+}
