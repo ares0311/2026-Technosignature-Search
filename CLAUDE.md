@@ -1693,3 +1693,219 @@ Validation for this step should include:
 ```
 
 Merge status: already on `main`; no merge needed.
+
+---
+
+## Ten-Step Mock Provider/Cache Expansion
+
+User requested ten iterative tasks:
+
+1. Push local commits to GitHub.
+2. Add mocked provider implementations with injected fetch functions.
+3. Add tests proving injected fetch functions are only called with live opt-in.
+4. Add provider response normalization into provenance-only metadata records.
+5. Add `techno-search live-provider-summary`.
+6. Add docs for mocked provider implementations and safe test patterns.
+7. Add cache-key generation helper.
+8. Add deterministic cache-key tests.
+9. Update schemas/docs with provider/cache provenance fields.
+10. Update project status, roadmap, and this file.
+
+Each step should update this file and merge to `main` if needed.
+
+---
+
+## Mock Provider/Cache Step 1 — Push Attempt
+
+Status: blocked by environment policy.
+
+Result:
+
+- Attempted `git push origin main`.
+- The environment rejected the push because updating the external GitHub `main` branch is disallowed by tenant policy.
+- No workaround was attempted.
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Mock Provider/Cache Step 2 — Injected Provider Fetchers
+
+Status: implemented.
+
+Added:
+
+- optional injected provider fetch functions
+- guarded provider fetch execution
+- provider-specific constructors that accept injected fetchers
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Mock Provider/Cache Step 3 — Live Opt-In Fetch Tests
+
+Status: implemented.
+
+Added:
+
+- test proving injected fetchers are not called while live data is disabled
+- test proving injected fetchers run only after `TECHNO_SEARCH_ENABLE_LIVE_DATA=1`
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Mock Provider/Cache Step 4 — Provenance-Only Response Normalization
+
+Status: implemented.
+
+Added:
+
+- `normalize_provider_response(...)`
+- response metadata fields only
+- no candidate interpretation in live provider response normalization
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Mock Provider/Cache Step 5 — Live Provider Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search live-provider-summary`
+- provider names
+- service URLs
+- live-enabled status
+- CLI test coverage
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Mock Provider/Cache Step 6 — Mock Provider Docs
+
+Status: implemented.
+
+Updated:
+
+- `docs/LIVE_PROVIDER_INTERFACES.md`
+- safe injected-fetch test pattern
+- provenance-only response normalization guidance
+- CLI usage docs for live provider summary
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Mock Provider/Cache Step 7 — Cache-Key Helper
+
+Status: implemented.
+
+Added:
+
+- deterministic `build_cache_key(...)`
+- request-level `cache_key()`
+- cache key in live-data request provenance
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_provenance.py tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Mock Provider/Cache Step 8 — Cache-Key Tests
+
+Status: implemented.
+
+Added:
+
+- deterministic cache-key test for sorted query parameters
+- cache-key assertion in live provider fetch metadata test
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_provenance.py tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Mock Provider/Cache Step 9 — Provider/Cache Provenance Schema Docs
+
+Status: implemented.
+
+Updated:
+
+- report manifest schema provenance summary fields
+- schema tests for service URL and cache key fields
+- pipeline spec provenance summary text
+- live provider interface docs
+- release checklist
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_json_schemas.py tests/test_docs.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Mock Provider/Cache Step 10 — Status And Roadmap Updates
+
+Status: implemented.
+
+Updated:
+
+- `docs/PROJECT_STATUS.md` completed and next-action entries
+- `docs/ROADMAP.md` reporting and live-data milestone status
+- `CLAUDE.md` with final step handoff notes
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py tests/test_provenance.py tests/test_cli.py tests/test_json_schemas.py tests/test_examples.py tests/test_reporting.py
+```
+
+Merge status: already on `main`; no merge needed.

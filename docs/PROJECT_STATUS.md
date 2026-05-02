@@ -67,6 +67,10 @@ The project will support three tracks from day one:
 - [x] Schema versioning policy added
 - [x] Explicit schema version fields added to generated artifacts
 - [x] Live provider adapter scaffolds added
+- [x] Mocked live provider implementations added with injected fetch functions
+- [x] Live provider response normalization added as provenance-only metadata
+- [x] Deterministic live-provider cache keys added
+- [x] Live provider summary CLI added
 - [x] Provenance helper module added
 - [x] Provenance summaries added to report manifests
 - [x] Provenance summary CLI added
@@ -77,14 +81,15 @@ The project will support three tracks from day one:
 
 - [x] Add calibration fixture documentation and expansion plan
 - [x] Add CLI usage documentation
-- [ ] Add live-data integration interfaces behind mocks
+- [x] Add live-data integration interfaces behind mocks
+- [ ] Add real live-data provider clients behind explicit integration gates
 
 ---
 
 ## Next 3 Actions
 
-1. Push the latest validation/schema-version documentation batch to GitHub from an approved local environment.
-2. Add provider-specific live-data adapter implementations behind mocks.
+1. Push local commits to GitHub from an approved local environment with the required token scopes.
+2. Add real Gaia/IRSA/VizieR/SIMBAD/Breakthrough Listen clients behind explicit live-data integration gates.
 3. Add CI workflow only after the publishing token has GitHub `workflow` scope.
 
 ---

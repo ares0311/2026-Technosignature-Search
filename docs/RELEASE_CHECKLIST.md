@@ -34,6 +34,7 @@ Before release, verify:
 - generated packets include `config_version`
 - generated packets include `schema_version`
 - report manifests include `provenance_summary`
+- live-provider request provenance includes service URL and cache key when applicable
 - generated packets include the required disclaimer
 - generated packets expose negative evidence and blocking issues
 

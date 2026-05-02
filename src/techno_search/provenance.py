@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import json
 import subprocess
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
@@ -23,7 +25,9 @@ class ProvenanceRecord:
     code_commit: str | None
     input_path: str | None = None
     provider_name: str | None = None
+    service_url: str | None = None
     query_parameters: dict[str, str] | None = None
+    cache_key: str | None = None
     source_ids: tuple[str, ...] = ()
     source_dataset: str | None = None
 
@@ -35,7 +39,9 @@ class ProvenanceRecord:
             "code_commit": self.code_commit,
             "input_path": self.input_path,
             "provider_name": self.provider_name,
+            "service_url": self.service_url,
             "query_parameters": self.query_parameters or {},
+            "cache_key": self.cache_key,
             "source_ids": list(self.source_ids),
             "source_dataset": self.source_dataset,
         }
@@ -45,7 +51,9 @@ def build_provenance_record(
     *,
     input_path: Path | str | None = None,
     provider_name: str | None = None,
+    service_url: str | None = None,
     query_parameters: Mapping[str, str] | None = None,
+    cache_key: str | None = None,
     source_ids: Sequence[str] = (),
     source_dataset: str | None = None,
     config_version: str = DEFAULT_SCORING_CONFIG_VERSION,
@@ -60,12 +68,37 @@ def build_provenance_record(
         code_commit=git_commit(),
         input_path=None if input_path is None else str(input_path),
         provider_name=provider_name,
+        service_url=service_url,
         query_parameters=(
             None if query_parameters is None else dict(sorted(query_parameters.items()))
         ),
+        cache_key=cache_key,
         source_ids=tuple(source_ids),
         source_dataset=source_dataset,
     )
+
+
+def build_cache_key(
+    *,
+    provider_name: str,
+    query: str,
+    purpose: str,
+    parameters: Mapping[str, str] | None = None,
+    config_version: str = DEFAULT_SCORING_CONFIG_VERSION,
+    schema_version: str = DEFAULT_SCHEMA_VERSION,
+) -> str:
+    """Build a deterministic cache key for live-provider request metadata."""
+
+    payload = {
+        "provider_name": provider_name,
+        "query": query,
+        "purpose": purpose,
+        "parameters": dict(sorted((parameters or {}).items())),
+        "config_version": config_version,
+        "schema_version": schema_version,
+    }
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return sha256(encoded).hexdigest()
 
 
 def candidate_provenance_record(

@@ -12,6 +12,7 @@ from typing import TextIO
 
 from techno_search.calibration import load_calibration_fixtures, summarize_calibration_fixtures
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
+from techno_search.live_data import live_data_enabled, provider_adapters
 from techno_search.reporting import (
     candidate_packet_json,
     write_candidate_reports,
@@ -93,6 +94,10 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             json.dumps(provenance_summary(args.report_dir), indent=2, sort_keys=True),
             file=out,
         )
+        return 0
+
+    if args.command == "live-provider-summary":
+        print(json.dumps(live_provider_summary(), indent=2, sort_keys=True), file=out)
         return 0
 
     parser.error(f"Unknown command: {args.command}")
@@ -290,6 +295,23 @@ def provenance_summary(report_dir: Path | str) -> dict[str, object]:
     }
 
 
+def live_provider_summary() -> dict[str, object]:
+    """Return configured live-provider adapter metadata without network access."""
+
+    adapters = provider_adapters()
+    return {
+        "live_enabled": live_data_enabled(),
+        "provider_count": len(adapters),
+        "providers": [
+            {
+                "provider_name": adapter.provider_name,
+                "service_url": adapter.service_url,
+            }
+            for adapter in adapters
+        ],
+    }
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="techno-search",
@@ -377,6 +399,10 @@ def _build_parser() -> argparse.ArgumentParser:
         "report_dir",
         type=Path,
         help="Directory containing per-candidate report manifests.",
+    )
+    subparsers.add_parser(
+        "live-provider-summary",
+        help="Print configured live-provider adapter names, URLs, and live-enabled status.",
     )
     return parser
 

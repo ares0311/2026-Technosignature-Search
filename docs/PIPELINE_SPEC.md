@@ -237,7 +237,7 @@ Per-candidate report manifests should follow:
 schemas/report_manifest.schema.json
 ```
 
-Report manifests include a `provenance_summary` object with schema/config versions, source IDs, source dataset, provider name when applicable, query parameters when applicable, generated timestamp, and code commit when available.
+Report manifests include a `provenance_summary` object with schema/config versions, source IDs, source dataset, provider name and service URL when applicable, query parameters when applicable, cache key when applicable, generated timestamp, and code commit when available.
 
 Batch report manifests should follow:
 

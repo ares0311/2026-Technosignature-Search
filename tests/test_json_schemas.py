@@ -41,9 +41,13 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     assert "schema_version" in manifest_schema["required"]
     assert "schema_version" in batch_schema["required"]
     assert "provenance_summary" in manifest_schema["required"]
+    assert "service_url" in manifest_schema["properties"]["provenance_summary"]["required"]
+    assert "cache_key" in manifest_schema["properties"]["provenance_summary"]["required"]
     assert packet["schema_version"] == "techno_search_packet_v1"
     assert manifest["schema_version"] == "techno_search_packet_v1"
     assert manifest["provenance_summary"]["source_dataset"] == "synthetic-example"
+    assert "service_url" in manifest["provenance_summary"]
+    assert "cache_key" in manifest["provenance_summary"]
     assert batch["schema_version"] == "techno_search_packet_v1"
     assert packet["config_version"] == "scoring_v0"
     assert batch["config_version"] == "scoring_v0"

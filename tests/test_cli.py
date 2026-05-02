@@ -233,3 +233,22 @@ def test_cli_provenance_summary_outputs_batch_report_counts() -> None:
     assert result["manifest_count"] == 3
     assert result["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 1}
     assert result["by_source_dataset"] == {"synthetic-example": 3}
+
+
+def test_cli_live_provider_summary_lists_default_off_providers(monkeypatch) -> None:
+    monkeypatch.delenv("TECHNO_SEARCH_ENABLE_LIVE_DATA", raising=False)
+    stdout = StringIO()
+
+    exit_code = main(["live-provider-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["live_enabled"] is False
+    assert result["provider_count"] == 5
+    assert {provider["provider_name"] for provider in result["providers"]} == {
+        "breakthrough_listen",
+        "gaia",
+        "irsa",
+        "simbad",
+        "vizier",
+    }

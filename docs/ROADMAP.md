@@ -136,6 +136,7 @@ Generate reproducible candidate reports.
 - [x] Example regeneration CLI
 - [x] Schema versioning policy
 - [x] Provenance summaries in report manifests
+- [x] Provider service URL and cache-key provenance fields
 
 ## Done When
 
@@ -186,11 +187,15 @@ Add real data ingestion behind tested abstractions.
 - [ ] Breakthrough Listen style file ingestion
 - [ ] Gaia/IRSA/VizieR query wrappers
 - [ ] Catalog caching
-- [ ] Provenance tracking
+- [x] Provenance tracking scaffold
 - [x] Live integration tests marked separately
 - [x] Opt-in live-data scaffold
 - [x] Provider adapter interfaces behind opt-in guard
-- [ ] Provider adapters behind mocks
+- [x] Provider adapters behind mocks
+- [x] Deterministic provider request cache keys
+- [x] Live provider summary CLI
+- [ ] Real provider client implementations
+- [ ] Local cache storage policy and implementation
 
 ---
 

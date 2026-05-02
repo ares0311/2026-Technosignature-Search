@@ -32,7 +32,9 @@
         "config_version",
         "generated_at_utc",
         "code_commit",
+        "service_url",
         "query_parameters",
+        "cache_key",
         "source_ids"
       ],
       "properties": {
@@ -42,7 +44,9 @@
         "code_commit": { "type": ["string", "null"] },
         "input_path": { "type": ["string", "null"] },
         "provider_name": { "type": ["string", "null"] },
+        "service_url": { "type": ["string", "null"] },
         "query_parameters": { "type": "object" },
+        "cache_key": { "type": ["string", "null"] },
         "source_ids": {
           "type": "array",
           "items": { "type": "string" }

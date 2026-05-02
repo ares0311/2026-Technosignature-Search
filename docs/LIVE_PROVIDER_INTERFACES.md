@@ -28,6 +28,21 @@ Each adapter should:
 
 ---
 
+## Mocked Provider Implementations
+
+Adapters may accept injected fetch functions for tests and future provider clients.
+
+Safe test pattern:
+
+- build a request with `adapter.build_request(...)`
+- assert request provenance and cache key fields locally
+- leave `TECHNO_SEARCH_ENABLE_LIVE_DATA` unset and assert fetches are rejected
+- set `TECHNO_SEARCH_ENABLE_LIVE_DATA=1` only in explicit tests
+- use injected fetch functions that return small metadata dictionaries
+- normalize responses as provenance-only metadata, not candidate interpretation
+
+---
+
 ## Provenance Fields
 
 Provider-backed requests should record:
@@ -36,6 +51,7 @@ Provider-backed requests should record:
 - service URL
 - query string
 - query parameters
+- deterministic cache key
 - request purpose
 - generated UTC timestamp
 - schema version

@@ -175,6 +175,16 @@ Summarize per-candidate report manifests in a generated report directory:
 
 ---
 
+## Summarize Live Providers
+
+Print configured provider adapter names, service URLs, and live-enabled status without network access:
+
+```bash
+.venv/bin/techno-search live-provider-summary
+```
+
+---
+
 ## Input Candidate JSON Shape
 
 The CLI expects a normalized synthetic candidate packet:
