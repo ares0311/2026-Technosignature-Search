@@ -25,6 +25,31 @@
     "config_version": { "type": "string", "minLength": 1 },
     "code_commit": { "type": ["string", "null"] },
     "generated_at_utc": { "type": "string", "minLength": 1 },
+    "plot_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "kind",
+          "track",
+          "media_type",
+          "description",
+          "synthetic",
+          "disclaimer"
+        ],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "kind": { "type": "string", "minLength": 1 },
+          "track": { "enum": ["radio", "infrared", "anomaly"] },
+          "media_type": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "synthetic": { "type": "boolean" },
+          "disclaimer": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": true
+      }
+    },
     "provenance_summary": {
       "type": "object",
       "required": [

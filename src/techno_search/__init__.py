@@ -4,6 +4,11 @@ from techno_search.calibration import load_calibration_fixtures
 from techno_search.config import TrackConfig, load_scoring_config, load_track_config
 from techno_search.live_data import live_data_enabled, require_live_data_enabled
 from techno_search.pathway import classify_pathway
+from techno_search.plotting import (
+    PLOT_ARTIFACT_DISCLAIMER,
+    PlotArtifact,
+    write_synthetic_plot_artifacts,
+)
 from techno_search.reporting import (
     REQUIRED_DISCLAIMER,
     ReportPaths,
@@ -20,6 +25,8 @@ from techno_search.scoring import score_candidate
 __all__ = [
     "Candidate",
     "Pathway",
+    "PLOT_ARTIFACT_DISCLAIMER",
+    "PlotArtifact",
     "REQUIRED_DISCLAIMER",
     "ReportPaths",
     "ScoredCandidate",
@@ -38,4 +45,5 @@ __all__ = [
     "require_live_data_enabled",
     "score_candidate",
     "write_candidate_reports",
+    "write_synthetic_plot_artifacts",
 ]

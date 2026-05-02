@@ -55,6 +55,10 @@ The v0 scorer estimates a false-positive probability of 0.009. The packet record
 
 - `diagnostic_placeholder`: waterfall_not_generated_v0
 
+## Plot Artifact Note
+
+Synthetic illustrative diagnostic for review context only; not evidence of a confirmed technosignature.
+
 ## Source IDs
 
 - example-radio-hit-table

@@ -146,6 +146,196 @@ Merge status: already on `main`; no merge needed.
 
 ---
 
+## Validation/Plot Step 6 — Lightweight Plot Artifact Interface
+
+Status: implemented.
+
+Added:
+
+- `techno_search.plotting.PlotArtifact`
+- dependency-free SVG writing via `write_synthetic_plot_artifacts(...)`
+- manifest-safe plot artifact entries with media type, kind, track, synthetic flag, and disclaimer
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_plotting.py tests/test_reporting.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Plot Step 7 — Radio Waterfall Placeholder
+
+Status: implemented.
+
+Added:
+
+- synthetic radio waterfall-style SVG generation
+- SNR and drift-rate proxy annotations
+- conservative SVG description/disclaimer text
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_plotting.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Plot Step 8 — Infrared SED Placeholder
+
+Status: implemented.
+
+Added:
+
+- synthetic infrared SED-style SVG generation
+- IR excess and confusion proxy annotations
+- dependency-free rendering from candidate feature values
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_plotting.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Plot Step 9 — Anomaly Crossmatch Placeholder
+
+Status: implemented.
+
+Added:
+
+- synthetic archival crossmatch-style SVG generation
+- crossmatch-confidence and artifact proxy annotations
+- conservative generated diagnostic text
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_plotting.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Plot Step 10 — Plot References In Manifests
+
+Status: implemented.
+
+Added:
+
+- report manifest `plot_artifacts` entries
+- batch manifest `plot_artifact_paths`
+- generated plot paths in `ReportPaths`
+- CLI support for default plot generation and `--no-plot-artifacts`
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_reporting.py tests/test_cli.py tests/test_examples.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Plot Step 11 — Optional Plot Tests
+
+Status: implemented.
+
+Added tests proving:
+
+- report writers can skip plot artifacts
+- manifests can contain an empty `plot_artifacts` list
+- report manifest validation accepts missing optional plot artifact fields
+- CLI `--no-plot-artifacts` suppresses SVG generation
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_reporting.py tests/test_validation.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Plot Step 12 — Plot Artifact Docs
+
+Status: implemented.
+
+Updated:
+
+- `docs/CLI_USAGE.md` for generated SVG artifacts and `--no-plot-artifacts`
+- `docs/VALIDATION.md` for optional plot artifact validation behavior
+- `schemas/report_manifest.schema.json` and `schemas/batch_manifest.schema.json` for plot artifact metadata
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py tests/test_json_schemas.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Plot Step 13 — Conservative Plot Language
+
+Status: implemented.
+
+Added:
+
+- shared plot artifact disclaimer
+- SVG title/description disclaimers
+- Markdown report plot artifact note
+- docs language describing plot artifacts as optional review context
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_reporting.py tests/test_plotting.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Plot Step 14 — Full Validation And Commit
+
+Status: implemented.
+
+Validation passed:
+
+- `.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing`
+- `.venv/bin/ruff check .`
+- `.venv/bin/mypy src`
+- `git diff --check`
+
+Result:
+
+- 138 tests passed
+- 5 tests skipped
+- total coverage: 92%
+
+Commit planned:
+
+```bash
+git commit -m "Add synthetic plot artifacts to reports"
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Catalog Cache And Normalization Expansion
 
 User requested fifteen iterative steps:

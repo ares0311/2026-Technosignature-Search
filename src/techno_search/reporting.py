@@ -10,6 +10,11 @@ from pathlib import Path
 from typing import Any
 
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
+from techno_search.plotting import (
+    PLOT_ARTIFACT_DISCLAIMER,
+    PlotArtifact,
+    write_synthetic_plot_artifacts,
+)
 from techno_search.provenance import candidate_provenance_record, git_commit
 from techno_search.schemas import ScoredCandidate
 
@@ -18,6 +23,8 @@ REQUIRED_DISCLAIMER = (
     "pipeline. It is not evidence of a confirmed technosignature. Further review and "
     "independent validation are required."
 )
+
+
 @dataclass(frozen=True)
 class ReportPaths:
     """Paths written for a candidate review packet."""
@@ -25,6 +32,7 @@ class ReportPaths:
     markdown_path: Path
     json_path: Path
     manifest_path: Path
+    plot_artifact_paths: tuple[Path, ...] = ()
 
 
 def candidate_packet(scored: ScoredCandidate) -> dict[str, Any]:
@@ -49,6 +57,7 @@ def write_candidate_reports(
     output_dir: Path | str,
     *,
     filename_prefix: str | None = None,
+    include_plot_artifacts: bool = True,
 ) -> ReportPaths:
     """Write Markdown and JSON review packets to ``output_dir``.
 
@@ -63,11 +72,22 @@ def write_candidate_reports(
     markdown_path = destination / f"{stem}.md"
     json_path = destination / f"{stem}.json"
     manifest_path = destination / f"{stem}.manifest.json"
+    plot_artifacts = (
+        write_synthetic_plot_artifacts(scored, destination, filename_prefix=stem)
+        if include_plot_artifacts
+        else ()
+    )
 
     markdown_path.write_text(candidate_markdown_report(scored), encoding="utf-8")
     json_path.write_text(candidate_packet_json(scored) + "\n", encoding="utf-8")
     manifest_path.write_text(
-        report_manifest_json(scored, markdown_path=markdown_path, json_path=json_path) + "\n",
+        report_manifest_json(
+            scored,
+            markdown_path=markdown_path,
+            json_path=json_path,
+            plot_artifacts=plot_artifacts,
+        )
+        + "\n",
         encoding="utf-8",
     )
 
@@ -75,6 +95,7 @@ def write_candidate_reports(
         markdown_path=markdown_path,
         json_path=json_path,
         manifest_path=manifest_path,
+        plot_artifact_paths=tuple(artifact.path for artifact in plot_artifacts),
     )
 
 
@@ -83,6 +104,7 @@ def report_manifest(
     *,
     markdown_path: Path,
     json_path: Path,
+    plot_artifacts: tuple[PlotArtifact, ...] = (),
 ) -> dict[str, Any]:
     """Return a persistence manifest for written candidate reports."""
 
@@ -97,6 +119,7 @@ def report_manifest(
         "code_commit": git_commit(),
         "generated_at_utc": datetime.now(UTC).isoformat(),
         "provenance_summary": candidate_provenance_record(scored.candidate).as_dict(),
+        "plot_artifacts": [artifact.as_manifest_entry() for artifact in plot_artifacts],
     }
 
 
@@ -105,12 +128,18 @@ def report_manifest_json(
     *,
     markdown_path: Path,
     json_path: Path,
+    plot_artifacts: tuple[PlotArtifact, ...] = (),
     indent: int = 2,
 ) -> str:
     """Serialize a report persistence manifest."""
 
     return json.dumps(
-        report_manifest(scored, markdown_path=markdown_path, json_path=json_path),
+        report_manifest(
+            scored,
+            markdown_path=markdown_path,
+            json_path=json_path,
+            plot_artifacts=plot_artifacts,
+        ),
         indent=indent,
         sort_keys=True,
     )
@@ -168,6 +197,10 @@ def candidate_markdown_report(scored: ScoredCandidate) -> str:
             "## Diagnostics",
             "",
             *_format_mapping(_diagnostic_fields(packet["features"])),
+            "",
+            "## Plot Artifact Note",
+            "",
+            PLOT_ARTIFACT_DISCLAIMER,
             "",
             "## Source IDs",
             "",

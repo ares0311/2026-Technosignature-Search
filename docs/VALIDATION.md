@@ -102,12 +102,15 @@ Regenerate committed example artifacts:
 
 Regenerated examples should keep stable fields identical unless there is an intentional scoring, schema, or reporting change.
 
+Report plot artifacts are optional review context. Current generated examples include dependency-free synthetic SVG diagnostics for radio, infrared, and anomaly tracks, but validators should continue to accept manifests where `plot_artifacts` is absent or empty.
+
 Examples should be regenerated when:
 
 - `schema_version` changes
 - `config_version` changes
 - report packet fields change
 - manifest fields change
+- plot artifact manifest fields change
 - example candidate inputs change
 
 Stable score, evidence, and pathway changes should be reviewed against `tests/fixtures/score_regressions.json`.

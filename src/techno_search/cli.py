@@ -51,16 +51,28 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         candidate = load_candidate_json(args.input)
         scored = score_candidate(candidate)
         if args.output_dir is not None:
-            paths = write_candidate_reports(scored, args.output_dir, filename_prefix=args.prefix)
+            paths = write_candidate_reports(
+                scored,
+                args.output_dir,
+                filename_prefix=args.prefix,
+                include_plot_artifacts=not args.no_plot_artifacts,
+            )
             print(str(paths.markdown_path), file=out)
             print(str(paths.json_path), file=out)
             print(str(paths.manifest_path), file=out)
+            for plot_path in paths.plot_artifact_paths:
+                print(str(plot_path), file=out)
         else:
             print(candidate_packet_json(scored), file=out)
         return 0
 
     if args.command == "score-batch":
-        manifest_path = score_batch(args.input_dir, args.output_dir, prefix=args.prefix)
+        manifest_path = score_batch(
+            args.input_dir,
+            args.output_dir,
+            prefix=args.prefix,
+            include_plot_artifacts=not args.no_plot_artifacts,
+        )
         print(str(manifest_path), file=out)
         return 0
 
@@ -166,19 +178,30 @@ def load_candidate_json(path: Path | str) -> Candidate:
     return candidate_from_mapping(data)
 
 
-def score_batch(input_dir: Path | str, output_dir: Path | str, *, prefix: str = "") -> Path:
+def score_batch(
+    input_dir: Path | str,
+    output_dir: Path | str,
+    *,
+    prefix: str = "",
+    include_plot_artifacts: bool = True,
+) -> Path:
     """Score all JSON candidate packets in a directory and write an aggregate manifest."""
 
     source_dir = Path(input_dir)
     destination = Path(output_dir)
     destination.mkdir(parents=True, exist_ok=True)
 
-    entries: list[dict[str, str]] = []
+    entries: list[dict[str, object]] = []
     for candidate_path in sorted(source_dir.glob("*.json")):
         candidate = load_candidate_json(candidate_path)
         scored = score_candidate(candidate)
         report_prefix = f"{prefix}{candidate.candidate_id}" if prefix else candidate.candidate_id
-        paths = write_candidate_reports(scored, destination, filename_prefix=report_prefix)
+        paths = write_candidate_reports(
+            scored,
+            destination,
+            filename_prefix=report_prefix,
+            include_plot_artifacts=include_plot_artifacts,
+        )
         entries.append(
             {
                 "candidate_id": candidate.candidate_id,
@@ -191,6 +214,7 @@ def score_batch(input_dir: Path | str, output_dir: Path | str, *, prefix: str = 
                 "markdown_path": str(paths.markdown_path),
                 "json_path": str(paths.json_path),
                 "manifest_path": str(paths.manifest_path),
+                "plot_artifact_paths": [str(path) for path in paths.plot_artifact_paths],
             }
         )
 
@@ -276,6 +300,7 @@ def regenerate_examples() -> dict[str, object]:
         report_paths.extend(
             [str(paths.markdown_path), str(paths.json_path), str(paths.manifest_path)]
         )
+        report_paths.extend(str(path) for path in paths.plot_artifact_paths)
 
     batch_manifest_path = score_batch(candidate_dir, batch_reports_dir)
     return {
@@ -489,6 +514,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "--prefix",
         help="Optional safe filename prefix for written reports.",
     )
+    score_parser.add_argument(
+        "--no-plot-artifacts",
+        action="store_true",
+        help="Skip dependency-free synthetic SVG diagnostic artifacts.",
+    )
     batch_parser = subparsers.add_parser(
         "score-batch",
         help="Score all normalized synthetic candidate JSON files in a directory.",
@@ -499,6 +529,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "--prefix",
         default="",
         help="Optional filename prefix prepended to each candidate ID.",
+    )
+    batch_parser.add_argument(
+        "--no-plot-artifacts",
+        action="store_true",
+        help="Skip dependency-free synthetic SVG diagnostic artifacts.",
     )
     calibration_parser = subparsers.add_parser(
         "calibration-summary",

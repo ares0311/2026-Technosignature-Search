@@ -25,6 +25,7 @@ PER_CANDIDATE_MANIFEST_FIELDS = {
     "code_commit",
     "generated_at_utc",
     "provenance_summary",
+    "plot_artifacts",
 }
 BATCH_MANIFEST_FIELDS = {
     "generated_at_utc",
@@ -44,6 +45,7 @@ BATCH_REPORT_FIELDS = {
     "markdown_path",
     "json_path",
     "manifest_path",
+    "plot_artifact_paths",
 }
 
 
@@ -64,6 +66,8 @@ def test_example_candidate_reports_exist_and_are_conservative() -> None:
         assert manifest["candidate_id"] == packet["candidate_id"]
         assert manifest["schema_version"] == "techno_search_packet_v1"
         assert manifest["provenance_summary"]["source_dataset"] == "synthetic-example"
+        assert len(manifest["plot_artifacts"]) == 1
+        assert Path(manifest["plot_artifacts"][0]["path"]).exists()
         assert packet["candidate_id"].startswith("example-")
         assert packet["positive_evidence"]
         assert packet["negative_evidence"] is not None
@@ -94,6 +98,8 @@ def test_batch_example_manifest_covers_all_candidates() -> None:
         assert markdown_path.exists()
         assert json_path.exists()
         assert manifest_path.exists()
+        for plot_path in report["plot_artifact_paths"]:
+            assert Path(plot_path).exists()
         assert REQUIRED_DISCLAIMER in markdown_path.read_text(encoding="utf-8")
 
         packet = json.loads(json_path.read_text(encoding="utf-8"))
@@ -103,6 +109,7 @@ def test_batch_example_manifest_covers_all_candidates() -> None:
         assert packet["schema_version"] == "techno_search_packet_v1"
         assert per_candidate_manifest["candidate_id"] == candidate_id
         assert per_candidate_manifest["schema_version"] == "techno_search_packet_v1"
+        assert len(per_candidate_manifest["plot_artifacts"]) == 1
         assert per_candidate_manifest["provenance_summary"]["source_dataset"] == (
             "synthetic-example"
         )

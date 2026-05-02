@@ -56,7 +56,34 @@ def test_cli_writes_reports(tmp_path) -> None:
     assert (output_dir / "cli-radio.md").exists()
     assert (output_dir / "cli-radio.json").exists()
     assert (output_dir / "cli-radio.manifest.json").exists()
+    assert (output_dir / "cli-radio-radio-waterfall.svg").exists()
     assert "cli-radio.md" in stdout.getvalue()
+    assert "cli-radio-radio-waterfall.svg" in stdout.getvalue()
+
+
+def test_cli_can_skip_report_plot_artifacts(tmp_path) -> None:
+    input_path = tmp_path / "candidate.json"
+    output_dir = tmp_path / "reports"
+    input_path.write_text(json.dumps(_candidate_json()), encoding="utf-8")
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "score",
+            str(input_path),
+            "--output-dir",
+            str(output_dir),
+            "--prefix",
+            "cli-radio",
+            "--no-plot-artifacts",
+        ],
+        stdout=stdout,
+    )
+    manifest = json.loads((output_dir / "cli-radio.manifest.json").read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert manifest["plot_artifacts"] == []
+    assert not (output_dir / "cli-radio-radio-waterfall.svg").exists()
 
 
 def test_cli_scores_batch_directory(tmp_path) -> None:
@@ -84,6 +111,7 @@ def test_cli_scores_batch_directory(tmp_path) -> None:
     assert (output_dir / "batch-cli-radio.md").exists()
     assert (output_dir / "batch-cli-radio-b.md").exists()
     assert len(manifest["reports"]) == 2
+    assert all(report["plot_artifact_paths"] for report in manifest["reports"])
 
 
 def test_score_batch_regenerates_expected_example_candidate_set(tmp_path) -> None:

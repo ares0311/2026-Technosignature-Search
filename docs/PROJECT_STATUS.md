@@ -43,6 +43,7 @@ The project will support three tracks from day one:
 - [x] Synthetic unit tests added for multi-modal scoring
 - [x] Candidate Markdown and JSON reporting implemented
 - [x] Candidate report file writers implemented
+- [x] Dependency-free synthetic report plot artifacts added
 - [x] Track-specific v0 config files added
 - [x] Synthetic radio prototype added
 - [x] Synthetic radio injection helpers added
@@ -102,6 +103,7 @@ The project will support three tracks from day one:
 - [x] Provenance summaries added to report manifests
 - [x] Provenance summary CLI added
 - [x] Validation summary CLI added
+- [x] Optional plot artifact references added to report manifests
 
 ---
 
@@ -126,9 +128,9 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Add dependency-free plot artifact interfaces for candidate review packets.
-2. Generate synthetic radio, infrared, and anomaly plot placeholders for reports.
-3. Wire optional plot artifact references into report manifests and validation docs.
+1. Add report plot artifact review ergonomics for human triage.
+2. Add injection-recovery summary fixtures for synthetic tracks.
+3. Begin reliability-curve scaffolding using synthetic calibration fixtures.
 
 ---
 

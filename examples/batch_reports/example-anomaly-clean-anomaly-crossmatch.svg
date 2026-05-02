@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" role="img" aria-labelledby="title desc">
+  <title id="title">Synthetic Archival Crossmatch Diagnostic</title>
+  <desc id="desc">Synthetic illustrative diagnostic for review context only; not evidence of a confirmed technosignature.</desc>
+  <style>
+    .title { font: 700 17px sans-serif; fill: #0f172a; }
+    .small { font: 12px sans-serif; fill: #334155; }
+    .note { font: 11px sans-serif; fill: #475569; }
+  </style>
+  <rect x="0" y="0" width="400" height="300" fill="#f8fafc"/>
+  <text x="24" y="28" class="title">Synthetic Archival Crossmatch Diagnostic</text>
+
+  <circle cx="150" cy="132" r="42" fill="none" stroke="#64748b" stroke-width="3"/>
+  <circle cx="159.0" cy="129.0" r="28" fill="none" stroke="#14b8a6" stroke-width="4"/>
+  <line x1="150" y1="132" x2="159.0" y2="129.0" stroke="#f97316" stroke-dasharray="5 5" stroke-width="3"/>
+  <text x="72" y="222" class="small">Historical source</text>
+  <text x="220" y="222" class="small">Modern match</text>
+  <text x="58" y="258" class="small">Crossmatch confidence: 0.90</text>
+  <text x="250" y="258" class="small">Artifact proxy: 0.02</text>
+
+  <text x="24" y="284" class="note">Synthetic illustrative diagnostic for review context only; not evidence of a confirmed technosignature.</text>
+</svg>

@@ -31,7 +31,8 @@
           "input_path",
           "markdown_path",
           "json_path",
-          "manifest_path"
+          "manifest_path",
+          "plot_artifact_paths"
         ],
         "properties": {
           "candidate_id": { "type": "string", "minLength": 1 },
@@ -41,7 +42,11 @@
           "input_path": { "type": "string", "minLength": 1 },
           "markdown_path": { "type": "string", "minLength": 1 },
           "json_path": { "type": "string", "minLength": 1 },
-          "manifest_path": { "type": "string", "minLength": 1 }
+          "manifest_path": { "type": "string", "minLength": 1 },
+          "plot_artifact_paths": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          }
         },
         "additionalProperties": true
       }

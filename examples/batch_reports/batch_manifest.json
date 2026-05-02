@@ -1,7 +1,7 @@
 {
   "candidate_count": 3,
   "config_version": "scoring_v0",
-  "generated_at_utc": "2026-05-01T22:37:21.726868+00:00",
+  "generated_at_utc": "2026-05-02T21:54:12.593643+00:00",
   "input_dir": "examples/candidates",
   "output_dir": "examples/batch_reports",
   "reports": [
@@ -12,6 +12,9 @@
       "json_path": "examples/batch_reports/example-anomaly-clean.json",
       "manifest_path": "examples/batch_reports/example-anomaly-clean.manifest.json",
       "markdown_path": "examples/batch_reports/example-anomaly-clean.md",
+      "plot_artifact_paths": [
+        "examples/batch_reports/example-anomaly-clean-anomaly-crossmatch.svg"
+      ],
       "recommended_pathway": "candidate_review_packet",
       "track": "anomaly"
     },
@@ -22,6 +25,9 @@
       "json_path": "examples/batch_reports/example-infrared-clean.json",
       "manifest_path": "examples/batch_reports/example-infrared-clean.manifest.json",
       "markdown_path": "examples/batch_reports/example-infrared-clean.md",
+      "plot_artifact_paths": [
+        "examples/batch_reports/example-infrared-clean-infrared-sed.svg"
+      ],
       "recommended_pathway": "candidate_review_packet",
       "track": "infrared"
     },
@@ -32,6 +38,9 @@
       "json_path": "examples/batch_reports/example-radio-clean.json",
       "manifest_path": "examples/batch_reports/example-radio-clean.manifest.json",
       "markdown_path": "examples/batch_reports/example-radio-clean.md",
+      "plot_artifact_paths": [
+        "examples/batch_reports/example-radio-clean-radio-waterfall.svg"
+      ],
       "recommended_pathway": "candidate_review_packet",
       "track": "radio"
     }

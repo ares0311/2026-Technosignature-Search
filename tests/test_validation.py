@@ -1,6 +1,10 @@
 import json
 
-from techno_search.validation import validate_candidate_mapping, validate_report_directory
+from techno_search.validation import (
+    validate_candidate_mapping,
+    validate_report_directory,
+    validate_report_manifest,
+)
 
 
 def test_validate_candidate_rejects_bad_track() -> None:
@@ -78,3 +82,22 @@ def test_validate_report_directory_rejects_empty_directory(tmp_path) -> None:
 
     assert result.ok is False
     assert result.errors == ("report directory contains no candidate JSON packets",)
+
+
+def test_validate_report_manifest_accepts_missing_optional_plot_artifacts() -> None:
+    result = validate_report_manifest(
+        {
+            "candidate_id": "optional-plots",
+            "track": "radio",
+            "recommended_pathway": "candidate_review_packet",
+            "schema_version": "techno_search_packet_v1",
+            "markdown_path": "optional-plots.md",
+            "json_path": "optional-plots.json",
+            "config_version": "scoring_v0",
+            "code_commit": None,
+            "generated_at_utc": "2026-05-02T00:00:00+00:00",
+            "provenance_summary": {},
+        }
+    )
+
+    assert result.ok is True

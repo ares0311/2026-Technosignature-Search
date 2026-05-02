@@ -1,15 +1,26 @@
 {
   "candidate_id": "example-anomaly-clean",
-  "code_commit": "8885577",
+  "code_commit": "620b283",
   "config_version": "scoring_v0",
-  "generated_at_utc": "2026-05-01T22:37:21.633329+00:00",
+  "generated_at_utc": "2026-05-02T21:54:12.500563+00:00",
   "json_path": "examples/reports/example-anomaly-clean.json",
   "markdown_path": "examples/reports/example-anomaly-clean.md",
+  "plot_artifacts": [
+    {
+      "description": "Synthetic archival crossmatch diagnostic placeholder.",
+      "disclaimer": "Synthetic illustrative diagnostic for review context only; not evidence of a confirmed technosignature.",
+      "kind": "synthetic_anomaly_crossmatch",
+      "media_type": "image/svg+xml",
+      "path": "examples/reports/example-anomaly-clean-anomaly-crossmatch.svg",
+      "synthetic": true,
+      "track": "anomaly"
+    }
+  ],
   "provenance_summary": {
     "cache_key": null,
-    "code_commit": "8885577",
+    "code_commit": "620b283",
     "config_version": "scoring_v0",
-    "generated_at_utc": "2026-05-01T22:37:21.633462+00:00",
+    "generated_at_utc": "2026-05-02T21:54:12.500681+00:00",
     "input_path": null,
     "provider_name": null,
     "query_parameters": {},

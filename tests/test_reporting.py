@@ -1,6 +1,7 @@
 import json
 
 from techno_search import (
+    PLOT_ARTIFACT_DISCLAIMER,
     REQUIRED_DISCLAIMER,
     Candidate,
     Track,
@@ -122,9 +123,13 @@ def test_write_candidate_reports_uses_safe_filenames(tmp_path) -> None:
     assert paths.markdown_path == tmp_path / "radio-report-with-spaces.md"
     assert paths.json_path == tmp_path / "radio-report-with-spaces.json"
     assert paths.manifest_path == tmp_path / "radio-report-with-spaces.manifest.json"
+    assert paths.plot_artifact_paths == (
+        tmp_path / "radio-report-with-spaces-radio-waterfall.svg",
+    )
     assert paths.markdown_path.exists()
     assert paths.json_path.exists()
     assert paths.manifest_path.exists()
+    assert paths.plot_artifact_paths[0].exists()
     assert REQUIRED_DISCLAIMER in paths.markdown_path.read_text(encoding="utf-8")
     assert json.loads(paths.json_path.read_text(encoding="utf-8"))["candidate_id"] == (
         "../radio report/with spaces"
@@ -141,6 +146,9 @@ def test_write_candidate_reports_uses_safe_filenames(tmp_path) -> None:
     ]
     assert manifest["markdown_path"].endswith("radio-report-with-spaces.md")
     assert manifest["json_path"].endswith("radio-report-with-spaces.json")
+    assert manifest["plot_artifacts"][0]["kind"] == "synthetic_radio_waterfall"
+    assert manifest["plot_artifacts"][0]["synthetic"] is True
+    assert manifest["plot_artifacts"][0]["disclaimer"] == PLOT_ARTIFACT_DISCLAIMER
     assert manifest["generated_at_utc"]
 
 
@@ -159,3 +167,14 @@ def test_candidate_markdown_report_includes_diagnostic_paths() -> None:
 
     assert "`waterfall_plot_path`: reports/diagnostic-waterfall.png" in report
     assert "`diagnostic_placeholder`: waterfall_not_generated_v0" in report
+    assert PLOT_ARTIFACT_DISCLAIMER in report
+
+
+def test_write_candidate_reports_can_skip_plot_artifacts(tmp_path) -> None:
+    scored = score_candidate(_synthetic_radio_candidate())
+
+    paths = write_candidate_reports(scored, tmp_path, include_plot_artifacts=False)
+    manifest = json.loads(paths.manifest_path.read_text(encoding="utf-8"))
+
+    assert paths.plot_artifact_paths == ()
+    assert manifest["plot_artifacts"] == []

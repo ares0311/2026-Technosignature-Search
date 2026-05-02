@@ -54,6 +54,10 @@ No strong false-positive evidence is present in the synthetic v0 feature packet,
 
 - None recorded
 
+## Plot Artifact Note
+
+Synthetic illustrative diagnostic for review context only; not evidence of a confirmed technosignature.
+
 ## Source IDs
 
 - synthetic historical source

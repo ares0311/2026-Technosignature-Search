@@ -124,7 +124,7 @@ Generate reproducible candidate reports.
 
 - [x] Markdown report generation
 - [x] JSON candidate packet
-- [ ] Plots where available
+- [x] Plots where available
 - [x] Positive evidence list
 - [x] Negative evidence list
 - [x] Blocking issues list
@@ -144,6 +144,7 @@ Generate reproducible candidate reports.
 - [x] Catalog-cache validator command
 - [x] Catalog-cache summary command
 - [x] Validation summary command
+- [x] Dependency-free synthetic SVG plot artifacts
 
 ## Done When
 

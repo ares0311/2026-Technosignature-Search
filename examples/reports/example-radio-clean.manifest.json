@@ -1,15 +1,26 @@
 {
   "candidate_id": "example-radio-clean",
-  "code_commit": "8885577",
+  "code_commit": "620b283",
   "config_version": "scoring_v0",
-  "generated_at_utc": "2026-05-01T22:37:21.663405+00:00",
+  "generated_at_utc": "2026-05-02T21:54:12.530550+00:00",
   "json_path": "examples/reports/example-radio-clean.json",
   "markdown_path": "examples/reports/example-radio-clean.md",
+  "plot_artifacts": [
+    {
+      "description": "Synthetic radio waterfall-style diagnostic placeholder.",
+      "disclaimer": "Synthetic illustrative diagnostic for review context only; not evidence of a confirmed technosignature.",
+      "kind": "synthetic_radio_waterfall",
+      "media_type": "image/svg+xml",
+      "path": "examples/reports/example-radio-clean-radio-waterfall.svg",
+      "synthetic": true,
+      "track": "radio"
+    }
+  ],
   "provenance_summary": {
     "cache_key": null,
-    "code_commit": "8885577",
+    "code_commit": "620b283",
     "config_version": "scoring_v0",
-    "generated_at_utc": "2026-05-01T22:37:21.663423+00:00",
+    "generated_at_utc": "2026-05-02T21:54:12.530574+00:00",
     "input_path": null,
     "provider_name": null,
     "query_parameters": {},
