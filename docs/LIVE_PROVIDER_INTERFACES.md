@@ -43,6 +43,26 @@ Safe test pattern:
 
 ---
 
+## Provider Client Protocol
+
+Future real provider clients should implement the `LiveProviderClient` protocol:
+
+- expose a `provider_name`
+- implement `fetch_metadata(request)`
+- call `require_live_data_enabled()` before any external request
+- return raw provider metadata for normalization, not candidate interpretation
+
+Adapters can wrap provider clients through the injected fetch function interface. This keeps real network clients separate from request construction, cache handling, scoring, and reporting.
+
+Current disabled skeletons:
+
+- `GaiaLiveClient`
+- `IrsaLiveClient`
+
+These skeletons require `TECHNO_SEARCH_ENABLE_LIVE_DATA=1` and then raise `NotImplementedError` until real provider implementations are added.
+
+---
+
 ## Query Shape Builders
 
 Provider adapters may expose request builders for common query shapes. These builders must create `LiveDataRequest` descriptors only; they must not perform network access or interpret provider matches.
@@ -100,6 +120,29 @@ Inspect cache counts without reading payloads:
 ```
 
 Cleanup may safely remove local cache files when they can be regenerated from recorded provenance. Do not commit cache contents.
+
+---
+
+## Fixture Policy
+
+Committed live metadata fixtures are allowed only when they are tiny, synthetic or redacted normalized metadata records. They should exercise provider request provenance and cache-handling code without requiring network access.
+
+Allowed:
+
+- fixture schema version
+- provider name and service URL
+- request provenance
+- cache key
+- response metadata such as field names and field count
+- notes explaining that the fixture is synthetic or redacted
+
+Not allowed:
+
+- bulk catalog rows
+- downloaded provider payloads
+- API credentials or tokens
+- candidate interpretation or confirmation language
+- cache directories or live cache contents
 
 ---
 

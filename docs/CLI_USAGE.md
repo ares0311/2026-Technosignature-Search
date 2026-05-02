@@ -197,6 +197,18 @@ Use `--cache-dir` to inspect a non-default local cache directory.
 
 ---
 
+## Summarize Live Metadata Fixtures
+
+Print committed live-metadata fixture coverage without network access:
+
+```bash
+.venv/bin/techno-search live-fixture-summary
+```
+
+Use `--fixture-dir` to inspect an alternate tiny fixture directory.
+
+---
+
 ## Input Candidate JSON Shape
 
 The CLI expects a normalized synthetic candidate packet:

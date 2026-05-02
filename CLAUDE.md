@@ -2129,3 +2129,229 @@ Validation for this step should include:
 ```
 
 Merge status: already on `main`; no merge needed.
+
+---
+
+## Ten-Step Live Fixture/Client Skeleton Expansion
+
+User requested ten iterative steps:
+
+1. Add cached live-metadata fixture format under `tests/fixtures/live_metadata/`.
+2. Add tests that load cached Gaia metadata fixtures without network access.
+3. Add tests that load cached IRSA metadata fixtures without network access.
+4. Add tests that load cached VizieR/SIMBAD metadata fixtures without network access.
+5. Add `techno-search live-fixture-summary`.
+6. Add docs for live metadata fixture rules and non-committed cache boundaries.
+7. Add a provider-client protocol/interface so real clients can plug in cleanly later.
+8. Add a disabled Gaia real-client skeleton behind `TECHNO_SEARCH_ENABLE_LIVE_DATA=1`.
+9. Add a disabled IRSA real-client skeleton behind `TECHNO_SEARCH_ENABLE_LIVE_DATA=1`.
+10. Update `PROJECT_STATUS`, `ROADMAP`, and `CLAUDE.md`, then commit the batch.
+
+## Live Fixture/Client Step 1 — Cached Metadata Fixture Format
+
+Status: implemented.
+
+Added:
+
+- `tests/fixtures/live_metadata/gaia_cone_search.metadata.json`
+- `tests/fixtures/live_metadata/irsa_catalog_cone.metadata.json`
+- `tests/fixtures/live_metadata/vizier_catalog_cone.metadata.json`
+- `tests/fixtures/live_metadata/simbad_object_lookup.metadata.json`
+- `live_metadata_fixture_v1` fixture schema marker
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Fixture/Client Step 2 — Gaia Fixture Loader Test
+
+Status: implemented.
+
+Added:
+
+- `default_live_metadata_fixture_dir(...)`
+- `load_live_metadata_fixture(...)`
+- `iter_live_metadata_fixtures(...)`
+- fixture shape validation
+- Gaia fixture test that runs with live data disabled
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Fixture/Client Step 3 — IRSA Fixture Loader Test
+
+Status: implemented.
+
+Added:
+
+- IRSA cached metadata fixture loader test
+- assertions for provider name, catalog provenance, cache key, and response metadata
+- live-data-disabled guard coverage
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Fixture/Client Step 4 — VizieR And SIMBAD Fixture Tests
+
+Status: implemented.
+
+Added:
+
+- VizieR cached metadata fixture loader test
+- SIMBAD cached metadata fixture loader test
+- provenance-only interpretation assertions
+- no candidate interpretation assertion for cached provider fixtures
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Fixture/Client Step 5 — Live Fixture Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `live_metadata_fixture_summary(...)`
+- `techno-search live-fixture-summary`
+- optional `--fixture-dir`
+- CLI test for committed fixture coverage counts
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Fixture/Client Step 6 — Fixture Documentation
+
+Status: implemented.
+
+Updated:
+
+- CLI docs for `live-fixture-summary`
+- live-data integration fixture policy
+- live-provider interface fixture allow/deny lists
+- data policy note for tiny live metadata fixtures versus local cache contents
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Fixture/Client Step 7 — Provider Client Protocol
+
+Status: implemented.
+
+Added:
+
+- `LiveProviderClient` protocol
+- `fetcher_from_client(...)`
+- `LiveProviderAdapter.from_client(...)`
+- protocol adapter test with injected stub client
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Fixture/Client Step 8 — Disabled Gaia Client Skeleton
+
+Status: implemented.
+
+Added:
+
+- `GaiaLiveClient`
+- explicit live opt-in guard
+- `NotImplementedError` after opt-in because no real network client exists yet
+- tests for disabled and unimplemented Gaia skeleton behavior
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Fixture/Client Step 9 — Disabled IRSA Client Skeleton
+
+Status: implemented.
+
+Added:
+
+- `IrsaLiveClient`
+- explicit live opt-in guard
+- `NotImplementedError` after opt-in because no real network client exists yet
+- tests for disabled and unimplemented IRSA skeleton behavior
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Fixture/Client Step 10 — Status And Roadmap Updates
+
+Status: implemented.
+
+Updated:
+
+- `docs/PROJECT_STATUS.md` completed, in-progress, and next-action entries
+- `docs/ROADMAP.md` reporting and live-data milestone status
+- `docs/LIVE_PROVIDER_INTERFACES.md` provider-client protocol and skeleton guidance
+- `CLAUDE.md` with final step handoff notes
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py tests/test_cli.py tests/test_docs.py
+```
+
+Merge status: already on `main`; no merge needed.

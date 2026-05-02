@@ -138,6 +138,7 @@ Generate reproducible candidate reports.
 - [x] Provenance summaries in report manifests
 - [x] Provider service URL and cache-key provenance fields
 - [x] Live-provider cache summary command
+- [x] Live-metadata fixture summary command
 
 ## Done When
 
@@ -198,6 +199,9 @@ Add real data ingestion behind tested abstractions.
 - [x] Live provider metadata cache helper
 - [x] Live provider cache summary CLI
 - [x] Non-networked Gaia/IRSA/VizieR/SIMBAD query-shape builders
+- [x] Cached live metadata fixtures
+- [x] Provider client protocol
+- [x] Disabled Gaia and IRSA live-client skeletons
 - [ ] Real provider client implementations
 - [ ] Catalog cache storage policy and implementation
 

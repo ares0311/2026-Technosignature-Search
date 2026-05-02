@@ -6,15 +6,21 @@ from techno_search.live_data import (
     LIVE_CACHE_DIR_ENV_VAR,
     LIVE_DATA_ENV_VAR,
     GaiaAdapter,
+    GaiaLiveClient,
     IrsaAdapter,
+    IrsaLiveClient,
     LiveDataClient,
     LiveDataDisabledError,
     LiveDataRequest,
+    LiveProviderAdapter,
     LiveProviderCache,
     SimbadAdapter,
     VizierAdapter,
     configured_live_cache_dir,
+    default_live_metadata_fixture_dir,
+    fetcher_from_client,
     live_data_enabled,
+    load_live_metadata_fixture,
     provider_adapters,
     require_live_data_enabled,
 )
@@ -133,6 +139,29 @@ def test_live_provider_fetch_writes_and_reuses_configured_cache(tmp_path, monkey
     assert cache.metadata_path(request).exists()
 
 
+def test_provider_client_protocol_can_be_adapted_to_fetcher(monkeypatch) -> None:
+    class StubClient:
+        provider_name = "stub"
+
+        def fetch_metadata(self, request: LiveDataRequest) -> dict[str, object]:
+            return {"query": request.query, "provider_name": self.provider_name}
+
+    client = StubClient()
+    adapter = LiveProviderAdapter.from_client(
+        provider_name="stub",
+        service_url="https://example.invalid/",
+        client=client,
+    )
+    request = adapter.build_request("synthetic target", purpose="client-protocol-test")
+
+    monkeypatch.setenv(LIVE_DATA_ENV_VAR, "1")
+    metadata = adapter.fetch_metadata(request)
+
+    assert fetcher_from_client(client)(request)["provider_name"] == "stub"
+    assert metadata["provider_name"] == "stub"
+    assert metadata["response_metadata"]["field_names"] == ["provider_name", "query"]
+
+
 def test_gaia_cone_search_query_shape_is_metadata_only(monkeypatch) -> None:
     monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
 
@@ -154,6 +183,38 @@ def test_gaia_cone_search_query_shape_is_metadata_only(monkeypatch) -> None:
     assert "CONTAINS" in request.query
     with pytest.raises(LiveDataDisabledError):
         GaiaAdapter().fetch_metadata(request)
+
+
+def test_gaia_live_metadata_fixture_loads_without_network(monkeypatch) -> None:
+    monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
+
+    fixture = load_live_metadata_fixture(
+        default_live_metadata_fixture_dir() / "gaia_cone_search.metadata.json"
+    )
+
+    assert live_data_enabled() is False
+    assert fixture["fixture_schema_version"] == "live_metadata_fixture_v1"
+    assert fixture["provider_name"] == "gaia"
+    assert fixture["request"]["provider_name"] == "gaia"
+    assert fixture["request"]["cache_key"] == "fixture-gaia-cone-search-v1"
+    assert fixture["response_metadata"]["response_type"] == "dict"
+
+
+def test_gaia_live_client_skeleton_is_disabled_and_unimplemented(monkeypatch) -> None:
+    request = GaiaAdapter().build_cone_search_request(
+        ra_deg=123.45,
+        dec_deg=-54.321,
+        radius_arcsec=5.0,
+    )
+    client = GaiaLiveClient()
+
+    monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
+    with pytest.raises(LiveDataDisabledError):
+        client.fetch_metadata(request)
+
+    monkeypatch.setenv(LIVE_DATA_ENV_VAR, "1")
+    with pytest.raises(NotImplementedError):
+        client.fetch_metadata(request)
 
 
 def test_irsa_catalog_query_shape_is_metadata_only(monkeypatch) -> None:
@@ -180,6 +241,38 @@ def test_irsa_catalog_query_shape_is_metadata_only(monkeypatch) -> None:
         IrsaAdapter().fetch_metadata(request)
 
 
+def test_irsa_live_metadata_fixture_loads_without_network(monkeypatch) -> None:
+    monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
+
+    fixture = load_live_metadata_fixture(
+        default_live_metadata_fixture_dir() / "irsa_catalog_cone.metadata.json"
+    )
+
+    assert live_data_enabled() is False
+    assert fixture["provider_name"] == "irsa"
+    assert fixture["request"]["query_parameters"]["catalog"] == "allwise_p3as_psd"
+    assert fixture["request"]["cache_key"] == "fixture-irsa-catalog-cone-v1"
+    assert fixture["response_metadata"]["field_count"] == 2
+
+
+def test_irsa_live_client_skeleton_is_disabled_and_unimplemented(monkeypatch) -> None:
+    request = IrsaAdapter().build_catalog_cone_request(
+        catalog="allwise_p3as_psd",
+        ra_deg=123.45,
+        dec_deg=-54.321,
+        radius_arcsec=10.0,
+    )
+    client = IrsaLiveClient()
+
+    monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
+    with pytest.raises(LiveDataDisabledError):
+        client.fetch_metadata(request)
+
+    monkeypatch.setenv(LIVE_DATA_ENV_VAR, "1")
+    with pytest.raises(NotImplementedError):
+        client.fetch_metadata(request)
+
+
 def test_vizier_catalog_query_shape_uses_provenance_only_metadata(monkeypatch) -> None:
     monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
 
@@ -198,6 +291,20 @@ def test_vizier_catalog_query_shape_uses_provenance_only_metadata(monkeypatch) -
         VizierAdapter().fetch_metadata(request)
 
 
+def test_vizier_live_metadata_fixture_loads_without_network(monkeypatch) -> None:
+    monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
+
+    fixture = load_live_metadata_fixture(
+        default_live_metadata_fixture_dir() / "vizier_catalog_cone.metadata.json"
+    )
+
+    assert live_data_enabled() is False
+    assert fixture["provider_name"] == "vizier"
+    assert fixture["request"]["query_parameters"]["interpretation"] == "provenance_only"
+    assert fixture["request"]["cache_key"] == "fixture-vizier-catalog-cone-v1"
+    assert "candidate" not in fixture
+
+
 def test_simbad_object_lookup_shape_uses_provenance_only_metadata(monkeypatch) -> None:
     monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
 
@@ -214,6 +321,20 @@ def test_simbad_object_lookup_shape_uses_provenance_only_metadata(monkeypatch) -
     )
     with pytest.raises(LiveDataDisabledError):
         SimbadAdapter().fetch_metadata(request)
+
+
+def test_simbad_live_metadata_fixture_loads_without_network(monkeypatch) -> None:
+    monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
+
+    fixture = load_live_metadata_fixture(
+        default_live_metadata_fixture_dir() / "simbad_object_lookup.metadata.json"
+    )
+
+    assert live_data_enabled() is False
+    assert fixture["provider_name"] == "simbad"
+    assert fixture["request"]["query_parameters"]["object_name"] == "synthetic-target"
+    assert fixture["request"]["query_parameters"]["interpretation"] == "provenance_only"
+    assert fixture["request"]["cache_key"] == "fixture-simbad-object-lookup-v1"
 
 
 @pytest.mark.integration_live

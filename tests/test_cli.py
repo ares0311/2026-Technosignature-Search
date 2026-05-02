@@ -269,3 +269,20 @@ def test_cli_live_cache_summary_outputs_cache_counts(tmp_path) -> None:
     assert result["exists"] is True
     assert result["metadata_file_count"] == 1
     assert result["by_provider"] == {"gaia": 1}
+
+
+def test_cli_live_fixture_summary_outputs_committed_fixture_counts() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["live-fixture-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["fixture_schema_version"] == "live_metadata_fixture_v1"
+    assert result["fixture_count"] == 4
+    assert result["by_provider"] == {
+        "gaia": 1,
+        "irsa": 1,
+        "simbad": 1,
+        "vizier": 1,
+    }

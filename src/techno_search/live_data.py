@@ -11,7 +11,7 @@ import os
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
 
 from techno_search.provenance import (
     ProvenanceRecord,
@@ -22,6 +22,7 @@ from techno_search.provenance import (
 LIVE_DATA_ENV_VAR = "TECHNO_SEARCH_ENABLE_LIVE_DATA"
 LIVE_CACHE_DIR_ENV_VAR = "TECHNO_SEARCH_LIVE_CACHE_DIR"
 DEFAULT_LIVE_CACHE_DIR = Path("cache/live_providers")
+LIVE_METADATA_FIXTURE_SCHEMA_VERSION = "live_metadata_fixture_v1"
 
 
 def configured_live_cache_dir(project_root: Path | str | None = None) -> Path:
@@ -33,6 +34,58 @@ def configured_live_cache_dir(project_root: Path | str | None = None) -> Path:
 
     root = Path.cwd() if project_root is None else Path(project_root)
     return root / DEFAULT_LIVE_CACHE_DIR
+
+
+def default_live_metadata_fixture_dir(project_root: Path | str | None = None) -> Path:
+    """Return the repository-local live metadata fixture directory."""
+
+    root = Path(__file__).resolve().parents[2] if project_root is None else Path(project_root)
+    return root / "tests" / "fixtures" / "live_metadata"
+
+
+def load_live_metadata_fixture(path: Path | str) -> dict[str, Any]:
+    """Load and validate a normalized live metadata fixture."""
+
+    fixture_path = Path(path)
+    with fixture_path.open(encoding="utf-8") as handle:
+        fixture = json.load(handle)
+    if not isinstance(fixture, dict):
+        msg = f"Live metadata fixture is not an object: {fixture_path}"
+        raise ValueError(msg)
+    _validate_live_metadata_fixture(fixture, fixture_path)
+    return fixture
+
+
+def iter_live_metadata_fixtures(
+    fixture_dir: Path | str | None = None,
+) -> tuple[dict[str, Any], ...]:
+    """Load all repository-local normalized live metadata fixtures."""
+
+    directory = default_live_metadata_fixture_dir() if fixture_dir is None else Path(fixture_dir)
+    return tuple(
+        load_live_metadata_fixture(path)
+        for path in sorted(directory.glob("*.metadata.json"))
+    )
+
+
+def live_metadata_fixture_summary(
+    fixture_dir: Path | str | None = None,
+) -> dict[str, object]:
+    """Summarize committed normalized live metadata fixtures."""
+
+    directory = default_live_metadata_fixture_dir() if fixture_dir is None else Path(fixture_dir)
+    fixtures = iter_live_metadata_fixtures(directory)
+    provider_counts: dict[str, int] = {}
+    for fixture in fixtures:
+        provider = str(fixture["provider_name"])
+        provider_counts[provider] = provider_counts.get(provider, 0) + 1
+
+    return {
+        "fixture_dir": str(directory),
+        "fixture_schema_version": LIVE_METADATA_FIXTURE_SCHEMA_VERSION,
+        "fixture_count": len(fixtures),
+        "by_provider": dict(sorted(provider_counts.items())),
+    }
 
 
 @dataclass(frozen=True)
@@ -159,6 +212,31 @@ def _safe_cache_component(value: str) -> str:
     return safe or "unknown"
 
 
+def _validate_live_metadata_fixture(fixture: Mapping[str, Any], path: Path) -> None:
+    if fixture.get("fixture_schema_version") != LIVE_METADATA_FIXTURE_SCHEMA_VERSION:
+        msg = f"Unsupported live metadata fixture schema in {path}"
+        raise ValueError(msg)
+
+    provider_name = fixture.get("provider_name")
+    request = fixture.get("request")
+    response_metadata = fixture.get("response_metadata")
+    if not isinstance(provider_name, str) or not provider_name:
+        msg = f"Live metadata fixture missing provider_name: {path}"
+        raise ValueError(msg)
+    if not isinstance(request, dict):
+        msg = f"Live metadata fixture missing request object: {path}"
+        raise ValueError(msg)
+    if request.get("provider_name") != provider_name:
+        msg = f"Live metadata fixture provider mismatch: {path}"
+        raise ValueError(msg)
+    if not request.get("cache_key"):
+        msg = f"Live metadata fixture missing request cache_key: {path}"
+        raise ValueError(msg)
+    if not isinstance(response_metadata, dict):
+        msg = f"Live metadata fixture missing response_metadata object: {path}"
+        raise ValueError(msg)
+
+
 class LiveDataClient:
     """Base scaffold for future live-data clients."""
 
@@ -177,6 +255,21 @@ class LiveDataClient:
 ProviderFetch = Callable[[LiveDataRequest], Mapping[str, Any]]
 
 
+class LiveProviderClient(Protocol):
+    """Protocol for future provider clients that can be injected into adapters."""
+
+    provider_name: str
+
+    def fetch_metadata(self, request: LiveDataRequest) -> Mapping[str, Any]:
+        """Fetch raw provider metadata for a guarded live-data request."""
+
+
+def fetcher_from_client(client: LiveProviderClient) -> ProviderFetch:
+    """Adapt a provider client object to the injected fetch function interface."""
+
+    return client.fetch_metadata
+
+
 @dataclass(frozen=True)
 class LiveProviderAdapter:
     """Provider-specific interface that remains guarded by default."""
@@ -184,6 +277,18 @@ class LiveProviderAdapter:
     provider_name: str
     service_url: str
     fetcher: ProviderFetch | None = None
+
+    @classmethod
+    def from_client(
+        cls,
+        *,
+        provider_name: str,
+        service_url: str,
+        client: LiveProviderClient,
+    ) -> LiveProviderAdapter:
+        """Build an adapter from a provider client without performing network access."""
+
+        return cls(provider_name, service_url, fetcher_from_client(client))
 
     def build_request(
         self,
@@ -263,6 +368,20 @@ class GaiaAdapter(LiveProviderAdapter):
         )
 
 
+class GaiaLiveClient:
+    """Disabled Gaia live-client skeleton for future provider integration."""
+
+    provider_name = "gaia"
+    service_url = "https://gea.esac.esa.int/archive/"
+
+    def fetch_metadata(self, request: LiveDataRequest) -> Mapping[str, Any]:
+        """Require live opt-in before future Gaia network implementation."""
+
+        require_live_data_enabled()
+        msg = "Gaia live client is not implemented yet."
+        raise NotImplementedError(msg)
+
+
 class IrsaAdapter(LiveProviderAdapter):
     def __init__(self, fetcher: ProviderFetch | None = None) -> None:
         super().__init__("irsa", "https://irsa.ipac.caltech.edu/", fetcher)
@@ -290,6 +409,20 @@ class IrsaAdapter(LiveProviderAdapter):
                 "radius_arcsec": f"{radius_arcsec:.6f}",
             },
         )
+
+
+class IrsaLiveClient:
+    """Disabled IRSA live-client skeleton for future provider integration."""
+
+    provider_name = "irsa"
+    service_url = "https://irsa.ipac.caltech.edu/"
+
+    def fetch_metadata(self, request: LiveDataRequest) -> Mapping[str, Any]:
+        """Require live opt-in before future IRSA network implementation."""
+
+        require_live_data_enabled()
+        msg = "IRSA live client is not implemented yet."
+        raise NotImplementedError(msg)
 
 
 class VizierAdapter(LiveProviderAdapter):

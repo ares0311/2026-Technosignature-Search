@@ -46,6 +46,26 @@ Live tests should only run when explicitly requested and when the opt-in environ
 
 ---
 
+## Cached Metadata Fixtures
+
+Tiny committed fixtures may live under:
+
+```text
+tests/fixtures/live_metadata/
+```
+
+These fixtures must contain normalized provider metadata only. They should record provider name, service URL, request provenance, cache key, response field names, and fixture notes. They must not contain bulk catalog rows, credentials, downloaded provider payloads, or candidate interpretation.
+
+Inspect committed fixture coverage with:
+
+```bash
+.venv/bin/techno-search live-fixture-summary
+```
+
+Live cache contents remain separate local artifacts under `cache/live_providers/` or `TECHNO_SEARCH_LIVE_CACHE_DIR` and must not be committed.
+
+---
+
 ## Scientific Guardrails
 
 - Preserve provenance for every live query and response.

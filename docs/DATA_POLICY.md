@@ -27,6 +27,8 @@ Do not commit:
 
 Live-provider metadata caches belong under `cache/live_providers/` by default or under the local directory named by `TECHNO_SEARCH_LIVE_CACHE_DIR`. These cache files are ignored local artifacts and should be regenerated from recorded provider request provenance when needed.
 
+Tiny live metadata fixtures under `tests/fixtures/live_metadata/` are allowed only when they contain normalized metadata and provenance summaries, not bulk provider data or candidate interpretation.
+
 Small synthetic fixtures are allowed.
 
 ---

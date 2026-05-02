@@ -12,7 +12,12 @@ from typing import TextIO
 
 from techno_search.calibration import load_calibration_fixtures, summarize_calibration_fixtures
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
-from techno_search.live_data import LiveProviderCache, live_data_enabled, provider_adapters
+from techno_search.live_data import (
+    LiveProviderCache,
+    live_data_enabled,
+    live_metadata_fixture_summary,
+    provider_adapters,
+)
 from techno_search.reporting import (
     candidate_packet_json,
     write_candidate_reports,
@@ -103,6 +108,13 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
     if args.command == "live-cache-summary":
         print(
             json.dumps(live_cache_summary(args.cache_dir), indent=2, sort_keys=True),
+            file=out,
+        )
+        return 0
+
+    if args.command == "live-fixture-summary":
+        print(
+            json.dumps(live_metadata_fixture_summary(args.fixture_dir), indent=2, sort_keys=True),
             file=out,
         )
         return 0
@@ -426,6 +438,15 @@ def _build_parser() -> argparse.ArgumentParser:
         "--cache-dir",
         type=Path,
         help="Optional live-provider cache directory override.",
+    )
+    live_fixture_parser = subparsers.add_parser(
+        "live-fixture-summary",
+        help="Print committed live-metadata fixture coverage without network access.",
+    )
+    live_fixture_parser.add_argument(
+        "--fixture-dir",
+        type=Path,
+        help="Optional live-metadata fixture directory override.",
     )
     return parser
 

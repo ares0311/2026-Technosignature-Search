@@ -1,0 +1,38 @@
+{
+  "fixture_notes": [
+    "Synthetic normalized metadata fixture only.",
+    "Does not contain live IRSA rows or candidate interpretation."
+  ],
+  "fixture_schema_version": "live_metadata_fixture_v1",
+  "provider_name": "irsa",
+  "request": {
+    "cache_key": "fixture-irsa-catalog-cone-v1",
+    "code_commit": null,
+    "config_version": "scoring_v0",
+    "generated_at_utc": "2026-05-01T00:00:00+00:00",
+    "input_path": null,
+    "provider_name": "irsa",
+    "query_parameters": {
+      "catalog": "allwise_p3as_psd",
+      "dec_deg": "-54.32100000",
+      "purpose": "irsa-catalog-crossmatch",
+      "query": "synthetic IRSA catalog cone search",
+      "query_type": "cone_search",
+      "ra_deg": "123.45000000",
+      "radius_arcsec": "10.000000"
+    },
+    "schema_version": "techno_search_packet_v1",
+    "service_url": "https://irsa.ipac.caltech.edu/",
+    "source_dataset": null,
+    "source_ids": []
+  },
+  "response_metadata": {
+    "field_count": 2,
+    "field_names": [
+      "mock_row_count",
+      "provider_status"
+    ],
+    "response_type": "dict"
+  },
+  "service_url": "https://irsa.ipac.caltech.edu/"
+}
