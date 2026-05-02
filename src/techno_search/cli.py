@@ -96,6 +96,11 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(all_result, indent=2, sort_keys=True), file=out)
         return 0 if all_result["ok"] else 1
 
+    if args.command == "validation-summary":
+        summary_result = validation_summary()
+        print(json.dumps(summary_result, indent=2, sort_keys=True), file=out)
+        return 0 if summary_result["ok"] else 1
+
     if args.command == "regenerate-examples":
         regeneration_result = regenerate_examples()
         print(json.dumps(regeneration_result, indent=2, sort_keys=True), file=out)
@@ -320,6 +325,45 @@ def validate_all() -> dict[str, object]:
     }
 
 
+def validation_summary() -> dict[str, object]:
+    """Return a concise local validation dashboard without network access."""
+
+    validation = validate_all()
+    candidates = validation["candidates"]
+    reports = validation["reports"]
+    schemas = validation["schema_paths_exist"]
+    calibration = validation["calibration_summary"]
+    regression = validation["score_regression_summary"]
+    catalog_cache = validation["catalog_cache_validation"]
+    provider_normalization = validation["provider_normalization_summary"]
+    return {
+        "ok": validation["ok"],
+        "generated_at_utc": datetime.now(UTC).isoformat(),
+        "candidate_count": len(candidates) if isinstance(candidates, dict) else 0,
+        "report_validation_ok": bool(reports["ok"]) if isinstance(reports, dict) else False,
+        "schema_count": len(schemas) if isinstance(schemas, dict) else 0,
+        "schemas_ok": all(schemas.values()) if isinstance(schemas, dict) else False,
+        "calibration_fixture_count": calibration["total"]
+        if isinstance(calibration, dict)
+        else 0,
+        "score_regression_candidate_count": regression["candidate_count"]
+        if isinstance(regression, dict)
+        else 0,
+        "catalog_cache_ok": bool(catalog_cache["ok"])
+        if isinstance(catalog_cache, dict)
+        else False,
+        "provider_normalization_case_count": provider_normalization["case_count"]
+        if isinstance(provider_normalization, dict)
+        else 0,
+        "recommended_commands": [
+            ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
+            ".venv/bin/ruff check .",
+            ".venv/bin/mypy src",
+            "git diff --check",
+        ],
+    }
+
+
 def provenance_summary(report_dir: Path | str) -> dict[str, object]:
     """Summarize provenance across per-candidate report manifests."""
 
@@ -498,6 +542,10 @@ def _build_parser() -> argparse.ArgumentParser:
             "Run local validation summaries for examples, reports, schemas, "
             "calibration, and score snapshots."
         ),
+    )
+    subparsers.add_parser(
+        "validation-summary",
+        help="Print a concise local health dashboard without network access.",
     )
     subparsers.add_parser(
         "regenerate-examples",

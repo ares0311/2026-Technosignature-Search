@@ -24,6 +24,128 @@ Overall status: all three requested steps are implemented.
 
 ---
 
+## Fifteen-Step Validation And Plot Artifact Expansion
+
+User requested fifteen iterative steps:
+
+1. Update `docs/PROJECT_STATUS.md` so "Next 3 Actions" reflects completed pushed work.
+2. Update `docs/ROADMAP.md` to mark provider normalization regression summaries as complete.
+3. Add `techno-search validation-summary` as a concise local health dashboard.
+4. Add tests for `validation-summary`.
+5. Commit and push the status/validation-summary cleanup.
+6. Add a lightweight plot artifact interface for reports without requiring heavy plotting dependencies.
+7. Add synthetic radio waterfall placeholder plot generation.
+8. Add synthetic infrared SED placeholder plot generation.
+9. Add synthetic anomaly/crossmatch placeholder plot generation.
+10. Wire plot artifact references into candidate report manifests.
+11. Add tests proving plots are optional and reports still pass without them.
+12. Update report docs and validation docs for plot artifacts.
+13. Add conservative "plot is illustrative / synthetic" language where needed.
+14. Run full validation and commit.
+15. Push `main` and confirm clean sync.
+
+Each step should update this file and merge to `main` if needed.
+
+## Validation/Plot Step 1 — Project Status Next Actions
+
+Status: implemented.
+
+Updated:
+
+- `docs/PROJECT_STATUS.md` completed items for provider normalization regression coverage
+- `docs/PROJECT_STATUS.md` next actions to point at dependency-free report plot artifacts
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Plot Step 2 — Roadmap Provider Normalization Status
+
+Status: implemented.
+
+Updated:
+
+- Milestone 5 with the validation summary command
+- Milestone 8 with provider normalization regression fixtures
+- Milestone 8 with provider normalization summary in local validation
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Plot Step 3 — Validation Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search validation-summary`
+- concise local health fields for examples, reports, schemas, calibration, score regressions, catalog cache, and provider normalization
+- recommended validation commands in the JSON output
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Plot Step 4 — Validation Summary Tests
+
+Status: implemented.
+
+Added tests proving:
+
+- the command exits successfully when the local health summary is clean
+- candidate, schema, calibration, score-regression, catalog-cache, and provider-normalization counts are present
+- the full validation command list includes mypy
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Plot Step 5 — Status And Validation Summary Commit
+
+Status: implemented.
+
+Validation passed:
+
+- `.venv/bin/python -m pytest tests/test_cli.py tests/test_docs.py`
+- `.venv/bin/ruff check src/techno_search/cli.py tests/test_cli.py`
+- `.venv/bin/mypy src`
+- `git diff --check`
+
+Commit planned:
+
+```bash
+git commit -m "Add validation summary command"
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Catalog Cache And Normalization Expansion
 
 User requested fifteen iterative steps:

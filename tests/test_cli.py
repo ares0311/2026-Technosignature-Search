@@ -207,6 +207,25 @@ def test_cli_validate_all_outputs_local_summary() -> None:
     assert all(result["schema_paths_exist"].values())
 
 
+def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["validation-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["ok"] is True
+    assert result["candidate_count"] == 3
+    assert result["report_validation_ok"] is True
+    assert result["schema_count"] == 3
+    assert result["schemas_ok"] is True
+    assert result["calibration_fixture_count"] == 15
+    assert result["score_regression_candidate_count"] == 3
+    assert result["catalog_cache_ok"] is True
+    assert result["provider_normalization_case_count"] == 5
+    assert ".venv/bin/mypy src" in result["recommended_commands"]
+
+
 def test_cli_regenerate_examples_writes_relative_example_outputs(tmp_path, monkeypatch) -> None:
     candidate_dir = tmp_path / "examples" / "candidates"
     candidate_dir.mkdir(parents=True)

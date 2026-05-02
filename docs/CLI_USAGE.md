@@ -154,6 +154,18 @@ It also reports `catalog_cache_validation` for Git-tracked paths so local untrac
 
 ---
 
+## Print Validation Dashboard
+
+Print a concise local health dashboard without network access:
+
+```bash
+.venv/bin/techno-search validation-summary
+```
+
+This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, score-regression, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
+
+---
+
 ## Regenerate Example Reports
 
 Refresh committed example reports from `examples/candidates`:

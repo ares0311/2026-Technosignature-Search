@@ -41,6 +41,12 @@ Run local validation summaries:
 .venv/bin/techno-search validate-all
 ```
 
+Print a compact local health dashboard:
+
+```bash
+.venv/bin/techno-search validation-summary
+```
+
 Validate catalog cache commit paths:
 
 ```bash

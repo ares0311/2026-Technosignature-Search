@@ -90,6 +90,8 @@ The project will support three tracks from day one:
 - [x] Catalog cache metadata storage helper added
 - [x] Catalog cache summary CLI added
 - [x] Provider normalization contract added
+- [x] Provider normalization regression fixtures added
+- [x] Provider normalization summary wired into `validate-all`
 - [x] Guarded Gaia live client added with mocked transport tests
 - [x] Guarded IRSA live client added with mocked transport tests
 - [x] Guarded VizieR live client added with mocked transport tests
@@ -99,6 +101,7 @@ The project will support three tracks from day one:
 - [x] Provenance helper module added
 - [x] Provenance summaries added to report manifests
 - [x] Provenance summary CLI added
+- [x] Validation summary CLI added
 
 ---
 
@@ -123,9 +126,9 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Push local commits to GitHub from an approved local environment with the required token scopes.
-2. Add provider-specific normalization regression fixtures for live-client metadata.
-3. Wire provider normalization summaries into local validation.
+1. Add dependency-free plot artifact interfaces for candidate review packets.
+2. Generate synthetic radio, infrared, and anomaly plot placeholders for reports.
+3. Wire optional plot artifact references into report manifests and validation docs.
 
 ---
 

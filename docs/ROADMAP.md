@@ -143,6 +143,7 @@ Generate reproducible candidate reports.
 - [x] Catalog-cache policy command
 - [x] Catalog-cache validator command
 - [x] Catalog-cache summary command
+- [x] Validation summary command
 
 ## Done When
 
@@ -221,6 +222,8 @@ Add real data ingestion behind tested abstractions.
 - [x] Live client capability summary fields
 - [x] Remaining real provider client implementations
 - [x] Catalog cache storage implementation
+- [x] Provider normalization regression fixtures
+- [x] Provider normalization summary in local validation
 
 ---
 
