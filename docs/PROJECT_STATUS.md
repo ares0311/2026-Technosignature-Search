@@ -90,6 +90,7 @@ The project will support three tracks from day one:
 - [x] Provider normalization contract added
 - [x] Guarded Gaia live client added with mocked transport tests
 - [x] Guarded IRSA live client added with mocked transport tests
+- [x] Guarded VizieR live client added with mocked transport tests
 - [x] Provenance helper module added
 - [x] Provenance summaries added to report manifests
 - [x] Provenance summary CLI added
@@ -109,6 +110,7 @@ The project will support three tracks from day one:
 - [x] Add catalog cache policy and commit-path guardrails
 - [x] Add guarded Gaia live provider client
 - [x] Add guarded IRSA live provider client
+- [x] Add guarded VizieR live provider client
 - [ ] Add real live-data provider clients behind explicit integration gates
 
 ---
@@ -116,8 +118,8 @@ The project will support three tracks from day one:
 ## Next 3 Actions
 
 1. Push local commits to GitHub from an approved local environment with the required token scopes.
-2. Repeat the guarded live-client pattern for VizieR behind explicit integration gates.
-3. Add SIMBAD and Breakthrough Listen clients only after Gaia/IRSA/VizieR contracts stay green.
+2. Repeat the guarded live-client pattern for SIMBAD behind explicit integration gates.
+3. Add Breakthrough Listen local-file metadata client only after catalog-client contracts stay green.
 
 ---
 

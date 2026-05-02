@@ -134,6 +134,8 @@ def live_client_summary() -> dict[str, object]:
                 "provider_name": client.provider_name,
                 "service_url": client.service_url,
                 "implemented": bool(getattr(client, "implemented", False)),
+                "networked": bool(getattr(client, "networked", False)),
+                "local_file_only": bool(getattr(client, "local_file_only", False)),
                 "requires_live_opt_in": True,
             }
             for client in clients
@@ -508,6 +510,8 @@ class GaiaLiveClient:
     provider_name = "gaia"
     service_url = "https://gea.esac.esa.int/archive/"
     implemented = True
+    networked = True
+    local_file_only = False
     tap_sync_url: str = "https://gea.esac.esa.int/tap-server/tap/sync"
     http_post_bytes: HttpPostBytes | None = None
     timeout_seconds: float = 30.0
@@ -586,6 +590,8 @@ class IrsaLiveClient:
     provider_name = "irsa"
     service_url = "https://irsa.ipac.caltech.edu/"
     implemented = True
+    networked = True
+    local_file_only = False
     gator_query_url: str = "https://irsa.ipac.caltech.edu/cgi-bin/Gator/nph-query"
     http_get_bytes: HttpGetBytes | None = None
     timeout_seconds: float = 30.0
@@ -658,19 +664,50 @@ class VizierAdapter(LiveProviderAdapter):
         )
 
 
+@dataclass(frozen=True)
 class VizierLiveClient:
-    """Disabled VizieR live-client skeleton for future provider integration."""
+    """Guarded VizieR catalog client for provenance metadata requests."""
 
     provider_name = "vizier"
     service_url = "https://vizier.cds.unistra.fr/"
-    implemented = False
+    implemented = True
+    networked = True
+    local_file_only = False
+    asu_tsv_url: str = "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
+    http_get_bytes: HttpGetBytes | None = None
+    timeout_seconds: float = 30.0
+    max_response_bytes: int = DEFAULT_CATALOG_CACHE_METADATA_MAX_BYTES
 
     def fetch_metadata(self, request: LiveDataRequest) -> Mapping[str, Any]:
-        """Require live opt-in before future VizieR network implementation."""
+        """Fetch VizieR catalog metadata only when live-data access is enabled."""
 
         require_live_data_enabled()
-        msg = "VizieR live client is not implemented yet."
-        raise NotImplementedError(msg)
+        if request.source_name != self.provider_name:
+            msg = f"VizieR client cannot fetch request for {request.source_name!r}."
+            raise ValueError(msg)
+        if request.parameters is None:
+            msg = "VizieR request missing query parameters."
+            raise ValueError(msg)
+
+        query = parse.urlencode(
+            {
+                "-source": request.parameters["catalog"],
+                "-c": f"{request.parameters['ra_deg']} {request.parameters['dec_deg']}",
+                "-c.rs": request.parameters["radius_arcsec"],
+                "-out.max": "50",
+            }
+        )
+        query_url = f"{self.asu_tsv_url}?{query}"
+        get_bytes = self.http_get_bytes or http_get_bytes
+        response_bytes = get_bytes(query_url, self.timeout_seconds, self.max_response_bytes)
+        decoded = response_bytes.decode("utf-8")
+        return {
+            "provider_status": "live",
+            "query_endpoint": self.asu_tsv_url,
+            "response_format": "tsv",
+            "content_bytes": len(response_bytes),
+            "rows": delimited_text_rows(decoded),
+        }
 
 
 class SimbadAdapter(LiveProviderAdapter):
@@ -702,6 +739,8 @@ class SimbadLiveClient:
     provider_name = "simbad"
     service_url = "https://simbad.cds.unistra.fr/"
     implemented = False
+    networked = False
+    local_file_only = False
 
     def fetch_metadata(self, request: LiveDataRequest) -> Mapping[str, Any]:
         """Require live opt-in before future SIMBAD network implementation."""
@@ -742,6 +781,8 @@ class BreakthroughListenLiveClient:
     provider_name = "breakthrough_listen"
     service_url = "https://breakthroughinitiatives.org/"
     implemented = False
+    networked = False
+    local_file_only = False
 
     def fetch_metadata(self, request: LiveDataRequest) -> Mapping[str, Any]:
         """Require live opt-in before future Breakthrough Listen implementation."""

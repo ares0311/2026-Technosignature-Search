@@ -24,6 +24,136 @@ Overall status: all three requested steps are implemented.
 
 ---
 
+## Fifteen-Step Remaining Provider Expansion
+
+User requested fifteen iterative steps:
+
+1. Add guarded VizieR live client with mocked transport.
+2. Add VizieR mocked response fixture.
+3. Add VizieR `integration_live` marker test without default network access.
+4. Update `CLAUDE.md`, `PROJECT_STATUS`, `ROADMAP`, and provider-interface docs.
+5. Run validation and commit VizieR work.
+6. Add guarded SIMBAD live client with mocked transport.
+7. Add SIMBAD mocked response fixture.
+8. Add SIMBAD `integration_live` marker test.
+9. Update docs/status and commit SIMBAD work.
+10. Add guarded Breakthrough Listen local-file metadata client.
+11. Add Breakthrough Listen mocked/local metadata fixture.
+12. Add local-file ingestion tests proving no large data is committed.
+13. Wire provider-client summaries to distinguish `implemented`, `networked`, and `local_file_only`.
+14. Run full validation and commit.
+15. Push `main` to GitHub and confirm branch is clean/synced.
+
+Each step should update this file and merge to `main` if needed.
+
+## Remaining Provider Expansion Step 1 — Guarded VizieR Client
+
+Status: implemented.
+
+Added:
+
+- guarded VizieR catalog client using `TECHNO_SEARCH_ENABLE_LIVE_DATA`
+- injectable HTTP GET byte fetcher for non-networked tests
+- bounded response reads
+- VizieR TSV row normalization through the shared delimited-table helper
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Remaining Provider Expansion Step 2 — VizieR Mock Fixture
+
+Status: implemented.
+
+Added:
+
+- `tests/fixtures/live_metadata/vizier_mock_response.metadata.json`
+- fixture loader coverage for mocked VizieR response metadata
+- live fixture summary expected count update
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Remaining Provider Expansion Step 3 — VizieR Integration Marker
+
+Status: implemented.
+
+Added:
+
+- VizieR client test proving disabled-by-default behavior
+- injected transport test for opt-in VizieR metadata fetches
+- `integration_live`-marked VizieR test with injected transport and no default network dependency
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Remaining Provider Expansion Step 4 — VizieR Status Docs
+
+Status: implemented.
+
+Updated:
+
+- `docs/PROJECT_STATUS.md`
+- `docs/ROADMAP.md`
+- `docs/LIVE_PROVIDER_INTERFACES.md`
+- `CLAUDE.md` handoff notes for the VizieR step
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py tests/test_cli.py tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Remaining Provider Expansion Step 5 — VizieR Validation And Commit
+
+Status: implemented.
+
+Validation passed:
+
+- `.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing`
+- `.venv/bin/ruff check .`
+- `.venv/bin/mypy src`
+- `git diff --check`
+
+Result:
+
+- 113 tests passed, 4 skipped
+- total coverage: 93%
+
+Commit planned:
+
+```bash
+git commit -m "Add guarded VizieR provider client"
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Live Provider Expansion
 
 User requested fifteen iterative steps:
