@@ -6,9 +6,11 @@ provides a guarded interface for future live integrations.
 
 from __future__ import annotations
 
+import json
 import os
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from techno_search.provenance import (
@@ -18,6 +20,19 @@ from techno_search.provenance import (
 )
 
 LIVE_DATA_ENV_VAR = "TECHNO_SEARCH_ENABLE_LIVE_DATA"
+LIVE_CACHE_DIR_ENV_VAR = "TECHNO_SEARCH_LIVE_CACHE_DIR"
+DEFAULT_LIVE_CACHE_DIR = Path("cache/live_providers")
+
+
+def configured_live_cache_dir(project_root: Path | str | None = None) -> Path:
+    """Return the configured live-provider cache directory without creating it."""
+
+    configured = os.environ.get(LIVE_CACHE_DIR_ENV_VAR)
+    if configured:
+        return Path(configured).expanduser()
+
+    root = Path.cwd() if project_root is None else Path(project_root)
+    return root / DEFAULT_LIVE_CACHE_DIR
 
 
 @dataclass(frozen=True)
@@ -56,6 +71,69 @@ class LiveDataDisabledError(RuntimeError):
     """Raised when live-data access is requested without explicit opt-in."""
 
 
+@dataclass(frozen=True)
+class LiveProviderCache:
+    """Small local cache for normalized live-provider metadata records."""
+
+    cache_dir: Path
+
+    @classmethod
+    def from_config(cls, project_root: Path | str | None = None) -> LiveProviderCache:
+        """Build a cache using the configured live-provider cache directory."""
+
+        return cls(configured_live_cache_dir(project_root=project_root))
+
+    def metadata_path(self, request: LiveDataRequest) -> Path:
+        """Return the local cache path for a request metadata record."""
+
+        return (
+            self.cache_dir
+            / _safe_cache_component(request.source_name)
+            / f"{request.cache_key()}.metadata.json"
+        )
+
+    def read_metadata(self, request: LiveDataRequest) -> dict[str, Any] | None:
+        """Read cached normalized metadata if present."""
+
+        path = self.metadata_path(request)
+        if not path.exists():
+            return None
+        with path.open(encoding="utf-8") as handle:
+            data = json.load(handle)
+        if not isinstance(data, dict):
+            msg = f"Cached metadata is not an object: {path}"
+            raise ValueError(msg)
+        return data
+
+    def write_metadata(
+        self,
+        request: LiveDataRequest,
+        metadata: Mapping[str, Any],
+    ) -> Path:
+        """Write normalized metadata for a live-provider request."""
+
+        path = self.metadata_path(request)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(dict(metadata), indent=2, sort_keys=True) + "\n")
+        return path
+
+    def summary(self) -> dict[str, object]:
+        """Return cache-directory metadata without reading cached payloads."""
+
+        provider_counts: dict[str, int] = {}
+        if self.cache_dir.exists():
+            for metadata_path in self.cache_dir.glob("*/*.metadata.json"):
+                provider = metadata_path.parent.name
+                provider_counts[provider] = provider_counts.get(provider, 0) + 1
+
+        return {
+            "cache_dir": str(self.cache_dir),
+            "exists": self.cache_dir.exists(),
+            "metadata_file_count": sum(provider_counts.values()),
+            "by_provider": dict(sorted(provider_counts.items())),
+        }
+
+
 def live_data_enabled() -> bool:
     """Return whether live-data integrations are explicitly enabled."""
 
@@ -71,6 +149,14 @@ def require_live_data_enabled() -> None:
             "explicitly marked integration_live runs."
         )
         raise LiveDataDisabledError(msg)
+
+
+def _safe_cache_component(value: str) -> str:
+    normalized = value.lower().replace(" ", "_")
+    safe = "".join(
+        character for character in normalized if character.isalnum() or character in "_-"
+    )
+    return safe or "unknown"
 
 
 class LiveDataClient:
@@ -116,36 +202,147 @@ class LiveProviderAdapter:
             parameters=parameters,
         )
 
-    def fetch_metadata(self, request: LiveDataRequest) -> dict[str, Any]:
+    def fetch_metadata(
+        self,
+        request: LiveDataRequest,
+        *,
+        cache: LiveProviderCache | None = None,
+    ) -> dict[str, Any]:
         """Guard future provider access behind explicit opt-in."""
 
         require_live_data_enabled()
+        if cache is not None:
+            cached_metadata = cache.read_metadata(request)
+            if cached_metadata is not None:
+                return cached_metadata
+
         if self.fetcher is None:
             msg = f"No live-data adapter is implemented for {self.provider_name!r}."
             raise NotImplementedError(msg)
 
         response = self.fetcher(request)
-        return normalize_provider_response(self, request, response)
+        metadata = normalize_provider_response(self, request, response)
+        if cache is not None:
+            cache.write_metadata(request, metadata)
+        return metadata
 
 
 class GaiaAdapter(LiveProviderAdapter):
     def __init__(self, fetcher: ProviderFetch | None = None) -> None:
         super().__init__("gaia", "https://gea.esac.esa.int/archive/", fetcher)
 
+    def build_cone_search_request(
+        self,
+        *,
+        ra_deg: float,
+        dec_deg: float,
+        radius_arcsec: float,
+        purpose: str = "gaia-source-crossmatch",
+        catalog: str = "gaiadr3.gaia_source",
+    ) -> LiveDataRequest:
+        """Build a Gaia cone-search query descriptor without network access."""
+
+        radius_deg = radius_arcsec / 3600.0
+        query = (
+            f"SELECT * FROM {catalog} WHERE "
+            "1=CONTAINS("
+            "POINT('ICRS', ra, dec), "
+            f"CIRCLE('ICRS', {ra_deg:.8f}, {dec_deg:.8f}, {radius_deg:.10f})"
+            ")"
+        )
+        return self.build_request(
+            query,
+            purpose=purpose,
+            parameters={
+                "catalog": catalog,
+                "query_type": "cone_search",
+                "ra_deg": f"{ra_deg:.8f}",
+                "dec_deg": f"{dec_deg:.8f}",
+                "radius_arcsec": f"{radius_arcsec:.6f}",
+            },
+        )
+
 
 class IrsaAdapter(LiveProviderAdapter):
     def __init__(self, fetcher: ProviderFetch | None = None) -> None:
         super().__init__("irsa", "https://irsa.ipac.caltech.edu/", fetcher)
+
+    def build_catalog_cone_request(
+        self,
+        *,
+        catalog: str,
+        ra_deg: float,
+        dec_deg: float,
+        radius_arcsec: float,
+        purpose: str = "irsa-catalog-crossmatch",
+    ) -> LiveDataRequest:
+        """Build an IRSA catalog cone-search descriptor without network access."""
+
+        query = f"{catalog} cone search at ra={ra_deg:.8f}, dec={dec_deg:.8f}"
+        return self.build_request(
+            query,
+            purpose=purpose,
+            parameters={
+                "catalog": catalog,
+                "query_type": "cone_search",
+                "ra_deg": f"{ra_deg:.8f}",
+                "dec_deg": f"{dec_deg:.8f}",
+                "radius_arcsec": f"{radius_arcsec:.6f}",
+            },
+        )
 
 
 class VizierAdapter(LiveProviderAdapter):
     def __init__(self, fetcher: ProviderFetch | None = None) -> None:
         super().__init__("vizier", "https://vizier.cds.unistra.fr/", fetcher)
 
+    def build_catalog_cone_request(
+        self,
+        *,
+        catalog: str,
+        ra_deg: float,
+        dec_deg: float,
+        radius_arcsec: float,
+        purpose: str = "vizier-catalog-crossmatch",
+    ) -> LiveDataRequest:
+        """Build a VizieR catalog cone-search descriptor without network access."""
+
+        query = f"{catalog} cone search at ra={ra_deg:.8f}, dec={dec_deg:.8f}"
+        return self.build_request(
+            query,
+            purpose=purpose,
+            parameters={
+                "catalog": catalog,
+                "query_type": "cone_search",
+                "ra_deg": f"{ra_deg:.8f}",
+                "dec_deg": f"{dec_deg:.8f}",
+                "radius_arcsec": f"{radius_arcsec:.6f}",
+                "interpretation": "provenance_only",
+            },
+        )
+
 
 class SimbadAdapter(LiveProviderAdapter):
     def __init__(self, fetcher: ProviderFetch | None = None) -> None:
         super().__init__("simbad", "https://simbad.cds.unistra.fr/", fetcher)
+
+    def build_object_lookup_request(
+        self,
+        *,
+        object_name: str,
+        purpose: str = "simbad-object-context",
+    ) -> LiveDataRequest:
+        """Build a SIMBAD object lookup descriptor without network access."""
+
+        return self.build_request(
+            object_name,
+            purpose=purpose,
+            parameters={
+                "object_name": object_name,
+                "query_type": "object_lookup",
+                "interpretation": "provenance_only",
+            },
+        )
 
 
 class BreakthroughListenAdapter(LiveProviderAdapter):

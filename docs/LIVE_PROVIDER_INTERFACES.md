@@ -43,6 +43,21 @@ Safe test pattern:
 
 ---
 
+## Query Shape Builders
+
+Provider adapters may expose request builders for common query shapes. These builders must create `LiveDataRequest` descriptors only; they must not perform network access or interpret provider matches.
+
+Current non-networked query-shape builders include:
+
+- Gaia cone search
+- IRSA catalog cone search
+- VizieR catalog cone search
+- SIMBAD object lookup
+
+The request parameters should preserve catalog names, coordinates, radii, object names, purpose, and any provenance-only interpretation markers needed for downstream audit.
+
+---
+
 ## Provenance Fields
 
 Provider-backed requests should record:
@@ -64,7 +79,27 @@ Provider-backed requests should record:
 
 Live provider responses and catalog caches must not be committed.
 
-Future adapters should store caches under a configurable local cache directory and record cache keys in provenance. Cache contents should be reproducible from provider, query parameters, software version, and timestamp metadata where possible.
+Adapters should store normalized metadata caches under the configurable local cache directory:
+
+```text
+cache/live_providers/
+```
+
+The cache directory can be overridden with:
+
+```bash
+TECHNO_SEARCH_LIVE_CACHE_DIR=/path/to/local/cache
+```
+
+Cache files are local reproducibility aids only. They must not be treated as candidate interpretation, external validation, or evidence of confirmation. Cache contents should be reproducible from provider, query parameters, software version, and timestamp metadata where possible.
+
+Inspect cache counts without reading payloads:
+
+```bash
+.venv/bin/techno-search live-cache-summary
+```
+
+Cleanup may safely remove local cache files when they can be regenerated from recorded provenance. Do not commit cache contents.
 
 ---
 

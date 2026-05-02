@@ -137,6 +137,7 @@ Generate reproducible candidate reports.
 - [x] Schema versioning policy
 - [x] Provenance summaries in report manifests
 - [x] Provider service URL and cache-key provenance fields
+- [x] Live-provider cache summary command
 
 ## Done When
 
@@ -194,8 +195,11 @@ Add real data ingestion behind tested abstractions.
 - [x] Provider adapters behind mocks
 - [x] Deterministic provider request cache keys
 - [x] Live provider summary CLI
+- [x] Live provider metadata cache helper
+- [x] Live provider cache summary CLI
+- [x] Non-networked Gaia/IRSA/VizieR/SIMBAD query-shape builders
 - [ ] Real provider client implementations
-- [ ] Local cache storage policy and implementation
+- [ ] Catalog cache storage policy and implementation
 
 ---
 

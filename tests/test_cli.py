@@ -252,3 +252,20 @@ def test_cli_live_provider_summary_lists_default_off_providers(monkeypatch) -> N
         "simbad",
         "vizier",
     }
+
+
+def test_cli_live_cache_summary_outputs_cache_counts(tmp_path) -> None:
+    cache_dir = tmp_path / "cache" / "live_providers"
+    provider_dir = cache_dir / "gaia"
+    provider_dir.mkdir(parents=True)
+    (provider_dir / "abc.metadata.json").write_text("{}", encoding="utf-8")
+    stdout = StringIO()
+
+    exit_code = main(["live-cache-summary", "--cache-dir", str(cache_dir)], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["cache_dir"] == str(cache_dir)
+    assert result["exists"] is True
+    assert result["metadata_file_count"] == 1
+    assert result["by_provider"] == {"gaia": 1}

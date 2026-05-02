@@ -25,6 +25,8 @@ Do not commit:
 - API tokens
 - generated intermediate products
 
+Live-provider metadata caches belong under `cache/live_providers/` by default or under the local directory named by `TECHNO_SEARCH_LIVE_CACHE_DIR`. These cache files are ignored local artifacts and should be regenerated from recorded provider request provenance when needed.
+
 Small synthetic fixtures are allowed.
 
 ---

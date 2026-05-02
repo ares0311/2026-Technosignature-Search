@@ -71,6 +71,9 @@ The project will support three tracks from day one:
 - [x] Live provider response normalization added as provenance-only metadata
 - [x] Deterministic live-provider cache keys added
 - [x] Live provider summary CLI added
+- [x] Live provider metadata cache helper added
+- [x] Live provider cache summary CLI added
+- [x] Non-networked provider query-shape builders added
 - [x] Provenance helper module added
 - [x] Provenance summaries added to report manifests
 - [x] Provenance summary CLI added
@@ -82,6 +85,8 @@ The project will support three tracks from day one:
 - [x] Add calibration fixture documentation and expansion plan
 - [x] Add CLI usage documentation
 - [x] Add live-data integration interfaces behind mocks
+- [x] Add local live-provider metadata cache helper
+- [x] Add non-networked provider query-shape builders
 - [ ] Add real live-data provider clients behind explicit integration gates
 
 ---
@@ -90,7 +95,7 @@ The project will support three tracks from day one:
 
 1. Push local commits to GitHub from an approved local environment with the required token scopes.
 2. Add real Gaia/IRSA/VizieR/SIMBAD/Breakthrough Listen clients behind explicit live-data integration gates.
-3. Add CI workflow only after the publishing token has GitHub `workflow` scope.
+3. Add live-data integration fixtures that exercise cached metadata paths without committing cache contents.
 
 ---
 

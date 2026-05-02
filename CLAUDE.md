@@ -65,8 +65,6 @@ Validation for this step should include:
 
 Merge status: already on `main`; no merge needed.
 
----
-
 ## Ten-Step Config/CI Expansion
 
 User requested ten iterative steps:
@@ -1906,6 +1904,228 @@ Validation for this step should include:
 
 ```bash
 .venv/bin/python -m pytest tests/test_live_data.py tests/test_provenance.py tests/test_cli.py tests/test_json_schemas.py tests/test_examples.py tests/test_reporting.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Ten-Step Live Cache/Query Shape Expansion
+
+User requested ten iterative steps:
+
+1. Add local cache policy constants and ignored cache directory conventions.
+2. Implement a `LiveProviderCache` helper that stores metadata by deterministic cache key.
+3. Add tests proving cache writes stay outside committed example/report paths.
+4. Wire cache directory config into live-provider request handling.
+5. Add `techno-search live-cache-summary`.
+6. Add docs for cache location, cleanup, and reproducibility limits.
+7. Add Gaia mock query-shape builder with no network access by default.
+8. Add IRSA mock query-shape builder with no network access by default.
+9. Add VizieR/SIMBAD mock query-shape builders with conservative provenance fields.
+10. Update `PROJECT_STATUS`, `ROADMAP`, and `CLAUDE.md`, then commit the batch.
+
+## Live Cache/Query Shape Step 1 — Cache Policy Constants
+
+Status: implemented.
+
+Added:
+
+- `LIVE_CACHE_DIR_ENV_VAR`
+- `DEFAULT_LIVE_CACHE_DIR`
+- `configured_live_cache_dir(...)`
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Cache/Query Shape Step 2 — Live Provider Cache Helper
+
+Status: implemented.
+
+Added:
+
+- `LiveProviderCache.from_config(...)`
+- deterministic metadata paths from request cache keys
+- JSON metadata read/write helpers
+- cache summary helper that counts metadata files by provider
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Cache/Query Shape Step 3 — Cache Path Tests
+
+Status: implemented.
+
+Added tests for:
+
+- configured cache directory environment override
+- default project-local `cache/live_providers` convention
+- metadata writes under a cache root
+- cache writes staying outside committed example report paths
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Cache/Query Shape Step 4 — Cache-Aware Provider Fetch
+
+Status: implemented.
+
+Added:
+
+- optional `cache=` argument to provider `fetch_metadata(...)`
+- cached normalized metadata reuse
+- cache write after injected live fetches
+- test coverage for one fetch call followed by cached reuse
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Cache/Query Shape Step 5 — Live Cache Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search live-cache-summary`
+- optional `--cache-dir`
+- cache existence, metadata count, and provider-count output
+- CLI test coverage
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Cache/Query Shape Step 6 — Cache Documentation
+
+Status: implemented.
+
+Updated:
+
+- live-provider cache location and environment override docs
+- live-cache summary CLI docs
+- data policy note that live-provider caches are ignored local artifacts
+- cleanup and reproducibility limits
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Cache/Query Shape Step 7 — Gaia Query Shape Builder
+
+Status: implemented.
+
+Added:
+
+- Gaia cone-search request builder
+- ADQL-like query descriptor with catalog, coordinates, and radius metadata
+- test proving request construction does not require live access
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Cache/Query Shape Step 8 — IRSA Query Shape Builder
+
+Status: implemented.
+
+Added:
+
+- IRSA catalog cone-search request builder
+- catalog, coordinates, radius, and purpose metadata
+- test proving request construction stays non-networked by default
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Cache/Query Shape Step 9 — VizieR And SIMBAD Query Shape Builders
+
+Status: implemented.
+
+Added:
+
+- VizieR catalog cone-search request builder
+- SIMBAD object lookup request builder
+- provenance-only interpretation markers in request parameters
+- tests proving both remain guarded by default
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Cache/Query Shape Step 10 — Status And Roadmap Updates
+
+Status: implemented.
+
+Updated:
+
+- `docs/PROJECT_STATUS.md` completed, in-progress, and next-action entries
+- `docs/ROADMAP.md` reporting and live-data milestone status
+- `docs/LIVE_PROVIDER_INTERFACES.md` query-shape builder guidance
+- `CLAUDE.md` with final step handoff notes
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py tests/test_cli.py tests/test_docs.py
 ```
 
 Merge status: already on `main`; no merge needed.

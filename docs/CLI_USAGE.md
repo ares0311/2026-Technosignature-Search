@@ -185,6 +185,18 @@ Print configured provider adapter names, service URLs, and live-enabled status w
 
 ---
 
+## Summarize Live Provider Cache
+
+Print the configured live-provider cache directory, whether it exists, and metadata counts without network access:
+
+```bash
+.venv/bin/techno-search live-cache-summary
+```
+
+Use `--cache-dir` to inspect a non-default local cache directory.
+
+---
+
 ## Input Candidate JSON Shape
 
 The CLI expects a normalized synthetic candidate packet:

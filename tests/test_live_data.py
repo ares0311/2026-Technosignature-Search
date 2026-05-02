@@ -3,11 +3,17 @@ import os
 import pytest
 
 from techno_search.live_data import (
+    LIVE_CACHE_DIR_ENV_VAR,
     LIVE_DATA_ENV_VAR,
     GaiaAdapter,
+    IrsaAdapter,
     LiveDataClient,
     LiveDataDisabledError,
     LiveDataRequest,
+    LiveProviderCache,
+    SimbadAdapter,
+    VizierAdapter,
+    configured_live_cache_dir,
     live_data_enabled,
     provider_adapters,
     require_live_data_enabled,
@@ -75,6 +81,139 @@ def test_injected_provider_fetcher_is_called_only_when_live_enabled(monkeypatch)
     assert metadata["provider_name"] == "gaia"
     assert metadata["response_metadata"]["field_names"] == ["provider_status", "rows"]
     assert metadata["request"]["cache_key"] == request.cache_key()
+
+
+def test_configured_live_cache_dir_uses_env_or_project_default(tmp_path, monkeypatch) -> None:
+    monkeypatch.delenv(LIVE_CACHE_DIR_ENV_VAR, raising=False)
+
+    assert configured_live_cache_dir(project_root=tmp_path) == tmp_path / "cache/live_providers"
+
+    explicit_cache_dir = tmp_path / "local-live-cache"
+    monkeypatch.setenv(LIVE_CACHE_DIR_ENV_VAR, str(explicit_cache_dir))
+
+    assert configured_live_cache_dir(project_root=tmp_path) == explicit_cache_dir
+
+
+def test_live_provider_cache_writes_metadata_outside_committed_report_paths(tmp_path) -> None:
+    request = GaiaAdapter().build_request(
+        "synthetic target",
+        purpose="cache-path-test",
+        parameters={"radius_arcsec": "5"},
+    )
+    cache = LiveProviderCache(tmp_path / "cache" / "live_providers")
+
+    metadata_path = cache.write_metadata(request, {"provider_name": "gaia"})
+
+    assert metadata_path == cache.metadata_path(request)
+    assert metadata_path.read_text(encoding="utf-8")
+    assert cache.read_metadata(request) == {"provider_name": "gaia"}
+    assert cache.summary()["by_provider"] == {"gaia": 1}
+    assert "examples/reports" not in metadata_path.as_posix()
+    assert "examples/batch_reports" not in metadata_path.as_posix()
+
+
+def test_live_provider_fetch_writes_and_reuses_configured_cache(tmp_path, monkeypatch) -> None:
+    calls: list[str] = []
+
+    def fetcher(request: LiveDataRequest) -> dict[str, object]:
+        calls.append(request.cache_key())
+        return {"rows": 1}
+
+    cache = LiveProviderCache(tmp_path / "cache" / "live_providers")
+    adapter = GaiaAdapter(fetcher=fetcher)
+    request = adapter.build_request("synthetic target", purpose="cache-fetch-test")
+
+    monkeypatch.setenv(LIVE_DATA_ENV_VAR, "1")
+
+    first = adapter.fetch_metadata(request, cache=cache)
+    second = adapter.fetch_metadata(request, cache=cache)
+
+    assert calls == [request.cache_key()]
+    assert second == first
+    assert cache.metadata_path(request).exists()
+
+
+def test_gaia_cone_search_query_shape_is_metadata_only(monkeypatch) -> None:
+    monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
+
+    request = GaiaAdapter().build_cone_search_request(
+        ra_deg=123.45,
+        dec_deg=-54.321,
+        radius_arcsec=5.0,
+    )
+
+    assert request.source_name == "gaia"
+    assert request.purpose == "gaia-source-crossmatch"
+    assert request.parameters == {
+        "catalog": "gaiadr3.gaia_source",
+        "query_type": "cone_search",
+        "ra_deg": "123.45000000",
+        "dec_deg": "-54.32100000",
+        "radius_arcsec": "5.000000",
+    }
+    assert "CONTAINS" in request.query
+    with pytest.raises(LiveDataDisabledError):
+        GaiaAdapter().fetch_metadata(request)
+
+
+def test_irsa_catalog_query_shape_is_metadata_only(monkeypatch) -> None:
+    monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
+
+    request = IrsaAdapter().build_catalog_cone_request(
+        catalog="allwise_p3as_psd",
+        ra_deg=123.45,
+        dec_deg=-54.321,
+        radius_arcsec=10.0,
+    )
+
+    assert request.source_name == "irsa"
+    assert request.purpose == "irsa-catalog-crossmatch"
+    assert request.parameters == {
+        "catalog": "allwise_p3as_psd",
+        "query_type": "cone_search",
+        "ra_deg": "123.45000000",
+        "dec_deg": "-54.32100000",
+        "radius_arcsec": "10.000000",
+    }
+    assert "allwise_p3as_psd" in request.query
+    with pytest.raises(LiveDataDisabledError):
+        IrsaAdapter().fetch_metadata(request)
+
+
+def test_vizier_catalog_query_shape_uses_provenance_only_metadata(monkeypatch) -> None:
+    monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
+
+    request = VizierAdapter().build_catalog_cone_request(
+        catalog="II/328/allwise",
+        ra_deg=123.45,
+        dec_deg=-54.321,
+        radius_arcsec=10.0,
+    )
+
+    assert request.source_name == "vizier"
+    assert request.parameters is not None
+    assert request.parameters["interpretation"] == "provenance_only"
+    assert request.provenance_record().as_dict()["provider_name"] == "vizier"
+    with pytest.raises(LiveDataDisabledError):
+        VizierAdapter().fetch_metadata(request)
+
+
+def test_simbad_object_lookup_shape_uses_provenance_only_metadata(monkeypatch) -> None:
+    monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
+
+    request = SimbadAdapter().build_object_lookup_request(object_name="synthetic-target")
+
+    assert request.source_name == "simbad"
+    assert request.parameters == {
+        "object_name": "synthetic-target",
+        "query_type": "object_lookup",
+        "interpretation": "provenance_only",
+    }
+    assert request.provenance_record().as_dict()["service_url"] == (
+        "https://simbad.cds.unistra.fr/"
+    )
+    with pytest.raises(LiveDataDisabledError):
+        SimbadAdapter().fetch_metadata(request)
 
 
 @pytest.mark.integration_live

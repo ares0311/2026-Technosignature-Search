@@ -12,7 +12,7 @@ from typing import TextIO
 
 from techno_search.calibration import load_calibration_fixtures, summarize_calibration_fixtures
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
-from techno_search.live_data import live_data_enabled, provider_adapters
+from techno_search.live_data import LiveProviderCache, live_data_enabled, provider_adapters
 from techno_search.reporting import (
     candidate_packet_json,
     write_candidate_reports,
@@ -98,6 +98,13 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
 
     if args.command == "live-provider-summary":
         print(json.dumps(live_provider_summary(), indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "live-cache-summary":
+        print(
+            json.dumps(live_cache_summary(args.cache_dir), indent=2, sort_keys=True),
+            file=out,
+        )
         return 0
 
     parser.error(f"Unknown command: {args.command}")
@@ -312,6 +319,13 @@ def live_provider_summary() -> dict[str, object]:
     }
 
 
+def live_cache_summary(cache_dir: Path | None = None) -> dict[str, object]:
+    """Return configured live-provider cache metadata without network access."""
+
+    cache = LiveProviderCache.from_config() if cache_dir is None else LiveProviderCache(cache_dir)
+    return cache.summary()
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="techno-search",
@@ -403,6 +417,15 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "live-provider-summary",
         help="Print configured live-provider adapter names, URLs, and live-enabled status.",
+    )
+    live_cache_parser = subparsers.add_parser(
+        "live-cache-summary",
+        help="Print live-provider cache directory metadata without reading payloads.",
+    )
+    live_cache_parser.add_argument(
+        "--cache-dir",
+        type=Path,
+        help="Optional live-provider cache directory override.",
     )
     return parser
 
