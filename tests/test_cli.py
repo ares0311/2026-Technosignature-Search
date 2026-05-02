@@ -190,6 +190,12 @@ def test_cli_validate_all_outputs_local_summary() -> None:
     assert result["ok"] is True
     assert result["calibration_summary"]["total"] == 15
     assert result["score_regression_summary"]["candidate_count"] == 3
+    assert result["catalog_cache_validation"]["ok"] is True
+    assert result["catalog_cache_validation"]["forbidden_roots"] == [
+        "data",
+        "cache",
+        "artifacts",
+    ]
     assert all(result["schema_paths_exist"].values())
 
 
@@ -279,10 +285,10 @@ def test_cli_live_fixture_summary_outputs_committed_fixture_counts() -> None:
 
     assert exit_code == 0
     assert result["fixture_schema_version"] == "live_metadata_fixture_v1"
-    assert result["fixture_count"] == 5
+    assert result["fixture_count"] == 6
     assert result["by_provider"] == {
         "breakthrough_listen": 1,
-        "gaia": 1,
+        "gaia": 2,
         "irsa": 1,
         "simbad": 1,
         "vizier": 1,
@@ -306,7 +312,16 @@ def test_cli_live_client_summary_outputs_disabled_skeleton_status(monkeypatch) -
         "simbad",
         "vizier",
     }
-    assert all(client["implemented"] is False for client in result["clients"])
+    implemented_by_provider = {
+        client["provider_name"]: client["implemented"] for client in result["clients"]
+    }
+    assert implemented_by_provider == {
+        "breakthrough_listen": False,
+        "gaia": True,
+        "irsa": False,
+        "simbad": False,
+        "vizier": False,
+    }
     assert all(client["requires_live_opt_in"] is True for client in result["clients"])
 
 
@@ -326,3 +341,46 @@ def test_cli_catalog_cache_policy_outputs_policy_without_creating_dir(tmp_path) 
     assert result["creates_directories"] is False
     assert result["implements_catalog_ingestion"] is False
     assert not cache_root.exists()
+
+
+def test_cli_catalog_cache_validate_accepts_fixture_paths() -> None:
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "catalog-cache-validate",
+            "tests/fixtures/live_metadata/gaia_cone_search.metadata.json",
+            "docs/CATALOG_CACHE_POLICY.md",
+        ],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["ok"] is True
+    assert result["errors"] == []
+    assert result["checked_path_count"] == 2
+
+
+def test_cli_catalog_cache_validate_rejects_forbidden_paths() -> None:
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "catalog-cache-validate",
+            "cache/catalog_metadata/gaia/example.metadata.json",
+            "data/raw/catalog.csv",
+        ],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 1
+    assert result["ok"] is False
+    assert result["errors"] == [
+        (
+            "Catalog cache path must not be committed: "
+            "cache/catalog_metadata/gaia/example.metadata.json"
+        ),
+        "Catalog cache path must not be committed: data/raw/catalog.csv",
+    ]

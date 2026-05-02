@@ -150,6 +150,7 @@ Run the non-network validation summaries used for quick release checks:
 ```
 
 This includes example candidate validation, report validation, schema path checks, calibration fixture summary, and score regression summary.
+It also reports `catalog_cache_validation` for Git-tracked paths so local untracked caches do not fail default validation.
 
 ---
 
@@ -211,7 +212,7 @@ Use `--fixture-dir` to inspect an alternate tiny fixture directory.
 
 ## Summarize Live Clients
 
-Print configured live-client skeleton status without network access:
+Print configured live-client implementation status without network access:
 
 ```bash
 .venv/bin/techno-search live-client-summary
@@ -230,6 +231,20 @@ Print the future catalog cache metadata policy without creating cache directorie
 ```
 
 Use `--cache-root` to inspect a local override.
+
+---
+
+## Validate Catalog Cache Commit Paths
+
+Validate paths before commit or release to prevent catalog cache files from entering Git:
+
+```bash
+.venv/bin/techno-search catalog-cache-validate \
+  tests/fixtures/live_metadata/gaia_cone_search.metadata.json
+```
+
+The command prints JSON with `ok`, `checked_path_count`, `forbidden_roots`, and `errors`.
+It returns exit code `1` for paths under forbidden committed roots such as `data/`, `cache/`, and `artifacts/`.
 
 ---
 

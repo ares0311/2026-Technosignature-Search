@@ -1,0 +1,44 @@
+{
+  "fixture_notes": [
+    "Synthetic Gaia TAP response metadata fixture only.",
+    "Does not contain live Gaia rows or candidate interpretation."
+  ],
+  "fixture_schema_version": "live_metadata_fixture_v1",
+  "provider_name": "gaia",
+  "request": {
+    "cache_key": "fixture-gaia-tap-mock-response-v1",
+    "code_commit": null,
+    "config_version": "scoring_v0",
+    "generated_at_utc": "2026-05-02T00:00:00+00:00",
+    "input_path": null,
+    "provider_name": "gaia",
+    "query_parameters": {
+      "catalog": "gaiadr3.gaia_source",
+      "dec_deg": "-54.32100000",
+      "purpose": "gaia-source-crossmatch",
+      "query": "synthetic Gaia TAP cone search",
+      "query_type": "cone_search",
+      "ra_deg": "123.45000000",
+      "radius_arcsec": "5.000000"
+    },
+    "schema_version": "techno_search_packet_v1",
+    "service_url": "https://gea.esac.esa.int/archive/",
+    "source_dataset": null,
+    "source_ids": []
+  },
+  "response_metadata": {
+    "field_count": 6,
+    "field_names": [
+      "content_bytes",
+      "provider_status",
+      "query_endpoint",
+      "raw_field_names",
+      "response_format",
+      "rows"
+    ],
+    "provider_status": "mocked",
+    "response_type": "dict",
+    "row_count": 1
+  },
+  "service_url": "https://gea.esac.esa.int/archive/"
+}

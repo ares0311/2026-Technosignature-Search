@@ -85,6 +85,10 @@ The project will support three tracks from day one:
 - [x] Catalog cache metadata policy documented
 - [x] Catalog cache policy CLI added
 - [x] Catalog cache commit-path validator added
+- [x] Catalog cache validator CLI added
+- [x] Catalog cache validation wired into `validate-all`
+- [x] Provider normalization contract added
+- [x] Guarded Gaia live client added with mocked transport tests
 - [x] Provenance helper module added
 - [x] Provenance summaries added to report manifests
 - [x] Provenance summary CLI added
@@ -102,6 +106,7 @@ The project will support three tracks from day one:
 - [x] Add disabled live provider client skeletons
 - [x] Add fixture-driven live-client normalization coverage
 - [x] Add catalog cache policy and commit-path guardrails
+- [x] Add guarded Gaia live provider client
 - [ ] Add real live-data provider clients behind explicit integration gates
 
 ---
@@ -109,8 +114,8 @@ The project will support three tracks from day one:
 ## Next 3 Actions
 
 1. Push local commits to GitHub from an approved local environment with the required token scopes.
-2. Add real Gaia/IRSA/VizieR/SIMBAD/Breakthrough Listen clients behind explicit live-data integration gates.
-3. Implement catalog cache storage only after the policy and commit-path validator remain green.
+2. Repeat the guarded live-client pattern for IRSA behind explicit integration gates.
+3. Add VizieR, SIMBAD, and Breakthrough Listen clients only after Gaia/IRSA contracts stay green.
 
 ---
 

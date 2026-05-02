@@ -1,3 +1,4 @@
+import json
 import os
 
 import pytest
@@ -18,6 +19,7 @@ from techno_search.live_data import (
     LiveDataRequest,
     LiveProviderAdapter,
     LiveProviderCache,
+    ProvenanceOnlyResponseNormalizer,
     SimbadAdapter,
     SimbadLiveClient,
     VizierAdapter,
@@ -29,6 +31,7 @@ from techno_search.live_data import (
     live_data_enabled,
     load_live_metadata_fixture,
     provider_adapters,
+    provider_response_metadata,
     require_live_data_enabled,
     validate_catalog_cache_commit_paths,
 )
@@ -165,6 +168,44 @@ def test_injected_provider_fetcher_is_called_only_when_live_enabled(monkeypatch)
     assert metadata["provider_name"] == "gaia"
     assert metadata["response_metadata"]["field_names"] == ["provider_status", "rows"]
     assert metadata["request"]["cache_key"] == request.cache_key()
+
+
+def test_provider_response_metadata_summarizes_rows_without_interpretation() -> None:
+    response = {
+        "provider_status": "mocked",
+        "rows": [{"source_id": "synthetic-a"}, {"source_id": "synthetic-b"}],
+    }
+
+    metadata = provider_response_metadata(response)
+
+    assert metadata == {
+        "response_type": "dict",
+        "field_names": ["provider_status", "rows"],
+        "field_count": 2,
+        "row_count": 2,
+        "provider_status": "mocked",
+    }
+
+
+def test_provenance_only_response_normalizer_preserves_request_context() -> None:
+    adapter = GaiaAdapter()
+    request = adapter.build_cone_search_request(
+        ra_deg=12.5,
+        dec_deg=-4.25,
+        radius_arcsec=3.0,
+    )
+
+    metadata = ProvenanceOnlyResponseNormalizer().normalize(
+        adapter,
+        request,
+        {"provider_status": "mocked", "rows": []},
+    )
+
+    assert metadata["provider_name"] == "gaia"
+    assert metadata["service_url"] == adapter.service_url
+    assert metadata["request"]["cache_key"] == request.cache_key()
+    assert metadata["response_metadata"]["row_count"] == 0
+    assert metadata["response_metadata"]["provider_status"] == "mocked"
 
 
 def test_configured_live_cache_dir_uses_env_or_project_default(tmp_path, monkeypatch) -> None:
@@ -367,21 +408,60 @@ def test_gaia_live_metadata_fixture_loads_without_network(monkeypatch) -> None:
     assert fixture["response_metadata"]["response_type"] == "dict"
 
 
-def test_gaia_live_client_skeleton_is_disabled_and_unimplemented(monkeypatch) -> None:
+def test_gaia_tap_mock_response_fixture_loads_without_network(monkeypatch) -> None:
+    monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
+
+    fixture = load_live_metadata_fixture(
+        default_live_metadata_fixture_dir() / "gaia_tap_mock_response.metadata.json"
+    )
+
+    assert live_data_enabled() is False
+    assert fixture["provider_name"] == "gaia"
+    assert fixture["request"]["cache_key"] == "fixture-gaia-tap-mock-response-v1"
+    assert fixture["response_metadata"]["provider_status"] == "mocked"
+    assert fixture["response_metadata"]["row_count"] == 1
+
+
+def test_gaia_live_client_requires_opt_in_and_uses_injected_http(monkeypatch) -> None:
     request = GaiaAdapter().build_cone_search_request(
         ra_deg=123.45,
         dec_deg=-54.321,
         radius_arcsec=5.0,
     )
-    client = GaiaLiveClient()
+    calls: list[tuple[str, bytes, float, int]] = []
+
+    def post_bytes(
+        url: str,
+        payload: bytes,
+        timeout_seconds: float,
+        max_response_bytes: int,
+    ) -> bytes:
+        calls.append((url, payload, timeout_seconds, max_response_bytes))
+        return json.dumps(
+            {
+                "metadata": [{"name": "source_id"}, {"name": "ra"}],
+                "data": [["123", 123.45]],
+            }
+        ).encode("utf-8")
+
+    client = GaiaLiveClient(http_post_bytes=post_bytes, timeout_seconds=5.0)
 
     monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
     with pytest.raises(LiveDataDisabledError):
         client.fetch_metadata(request)
+    assert calls == []
 
     monkeypatch.setenv(LIVE_DATA_ENV_VAR, "1")
-    with pytest.raises(NotImplementedError):
-        client.fetch_metadata(request)
+    metadata = client.fetch_metadata(request)
+
+    assert metadata["provider_status"] == "live"
+    assert metadata["query_endpoint"] == client.tap_sync_url
+    assert metadata["response_format"] == "json"
+    assert metadata["rows"] == [{"source_id": "123", "ra": 123.45}]
+    assert calls
+    assert calls[0][0] == client.tap_sync_url
+    assert b"REQUEST=doQuery" in calls[0][1]
+    assert b"FORMAT=json" in calls[0][1]
 
 
 def test_irsa_catalog_query_shape_is_metadata_only(monkeypatch) -> None:
@@ -595,6 +675,34 @@ def test_simbad_live_client_skeleton_is_disabled_and_unimplemented(monkeypatch) 
     monkeypatch.setenv(LIVE_DATA_ENV_VAR, "1")
     with pytest.raises(NotImplementedError):
         client.fetch_metadata(request)
+
+
+@pytest.mark.integration_live
+@pytest.mark.skipif(
+    os.environ.get(LIVE_DATA_ENV_VAR) != "1",
+    reason="live-data integration scaffold is opt-in",
+)
+def test_gaia_live_client_integration_marker_uses_injected_transport() -> None:
+    request = GaiaAdapter().build_cone_search_request(
+        ra_deg=123.45,
+        dec_deg=-54.321,
+        radius_arcsec=5.0,
+    )
+
+    def post_bytes(
+        url: str,
+        payload: bytes,
+        timeout_seconds: float,
+        max_response_bytes: int,
+    ) -> bytes:
+        return json.dumps({"metadata": [{"name": "source_id"}], "data": [["123"]]}).encode(
+            "utf-8"
+        )
+
+    metadata = GaiaLiveClient(http_post_bytes=post_bytes).fetch_metadata(request)
+
+    assert metadata["provider_status"] == "live"
+    assert metadata["rows"] == [{"source_id": "123"}]
 
 
 @pytest.mark.integration_live

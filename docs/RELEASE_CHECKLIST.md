@@ -47,7 +47,11 @@ Useful commands:
 .venv/bin/techno-search schema-paths
 .venv/bin/techno-search score-regression-summary
 .venv/bin/techno-search catalog-cache-policy
+.venv/bin/techno-search catalog-cache-validate docs/CATALOG_CACHE_POLICY.md
+.venv/bin/techno-search validate-all
 ```
+
+The `validate-all` output must include `catalog_cache_validation.ok: true`.
 
 ---
 

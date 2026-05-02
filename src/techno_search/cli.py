@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 from collections import Counter
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import TextIO
@@ -19,6 +21,7 @@ from techno_search.live_data import (
     live_data_enabled,
     live_metadata_fixture_summary,
     provider_adapters,
+    validate_catalog_cache_commit_paths,
 )
 from techno_search.reporting import (
     candidate_packet_json,
@@ -131,6 +134,11 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             file=out,
         )
         return 0
+
+    if args.command == "catalog-cache-validate":
+        catalog_result = catalog_cache_validation_summary(args.paths)
+        print(json.dumps(catalog_result, indent=2, sort_keys=True), file=out)
+        return 0 if catalog_result["ok"] else 1
 
     parser.error(f"Unknown command: {args.command}")
     return 2
@@ -278,11 +286,13 @@ def validate_all() -> dict[str, object]:
     schema_results = {path: Path(path).exists() for path in schemas.values()}
     calibration = summarize_calibration_fixtures(load_calibration_fixtures()).as_dict()
     regression = score_regression_summary()
+    catalog_cache = catalog_cache_validation_summary(git_tracked_paths(root), project_root=root)
 
     ok = (
         all(result["ok"] for result in candidate_results.values())
         and bool(report_result["ok"])
         and all(schema_results.values())
+        and bool(catalog_cache["ok"])
     )
     return {
         "ok": ok,
@@ -292,6 +302,7 @@ def validate_all() -> dict[str, object]:
         "schema_paths_exist": schema_results,
         "calibration_summary": calibration,
         "score_regression_summary": regression,
+        "catalog_cache_validation": catalog_cache,
     }
 
 
@@ -360,6 +371,32 @@ def catalog_cache_policy_summary(cache_root: Path | None = None) -> dict[str, ob
         else CatalogCachePolicy(cache_root)
     )
     return policy.as_dict()
+
+
+def catalog_cache_validation_summary(
+    paths: Sequence[Path | str],
+    *,
+    project_root: Path | str | None = None,
+) -> dict[str, object]:
+    """Validate catalog cache commit paths for release and pre-commit checks."""
+
+    return validate_catalog_cache_commit_paths(paths, project_root=project_root)
+
+
+def git_tracked_paths(project_root: Path | str) -> list[Path]:
+    """Return Git-tracked paths for repository-scoped release checks."""
+
+    root = Path(project_root)
+    result = subprocess.run(
+        ["git", "ls-files"],
+        cwd=root,
+        capture_output=True,
+        check=False,
+        text=True,
+    )
+    if result.returncode != 0:
+        return []
+    return [root / line for line in result.stdout.splitlines() if line]
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -484,6 +521,16 @@ def _build_parser() -> argparse.ArgumentParser:
         "--cache-root",
         type=Path,
         help="Optional catalog cache metadata root override.",
+    )
+    catalog_cache_validate_parser = subparsers.add_parser(
+        "catalog-cache-validate",
+        help="Validate paths for forbidden committed catalog cache locations.",
+    )
+    catalog_cache_validate_parser.add_argument(
+        "paths",
+        nargs="+",
+        type=Path,
+        help="Paths to validate before commit or release.",
     )
     return parser
 

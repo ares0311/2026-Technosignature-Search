@@ -24,6 +24,296 @@ Overall status: all three requested steps are implemented.
 
 ---
 
+## Fifteen-Step Live Provider Expansion
+
+User requested fifteen iterative steps:
+
+1. Push `main` to GitHub with required token scopes.
+2. Add a catalog-cache validator CLI command for pre-commit/release checks.
+3. Add tests for that validator CLI command.
+4. Wire catalog-cache validation into `validate-all`.
+5. Update release docs to include the new validator output.
+6. Add a real-provider implementation plan doc for Gaia, IRSA, VizieR, SIMBAD, and Breakthrough Listen.
+7. Add a provider-client result normalization interface.
+8. Add tests for provider normalization contracts.
+9. Implement the Gaia client behind `TECHNO_SEARCH_ENABLE_LIVE_DATA=1`.
+10. Add mocked Gaia integration fixtures.
+11. Add Gaia live integration test markers without enabling network by default.
+12. Update `PROJECT_STATUS`, `ROADMAP`, and `CLAUDE.md`.
+13. Run full validation and commit.
+14. Repeat the same client pattern for IRSA as the next provider.
+15. Push the new commits once GitHub credentials are working.
+
+Each step should update this file and merge to `main` if needed.
+
+## Live Provider Expansion Step 1 — Push Main
+
+Status: implemented.
+
+Result:
+
+- `git push origin main` returned `Everything up-to-date`
+- local `main` and `origin/main` were already synchronized
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider Expansion Step 2 — Catalog Cache Validator CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search catalog-cache-validate`
+- structured JSON output for catalog cache commit-path validation
+- nonzero exit for forbidden catalog cache paths
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider Expansion Step 3 — Validator CLI Tests
+
+Status: implemented.
+
+Added tests for:
+
+- accepting committed fixture and docs paths
+- rejecting forbidden `cache/` catalog metadata paths
+- rejecting forbidden `data/` catalog paths
+- returning nonzero status when forbidden paths are supplied
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider Expansion Step 4 — Validate-All Catalog Cache Wiring
+
+Status: implemented.
+
+Added:
+
+- Git-tracked path collection for release-scoped catalog cache validation
+- `catalog_cache_validation` block in `techno-search validate-all`
+- CLI test assertion that `validate-all` reports catalog cache validation state
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider Expansion Step 5 — Release Docs Validator Output
+
+Status: implemented.
+
+Updated:
+
+- `docs/CLI_USAGE.md` with `catalog-cache-validate`
+- `docs/CLI_USAGE.md` with `validate-all` catalog cache validation output
+- `docs/VALIDATION.md` with direct catalog cache path validation
+- `docs/RELEASE_CHECKLIST.md` with validator and `validate-all` commands
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider Expansion Step 6 — Provider Implementation Plan
+
+Status: implemented.
+
+Added:
+
+- `docs/LIVE_PROVIDER_IMPLEMENTATION_PLAN.md`
+- shared real-provider requirements
+- provider rollout order for Gaia, IRSA, VizieR, SIMBAD, and Breakthrough Listen
+- done criteria preserving opt-in network access, provenance, fixtures, and catalog cache guardrails
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider Expansion Step 7 — Provider Normalization Interface
+
+Status: implemented.
+
+Added:
+
+- `ProviderResponseNormalizer` protocol
+- `ProvenanceOnlyResponseNormalizer`
+- shared `provider_response_metadata(...)`
+- default provenance-only normalization path for adapters
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider Expansion Step 8 — Provider Normalization Contract Tests
+
+Status: implemented.
+
+Added tests for:
+
+- response shape metadata
+- row-count summaries
+- provider-status summaries
+- provenance-only normalizer request context preservation
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider Expansion Step 9 — Guarded Gaia Live Client
+
+Status: implemented.
+
+Added:
+
+- guarded Gaia TAP client using `TECHNO_SEARCH_ENABLE_LIVE_DATA`
+- injectable HTTP POST byte fetcher for non-networked tests
+- bounded response reads
+- Gaia TAP JSON row normalization
+- live-client summary now reports Gaia as implemented while preserving opt-in requirement
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider Expansion Step 10 — Mocked Gaia Integration Fixture
+
+Status: implemented.
+
+Added:
+
+- `tests/fixtures/live_metadata/gaia_tap_mock_response.metadata.json`
+- fixture loader coverage for mocked Gaia TAP response metadata
+- live fixture summary expected count update
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider Expansion Step 11 — Gaia Integration Marker
+
+Status: implemented.
+
+Added:
+
+- `integration_live`-marked Gaia client test
+- opt-in skip guard using `TECHNO_SEARCH_ENABLE_LIVE_DATA`
+- injected transport so the marked test still has no default network dependency
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider Expansion Step 12 — Status And Roadmap Updates
+
+Status: implemented.
+
+Updated:
+
+- `docs/PROJECT_STATUS.md` completed, in-progress, and next-action entries
+- `docs/ROADMAP.md` reporting and live-data milestone entries
+- `docs/LIVE_PROVIDER_INTERFACES.md` to identify Gaia as the first guarded implementation
+- `docs/CLI_USAGE.md` live-client wording
+- `CLAUDE.md` handoff notes for this step
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py tests/test_cli.py tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Live Provider Expansion Step 13 — Validation And Commit
+
+Status: implemented.
+
+Validation passed:
+
+- `.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing`
+- `.venv/bin/ruff check .`
+- `.venv/bin/mypy src`
+- `git diff --check`
+
+Result:
+
+- 111 tests passed, 2 skipped
+- total coverage: 93%
+
+Commit planned:
+
+```bash
+git commit -m "Add guarded Gaia provider client"
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Catalog Cache Guardrail Step 7 — Validator Tests
 
 Status: implemented.

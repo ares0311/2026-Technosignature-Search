@@ -41,6 +41,15 @@ Run local validation summaries:
 .venv/bin/techno-search validate-all
 ```
 
+Validate catalog cache commit paths:
+
+```bash
+.venv/bin/techno-search catalog-cache-validate docs/CATALOG_CACHE_POLICY.md
+```
+
+`validate-all` includes a `catalog_cache_validation` block for Git-tracked paths.
+Use `catalog-cache-validate` directly for pre-commit checks on a proposed path list.
+
 ---
 
 ## Schemas

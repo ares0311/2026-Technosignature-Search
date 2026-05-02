@@ -141,6 +141,7 @@ Generate reproducible candidate reports.
 - [x] Live-metadata fixture summary command
 - [x] Live-client summary command
 - [x] Catalog-cache policy command
+- [x] Catalog-cache validator command
 
 ## Done When
 
@@ -209,7 +210,10 @@ Add real data ingestion behind tested abstractions.
 - [x] Breakthrough Listen local file metadata request shape
 - [x] Catalog cache metadata policy
 - [x] Catalog cache commit-path validator
-- [ ] Real provider client implementations
+- [x] Provider response normalization contract
+- [x] Guarded Gaia live client with mocked transport tests
+- [ ] Guarded IRSA live client with mocked transport tests
+- [ ] Remaining real provider client implementations
 - [ ] Catalog cache storage implementation
 
 ---

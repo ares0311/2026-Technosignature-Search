@@ -8,10 +8,12 @@ from __future__ import annotations
 
 import json
 import os
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol
+from urllib import parse
+from urllib import request as urlrequest
 
 from techno_search.provenance import (
     ProvenanceRecord,
@@ -131,7 +133,7 @@ def live_client_summary() -> dict[str, object]:
             {
                 "provider_name": client.provider_name,
                 "service_url": client.service_url,
-                "implemented": False,
+                "implemented": bool(getattr(client, "implemented", False)),
                 "requires_live_opt_in": True,
             }
             for client in clients
@@ -140,7 +142,7 @@ def live_client_summary() -> dict[str, object]:
 
 
 def validate_catalog_cache_commit_paths(
-    paths: list[Path | str],
+    paths: Sequence[Path | str],
     *,
     project_root: Path | str | None = None,
 ) -> dict[str, object]:
@@ -370,6 +372,7 @@ class LiveDataClient:
 
 
 ProviderFetch = Callable[[LiveDataRequest], Mapping[str, Any]]
+HttpPostBytes = Callable[[str, bytes, float, int], bytes]
 
 
 class LiveProviderClient(Protocol):
@@ -379,6 +382,18 @@ class LiveProviderClient(Protocol):
 
     def fetch_metadata(self, request: LiveDataRequest) -> Mapping[str, Any]:
         """Fetch raw provider metadata for a guarded live-data request."""
+
+
+class ProviderResponseNormalizer(Protocol):
+    """Protocol for converting provider responses into provenance metadata."""
+
+    def normalize(
+        self,
+        adapter: LiveProviderAdapter,
+        request: LiveDataRequest,
+        response: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        """Normalize provider output without scientific interpretation."""
 
 
 def fetcher_from_client(client: LiveProviderClient) -> ProviderFetch:
@@ -443,7 +458,7 @@ class LiveProviderAdapter:
             raise NotImplementedError(msg)
 
         response = self.fetcher(request)
-        metadata = normalize_provider_response(self, request, response)
+        metadata = DEFAULT_PROVIDER_RESPONSE_NORMALIZER.normalize(self, request, response)
         if cache is not None:
             cache.write_metadata(request, metadata)
         return metadata
@@ -485,18 +500,53 @@ class GaiaAdapter(LiveProviderAdapter):
         )
 
 
+@dataclass(frozen=True)
 class GaiaLiveClient:
-    """Disabled Gaia live-client skeleton for future provider integration."""
+    """Guarded Gaia TAP client for provenance metadata requests."""
 
     provider_name = "gaia"
     service_url = "https://gea.esac.esa.int/archive/"
+    implemented = True
+    tap_sync_url: str = "https://gea.esac.esa.int/tap-server/tap/sync"
+    http_post_bytes: HttpPostBytes | None = None
+    timeout_seconds: float = 30.0
+    max_response_bytes: int = DEFAULT_CATALOG_CACHE_METADATA_MAX_BYTES
 
     def fetch_metadata(self, request: LiveDataRequest) -> Mapping[str, Any]:
-        """Require live opt-in before future Gaia network implementation."""
+        """Fetch Gaia TAP metadata only when live-data access is enabled."""
 
         require_live_data_enabled()
-        msg = "Gaia live client is not implemented yet."
-        raise NotImplementedError(msg)
+        if request.source_name != self.provider_name:
+            msg = f"Gaia client cannot fetch request for {request.source_name!r}."
+            raise ValueError(msg)
+
+        payload = parse.urlencode(
+            {
+                "REQUEST": "doQuery",
+                "LANG": "ADQL",
+                "FORMAT": "json",
+                "QUERY": request.query,
+            }
+        ).encode("utf-8")
+        post_bytes = self.http_post_bytes or http_post_bytes
+        response_bytes = post_bytes(
+            self.tap_sync_url,
+            payload,
+            self.timeout_seconds,
+            self.max_response_bytes,
+        )
+        decoded = json.loads(response_bytes.decode("utf-8"))
+        if not isinstance(decoded, dict):
+            msg = "Gaia TAP response must be a JSON object."
+            raise ValueError(msg)
+        return {
+            "provider_status": "live",
+            "query_endpoint": self.tap_sync_url,
+            "response_format": "json",
+            "content_bytes": len(response_bytes),
+            "raw_field_names": sorted(str(key) for key in decoded),
+            "rows": gaia_tap_rows(decoded),
+        }
 
 
 class IrsaAdapter(LiveProviderAdapter):
@@ -533,6 +583,7 @@ class IrsaLiveClient:
 
     provider_name = "irsa"
     service_url = "https://irsa.ipac.caltech.edu/"
+    implemented = False
 
     def fetch_metadata(self, request: LiveDataRequest) -> Mapping[str, Any]:
         """Require live opt-in before future IRSA network implementation."""
@@ -577,6 +628,7 @@ class VizierLiveClient:
 
     provider_name = "vizier"
     service_url = "https://vizier.cds.unistra.fr/"
+    implemented = False
 
     def fetch_metadata(self, request: LiveDataRequest) -> Mapping[str, Any]:
         """Require live opt-in before future VizieR network implementation."""
@@ -614,6 +666,7 @@ class SimbadLiveClient:
 
     provider_name = "simbad"
     service_url = "https://simbad.cds.unistra.fr/"
+    implemented = False
 
     def fetch_metadata(self, request: LiveDataRequest) -> Mapping[str, Any]:
         """Require live opt-in before future SIMBAD network implementation."""
@@ -653,6 +706,7 @@ class BreakthroughListenLiveClient:
 
     provider_name = "breakthrough_listen"
     service_url = "https://breakthroughinitiatives.org/"
+    implemented = False
 
     def fetch_metadata(self, request: LiveDataRequest) -> Mapping[str, Any]:
         """Require live opt-in before future Breakthrough Listen implementation."""
@@ -673,12 +727,101 @@ def normalize_provider_response(
         "provider_name": adapter.provider_name,
         "service_url": adapter.service_url,
         "request": request.provenance_record().as_dict(),
-        "response_metadata": {
-            "response_type": type(response).__name__,
-            "field_names": sorted(str(key) for key in response),
-            "field_count": len(response),
-        },
+        "response_metadata": provider_response_metadata(response),
     }
+
+
+@dataclass(frozen=True)
+class ProvenanceOnlyResponseNormalizer:
+    """Default provider response normalizer for provenance-only metadata."""
+
+    def normalize(
+        self,
+        adapter: LiveProviderAdapter,
+        request: LiveDataRequest,
+        response: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        """Normalize provider output without candidate interpretation."""
+
+        return normalize_provider_response(adapter, request, response)
+
+
+DEFAULT_PROVIDER_RESPONSE_NORMALIZER = ProvenanceOnlyResponseNormalizer()
+
+
+def provider_response_metadata(response: Mapping[str, Any]) -> dict[str, object]:
+    """Summarize provider response shape without interpreting rows scientifically."""
+
+    metadata: dict[str, object] = {
+        "response_type": type(response).__name__,
+        "field_names": sorted(str(key) for key in response),
+        "field_count": len(response),
+    }
+    rows = response.get("rows")
+    if isinstance(rows, list):
+        metadata["row_count"] = len(rows)
+    provider_status = response.get("provider_status")
+    if isinstance(provider_status, str):
+        metadata["provider_status"] = provider_status
+    return metadata
+
+
+def http_post_bytes(
+    url: str,
+    payload: bytes,
+    timeout_seconds: float,
+    max_response_bytes: int,
+) -> bytes:
+    """POST to a provider endpoint and return bounded response bytes."""
+
+    post_request = urlrequest.Request(
+        url,
+        data=payload,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        method="POST",
+    )
+    with urlrequest.urlopen(post_request, timeout=timeout_seconds) as response:
+        data = bytes(response.read(max_response_bytes + 1))
+    if len(data) > max_response_bytes:
+        msg = f"Provider response exceeded {max_response_bytes} bytes."
+        raise ValueError(msg)
+    return data
+
+
+def gaia_tap_rows(response: Mapping[str, Any]) -> list[dict[str, object]]:
+    """Extract Gaia TAP rows without assigning scientific meaning."""
+
+    rows = response.get("data")
+    if not isinstance(rows, list):
+        return []
+
+    field_names = gaia_tap_field_names(response)
+    normalized_rows: list[dict[str, object]] = []
+    for row in rows:
+        if isinstance(row, dict):
+            normalized_rows.append(dict(row))
+        elif isinstance(row, list) and field_names:
+            normalized_rows.append(
+                {
+                    field_name: value
+                    for field_name, value in zip(field_names, row, strict=False)
+                }
+            )
+    return normalized_rows
+
+
+def gaia_tap_field_names(response: Mapping[str, Any]) -> list[str]:
+    """Return Gaia TAP field names from JSON metadata when present."""
+
+    metadata = response.get("metadata")
+    if not isinstance(metadata, list):
+        return []
+
+    field_names: list[str] = []
+    for field in metadata:
+        if isinstance(field, dict) and isinstance(field.get("name"), str):
+            field_names.append(str(field["name"]))
+    return field_names
 
 
 def provider_adapters() -> tuple[LiveProviderAdapter, ...]:
