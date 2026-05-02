@@ -1,0 +1,66 @@
+{
+  "cases": [
+    {
+      "case_id": "radio-recovered-narrowband",
+      "expected_pathway": "candidate_review_packet",
+      "false_alarm": false,
+      "injected_signal_strength": 0.92,
+      "injection_type": "synthetic_narrowband_signal",
+      "outcome": "recovered",
+      "recovery_score": 0.88,
+      "track": "radio"
+    },
+    {
+      "case_id": "radio-missed-low-snr",
+      "expected_pathway": "github_reproducibility_only",
+      "false_alarm": false,
+      "injected_signal_strength": 0.18,
+      "injection_type": "synthetic_narrowband_signal",
+      "outcome": "missed",
+      "recovery_score": 0.24,
+      "track": "radio"
+    },
+    {
+      "case_id": "infrared-recovered-excess",
+      "expected_pathway": "candidate_review_packet",
+      "false_alarm": false,
+      "injected_signal_strength": 0.81,
+      "injection_type": "synthetic_infrared_excess",
+      "outcome": "recovered",
+      "recovery_score": 0.84,
+      "track": "infrared"
+    },
+    {
+      "case_id": "infrared-dust-false-alarm",
+      "expected_pathway": "do_not_submit_false_positive",
+      "false_alarm": true,
+      "injected_signal_strength": 0.64,
+      "injection_type": "synthetic_infrared_excess",
+      "outcome": "false_alarm",
+      "recovery_score": 0.31,
+      "track": "infrared"
+    },
+    {
+      "case_id": "anomaly-recovered-disappearance",
+      "expected_pathway": "candidate_review_packet",
+      "false_alarm": false,
+      "injected_signal_strength": 0.86,
+      "injection_type": "synthetic_archival_disappearance",
+      "outcome": "recovered",
+      "recovery_score": 0.82,
+      "track": "anomaly"
+    },
+    {
+      "case_id": "anomaly-artifact-false-alarm",
+      "expected_pathway": "do_not_submit_false_positive",
+      "false_alarm": true,
+      "injected_signal_strength": 0.58,
+      "injection_type": "synthetic_archival_disappearance",
+      "outcome": "false_alarm",
+      "recovery_score": 0.29,
+      "track": "anomaly"
+    }
+  ],
+  "description": "Synthetic injection-recovery fixtures for development summaries only.",
+  "schema_version": "synthetic_injection_recovery_v1"
+}

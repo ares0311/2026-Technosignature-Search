@@ -82,10 +82,24 @@ Review snapshot coverage:
 .venv/bin/techno-search score-regression-summary
 ```
 
+Review synthetic injection-recovery fixture coverage:
+
+```bash
+.venv/bin/techno-search injection-recovery-summary
+```
+
+`validate-all` and `validation-summary` include injection-recovery coverage. The reported recovery rate and false-alarm fraction are synthetic development diagnostics only; they are not calibrated survey sensitivity or reliability estimates.
+
 Snapshot fixture:
 
 ```text
 tests/fixtures/score_regressions.json
+```
+
+Injection-recovery fixture:
+
+```text
+tests/fixtures/injection_recovery_summary.json
 ```
 
 When scores change, review whether the scoring model, thresholds, or example inputs changed intentionally.

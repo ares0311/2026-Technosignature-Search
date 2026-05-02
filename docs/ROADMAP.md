@@ -160,11 +160,12 @@ Measure sensitivity and reliability.
 
 ## Tasks
 
-- [ ] Radio synthetic signal injection
-- [ ] Infrared synthetic excess injection
-- [ ] Archival anomaly simulation
+- [x] Radio synthetic signal injection
+- [x] Infrared synthetic excess injection
+- [x] Archival anomaly simulation
+- [x] Synthetic injection-recovery summary fixtures
 - [ ] Recovery curves
-- [ ] False-alarm estimates
+- [x] Synthetic false-alarm estimates
 
 ---
 
@@ -242,6 +243,7 @@ Make scores empirically meaningful.
 - [x] False-positive class summary tooling
 - [x] Local validation summary command
 - [x] Provenance summary command
+- [x] Synthetic injection-recovery summary command
 - [ ] Reliability curves
 - [ ] Precision-recall analysis
 - [ ] False-positive class analysis

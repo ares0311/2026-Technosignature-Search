@@ -148,6 +148,192 @@ Merge status: already on `main`; no merge needed.
 
 ---
 
+## Plot/Injection Step 6 — Injection-Recovery Fixture Schema
+
+Status: implemented.
+
+Added:
+
+- `INJECTION_RECOVERY_SCHEMA_VERSION`
+- `InjectionRecoveryCase`
+- loader validation for `synthetic_injection_recovery_v1`
+- conservative disclaimer that fixtures are not calibrated sensitivity estimates
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_injection_recovery.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Plot/Injection Step 7 — Radio Injection-Recovery Fixtures
+
+Status: implemented.
+
+Added radio cases for:
+
+- recovered synthetic narrowband signal
+- missed low-SNR synthetic narrowband signal
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_injection_recovery.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Plot/Injection Step 8 — Infrared Injection-Recovery Fixtures
+
+Status: implemented.
+
+Added infrared cases for:
+
+- recovered synthetic infrared excess
+- dust-contaminated false alarm
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_injection_recovery.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Plot/Injection Step 9 — Archival Anomaly Injection-Recovery Fixtures
+
+Status: implemented.
+
+Added anomaly cases for:
+
+- recovered synthetic archival disappearance
+- artifact-driven false alarm
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_injection_recovery.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Plot/Injection Step 10 — Injection-Recovery Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search injection-recovery-summary`
+- summary counts by track, outcome, injection type, and expected pathway
+- synthetic recovery rate and synthetic false-alarm fraction
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py tests/test_injection_recovery.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Plot/Injection Step 11 — Injection-Recovery Summary Tests
+
+Status: implemented.
+
+Added tests proving:
+
+- the fixture covers radio, infrared, and anomaly tracks
+- outcomes include recovered, missed, and false alarm
+- CLI output exposes track/outcome counts and synthetic rates
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py tests/test_injection_recovery.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Plot/Injection Step 12 — Injection-Recovery Validation Wiring
+
+Status: implemented.
+
+Added:
+
+- injection-recovery summary block in `validate-all`
+- validation gate requiring fixture coverage
+- injection-recovery counts and synthetic rates in `validation-summary`
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py tests/test_injection_recovery.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Plot/Injection Step 13 — Injection-Recovery Docs And Status
+
+Status: implemented.
+
+Updated:
+
+- `docs/CLI_USAGE.md`
+- `docs/VALIDATION.md`
+- `docs/ROADMAP.md`
+- `docs/PROJECT_STATUS.md`
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Plot/Injection Step 14 — Full Validation And Commit
+
+Status: implemented.
+
+Validation passed:
+
+- `.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing`
+- `.venv/bin/ruff check .`
+- `.venv/bin/mypy src`
+- `git diff --check`
+
+Result:
+
+- 143 tests passed
+- 5 tests skipped
+- total coverage: 92%
+
+Commit planned:
+
+```bash
+git commit -m "Add injection recovery summaries"
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Validation And Plot Artifact Expansion
 
 User requested fifteen iterative steps:

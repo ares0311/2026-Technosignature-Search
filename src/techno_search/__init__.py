@@ -2,6 +2,11 @@
 
 from techno_search.calibration import load_calibration_fixtures
 from techno_search.config import TrackConfig, load_scoring_config, load_track_config
+from techno_search.injection_recovery import (
+    INJECTION_RECOVERY_DISCLAIMER,
+    injection_recovery_summary,
+    load_injection_recovery_cases,
+)
 from techno_search.live_data import live_data_enabled, require_live_data_enabled
 from techno_search.pathway import classify_pathway
 from techno_search.plotting import (
@@ -25,6 +30,7 @@ from techno_search.scoring import score_candidate
 
 __all__ = [
     "Candidate",
+    "INJECTION_RECOVERY_DISCLAIMER",
     "Pathway",
     "PLOT_ARTIFACT_DISCLAIMER",
     "PlotArtifact",
@@ -38,10 +44,12 @@ __all__ = [
     "candidate_packet_json",
     "classify_pathway",
     "load_calibration_fixtures",
+    "load_injection_recovery_cases",
     "load_scoring_config",
     "load_track_config",
     "live_data_enabled",
     "plot_artifact_summary",
+    "injection_recovery_summary",
     "report_manifest",
     "report_manifest_json",
     "require_live_data_enabled",

@@ -208,6 +208,20 @@ def test_cli_score_regression_summary_outputs_snapshot_counts() -> None:
     assert result["by_recommended_pathway"] == {"candidate_review_packet": 3}
 
 
+def test_cli_injection_recovery_summary_outputs_fixture_counts() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["injection-recovery-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["case_count"] == 6
+    assert result["by_track"] == {"anomaly": 2, "infrared": 2, "radio": 2}
+    assert result["by_outcome"] == {"false_alarm": 2, "missed": 1, "recovered": 3}
+    assert result["synthetic_recovery_rate"] == 0.75
+    assert result["synthetic_false_alarm_fraction"] == 0.333333
+
+
 def test_cli_validate_all_outputs_local_summary() -> None:
     stdout = StringIO()
 
@@ -226,6 +240,12 @@ def test_cli_validate_all_outputs_local_summary() -> None:
         "irsa": 1,
         "simbad": 1,
         "vizier": 1,
+    }
+    assert result["injection_recovery_summary"]["case_count"] == 6
+    assert result["injection_recovery_summary"]["by_track"] == {
+        "anomaly": 2,
+        "infrared": 2,
+        "radio": 2,
     }
     assert result["catalog_cache_validation"]["forbidden_roots"] == [
         "data",
@@ -251,6 +271,9 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["score_regression_candidate_count"] == 3
     assert result["catalog_cache_ok"] is True
     assert result["provider_normalization_case_count"] == 5
+    assert result["injection_recovery_case_count"] == 6
+    assert result["synthetic_recovery_rate"] == 0.75
+    assert result["synthetic_false_alarm_fraction"] == 0.333333
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 

@@ -14,6 +14,7 @@ from typing import TextIO
 
 from techno_search.calibration import load_calibration_fixtures, summarize_calibration_fixtures
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
+from techno_search.injection_recovery import injection_recovery_summary
 from techno_search.live_data import (
     CatalogCache,
     CatalogCachePolicy,
@@ -100,6 +101,17 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
     if args.command == "score-regression-summary":
         print(
             json.dumps(score_regression_summary(args.snapshot_path), indent=2, sort_keys=True),
+            file=out,
+        )
+        return 0
+
+    if args.command == "injection-recovery-summary":
+        print(
+            json.dumps(
+                injection_recovery_summary(args.fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
             file=out,
         )
         return 0
@@ -336,6 +348,8 @@ def validate_all() -> dict[str, object]:
     catalog_cache = catalog_cache_validation_summary(git_tracked_paths(root), project_root=root)
     provider_normalization = provider_normalization_regression_summary()
     provider_normalization_case_count = provider_normalization["case_count"]
+    injection_recovery = injection_recovery_summary()
+    injection_recovery_case_count = injection_recovery["case_count"]
 
     ok = (
         all(result["ok"] for result in candidate_results.values())
@@ -344,6 +358,8 @@ def validate_all() -> dict[str, object]:
         and bool(catalog_cache["ok"])
         and isinstance(provider_normalization_case_count, int)
         and provider_normalization_case_count >= 5
+        and isinstance(injection_recovery_case_count, int)
+        and injection_recovery_case_count >= 6
     )
     return {
         "ok": ok,
@@ -355,6 +371,7 @@ def validate_all() -> dict[str, object]:
         "score_regression_summary": regression,
         "catalog_cache_validation": catalog_cache,
         "provider_normalization_summary": provider_normalization,
+        "injection_recovery_summary": injection_recovery,
     }
 
 
@@ -369,6 +386,7 @@ def validation_summary() -> dict[str, object]:
     regression = validation["score_regression_summary"]
     catalog_cache = validation["catalog_cache_validation"]
     provider_normalization = validation["provider_normalization_summary"]
+    injection_recovery = validation["injection_recovery_summary"]
     return {
         "ok": validation["ok"],
         "generated_at_utc": datetime.now(UTC).isoformat(),
@@ -388,6 +406,17 @@ def validation_summary() -> dict[str, object]:
         "provider_normalization_case_count": provider_normalization["case_count"]
         if isinstance(provider_normalization, dict)
         else 0,
+        "injection_recovery_case_count": injection_recovery["case_count"]
+        if isinstance(injection_recovery, dict)
+        else 0,
+        "synthetic_recovery_rate": injection_recovery["synthetic_recovery_rate"]
+        if isinstance(injection_recovery, dict)
+        else 0.0,
+        "synthetic_false_alarm_fraction": injection_recovery[
+            "synthetic_false_alarm_fraction"
+        ]
+        if isinstance(injection_recovery, dict)
+        else 0.0,
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
             ".venv/bin/ruff check .",
@@ -578,6 +607,15 @@ def _build_parser() -> argparse.ArgumentParser:
         "--snapshot-path",
         type=Path,
         help="Optional score regression snapshot JSON path.",
+    )
+    injection_recovery_parser = subparsers.add_parser(
+        "injection-recovery-summary",
+        help="Summarize synthetic injection-recovery fixture coverage.",
+    )
+    injection_recovery_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional synthetic injection-recovery fixture JSON path.",
     )
     subparsers.add_parser(
         "validate-all",

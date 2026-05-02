@@ -104,6 +104,10 @@ The project will support three tracks from day one:
 - [x] Provenance summary CLI added
 - [x] Validation summary CLI added
 - [x] Optional plot artifact references added to report manifests
+- [x] Plot artifact summary CLI added
+- [x] Synthetic injection-recovery fixtures added
+- [x] Injection-recovery summary CLI added
+- [x] Injection-recovery summary wired into local validation
 
 ---
 
@@ -128,9 +132,9 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Add report plot artifact review ergonomics for human triage.
-2. Add injection-recovery summary fixtures for synthetic tracks.
-3. Begin reliability-curve scaffolding using synthetic calibration fixtures.
+1. Begin reliability-curve scaffolding using synthetic calibration and injection-recovery fixtures.
+2. Add precision-recall summary fixtures for synthetic candidate classes.
+3. Define a human-review queue packet format for triage labels and reviewer notes.
 
 ---
 

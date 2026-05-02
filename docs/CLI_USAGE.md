@@ -147,6 +147,18 @@ Print stable score-regression fixture coverage:
 
 ---
 
+## Summarize Injection-Recovery Fixtures
+
+Print synthetic injection-recovery fixture coverage:
+
+```bash
+.venv/bin/techno-search injection-recovery-summary
+```
+
+The summary reports cases by track, outcome, injection type, expected pathway, synthetic recovery rate, and synthetic false-alarm fraction. These fixtures are development diagnostics, not calibrated survey sensitivity estimates.
+
+---
+
 ## Run Local Validation Summary
 
 Run the non-network validation summaries used for quick release checks:
