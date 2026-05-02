@@ -214,6 +214,7 @@ Add real data ingestion behind tested abstractions.
 - [x] Guarded Gaia live client with mocked transport tests
 - [x] Guarded IRSA live client with mocked transport tests
 - [x] Guarded VizieR live client with mocked transport tests
+- [x] Guarded SIMBAD live client with mocked transport tests
 - [ ] Remaining real provider client implementations
 - [ ] Catalog cache storage implementation
 

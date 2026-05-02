@@ -154,6 +154,102 @@ Merge status: already on `main`; no merge needed.
 
 ---
 
+## Remaining Provider Expansion Step 6 — Guarded SIMBAD Client
+
+Status: implemented.
+
+Added:
+
+- guarded SIMBAD object-lookup client using `TECHNO_SEARCH_ENABLE_LIVE_DATA`
+- injectable HTTP GET byte fetcher for non-networked tests
+- bounded response reads
+- SIMBAD tabular metadata normalization through the shared delimited-table helper
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Remaining Provider Expansion Step 7 — SIMBAD Mock Fixture
+
+Status: implemented.
+
+Added:
+
+- `tests/fixtures/live_metadata/simbad_mock_response.metadata.json`
+- fixture loader coverage for mocked SIMBAD response metadata
+- live fixture summary expected count update
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Remaining Provider Expansion Step 8 — SIMBAD Integration Marker
+
+Status: implemented.
+
+Added:
+
+- SIMBAD client test proving disabled-by-default behavior
+- injected transport test for opt-in SIMBAD metadata fetches
+- `integration_live`-marked SIMBAD test with injected transport and no default network dependency
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_live_data.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Remaining Provider Expansion Step 9 — SIMBAD Docs, Validation, And Commit
+
+Status: implemented.
+
+Updated:
+
+- `docs/PROJECT_STATUS.md`
+- `docs/ROADMAP.md`
+- `docs/LIVE_PROVIDER_INTERFACES.md`
+- `CLAUDE.md` handoff notes for the SIMBAD step
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/ruff check .
+.venv/bin/mypy src
+git diff --check
+```
+
+Commit planned:
+
+```bash
+git commit -m "Add guarded SIMBAD provider client"
+```
+
+Merge status: already on `main`; no merge needed.
+
+Result:
+
+- 114 tests passed, 5 skipped
+- total coverage: 92%
+
+---
+
 ## Fifteen-Step Live Provider Expansion
 
 User requested fifteen iterative steps:

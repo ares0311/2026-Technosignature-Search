@@ -65,6 +65,7 @@ Current clients:
 `GaiaLiveClient` has a guarded TAP metadata implementation with injectable transport for tests.
 `IrsaLiveClient` has a guarded catalog metadata implementation with injectable transport for tests.
 `VizierLiveClient` has a guarded catalog metadata implementation with injectable transport for tests.
+`SimbadLiveClient` has a guarded object-lookup metadata implementation with injectable transport for tests.
 The remaining skeletons require `TECHNO_SEARCH_ENABLE_LIVE_DATA=1` and then raise `NotImplementedError` until real provider implementations are added.
 
 Inspect skeleton status without network access:

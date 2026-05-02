@@ -701,6 +701,20 @@ def test_simbad_live_metadata_fixture_loads_without_network(monkeypatch) -> None
     assert fixture["request"]["cache_key"] == "fixture-simbad-object-lookup-v1"
 
 
+def test_simbad_mock_response_fixture_loads_without_network(monkeypatch) -> None:
+    monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
+
+    fixture = load_live_metadata_fixture(
+        default_live_metadata_fixture_dir() / "simbad_mock_response.metadata.json"
+    )
+
+    assert live_data_enabled() is False
+    assert fixture["provider_name"] == "simbad"
+    assert fixture["request"]["cache_key"] == "fixture-simbad-mock-response-v1"
+    assert fixture["response_metadata"]["provider_status"] == "mocked"
+    assert fixture["response_metadata"]["row_count"] == 1
+
+
 def test_simbad_fixture_client_normalizes_through_adapter(monkeypatch) -> None:
     request = SimbadAdapter().build_object_lookup_request(object_name="synthetic-target")
     adapter = LiveProviderAdapter.from_client(
@@ -721,17 +735,62 @@ def test_simbad_fixture_client_normalizes_through_adapter(monkeypatch) -> None:
     ]
 
 
-def test_simbad_live_client_skeleton_is_disabled_and_unimplemented(monkeypatch) -> None:
+def test_simbad_live_client_requires_opt_in_and_uses_injected_http(monkeypatch) -> None:
     request = SimbadAdapter().build_object_lookup_request(object_name="synthetic-target")
-    client = SimbadLiveClient()
+    calls: list[tuple[str, float, int]] = []
+
+    def get_bytes(url: str, timeout_seconds: float, max_response_bytes: int) -> bytes:
+        calls.append((url, timeout_seconds, max_response_bytes))
+        return b"main_id\totype\tra\tdec\nsynthetic-target\tStar\t123.45\t-54.321\n"
+
+    client = SimbadLiveClient(http_get_bytes=get_bytes, timeout_seconds=5.0)
 
     monkeypatch.delenv(LIVE_DATA_ENV_VAR, raising=False)
     with pytest.raises(LiveDataDisabledError):
         client.fetch_metadata(request)
+    assert calls == []
 
     monkeypatch.setenv(LIVE_DATA_ENV_VAR, "1")
-    with pytest.raises(NotImplementedError):
-        client.fetch_metadata(request)
+    metadata = client.fetch_metadata(request)
+
+    assert metadata["provider_status"] == "live"
+    assert metadata["query_endpoint"] == client.sim_script_url
+    assert metadata["response_format"] == "tsv"
+    assert metadata["rows"] == [
+        {
+            "main_id": "synthetic-target",
+            "otype": "Star",
+            "ra": "123.45",
+            "dec": "-54.321",
+        }
+    ]
+    assert calls
+    assert calls[0][0].startswith(client.sim_script_url)
+    assert "synthetic-target" in calls[0][0]
+
+
+@pytest.mark.integration_live
+@pytest.mark.skipif(
+    os.environ.get(LIVE_DATA_ENV_VAR) != "1",
+    reason="live-data integration scaffold is opt-in",
+)
+def test_simbad_live_client_integration_marker_uses_injected_transport() -> None:
+    request = SimbadAdapter().build_object_lookup_request(object_name="synthetic-target")
+
+    def get_bytes(url: str, timeout_seconds: float, max_response_bytes: int) -> bytes:
+        return b"main_id\totype\tra\tdec\nsynthetic-target\tStar\t123.45\t-54.321\n"
+
+    metadata = SimbadLiveClient(http_get_bytes=get_bytes).fetch_metadata(request)
+
+    assert metadata["provider_status"] == "live"
+    assert metadata["rows"] == [
+        {
+            "main_id": "synthetic-target",
+            "otype": "Star",
+            "ra": "123.45",
+            "dec": "-54.321",
+        }
+    ]
 
 
 @pytest.mark.integration_live

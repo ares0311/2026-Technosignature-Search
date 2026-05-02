@@ -733,21 +733,45 @@ class SimbadAdapter(LiveProviderAdapter):
         )
 
 
+@dataclass(frozen=True)
 class SimbadLiveClient:
-    """Disabled SIMBAD live-client skeleton for future provider integration."""
+    """Guarded SIMBAD object-lookup client for provenance metadata requests."""
 
     provider_name = "simbad"
     service_url = "https://simbad.cds.unistra.fr/"
-    implemented = False
-    networked = False
+    implemented = True
+    networked = True
     local_file_only = False
+    sim_script_url: str = "https://simbad.cds.unistra.fr/simbad/sim-script"
+    http_get_bytes: HttpGetBytes | None = None
+    timeout_seconds: float = 30.0
+    max_response_bytes: int = DEFAULT_CATALOG_CACHE_METADATA_MAX_BYTES
 
     def fetch_metadata(self, request: LiveDataRequest) -> Mapping[str, Any]:
-        """Require live opt-in before future SIMBAD network implementation."""
+        """Fetch SIMBAD object metadata only when live-data access is enabled."""
 
         require_live_data_enabled()
-        msg = "SIMBAD live client is not implemented yet."
-        raise NotImplementedError(msg)
+        if request.source_name != self.provider_name:
+            msg = f"SIMBAD client cannot fetch request for {request.source_name!r}."
+            raise ValueError(msg)
+
+        script = "\n".join(
+            [
+                "format object \"main_id\\totype\\tra\\tdec\"",
+                f"query id {request.query}",
+            ]
+        )
+        query_url = f"{self.sim_script_url}?{parse.urlencode({'script': script})}"
+        get_bytes = self.http_get_bytes or http_get_bytes
+        response_bytes = get_bytes(query_url, self.timeout_seconds, self.max_response_bytes)
+        decoded = response_bytes.decode("utf-8")
+        return {
+            "provider_status": "live",
+            "query_endpoint": self.sim_script_url,
+            "response_format": "tsv",
+            "content_bytes": len(response_bytes),
+            "rows": delimited_text_rows(decoded),
+        }
 
 
 class BreakthroughListenAdapter(LiveProviderAdapter):
