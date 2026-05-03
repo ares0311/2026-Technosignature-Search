@@ -246,7 +246,7 @@ Make scores empirically meaningful.
 - [x] Provenance summary command
 - [x] Synthetic injection-recovery summary command
 - [x] Reliability curves
-- [ ] Precision-recall analysis
+- [x] Precision-recall analysis
 - [ ] False-positive class analysis
 - [ ] Calibration by track
 

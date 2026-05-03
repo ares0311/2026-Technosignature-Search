@@ -171,6 +171,18 @@ The summary reports bins by track and score range plus synthetic calibration-err
 
 ---
 
+## Summarize Precision-Recall Fixtures
+
+Print synthetic precision-recall fixture coverage:
+
+```bash
+.venv/bin/techno-search precision-recall-summary
+```
+
+The summary reports cases by track and truth class plus synthetic precision, recall, and F1 diagnostics. These fixtures are not validated survey classification metrics.
+
+---
+
 ## Run Local Validation Summary
 
 Run the non-network validation summaries used for quick release checks:

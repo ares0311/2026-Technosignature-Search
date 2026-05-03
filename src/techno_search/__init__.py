@@ -2,8 +2,11 @@
 
 from techno_search.calibration import load_calibration_fixtures
 from techno_search.calibration_metrics import (
+    PRECISION_RECALL_DISCLAIMER,
     RELIABILITY_DISCLAIMER,
+    load_precision_recall_cases,
     load_reliability_bins,
+    precision_recall_summary,
     reliability_summary,
 )
 from techno_search.config import TrackConfig, load_scoring_config, load_track_config
@@ -37,6 +40,7 @@ __all__ = [
     "Candidate",
     "INJECTION_RECOVERY_DISCLAIMER",
     "Pathway",
+    "PRECISION_RECALL_DISCLAIMER",
     "PLOT_ARTIFACT_DISCLAIMER",
     "PlotArtifact",
     "REQUIRED_DISCLAIMER",
@@ -51,11 +55,13 @@ __all__ = [
     "classify_pathway",
     "load_calibration_fixtures",
     "load_injection_recovery_cases",
+    "load_precision_recall_cases",
     "load_reliability_bins",
     "load_scoring_config",
     "load_track_config",
     "live_data_enabled",
     "plot_artifact_summary",
+    "precision_recall_summary",
     "injection_recovery_summary",
     "report_manifest",
     "report_manifest_json",

@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import TextIO
 
 from techno_search.calibration import load_calibration_fixtures, summarize_calibration_fixtures
-from techno_search.calibration_metrics import reliability_summary
+from techno_search.calibration_metrics import precision_recall_summary, reliability_summary
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.injection_recovery import injection_recovery_summary
 from techno_search.live_data import (
@@ -121,6 +121,17 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(
             json.dumps(
                 reliability_summary(args.fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "precision-recall-summary":
+        print(
+            json.dumps(
+                precision_recall_summary(args.fixture_path),
                 indent=2,
                 sort_keys=True,
             ),
@@ -364,6 +375,8 @@ def validate_all() -> dict[str, object]:
     injection_recovery_case_count = injection_recovery["case_count"]
     reliability = reliability_summary()
     reliability_bin_count = reliability["bin_count"]
+    precision_recall = precision_recall_summary()
+    precision_recall_case_count = precision_recall["case_count"]
 
     ok = (
         all(result["ok"] for result in candidate_results.values())
@@ -376,6 +389,8 @@ def validate_all() -> dict[str, object]:
         and injection_recovery_case_count >= 6
         and isinstance(reliability_bin_count, int)
         and reliability_bin_count >= 9
+        and isinstance(precision_recall_case_count, int)
+        and precision_recall_case_count >= 6
     )
     return {
         "ok": ok,
@@ -389,6 +404,7 @@ def validate_all() -> dict[str, object]:
         "provider_normalization_summary": provider_normalization,
         "injection_recovery_summary": injection_recovery,
         "reliability_summary": reliability,
+        "precision_recall_summary": precision_recall,
     }
 
 
@@ -405,6 +421,7 @@ def validation_summary() -> dict[str, object]:
     provider_normalization = validation["provider_normalization_summary"]
     injection_recovery = validation["injection_recovery_summary"]
     reliability = validation["reliability_summary"]
+    precision_recall = validation["precision_recall_summary"]
     return {
         "ok": validation["ok"],
         "generated_at_utc": datetime.now(UTC).isoformat(),
@@ -442,6 +459,15 @@ def validation_summary() -> dict[str, object]:
             "mean_absolute_calibration_error"
         ]
         if isinstance(reliability, dict)
+        else 0.0,
+        "precision_recall_case_count": precision_recall["case_count"]
+        if isinstance(precision_recall, dict)
+        else 0,
+        "synthetic_precision": precision_recall["synthetic_precision"]
+        if isinstance(precision_recall, dict)
+        else 0.0,
+        "synthetic_recall": precision_recall["synthetic_recall"]
+        if isinstance(precision_recall, dict)
         else 0.0,
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
@@ -651,6 +677,15 @@ def _build_parser() -> argparse.ArgumentParser:
         "--fixture-path",
         type=Path,
         help="Optional synthetic reliability fixture JSON path.",
+    )
+    precision_recall_parser = subparsers.add_parser(
+        "precision-recall-summary",
+        help="Summarize synthetic precision-recall fixture coverage.",
+    )
+    precision_recall_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional synthetic precision-recall fixture JSON path.",
     )
     subparsers.add_parser(
         "validate-all",

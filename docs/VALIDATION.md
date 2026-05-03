@@ -94,7 +94,13 @@ Review synthetic reliability-curve fixture coverage:
 .venv/bin/techno-search reliability-summary
 ```
 
-`validate-all` and `validation-summary` include injection-recovery and reliability coverage. The reported recovery rate, false-alarm fraction, and reliability errors are synthetic development diagnostics only; they are not calibrated survey sensitivity or reliability estimates.
+Review synthetic precision-recall fixture coverage:
+
+```bash
+.venv/bin/techno-search precision-recall-summary
+```
+
+`validate-all` and `validation-summary` include injection-recovery, reliability, and precision-recall coverage. The reported recovery rate, false-alarm fraction, reliability errors, precision, recall, and F1 score are synthetic development diagnostics only; they are not calibrated survey sensitivity, reliability, or classification performance estimates.
 
 Snapshot fixture:
 
@@ -112,6 +118,12 @@ Reliability fixture:
 
 ```text
 tests/fixtures/reliability_curves.json
+```
+
+Precision-recall fixture:
+
+```text
+tests/fixtures/precision_recall_summary.json
 ```
 
 When scores change, review whether the scoring model, thresholds, or example inputs changed intentionally.

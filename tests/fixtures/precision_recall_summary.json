@@ -1,0 +1,60 @@
+{
+  "cases": [
+    {
+      "case_id": "radio-candidate-threshold",
+      "false_negative_count": 2,
+      "false_positive_count": 1,
+      "score_threshold": 0.6,
+      "track": "radio",
+      "true_positive_count": 7,
+      "truth_class": "candidate"
+    },
+    {
+      "case_id": "radio-false-positive-threshold",
+      "false_negative_count": 1,
+      "false_positive_count": 2,
+      "score_threshold": 0.6,
+      "track": "radio",
+      "true_positive_count": 8,
+      "truth_class": "false_positive"
+    },
+    {
+      "case_id": "infrared-candidate-threshold",
+      "false_negative_count": 3,
+      "false_positive_count": 2,
+      "score_threshold": 0.6,
+      "track": "infrared",
+      "true_positive_count": 6,
+      "truth_class": "candidate"
+    },
+    {
+      "case_id": "infrared-false-positive-threshold",
+      "false_negative_count": 2,
+      "false_positive_count": 1,
+      "score_threshold": 0.6,
+      "track": "infrared",
+      "true_positive_count": 9,
+      "truth_class": "false_positive"
+    },
+    {
+      "case_id": "anomaly-candidate-threshold",
+      "false_negative_count": 2,
+      "false_positive_count": 2,
+      "score_threshold": 0.6,
+      "track": "anomaly",
+      "true_positive_count": 5,
+      "truth_class": "candidate"
+    },
+    {
+      "case_id": "anomaly-false-positive-threshold",
+      "false_negative_count": 1,
+      "false_positive_count": 2,
+      "score_threshold": 0.6,
+      "track": "anomaly",
+      "true_positive_count": 7,
+      "truth_class": "false_positive"
+    }
+  ],
+  "description": "Synthetic precision-recall fixtures for development diagnostics only.",
+  "schema_version": "synthetic_precision_recall_v1"
+}

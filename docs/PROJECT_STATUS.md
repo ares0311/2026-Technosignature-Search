@@ -111,6 +111,9 @@ The project will support three tracks from day one:
 - [x] Synthetic reliability curve fixtures added
 - [x] Reliability summary CLI added
 - [x] Reliability summary wired into local validation
+- [x] Synthetic precision-recall fixtures added
+- [x] Precision-recall summary CLI added
+- [x] Precision-recall summary wired into local validation
 
 ---
 
@@ -135,9 +138,9 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Add precision-recall summary fixtures for synthetic candidate classes.
-2. Add false-positive class analysis summaries for synthetic calibration fixtures.
-3. Define a human-review queue packet format for triage labels and reviewer notes.
+1. Add false-positive class analysis summaries for synthetic calibration fixtures.
+2. Define a human-review queue packet format for triage labels and reviewer notes.
+3. Add human-review queue export examples.
 
 ---
 

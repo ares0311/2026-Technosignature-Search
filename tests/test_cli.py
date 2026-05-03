@@ -236,6 +236,21 @@ def test_cli_reliability_summary_outputs_fixture_counts() -> None:
     assert result["mean_absolute_calibration_error"] == 0.022933
 
 
+def test_cli_precision_recall_summary_outputs_fixture_counts() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["precision-recall-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["case_count"] == 6
+    assert result["by_track"] == {"anomaly": 2, "infrared": 2, "radio": 2}
+    assert result["by_truth_class"] == {"candidate": 3, "false_positive": 3}
+    assert result["synthetic_precision"] == 0.807692
+    assert result["synthetic_recall"] == 0.792453
+    assert result["synthetic_f1_score"] == 0.8
+
+
 def test_cli_validate_all_outputs_local_summary() -> None:
     stdout = StringIO()
 
@@ -267,6 +282,11 @@ def test_cli_validate_all_outputs_local_summary() -> None:
         "infrared": 3,
         "radio": 3,
     }
+    assert result["precision_recall_summary"]["case_count"] == 6
+    assert result["precision_recall_summary"]["by_truth_class"] == {
+        "candidate": 3,
+        "false_positive": 3,
+    }
     assert result["catalog_cache_validation"]["forbidden_roots"] == [
         "data",
         "cache",
@@ -296,6 +316,9 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["synthetic_false_alarm_fraction"] == 0.333333
     assert result["reliability_bin_count"] == 9
     assert result["mean_absolute_calibration_error"] == 0.022933
+    assert result["precision_recall_case_count"] == 6
+    assert result["synthetic_precision"] == 0.807692
+    assert result["synthetic_recall"] == 0.792453
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 

@@ -10,9 +10,14 @@ from pathlib import Path
 from techno_search.schemas import Track
 
 RELIABILITY_SCHEMA_VERSION = "synthetic_reliability_curves_v1"
+PRECISION_RECALL_SCHEMA_VERSION = "synthetic_precision_recall_v1"
 RELIABILITY_DISCLAIMER = (
     "Synthetic reliability fixtures are development diagnostics only; they are not "
     "calibrated survey performance estimates."
+)
+PRECISION_RECALL_DISCLAIMER = (
+    "Synthetic precision-recall fixtures are development diagnostics only; they are not "
+    "validated survey classification metrics."
 )
 
 
@@ -35,11 +40,32 @@ class ReliabilityBin:
         return abs(self.predicted_probability - self.observed_fraction)
 
 
+@dataclass(frozen=True)
+class PrecisionRecallCase:
+    """One synthetic precision-recall fixture case."""
+
+    case_id: str
+    track: Track
+    truth_class: str
+    score_threshold: float
+    true_positive_count: int
+    false_positive_count: int
+    false_negative_count: int
+
+
 def default_reliability_fixture_path() -> Path:
     """Return the repository-local synthetic reliability fixture path."""
 
     return Path(__file__).resolve().parents[2] / "tests" / "fixtures" / (
         "reliability_curves.json"
+    )
+
+
+def default_precision_recall_fixture_path() -> Path:
+    """Return the repository-local synthetic precision-recall fixture path."""
+
+    return Path(__file__).resolve().parents[2] / "tests" / "fixtures" / (
+        "precision_recall_summary.json"
     )
 
 
@@ -60,6 +86,27 @@ def load_reliability_bins(path: Path | str | None = None) -> tuple[ReliabilityBi
         msg = f"Reliability fixture missing bins: {fixture_path}"
         raise ValueError(msg)
     return tuple(_reliability_bin_from_mapping(item) for item in bins)
+
+
+def load_precision_recall_cases(
+    path: Path | str | None = None,
+) -> tuple[PrecisionRecallCase, ...]:
+    """Load and validate synthetic precision-recall fixture cases."""
+
+    fixture_path = default_precision_recall_fixture_path() if path is None else Path(path)
+    with fixture_path.open(encoding="utf-8") as handle:
+        fixture = json.load(handle)
+    if not isinstance(fixture, dict):
+        msg = f"Precision-recall fixture is not an object: {fixture_path}"
+        raise ValueError(msg)
+    if fixture.get("schema_version") != PRECISION_RECALL_SCHEMA_VERSION:
+        msg = f"Unsupported precision-recall fixture schema: {fixture_path}"
+        raise ValueError(msg)
+    cases = fixture.get("cases")
+    if not isinstance(cases, list):
+        msg = f"Precision-recall fixture missing cases: {fixture_path}"
+        raise ValueError(msg)
+    return tuple(_precision_recall_case_from_mapping(item) for item in cases)
 
 
 def reliability_summary(path: Path | str | None = None) -> dict[str, object]:
@@ -86,6 +133,34 @@ def reliability_summary(path: Path | str | None = None) -> dict[str, object]:
     }
 
 
+def precision_recall_summary(path: Path | str | None = None) -> dict[str, object]:
+    """Summarize synthetic precision-recall fixture coverage."""
+
+    fixture_path = default_precision_recall_fixture_path() if path is None else Path(path)
+    cases = load_precision_recall_cases(fixture_path)
+    true_positive_count = sum(item.true_positive_count for item in cases)
+    false_positive_count = sum(item.false_positive_count for item in cases)
+    false_negative_count = sum(item.false_negative_count for item in cases)
+    precision = _safe_ratio(true_positive_count, true_positive_count + false_positive_count)
+    recall = _safe_ratio(true_positive_count, true_positive_count + false_negative_count)
+    return {
+        "fixture_path": str(fixture_path),
+        "schema_version": PRECISION_RECALL_SCHEMA_VERSION,
+        "disclaimer": PRECISION_RECALL_DISCLAIMER,
+        "case_count": len(cases),
+        "by_track": _counter_to_dict(Counter(item.track.value for item in cases)),
+        "by_truth_class": _counter_to_dict(Counter(item.truth_class for item in cases)),
+        "thresholds": sorted({item.score_threshold for item in cases}),
+        "true_positive_count": true_positive_count,
+        "false_positive_count": false_positive_count,
+        "false_negative_count": false_negative_count,
+        "synthetic_precision": precision,
+        "synthetic_recall": recall,
+        "synthetic_f1_score": _f1_score(precision, recall),
+        "case_ids": sorted(item.case_id for item in cases),
+    }
+
+
 def _reliability_bin_from_mapping(data: object) -> ReliabilityBin:
     if not isinstance(data, dict):
         msg = "Reliability bin must be an object"
@@ -101,10 +176,31 @@ def _reliability_bin_from_mapping(data: object) -> ReliabilityBin:
     )
 
 
+def _precision_recall_case_from_mapping(data: object) -> PrecisionRecallCase:
+    if not isinstance(data, dict):
+        msg = "Precision-recall case must be an object"
+        raise ValueError(msg)
+    return PrecisionRecallCase(
+        case_id=str(data["case_id"]),
+        track=Track(str(data["track"])),
+        truth_class=str(data["truth_class"]),
+        score_threshold=float(data["score_threshold"]),
+        true_positive_count=int(data["true_positive_count"]),
+        false_positive_count=int(data["false_positive_count"]),
+        false_negative_count=int(data["false_negative_count"]),
+    )
+
+
 def _safe_ratio(numerator: float, denominator: int) -> float:
     if denominator == 0:
         return 0.0
     return round(numerator / denominator, 6)
+
+
+def _f1_score(precision: float, recall: float) -> float:
+    if precision + recall == 0.0:
+        return 0.0
+    return round((2 * precision * recall) / (precision + recall), 6)
 
 
 def _counter_to_dict(counter: Counter[str]) -> dict[str, int]:

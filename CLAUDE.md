@@ -247,6 +247,95 @@ Merge status: already on `main`; no merge needed.
 
 ---
 
+## Reliability/PR Step 11 — Precision-Recall Fixture Schema
+
+Status: implemented.
+
+Added:
+
+- `PRECISION_RECALL_SCHEMA_VERSION`
+- `PrecisionRecallCase`
+- loader validation for `synthetic_precision_recall_v1`
+- conservative disclaimer that fixtures are not validated classification metrics
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_calibration_metrics.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Reliability/PR Step 12 — Precision-Recall Fixtures
+
+Status: implemented.
+
+Added synthetic precision-recall fixtures for:
+
+- candidate truth class
+- false-positive truth class
+- radio, infrared, and anomaly tracks
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_calibration_metrics.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Reliability/PR Step 13 — Precision-Recall Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search precision-recall-summary`
+- precision-recall summary block in `validate-all`
+- precision-recall counts and synthetic metrics in `validation-summary`
+- docs/status updates for synthetic precision-recall diagnostics
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_calibration_metrics.py tests/test_cli.py tests/test_docs.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Reliability/PR Step 14 — Full Validation And Commit
+
+Status: implemented.
+
+Validation passed:
+
+- `.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing`
+- `.venv/bin/ruff check .`
+- `.venv/bin/mypy src`
+- `git diff --check`
+
+Result:
+
+- 149 tests passed
+- 5 tests skipped
+- total coverage: 92%
+
+Commit planned:
+
+```bash
+git commit -m "Add precision recall summary fixtures"
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Plot Ergonomics And Injection-Recovery Expansion
 
 User requested fifteen iterative steps:
