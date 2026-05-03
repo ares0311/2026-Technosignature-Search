@@ -24,6 +24,174 @@ Overall status: all three requested steps are implemented.
 
 ---
 
+## Fifteen-Step False-Positive And Human-Review Expansion
+
+User requested fifteen iterative steps:
+
+1. Add false-positive class analysis fixture schema.
+2. Add false-positive class fixtures from calibration cases.
+3. Add `techno-search false-positive-summary`.
+4. Add tests for false-positive summary by class and track.
+5. Wire false-positive summary into `validate-all`.
+6. Wire false-positive summary into `validation-summary`.
+7. Update validation docs for false-positive class diagnostics.
+8. Update roadmap/status to mark false-positive class analysis complete.
+9. Run focused validation and commit.
+10. Push `main` and confirm sync.
+11. Add human-review queue packet schema.
+12. Add triage label enum/allowed values.
+13. Add reviewer notes structure.
+14. Add `techno-search review-queue-summary`.
+15. Add tests and docs for the human-review queue scaffold.
+
+Each step should update this file and merge to `main` if needed.
+
+## False-Positive/Human-Review Step 1 — False-Positive Analysis Schema
+
+Status: implemented.
+
+Added:
+
+- `FALSE_POSITIVE_ANALYSIS_SCHEMA_VERSION`
+- `FALSE_POSITIVE_ANALYSIS_DISCLAIMER`
+- class, track, pathway, candidate-ID, and fixture-name summary fields
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## False-Positive/Human-Review Step 2 — Calibration-Derived Class Fixtures
+
+Status: implemented.
+
+Reused the existing synthetic calibration false-positive cases as the source fixture set for class analysis. This keeps the diagnostic tied to the scored calibration cases and avoids introducing an unscored duplicate fixture list.
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## False-Positive/Human-Review Step 3 — False-Positive Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search false-positive-summary`
+- optional `--fixture-path`
+- conservative JSON output with synthetic diagnostic disclaimer
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## False-Positive/Human-Review Step 4 — False-Positive Summary Tests
+
+Status: implemented.
+
+Added tests for:
+
+- class count
+- track count
+- nested track-and-class counts
+- CLI output and disclaimer language
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## False-Positive/Human-Review Step 5 — Validate-All Wiring
+
+Status: implemented.
+
+Added `false_positive_summary` to `validate-all` with gates for expected synthetic case and class coverage.
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## False-Positive/Human-Review Step 6 — Validation Summary Wiring
+
+Status: implemented.
+
+Added:
+
+- `false_positive_case_count`
+- `false_positive_class_count`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## False-Positive/Human-Review Step 7 — Validation Docs
+
+Status: implemented.
+
+Updated:
+
+- `docs/CLI_USAGE.md`
+- `docs/VALIDATION.md`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## False-Positive/Human-Review Step 8 — Roadmap And Status
+
+Status: implemented.
+
+Updated:
+
+- `docs/ROADMAP.md`
+- `docs/PROJECT_STATUS.md`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## False-Positive/Human-Review Step 9 — Focused Validation And Commit
+
+Status: implemented.
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest tests/test_calibration_fixtures.py tests/test_cli.py tests/test_docs.py
+.venv/bin/ruff check src/techno_search/calibration.py src/techno_search/cli.py src/techno_search/__init__.py tests/test_calibration_fixtures.py tests/test_cli.py
+.venv/bin/mypy src
+git diff --check
+```
+
+Result:
+
+- 36 focused tests passed
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+
+Commit planned:
+
+```bash
+git commit -m "Add false positive class summaries"
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## False-Positive/Human-Review Step 10 — Push Main
+
+Status: pending.
+
+Planned push:
+
+```bash
+git push origin main
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Reliability And Precision-Recall Expansion
 
 User requested fifteen iterative steps:

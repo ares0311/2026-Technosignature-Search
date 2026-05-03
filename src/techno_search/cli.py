@@ -12,7 +12,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TextIO
 
-from techno_search.calibration import load_calibration_fixtures, summarize_calibration_fixtures
+from techno_search.calibration import (
+    false_positive_class_summary,
+    load_calibration_fixtures,
+    summarize_calibration_fixtures,
+)
 from techno_search.calibration_metrics import precision_recall_summary, reliability_summary
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.injection_recovery import injection_recovery_summary
@@ -83,6 +87,17 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         fixtures = load_calibration_fixtures(args.fixture_path)
         summary = summarize_calibration_fixtures(fixtures)
         print(json.dumps(summary.as_dict(), indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "false-positive-summary":
+        print(
+            json.dumps(
+                false_positive_class_summary(args.fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
         return 0
 
     if args.command == "validate-candidate":
@@ -367,6 +382,9 @@ def validate_all() -> dict[str, object]:
     schemas = schema_paths()
     schema_results = {path: Path(path).exists() for path in schemas.values()}
     calibration = summarize_calibration_fixtures(load_calibration_fixtures()).as_dict()
+    false_positive_analysis = false_positive_class_summary()
+    false_positive_case_count = false_positive_analysis["case_count"]
+    false_positive_class_count = false_positive_analysis["class_count"]
     regression = score_regression_summary()
     catalog_cache = catalog_cache_validation_summary(git_tracked_paths(root), project_root=root)
     provider_normalization = provider_normalization_regression_summary()
@@ -383,6 +401,10 @@ def validate_all() -> dict[str, object]:
         and bool(report_result["ok"])
         and all(schema_results.values())
         and bool(catalog_cache["ok"])
+        and isinstance(false_positive_case_count, int)
+        and false_positive_case_count >= 15
+        and isinstance(false_positive_class_count, int)
+        and false_positive_class_count >= 15
         and isinstance(provider_normalization_case_count, int)
         and provider_normalization_case_count >= 5
         and isinstance(injection_recovery_case_count, int)
@@ -399,6 +421,7 @@ def validate_all() -> dict[str, object]:
         "schemas": schemas,
         "schema_paths_exist": schema_results,
         "calibration_summary": calibration,
+        "false_positive_summary": false_positive_analysis,
         "score_regression_summary": regression,
         "catalog_cache_validation": catalog_cache,
         "provider_normalization_summary": provider_normalization,
@@ -416,6 +439,7 @@ def validation_summary() -> dict[str, object]:
     reports = validation["reports"]
     schemas = validation["schema_paths_exist"]
     calibration = validation["calibration_summary"]
+    false_positive_analysis = validation["false_positive_summary"]
     regression = validation["score_regression_summary"]
     catalog_cache = validation["catalog_cache_validation"]
     provider_normalization = validation["provider_normalization_summary"]
@@ -431,6 +455,12 @@ def validation_summary() -> dict[str, object]:
         "schemas_ok": all(schemas.values()) if isinstance(schemas, dict) else False,
         "calibration_fixture_count": calibration["total"]
         if isinstance(calibration, dict)
+        else 0,
+        "false_positive_case_count": false_positive_analysis["case_count"]
+        if isinstance(false_positive_analysis, dict)
+        else 0,
+        "false_positive_class_count": false_positive_analysis["class_count"]
+        if isinstance(false_positive_analysis, dict)
         else 0,
         "score_regression_candidate_count": regression["candidate_count"]
         if isinstance(regression, dict)
@@ -629,6 +659,15 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize synthetic calibration fixture coverage.",
     )
     calibration_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional calibration fixture JSON path.",
+    )
+    false_positive_parser = subparsers.add_parser(
+        "false-positive-summary",
+        help="Summarize synthetic false-positive classes by track.",
+    )
+    false_positive_parser.add_argument(
         "--fixture-path",
         type=Path,
         help="Optional calibration fixture JSON path.",

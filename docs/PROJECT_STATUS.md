@@ -114,6 +114,8 @@ The project will support three tracks from day one:
 - [x] Synthetic precision-recall fixtures added
 - [x] Precision-recall summary CLI added
 - [x] Precision-recall summary wired into local validation
+- [x] False-positive class analysis summary CLI added
+- [x] False-positive class analysis wired into local validation
 
 ---
 
@@ -138,9 +140,9 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Add false-positive class analysis summaries for synthetic calibration fixtures.
-2. Define a human-review queue packet format for triage labels and reviewer notes.
-3. Add human-review queue export examples.
+1. Define a human-review queue packet format for triage labels and reviewer notes.
+2. Add human-review queue export examples.
+3. Add consensus label scaffolding for repeated reviewer decisions.
 
 ---
 

@@ -97,6 +97,18 @@ Print counts by track, false-positive class, and expected pathway:
 
 ---
 
+## Summarize False-Positive Classes
+
+Print synthetic false-positive class diagnostics grouped by track and class:
+
+```bash
+.venv/bin/techno-search false-positive-summary
+```
+
+The summary uses the calibration false-positive fixtures and reports class counts, track counts, expected pathways, candidate IDs, and fixture names. It is a development diagnostic only, not calibrated survey contamination analysis.
+
+---
+
 ## Validate Candidate JSON
 
 Validate a normalized synthetic candidate packet before scoring:
@@ -191,7 +203,7 @@ Run the non-network validation summaries used for quick release checks:
 .venv/bin/techno-search validate-all
 ```
 
-This includes example candidate validation, report validation, schema path checks, calibration fixture summary, and score regression summary.
+This includes example candidate validation, report validation, schema path checks, calibration fixture summary, false-positive class diagnostics, and score regression summary.
 It also reports `catalog_cache_validation` for Git-tracked paths so local untracked caches do not fail default validation.
 
 ---
@@ -204,7 +216,7 @@ Print a concise local health dashboard without network access:
 .venv/bin/techno-search validation-summary
 ```
 
-This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, score-regression, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
+This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, false-positive class, score-regression, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
 
 ---
 

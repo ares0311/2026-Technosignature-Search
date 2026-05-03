@@ -82,6 +82,12 @@ Review snapshot coverage:
 .venv/bin/techno-search score-regression-summary
 ```
 
+Review synthetic false-positive class coverage:
+
+```bash
+.venv/bin/techno-search false-positive-summary
+```
+
 Review synthetic injection-recovery fixture coverage:
 
 ```bash
@@ -100,7 +106,7 @@ Review synthetic precision-recall fixture coverage:
 .venv/bin/techno-search precision-recall-summary
 ```
 
-`validate-all` and `validation-summary` include injection-recovery, reliability, and precision-recall coverage. The reported recovery rate, false-alarm fraction, reliability errors, precision, recall, and F1 score are synthetic development diagnostics only; they are not calibrated survey sensitivity, reliability, or classification performance estimates.
+`validate-all` and `validation-summary` include false-positive class, injection-recovery, reliability, and precision-recall coverage. The reported false-positive class coverage, recovery rate, false-alarm fraction, reliability errors, precision, recall, and F1 score are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, or classification performance estimates.
 
 Snapshot fixture:
 
@@ -124,6 +130,12 @@ Precision-recall fixture:
 
 ```text
 tests/fixtures/precision_recall_summary.json
+```
+
+False-positive class diagnostics currently reuse:
+
+```text
+tests/fixtures/calibration_false_positives.json
 ```
 
 When scores change, review whether the scoring model, thresholds, or example inputs changed intentionally.

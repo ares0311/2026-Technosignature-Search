@@ -1,6 +1,10 @@
 """Technosignature-interest candidate search tools."""
 
-from techno_search.calibration import load_calibration_fixtures
+from techno_search.calibration import (
+    FALSE_POSITIVE_ANALYSIS_DISCLAIMER,
+    false_positive_class_summary,
+    load_calibration_fixtures,
+)
 from techno_search.calibration_metrics import (
     PRECISION_RECALL_DISCLAIMER,
     RELIABILITY_DISCLAIMER,
@@ -38,6 +42,7 @@ from techno_search.scoring import score_candidate
 
 __all__ = [
     "Candidate",
+    "FALSE_POSITIVE_ANALYSIS_DISCLAIMER",
     "INJECTION_RECOVERY_DISCLAIMER",
     "Pathway",
     "PRECISION_RECALL_DISCLAIMER",
@@ -53,6 +58,7 @@ __all__ = [
     "candidate_packet",
     "candidate_packet_json",
     "classify_pathway",
+    "false_positive_class_summary",
     "load_calibration_fixtures",
     "load_injection_recovery_cases",
     "load_precision_recall_cases",

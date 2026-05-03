@@ -143,6 +143,22 @@ def test_cli_calibration_summary_outputs_fixture_counts() -> None:
     assert summary["by_expected_pathway"] == {"do_not_submit_false_positive": 15}
 
 
+def test_cli_false_positive_summary_outputs_class_counts() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["false-positive-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "synthetic_false_positive_analysis_v1"
+    assert result["case_count"] == 15
+    assert result["class_count"] == 15
+    assert result["by_track"] == {"anomaly": 6, "infrared": 5, "radio": 4}
+    assert result["by_class"]["rfi"] == 1
+    assert result["by_track_and_class"]["radio"]["satellite_like_recurrence"] == 1
+    assert "not calibrated survey contamination analysis" in result["disclaimer"]
+
+
 def test_cli_validate_candidate_accepts_normalized_candidate(tmp_path) -> None:
     input_path = tmp_path / "candidate.json"
     input_path.write_text(json.dumps(_candidate_json()), encoding="utf-8")
@@ -260,6 +276,15 @@ def test_cli_validate_all_outputs_local_summary() -> None:
     assert exit_code == 0
     assert result["ok"] is True
     assert result["calibration_summary"]["total"] == 15
+    assert result["false_positive_summary"]["case_count"] == 15
+    assert result["false_positive_summary"]["class_count"] == 15
+    assert result["false_positive_summary"]["by_track_and_class"]["infrared"] == {
+        "agb_like_colors": 1,
+        "agn_blend": 1,
+        "bad_photometry": 1,
+        "dust_or_yso": 1,
+        "extragalactic_contaminant": 1,
+    }
     assert result["score_regression_summary"]["candidate_count"] == 3
     assert result["catalog_cache_validation"]["ok"] is True
     assert result["provider_normalization_summary"]["case_count"] == 5
@@ -308,6 +333,8 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["schema_count"] == 3
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
+    assert result["false_positive_case_count"] == 15
+    assert result["false_positive_class_count"] == 15
     assert result["score_regression_candidate_count"] == 3
     assert result["catalog_cache_ok"] is True
     assert result["provider_normalization_case_count"] == 5
