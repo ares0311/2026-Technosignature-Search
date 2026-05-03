@@ -1,0 +1,87 @@
+{
+  "bins": [
+    {
+      "bin_id": "radio-low",
+      "observed_fraction": 0.22,
+      "predicted_probability": 0.25,
+      "sample_count": 20,
+      "score_max": 0.3,
+      "score_min": 0.0,
+      "track": "radio"
+    },
+    {
+      "bin_id": "radio-mid",
+      "observed_fraction": 0.56,
+      "predicted_probability": 0.55,
+      "sample_count": 18,
+      "score_max": 0.7,
+      "score_min": 0.3,
+      "track": "radio"
+    },
+    {
+      "bin_id": "radio-high",
+      "observed_fraction": 0.78,
+      "predicted_probability": 0.82,
+      "sample_count": 12,
+      "score_max": 1.0,
+      "score_min": 0.7,
+      "track": "radio"
+    },
+    {
+      "bin_id": "infrared-low",
+      "observed_fraction": 0.18,
+      "predicted_probability": 0.2,
+      "sample_count": 22,
+      "score_max": 0.3,
+      "score_min": 0.0,
+      "track": "infrared"
+    },
+    {
+      "bin_id": "infrared-mid",
+      "observed_fraction": 0.5,
+      "predicted_probability": 0.52,
+      "sample_count": 16,
+      "score_max": 0.7,
+      "score_min": 0.3,
+      "track": "infrared"
+    },
+    {
+      "bin_id": "infrared-high",
+      "observed_fraction": 0.74,
+      "predicted_probability": 0.76,
+      "sample_count": 12,
+      "score_max": 1.0,
+      "score_min": 0.7,
+      "track": "infrared"
+    },
+    {
+      "bin_id": "anomaly-low",
+      "observed_fraction": 0.16,
+      "predicted_probability": 0.18,
+      "sample_count": 20,
+      "score_max": 0.3,
+      "score_min": 0.0,
+      "track": "anomaly"
+    },
+    {
+      "bin_id": "anomaly-mid",
+      "observed_fraction": 0.47,
+      "predicted_probability": 0.5,
+      "sample_count": 18,
+      "score_max": 0.7,
+      "score_min": 0.3,
+      "track": "anomaly"
+    },
+    {
+      "bin_id": "anomaly-high",
+      "observed_fraction": 0.71,
+      "predicted_probability": 0.73,
+      "sample_count": 12,
+      "score_max": 1.0,
+      "score_min": 0.7,
+      "track": "anomaly"
+    }
+  ],
+  "description": "Synthetic reliability bins for development diagnostics only.",
+  "schema_version": "synthetic_reliability_curves_v1"
+}

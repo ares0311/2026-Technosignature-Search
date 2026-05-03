@@ -1,6 +1,11 @@
 """Technosignature-interest candidate search tools."""
 
 from techno_search.calibration import load_calibration_fixtures
+from techno_search.calibration_metrics import (
+    RELIABILITY_DISCLAIMER,
+    load_reliability_bins,
+    reliability_summary,
+)
 from techno_search.config import TrackConfig, load_scoring_config, load_track_config
 from techno_search.injection_recovery import (
     INJECTION_RECOVERY_DISCLAIMER,
@@ -35,6 +40,7 @@ __all__ = [
     "PLOT_ARTIFACT_DISCLAIMER",
     "PlotArtifact",
     "REQUIRED_DISCLAIMER",
+    "RELIABILITY_DISCLAIMER",
     "ReportPaths",
     "ScoredCandidate",
     "Track",
@@ -45,6 +51,7 @@ __all__ = [
     "classify_pathway",
     "load_calibration_fixtures",
     "load_injection_recovery_cases",
+    "load_reliability_bins",
     "load_scoring_config",
     "load_track_config",
     "live_data_enabled",
@@ -53,6 +60,7 @@ __all__ = [
     "report_manifest",
     "report_manifest_json",
     "require_live_data_enabled",
+    "reliability_summary",
     "score_candidate",
     "write_candidate_reports",
     "write_synthetic_plot_artifacts",

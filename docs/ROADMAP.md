@@ -164,7 +164,8 @@ Measure sensitivity and reliability.
 - [x] Infrared synthetic excess injection
 - [x] Archival anomaly simulation
 - [x] Synthetic injection-recovery summary fixtures
-- [ ] Recovery curves
+- [x] Synthetic reliability curve fixtures
+- [x] Recovery curves
 - [x] Synthetic false-alarm estimates
 
 ---
@@ -244,7 +245,7 @@ Make scores empirically meaningful.
 - [x] Local validation summary command
 - [x] Provenance summary command
 - [x] Synthetic injection-recovery summary command
-- [ ] Reliability curves
+- [x] Reliability curves
 - [ ] Precision-recall analysis
 - [ ] False-positive class analysis
 - [ ] Calibration by track

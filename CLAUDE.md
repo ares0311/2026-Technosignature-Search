@@ -24,6 +24,229 @@ Overall status: all three requested steps are implemented.
 
 ---
 
+## Fifteen-Step Reliability And Precision-Recall Expansion
+
+User requested fifteen iterative steps:
+
+1. Add synthetic reliability-curve fixture schema.
+2. Add radio reliability curve fixture bins.
+3. Add infrared reliability curve fixture bins.
+4. Add anomaly reliability curve fixture bins.
+5. Add `techno-search reliability-summary`.
+6. Add tests for reliability summary by track and score bin.
+7. Wire reliability summary into `validate-all`.
+8. Wire reliability summary into `validation-summary`.
+9. Add conservative docs noting these are synthetic diagnostics, not calibrated survey performance.
+10. Commit and push the reliability fixture pass.
+11. Add precision-recall synthetic fixture schema.
+12. Add precision-recall fixtures for candidate vs false-positive classes.
+13. Add `techno-search precision-recall-summary`.
+14. Run full validation and commit.
+15. Push `main` and confirm clean sync.
+
+Each step should update this file and merge to `main` if needed.
+
+## Reliability/PR Step 1 — Reliability Fixture Schema
+
+Status: implemented.
+
+Added:
+
+- `RELIABILITY_SCHEMA_VERSION`
+- `ReliabilityBin`
+- loader validation for `synthetic_reliability_curves_v1`
+- conservative disclaimer that bins are synthetic development diagnostics
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_calibration_metrics.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Reliability/PR Step 2 — Radio Reliability Bins
+
+Status: implemented.
+
+Added radio reliability bins for:
+
+- low score range
+- mid score range
+- high score range
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_calibration_metrics.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Reliability/PR Step 3 — Infrared Reliability Bins
+
+Status: implemented.
+
+Added infrared reliability bins for:
+
+- low score range
+- mid score range
+- high score range
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_calibration_metrics.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Reliability/PR Step 4 — Anomaly Reliability Bins
+
+Status: implemented.
+
+Added anomaly reliability bins for:
+
+- low score range
+- mid score range
+- high score range
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_calibration_metrics.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Reliability/PR Step 5 — Reliability Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search reliability-summary`
+- bin counts by track and score range
+- synthetic mean and max absolute calibration error
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py tests/test_calibration_metrics.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Reliability/PR Step 6 — Reliability Summary Tests
+
+Status: implemented.
+
+Added tests proving:
+
+- fixture bins cover radio, infrared, and anomaly tracks
+- score bins cover low, mid, and high ranges
+- summary reports total samples and calibration-error diagnostics
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py tests/test_calibration_metrics.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Reliability/PR Step 7 — Validate-All Reliability Wiring
+
+Status: implemented.
+
+Added:
+
+- reliability summary block in `validate-all`
+- validation gate requiring the expected reliability bin coverage
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Reliability/PR Step 8 — Validation Summary Reliability Wiring
+
+Status: implemented.
+
+Added:
+
+- `reliability_bin_count` in `validation-summary`
+- `mean_absolute_calibration_error` in `validation-summary`
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Reliability/PR Step 9 — Reliability Docs And Status
+
+Status: implemented.
+
+Updated:
+
+- `docs/CLI_USAGE.md`
+- `docs/VALIDATION.md`
+- `docs/ROADMAP.md`
+- `docs/PROJECT_STATUS.md`
+
+Validation for this step should include:
+
+```bash
+.venv/bin/python -m pytest tests/test_docs.py tests/test_cli.py
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Reliability/PR Step 10 — Reliability Fixture Commit
+
+Status: implemented.
+
+Validation passed:
+
+- `.venv/bin/python -m pytest tests/test_calibration_metrics.py tests/test_cli.py tests/test_docs.py`
+- `.venv/bin/ruff check src/techno_search/calibration_metrics.py src/techno_search/cli.py src/techno_search/__init__.py tests/test_calibration_metrics.py tests/test_cli.py`
+- `.venv/bin/mypy src`
+- `git diff --check`
+
+Commit planned:
+
+```bash
+git commit -m "Add reliability summary fixtures"
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Plot Ergonomics And Injection-Recovery Expansion
 
 User requested fifteen iterative steps:

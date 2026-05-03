@@ -108,6 +108,9 @@ The project will support three tracks from day one:
 - [x] Synthetic injection-recovery fixtures added
 - [x] Injection-recovery summary CLI added
 - [x] Injection-recovery summary wired into local validation
+- [x] Synthetic reliability curve fixtures added
+- [x] Reliability summary CLI added
+- [x] Reliability summary wired into local validation
 
 ---
 
@@ -132,8 +135,8 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Begin reliability-curve scaffolding using synthetic calibration and injection-recovery fixtures.
-2. Add precision-recall summary fixtures for synthetic candidate classes.
+1. Add precision-recall summary fixtures for synthetic candidate classes.
+2. Add false-positive class analysis summaries for synthetic calibration fixtures.
 3. Define a human-review queue packet format for triage labels and reviewer notes.
 
 ---

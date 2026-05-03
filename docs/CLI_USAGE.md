@@ -159,6 +159,18 @@ The summary reports cases by track, outcome, injection type, expected pathway, s
 
 ---
 
+## Summarize Reliability Fixtures
+
+Print synthetic reliability-curve fixture coverage:
+
+```bash
+.venv/bin/techno-search reliability-summary
+```
+
+The summary reports bins by track and score range plus synthetic calibration-error diagnostics. These bins are not calibrated survey performance estimates.
+
+---
+
 ## Run Local Validation Summary
 
 Run the non-network validation summaries used for quick release checks:

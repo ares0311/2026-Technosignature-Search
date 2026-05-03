@@ -222,6 +222,20 @@ def test_cli_injection_recovery_summary_outputs_fixture_counts() -> None:
     assert result["synthetic_false_alarm_fraction"] == 0.333333
 
 
+def test_cli_reliability_summary_outputs_fixture_counts() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["reliability-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["bin_count"] == 9
+    assert result["total_sample_count"] == 150
+    assert result["by_track"] == {"anomaly": 3, "infrared": 3, "radio": 3}
+    assert result["score_bins"] == ["0.0-0.3", "0.3-0.7", "0.7-1.0"]
+    assert result["mean_absolute_calibration_error"] == 0.022933
+
+
 def test_cli_validate_all_outputs_local_summary() -> None:
     stdout = StringIO()
 
@@ -246,6 +260,12 @@ def test_cli_validate_all_outputs_local_summary() -> None:
         "anomaly": 2,
         "infrared": 2,
         "radio": 2,
+    }
+    assert result["reliability_summary"]["bin_count"] == 9
+    assert result["reliability_summary"]["by_track"] == {
+        "anomaly": 3,
+        "infrared": 3,
+        "radio": 3,
     }
     assert result["catalog_cache_validation"]["forbidden_roots"] == [
         "data",
@@ -274,6 +294,8 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["injection_recovery_case_count"] == 6
     assert result["synthetic_recovery_rate"] == 0.75
     assert result["synthetic_false_alarm_fraction"] == 0.333333
+    assert result["reliability_bin_count"] == 9
+    assert result["mean_absolute_calibration_error"] == 0.022933
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 

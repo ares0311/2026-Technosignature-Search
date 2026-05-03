@@ -88,7 +88,13 @@ Review synthetic injection-recovery fixture coverage:
 .venv/bin/techno-search injection-recovery-summary
 ```
 
-`validate-all` and `validation-summary` include injection-recovery coverage. The reported recovery rate and false-alarm fraction are synthetic development diagnostics only; they are not calibrated survey sensitivity or reliability estimates.
+Review synthetic reliability-curve fixture coverage:
+
+```bash
+.venv/bin/techno-search reliability-summary
+```
+
+`validate-all` and `validation-summary` include injection-recovery and reliability coverage. The reported recovery rate, false-alarm fraction, and reliability errors are synthetic development diagnostics only; they are not calibrated survey sensitivity or reliability estimates.
 
 Snapshot fixture:
 
@@ -100,6 +106,12 @@ Injection-recovery fixture:
 
 ```text
 tests/fixtures/injection_recovery_summary.json
+```
+
+Reliability fixture:
+
+```text
+tests/fixtures/reliability_curves.json
 ```
 
 When scores change, review whether the scoring model, thresholds, or example inputs changed intentionally.
