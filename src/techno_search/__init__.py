@@ -1,7 +1,10 @@
 """Technosignature-interest candidate search tools."""
 
 from techno_search.calibration import (
+    CALIBRATION_TRACK_DISCLAIMER,
+    CALIBRATION_TRACK_SCHEMA_VERSION,
     FALSE_POSITIVE_ANALYSIS_DISCLAIMER,
+    calibration_track_summary,
     false_positive_class_summary,
     load_calibration_fixtures,
 )
@@ -38,12 +41,20 @@ from techno_search.reporting import (
     write_candidate_reports,
 )
 from techno_search.review_queue import (
+    CONSENSUS_LABEL_DISCLAIMER,
+    CONSENSUS_LABEL_SCHEMA_VERSION,
     REVIEW_QUEUE_DISCLAIMER,
     REVIEW_QUEUE_SCHEMA_VERSION,
+    ConsensusDecision,
+    ConsensusItem,
+    ConsensusLabel,
     ReviewerNote,
     ReviewQueueItem,
     TriageLabel,
+    allowed_consensus_labels,
     allowed_triage_labels,
+    consensus_summary,
+    load_consensus_items,
     load_review_queue_items,
     review_queue_summary,
 )
@@ -52,6 +63,13 @@ from techno_search.scoring import score_candidate
 
 __all__ = [
     "Candidate",
+    "CALIBRATION_TRACK_DISCLAIMER",
+    "CALIBRATION_TRACK_SCHEMA_VERSION",
+    "CONSENSUS_LABEL_DISCLAIMER",
+    "CONSENSUS_LABEL_SCHEMA_VERSION",
+    "ConsensusDecision",
+    "ConsensusItem",
+    "ConsensusLabel",
     "FALSE_POSITIVE_ANALYSIS_DISCLAIMER",
     "INJECTION_RECOVERY_DISCLAIMER",
     "Pathway",
@@ -69,10 +87,12 @@ __all__ = [
     "Track",
     "TrackConfig",
     "TriageLabel",
+    "allowed_consensus_labels",
     "allowed_triage_labels",
     "candidate_markdown_report",
     "candidate_packet",
     "candidate_packet_json",
+    "calibration_track_summary",
     "classify_pathway",
     "false_positive_class_summary",
     "load_calibration_fixtures",
@@ -86,6 +106,8 @@ __all__ = [
     "plot_artifact_summary",
     "precision_recall_summary",
     "injection_recovery_summary",
+    "consensus_summary",
+    "load_consensus_items",
     "report_manifest",
     "report_manifest_json",
     "require_live_data_enabled",

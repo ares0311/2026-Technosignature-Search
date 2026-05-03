@@ -159,6 +159,23 @@ def test_cli_false_positive_summary_outputs_class_counts() -> None:
     assert "not calibrated survey contamination analysis" in result["disclaimer"]
 
 
+def test_cli_calibration_track_summary_outputs_track_counts() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["calibration-track-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "synthetic_calibration_by_track_v1"
+    assert result["case_count"] == 15
+    assert result["track_count"] == 3
+    assert result["minimum_track_case_count"] == 4
+    assert result["by_track"]["radio"]["case_count"] == 4
+    assert result["by_track"]["infrared"]["case_count"] == 5
+    assert result["by_track"]["anomaly"]["case_count"] == 6
+    assert "not calibrated per-track survey performance" in result["disclaimer"]
+
+
 def test_cli_validate_candidate_accepts_normalized_candidate(tmp_path) -> None:
     input_path = tmp_path / "candidate.json"
     input_path.write_text(json.dumps(_candidate_json()), encoding="utf-8")
@@ -211,10 +228,12 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
     assert set(result) == {
         "batch_manifest",
         "candidate_packet",
+        "consensus_labels",
         "report_manifest",
         "review_queue",
     }
     assert result["candidate_packet"].endswith("schemas/candidate_packet.schema.json")
+    assert result["consensus_labels"].endswith("schemas/consensus_labels.schema.json")
     assert result["review_queue"].endswith("schemas/review_queue.schema.json")
 
 
@@ -289,6 +308,23 @@ def test_cli_review_queue_summary_outputs_fixture_counts() -> None:
     assert "not discovery claims" in result["disclaimer"]
 
 
+def test_cli_consensus_summary_outputs_fixture_counts() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["consensus-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "human_review_consensus_labels_v1"
+    assert result["item_count"] == 5
+    assert result["decision_count"] == 13
+    assert result["unique_reviewer_count"] == 4
+    assert result["by_track"] == {"anomaly": 2, "infrared": 1, "radio": 2}
+    assert result["by_consensus_label"]["no_consensus"] == 1
+    assert result["by_reviewer_decision_count"] == {"2": 2, "3": 3}
+    assert "not discovery claims" in result["disclaimer"]
+
+
 def test_cli_validate_all_outputs_local_summary() -> None:
     stdout = StringIO()
 
@@ -298,6 +334,9 @@ def test_cli_validate_all_outputs_local_summary() -> None:
     assert exit_code == 0
     assert result["ok"] is True
     assert result["calibration_summary"]["total"] == 15
+    assert result["calibration_track_summary"]["track_count"] == 3
+    assert result["calibration_track_summary"]["minimum_track_case_count"] == 4
+    assert result["calibration_track_summary"]["by_track"]["radio"]["case_count"] == 4
     assert result["false_positive_summary"]["case_count"] == 15
     assert result["false_positive_summary"]["class_count"] == 15
     assert result["false_positive_summary"]["by_track_and_class"]["infrared"] == {
@@ -343,6 +382,15 @@ def test_cli_validate_all_outputs_local_summary() -> None:
         "likely_false_positive": 1,
         "needs_human_review": 1,
     }
+    assert result["consensus_summary"]["item_count"] == 5
+    assert result["consensus_summary"]["decision_count"] == 13
+    assert result["consensus_summary"]["by_consensus_label"] == {
+        "follow_up_target": 1,
+        "insufficient_evidence": 1,
+        "known_object_annotation": 1,
+        "likely_false_positive": 1,
+        "no_consensus": 1,
+    }
     assert result["catalog_cache_validation"]["forbidden_roots"] == [
         "data",
         "cache",
@@ -361,9 +409,11 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 4
+    assert result["schema_count"] == 5
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
+    assert result["calibration_track_count"] == 3
+    assert result["calibration_minimum_track_case_count"] == 4
     assert result["false_positive_case_count"] == 15
     assert result["false_positive_class_count"] == 15
     assert result["score_regression_candidate_count"] == 3
@@ -379,6 +429,9 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["synthetic_recall"] == 0.792453
     assert result["review_queue_item_count"] == 5
     assert result["review_queue_note_count"] == 4
+    assert result["consensus_item_count"] == 5
+    assert result["consensus_decision_count"] == 13
+    assert result["consensus_unique_reviewer_count"] == 4
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 

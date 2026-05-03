@@ -1,0 +1,127 @@
+{
+  "schema_version": "human_review_consensus_labels_v1",
+  "description": "Small synthetic repeated-reviewer consensus label examples for human-review workflow tests.",
+  "disclaimer": "Human-review consensus labels are triage summaries only; they are not discovery claims or external validation.",
+  "allowed_consensus_labels": [
+    "follow_up_target",
+    "insufficient_evidence",
+    "known_object_annotation",
+    "likely_false_positive",
+    "no_consensus"
+  ],
+  "items": [
+    {
+      "candidate_id": "example-radio-clean",
+      "track": "radio",
+      "consensus_label": "no_consensus",
+      "reviewer_decisions": [
+        {
+          "reviewer_id": "synthetic-reviewer-a",
+          "triage_label": "needs_human_review",
+          "created_at_utc": "2026-05-03T01:00:00+00:00",
+          "rationale": "Synthetic radio packet needs additional independent review before any stronger triage label."
+        },
+        {
+          "reviewer_id": "synthetic-reviewer-b",
+          "triage_label": "follow_up_target",
+          "created_at_utc": "2026-05-03T01:05:00+00:00",
+          "rationale": "Synthetic packet has enough positive evidence to exercise follow-up routing."
+        },
+        {
+          "reviewer_id": "synthetic-reviewer-c",
+          "triage_label": "likely_false_positive",
+          "created_at_utc": "2026-05-03T01:10:00+00:00",
+          "rationale": "Conservative handling should preserve false-positive uncertainty."
+        }
+      ]
+    },
+    {
+      "candidate_id": "cal-radio-rfi",
+      "track": "radio",
+      "consensus_label": "likely_false_positive",
+      "reviewer_decisions": [
+        {
+          "reviewer_id": "synthetic-reviewer-a",
+          "triage_label": "likely_false_positive",
+          "created_at_utc": "2026-05-03T01:15:00+00:00",
+          "rationale": "RFI-band overlap is a blocking false-positive indicator."
+        },
+        {
+          "reviewer_id": "synthetic-reviewer-b",
+          "triage_label": "likely_false_positive",
+          "created_at_utc": "2026-05-03T01:20:00+00:00",
+          "rationale": "Off-target recurrence supports false-positive routing."
+        },
+        {
+          "reviewer_id": "synthetic-reviewer-d",
+          "triage_label": "likely_false_positive",
+          "created_at_utc": "2026-05-03T01:25:00+00:00",
+          "rationale": "No external follow-up should be implied for this synthetic contaminant."
+        }
+      ]
+    },
+    {
+      "candidate_id": "example-infrared-clean",
+      "track": "infrared",
+      "consensus_label": "follow_up_target",
+      "reviewer_decisions": [
+        {
+          "reviewer_id": "synthetic-reviewer-a",
+          "triage_label": "follow_up_target",
+          "created_at_utc": "2026-05-03T01:30:00+00:00",
+          "rationale": "Synthetic infrared packet is useful for exercising follow-up target routing."
+        },
+        {
+          "reviewer_id": "synthetic-reviewer-b",
+          "triage_label": "follow_up_target",
+          "created_at_utc": "2026-05-03T01:35:00+00:00",
+          "rationale": "No immediate blocking issue in the synthetic example packet."
+        },
+        {
+          "reviewer_id": "synthetic-reviewer-c",
+          "triage_label": "needs_human_review",
+          "created_at_utc": "2026-05-03T01:40:00+00:00",
+          "rationale": "Additional review remains appropriate before treating this as anything beyond a candidate."
+        }
+      ]
+    },
+    {
+      "candidate_id": "known-object-demo",
+      "track": "anomaly",
+      "consensus_label": "known_object_annotation",
+      "reviewer_decisions": [
+        {
+          "reviewer_id": "synthetic-reviewer-a",
+          "triage_label": "known_object_annotation",
+          "created_at_utc": "2026-05-03T01:45:00+00:00",
+          "rationale": "Known-object style annotations should stay separate from candidate-interest claims."
+        },
+        {
+          "reviewer_id": "synthetic-reviewer-d",
+          "triage_label": "known_object_annotation",
+          "created_at_utc": "2026-05-03T01:50:00+00:00",
+          "rationale": "Consensus should route this to annotation rather than follow-up."
+        }
+      ]
+    },
+    {
+      "candidate_id": "low-confidence-demo",
+      "track": "anomaly",
+      "consensus_label": "insufficient_evidence",
+      "reviewer_decisions": [
+        {
+          "reviewer_id": "synthetic-reviewer-b",
+          "triage_label": "insufficient_evidence",
+          "created_at_utc": "2026-05-03T01:55:00+00:00",
+          "rationale": "Blocking issues prevent stronger review routing."
+        },
+        {
+          "reviewer_id": "synthetic-reviewer-c",
+          "triage_label": "insufficient_evidence",
+          "created_at_utc": "2026-05-03T02:00:00+00:00",
+          "rationale": "Negative evidence should remain visible before any future review."
+        }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 from techno_search.calibration import (
+    calibration_track_summary,
     false_positive_class_summary,
     load_calibration_fixtures,
     summarize_calibration_fixtures,
@@ -64,3 +65,28 @@ def test_false_positive_class_summary_groups_classes_by_track() -> None:
     }
     assert summary["candidate_ids_by_class"]["rfi"] == ["cal-radio-rfi"]
     assert "calibration_false_positives.json" in str(summary["fixture_path"])
+
+
+def test_calibration_track_summary_counts_class_and_pathway_coverage() -> None:
+    summary = calibration_track_summary()
+
+    assert summary["schema_version"] == "synthetic_calibration_by_track_v1"
+    assert summary["case_count"] == 15
+    assert summary["track_count"] == 3
+    assert summary["minimum_track_case_count"] == 4
+    assert summary["by_track"]["radio"]["case_count"] == 4
+    assert summary["by_track"]["radio"]["class_count"] == 4
+    assert summary["by_track"]["radio"]["by_expected_pathway"] == {
+        Pathway.DO_NOT_SUBMIT_FALSE_POSITIVE.value: 4
+    }
+    assert summary["by_track"]["infrared"]["case_count"] == 5
+    assert summary["by_track"]["infrared"]["by_false_positive_class"] == {
+        "agb_like_colors": 1,
+        "agn_blend": 1,
+        "bad_photometry": 1,
+        "dust_or_yso": 1,
+        "extragalactic_contaminant": 1,
+    }
+    assert summary["by_track"]["anomaly"]["case_count"] == 6
+    assert "cal-anomaly-variable-star" in summary["by_track"]["anomaly"]["candidate_ids"]
+    assert "not calibrated per-track survey performance" in str(summary["disclaimer"])

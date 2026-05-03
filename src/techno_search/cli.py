@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import TextIO
 
 from techno_search.calibration import (
+    calibration_track_summary,
     false_positive_class_summary,
     load_calibration_fixtures,
     summarize_calibration_fixtures,
@@ -36,7 +37,7 @@ from techno_search.reporting import (
     candidate_packet_json,
     write_candidate_reports,
 )
-from techno_search.review_queue import review_queue_summary
+from techno_search.review_queue import consensus_summary, review_queue_summary
 from techno_search.schemas import Candidate, candidate_from_mapping
 from techno_search.scoring import score_candidate
 from techno_search.validation import validate_candidate_file, validate_report_directory
@@ -44,6 +45,7 @@ from techno_search.validation import validate_candidate_file, validate_report_di
 SCHEMA_FILENAMES = {
     "batch_manifest": "batch_manifest.schema.json",
     "candidate_packet": "candidate_packet.schema.json",
+    "consensus_labels": "consensus_labels.schema.json",
     "report_manifest": "report_manifest.schema.json",
     "review_queue": "review_queue.schema.json",
 }
@@ -95,6 +97,17 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(
             json.dumps(
                 false_positive_class_summary(args.fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "calibration-track-summary":
+        print(
+            json.dumps(
+                calibration_track_summary(args.fixture_path),
                 indent=2,
                 sort_keys=True,
             ),
@@ -160,6 +173,17 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(
             json.dumps(
                 review_queue_summary(args.fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "consensus-summary":
+        print(
+            json.dumps(
+                consensus_summary(args.fixture_path),
                 indent=2,
                 sort_keys=True,
             ),
@@ -395,6 +419,9 @@ def validate_all() -> dict[str, object]:
     schemas = schema_paths()
     schema_results = {path: Path(path).exists() for path in schemas.values()}
     calibration = summarize_calibration_fixtures(load_calibration_fixtures()).as_dict()
+    calibration_by_track = calibration_track_summary()
+    calibration_track_count = calibration_by_track["track_count"]
+    calibration_minimum_track_case_count = calibration_by_track["minimum_track_case_count"]
     false_positive_analysis = false_positive_class_summary()
     false_positive_case_count = false_positive_analysis["case_count"]
     false_positive_class_count = false_positive_analysis["class_count"]
@@ -411,12 +438,19 @@ def validate_all() -> dict[str, object]:
     review_queue = review_queue_summary()
     review_queue_item_count = review_queue["item_count"]
     review_queue_note_count = review_queue["note_count"]
+    consensus = consensus_summary()
+    consensus_item_count = consensus["item_count"]
+    consensus_decision_count = consensus["decision_count"]
 
     ok = (
         all(result["ok"] for result in candidate_results.values())
         and bool(report_result["ok"])
         and all(schema_results.values())
         and bool(catalog_cache["ok"])
+        and isinstance(calibration_track_count, int)
+        and calibration_track_count >= 3
+        and isinstance(calibration_minimum_track_case_count, int)
+        and calibration_minimum_track_case_count >= 4
         and isinstance(false_positive_case_count, int)
         and false_positive_case_count >= 15
         and isinstance(false_positive_class_count, int)
@@ -433,6 +467,10 @@ def validate_all() -> dict[str, object]:
         and review_queue_item_count >= 5
         and isinstance(review_queue_note_count, int)
         and review_queue_note_count >= 4
+        and isinstance(consensus_item_count, int)
+        and consensus_item_count >= 5
+        and isinstance(consensus_decision_count, int)
+        and consensus_decision_count >= 10
     )
     return {
         "ok": ok,
@@ -441,6 +479,7 @@ def validate_all() -> dict[str, object]:
         "schemas": schemas,
         "schema_paths_exist": schema_results,
         "calibration_summary": calibration,
+        "calibration_track_summary": calibration_by_track,
         "false_positive_summary": false_positive_analysis,
         "score_regression_summary": regression,
         "catalog_cache_validation": catalog_cache,
@@ -449,6 +488,7 @@ def validate_all() -> dict[str, object]:
         "reliability_summary": reliability,
         "precision_recall_summary": precision_recall,
         "review_queue_summary": review_queue,
+        "consensus_summary": consensus,
     }
 
 
@@ -460,6 +500,7 @@ def validation_summary() -> dict[str, object]:
     reports = validation["reports"]
     schemas = validation["schema_paths_exist"]
     calibration = validation["calibration_summary"]
+    calibration_by_track = validation["calibration_track_summary"]
     false_positive_analysis = validation["false_positive_summary"]
     regression = validation["score_regression_summary"]
     catalog_cache = validation["catalog_cache_validation"]
@@ -468,6 +509,7 @@ def validation_summary() -> dict[str, object]:
     reliability = validation["reliability_summary"]
     precision_recall = validation["precision_recall_summary"]
     review_queue = validation["review_queue_summary"]
+    consensus = validation["consensus_summary"]
     return {
         "ok": validation["ok"],
         "generated_at_utc": datetime.now(UTC).isoformat(),
@@ -477,6 +519,14 @@ def validation_summary() -> dict[str, object]:
         "schemas_ok": all(schemas.values()) if isinstance(schemas, dict) else False,
         "calibration_fixture_count": calibration["total"]
         if isinstance(calibration, dict)
+        else 0,
+        "calibration_track_count": calibration_by_track["track_count"]
+        if isinstance(calibration_by_track, dict)
+        else 0,
+        "calibration_minimum_track_case_count": calibration_by_track[
+            "minimum_track_case_count"
+        ]
+        if isinstance(calibration_by_track, dict)
         else 0,
         "false_positive_case_count": false_positive_analysis["case_count"]
         if isinstance(false_positive_analysis, dict)
@@ -526,6 +576,15 @@ def validation_summary() -> dict[str, object]:
         else 0,
         "review_queue_note_count": review_queue["note_count"]
         if isinstance(review_queue, dict)
+        else 0,
+        "consensus_item_count": consensus["item_count"]
+        if isinstance(consensus, dict)
+        else 0,
+        "consensus_decision_count": consensus["decision_count"]
+        if isinstance(consensus, dict)
+        else 0,
+        "consensus_unique_reviewer_count": consensus["unique_reviewer_count"]
+        if isinstance(consensus, dict)
         else 0,
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
@@ -700,6 +759,15 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Optional calibration fixture JSON path.",
     )
+    calibration_track_parser = subparsers.add_parser(
+        "calibration-track-summary",
+        help="Summarize synthetic calibration fixture coverage within each track.",
+    )
+    calibration_track_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional calibration fixture JSON path.",
+    )
     validate_candidate_parser = subparsers.add_parser(
         "validate-candidate",
         help="Validate a normalized synthetic candidate JSON file.",
@@ -762,6 +830,15 @@ def _build_parser() -> argparse.ArgumentParser:
         "--fixture-path",
         type=Path,
         help="Optional synthetic human-review queue fixture JSON path.",
+    )
+    consensus_parser = subparsers.add_parser(
+        "consensus-summary",
+        help="Summarize synthetic human-review consensus label fixture coverage.",
+    )
+    consensus_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional synthetic human-review consensus fixture JSON path.",
     )
     subparsers.add_parser(
         "validate-all",

@@ -9,6 +9,7 @@ def test_json_schema_files_are_parseable_and_named() -> None:
     assert {path.name for path in schema_paths} == {
         "batch_manifest.schema.json",
         "candidate_packet.schema.json",
+        "consensus_labels.schema.json",
         "report_manifest.schema.json",
         "review_queue.schema.json",
     }
@@ -32,17 +33,22 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     review_queue_schema = json.loads(
         Path("schemas/review_queue.schema.json").read_text(encoding="utf-8")
     )
+    consensus_schema = json.loads(
+        Path("schemas/consensus_labels.schema.json").read_text(encoding="utf-8")
+    )
     packet = json.loads(Path("examples/reports/example-radio-clean.json").read_text())
     manifest = json.loads(
         Path("examples/reports/example-radio-clean.manifest.json").read_text()
     )
     batch = json.loads(Path("examples/batch_reports/batch_manifest.json").read_text())
     review_queue = json.loads(Path("tests/fixtures/review_queue.json").read_text())
+    consensus = json.loads(Path("tests/fixtures/consensus_labels.json").read_text())
 
     assert set(packet_schema["required"]) <= set(packet)
     assert set(manifest_schema["required"]) <= set(manifest)
     assert set(batch_schema["required"]) <= set(batch)
     assert set(review_queue_schema["required"]) <= set(review_queue)
+    assert set(consensus_schema["required"]) <= set(consensus)
     assert "schema_version" in packet_schema["required"]
     assert "schema_version" in manifest_schema["required"]
     assert "schema_version" in batch_schema["required"]
@@ -67,4 +73,12 @@ def test_schema_required_fields_match_example_artifacts() -> None:
         "known_object_annotation",
         "likely_false_positive",
         "needs_human_review",
+    ]
+    assert consensus["schema_version"] == "human_review_consensus_labels_v1"
+    assert sorted(consensus["allowed_consensus_labels"]) == [
+        "follow_up_target",
+        "insufficient_evidence",
+        "known_object_annotation",
+        "likely_false_positive",
+        "no_consensus",
     ]

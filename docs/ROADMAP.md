@@ -182,7 +182,7 @@ Support citizen-science review.
 - [x] Review queue format
 - [x] Exportable review packets
 - [x] Reviewer notes
-- [ ] Consensus labels
+- [x] Consensus labels
 
 ---
 
@@ -248,7 +248,7 @@ Make scores empirically meaningful.
 - [x] Reliability curves
 - [x] Precision-recall analysis
 - [x] False-positive class analysis
-- [ ] Calibration by track
+- [x] Calibration by track
 
 ---
 

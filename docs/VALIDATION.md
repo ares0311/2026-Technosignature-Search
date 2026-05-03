@@ -72,6 +72,7 @@ Committed schemas:
 - `schemas/report_manifest.schema.json`
 - `schemas/batch_manifest.schema.json`
 - `schemas/review_queue.schema.json`
+- `schemas/consensus_labels.schema.json`
 
 ---
 
@@ -87,6 +88,12 @@ Review synthetic false-positive class coverage:
 
 ```bash
 .venv/bin/techno-search false-positive-summary
+```
+
+Review synthetic calibration fixture coverage by track:
+
+```bash
+.venv/bin/techno-search calibration-track-summary
 ```
 
 Review synthetic injection-recovery fixture coverage:
@@ -113,7 +120,13 @@ Review synthetic human-review queue fixture coverage:
 .venv/bin/techno-search review-queue-summary
 ```
 
-`validate-all` and `validation-summary` include false-positive class, injection-recovery, reliability, precision-recall, and human-review queue coverage. The reported false-positive class coverage, recovery rate, false-alarm fraction, reliability errors, precision, recall, F1 score, and review queue counts are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, classification performance estimates, or discovery claims.
+Review synthetic human-review consensus label coverage:
+
+```bash
+.venv/bin/techno-search consensus-summary
+```
+
+`validate-all` and `validation-summary` include calibration-by-track, false-positive class, injection-recovery, reliability, precision-recall, human-review queue, and consensus-label coverage. The reported calibration-by-track coverage, false-positive class coverage, recovery rate, false-alarm fraction, reliability errors, precision, recall, F1 score, review queue counts, and consensus counts are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, per-track survey performance, classification performance estimates, discovery claims, or external validation.
 
 Snapshot fixture:
 
@@ -149,6 +162,12 @@ Human-review queue fixture:
 
 ```text
 tests/fixtures/review_queue.json
+```
+
+Human-review consensus fixture:
+
+```text
+tests/fixtures/consensus_labels.json
 ```
 
 When scores change, review whether the scoring model, thresholds, or example inputs changed intentionally.

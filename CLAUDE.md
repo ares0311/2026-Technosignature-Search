@@ -24,6 +24,264 @@ Overall status: all three requested steps are implemented.
 
 ---
 
+## Fifteen-Step Consensus And Calibration-Track Expansion
+
+User requested fifteen iterative steps:
+
+1. Add consensus-label schema for repeated reviewer decisions.
+2. Add consensus label fixture examples.
+3. Add `techno-search consensus-summary`.
+4. Add tests for consensus summaries by label, track, and reviewer count.
+5. Wire consensus summary into `validate-all`.
+6. Wire consensus counts into `validation-summary`.
+7. Update human-review docs for consensus labels.
+8. Mark consensus-label scaffold complete in roadmap/status.
+9. Add calibration-by-track summary helper.
+10. Add `techno-search calibration-track-summary`.
+11. Add tests for calibration-by-track class/pathway coverage.
+12. Wire calibration-by-track summary into `validate-all`.
+13. Wire calibration-by-track counts into `validation-summary`.
+14. Update calibration docs/status/roadmap.
+15. Run full validation, commit, push, and record everything in `CLAUDE.md`.
+
+Each step should update this file and merge to `main` if needed.
+
+## Consensus/Calibration Step 1 — Consensus Label Schema
+
+Status: implemented.
+
+Added:
+
+- `CONSENSUS_LABEL_SCHEMA_VERSION`
+- `CONSENSUS_LABEL_DISCLAIMER`
+- `ConsensusLabel`
+- `ConsensusDecision`
+- `ConsensusItem`
+- `schemas/consensus_labels.schema.json`
+- consensus fixture loader and summary skeleton
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus/Calibration Step 2 — Consensus Label Fixtures
+
+Status: implemented.
+
+Added `tests/fixtures/consensus_labels.json` with repeated synthetic reviewer decisions for:
+
+- no consensus
+- likely false positive
+- follow-up target
+- known-object annotation
+- insufficient evidence
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus/Calibration Step 3 — Consensus Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search consensus-summary`
+- optional `--fixture-path`
+- `consensus_labels` in `schema-paths`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus/Calibration Step 4 — Consensus Summary Tests
+
+Status: implemented.
+
+Added tests for:
+
+- consensus fixture loading and allowed labels
+- consensus summary counts by label and track
+- repeated reviewer decision counts
+- CLI `consensus-summary`
+- `consensus_labels` schema discovery and fixture required fields
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus/Calibration Step 5 — Validate-All Consensus Wiring
+
+Status: implemented.
+
+Added:
+
+- `consensus_summary` block in `validate-all`
+- validation gates for minimum synthetic consensus item and decision coverage
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus/Calibration Step 6 — Validation Summary Consensus Counts
+
+Status: implemented.
+
+Added:
+
+- `consensus_item_count`
+- `consensus_decision_count`
+- `consensus_unique_reviewer_count`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus/Calibration Step 7 — Consensus Docs
+
+Status: implemented.
+
+Updated:
+
+- `docs/CLI_USAGE.md`
+- `docs/VALIDATION.md`
+- `README.md`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus/Calibration Step 8 — Consensus Roadmap And Status
+
+Status: implemented.
+
+Updated:
+
+- `docs/ROADMAP.md`
+- `docs/PROJECT_STATUS.md`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus/Calibration Step 9 — Calibration-By-Track Helper
+
+Status: implemented.
+
+Added:
+
+- `CALIBRATION_TRACK_SCHEMA_VERSION`
+- `CALIBRATION_TRACK_DISCLAIMER`
+- `calibration_track_summary`
+- per-track case, class, pathway, candidate-ID, and fixture-name coverage
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus/Calibration Step 10 — Calibration Track Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search calibration-track-summary`
+- optional `--fixture-path`
+- public package exports for calibration-track summary helpers
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus/Calibration Step 11 — Calibration Track Tests
+
+Status: implemented.
+
+Added tests for:
+
+- per-track calibration case counts
+- per-track false-positive class coverage
+- per-track expected pathway coverage
+- `techno-search calibration-track-summary`
+- conservative per-track calibration disclaimer
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus/Calibration Step 12 — Validate-All Calibration Track Wiring
+
+Status: implemented.
+
+Added:
+
+- `calibration_track_summary` block in `validate-all`
+- validation gates for expected track coverage and minimum per-track fixture coverage
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus/Calibration Step 13 — Validation Summary Calibration Track Counts
+
+Status: implemented.
+
+Added:
+
+- `calibration_track_count`
+- `calibration_minimum_track_case_count`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus/Calibration Step 14 — Calibration Docs And Status
+
+Status: implemented.
+
+Updated:
+
+- `docs/CLI_USAGE.md`
+- `docs/VALIDATION.md`
+- `docs/ROADMAP.md`
+- `docs/PROJECT_STATUS.md`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus/Calibration Step 15 — Full Validation, Commit, And Push
+
+Status: implemented.
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/ruff check .
+.venv/bin/mypy src
+git diff --check
+```
+
+Result:
+
+- 159 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+
+Planned commit:
+
+```bash
+git commit -m "Add consensus and calibration track summaries"
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step False-Positive And Human-Review Expansion
 
 User requested fifteen iterative steps:

@@ -121,6 +121,11 @@ The project will support three tracks from day one:
 - [x] Reviewer notes scaffold added
 - [x] Review queue summary CLI added
 - [x] Review queue summary wired into local validation
+- [x] Human-review consensus labels added
+- [x] Consensus summary CLI added
+- [x] Consensus summary wired into local validation
+- [x] Calibration-by-track summary CLI added
+- [x] Calibration-by-track summary wired into local validation
 
 ---
 
@@ -145,9 +150,9 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Add consensus label scaffolding for repeated reviewer decisions.
-2. Add calibration-by-track summaries for the synthetic calibration fixture set.
-3. Start validation dataset manifests for future non-synthetic false-positive suites.
+1. Start validation dataset manifests for future non-synthetic false-positive suites.
+2. Add benchmark metadata capture for local synthetic validation runs.
+3. Add conservative export examples for consensus-label review summaries.
 
 ---
 

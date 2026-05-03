@@ -15,6 +15,11 @@ FALSE_POSITIVE_ANALYSIS_DISCLAIMER = (
     "Synthetic false-positive class analysis is a development diagnostic only; "
     "it is not calibrated survey contamination analysis."
 )
+CALIBRATION_TRACK_SCHEMA_VERSION = "synthetic_calibration_by_track_v1"
+CALIBRATION_TRACK_DISCLAIMER = (
+    "Synthetic calibration-by-track summaries are development diagnostics only; "
+    "they are not calibrated per-track survey performance estimates."
+)
 
 
 @dataclass(frozen=True)
@@ -120,6 +125,36 @@ def false_positive_class_summary(path: Path | None = None) -> dict[str, object]:
     }
 
 
+def calibration_track_summary(path: Path | None = None) -> dict[str, object]:
+    """Summarize synthetic calibration fixture coverage within each search track."""
+
+    fixture_path = path or default_calibration_fixture_path()
+    fixtures = load_calibration_fixtures(fixture_path)
+    by_track: dict[str, list[CalibrationFixture]] = defaultdict(list)
+    for fixture in fixtures:
+        by_track[fixture.candidate.track.value].append(fixture)
+
+    track_summaries = {
+        track: _calibration_track_detail(track_fixtures)
+        for track, track_fixtures in sorted(by_track.items())
+    }
+    case_counts = [
+        detail["case_count"]
+        for detail in track_summaries.values()
+        if isinstance(detail["case_count"], int)
+    ]
+    summary = summarize_calibration_fixtures(fixtures)
+    return {
+        "fixture_path": str(fixture_path),
+        "schema_version": CALIBRATION_TRACK_SCHEMA_VERSION,
+        "disclaimer": CALIBRATION_TRACK_DISCLAIMER,
+        "case_count": summary.total,
+        "track_count": len(track_summaries),
+        "minimum_track_case_count": min(case_counts) if case_counts else 0,
+        "by_track": track_summaries,
+    }
+
+
 def _fixture_from_mapping(data: dict[str, Any]) -> CalibrationFixture:
     candidate = candidate_from_mapping(data["candidate"])
     false_positive_class = str(candidate.provenance.get("false_positive_class", "unknown"))
@@ -129,6 +164,21 @@ def _fixture_from_mapping(data: dict[str, Any]) -> CalibrationFixture:
         candidate=candidate,
         false_positive_class=false_positive_class,
     )
+
+
+def _calibration_track_detail(fixtures: list[CalibrationFixture]) -> dict[str, object]:
+    return {
+        "case_count": len(fixtures),
+        "class_count": len({fixture.false_positive_class for fixture in fixtures}),
+        "by_false_positive_class": _counter_to_dict(
+            Counter(fixture.false_positive_class for fixture in fixtures)
+        ),
+        "by_expected_pathway": _counter_to_dict(
+            Counter(fixture.expected_pathway.value for fixture in fixtures)
+        ),
+        "candidate_ids": sorted(fixture.candidate.candidate_id for fixture in fixtures),
+        "fixture_names": sorted(fixture.name for fixture in fixtures),
+    }
 
 
 def _counter_to_dict(counter: Counter[str]) -> dict[str, int]:

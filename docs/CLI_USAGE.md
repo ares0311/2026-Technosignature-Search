@@ -109,6 +109,18 @@ The summary uses the calibration false-positive fixtures and reports class count
 
 ---
 
+## Summarize Calibration By Track
+
+Print synthetic calibration fixture coverage within each search track:
+
+```bash
+.venv/bin/techno-search calibration-track-summary
+```
+
+The summary reports per-track case counts, false-positive class coverage, expected pathway coverage, candidate IDs, and fixture names. It is a development diagnostic only, not calibrated per-track survey performance analysis.
+
+---
+
 ## Validate Candidate JSON
 
 Validate a normalized synthetic candidate packet before scoring:
@@ -147,7 +159,7 @@ Print local JSON schema artifact paths:
 .venv/bin/techno-search schema-paths
 ```
 
-This includes candidate packets, report manifests, batch manifests, and human-review queue packets.
+This includes candidate packets, report manifests, batch manifests, human-review queue packets, and human-review consensus labels.
 
 ---
 
@@ -209,6 +221,18 @@ The summary reports queue items by track, triage label, and recommended pathway,
 
 ---
 
+## Summarize Consensus Label Fixtures
+
+Print synthetic repeated-reviewer consensus fixture coverage:
+
+```bash
+.venv/bin/techno-search consensus-summary
+```
+
+The summary reports consensus items by track and consensus label, reviewer decision counts, decision-label counts, and unique reviewer coverage. Consensus labels are triage summaries only; they are not discovery claims or external validation.
+
+---
+
 ## Run Local Validation Summary
 
 Run the non-network validation summaries used for quick release checks:
@@ -217,7 +241,7 @@ Run the non-network validation summaries used for quick release checks:
 .venv/bin/techno-search validate-all
 ```
 
-This includes example candidate validation, report validation, schema path checks, calibration fixture summary, false-positive class diagnostics, score regression summary, and human-review queue summary.
+This includes example candidate validation, report validation, schema path checks, calibration fixture summary, calibration-by-track diagnostics, false-positive class diagnostics, score regression summary, human-review queue summary, and consensus label summary.
 It also reports `catalog_cache_validation` for Git-tracked paths so local untracked caches do not fail default validation.
 
 ---
@@ -230,7 +254,7 @@ Print a concise local health dashboard without network access:
 .venv/bin/techno-search validation-summary
 ```
 
-This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, false-positive class, score-regression, review-queue, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
+This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, calibration-by-track, false-positive class, score-regression, review-queue, consensus-label, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
 
 ---
 
