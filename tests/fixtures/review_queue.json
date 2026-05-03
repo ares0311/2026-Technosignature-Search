@@ -1,0 +1,109 @@
+{
+  "schema_version": "human_review_queue_v1",
+  "description": "Small synthetic human-review queue packet examples for triage workflow tests.",
+  "disclaimer": "Human-review queue packets are triage aids only; they are not discovery claims.",
+  "allowed_triage_labels": [
+    "follow_up_target",
+    "insufficient_evidence",
+    "known_object_annotation",
+    "likely_false_positive",
+    "needs_human_review"
+  ],
+  "items": [
+    {
+      "candidate_id": "example-radio-clean",
+      "track": "radio",
+      "recommended_pathway": "candidate_review_packet",
+      "triage_label": "needs_human_review",
+      "source_packet_path": "examples/reports/example-radio-clean.json",
+      "review_packet_path": "examples/reports/example-radio-clean.md",
+      "negative_evidence_count": 2,
+      "blocking_issue_count": 0,
+      "reviewer_notes": [
+        {
+          "reviewer_id": "synthetic-reviewer-a",
+          "created_at_utc": "2026-05-03T00:00:00+00:00",
+          "note": "Synthetic radio packet retained for conservative human-review workflow testing.",
+          "tags": [
+            "synthetic",
+            "radio"
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_id": "cal-radio-rfi",
+      "track": "radio",
+      "recommended_pathway": "do_not_submit_false_positive",
+      "triage_label": "likely_false_positive",
+      "source_packet_path": "tests/fixtures/calibration_false_positives.json",
+      "review_packet_path": "tests/fixtures/calibration_false_positives.json",
+      "negative_evidence_count": 4,
+      "blocking_issue_count": 1,
+      "reviewer_notes": [
+        {
+          "reviewer_id": "synthetic-reviewer-b",
+          "created_at_utc": "2026-05-03T00:05:00+00:00",
+          "note": "RFI overlap and off-target recurrence make false-positive handling the default interpretation.",
+          "tags": [
+            "synthetic",
+            "false-positive"
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_id": "example-infrared-clean",
+      "track": "infrared",
+      "recommended_pathway": "candidate_review_packet",
+      "triage_label": "follow_up_target",
+      "source_packet_path": "examples/reports/example-infrared-clean.json",
+      "review_packet_path": "examples/reports/example-infrared-clean.md",
+      "negative_evidence_count": 2,
+      "blocking_issue_count": 0,
+      "reviewer_notes": [
+        {
+          "reviewer_id": "synthetic-reviewer-a",
+          "created_at_utc": "2026-05-03T00:10:00+00:00",
+          "note": "Synthetic infrared packet can exercise follow-up target routing without implying confirmation.",
+          "tags": [
+            "synthetic",
+            "infrared"
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_id": "known-object-demo",
+      "track": "anomaly",
+      "recommended_pathway": "known_object_annotation",
+      "triage_label": "known_object_annotation",
+      "source_packet_path": "examples/reports/example-anomaly-clean.json",
+      "review_packet_path": "examples/reports/example-anomaly-clean.md",
+      "negative_evidence_count": 3,
+      "blocking_issue_count": 0,
+      "reviewer_notes": [
+        {
+          "reviewer_id": "synthetic-reviewer-c",
+          "created_at_utc": "2026-05-03T00:15:00+00:00",
+          "note": "Known-object style annotations should remain separate from candidate-interest routing.",
+          "tags": [
+            "synthetic",
+            "annotation"
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_id": "low-confidence-demo",
+      "track": "anomaly",
+      "recommended_pathway": "github_reproducibility_only",
+      "triage_label": "insufficient_evidence",
+      "source_packet_path": "examples/reports/example-anomaly-clean.json",
+      "review_packet_path": "examples/reports/example-anomaly-clean.md",
+      "negative_evidence_count": 5,
+      "blocking_issue_count": 2,
+      "reviewer_notes": []
+    }
+  ]
+}

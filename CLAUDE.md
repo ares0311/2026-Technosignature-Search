@@ -180,12 +180,120 @@ Merge status: already on `main`; no merge needed.
 
 ## False-Positive/Human-Review Step 10 — Push Main
 
-Status: pending.
+Status: implemented.
 
-Planned push:
+Pushed commit:
+
+- `5271a93 Add false positive class summaries`
+
+Remote sync:
 
 ```bash
 git push origin main
+```
+
+Result:
+
+- `main` pushed to `origin/main`
+- remote advanced from `4652b32` to `5271a93`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## False-Positive/Human-Review Step 11 — Human-Review Queue Schema
+
+Status: implemented.
+
+Added:
+
+- `REVIEW_QUEUE_SCHEMA_VERSION`
+- `schemas/review_queue.schema.json`
+- `tests/fixtures/review_queue.json`
+- schema path wiring through `schema-paths`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## False-Positive/Human-Review Step 12 — Triage Label Enum
+
+Status: implemented.
+
+Added `TriageLabel` with allowed values:
+
+- `needs_human_review`
+- `likely_false_positive`
+- `follow_up_target`
+- `known_object_annotation`
+- `insufficient_evidence`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## False-Positive/Human-Review Step 13 — Reviewer Notes Structure
+
+Status: implemented.
+
+Added:
+
+- `ReviewerNote`
+- `ReviewQueueItem`
+- reviewer-note coverage in the fixture and summary output
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## False-Positive/Human-Review Step 14 — Review Queue Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search review-queue-summary`
+- review queue summary block in `validate-all`
+- review queue counts in `validation-summary`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## False-Positive/Human-Review Step 15 — Tests, Docs, And Final Validation
+
+Status: implemented.
+
+Added tests and docs for:
+
+- human-review queue fixtures
+- allowed triage labels
+- reviewer notes
+- review queue schema paths
+- review queue CLI output
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/ruff check .
+.venv/bin/mypy src
+git diff --check
+```
+
+Result:
+
+- 154 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+
+Commit planned:
+
+```bash
+git commit -m "Add human review queue summary"
 ```
 
 Merge status: already on `main`; no merge needed.

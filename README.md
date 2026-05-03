@@ -192,6 +192,7 @@ Machine-readable schemas:
 - Candidate packet schema: [`candidate_packet.schema.json`](schemas/candidate_packet.schema.json)
 - Report manifest schema: [`report_manifest.schema.json`](schemas/report_manifest.schema.json)
 - Batch manifest schema: [`batch_manifest.schema.json`](schemas/batch_manifest.schema.json)
+- Human-review queue schema: [`review_queue.schema.json`](schemas/review_queue.schema.json)
 
 Validation and schema policy:
 

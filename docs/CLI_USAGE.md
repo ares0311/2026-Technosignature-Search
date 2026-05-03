@@ -147,6 +147,8 @@ Print local JSON schema artifact paths:
 .venv/bin/techno-search schema-paths
 ```
 
+This includes candidate packets, report manifests, batch manifests, and human-review queue packets.
+
 ---
 
 ## Summarize Score Regression Snapshots
@@ -195,6 +197,18 @@ The summary reports cases by track and truth class plus synthetic precision, rec
 
 ---
 
+## Summarize Human-Review Queue Fixtures
+
+Print synthetic human-review queue fixture coverage:
+
+```bash
+.venv/bin/techno-search review-queue-summary
+```
+
+The summary reports queue items by track, triage label, and recommended pathway, plus reviewer-note coverage and items still missing notes. These packets are triage aids only; they are not discovery claims.
+
+---
+
 ## Run Local Validation Summary
 
 Run the non-network validation summaries used for quick release checks:
@@ -203,7 +217,7 @@ Run the non-network validation summaries used for quick release checks:
 .venv/bin/techno-search validate-all
 ```
 
-This includes example candidate validation, report validation, schema path checks, calibration fixture summary, false-positive class diagnostics, and score regression summary.
+This includes example candidate validation, report validation, schema path checks, calibration fixture summary, false-positive class diagnostics, score regression summary, and human-review queue summary.
 It also reports `catalog_cache_validation` for Git-tracked paths so local untracked caches do not fail default validation.
 
 ---
@@ -216,7 +230,7 @@ Print a concise local health dashboard without network access:
 .venv/bin/techno-search validation-summary
 ```
 
-This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, false-positive class, score-regression, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
+This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, false-positive class, score-regression, review-queue, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
 
 ---
 

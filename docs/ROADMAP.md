@@ -178,10 +178,10 @@ Support citizen-science review.
 
 ## Tasks
 
-- [ ] Candidate triage labels
-- [ ] Review queue format
-- [ ] Exportable review packets
-- [ ] Reviewer notes
+- [x] Candidate triage labels
+- [x] Review queue format
+- [x] Exportable review packets
+- [x] Reviewer notes
 - [ ] Consensus labels
 
 ---

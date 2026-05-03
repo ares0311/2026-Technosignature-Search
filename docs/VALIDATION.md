@@ -71,6 +71,7 @@ Committed schemas:
 - `schemas/candidate_packet.schema.json`
 - `schemas/report_manifest.schema.json`
 - `schemas/batch_manifest.schema.json`
+- `schemas/review_queue.schema.json`
 
 ---
 
@@ -106,7 +107,13 @@ Review synthetic precision-recall fixture coverage:
 .venv/bin/techno-search precision-recall-summary
 ```
 
-`validate-all` and `validation-summary` include false-positive class, injection-recovery, reliability, and precision-recall coverage. The reported false-positive class coverage, recovery rate, false-alarm fraction, reliability errors, precision, recall, and F1 score are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, or classification performance estimates.
+Review synthetic human-review queue fixture coverage:
+
+```bash
+.venv/bin/techno-search review-queue-summary
+```
+
+`validate-all` and `validation-summary` include false-positive class, injection-recovery, reliability, precision-recall, and human-review queue coverage. The reported false-positive class coverage, recovery rate, false-alarm fraction, reliability errors, precision, recall, F1 score, and review queue counts are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, classification performance estimates, or discovery claims.
 
 Snapshot fixture:
 
@@ -136,6 +143,12 @@ False-positive class diagnostics currently reuse:
 
 ```text
 tests/fixtures/calibration_false_positives.json
+```
+
+Human-review queue fixture:
+
+```text
+tests/fixtures/review_queue.json
 ```
 
 When scores change, review whether the scoring model, thresholds, or example inputs changed intentionally.

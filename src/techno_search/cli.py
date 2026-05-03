@@ -36,6 +36,7 @@ from techno_search.reporting import (
     candidate_packet_json,
     write_candidate_reports,
 )
+from techno_search.review_queue import review_queue_summary
 from techno_search.schemas import Candidate, candidate_from_mapping
 from techno_search.scoring import score_candidate
 from techno_search.validation import validate_candidate_file, validate_report_directory
@@ -44,6 +45,7 @@ SCHEMA_FILENAMES = {
     "batch_manifest": "batch_manifest.schema.json",
     "candidate_packet": "candidate_packet.schema.json",
     "report_manifest": "report_manifest.schema.json",
+    "review_queue": "review_queue.schema.json",
 }
 
 
@@ -147,6 +149,17 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(
             json.dumps(
                 precision_recall_summary(args.fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "review-queue-summary":
+        print(
+            json.dumps(
+                review_queue_summary(args.fixture_path),
                 indent=2,
                 sort_keys=True,
             ),
@@ -395,6 +408,9 @@ def validate_all() -> dict[str, object]:
     reliability_bin_count = reliability["bin_count"]
     precision_recall = precision_recall_summary()
     precision_recall_case_count = precision_recall["case_count"]
+    review_queue = review_queue_summary()
+    review_queue_item_count = review_queue["item_count"]
+    review_queue_note_count = review_queue["note_count"]
 
     ok = (
         all(result["ok"] for result in candidate_results.values())
@@ -413,6 +429,10 @@ def validate_all() -> dict[str, object]:
         and reliability_bin_count >= 9
         and isinstance(precision_recall_case_count, int)
         and precision_recall_case_count >= 6
+        and isinstance(review_queue_item_count, int)
+        and review_queue_item_count >= 5
+        and isinstance(review_queue_note_count, int)
+        and review_queue_note_count >= 4
     )
     return {
         "ok": ok,
@@ -428,6 +448,7 @@ def validate_all() -> dict[str, object]:
         "injection_recovery_summary": injection_recovery,
         "reliability_summary": reliability,
         "precision_recall_summary": precision_recall,
+        "review_queue_summary": review_queue,
     }
 
 
@@ -446,6 +467,7 @@ def validation_summary() -> dict[str, object]:
     injection_recovery = validation["injection_recovery_summary"]
     reliability = validation["reliability_summary"]
     precision_recall = validation["precision_recall_summary"]
+    review_queue = validation["review_queue_summary"]
     return {
         "ok": validation["ok"],
         "generated_at_utc": datetime.now(UTC).isoformat(),
@@ -499,6 +521,12 @@ def validation_summary() -> dict[str, object]:
         "synthetic_recall": precision_recall["synthetic_recall"]
         if isinstance(precision_recall, dict)
         else 0.0,
+        "review_queue_item_count": review_queue["item_count"]
+        if isinstance(review_queue, dict)
+        else 0,
+        "review_queue_note_count": review_queue["note_count"]
+        if isinstance(review_queue, dict)
+        else 0,
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
             ".venv/bin/ruff check .",
@@ -725,6 +753,15 @@ def _build_parser() -> argparse.ArgumentParser:
         "--fixture-path",
         type=Path,
         help="Optional synthetic precision-recall fixture JSON path.",
+    )
+    review_queue_parser = subparsers.add_parser(
+        "review-queue-summary",
+        help="Summarize synthetic human-review queue fixture coverage.",
+    )
+    review_queue_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional synthetic human-review queue fixture JSON path.",
     )
     subparsers.add_parser(
         "validate-all",

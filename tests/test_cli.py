@@ -208,8 +208,14 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
     result = json.loads(stdout.getvalue())
 
     assert exit_code == 0
-    assert set(result) == {"batch_manifest", "candidate_packet", "report_manifest"}
+    assert set(result) == {
+        "batch_manifest",
+        "candidate_packet",
+        "report_manifest",
+        "review_queue",
+    }
     assert result["candidate_packet"].endswith("schemas/candidate_packet.schema.json")
+    assert result["review_queue"].endswith("schemas/review_queue.schema.json")
 
 
 def test_cli_score_regression_summary_outputs_snapshot_counts() -> None:
@@ -267,6 +273,22 @@ def test_cli_precision_recall_summary_outputs_fixture_counts() -> None:
     assert result["synthetic_f1_score"] == 0.8
 
 
+def test_cli_review_queue_summary_outputs_fixture_counts() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["review-queue-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "human_review_queue_v1"
+    assert result["item_count"] == 5
+    assert result["note_count"] == 4
+    assert result["by_track"] == {"anomaly": 2, "infrared": 1, "radio": 2}
+    assert result["by_triage_label"]["needs_human_review"] == 1
+    assert result["items_missing_notes"] == ["low-confidence-demo"]
+    assert "not discovery claims" in result["disclaimer"]
+
+
 def test_cli_validate_all_outputs_local_summary() -> None:
     stdout = StringIO()
 
@@ -312,6 +334,15 @@ def test_cli_validate_all_outputs_local_summary() -> None:
         "candidate": 3,
         "false_positive": 3,
     }
+    assert result["review_queue_summary"]["item_count"] == 5
+    assert result["review_queue_summary"]["note_count"] == 4
+    assert result["review_queue_summary"]["by_triage_label"] == {
+        "follow_up_target": 1,
+        "insufficient_evidence": 1,
+        "known_object_annotation": 1,
+        "likely_false_positive": 1,
+        "needs_human_review": 1,
+    }
     assert result["catalog_cache_validation"]["forbidden_roots"] == [
         "data",
         "cache",
@@ -330,7 +361,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 3
+    assert result["schema_count"] == 4
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["false_positive_case_count"] == 15
@@ -346,6 +377,8 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["precision_recall_case_count"] == 6
     assert result["synthetic_precision"] == 0.807692
     assert result["synthetic_recall"] == 0.792453
+    assert result["review_queue_item_count"] == 5
+    assert result["review_queue_note_count"] == 4
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 
