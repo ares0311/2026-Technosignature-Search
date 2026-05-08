@@ -12,25 +12,18 @@ def test_cli_usage_references_existing_example_paths() -> None:
     assert Path("examples/reports/example-radio-clean.manifest.json").exists()
 
 
-def test_readme_quickstart_references_existing_examples() -> None:
+def test_readme_references_existing_project_docs() -> None:
     readme = Path("README.md").read_text(encoding="utf-8")
 
-    assert "pip install -e \".[dev]\"" in readme
-    assert ".venv/bin/techno-search score examples/candidates/radio_clean_candidate.json" in readme
-    assert (
-        ".venv/bin/techno-search score-batch examples/candidates examples/batch_reports"
-        in readme
-    )
-
     linked_paths = (
-        "examples/reports/example-radio-clean.md",
-        "examples/reports/example-radio-clean.manifest.json",
-        "examples/batch_reports/batch_manifest.json",
-        "examples/batch_reports/example-radio-clean.md",
-        "examples/batch_reports/example-infrared-clean.md",
-        "examples/batch_reports/example-anomaly-clean.md",
+        "docs/PROJECT_STATUS.md",
+        "docs/ROADMAP.md",
+        "docs/PIPELINE_SPEC.md",
+        "docs/SCORING_MODEL.md",
+        "docs/LOCAL_SYSTEM_PROFILE.md",
     )
     for path in linked_paths:
+        assert path in readme
         assert Path(path).exists()
 
 
@@ -44,12 +37,6 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
         "## 🛣 Roadmap",
         "## ⚙️ Architecture",
         "## 📐 Scoring Model",
-        "## 🧪 Scientific Rigor",
-        "## 🧭 Pathway Logic",
-        "## 🔎 Search Tracks",
-        "## ⚡ Quickstart",
-        "## 📦 Example Outputs",
-        "## 🧾 Schemas",
         "## 📂 Project Structure",
         "## 🖥 Local System Profile",
         "## ⚠️ Important Disclaimer",
@@ -59,12 +46,11 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     for section in expected_sections:
         assert section in readme
 
-    assert "false positives until shown otherwise" in readme
+    assert "Most signals are **not technosignatures**." in readme
     assert "P(H | D) ∝ P(D | H) P(H)" in readme
     assert "log_score_i = log_prior_i + weighted_evidence_i" in readme
-    assert "false_positive_probability = 1 - posterior.technosignature_interest" in readme
     assert "No claims of confirmed technosignatures" in readme
-    assert "not unsupported claims" in readme
+    assert "not just interesting anomalies" in readme
 
 
 def test_publishing_docs_reference_current_validation_commands() -> None:
