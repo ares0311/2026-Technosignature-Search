@@ -47,8 +47,9 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
         assert section in readme
 
     assert "Most signals are **not technosignatures**." in readme
-    assert "P(H | D) ∝ P(D | H) P(H)" in readme
-    assert "log_score_i = log_prior_i + weighted_evidence_i" in readme
+    assert "P(H \\mid D) \\propto P(D \\mid H)P(H)" in readme
+    assert "\\mathrm{log\\_score}_i =" in readme
+    assert "P(\\mathrm{false\\ positive}) =" in readme
     assert "No claims of confirmed technosignatures" in readme
     assert "not just interesting anomalies" in readme
 

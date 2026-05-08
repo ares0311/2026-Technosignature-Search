@@ -11,13 +11,19 @@
 A **research-grade, reproducible pipeline** for detecting and evaluating technosignature-interest candidates from **radio, infrared, and archival/catalog** astronomical datasets.
 
 ```
-Radio SETI → Infrared Waste Heat → Archival / Catalog Anomalies
+Radio SETI data        → narrowband / drift candidates
+Infrared catalogs      → waste-heat-interest excess candidates
+Archival catalogs      → cross-survey anomaly candidates
 ```
 
 ### Core Flow
 
 ```
-Existing Data → Candidate Detection → Vetting → Bayesian Scoring → Submission Pathway
+Existing Astronomical Data
+  → Candidate Extraction
+  → False-Positive Vetting
+  → Bayesian-Style Scoring
+  → Conservative Review Pathway
 ```
 
 This project prioritizes:
@@ -25,6 +31,7 @@ This project prioritizes:
 - Low false-positive rates
 - Reproducibility
 - High-value follow-up targets
+- Explicit uncertainty and provenance
 
 ---
 
@@ -73,7 +80,13 @@ This system is built to **disprove signals first**, then elevate only the strong
 ## ⚙️ Architecture
 
 ```
-Ingest → Normalize → Search → Vet → Score → Classify
+Ingest
+  → Normalize
+  → Search
+  → Vet
+  → Score
+  → Classify
+  → Report
 ```
 
 | Module | Purpose |
@@ -88,6 +101,8 @@ Ingest → Normalize → Search → Vet → Score → Classify
 | anomalies/ | Archival and catalog anomaly prototypes |
 | live_data.py | Guarded provider interfaces and cache policy |
 
+Every stage must preserve provenance, expose uncertainty, and keep detection separate from interpretation.
+
 👉 See [`docs/PIPELINE_SPEC.md`](docs/PIPELINE_SPEC.md)
 
 ---
@@ -96,22 +111,36 @@ Ingest → Normalize → Search → Vet → Score → Classify
 
 Bayesian framework:
 
-```
-P(H | D) ∝ P(D | H) P(H)
-```
+$$
+P(H \mid D) \propto P(D \mid H)P(H)
+$$
 
 Multi-hypothesis normalization:
 
-```
-P(H_i | D) = P(D | H_i) P(H_i) / Σ_j P(D | H_j) P(H_j)
-```
+$$
+P(H_i \mid D) =
+\frac{P(D \mid H_i)P(H_i)}
+{\sum_j P(D \mid H_j)P(H_j)}
+$$
 
 Current v0 approximation:
 
-```
-log_score_i = log_prior_i + weighted_evidence_i
-posterior_i = softmax(log_score_i)
-```
+$$
+\mathrm{log\_score}_i =
+\mathrm{log\_prior}_i + \mathrm{weighted\_evidence}_i
+$$
+
+$$
+\mathrm{posterior}_i =
+\mathrm{softmax}(\mathrm{log\_score}_i)
+$$
+
+False-positive probability:
+
+$$
+P(\mathrm{false\ positive}) =
+1 - P(\mathrm{technosignature\ interest} \mid D)
+$$
 
 Hypotheses:
 - Technosignature-interest candidate
@@ -126,6 +155,7 @@ Outputs:
 - Posterior probabilities
 - False positive probability
 - Signal reality confidence
+- Novelty score
 - Follow-up value
 - Review readiness
 - Submission pathway
