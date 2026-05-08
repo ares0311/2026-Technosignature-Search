@@ -30,6 +30,7 @@ Before release, verify:
 - batch manifest schemas parse
 - example reports regenerate cleanly
 - score regression snapshots are reviewed when scores change
+- benchmark run-result metadata is reviewed when validation run fixtures change
 - calibration fixtures still route expected false positives conservatively
 - generated packets include `config_version`
 - generated packets include `schema_version`

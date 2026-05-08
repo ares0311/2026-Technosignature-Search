@@ -194,8 +194,10 @@ Machine-readable schemas:
 - Batch manifest schema: [`batch_manifest.schema.json`](schemas/batch_manifest.schema.json)
 - Human-review queue schema: [`review_queue.schema.json`](schemas/review_queue.schema.json)
 - Human-review consensus schema: [`consensus_labels.schema.json`](schemas/consensus_labels.schema.json)
+- Human-review consensus export schema: [`consensus_export.schema.json`](schemas/consensus_export.schema.json)
 - Validation dataset manifest schema: [`validation_dataset_manifest.schema.json`](schemas/validation_dataset_manifest.schema.json)
 - Local benchmark metadata schema: [`benchmark_metadata.schema.json`](schemas/benchmark_metadata.schema.json)
+- Benchmark run-result schema: [`benchmark_run_results.schema.json`](schemas/benchmark_run_results.schema.json)
 
 Validation and schema policy:
 

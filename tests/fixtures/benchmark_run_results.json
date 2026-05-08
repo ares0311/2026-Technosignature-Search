@@ -1,0 +1,37 @@
+{
+  "schema_version": "synthetic_benchmark_run_result_v1",
+  "description": "Small local synthetic benchmark run-result metadata examples for future calibration-grid tracking.",
+  "disclaimer": "Benchmark run results record local synthetic execution metadata only; they are not scientific performance claims or survey sensitivity estimates.",
+  "runs": [
+    {
+      "run_id": "pytest-coverage-2026-05-08",
+      "command_name": "pytest coverage gate",
+      "command_kind": "test",
+      "status": "passed",
+      "worker_count": 1,
+      "input_case_count": 170,
+      "duration_seconds": 2.45,
+      "git_commit": "0e94ea9"
+    },
+    {
+      "run_id": "ruff-2026-05-08",
+      "command_name": "ruff lint gate",
+      "command_kind": "lint",
+      "status": "passed",
+      "worker_count": 1,
+      "input_case_count": 1,
+      "duration_seconds": 0.10,
+      "git_commit": "0e94ea9"
+    },
+    {
+      "run_id": "future-calibration-grid-placeholder",
+      "command_name": "future synthetic calibration worker ceiling",
+      "command_kind": "future_benchmark_scaffold",
+      "status": "planned_not_implemented",
+      "worker_count": 12,
+      "input_case_count": 0,
+      "duration_seconds": 0.0,
+      "git_commit": "planned"
+    }
+  ]
+}

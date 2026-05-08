@@ -20,6 +20,11 @@ CONSENSUS_LABEL_DISCLAIMER = (
     "Human-review consensus labels are triage summaries only; they are not discovery "
     "claims or external validation."
 )
+CONSENSUS_EXPORT_SCHEMA_VERSION = "human_review_consensus_export_v1"
+CONSENSUS_EXPORT_DISCLAIMER = (
+    "Consensus exports are conservative review handoff summaries only; they are not "
+    "discovery claims, detections, or external validation."
+)
 
 
 class TriageLabel(StrEnum):
@@ -87,6 +92,20 @@ class ConsensusItem:
     reviewer_decisions: tuple[ConsensusDecision, ...]
 
 
+@dataclass(frozen=True)
+class ConsensusExportItem:
+    """One conservative consensus-label export item."""
+
+    candidate_id: str
+    track: Track
+    consensus_label: ConsensusLabel
+    export_path: str
+    evidence_summary: str
+    negative_evidence_count: int
+    blocking_issue_count: int
+    reviewer_decision_count: int
+
+
 def allowed_triage_labels() -> tuple[str, ...]:
     """Return sorted allowed human-review triage label values."""
 
@@ -112,6 +131,14 @@ def default_consensus_label_fixture_path() -> Path:
 
     return Path(__file__).resolve().parents[2] / "tests" / "fixtures" / (
         "consensus_labels.json"
+    )
+
+
+def default_consensus_export_fixture_path() -> Path:
+    """Return the repository-local human-review consensus export fixture path."""
+
+    return Path(__file__).resolve().parents[2] / "tests" / "fixtures" / (
+        "consensus_exports.json"
     )
 
 
@@ -159,6 +186,29 @@ def load_consensus_items(path: Path | None = None) -> tuple[ConsensusItem, ...]:
         raise ValueError(msg)
 
     return tuple(_consensus_item_from_mapping(item) for item in data["items"])
+
+
+def load_consensus_export_items(path: Path | None = None) -> tuple[ConsensusExportItem, ...]:
+    """Load synthetic human-review consensus export fixture items."""
+
+    fixture_path = path or default_consensus_export_fixture_path()
+    with fixture_path.open(encoding="utf-8") as handle:
+        data = json.load(handle)
+
+    schema_version = str(data.get("schema_version", ""))
+    if schema_version != CONSENSUS_EXPORT_SCHEMA_VERSION:
+        msg = (
+            f"Unsupported consensus export schema version {schema_version!r}; "
+            f"expected {CONSENSUS_EXPORT_SCHEMA_VERSION!r}"
+        )
+        raise ValueError(msg)
+
+    disclaimer = str(data.get("disclaimer", ""))
+    if "not discovery claims" not in disclaimer:
+        msg = "Consensus export fixture must preserve conservative disclaimer language"
+        raise ValueError(msg)
+
+    return tuple(_consensus_export_item_from_mapping(item) for item in data["exports"])
 
 
 def review_queue_summary(path: Path | None = None) -> dict[str, object]:
@@ -221,6 +271,28 @@ def consensus_summary(path: Path | None = None) -> dict[str, object]:
     }
 
 
+def consensus_export_summary(path: Path | None = None) -> dict[str, object]:
+    """Summarize synthetic human-review consensus export fixture coverage."""
+
+    fixture_path = path or default_consensus_export_fixture_path()
+    items = load_consensus_export_items(fixture_path)
+    return {
+        "fixture_path": str(fixture_path),
+        "schema_version": CONSENSUS_EXPORT_SCHEMA_VERSION,
+        "disclaimer": CONSENSUS_EXPORT_DISCLAIMER,
+        "export_count": len(items),
+        "reviewer_decision_total": sum(item.reviewer_decision_count for item in items),
+        "negative_evidence_total": sum(item.negative_evidence_count for item in items),
+        "blocking_issue_total": sum(item.blocking_issue_count for item in items),
+        "by_track": _counter_to_dict(Counter(item.track.value for item in items)),
+        "by_consensus_label": _counter_to_dict(
+            Counter(item.consensus_label.value for item in items)
+        ),
+        "candidate_ids": sorted(item.candidate_id for item in items),
+        "export_paths": sorted(item.export_path for item in items),
+    }
+
+
 def _review_queue_item_from_mapping(data: dict[str, Any]) -> ReviewQueueItem:
     return ReviewQueueItem(
         candidate_id=str(data["candidate_id"]),
@@ -260,6 +332,19 @@ def _consensus_decision_from_mapping(data: dict[str, Any]) -> ConsensusDecision:
         triage_label=TriageLabel(str(data["triage_label"])),
         created_at_utc=str(data["created_at_utc"]),
         rationale=str(data["rationale"]),
+    )
+
+
+def _consensus_export_item_from_mapping(data: dict[str, Any]) -> ConsensusExportItem:
+    return ConsensusExportItem(
+        candidate_id=str(data["candidate_id"]),
+        track=Track(str(data["track"])),
+        consensus_label=ConsensusLabel(str(data["consensus_label"])),
+        export_path=str(data["export_path"]),
+        evidence_summary=str(data["evidence_summary"]),
+        negative_evidence_count=int(data["negative_evidence_count"]),
+        blocking_issue_count=int(data["blocking_issue_count"]),
+        reviewer_decision_count=int(data["reviewer_decision_count"]),
     )
 
 

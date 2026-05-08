@@ -159,7 +159,7 @@ Print local JSON schema artifact paths:
 .venv/bin/techno-search schema-paths
 ```
 
-This includes candidate packets, report manifests, batch manifests, human-review queue packets, human-review consensus labels, validation dataset manifests, and local benchmark metadata.
+This includes candidate packets, report manifests, batch manifests, human-review queue packets, human-review consensus labels, validation dataset manifests, local benchmark metadata, and benchmark run-result metadata.
 
 ---
 
@@ -233,6 +233,18 @@ The summary reports consensus items by track and consensus label, reviewer decis
 
 ---
 
+## Summarize Consensus Export Fixtures
+
+Print conservative consensus-label export example coverage:
+
+```bash
+.venv/bin/techno-search consensus-export-summary
+```
+
+The summary reports export counts by track and consensus label, reviewer-decision totals, negative evidence totals, and blocking issue totals. Consensus exports are review handoff summaries only; they are not discovery claims, detections, or external validation.
+
+---
+
 ## Summarize Validation Dataset Manifests
 
 Print validation dataset manifest coverage:
@@ -257,6 +269,18 @@ The summary reports the documented local hardware profile path, conservative wor
 
 ---
 
+## Summarize Benchmark Run Results
+
+Print local synthetic benchmark run-result metadata:
+
+```bash
+.venv/bin/techno-search benchmark-run-summary
+```
+
+The summary reports local run-result counts, command-kind counts, status counts, worker limits, input-case totals, run IDs, and recorded git commits. Benchmark run results are local synthetic execution metadata only; they are not scientific performance claims or survey sensitivity estimates.
+
+---
+
 ## Run Local Validation Summary
 
 Run the non-network validation summaries used for quick release checks:
@@ -265,7 +289,7 @@ Run the non-network validation summaries used for quick release checks:
 .venv/bin/techno-search validate-all
 ```
 
-This includes example candidate validation, report validation, schema path checks, calibration fixture summary, calibration-by-track diagnostics, false-positive class diagnostics, score regression summary, human-review queue summary, consensus label summary, validation dataset manifest summary, and benchmark metadata summary.
+This includes example candidate validation, report validation, schema path checks, calibration fixture summary, calibration-by-track diagnostics, false-positive class diagnostics, score regression summary, human-review queue summary, consensus label summary, consensus export summary, validation dataset manifest summary, benchmark metadata summary, and benchmark run-result summary.
 It also reports `catalog_cache_validation` for Git-tracked paths so local untracked caches do not fail default validation.
 
 ---
@@ -278,7 +302,7 @@ Print a concise local health dashboard without network access:
 .venv/bin/techno-search validation-summary
 ```
 
-This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, calibration-by-track, false-positive class, validation-dataset, benchmark-metadata, score-regression, review-queue, consensus-label, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
+This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, calibration-by-track, false-positive class, validation-dataset, benchmark-metadata, benchmark-run, score-regression, review-queue, consensus-label, consensus-export, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
 
 ---
 

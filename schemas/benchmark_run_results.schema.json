@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/techno-search/benchmark_run_results.schema.json",
+  "title": "Technosignature Search synthetic benchmark run results",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "description",
+    "disclaimer",
+    "runs"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "synthetic_benchmark_run_result_v1"
+    },
+    "description": {
+      "type": "string"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "runs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "run_id",
+          "command_name",
+          "command_kind",
+          "status",
+          "worker_count",
+          "input_case_count",
+          "duration_seconds",
+          "git_commit"
+        ],
+        "properties": {
+          "run_id": {
+            "type": "string"
+          },
+          "command_name": {
+            "type": "string"
+          },
+          "command_kind": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "worker_count": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "input_case_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "duration_seconds": {
+            "type": "number",
+            "minimum": 0
+          },
+          "git_commit": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

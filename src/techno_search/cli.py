@@ -12,7 +12,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TextIO
 
-from techno_search.benchmark_metadata import benchmark_metadata_summary
+from techno_search.benchmark_metadata import (
+    benchmark_metadata_summary,
+    benchmark_run_result_summary,
+)
 from techno_search.calibration import (
     calibration_track_summary,
     false_positive_class_summary,
@@ -38,20 +41,30 @@ from techno_search.reporting import (
     candidate_packet_json,
     write_candidate_reports,
 )
-from techno_search.review_queue import consensus_summary, review_queue_summary
+from techno_search.review_queue import (
+    consensus_export_summary,
+    consensus_summary,
+    review_queue_summary,
+)
 from techno_search.schemas import Candidate, candidate_from_mapping
 from techno_search.scoring import score_candidate
 from techno_search.validation import validate_candidate_file, validate_report_directory
-from techno_search.validation_datasets import validation_dataset_summary
+from techno_search.validation_datasets import (
+    validation_dataset_summary,
+    validation_promotion_summary,
+)
 
 SCHEMA_FILENAMES = {
     "batch_manifest": "batch_manifest.schema.json",
     "benchmark_metadata": "benchmark_metadata.schema.json",
+    "benchmark_run_results": "benchmark_run_results.schema.json",
     "candidate_packet": "candidate_packet.schema.json",
+    "consensus_export": "consensus_export.schema.json",
     "consensus_labels": "consensus_labels.schema.json",
     "report_manifest": "report_manifest.schema.json",
     "review_queue": "review_queue.schema.json",
     "validation_dataset_manifest": "validation_dataset_manifest.schema.json",
+    "validation_promotion_rules": "validation_promotion_rules.schema.json",
 }
 
 
@@ -184,10 +197,32 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "validation-promotion-summary":
+        print(
+            json.dumps(
+                validation_promotion_summary(args.rules_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     if args.command == "benchmark-metadata-summary":
         print(
             json.dumps(
                 benchmark_metadata_summary(args.metadata_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "benchmark-run-summary":
+        print(
+            json.dumps(
+                benchmark_run_result_summary(args.results_path),
                 indent=2,
                 sort_keys=True,
             ),
@@ -210,6 +245,17 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(
             json.dumps(
                 consensus_summary(args.fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "consensus-export-summary":
+        print(
+            json.dumps(
+                consensus_export_summary(args.fixture_path),
                 indent=2,
                 sort_keys=True,
             ),
@@ -467,12 +513,19 @@ def validate_all() -> dict[str, object]:
     consensus = consensus_summary()
     consensus_item_count = consensus["item_count"]
     consensus_decision_count = consensus["decision_count"]
+    consensus_exports = consensus_export_summary()
+    consensus_export_count = consensus_exports["export_count"]
     validation_datasets = validation_dataset_summary()
     validation_dataset_count = validation_datasets["dataset_count"]
     validation_dataset_case_count = validation_datasets["total_case_count"]
+    validation_promotions = validation_promotion_summary()
+    validation_promotion_rule_count = validation_promotions["rule_count"]
     benchmark_metadata = benchmark_metadata_summary()
     benchmark_command_count = benchmark_metadata["command_count"]
     benchmark_worker_limit = benchmark_metadata["default_cpu_worker_limit"]
+    benchmark_runs = benchmark_run_result_summary()
+    benchmark_run_count = benchmark_runs["run_count"]
+    benchmark_run_worker_limit = benchmark_runs["max_worker_count"]
 
     ok = (
         all(result["ok"] for result in candidate_results.values())
@@ -503,14 +556,22 @@ def validate_all() -> dict[str, object]:
         and consensus_item_count >= 5
         and isinstance(consensus_decision_count, int)
         and consensus_decision_count >= 10
+        and isinstance(consensus_export_count, int)
+        and consensus_export_count >= 5
         and isinstance(validation_dataset_count, int)
         and validation_dataset_count >= 3
         and isinstance(validation_dataset_case_count, int)
         and validation_dataset_case_count >= 15
+        and isinstance(validation_promotion_rule_count, int)
+        and validation_promotion_rule_count >= 3
         and isinstance(benchmark_command_count, int)
         and benchmark_command_count >= 4
         and isinstance(benchmark_worker_limit, int)
         and benchmark_worker_limit <= 12
+        and isinstance(benchmark_run_count, int)
+        and benchmark_run_count >= 3
+        and isinstance(benchmark_run_worker_limit, int)
+        and benchmark_run_worker_limit <= 12
     )
     return {
         "ok": ok,
@@ -529,8 +590,11 @@ def validate_all() -> dict[str, object]:
         "precision_recall_summary": precision_recall,
         "review_queue_summary": review_queue,
         "consensus_summary": consensus,
+        "consensus_export_summary": consensus_exports,
         "validation_dataset_summary": validation_datasets,
+        "validation_promotion_summary": validation_promotions,
         "benchmark_metadata_summary": benchmark_metadata,
+        "benchmark_run_summary": benchmark_runs,
     }
 
 
@@ -552,8 +616,11 @@ def validation_summary() -> dict[str, object]:
     precision_recall = validation["precision_recall_summary"]
     review_queue = validation["review_queue_summary"]
     consensus = validation["consensus_summary"]
+    consensus_exports = validation["consensus_export_summary"]
     validation_datasets = validation["validation_dataset_summary"]
+    validation_promotions = validation["validation_promotion_summary"]
     benchmark_metadata = validation["benchmark_metadata_summary"]
+    benchmark_runs = validation["benchmark_run_summary"]
     return {
         "ok": validation["ok"],
         "generated_at_utc": datetime.now(UTC).isoformat(),
@@ -630,11 +697,27 @@ def validation_summary() -> dict[str, object]:
         "consensus_unique_reviewer_count": consensus["unique_reviewer_count"]
         if isinstance(consensus, dict)
         else 0,
+        "consensus_export_count": consensus_exports["export_count"]
+        if isinstance(consensus_exports, dict)
+        else 0,
+        "consensus_export_blocking_issue_total": consensus_exports[
+            "blocking_issue_total"
+        ]
+        if isinstance(consensus_exports, dict)
+        else 0,
         "validation_dataset_count": validation_datasets["dataset_count"]
         if isinstance(validation_datasets, dict)
         else 0,
         "validation_dataset_case_count": validation_datasets["total_case_count"]
         if isinstance(validation_datasets, dict)
+        else 0,
+        "validation_promotion_rule_count": validation_promotions["rule_count"]
+        if isinstance(validation_promotions, dict)
+        else 0,
+        "validation_promotion_blocking_condition_count": validation_promotions[
+            "blocking_condition_count"
+        ]
+        if isinstance(validation_promotions, dict)
         else 0,
         "benchmark_command_count": benchmark_metadata["command_count"]
         if isinstance(benchmark_metadata, dict)
@@ -646,6 +729,15 @@ def validation_summary() -> dict[str, object]:
         else 0,
         "benchmark_memory_budget_gb": benchmark_metadata["memory_budget_gb"]
         if isinstance(benchmark_metadata, dict)
+        else 0,
+        "benchmark_run_count": benchmark_runs["run_count"]
+        if isinstance(benchmark_runs, dict)
+        else 0,
+        "benchmark_run_input_case_total": benchmark_runs["input_case_total"]
+        if isinstance(benchmark_runs, dict)
+        else 0,
+        "benchmark_run_max_worker_count": benchmark_runs["max_worker_count"]
+        if isinstance(benchmark_runs, dict)
         else 0,
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
@@ -901,6 +993,15 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Optional synthetic human-review consensus fixture JSON path.",
     )
+    consensus_export_parser = subparsers.add_parser(
+        "consensus-export-summary",
+        help="Summarize synthetic human-review consensus export fixture coverage.",
+    )
+    consensus_export_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional synthetic human-review consensus export fixture JSON path.",
+    )
     validation_dataset_parser = subparsers.add_parser(
         "validation-dataset-summary",
         help="Summarize validation dataset manifest coverage.",
@@ -910,6 +1011,15 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Optional validation dataset manifest JSON path.",
     )
+    validation_promotion_parser = subparsers.add_parser(
+        "validation-promotion-summary",
+        help="Summarize validation dataset promotion rule coverage.",
+    )
+    validation_promotion_parser.add_argument(
+        "--rules-path",
+        type=Path,
+        help="Optional validation promotion rules JSON path.",
+    )
     benchmark_metadata_parser = subparsers.add_parser(
         "benchmark-metadata-summary",
         help="Summarize local synthetic validation benchmark metadata.",
@@ -918,6 +1028,15 @@ def _build_parser() -> argparse.ArgumentParser:
         "--metadata-path",
         type=Path,
         help="Optional benchmark metadata JSON path.",
+    )
+    benchmark_run_parser = subparsers.add_parser(
+        "benchmark-run-summary",
+        help="Summarize local synthetic benchmark run-result metadata.",
+    )
+    benchmark_run_parser.add_argument(
+        "--results-path",
+        type=Path,
+        help="Optional benchmark run-result JSON path.",
     )
     subparsers.add_parser(
         "validate-all",

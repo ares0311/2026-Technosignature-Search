@@ -73,6 +73,7 @@ Committed schemas:
 - `schemas/batch_manifest.schema.json`
 - `schemas/review_queue.schema.json`
 - `schemas/consensus_labels.schema.json`
+- `schemas/consensus_export.schema.json`
 - `schemas/validation_dataset_manifest.schema.json`
 - `schemas/benchmark_metadata.schema.json`
 
@@ -128,6 +129,12 @@ Review synthetic human-review consensus label coverage:
 .venv/bin/techno-search consensus-summary
 ```
 
+Review synthetic human-review consensus export coverage:
+
+```bash
+.venv/bin/techno-search consensus-export-summary
+```
+
 Review validation dataset manifest coverage:
 
 ```bash
@@ -140,7 +147,13 @@ Review local synthetic benchmark metadata:
 .venv/bin/techno-search benchmark-metadata-summary
 ```
 
-`validate-all` and `validation-summary` include calibration-by-track, false-positive class, validation dataset, benchmark metadata, injection-recovery, reliability, precision-recall, human-review queue, and consensus-label coverage. The reported calibration-by-track coverage, false-positive class coverage, validation dataset coverage, benchmark metadata, recovery rate, false-alarm fraction, reliability errors, precision, recall, F1 score, review queue counts, and consensus counts are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, per-track survey performance, classification performance estimates, discovery claims, external validation, or scientific performance claims.
+Review local synthetic benchmark run-result metadata:
+
+```bash
+.venv/bin/techno-search benchmark-run-summary
+```
+
+`validate-all` and `validation-summary` include calibration-by-track, false-positive class, validation dataset, benchmark metadata, benchmark run-result metadata, injection-recovery, reliability, precision-recall, human-review queue, consensus-label, and consensus-export coverage. The reported calibration-by-track coverage, false-positive class coverage, validation dataset coverage, benchmark metadata, benchmark run-result metadata, recovery rate, false-alarm fraction, reliability errors, precision, recall, F1 score, review queue counts, consensus counts, and consensus export counts are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, per-track survey performance, classification performance estimates, discovery claims, external validation, detections, or scientific performance claims.
 
 Snapshot fixture:
 
@@ -184,6 +197,12 @@ Human-review consensus fixture:
 tests/fixtures/consensus_labels.json
 ```
 
+Human-review consensus export fixture:
+
+```text
+tests/fixtures/consensus_exports.json
+```
+
 Validation dataset manifest fixture:
 
 ```text
@@ -194,6 +213,12 @@ Benchmark metadata fixture:
 
 ```text
 tests/fixtures/benchmark_metadata.json
+```
+
+Benchmark run-result fixture:
+
+```text
+tests/fixtures/benchmark_run_results.json
 ```
 
 When scores change, review whether the scoring model, thresholds, or example inputs changed intentionally.

@@ -24,6 +24,285 @@ Overall status: all three requested steps are implemented.
 
 ---
 
+## Fifteen-Step Consensus Export, Promotion, And Benchmark Run Expansion
+
+User requested the next fifteen steps:
+
+1. Add conservative consensus-label export example format.
+2. Add consensus export fixture JSON.
+3. Add `techno-search consensus-export-summary`.
+4. Add tests for consensus export coverage and conservative language.
+5. Wire consensus export summary into `validate-all`.
+6. Wire consensus export counts into `validation-summary`.
+7. Update docs/status for consensus export examples.
+8. Add validation dataset promotion rule schema.
+9. Add promotion rule fixture for synthetic to future non-synthetic datasets.
+10. Add `techno-search validation-promotion-summary`.
+11. Add tests for promotion rules by readiness, evidence requirements, and blocking conditions.
+12. Wire promotion rules into `validate-all` and `validation-summary`.
+13. Add benchmark run-result metadata schema for future synthetic calibration grids.
+14. Add benchmark run-result fixture and summary CLI.
+15. Run full validation, update `CLAUDE.md`, commit, push, and confirm clean sync.
+
+Each step should update this file and merge to `main` if needed.
+
+## Consensus Export/Promotion/Benchmark Step 1 — Consensus Export Format
+
+Status: implemented.
+
+Added:
+
+- `CONSENSUS_EXPORT_SCHEMA_VERSION`
+- `CONSENSUS_EXPORT_DISCLAIMER`
+- `ConsensusExportItem`
+- consensus export fixture loader
+- consensus export summary helper
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus Export/Promotion/Benchmark Step 2 — Consensus Export Fixture
+
+Status: implemented.
+
+Added:
+
+- `schemas/consensus_export.schema.json`
+- `tests/fixtures/consensus_exports.json`
+- conservative consensus export examples for no-consensus, likely-false-positive, follow-up-target, known-object annotation, and insufficient-evidence labels
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus Export/Promotion/Benchmark Step 3 — Consensus Export Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search consensus-export-summary`
+- optional `--fixture-path`
+- `consensus_export` in `schema-paths`
+- public package exports for consensus export helpers
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus Export/Promotion/Benchmark Step 4 — Consensus Export Tests
+
+Status: implemented.
+
+Added tests for:
+
+- consensus export fixture loading
+- conservative disclaimer language
+- summary counts by track and consensus label
+- CLI output for `consensus-export-summary`
+- schema discovery and required fixture fields
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus Export/Promotion/Benchmark Step 5 — Validate-All Consensus Export Wiring
+
+Status: implemented.
+
+Added:
+
+- `consensus_export_summary` block in `validate-all`
+- validation gate for expected synthetic consensus export coverage
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus Export/Promotion/Benchmark Step 6 — Validation Summary Consensus Export Counts
+
+Status: implemented.
+
+Added:
+
+- `consensus_export_count`
+- `consensus_export_blocking_issue_total`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus Export/Promotion/Benchmark Step 7 — Consensus Export Docs And Status
+
+Status: implemented.
+
+Updated:
+
+- `README.md`
+- `docs/CLI_USAGE.md`
+- `docs/VALIDATION.md`
+- `docs/PROJECT_STATUS.md`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus Export/Promotion/Benchmark Step 8 — Validation Promotion Rule Schema
+
+Status: implemented.
+
+Added:
+
+- `VALIDATION_PROMOTION_SCHEMA_VERSION`
+- `VALIDATION_PROMOTION_DISCLAIMER`
+- `ValidationPromotionRule`
+- promotion rule loader
+- promotion rule summary helper
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus Export/Promotion/Benchmark Step 9 — Validation Promotion Fixture
+
+Status: implemented.
+
+Added:
+
+- `schemas/validation_promotion_rules.schema.json`
+- `tests/fixtures/validation_promotion_rules.json`
+- synthetic-to-curated promotion rules for radio, infrared, and anomaly validation datasets
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus Export/Promotion/Benchmark Step 10 — Validation Promotion Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search validation-promotion-summary`
+- optional `--rules-path`
+- `validation_promotion_rules` in `schema-paths`
+- public package exports for validation promotion helpers
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus Export/Promotion/Benchmark Step 11 — Validation Promotion Tests
+
+Status: implemented.
+
+Added tests for:
+
+- promotion rule fixture loading
+- readiness transitions
+- evidence requirements
+- blocking conditions
+- external-review requirements
+- `techno-search validation-promotion-summary`
+- schema discovery and required fixture fields
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus Export/Promotion/Benchmark Step 12 — Validation Promotion Local Validation Wiring
+
+Status: implemented.
+
+Added:
+
+- `validation_promotion_summary` block in `validate-all`
+- validation gate for promotion rule coverage
+- `validation_promotion_rule_count` in `validation-summary`
+- `validation_promotion_blocking_condition_count` in `validation-summary`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus Export/Promotion/Benchmark Step 13 — Benchmark Run-Result Metadata Schema
+
+Status: implemented.
+
+Added:
+
+- `BENCHMARK_RUN_RESULT_SCHEMA_VERSION`
+- `BENCHMARK_RUN_RESULT_DISCLAIMER`
+- `BenchmarkRunResult`
+- benchmark run-result loader
+- benchmark run-result summary helper
+- `schemas/benchmark_run_results.schema.json`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus Export/Promotion/Benchmark Step 14 — Benchmark Run-Result Fixture And Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `tests/fixtures/benchmark_run_results.json`
+- `techno-search benchmark-run-summary`
+- benchmark run-result schema discovery in `schema-paths`
+- benchmark run-result summary wiring in `validate-all`
+- benchmark run-result counts in `validation-summary`
+- tests for fixture loading, CLI output, schema fields, and local validation wiring
+- docs/status/roadmap references for benchmark run-result metadata
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest tests/test_benchmark_metadata.py tests/test_cli.py tests/test_json_schemas.py tests/test_validation_datasets.py
+```
+
+Result:
+
+- 48 tests passed
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Consensus Export/Promotion/Benchmark Step 15 — Validation, Commit, And Push
+
+Status: implemented.
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/ruff check .
+.venv/bin/mypy src
+git diff --check
+```
+
+Result:
+
+- 174 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+
+Planned commit:
+
+```bash
+git commit -m "Add benchmark run result summaries"
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Validation Dataset And Benchmark Metadata Expansion
 
 User asked to continue after the consensus/calibration pass. Next roadmap/status items:

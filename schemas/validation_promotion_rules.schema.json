@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/techno-search/validation_promotion_rules.schema.json",
+  "title": "Technosignature Search validation dataset promotion rules",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "description",
+    "disclaimer",
+    "rules"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "validation_dataset_promotion_rules_v1"
+    },
+    "description": {
+      "type": "string"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "rule_id",
+          "from_readiness",
+          "to_readiness",
+          "required_evidence",
+          "blocking_conditions",
+          "minimum_case_count",
+          "requires_external_review"
+        ],
+        "properties": {
+          "rule_id": {
+            "type": "string"
+          },
+          "from_readiness": {
+            "type": "string"
+          },
+          "to_readiness": {
+            "type": "string"
+          },
+          "required_evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "blocking_conditions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          },
+          "minimum_case_count": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "requires_external_review": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

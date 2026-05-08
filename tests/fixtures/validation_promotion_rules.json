@@ -1,0 +1,61 @@
+{
+  "schema_version": "validation_dataset_promotion_rules_v1",
+  "description": "Promotion rules for moving validation datasets from synthetic scaffolds toward future non-synthetic false-positive suites.",
+  "disclaimer": "Validation dataset promotion rules describe readiness requirements only; they do not certify discoveries or calibrated survey performance.",
+  "rules": [
+    {
+      "rule_id": "synthetic-to-curated-radio",
+      "from_readiness": "synthetic_scaffold",
+      "to_readiness": "curated_non_synthetic_candidate",
+      "required_evidence": [
+        "documented_source_catalog_or_observation",
+        "provenance_fields_complete",
+        "negative_evidence_reviewed",
+        "false_positive_class_labeled"
+      ],
+      "blocking_conditions": [
+        "missing_source_license",
+        "unresolved_candidate_claim_language",
+        "committed_large_data_payload"
+      ],
+      "minimum_case_count": 10,
+      "requires_external_review": true
+    },
+    {
+      "rule_id": "synthetic-to-curated-infrared",
+      "from_readiness": "synthetic_scaffold",
+      "to_readiness": "curated_non_synthetic_candidate",
+      "required_evidence": [
+        "catalog_crossmatch_provenance",
+        "photometric_quality_flags_recorded",
+        "natural_explanation_labels_present",
+        "false_positive_class_labeled"
+      ],
+      "blocking_conditions": [
+        "missing_catalog_query_parameters",
+        "unreviewed_blending_or_confusion",
+        "unsupported_followup_claim"
+      ],
+      "minimum_case_count": 10,
+      "requires_external_review": true
+    },
+    {
+      "rule_id": "synthetic-to-curated-anomaly",
+      "from_readiness": "synthetic_scaffold",
+      "to_readiness": "curated_non_synthetic_candidate",
+      "required_evidence": [
+        "multi_epoch_provenance",
+        "survey_depth_context_recorded",
+        "artifact_review_completed",
+        "false_positive_class_labeled"
+      ],
+      "blocking_conditions": [
+        "missing_epoch_metadata",
+        "unresolved_known_object_match",
+        "unsupported_discovery_language"
+      ],
+      "minimum_case_count": 10,
+      "requires_external_review": true
+    }
+  ]
+}

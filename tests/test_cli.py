@@ -228,18 +228,28 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
     assert set(result) == {
         "batch_manifest",
         "benchmark_metadata",
+        "benchmark_run_results",
         "candidate_packet",
+        "consensus_export",
         "consensus_labels",
         "report_manifest",
         "review_queue",
         "validation_dataset_manifest",
+        "validation_promotion_rules",
     }
     assert result["benchmark_metadata"].endswith("schemas/benchmark_metadata.schema.json")
+    assert result["benchmark_run_results"].endswith(
+        "schemas/benchmark_run_results.schema.json"
+    )
     assert result["candidate_packet"].endswith("schemas/candidate_packet.schema.json")
+    assert result["consensus_export"].endswith("schemas/consensus_export.schema.json")
     assert result["consensus_labels"].endswith("schemas/consensus_labels.schema.json")
     assert result["review_queue"].endswith("schemas/review_queue.schema.json")
     assert result["validation_dataset_manifest"].endswith(
         "schemas/validation_dataset_manifest.schema.json"
+    )
+    assert result["validation_promotion_rules"].endswith(
+        "schemas/validation_promotion_rules.schema.json"
     )
 
 
@@ -331,6 +341,23 @@ def test_cli_consensus_summary_outputs_fixture_counts() -> None:
     assert "not discovery claims" in result["disclaimer"]
 
 
+def test_cli_consensus_export_summary_outputs_fixture_counts() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["consensus-export-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "human_review_consensus_export_v1"
+    assert result["export_count"] == 5
+    assert result["reviewer_decision_total"] == 13
+    assert result["negative_evidence_total"] == 16
+    assert result["blocking_issue_total"] == 3
+    assert result["by_track"] == {"anomaly": 2, "infrared": 1, "radio": 2}
+    assert result["by_consensus_label"]["likely_false_positive"] == 1
+    assert "not discovery claims" in result["disclaimer"]
+
+
 def test_cli_validation_dataset_summary_outputs_manifest_counts() -> None:
     stdout = StringIO()
 
@@ -347,6 +374,22 @@ def test_cli_validation_dataset_summary_outputs_manifest_counts() -> None:
     assert "not calibrated survey performance claims" in result["disclaimer"]
 
 
+def test_cli_validation_promotion_summary_outputs_rule_counts() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["validation-promotion-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "validation_dataset_promotion_rules_v1"
+    assert result["rule_count"] == 3
+    assert result["required_evidence_count"] == 12
+    assert result["blocking_condition_count"] == 9
+    assert result["rules_requiring_external_review"] == 3
+    assert result["by_from_readiness"] == {"synthetic_scaffold": 3}
+    assert "do not certify discoveries" in result["disclaimer"]
+
+
 def test_cli_benchmark_metadata_summary_outputs_local_context() -> None:
     stdout = StringIO()
 
@@ -361,6 +404,21 @@ def test_cli_benchmark_metadata_summary_outputs_local_context() -> None:
     assert result["command_count"] == 4
     assert result["by_status"] == {"planned_not_implemented": 1, "recommended": 3}
     assert "not a scientific performance claim" in result["disclaimer"]
+
+
+def test_cli_benchmark_run_summary_outputs_local_run_results() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["benchmark-run-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "synthetic_benchmark_run_result_v1"
+    assert result["run_count"] == 3
+    assert result["input_case_total"] == 171
+    assert result["max_worker_count"] == 12
+    assert result["by_status"] == {"passed": 2, "planned_not_implemented": 1}
+    assert "not scientific performance claims" in result["disclaimer"]
 
 
 def test_cli_validate_all_outputs_local_summary() -> None:
@@ -429,14 +487,21 @@ def test_cli_validate_all_outputs_local_summary() -> None:
         "likely_false_positive": 1,
         "no_consensus": 1,
     }
+    assert result["consensus_export_summary"]["export_count"] == 5
+    assert result["consensus_export_summary"]["blocking_issue_total"] == 3
     assert result["validation_dataset_summary"]["dataset_count"] == 3
     assert result["validation_dataset_summary"]["total_case_count"] == 15
     assert result["validation_dataset_summary"]["by_readiness"] == {
         "synthetic_scaffold": 3
     }
+    assert result["validation_promotion_summary"]["rule_count"] == 3
+    assert result["validation_promotion_summary"]["blocking_condition_count"] == 9
     assert result["benchmark_metadata_summary"]["command_count"] == 4
     assert result["benchmark_metadata_summary"]["default_cpu_worker_limit"] == 12
     assert result["benchmark_metadata_summary"]["memory_budget_gb"] == 48
+    assert result["benchmark_run_summary"]["run_count"] == 3
+    assert result["benchmark_run_summary"]["input_case_total"] == 171
+    assert result["benchmark_run_summary"]["max_worker_count"] == 12
     assert result["catalog_cache_validation"]["forbidden_roots"] == [
         "data",
         "cache",
@@ -455,7 +520,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 7
+    assert result["schema_count"] == 10
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -478,11 +543,18 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["consensus_item_count"] == 5
     assert result["consensus_decision_count"] == 13
     assert result["consensus_unique_reviewer_count"] == 4
+    assert result["consensus_export_count"] == 5
+    assert result["consensus_export_blocking_issue_total"] == 3
     assert result["validation_dataset_count"] == 3
     assert result["validation_dataset_case_count"] == 15
+    assert result["validation_promotion_rule_count"] == 3
+    assert result["validation_promotion_blocking_condition_count"] == 9
     assert result["benchmark_command_count"] == 4
     assert result["benchmark_default_cpu_worker_limit"] == 12
     assert result["benchmark_memory_budget_gb"] == 48
+    assert result["benchmark_run_count"] == 3
+    assert result["benchmark_run_input_case_total"] == 171
+    assert result["benchmark_run_max_worker_count"] == 12
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 

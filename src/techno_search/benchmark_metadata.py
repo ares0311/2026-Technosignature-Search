@@ -13,6 +13,11 @@ BENCHMARK_METADATA_DISCLAIMER = (
     "Benchmark metadata records local validation context only; it is not a "
     "scientific performance claim or candidate-quality metric."
 )
+BENCHMARK_RUN_RESULT_SCHEMA_VERSION = "synthetic_benchmark_run_result_v1"
+BENCHMARK_RUN_RESULT_DISCLAIMER = (
+    "Benchmark run results record local synthetic execution metadata only; they "
+    "are not scientific performance claims or survey sensitivity estimates."
+)
 
 
 @dataclass(frozen=True)
@@ -26,11 +31,33 @@ class BenchmarkCommand:
     status: str
 
 
+@dataclass(frozen=True)
+class BenchmarkRunResult:
+    """One recorded local synthetic benchmark run-result entry."""
+
+    run_id: str
+    command_name: str
+    command_kind: str
+    status: str
+    worker_count: int
+    input_case_count: int
+    duration_seconds: float
+    git_commit: str
+
+
 def default_benchmark_metadata_path() -> Path:
     """Return the repository-local benchmark metadata fixture path."""
 
     return Path(__file__).resolve().parents[2] / "tests" / "fixtures" / (
         "benchmark_metadata.json"
+    )
+
+
+def default_benchmark_run_results_path() -> Path:
+    """Return the repository-local benchmark run-results fixture path."""
+
+    return Path(__file__).resolve().parents[2] / "tests" / "fixtures" / (
+        "benchmark_run_results.json"
     )
 
 
@@ -50,6 +77,24 @@ def load_benchmark_commands(path: Path | None = None) -> tuple[BenchmarkCommand,
         raise ValueError(msg)
 
     return tuple(_command_from_mapping(command) for command in data["commands"])
+
+
+def load_benchmark_run_results(path: Path | None = None) -> tuple[BenchmarkRunResult, ...]:
+    """Load local synthetic benchmark run-result entries."""
+
+    results_path = path or default_benchmark_run_results_path()
+    with results_path.open(encoding="utf-8") as handle:
+        data = json.load(handle)
+
+    schema_version = str(data.get("schema_version", ""))
+    if schema_version != BENCHMARK_RUN_RESULT_SCHEMA_VERSION:
+        msg = (
+            f"Unsupported benchmark run-result schema version {schema_version!r}; "
+            f"expected {BENCHMARK_RUN_RESULT_SCHEMA_VERSION!r}"
+        )
+        raise ValueError(msg)
+
+    return tuple(_run_result_from_mapping(result) for result in data["runs"])
 
 
 def benchmark_metadata_summary(path: Path | None = None) -> dict[str, object]:
@@ -81,6 +126,28 @@ def benchmark_metadata_summary(path: Path | None = None) -> dict[str, object]:
     }
 
 
+def benchmark_run_result_summary(path: Path | None = None) -> dict[str, object]:
+    """Summarize local synthetic benchmark run-result fixture coverage."""
+
+    results_path = path or default_benchmark_run_results_path()
+    runs = load_benchmark_run_results(results_path)
+    durations = [run.duration_seconds for run in runs]
+
+    return {
+        "results_path": str(results_path),
+        "schema_version": BENCHMARK_RUN_RESULT_SCHEMA_VERSION,
+        "disclaimer": BENCHMARK_RUN_RESULT_DISCLAIMER,
+        "run_count": len(runs),
+        "input_case_total": sum(run.input_case_count for run in runs),
+        "max_worker_count": max((run.worker_count for run in runs), default=0),
+        "max_duration_seconds": max(durations, default=0.0),
+        "by_command_kind": _counter_to_dict(Counter(run.command_kind for run in runs)),
+        "by_status": _counter_to_dict(Counter(run.status for run in runs)),
+        "run_ids": sorted(run.run_id for run in runs),
+        "git_commits": sorted({run.git_commit for run in runs}),
+    }
+
+
 def _command_from_mapping(data: dict[str, Any]) -> BenchmarkCommand:
     return BenchmarkCommand(
         name=str(data["name"]),
@@ -88,6 +155,19 @@ def _command_from_mapping(data: dict[str, Any]) -> BenchmarkCommand:
         command_kind=str(data["command_kind"]),
         worker_count=int(data.get("worker_count", 1)),
         status=str(data["status"]),
+    )
+
+
+def _run_result_from_mapping(data: dict[str, Any]) -> BenchmarkRunResult:
+    return BenchmarkRunResult(
+        run_id=str(data["run_id"]),
+        command_name=str(data["command_name"]),
+        command_kind=str(data["command_kind"]),
+        status=str(data["status"]),
+        worker_count=int(data["worker_count"]),
+        input_case_count=int(data["input_case_count"]),
+        duration_seconds=float(data["duration_seconds"]),
+        git_commit=str(data["git_commit"]),
     )
 
 

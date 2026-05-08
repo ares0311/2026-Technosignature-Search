@@ -124,6 +124,9 @@ The project will support three tracks from day one:
 - [x] Human-review consensus labels added
 - [x] Consensus summary CLI added
 - [x] Consensus summary wired into local validation
+- [x] Consensus export examples added
+- [x] Consensus export summary CLI added
+- [x] Consensus export summary wired into local validation
 - [x] Calibration-by-track summary CLI added
 - [x] Calibration-by-track summary wired into local validation
 - [x] Validation dataset manifest schema added
@@ -132,6 +135,9 @@ The project will support three tracks from day one:
 - [x] Benchmark metadata schema added
 - [x] Benchmark metadata summary CLI added
 - [x] Benchmark metadata summary wired into local validation
+- [x] Benchmark run-result fixture and schema added
+- [x] Benchmark run-result summary CLI added
+- [x] Benchmark run-result summary wired into local validation
 
 ---
 
@@ -156,9 +162,9 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Add conservative export examples for consensus-label review summaries.
-2. Define validation dataset promotion rules for future non-synthetic false-positive suites.
-3. Add benchmark run-result recording once synthetic calibration grids exist.
+1. Define a durable benchmark run-result append workflow for future synthetic calibration grids.
+2. Add promotion readiness documentation for future non-synthetic validation datasets.
+3. Add benchmark run-result comparison checks once repeated synthetic calibration grids exist.
 
 ---
 

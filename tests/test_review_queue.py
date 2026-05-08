@@ -1,9 +1,12 @@
 from techno_search.review_queue import (
+    CONSENSUS_EXPORT_DISCLAIMER,
     CONSENSUS_LABEL_DISCLAIMER,
     REVIEW_QUEUE_DISCLAIMER,
     allowed_consensus_labels,
     allowed_triage_labels,
+    consensus_export_summary,
     consensus_summary,
+    load_consensus_export_items,
     load_consensus_items,
     load_review_queue_items,
     review_queue_summary,
@@ -90,3 +93,31 @@ def test_consensus_summary_counts_labels_tracks_and_reviewer_counts() -> None:
         "needs_human_review": 2,
     }
     assert summary["by_reviewer_decision_count"] == {"2": 2, "3": 3}
+
+
+def test_consensus_export_fixture_loads_conservative_export_items() -> None:
+    items = load_consensus_export_items()
+
+    assert len(items) == 5
+    assert {item.consensus_label.value for item in items} == set(allowed_consensus_labels())
+    assert items[0].export_path.endswith(".consensus.json")
+    assert "not discovery claims" in CONSENSUS_EXPORT_DISCLAIMER
+
+
+def test_consensus_export_summary_counts_labels_and_preserves_uncertainty() -> None:
+    summary = consensus_export_summary()
+
+    assert summary["schema_version"] == "human_review_consensus_export_v1"
+    assert summary["export_count"] == 5
+    assert summary["reviewer_decision_total"] == 13
+    assert summary["negative_evidence_total"] == 16
+    assert summary["blocking_issue_total"] == 3
+    assert summary["by_track"] == {"anomaly": 2, "infrared": 1, "radio": 2}
+    assert summary["by_consensus_label"] == {
+        "follow_up_target": 1,
+        "insufficient_evidence": 1,
+        "known_object_annotation": 1,
+        "likely_false_positive": 1,
+        "no_consensus": 1,
+    }
+    assert "not discovery claims" in str(summary["disclaimer"])

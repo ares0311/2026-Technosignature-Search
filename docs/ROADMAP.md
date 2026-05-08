@@ -249,6 +249,8 @@ Make scores empirically meaningful.
 - [x] Precision-recall analysis
 - [x] False-positive class analysis
 - [x] Calibration by track
+- [x] Local benchmark metadata
+- [x] Synthetic benchmark run-result metadata
 
 ---
 
