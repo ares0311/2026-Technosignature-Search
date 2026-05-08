@@ -1,5 +1,12 @@
 """Technosignature-interest candidate search tools."""
 
+from techno_search.benchmark_metadata import (
+    BENCHMARK_METADATA_DISCLAIMER,
+    BENCHMARK_METADATA_SCHEMA_VERSION,
+    BenchmarkCommand,
+    benchmark_metadata_summary,
+    load_benchmark_commands,
+)
 from techno_search.calibration import (
     CALIBRATION_TRACK_DISCLAIMER,
     CALIBRATION_TRACK_SCHEMA_VERSION,
@@ -60,8 +67,18 @@ from techno_search.review_queue import (
 )
 from techno_search.schemas import Candidate, Pathway, ScoredCandidate, Track
 from techno_search.scoring import score_candidate
+from techno_search.validation_datasets import (
+    VALIDATION_DATASET_DISCLAIMER,
+    VALIDATION_DATASET_SCHEMA_VERSION,
+    ValidationDatasetEntry,
+    load_validation_dataset_entries,
+    validation_dataset_summary,
+)
 
 __all__ = [
+    "BENCHMARK_METADATA_DISCLAIMER",
+    "BENCHMARK_METADATA_SCHEMA_VERSION",
+    "BenchmarkCommand",
     "Candidate",
     "CALIBRATION_TRACK_DISCLAIMER",
     "CALIBRATION_TRACK_SCHEMA_VERSION",
@@ -87,8 +104,12 @@ __all__ = [
     "Track",
     "TrackConfig",
     "TriageLabel",
+    "VALIDATION_DATASET_DISCLAIMER",
+    "VALIDATION_DATASET_SCHEMA_VERSION",
+    "ValidationDatasetEntry",
     "allowed_consensus_labels",
     "allowed_triage_labels",
+    "benchmark_metadata_summary",
     "candidate_markdown_report",
     "candidate_packet",
     "candidate_packet_json",
@@ -96,12 +117,14 @@ __all__ = [
     "classify_pathway",
     "false_positive_class_summary",
     "load_calibration_fixtures",
+    "load_benchmark_commands",
     "load_injection_recovery_cases",
     "load_precision_recall_cases",
     "load_reliability_bins",
     "load_review_queue_items",
     "load_scoring_config",
     "load_track_config",
+    "load_validation_dataset_entries",
     "live_data_enabled",
     "plot_artifact_summary",
     "precision_recall_summary",
@@ -114,6 +137,7 @@ __all__ = [
     "reliability_summary",
     "review_queue_summary",
     "score_candidate",
+    "validation_dataset_summary",
     "write_candidate_reports",
     "write_synthetic_plot_artifacts",
 ]

@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/techno-search/benchmark_metadata.schema.json",
+  "title": "Technosignature Search local synthetic benchmark metadata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "description",
+    "disclaimer",
+    "hardware_profile",
+    "recommended_limits",
+    "commands"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "local_synthetic_benchmark_metadata_v1"
+    },
+    "description": {
+      "type": "string"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "hardware_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile_path",
+        "machine",
+        "chip",
+        "memory_gb",
+        "cpu_count"
+      ],
+      "properties": {
+        "profile_path": {
+          "type": "string"
+        },
+        "machine": {
+          "type": "string"
+        },
+        "chip": {
+          "type": "string"
+        },
+        "memory_gb": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "cpu_count": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "recommended_limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cpu_workers",
+        "memory_budget_gb"
+      ],
+      "properties": {
+        "cpu_workers": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "memory_budget_gb": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "commands": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "command",
+          "command_kind",
+          "worker_count",
+          "status"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "command": {
+            "type": "string"
+          },
+          "command_kind": {
+            "type": "string"
+          },
+          "worker_count": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

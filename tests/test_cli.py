@@ -227,14 +227,20 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
     assert exit_code == 0
     assert set(result) == {
         "batch_manifest",
+        "benchmark_metadata",
         "candidate_packet",
         "consensus_labels",
         "report_manifest",
         "review_queue",
+        "validation_dataset_manifest",
     }
+    assert result["benchmark_metadata"].endswith("schemas/benchmark_metadata.schema.json")
     assert result["candidate_packet"].endswith("schemas/candidate_packet.schema.json")
     assert result["consensus_labels"].endswith("schemas/consensus_labels.schema.json")
     assert result["review_queue"].endswith("schemas/review_queue.schema.json")
+    assert result["validation_dataset_manifest"].endswith(
+        "schemas/validation_dataset_manifest.schema.json"
+    )
 
 
 def test_cli_score_regression_summary_outputs_snapshot_counts() -> None:
@@ -325,6 +331,38 @@ def test_cli_consensus_summary_outputs_fixture_counts() -> None:
     assert "not discovery claims" in result["disclaimer"]
 
 
+def test_cli_validation_dataset_summary_outputs_manifest_counts() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["validation-dataset-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "validation_dataset_manifest_v1"
+    assert result["dataset_count"] == 3
+    assert result["total_case_count"] == 15
+    assert result["false_positive_class_count"] == 15
+    assert result["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 1}
+    assert result["by_readiness"] == {"synthetic_scaffold": 3}
+    assert "not calibrated survey performance claims" in result["disclaimer"]
+
+
+def test_cli_benchmark_metadata_summary_outputs_local_context() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["benchmark-metadata-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "local_synthetic_benchmark_metadata_v1"
+    assert result["hardware_profile_path"] == "docs/LOCAL_SYSTEM_PROFILE.md"
+    assert result["default_cpu_worker_limit"] == 12
+    assert result["memory_budget_gb"] == 48
+    assert result["command_count"] == 4
+    assert result["by_status"] == {"planned_not_implemented": 1, "recommended": 3}
+    assert "not a scientific performance claim" in result["disclaimer"]
+
+
 def test_cli_validate_all_outputs_local_summary() -> None:
     stdout = StringIO()
 
@@ -391,6 +429,14 @@ def test_cli_validate_all_outputs_local_summary() -> None:
         "likely_false_positive": 1,
         "no_consensus": 1,
     }
+    assert result["validation_dataset_summary"]["dataset_count"] == 3
+    assert result["validation_dataset_summary"]["total_case_count"] == 15
+    assert result["validation_dataset_summary"]["by_readiness"] == {
+        "synthetic_scaffold": 3
+    }
+    assert result["benchmark_metadata_summary"]["command_count"] == 4
+    assert result["benchmark_metadata_summary"]["default_cpu_worker_limit"] == 12
+    assert result["benchmark_metadata_summary"]["memory_budget_gb"] == 48
     assert result["catalog_cache_validation"]["forbidden_roots"] == [
         "data",
         "cache",
@@ -409,7 +455,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 5
+    assert result["schema_count"] == 7
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -432,6 +478,11 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["consensus_item_count"] == 5
     assert result["consensus_decision_count"] == 13
     assert result["consensus_unique_reviewer_count"] == 4
+    assert result["validation_dataset_count"] == 3
+    assert result["validation_dataset_case_count"] == 15
+    assert result["benchmark_command_count"] == 4
+    assert result["benchmark_default_cpu_worker_limit"] == 12
+    assert result["benchmark_memory_budget_gb"] == 48
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 

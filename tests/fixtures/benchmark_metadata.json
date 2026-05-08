@@ -1,0 +1,46 @@
+{
+  "schema_version": "local_synthetic_benchmark_metadata_v1",
+  "description": "Local synthetic validation benchmark metadata scaffold based on the documented development workstation.",
+  "disclaimer": "Benchmark metadata records local validation context only; it is not a scientific performance claim or candidate-quality metric.",
+  "hardware_profile": {
+    "profile_path": "docs/LOCAL_SYSTEM_PROFILE.md",
+    "machine": "MacBook Pro 16-inch Nov 2024",
+    "chip": "Apple M4 Max",
+    "memory_gb": 64,
+    "cpu_count": 16
+  },
+  "recommended_limits": {
+    "cpu_workers": 12,
+    "memory_budget_gb": 48
+  },
+  "commands": [
+    {
+      "name": "pytest coverage gate",
+      "command": ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
+      "command_kind": "test",
+      "worker_count": 1,
+      "status": "recommended"
+    },
+    {
+      "name": "ruff lint gate",
+      "command": ".venv/bin/ruff check .",
+      "command_kind": "lint",
+      "worker_count": 1,
+      "status": "recommended"
+    },
+    {
+      "name": "mypy type gate",
+      "command": ".venv/bin/mypy src",
+      "command_kind": "type_check",
+      "worker_count": 1,
+      "status": "recommended"
+    },
+    {
+      "name": "future synthetic calibration worker ceiling",
+      "command": "techno-search future-synthetic-calibration-grid --workers 12",
+      "command_kind": "future_benchmark_scaffold",
+      "worker_count": 12,
+      "status": "planned_not_implemented"
+    }
+  ]
+}

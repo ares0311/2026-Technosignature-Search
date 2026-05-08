@@ -24,6 +24,268 @@ Overall status: all three requested steps are implemented.
 
 ---
 
+## Fifteen-Step Validation Dataset And Benchmark Metadata Expansion
+
+User asked to continue after the consensus/calibration pass. Next roadmap/status items:
+
+1. Add validation dataset manifest helper schema in code.
+2. Add validation dataset JSON schema artifact.
+3. Add validation dataset manifest fixture examples.
+4. Add validation dataset summary helper.
+5. Add `techno-search validation-dataset-summary`.
+6. Add tests for validation dataset schema, helper, and CLI.
+7. Wire validation dataset summary into `validate-all`.
+8. Wire validation dataset counts into `validation-summary`.
+9. Update validation dataset docs/status/roadmap.
+10. Add benchmark metadata helper schema in code.
+11. Add benchmark metadata JSON schema and fixture.
+12. Add `techno-search benchmark-metadata-summary`.
+13. Add tests for benchmark metadata schema, helper, and CLI.
+14. Wire benchmark metadata into validation/docs/status.
+15. Run full validation, commit, push, and record everything in `CLAUDE.md`.
+
+Each step should update this file and merge to `main` if needed.
+
+## Validation/Benchmark Step 1 — Validation Dataset Helper Schema
+
+Status: implemented.
+
+Added:
+
+- `VALIDATION_DATASET_SCHEMA_VERSION`
+- `VALIDATION_DATASET_DISCLAIMER`
+- `ValidationDatasetEntry`
+- validation dataset manifest loader
+- validation dataset summary helper skeleton
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Benchmark Step 2 — Validation Dataset JSON Schema
+
+Status: implemented.
+
+Added:
+
+- `schemas/validation_dataset_manifest.schema.json`
+- required manifest fields for dataset ID, track, kind, readiness, source fixture path, case count, false-positive classes, and expected pathways
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Benchmark Step 3 — Validation Dataset Fixture
+
+Status: implemented.
+
+Added `tests/fixtures/validation_dataset_manifest.json` with lightweight synthetic scaffold entries for:
+
+- radio false-positive validation cases
+- infrared false-positive validation cases
+- anomaly false-positive validation cases
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Benchmark Step 4 — Validation Dataset Summary Helper
+
+Status: implemented.
+
+The validation dataset helper now summarizes:
+
+- dataset count
+- total case count
+- false-positive class count
+- expected pathway count
+- counts by track, dataset kind, and readiness
+- dataset IDs and source fixture paths
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Benchmark Step 5 — Validation Dataset Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search validation-dataset-summary`
+- optional `--manifest-path`
+- `validation_dataset_manifest` in `schema-paths`
+- public package exports for validation dataset helpers
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Benchmark Step 6 — Validation Dataset Tests
+
+Status: implemented.
+
+Added tests for:
+
+- validation dataset manifest loading
+- validation dataset summary counts
+- `techno-search validation-dataset-summary`
+- schema discovery and required manifest fields
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Benchmark Step 7 — Validate-All Validation Dataset Wiring
+
+Status: implemented.
+
+Added:
+
+- `validation_dataset_summary` block in `validate-all`
+- validation gates for manifest dataset count and total case coverage
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Benchmark Step 8 — Validation Summary Dataset Counts
+
+Status: implemented.
+
+Added:
+
+- `validation_dataset_count`
+- `validation_dataset_case_count`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Benchmark Step 9 — Validation Dataset Docs And Status
+
+Status: implemented.
+
+Updated:
+
+- `README.md`
+- `docs/CLI_USAGE.md`
+- `docs/VALIDATION.md`
+- `docs/ROADMAP.md`
+- `docs/PROJECT_STATUS.md`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Benchmark Step 10 — Benchmark Metadata Helper Schema
+
+Status: implemented.
+
+Added:
+
+- `BENCHMARK_METADATA_SCHEMA_VERSION`
+- `BENCHMARK_METADATA_DISCLAIMER`
+- `BenchmarkCommand`
+- benchmark metadata loader
+- benchmark metadata summary helper
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Benchmark Step 11 — Benchmark Metadata Schema And Fixture
+
+Status: implemented.
+
+Added:
+
+- `schemas/benchmark_metadata.schema.json`
+- `tests/fixtures/benchmark_metadata.json`
+- local benchmark metadata tied to `docs/LOCAL_SYSTEM_PROFILE.md`
+- recommended worker and memory limits from the documented local workstation
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Benchmark Step 12 — Benchmark Metadata Summary CLI
+
+Status: implemented.
+
+Added:
+
+- `techno-search benchmark-metadata-summary`
+- optional `--metadata-path`
+- `benchmark_metadata` in `schema-paths`
+- public package exports for benchmark metadata helpers
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Benchmark Step 13 — Benchmark Metadata Tests
+
+Status: implemented.
+
+Added tests for:
+
+- benchmark metadata fixture loading
+- local hardware/profile summary fields
+- command kind and status counts
+- `techno-search benchmark-metadata-summary`
+- schema discovery and required fixture fields
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Benchmark Step 14 — Benchmark Metadata Validation And Docs
+
+Status: implemented.
+
+Added:
+
+- `benchmark_metadata_summary` block in `validate-all`
+- benchmark metadata counts in `validation-summary`
+- benchmark metadata references in `README.md`, `docs/CLI_USAGE.md`, `docs/VALIDATION.md`, and `docs/PROJECT_STATUS.md`
+
+Merge status: already on `main`; no merge needed.
+
+---
+
+## Validation/Benchmark Step 15 — Full Validation, Commit, And Push
+
+Status: implemented.
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/ruff check .
+.venv/bin/mypy src
+git diff --check
+```
+
+Result:
+
+- 165 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+
+Planned commit:
+
+```bash
+git commit -m "Add validation dataset and benchmark metadata summaries"
+```
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Consensus And Calibration-Track Expansion
 
 User requested fifteen iterative steps:

@@ -8,10 +8,12 @@ def test_json_schema_files_are_parseable_and_named() -> None:
 
     assert {path.name for path in schema_paths} == {
         "batch_manifest.schema.json",
+        "benchmark_metadata.schema.json",
         "candidate_packet.schema.json",
         "consensus_labels.schema.json",
         "report_manifest.schema.json",
         "review_queue.schema.json",
+        "validation_dataset_manifest.schema.json",
     }
     for path in schema_paths:
         schema = json.loads(path.read_text(encoding="utf-8"))
@@ -30,25 +32,39 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     batch_schema = json.loads(
         Path("schemas/batch_manifest.schema.json").read_text(encoding="utf-8")
     )
+    benchmark_schema = json.loads(
+        Path("schemas/benchmark_metadata.schema.json").read_text(encoding="utf-8")
+    )
     review_queue_schema = json.loads(
         Path("schemas/review_queue.schema.json").read_text(encoding="utf-8")
     )
     consensus_schema = json.loads(
         Path("schemas/consensus_labels.schema.json").read_text(encoding="utf-8")
     )
+    validation_dataset_schema = json.loads(
+        Path("schemas/validation_dataset_manifest.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
     packet = json.loads(Path("examples/reports/example-radio-clean.json").read_text())
     manifest = json.loads(
         Path("examples/reports/example-radio-clean.manifest.json").read_text()
     )
     batch = json.loads(Path("examples/batch_reports/batch_manifest.json").read_text())
+    benchmark = json.loads(Path("tests/fixtures/benchmark_metadata.json").read_text())
     review_queue = json.loads(Path("tests/fixtures/review_queue.json").read_text())
     consensus = json.loads(Path("tests/fixtures/consensus_labels.json").read_text())
+    validation_dataset = json.loads(
+        Path("tests/fixtures/validation_dataset_manifest.json").read_text()
+    )
 
     assert set(packet_schema["required"]) <= set(packet)
     assert set(manifest_schema["required"]) <= set(manifest)
     assert set(batch_schema["required"]) <= set(batch)
+    assert set(benchmark_schema["required"]) <= set(benchmark)
     assert set(review_queue_schema["required"]) <= set(review_queue)
     assert set(consensus_schema["required"]) <= set(consensus)
+    assert set(validation_dataset_schema["required"]) <= set(validation_dataset)
     assert "schema_version" in packet_schema["required"]
     assert "schema_version" in manifest_schema["required"]
     assert "schema_version" in batch_schema["required"]
@@ -66,6 +82,8 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     assert batch["schema_version"] == "techno_search_packet_v1"
     assert packet["config_version"] == "scoring_v0"
     assert batch["config_version"] == "scoring_v0"
+    assert benchmark["schema_version"] == "local_synthetic_benchmark_metadata_v1"
+    assert benchmark["recommended_limits"]["cpu_workers"] == 12
     assert review_queue["schema_version"] == "human_review_queue_v1"
     assert sorted(review_queue["allowed_triage_labels"]) == [
         "follow_up_target",
@@ -82,3 +100,5 @@ def test_schema_required_fields_match_example_artifacts() -> None:
         "likely_false_positive",
         "no_consensus",
     ]
+    assert validation_dataset["schema_version"] == "validation_dataset_manifest_v1"
+    assert len(validation_dataset["datasets"]) == 3
