@@ -8,18 +8,16 @@
 
 ## 🌌 Overview
 
-A **research-grade, reproducible pipeline** for detecting and evaluating technosignature-interest candidates from existing astronomical datasets.
+A **research-grade, reproducible pipeline** for detecting and evaluating technosignature-interest candidates from **radio, infrared, and archival/catalog** astronomical datasets.
 
-Initial search modes:
-
-```text
+```
 Radio SETI → Infrared Waste Heat → Archival / Catalog Anomalies
 ```
 
 ### Core Flow
 
 ```
-Existing Data → Candidate Extraction → Vetting → Bayesian Scoring → Review Pathway
+Existing Data → Candidate Detection → Vetting → Bayesian Scoring → Submission Pathway
 ```
 
 This project prioritizes:
@@ -27,7 +25,6 @@ This project prioritizes:
 - Low false-positive rates
 - Reproducibility
 - High-value follow-up targets
-- Conservative candidate reporting
 
 ---
 
@@ -46,8 +43,8 @@ This system is built to **disprove signals first**, then elevate only the strong
 - ✅ Repo initialized
 - ✅ Documentation system built
 - ✅ Scoring architecture defined
-- ✅ Synthetic radio, infrared, and archival anomaly prototypes implemented
-- ✅ Candidate reporting and validation system implemented
+- ✅ Synthetic track prototypes implemented
+- ✅ Candidate reporting and validation implemented
 - ⏳ Live-data workflows remain opt-in and provenance-only
 
 👉 See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md)
@@ -66,7 +63,7 @@ This system is built to **disprove signals first**, then elevate only the strong
 | 6 | Candidate reporting system |
 | 7 | Calibration |
 | 8 | Injection–recovery |
-| 9 | Human review workflow |
+| 9 | Human-review workflow |
 | 10 | Guarded live-data integrations |
 
 👉 See [`docs/ROADMAP.md`](docs/ROADMAP.md)
@@ -76,7 +73,7 @@ This system is built to **disprove signals first**, then elevate only the strong
 ## ⚙️ Architecture
 
 ```
-Ingest → Normalize → Search → Vet → Score → Classify → Report
+Ingest → Normalize → Search → Vet → Score → Classify
 ```
 
 | Module | Purpose |
