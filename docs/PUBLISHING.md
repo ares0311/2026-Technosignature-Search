@@ -10,7 +10,7 @@ This project may contain unpublished research workflow code and local workspace 
 
 ## Current State
 
-As of 2026-05-01, local `main` contains commits that may be ahead of `origin/main`.
+As of 2026-05-08, local `main` is expected to track `origin/main`.
 
 Check with:
 
@@ -19,34 +19,37 @@ git status --short --branch
 git log --oneline --decorate --max-count=5
 ```
 
-Recent local commits:
+Recent pushed commits:
 
 ```text
-c3b31c5 Add quickstart batch examples and fixture coverage
-121f33d Add CLI docs and batch scoring
-cb24d55 Add CLI examples calibration and manifests
-5c1c6ae Build synthetic scoring foundation
+fa1ebcf Add benchmark run result summaries
+0e94ea9 Add validation dataset and benchmark metadata summaries
+887775f Record consensus calibration push
+```
+
+GitHub reported that the repository moved to:
+
+```text
+https://github.com/ares0311/2026-Technosignature-Search.git
+```
+
+If local `origin` still points at the previous URL, update it intentionally:
+
+```bash
+git remote set-url origin https://github.com/ares0311/2026-Technosignature-Search.git
 ```
 
 ---
 
 ## Automated Push Status
 
-An attempted automated push was blocked by the execution environment because pushing `main` mutates an external remote.
-
-Blocked command:
+Agents may push only when the project owner explicitly requests publication. The current validated push command is:
 
 ```bash
 git push origin main
 ```
 
-No workaround should be attempted by agents without explicit project-owner direction.
-
-Current recommended publication decision:
-
-- Keep the commits local until the project owner manually reviews the synthetic examples and generated reports.
-- If publishing is desired, prefer a branch and pull request over a direct `main` push.
-- Direct automated pushing remains out of scope for agents in this environment.
+No workaround should be attempted if credentials, remote access, or repository ownership is unclear.
 
 ---
 
@@ -54,8 +57,8 @@ Current recommended publication decision:
 
 The project owner can choose one of these paths:
 
-1. Push `main` manually after reviewing the staged local commits.
-2. Create a feature branch from local `main`, push that branch manually, and open a pull request.
+1. Push `main` after reviewing the staged local commits.
+2. Create a feature branch from local `main`, push that branch, and open a pull request.
 3. Keep working locally until the next stable checkpoint.
 4. Export a patch for offline review:
 

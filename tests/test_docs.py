@@ -34,6 +34,34 @@ def test_readme_quickstart_references_existing_examples() -> None:
         assert Path(path).exists()
 
 
+def test_readme_keeps_public_entrypoint_structure() -> None:
+    readme = Path("README.md").read_text(encoding="utf-8")
+
+    expected_sections = (
+        "## 🌌 Overview",
+        "## 🧠 Key Idea",
+        "## 📊 Current Status",
+        "## 🛣 Roadmap",
+        "## ⚙️ Architecture",
+        "## 📐 Scoring Model",
+        "## 🔎 Search Tracks",
+        "## ⚡ Quickstart",
+        "## 📦 Example Outputs",
+        "## 🧾 Schemas",
+        "## 📂 Project Structure",
+        "## 🖥 Local System Profile",
+        "## ⚠️ Important Disclaimer",
+        "## 📜 License",
+        "## 🔭 Vision",
+    )
+    for section in expected_sections:
+        assert section in readme
+
+    assert "false positives until shown otherwise" in readme
+    assert "No claims of confirmed technosignatures" in readme
+    assert "not unsupported claims" in readme
+
+
 def test_publishing_docs_reference_current_validation_commands() -> None:
     doc = Path("docs/PUBLISHING.md").read_text(encoding="utf-8")
 

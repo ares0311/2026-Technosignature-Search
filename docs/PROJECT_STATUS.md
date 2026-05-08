@@ -7,7 +7,7 @@ Technosignature Search
 Initial v0 Implementation
 
 ## Current Phase
-Phase 1 — Synthetic Scoring Core
+Initial v0 Implementation / Synthetic Scoring Core
 
 ## Package Name
 `techno_search`
@@ -138,6 +138,7 @@ The project will support three tracks from day one:
 - [x] Benchmark run-result fixture and schema added
 - [x] Benchmark run-result summary CLI added
 - [x] Benchmark run-result summary wired into local validation
+- [x] README public entrypoint refreshed with compact project overview
 
 ---
 

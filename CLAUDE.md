@@ -24,6 +24,43 @@ Overall status: all three requested steps are implemented.
 
 ---
 
+## README Style Refresh
+
+User requested extracting the style DNA from the sibling exoplanet project README and applying it to this repository.
+
+Status: implemented.
+
+Added:
+
+- compact public-facing README structure with visual section headers
+- core flow, key idea, current status, roadmap, architecture, scoring model, quickstart, schema table, disclaimer, license, and vision sections
+- conservative technosignature language and false-positive-first framing
+- README structure drift test in `tests/test_docs.py`
+- updated `docs/PROJECT_STATUS.md` current-phase wording
+- refreshed `docs/PUBLISHING.md` with the moved GitHub repository URL
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/ruff check .
+.venv/bin/mypy src
+git diff --check
+```
+
+Result:
+
+- 175 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Consensus Export, Promotion, And Benchmark Run Expansion
 
 User requested the next fifteen steps:
