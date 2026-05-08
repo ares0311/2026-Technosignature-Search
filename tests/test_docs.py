@@ -20,6 +20,9 @@ def test_readme_references_existing_project_docs() -> None:
         "docs/ROADMAP.md",
         "docs/PIPELINE_SPEC.md",
         "docs/SCORING_MODEL.md",
+        "docs/CLI_USAGE.md",
+        "docs/VALIDATION.md",
+        "docs/SUBMISSION_PATHWAYS.md",
         "docs/LOCAL_SYSTEM_PROFILE.md",
     )
     for path in linked_paths:
@@ -31,27 +34,39 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     readme = Path("README.md").read_text(encoding="utf-8")
 
     expected_sections = (
-        "## 🌌 Overview",
-        "## 🧠 Key Idea",
+        "## 🌌 Introduction",
+        "## 🧠 Scientific Motivation",
         "## 📊 Current Status",
-        "## 🛣 Roadmap",
-        "## ⚙️ Architecture",
-        "## 📐 Scoring Model",
-        "## 📂 Project Structure",
+        "## 🛣 Project Roadmap",
+        "## ⚙️ Pipeline Architecture",
+        "## 📐 Methodology and Scoring Equations",
+        "## 🔭 Data Sources",
+        "## 🚀 Installation",
+        "## ⚡ Quick Start",
+        "## 🧪 Quality Control",
+        "## 📤 Submission Pathways",
+        "## 📂 Repository Layout",
         "## 🖥 Local System Profile",
+        "## 🛡 Guardrails",
         "## ⚠️ Important Disclaimer",
+        "## 📚 Works Cited",
         "## 📜 License",
         "## 🔭 Vision",
     )
     for section in expected_sections:
         assert section in readme
 
-    assert "Most signals are **not technosignatures**." in readme
+    assert "Most apparent technosignature-like signals are false positives." in readme
     assert "P(H \\mid D) \\propto P(D \\mid H)P(H)" in readme
-    assert "\\mathrm{log\\_score}_i =" in readme
+    assert "\\sum_k w_{ik}x_k" in readme
     assert "P(\\mathrm{false\\ positive}) =" in readme
+    assert "Breakthrough Listen-style radio data" in readme
+    assert ".venv/bin/techno-search score examples/candidates/radio_clean_candidate.json" in readme
+    assert ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing" in readme
+    assert "Works Cited" in readme
+    assert "Gaia Data Release 3" in readme
     assert "No claims of confirmed technosignatures" in readme
-    assert "not just interesting anomalies" in readme
+    assert "not unsupported claims" in readme
 
 
 def test_publishing_docs_reference_current_validation_commands() -> None:
