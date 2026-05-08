@@ -36,6 +36,17 @@ This project prioritizes:
 - Conservative candidate reporting
 - High-value follow-up targets
 
+### At a Glance
+
+| Dimension | Design Choice |
+|-----------|---------------|
+| Scientific posture | Candidate triage and reproducible follow-up prioritization, not discovery claims |
+| Default hypothesis | False positive until evidence survives structured vetting |
+| Search geometry | Multi-modal: radio, infrared, and archival/catalog anomaly tracks |
+| Output artifact | Human-readable Markdown plus machine-readable JSON candidate packets |
+| Statistical stance | Interpretable Bayesian-style scoring before learned triage models |
+| Validation mode | Synthetic fixtures, score regression snapshots, and non-networked tests by default |
+
 ---
 
 ## 🧠 Scientific Motivation
@@ -45,6 +56,16 @@ Technosignature searches are unusually vulnerable to overinterpretation. Radio s
 This repository treats those explanations as the default. The goal is to produce scientifically defensible **candidate signals**, **anomalies**, and **follow-up targets**, not claims of confirmed technosignatures.
 
 The workflow follows the same broad pattern used in exoplanet vetting: detect an interesting signal, attack it with known false-positive explanations, quantify uncertainty, and route it conservatively.
+
+### Research Questions
+
+| Question | Operational Test |
+|----------|------------------|
+| Is the signal or anomaly real? | Require signal-reality features, metadata completeness, and reproducible candidate packet generation |
+| Is it unusual after known explanations? | Compare candidate evidence against RFI, dust, AGN, artifact, moving-object, and catalog-error hypotheses |
+| Which false-positive class is most plausible? | Preserve explicit false-positive features and negative evidence in every packet |
+| Is follow-up scientifically useful? | Estimate follow-up value and review readiness separately from candidate-interest score |
+| Is the result ready for external attention? | Route through conservative pathways and block unsupported claims |
 
 ---
 
@@ -127,6 +148,14 @@ Track C: Archival / Catalog Anomalies
     → candidate packet
 ```
 
+### Evidence and Null-Model Matrix
+
+| Track | Candidate Signal | Primary Null Models | Required Negative Evidence |
+|-------|------------------|---------------------|----------------------------|
+| Radio SETI | Narrowband, drifting, structured, or cadence-selected signal | RFI, satellite/aircraft emission, band-edge artifact, gain instability, low-SNR noise | OFF-target behavior, frequency persistence, known RFI overlap, metadata quality |
+| Infrared Waste Heat | Mid-infrared excess or SED residual around a stellar-like source | Dust, YSO, AGB star, galaxy, AGN, blending, photometric artifact | Gaia solution quality, WISE/2MASS flags, confusion score, natural-source indicators |
+| Archival / Catalog Anomaly | Missing, appearing, displaced, or strongly changed source | Proper motion, moving object, plate defect, survey-depth mismatch, bandpass effect, catalog mismatch | Epoch metadata, survey limits, artifact score, cross-match confidence |
+
 ### Shared Stage Contract
 
 | Stage | Required Behavior |
@@ -147,6 +176,24 @@ Track C: Archival / Catalog Anomalies
 
 The scoring model evaluates multiple hypotheses for each candidate. It is Bayesian in structure, but the v0 implementation uses interpretable log-score approximations until calibrated empirical likelihoods are available.
 
+### Feature Representation
+
+Each candidate is represented as a track-specific feature vector:
+
+$$
+\mathbf{x} =
+\left[x_{\mathrm{signal}}, x_{\mathrm{quality}}, x_{\mathrm{provenance}},
+x_{\mathrm{artifact}}, x_{\mathrm{natural}}, x_{\mathrm{known}}\right]
+$$
+
+The hypothesis set is:
+
+$$
+\mathcal{H} =
+\{H_{\mathrm{tech}}, H_{\mathrm{natural}}, H_{\mathrm{human}},
+H_{\mathrm{instrument}}, H_{\mathrm{catalog}}, H_{\mathrm{known}}, H_{\mathrm{noise}}\}
+$$
+
 ### Bayesian Framing
 
 $$
@@ -159,6 +206,13 @@ $$
 P(H_i \mid D) =
 \frac{P(D \mid H_i)P(H_i)}
 {\sum_j P(D \mid H_j)P(H_j)}
+$$
+
+The odds between a candidate-interest hypothesis and a false-positive hypothesis can be summarized by a Bayes factor:
+
+$$
+K_{ij} =
+\frac{P(D \mid H_i)}{P(D \mid H_j)}
 $$
 
 ### v0 Interpretable Approximation
@@ -181,6 +235,25 @@ P(\mathrm{false\ positive}) =
 1 - P(H_{\mathrm{technosignature\ interest}} \mid D)
 $$
 
+### Derived Review Scores
+
+The scorer separates candidate interest from operational readiness:
+
+$$
+S_{\mathrm{reality}} =
+g(\mathrm{SNR}, \mathrm{repeatability}, \mathrm{data\ quality}, \mathrm{metadata})
+$$
+
+$$
+S_{\mathrm{novelty}} =
+1 - P(H_{\mathrm{known}} \mid D)
+$$
+
+$$
+S_{\mathrm{followup}} =
+h(S_{\mathrm{reality}}, S_{\mathrm{novelty}}, P(H_{\mathrm{tech}} \mid D), P(\mathrm{false\ positive}))
+$$
+
 ### Review Readiness
 
 The current implementation tracks review readiness as a conservative derived score:
@@ -191,6 +264,31 @@ f(\mathrm{signal\ reality}, \mathrm{provenance}, \mathrm{metadata}, \mathrm{nega
 $$
 
 where \(R\) is not a discovery probability. It is a measure of whether the packet has enough context for meaningful review.
+
+### Calibration Targets
+
+Future empirical calibration should evaluate reliability and ranking quality:
+
+$$
+\mathrm{Brier} =
+\frac{1}{N}\sum_{n=1}^{N}\left(p_n - y_n\right)^2
+$$
+
+$$
+\mathrm{ECE} =
+\sum_{m=1}^{M}\frac{|B_m|}{N}
+\left|\mathrm{acc}(B_m) - \mathrm{conf}(B_m)\right|
+$$
+
+$$
+\mathrm{Precision} =
+\frac{TP}{TP + FP},
+\qquad
+\mathrm{Recall} =
+\frac{TP}{TP + FN}
+$$
+
+Until non-synthetic validation sets exist, these summaries are development diagnostics only.
 
 ### Hypotheses
 
@@ -222,15 +320,15 @@ where \(R\) is not a discovery probability. It is a measure of whether the packe
 
 Default tests use synthetic fixtures and mocked provider metadata. Real provider access must be explicit, opt-in, and provenance-preserving.
 
-| Source | Use in Project | Notes |
-|--------|----------------|-------|
-| Breakthrough Listen-style radio data | Radio SETI candidate search | Future file/hit-table ingestion; no default network access |
-| Gaia DR3 | Stellar context, parallax, proper motion, source quality | Used for infrared and archival context |
-| 2MASS | Near-infrared photometry | Helps characterize stellar SEDs and contaminants |
-| WISE / AllWISE / CatWISE | Mid-infrared photometry and motion-sensitive catalog context | Supports IR-excess and blending checks |
-| VizieR | Catalog cross-identification | Used for known-object and contaminant context |
-| SIMBAD | Object identity and bibliography context | Used for known-object annotation |
-| Historical / modern catalogs | Archival anomaly checks | Future curated datasets only; no large data committed |
+| Source | Use in Project | Principal Features | Failure Modes to Preserve |
+|--------|----------------|--------------------|---------------------------|
+| Breakthrough Listen-style radio data | Radio SETI candidate search | Frequency, drift rate, SNR, ON/OFF cadence, bandwidth | RFI, backend artifacts, frequency persistence, missing OFF scans |
+| Gaia DR3 | Stellar context and astrometry | Parallax, proper motion, quality flags, source identity | Bad astrometric solution, non-stellar source, cross-match ambiguity |
+| 2MASS | Near-infrared photometry | J/H/K photometry, near-IR color context | Saturation, blending, catalog mismatch |
+| WISE / AllWISE / CatWISE | Mid-infrared photometry and motion-sensitive catalog context | W1-W4 fluxes, mid-IR colors, source confusion | AGN, galaxy, dust, YSO, AGB, poor image quality |
+| VizieR | Literature catalog cross-identification | Catalog membership, source class context | Known contaminant, inconsistent identifiers |
+| SIMBAD | Object identity and bibliography context | Object type, aliases, known-source annotations | Known object masquerading as a new candidate |
+| Historical / modern catalogs | Archival anomaly checks | Epoch, magnitude, limits, cross-match confidence | Proper motion, moving object, survey-depth mismatch, plate artifact |
 
 All data products remain governed by their original licenses, citation requirements, and provider policies.
 
@@ -313,6 +411,18 @@ Scientific quality gates:
 - Report language must remain conservative.
 - Score changes must be checked against score-regression fixtures.
 - Calibration summaries are synthetic development diagnostics, not survey-performance claims.
+
+### Quality-Control Matrix
+
+| Risk | Guardrail | Validation Artifact |
+|------|-----------|---------------------|
+| Overclaiming | Required disclaimer and conservative language checks | Report validators and docs tests |
+| RFI or artifact leakage | False-positive fixtures by track and class | Calibration false-positive suite |
+| Schema drift | Versioned JSON schemas and schema path checks | `schema-paths`, schema tests |
+| Score instability | Golden score regression snapshots | `score-regression-summary` |
+| Hidden data dependency | Synthetic fixtures and mocked services by default | `pytest`, live-data opt-in guards |
+| Lost provenance | Manifest and provenance summary validation | Report manifests and provenance summary CLI |
+| Misleading calibration | Synthetic-only disclaimers on reliability and PR summaries | Validation summary commands |
 
 👉 See [`docs/VALIDATION.md`](docs/VALIDATION.md)
 

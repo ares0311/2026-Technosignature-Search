@@ -57,10 +57,17 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
         assert section in readme
 
     assert "Most apparent technosignature-like signals are false positives." in readme
+    assert "### Research Questions" in readme
+    assert "### Evidence and Null-Model Matrix" in readme
+    assert "\\mathcal{H} =" in readme
+    assert "K_{ij} =" in readme
+    assert "\\mathrm{Brier} =" in readme
+    assert "\\mathrm{ECE} =" in readme
     assert "P(H \\mid D) \\propto P(D \\mid H)P(H)" in readme
     assert "\\sum_k w_{ik}x_k" in readme
     assert "P(\\mathrm{false\\ positive}) =" in readme
     assert "Breakthrough Listen-style radio data" in readme
+    assert "### Quality-Control Matrix" in readme
     assert ".venv/bin/techno-search score examples/candidates/radio_clean_candidate.json" in readme
     assert ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing" in readme
     assert "Works Cited" in readme
