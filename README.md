@@ -9,9 +9,15 @@
 
 ## 🌌 Introduction
 
-A **research-grade, reproducible pipeline** for detecting, vetting, scoring, and reporting technosignature-interest candidates from existing astronomical data.
+### Abstract
 
-This project is not a discovery engine. It is a conservative scientific workflow for producing reviewable candidate packets across three complementary search modes:
+Technosignature searches require an analysis framework that is simultaneously sensitive to unusual signals and aggressively skeptical of their interpretation. Existing astronomical archives contain radio observations, infrared photometry, astrometric catalogs, and historical survey records that can be searched for candidate signals or anomalies, but the same archives also contain abundant terrestrial interference, instrumental artifacts, catalog ambiguities, natural astrophysical contaminants, and selection effects. This project develops a reproducible, multi-modal technosignature-interest candidate pipeline that treats those false-positive explanations as the default scientific hypothesis.
+
+The pipeline integrates three search tracks: narrowband or Doppler-drifting radio candidates, infrared-excess or waste-heat-interest catalog candidates, and archival/catalog anomalies such as missing, appearing, displaced, or strongly variable sources. Each track emits a normalized feature packet, preserves provenance, records positive and negative evidence, and routes the result through a shared Bayesian-style scoring and conservative pathway framework. The scoring layer evaluates multiple competing hypotheses, including natural sources, human interference, instrumental artifacts, catalog or processing errors, known objects, low-confidence noise, and technosignature-interest candidates. In the current v0 implementation, calibrated empirical likelihoods are not yet claimed; instead, interpretable log-score approximations and synthetic fixtures provide a transparent baseline for regression testing and future calibration.
+
+The methodological objective is not to identify confirmed technosignatures. It is to produce auditable review packets that make uncertainty explicit, expose blocking issues, retain false-positive evidence, and prioritize candidates for human review only when the available evidence justifies further attention. This makes the project a candidate-evaluation and reproducibility system rather than an announcement or discovery platform.
+
+### Modal Search Scope
 
 ```text
 Radio SETI          → narrowband / drifting candidate signals
@@ -19,7 +25,7 @@ Infrared catalogs   → waste-heat-interest excess candidates
 Archival catalogs   → cross-survey anomaly candidates
 ```
 
-The central premise is simple:
+### Core Premise
 
 > Most apparent technosignature-like signals are false positives.
 
