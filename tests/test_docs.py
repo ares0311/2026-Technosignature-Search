@@ -44,6 +44,8 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
         "## 🛣 Roadmap",
         "## ⚙️ Architecture",
         "## 📐 Scoring Model",
+        "## 🧪 Scientific Rigor",
+        "## 🧭 Pathway Logic",
         "## 🔎 Search Tracks",
         "## ⚡ Quickstart",
         "## 📦 Example Outputs",
@@ -58,6 +60,9 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
         assert section in readme
 
     assert "false positives until shown otherwise" in readme
+    assert "P(H | D) ∝ P(D | H) P(H)" in readme
+    assert "log_score_i = log_prior_i + weighted_evidence_i" in readme
+    assert "false_positive_probability = 1 - posterior.technosignature_interest" in readme
     assert "No claims of confirmed technosignatures" in readme
     assert "not unsupported claims" in readme
 

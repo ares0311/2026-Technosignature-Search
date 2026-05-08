@@ -17,6 +17,12 @@ A **research-grade, reproducible, multi-modal citizen-science pipeline** for sea
 Ingest → Normalize → Search → Vet → Score → Classify → Report
 ```
 
+Research flow:
+
+```text
+Existing Astronomical Data → Candidate Extraction → False-Positive Vetting → Bayesian-Style Scoring → Review Pathway
+```
+
 Search tracks:
 
 ```text
@@ -31,6 +37,7 @@ This project prioritizes:
 - Provenance-preserving reports
 - Human-in-the-loop triage
 - Synthetic injection, recovery, and calibration fixtures
+- Clear separation between detection, interpretation, and follow-up recommendation
 
 ---
 
@@ -85,6 +92,18 @@ This system is built to **disprove candidate signals first**, preserve negative 
 Ingest → Normalize → Search → Vet → Score → Classify → Report
 ```
 
+Stage responsibilities:
+
+| Stage | Responsibility |
+|-------|----------------|
+| Ingest | Load synthetic or future provider-backed inputs without destructive transformations |
+| Normalize | Standardize units, field names, schema versions, and provenance |
+| Search | Identify candidate signals or anomalies without claiming interpretation |
+| Vet | Surface natural, instrumental, catalog, and human-made false-positive evidence |
+| Score | Compute posterior-style probabilities and derived review-readiness scores |
+| Classify | Route candidates to conservative pathways |
+| Report | Emit Markdown/JSON packets with positive evidence, negative evidence, blocking issues, and provenance |
+
 | Module | Purpose |
 |--------|---------|
 | `schemas.py` | Candidate and scored-candidate data structures |
@@ -105,10 +124,29 @@ Ingest → Normalize → Search → Vet → Score → Classify → Report
 
 ## 📐 Scoring Model
 
-The v0 scorer uses an interpretable log-score approximation to a multi-hypothesis Bayesian framing:
+Bayesian framework:
+
+```text
+P(H | D) ∝ P(D | H) P(H)
+```
+
+Normalized multi-hypothesis framing:
 
 ```text
 P(H_i | D) = P(D | H_i) P(H_i) / Σ_j P(D | H_j) P(H_j)
+```
+
+Current v0 implementation uses interpretable log-score approximations:
+
+```text
+log_score_i = log_prior_i + weighted_evidence_i
+posterior_i = softmax(log_score_i)
+```
+
+False-positive probability is tracked conservatively:
+
+```text
+false_positive_probability = 1 - posterior.technosignature_interest
 ```
 
 Hypotheses include:
@@ -132,6 +170,64 @@ Outputs:
 - Recommended pathway
 
 👉 See [`docs/SCORING_MODEL.md`](docs/SCORING_MODEL.md)
+
+---
+
+## 🧪 Scientific Rigor
+
+The pipeline is designed around a false-positive-first review model.
+
+Evidence packets must preserve:
+
+- Positive evidence for candidate interest
+- Negative evidence against candidate interest
+- Blocking issues that prevent strong interpretation
+- Source IDs and provenance metadata
+- Config and schema versions
+- Known-object, artifact, RFI, natural-source, catalog-error, and low-confidence alternatives
+
+Default validation is deterministic and non-networked:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/ruff check .
+.venv/bin/mypy src
+git diff --check
+```
+
+Live-provider work is opt-in only and must preserve provider, query, cache, and code provenance.
+
+👉 See [`docs/VALIDATION.md`](docs/VALIDATION.md), [`docs/DATA_POLICY.md`](docs/DATA_POLICY.md), and [`docs/LIVE_DATA_INTEGRATIONS.md`](docs/LIVE_DATA_INTEGRATIONS.md)
+
+---
+
+## 🧭 Pathway Logic
+
+Candidates are routed conservatively:
+
+```text
+Known object / known artifact
+  → known_object_annotation
+
+Strong false-positive evidence
+  → do_not_submit_false_positive
+
+Weak, incomplete, exploratory, or method-development result
+  → github_reproducibility_only
+
+Ambiguous but potentially useful for review
+  → human_review_queue
+
+Stronger, well-documented, still unconfirmed candidate
+  → candidate_review_packet
+
+Rare, reviewed, reproducible follow-up target
+  → external_followup_candidate
+```
+
+No pathway is a discovery claim.
+
+👉 See [`docs/SUBMISSION_PATHWAYS.md`](docs/SUBMISSION_PATHWAYS.md)
 
 ---
 
