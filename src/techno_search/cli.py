@@ -18,7 +18,10 @@ from techno_search.background_search import (
     target_priority_summary,
 )
 from techno_search.benchmark_metadata import (
+    BenchmarkRunResult,
+    append_benchmark_run_result,
     benchmark_metadata_summary,
+    benchmark_run_result_comparison,
     benchmark_run_result_summary,
 )
 from techno_search.calibration import (
@@ -230,6 +233,41 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(
             json.dumps(
                 benchmark_run_result_summary(args.results_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "benchmark-run-append":
+        print(
+            json.dumps(
+                append_benchmark_run_result(
+                    args.results_path,
+                    BenchmarkRunResult(
+                        run_id=args.run_id,
+                        command_name=args.command_name,
+                        command_kind=args.command_kind,
+                        status=args.status,
+                        worker_count=args.worker_count,
+                        input_case_count=args.input_case_count,
+                        duration_seconds=args.duration_seconds,
+                        git_commit=args.git_commit,
+                        config_version=args.config_version,
+                    ),
+                ),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "benchmark-run-compare":
+        print(
+            json.dumps(
+                benchmark_run_result_comparison(args.results_path),
                 indent=2,
                 sort_keys=True,
             ),
@@ -1105,6 +1143,34 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize local synthetic benchmark run-result metadata.",
     )
     benchmark_run_parser.add_argument(
+        "--results-path",
+        type=Path,
+        help="Optional benchmark run-result JSON path.",
+    )
+    benchmark_append_parser = subparsers.add_parser(
+        "benchmark-run-append",
+        help="Append one local synthetic benchmark run-result entry.",
+    )
+    benchmark_append_parser.add_argument(
+        "--results-path",
+        type=Path,
+        required=True,
+        help="Benchmark run-result JSON path to create or append.",
+    )
+    benchmark_append_parser.add_argument("--run-id", required=True)
+    benchmark_append_parser.add_argument("--command-name", required=True)
+    benchmark_append_parser.add_argument("--command-kind", required=True)
+    benchmark_append_parser.add_argument("--status", required=True)
+    benchmark_append_parser.add_argument("--worker-count", type=int, required=True)
+    benchmark_append_parser.add_argument("--input-case-count", type=int, required=True)
+    benchmark_append_parser.add_argument("--duration-seconds", type=float, required=True)
+    benchmark_append_parser.add_argument("--git-commit", required=True)
+    benchmark_append_parser.add_argument("--config-version", required=True)
+    benchmark_compare_parser = subparsers.add_parser(
+        "benchmark-run-compare",
+        help="Compare repeated local synthetic benchmark run-result entries.",
+    )
+    benchmark_compare_parser.add_argument(
         "--results-path",
         type=Path,
         help="Optional benchmark run-result JSON path.",

@@ -34,7 +34,8 @@
           "worker_count",
           "input_case_count",
           "duration_seconds",
-          "git_commit"
+          "git_commit",
+          "config_version"
         ],
         "properties": {
           "run_id": {
@@ -62,6 +63,9 @@
             "minimum": 0
           },
           "git_commit": {
+            "type": "string"
+          },
+          "config_version": {
             "type": "string"
           }
         }

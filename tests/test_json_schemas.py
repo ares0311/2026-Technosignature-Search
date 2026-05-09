@@ -128,6 +128,10 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     assert benchmark["recommended_limits"]["cpu_workers"] == 12
     assert benchmark_runs["schema_version"] == "synthetic_benchmark_run_result_v1"
     assert len(benchmark_runs["runs"]) == 3
+    assert "config_version" in benchmark_run_schema["properties"]["runs"]["items"][
+        "required"
+    ]
+    assert benchmark_runs["runs"][0]["config_version"] == "scoring_v0"
     assert background_targets["schema_version"] == "background_target_priority_v1"
     assert len(background_targets["targets"]) == 3
     assert background_ledger["schema_version"] == "background_search_ledger_v1"

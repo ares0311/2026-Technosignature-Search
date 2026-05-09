@@ -424,7 +424,98 @@ def test_cli_benchmark_run_summary_outputs_local_run_results() -> None:
     assert result["input_case_total"] == 171
     assert result["max_worker_count"] == 12
     assert result["by_status"] == {"passed": 2, "planned_not_implemented": 1}
+    assert result["by_config_version"] == {
+        "benchmark_plan_v0": 1,
+        "scoring_v0": 1,
+        "tooling_v0": 1,
+    }
     assert "not scientific performance claims" in result["disclaimer"]
+
+
+def test_cli_benchmark_run_append_outputs_updated_summary(tmp_path) -> None:
+    results_path = tmp_path / "benchmark_run_results.json"
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "benchmark-run-append",
+            "--results-path",
+            str(results_path),
+            "--run-id",
+            "cli-benchmark-run-001",
+            "--command-name",
+            "pytest coverage gate",
+            "--command-kind",
+            "test",
+            "--status",
+            "passed",
+            "--worker-count",
+            "1",
+            "--input-case-count",
+            "194",
+            "--duration-seconds",
+            "1.58",
+            "--git-commit",
+            "abc1234",
+            "--config-version",
+            "scoring_v0",
+        ],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["ok"] is True
+    assert result["appended_run"]["run_id"] == "cli-benchmark-run-001"
+    assert result["appended_run"]["config_version"] == "scoring_v0"
+    assert result["summary"]["run_count"] == 1
+    assert results_path.exists()
+
+
+def test_cli_benchmark_run_compare_outputs_repeated_run_deltas(tmp_path) -> None:
+    results_path = tmp_path / "benchmark_run_results.json"
+    for run_id, duration in (
+        ("cli-benchmark-run-001", "2.0"),
+        ("cli-benchmark-run-002", "1.5"),
+    ):
+        main(
+            [
+                "benchmark-run-append",
+                "--results-path",
+                str(results_path),
+                "--run-id",
+                run_id,
+                "--command-name",
+                "pytest coverage gate",
+                "--command-kind",
+                "test",
+                "--status",
+                "passed",
+                "--worker-count",
+                "1",
+                "--input-case-count",
+                "194",
+                "--duration-seconds",
+                duration,
+                "--git-commit",
+                "abc1234",
+                "--config-version",
+                "scoring_v0",
+            ],
+            stdout=StringIO(),
+        )
+    stdout = StringIO()
+
+    exit_code = main(
+        ["benchmark-run-compare", "--results-path", str(results_path)],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["run_count"] == 2
+    assert result["repeated_command_count"] == 1
+    assert result["comparisons"][0]["duration_delta_seconds"] == -0.5
 
 
 def test_cli_target_priority_summary_outputs_selected_target() -> None:

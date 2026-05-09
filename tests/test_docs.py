@@ -87,6 +87,8 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     assert ".venv/bin/techno-search target-priority-summary" in readme
     assert ".venv/bin/techno-search background-ledger-summary" in readme
     assert ".venv/bin/techno-search background-run-once" in readme
+    assert ".venv/bin/techno-search benchmark-run-append" in readme
+    assert ".venv/bin/techno-search benchmark-run-compare" in readme
     assert "configs/background_priority_v0.json" in readme
     assert "The selected target is a scheduling recommendation only." in readme
     assert "### Quality-Control Matrix" in readme

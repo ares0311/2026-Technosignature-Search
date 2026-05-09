@@ -115,6 +115,31 @@ Merge status: already on `main`; no merge needed.
 
 ---
 
+## Benchmark Append And Comparison Workflow
+
+User requested the next fifteen steps and asked to push when complete.
+
+Status: implemented in this iteration.
+
+Added:
+
+- append-only benchmark run-result helper
+- repeated-run benchmark comparison helper
+- `techno-search benchmark-run-append`
+- `techno-search benchmark-run-compare`
+- required `config_version` field on benchmark run-result entries
+- tests for append preservation, duplicate run rejection, repeated-run deltas, schema coverage, and CLI output
+- README, CLI usage, validation, roadmap, project status, and decisions updates
+
+Scientific guardrail:
+
+- benchmark runs record local synthetic execution context only
+- append/compare outputs are not survey sensitivity estimates, candidate-quality metrics, detections, or external validation
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Consensus Export, Promotion, And Benchmark Run Expansion
 
 User requested the next fifteen steps:

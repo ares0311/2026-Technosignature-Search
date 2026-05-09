@@ -281,6 +281,41 @@ The summary reports local run-result counts, command-kind counts, status counts,
 
 ---
 
+## Append Benchmark Run Results
+
+Append one local synthetic benchmark run-result entry without overwriting previous runs:
+
+```bash
+.venv/bin/techno-search benchmark-run-append \
+  --results-path artifacts/benchmark_run_results.json \
+  --run-id pytest-coverage-local-001 \
+  --command-name "pytest coverage gate" \
+  --command-kind test \
+  --status passed \
+  --worker-count 1 \
+  --input-case-count 194 \
+  --duration-seconds 1.58 \
+  --git-commit "$(git rev-parse --short HEAD)" \
+  --config-version scoring_v0
+```
+
+Generated benchmark ledgers should be written to ignored local paths such as `artifacts/` unless they are tiny reviewed fixtures. Required metadata includes command name, command kind, status, worker count, input case count, duration, git commit, and config version. These entries are execution context only; they are not survey sensitivity estimates.
+
+---
+
+## Compare Benchmark Run Results
+
+Compare repeated local synthetic benchmark entries grouped by command name:
+
+```bash
+.venv/bin/techno-search benchmark-run-compare \
+  --results-path artifacts/benchmark_run_results.json
+```
+
+The comparison reports repeated-command counts, duration deltas, worker-count changes, status changes, input-case deltas, and config-version changes. These checks help catch local validation drift; they do not establish scientific performance.
+
+---
+
 ## Summarize Background Target Priority
 
 Print the fixture-backed target-priority ranking used by the passive/background search scaffold:

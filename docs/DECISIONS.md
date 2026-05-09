@@ -399,3 +399,26 @@ Passive search infrastructure is useful only if it improves reproducibility. A b
 - The runner routes scheduling-only entries to `github_reproducibility_only`.
 - The runner requires an explicit CLI acknowledgement flag.
 - Generated local ledgers should be written to ignored paths unless reviewed as tiny fixtures.
+
+---
+
+## DECISION-017: Append Benchmark Runs Rather Than Rewriting Benchmark History
+
+**Date:** 2026-05-08
+
+**Status:** Accepted
+
+### Decision
+
+Local synthetic benchmark run results should be appended as new run entries instead of overwriting prior run metadata.
+
+### Rationale
+
+Benchmark metadata is useful for reproducibility only when it preserves execution context across repeated local validation runs. Rewriting prior runs would make local drift, worker-count changes, config changes, and status changes harder to audit.
+
+### Consequences
+
+- Each benchmark run requires a unique `run_id`.
+- Each run records command name, command kind, status, worker count, input case count, duration, git commit, and config version.
+- Repeated-run comparison reports deltas for local validation drift only.
+- Benchmark deltas are not survey sensitivity estimates, candidate-quality metrics, discovery claims, or calibrated scientific performance claims.

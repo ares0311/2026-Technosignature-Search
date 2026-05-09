@@ -559,8 +559,29 @@ Recommended recalibration checks:
 .venv/bin/techno-search reliability-summary
 .venv/bin/techno-search precision-recall-summary
 .venv/bin/techno-search score-regression-summary
+.venv/bin/techno-search benchmark-run-summary
+.venv/bin/techno-search benchmark-run-compare \
+  --results-path artifacts/benchmark_run_results.json
 .venv/bin/techno-search validate-all
 ```
+
+When recording local benchmark runs, append rather than overwrite:
+
+```bash
+.venv/bin/techno-search benchmark-run-append \
+  --results-path artifacts/benchmark_run_results.json \
+  --run-id pytest-coverage-local-001 \
+  --command-name "pytest coverage gate" \
+  --command-kind test \
+  --status passed \
+  --worker-count 1 \
+  --input-case-count 194 \
+  --duration-seconds 1.58 \
+  --git-commit "$(git rev-parse --short HEAD)" \
+  --config-version scoring_v0
+```
+
+Benchmark run results record local execution context only. They are not calibrated survey sensitivity estimates or candidate-quality claims.
 
 ### Target Selection and Background Search Roadmap
 
@@ -691,6 +712,7 @@ Scientific quality gates:
 | Hidden data dependency | Synthetic fixtures and mocked services by default | `pytest`, live-data opt-in guards |
 | Lost provenance | Manifest and provenance summary validation | Report manifests and provenance summary CLI |
 | Misleading calibration | Synthetic-only disclaimers on reliability and PR summaries | Validation summary commands |
+| Benchmark drift | Append-only local benchmark run results and repeated-run comparison | `benchmark-run-append`, `benchmark-run-compare` |
 
 👉 See [`docs/VALIDATION.md`](docs/VALIDATION.md)
 

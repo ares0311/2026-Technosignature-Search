@@ -11,7 +11,8 @@
       "worker_count": 1,
       "input_case_count": 170,
       "duration_seconds": 2.45,
-      "git_commit": "0e94ea9"
+      "git_commit": "0e94ea9",
+      "config_version": "scoring_v0"
     },
     {
       "run_id": "ruff-2026-05-08",
@@ -21,7 +22,8 @@
       "worker_count": 1,
       "input_case_count": 1,
       "duration_seconds": 0.10,
-      "git_commit": "0e94ea9"
+      "git_commit": "0e94ea9",
+      "config_version": "tooling_v0"
     },
     {
       "run_id": "future-calibration-grid-placeholder",
@@ -31,7 +33,8 @@
       "worker_count": 12,
       "input_case_count": 0,
       "duration_seconds": 0.0,
-      "git_commit": "planned"
+      "git_commit": "planned",
+      "config_version": "benchmark_plan_v0"
     }
   ]
 }

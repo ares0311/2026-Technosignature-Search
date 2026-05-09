@@ -43,6 +43,7 @@ class BenchmarkRunResult:
     input_case_count: int
     duration_seconds: float
     git_commit: str
+    config_version: str
 
 
 def default_benchmark_metadata_path() -> Path:
@@ -143,8 +144,114 @@ def benchmark_run_result_summary(path: Path | None = None) -> dict[str, object]:
         "max_duration_seconds": max(durations, default=0.0),
         "by_command_kind": _counter_to_dict(Counter(run.command_kind for run in runs)),
         "by_status": _counter_to_dict(Counter(run.status for run in runs)),
+        "by_config_version": _counter_to_dict(
+            Counter(run.config_version for run in runs)
+        ),
         "run_ids": sorted(run.run_id for run in runs),
         "git_commits": sorted({run.git_commit for run in runs}),
+    }
+
+
+def append_benchmark_run_result(
+    path: Path,
+    run: BenchmarkRunResult,
+) -> dict[str, object]:
+    """Append one benchmark run-result entry without overwriting prior runs."""
+
+    results_path = Path(path)
+    if results_path.exists():
+        with results_path.open(encoding="utf-8") as handle:
+            data = json.load(handle)
+        schema_version = str(data.get("schema_version", ""))
+        if schema_version != BENCHMARK_RUN_RESULT_SCHEMA_VERSION:
+            msg = (
+                f"Unsupported benchmark run-result schema version "
+                f"{schema_version!r}; expected "
+                f"{BENCHMARK_RUN_RESULT_SCHEMA_VERSION!r}"
+            )
+            raise ValueError(msg)
+        runs = list(data.get("runs", []))
+    else:
+        data = {
+            "schema_version": BENCHMARK_RUN_RESULT_SCHEMA_VERSION,
+            "description": (
+                "Local synthetic benchmark run-result metadata. Entries record "
+                "execution context only, not scientific performance claims."
+            ),
+            "disclaimer": BENCHMARK_RUN_RESULT_DISCLAIMER,
+        }
+        runs = []
+
+    existing_run_ids = {str(item["run_id"]) for item in runs}
+    if run.run_id in existing_run_ids:
+        msg = f"Benchmark run_id {run.run_id!r} already exists."
+        raise ValueError(msg)
+
+    runs.append(_run_result_to_mapping(run))
+    data["runs"] = runs
+    results_path.parent.mkdir(parents=True, exist_ok=True)
+    results_path.write_text(
+        json.dumps(data, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    return {
+        "ok": True,
+        "results_path": str(results_path),
+        "appended_run": _run_result_to_mapping(run),
+        "summary": benchmark_run_result_summary(results_path),
+        "disclaimer": BENCHMARK_RUN_RESULT_DISCLAIMER,
+    }
+
+
+def benchmark_run_result_comparison(path: Path | None = None) -> dict[str, object]:
+    """Compare repeated benchmark run results grouped by command name."""
+
+    results_path = path or default_benchmark_run_results_path()
+    runs = load_benchmark_run_results(results_path)
+    by_command: dict[str, list[BenchmarkRunResult]] = {}
+    for run in runs:
+        by_command.setdefault(run.command_name, []).append(run)
+
+    comparisons = []
+    for command_name, command_runs in sorted(by_command.items()):
+        ordered = sorted(command_runs, key=lambda run: run.run_id)
+        if len(ordered) < 2:
+            continue
+        previous = ordered[-2]
+        latest = ordered[-1]
+        comparisons.append(
+            {
+                "command_name": command_name,
+                "previous_run_id": previous.run_id,
+                "latest_run_id": latest.run_id,
+                "duration_delta_seconds": round(
+                    latest.duration_seconds - previous.duration_seconds,
+                    6,
+                ),
+                "worker_count_changed": latest.worker_count != previous.worker_count,
+                "status_changed": latest.status != previous.status,
+                "input_case_count_delta": latest.input_case_count
+                - previous.input_case_count,
+                "config_version_changed": latest.config_version
+                != previous.config_version,
+            }
+        )
+
+    return {
+        "results_path": str(results_path),
+        "schema_version": BENCHMARK_RUN_RESULT_SCHEMA_VERSION,
+        "disclaimer": BENCHMARK_RUN_RESULT_DISCLAIMER,
+        "run_count": len(runs),
+        "repeated_command_count": len(comparisons),
+        "worker_count_change_count": sum(
+            1 for item in comparisons if item["worker_count_changed"]
+        ),
+        "status_change_count": sum(1 for item in comparisons if item["status_changed"]),
+        "config_version_change_count": sum(
+            1 for item in comparisons if item["config_version_changed"]
+        ),
+        "comparisons": comparisons,
     }
 
 
@@ -168,7 +275,22 @@ def _run_result_from_mapping(data: dict[str, Any]) -> BenchmarkRunResult:
         input_case_count=int(data["input_case_count"]),
         duration_seconds=float(data["duration_seconds"]),
         git_commit=str(data["git_commit"]),
+        config_version=str(data["config_version"]),
     )
+
+
+def _run_result_to_mapping(run: BenchmarkRunResult) -> dict[str, object]:
+    return {
+        "run_id": run.run_id,
+        "command_name": run.command_name,
+        "command_kind": run.command_kind,
+        "status": run.status,
+        "worker_count": run.worker_count,
+        "input_case_count": run.input_case_count,
+        "duration_seconds": run.duration_seconds,
+        "git_commit": run.git_commit,
+        "config_version": run.config_version,
+    }
 
 
 def _counter_to_dict(counter: Counter[str]) -> dict[str, int]:

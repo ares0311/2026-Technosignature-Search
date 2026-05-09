@@ -255,6 +255,8 @@ Make scores empirically meaningful.
 - [x] Calibration by track
 - [x] Local benchmark metadata
 - [x] Synthetic benchmark run-result metadata
+- [x] Append-only benchmark run-result workflow
+- [x] Repeated-run benchmark comparison workflow
 
 ---
 

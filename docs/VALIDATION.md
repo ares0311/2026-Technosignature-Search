@@ -156,6 +156,29 @@ Review local synthetic benchmark run-result metadata:
 .venv/bin/techno-search benchmark-run-summary
 ```
 
+Append one local synthetic benchmark run-result entry to an ignored output path:
+
+```bash
+.venv/bin/techno-search benchmark-run-append \
+  --results-path artifacts/benchmark_run_results.json \
+  --run-id pytest-coverage-local-001 \
+  --command-name "pytest coverage gate" \
+  --command-kind test \
+  --status passed \
+  --worker-count 1 \
+  --input-case-count 194 \
+  --duration-seconds 1.58 \
+  --git-commit "$(git rev-parse --short HEAD)" \
+  --config-version scoring_v0
+```
+
+Compare repeated local benchmark entries:
+
+```bash
+.venv/bin/techno-search benchmark-run-compare \
+  --results-path artifacts/benchmark_run_results.json
+```
+
 Review fixture-backed background target prioritization:
 
 ```bash
@@ -176,7 +199,7 @@ Review passive/background search ledger coverage:
 .venv/bin/techno-search background-ledger-summary
 ```
 
-`validate-all` and `validation-summary` include calibration-by-track, false-positive class, validation dataset, benchmark metadata, benchmark run-result metadata, background target-priority, background search ledger, injection-recovery, reliability, precision-recall, human-review queue, consensus-label, and consensus-export coverage. The reported calibration-by-track coverage, false-positive class coverage, validation dataset coverage, benchmark metadata, benchmark run-result metadata, target-priority ranking, background ledger counts, recovery rate, false-alarm fraction, reliability errors, precision, recall, F1 score, review queue counts, consensus counts, and consensus export counts are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, per-track survey performance, classification performance estimates, discovery claims, external validation, detections, or scientific performance claims.
+`validate-all` and `validation-summary` include calibration-by-track, false-positive class, validation dataset, benchmark metadata, benchmark run-result metadata, background target-priority, background search ledger, injection-recovery, reliability, precision-recall, human-review queue, consensus-label, and consensus-export coverage. Benchmark append and compare commands are local workflow helpers for ignored output paths. The reported calibration-by-track coverage, false-positive class coverage, validation dataset coverage, benchmark metadata, benchmark run-result metadata, benchmark deltas, target-priority ranking, background ledger counts, recovery rate, false-alarm fraction, reliability errors, precision, recall, F1 score, review queue counts, consensus counts, and consensus export counts are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, per-track survey performance, classification performance estimates, discovery claims, external validation, detections, or scientific performance claims.
 
 Snapshot fixture:
 
