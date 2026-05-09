@@ -1,0 +1,50 @@
+{
+  "schema_version": "background_reviewed_log_v1",
+  "description": "Reviewed local background-search outcomes that do not currently require follow-up.",
+  "disclaimer": "Reviewed background-search records document targets that do not currently require follow-up; they are not external validation or discovery claims.",
+  "reviewed_entries": [
+    {
+      "review_id": "reviewed-background-demo-003",
+      "run_id": "background-demo-003",
+      "target_id": "target-anomaly-weak-context",
+      "track": "anomaly",
+      "outcome_status": "reviewed_no_follow_up",
+      "reviewed_at_utc": "2026-05-08T10:10:01+00:00",
+      "reason_codes": [
+        "no_candidate_packet_generated",
+        "weak_context_recorded"
+      ],
+      "negative_evidence": [
+        "candidate extraction produced no packet",
+        "weak archival context remains documented as a negative search result"
+      ],
+      "blocking_issues": [
+        "synthetic fixture intentionally records weak context",
+        "no candidate packet generated"
+      ],
+      "recommended_next_action": "retain_in_reviewed_log",
+      "network_access_allowed": false
+    },
+    {
+      "review_id": "reviewed-background-demo-004",
+      "run_id": "background-demo-004",
+      "target_id": "target-radio-clean-drift",
+      "track": "radio",
+      "outcome_status": "reviewed_no_follow_up",
+      "reviewed_at_utc": "2026-05-08T10:15:00+00:00",
+      "reason_codes": [
+        "local_scheduling_only",
+        "no_candidate_extraction_performed"
+      ],
+      "negative_evidence": [
+        "local fixture runner recorded scheduling only",
+        "no candidate packet was generated during this run"
+      ],
+      "blocking_issues": [
+        "local fixture runner records scheduling only; no candidate extraction was performed"
+      ],
+      "recommended_next_action": "retain_in_reviewed_log",
+      "network_access_allowed": false
+    }
+  ]
+}

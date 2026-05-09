@@ -13,7 +13,11 @@ from pathlib import Path
 from typing import TextIO
 
 from techno_search.background_search import (
+    background_follow_up_test_summary,
+    background_needs_follow_up_summary,
+    background_report_readiness_summary,
     background_review_workflow_summary,
+    background_reviewed_log_summary,
     background_search_ledger_summary,
     candidate_extraction_handoff_summary,
     run_local_background_search_once,
@@ -66,6 +70,10 @@ from techno_search.validation_datasets import (
 )
 
 SCHEMA_FILENAMES = {
+    "background_follow_up_tests": "background_follow_up_tests.schema.json",
+    "background_needs_follow_up_log": "background_needs_follow_up_log.schema.json",
+    "background_report_readiness": "background_report_readiness.schema.json",
+    "background_reviewed_log": "background_reviewed_log.schema.json",
     "background_search_ledger": "background_search_ledger.schema.json",
     "background_targets": "background_targets.schema.json",
     "batch_manifest": "batch_manifest.schema.json",
@@ -294,7 +302,11 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
     if args.command == "target-priority-summary":
         print(
             json.dumps(
-                target_priority_summary(args.target_path, args.config_path),
+                target_priority_summary(
+                    args.target_path,
+                    args.config_path,
+                    args.ledger_path,
+                ),
                 indent=2,
                 sort_keys=True,
             ),
@@ -324,6 +336,61 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "reviewed-log-summary":
+        print(
+            json.dumps(
+                background_reviewed_log_summary(args.reviewed_log_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "needs-follow-up-summary":
+        print(
+            json.dumps(
+                background_needs_follow_up_summary(args.needs_follow_up_log_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "follow-up-test-summary":
+        print(
+            json.dumps(
+                background_follow_up_test_summary(args.follow_up_tests_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "report-readiness-summary":
+        print(
+            json.dumps(
+                background_report_readiness_summary(args.report_readiness_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "submission-recommendation-summary":
+        print(
+            json.dumps(
+                background_report_readiness_summary(args.report_readiness_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     if args.command == "candidate-extraction-handoff-summary":
         print(
             json.dumps(
@@ -340,6 +407,8 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             json.dumps(
                 run_local_background_search_once(
                     args.ledger_path,
+                    reviewed_log_path=args.reviewed_log_path,
+                    needs_follow_up_log_path=args.needs_follow_up_log_path,
                     target_path=args.target_path,
                     config_path=args.config_path,
                     run_id=args.run_id,
@@ -660,6 +729,27 @@ def validate_all() -> dict[str, object]:
     background_review_status_count = background_review_workflow[
         "reviewed_workflow_status_count"
     ]
+    reviewed_log = background_reviewed_log_summary()
+    reviewed_log_entry_count = reviewed_log["entry_count"]
+    reviewed_log_network_count = reviewed_log["network_access_allowed_count"]
+    needs_follow_up_log = background_needs_follow_up_summary()
+    needs_follow_up_entry_count = needs_follow_up_log["entry_count"]
+    needs_follow_up_approval_count = needs_follow_up_log[
+        "submission_requires_user_approval_count"
+    ]
+    needs_follow_up_network_count = needs_follow_up_log["network_access_allowed_count"]
+    follow_up_tests = background_follow_up_test_summary()
+    follow_up_test_result_count = follow_up_tests["result_count"]
+    follow_up_test_complete_count = follow_up_tests["complete_follow_up_test_set_count"]
+    follow_up_test_network_count = follow_up_tests["network_access_allowed_count"]
+    report_readiness = background_report_readiness_summary()
+    report_readiness_record_count = report_readiness["record_count"]
+    report_readiness_ready_count = report_readiness["ready_to_draft_report_count"]
+    report_readiness_approval_count = report_readiness["user_approval_required_count"]
+    report_readiness_external_allowed_count = report_readiness[
+        "external_submission_allowed_count"
+    ]
+    report_readiness_network_count = report_readiness["network_access_allowed_count"]
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -721,6 +811,32 @@ def validate_all() -> dict[str, object]:
         and background_ledger_entry_count >= 4
         and isinstance(background_review_status_count, int)
         and background_review_status_count >= 4
+        and isinstance(reviewed_log_entry_count, int)
+        and reviewed_log_entry_count >= 2
+        and isinstance(reviewed_log_network_count, int)
+        and reviewed_log_network_count == 0
+        and isinstance(needs_follow_up_entry_count, int)
+        and needs_follow_up_entry_count >= 2
+        and isinstance(needs_follow_up_approval_count, int)
+        and needs_follow_up_approval_count == needs_follow_up_entry_count
+        and isinstance(needs_follow_up_network_count, int)
+        and needs_follow_up_network_count == 0
+        and isinstance(follow_up_test_result_count, int)
+        and follow_up_test_result_count >= 12
+        and isinstance(follow_up_test_complete_count, int)
+        and follow_up_test_complete_count >= 2
+        and isinstance(follow_up_test_network_count, int)
+        and follow_up_test_network_count == 0
+        and isinstance(report_readiness_record_count, int)
+        and report_readiness_record_count >= 2
+        and isinstance(report_readiness_ready_count, int)
+        and report_readiness_ready_count >= 1
+        and isinstance(report_readiness_approval_count, int)
+        and report_readiness_approval_count == report_readiness_record_count
+        and isinstance(report_readiness_external_allowed_count, int)
+        and report_readiness_external_allowed_count == 0
+        and isinstance(report_readiness_network_count, int)
+        and report_readiness_network_count == 0
         and isinstance(candidate_handoff_record_count, int)
         and candidate_handoff_record_count >= 4
         and isinstance(candidate_handoff_network_count, int)
@@ -752,6 +868,10 @@ def validate_all() -> dict[str, object]:
         "target_priority_summary": target_priorities,
         "background_ledger_summary": background_ledger,
         "background_review_workflow_summary": background_review_workflow,
+        "background_reviewed_log_summary": reviewed_log,
+        "background_needs_follow_up_summary": needs_follow_up_log,
+        "background_follow_up_test_summary": follow_up_tests,
+        "background_report_readiness_summary": report_readiness,
         "candidate_extraction_handoff_summary": candidate_handoffs,
     }
 
@@ -783,6 +903,10 @@ def validation_summary() -> dict[str, object]:
     target_priorities = validation["target_priority_summary"]
     background_ledger = validation["background_ledger_summary"]
     background_review_workflow = validation["background_review_workflow_summary"]
+    reviewed_log = validation["background_reviewed_log_summary"]
+    needs_follow_up_log = validation["background_needs_follow_up_summary"]
+    follow_up_tests = validation["background_follow_up_test_summary"]
+    report_readiness = validation["background_report_readiness_summary"]
     candidate_handoffs = validation["candidate_extraction_handoff_summary"]
     return {
         "ok": validation["ok"],
@@ -947,6 +1071,68 @@ def validation_summary() -> dict[str, object]:
             "local_only_entry_count"
         ]
         if isinstance(background_review_workflow, dict)
+        else 0,
+        "background_reviewed_log_entry_count": reviewed_log["entry_count"]
+        if isinstance(reviewed_log, dict)
+        else 0,
+        "background_reviewed_log_network_access_allowed_count": reviewed_log[
+            "network_access_allowed_count"
+        ]
+        if isinstance(reviewed_log, dict)
+        else 0,
+        "background_needs_follow_up_entry_count": needs_follow_up_log["entry_count"]
+        if isinstance(needs_follow_up_log, dict)
+        else 0,
+        "background_needs_follow_up_required_test_count": needs_follow_up_log[
+            "required_test_count"
+        ]
+        if isinstance(needs_follow_up_log, dict)
+        else 0,
+        "background_needs_follow_up_user_approval_count": needs_follow_up_log[
+            "submission_requires_user_approval_count"
+        ]
+        if isinstance(needs_follow_up_log, dict)
+        else 0,
+        "background_needs_follow_up_network_access_allowed_count": needs_follow_up_log[
+            "network_access_allowed_count"
+        ]
+        if isinstance(needs_follow_up_log, dict)
+        else 0,
+        "background_follow_up_test_result_count": follow_up_tests["result_count"]
+        if isinstance(follow_up_tests, dict)
+        else 0,
+        "background_follow_up_test_complete_set_count": follow_up_tests[
+            "complete_follow_up_test_set_count"
+        ]
+        if isinstance(follow_up_tests, dict)
+        else 0,
+        "background_follow_up_test_network_access_allowed_count": follow_up_tests[
+            "network_access_allowed_count"
+        ]
+        if isinstance(follow_up_tests, dict)
+        else 0,
+        "background_report_readiness_record_count": report_readiness["record_count"]
+        if isinstance(report_readiness, dict)
+        else 0,
+        "background_report_readiness_ready_to_draft_count": report_readiness[
+            "ready_to_draft_report_count"
+        ]
+        if isinstance(report_readiness, dict)
+        else 0,
+        "background_report_readiness_user_approval_count": report_readiness[
+            "user_approval_required_count"
+        ]
+        if isinstance(report_readiness, dict)
+        else 0,
+        "background_report_readiness_external_submission_allowed_count": (
+            report_readiness["external_submission_allowed_count"]
+        )
+        if isinstance(report_readiness, dict)
+        else 0,
+        "background_report_readiness_top_three_recommendation_count": (
+            report_readiness["top_three_recommendation_count"]
+        )
+        if isinstance(report_readiness, dict)
         else 0,
         "candidate_extraction_handoff_record_count": candidate_handoffs["record_count"]
         if isinstance(candidate_handoffs, dict)
@@ -1314,6 +1500,11 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Optional background priority config JSON path.",
     )
+    target_priority_parser.add_argument(
+        "--ledger-path",
+        type=Path,
+        help="Optional background search ledger path for review-history scoring.",
+    )
     background_ledger_parser = subparsers.add_parser(
         "background-ledger-summary",
         help="Summarize passive/background search ledger fixture coverage.",
@@ -1331,6 +1522,51 @@ def _build_parser() -> argparse.ArgumentParser:
         "--ledger-path",
         type=Path,
         help="Optional background search ledger JSON path.",
+    )
+    reviewed_log_parser = subparsers.add_parser(
+        "reviewed-log-summary",
+        help="Summarize reviewed background-search outcome records.",
+    )
+    reviewed_log_parser.add_argument(
+        "--reviewed-log-path",
+        type=Path,
+        help="Optional reviewed background-search log JSON path.",
+    )
+    needs_follow_up_parser = subparsers.add_parser(
+        "needs-follow-up-summary",
+        help="Summarize background-search outcomes that require follow-up.",
+    )
+    needs_follow_up_parser.add_argument(
+        "--needs-follow-up-log-path",
+        type=Path,
+        help="Optional needs-follow-up background-search log JSON path.",
+    )
+    follow_up_tests_parser = subparsers.add_parser(
+        "follow-up-test-summary",
+        help="Summarize deterministic local follow-up test results.",
+    )
+    follow_up_tests_parser.add_argument(
+        "--follow-up-tests-path",
+        type=Path,
+        help="Optional background follow-up test result JSON path.",
+    )
+    report_readiness_parser = subparsers.add_parser(
+        "report-readiness-summary",
+        help="Summarize report-readiness gates for follow-up records.",
+    )
+    report_readiness_parser.add_argument(
+        "--report-readiness-path",
+        type=Path,
+        help="Optional background report-readiness JSON path.",
+    )
+    submission_recommendation_parser = subparsers.add_parser(
+        "submission-recommendation-summary",
+        help="Summarize top-three conservative submission recommendations.",
+    )
+    submission_recommendation_parser.add_argument(
+        "--report-readiness-path",
+        type=Path,
+        help="Optional background report-readiness JSON path.",
     )
     handoff_parser = subparsers.add_parser(
         "candidate-extraction-handoff-summary",
@@ -1350,6 +1586,22 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         required=True,
         help="Background search ledger JSON path to create or append.",
+    )
+    background_run_parser.add_argument(
+        "--reviewed-log-path",
+        type=Path,
+        help=(
+            "Reviewed outcome log path. Defaults to background_reviewed_log.json "
+            "next to the ledger."
+        ),
+    )
+    background_run_parser.add_argument(
+        "--needs-follow-up-log-path",
+        type=Path,
+        help=(
+            "Needs-follow-up outcome log path. Defaults to "
+            "background_needs_follow_up_log.json next to the ledger."
+        ),
     )
     background_run_parser.add_argument(
         "--target-path",

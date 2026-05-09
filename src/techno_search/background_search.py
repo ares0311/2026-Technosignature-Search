@@ -21,9 +21,33 @@ BACKGROUND_SEARCH_LEDGER_DISCLAIMER = (
     "Background search ledger entries record searched targets and outcomes for "
     "reproducibility; they are not discovery claims."
 )
+BACKGROUND_REVIEWED_LOG_SCHEMA_VERSION = "background_reviewed_log_v1"
+BACKGROUND_REVIEWED_LOG_DISCLAIMER = (
+    "Reviewed background-search records document targets that do not currently "
+    "require follow-up; they are not external validation or discovery claims."
+)
+BACKGROUND_NEEDS_FOLLOW_UP_SCHEMA_VERSION = "background_needs_follow_up_log_v1"
+BACKGROUND_NEEDS_FOLLOW_UP_DISCLAIMER = (
+    "Needs-follow-up background-search records identify local follow-up work for "
+    "review; they are not detections, not discovery claims, and not submission "
+    "approvals."
+)
+BACKGROUND_FOLLOW_UP_TEST_SCHEMA_VERSION = "background_follow_up_tests_v1"
+BACKGROUND_FOLLOW_UP_TEST_DISCLAIMER = (
+    "Background follow-up test records describe deterministic local checks only; "
+    "they are not detections, not external validation, and not submission approvals."
+)
+BACKGROUND_REPORT_READINESS_SCHEMA_VERSION = "background_report_readiness_v1"
+BACKGROUND_REPORT_READINESS_DISCLAIMER = (
+    "Background report-readiness records gate conservative draft reports and "
+    "submission recommendations; they are not discoveries, endorsements, or "
+    "authorization to submit externally."
+)
 BACKGROUND_PRIORITY_CONFIG_VERSION = "background_priority_v0"
 LOCAL_BACKGROUND_EXECUTION_MODE = "local_non_network_fixture_runner"
 LOCAL_BACKGROUND_REVIEW_STATUS = "local_scheduling_only"
+BACKGROUND_REVIEWED_NO_FOLLOW_UP_STATUS = "reviewed_no_follow_up"
+BACKGROUND_NEEDS_FOLLOW_UP_STATUS = "needs_follow_up_required"
 CANDIDATE_EXTRACTION_HANDOFF_SCHEMA_VERSION = "candidate_extraction_handoff_v1"
 CANDIDATE_EXTRACTION_HANDOFF_DISCLAIMER = (
     "Candidate extraction handoff records describe local fixture handoffs from "
@@ -40,6 +64,18 @@ DEFAULT_PRIORITY_WEIGHTS = {
 }
 DEFAULT_BLOCKING_ISSUE_PENALTY_PER_ISSUE = 0.05
 DEFAULT_MAX_BLOCKING_ISSUE_PENALTY = 0.25
+DEFAULT_NEVER_REVIEWED_TARGET_BOOST = 0.08
+DEFAULT_PRIOR_REVIEW_PENALTY_PER_ENTRY = 0.04
+DEFAULT_MAX_PRIOR_REVIEW_PENALTY = 0.12
+DEFAULT_NEEDS_FOLLOW_UP_PRIORITY_THRESHOLD = 0.70
+MANDATORY_FOLLOW_UP_TESTS = (
+    "provenance_check",
+    "false_positive_class_check",
+    "cross_source_consistency_check",
+    "calibration_confidence_check",
+    "reproducibility_check",
+    "human_review_checklist",
+)
 
 
 @dataclass(frozen=True)
@@ -56,6 +92,10 @@ class BackgroundPriorityConfig:
     network_access_enabled: bool
     local_runner_status: str
     local_runner_pathway: str
+    never_reviewed_target_boost: float
+    prior_review_penalty_per_entry: float
+    max_prior_review_penalty: float
+    needs_follow_up_priority_threshold: float
 
 
 @dataclass(frozen=True)
@@ -97,6 +137,97 @@ class BackgroundSearchLedgerEntry:
     negative_result_logged: bool = False
     requires_human_review: bool = False
     reviewed_workflow_status: str = "unreviewed"
+
+
+@dataclass(frozen=True)
+class BackgroundReviewedLogEntry:
+    """One reviewed target outcome that does not currently need follow-up."""
+
+    review_id: str
+    run_id: str
+    target_id: str
+    track: Track
+    outcome_status: str
+    reviewed_at_utc: str
+    reason_codes: tuple[str, ...]
+    negative_evidence: tuple[str, ...]
+    blocking_issues: tuple[str, ...]
+    recommended_next_action: str
+    network_access_allowed: bool
+
+
+@dataclass(frozen=True)
+class BackgroundNeedsFollowUpEntry:
+    """One target outcome requiring additional local follow-up or review."""
+
+    follow_up_id: str
+    run_id: str
+    target_id: str
+    track: Track
+    follow_up_status: str
+    created_at_utc: str
+    trigger_types: tuple[str, ...]
+    reason_codes: tuple[str, ...]
+    required_tests: tuple[str, ...]
+    blocking_issues: tuple[str, ...]
+    report_required: bool
+    human_review_required: bool
+    submission_requires_user_approval: bool
+    network_access_allowed: bool
+
+
+@dataclass(frozen=True)
+class BackgroundFollowUpTestResult:
+    """One deterministic local follow-up test result."""
+
+    result_id: str
+    follow_up_id: str
+    run_id: str
+    target_id: str
+    track: Track
+    test_name: str
+    status: str
+    executed_at_utc: str
+    evidence: tuple[str, ...]
+    negative_evidence: tuple[str, ...]
+    blocking_issues: tuple[str, ...]
+    uncertainty_notes: tuple[str, ...]
+    network_access_allowed: bool
+
+
+@dataclass(frozen=True)
+class SubmissionRecommendation:
+    """One conservative report-routing recommendation."""
+
+    rank: int
+    destination: str
+    suitability_rationale: str
+    risks: tuple[str, ...]
+    prerequisites: tuple[str, ...]
+    recommended_action: str
+
+
+@dataclass(frozen=True)
+class BackgroundReportReadinessRecord:
+    """One report-readiness gate for a needs-follow-up item."""
+
+    readiness_id: str
+    follow_up_id: str
+    run_id: str
+    target_id: str
+    track: Track
+    readiness_status: str
+    evaluated_at_utc: str
+    mandatory_tests_complete: bool
+    ready_to_draft_report: bool
+    report_required: bool
+    user_approval_required: bool
+    external_submission_allowed: bool
+    recommended_action: str
+    blocking_issues: tuple[str, ...]
+    limitations: tuple[str, ...]
+    top_three_recommendations: tuple[SubmissionRecommendation, ...]
+    network_access_allowed: bool
 
 
 @dataclass(frozen=True)
@@ -142,6 +273,38 @@ def default_background_ledger_path() -> Path:
 
     return Path(__file__).resolve().parents[2] / "tests" / "fixtures" / (
         "background_search_ledger.json"
+    )
+
+
+def default_background_reviewed_log_path() -> Path:
+    """Return the repository-local reviewed background outcome fixture path."""
+
+    return Path(__file__).resolve().parents[2] / "tests" / "fixtures" / (
+        "background_reviewed_log.json"
+    )
+
+
+def default_background_needs_follow_up_log_path() -> Path:
+    """Return the repository-local needs-follow-up background fixture path."""
+
+    return Path(__file__).resolve().parents[2] / "tests" / "fixtures" / (
+        "background_needs_follow_up_log.json"
+    )
+
+
+def default_background_follow_up_tests_path() -> Path:
+    """Return the repository-local background follow-up test fixture path."""
+
+    return Path(__file__).resolve().parents[2] / "tests" / "fixtures" / (
+        "background_follow_up_tests.json"
+    )
+
+
+def default_background_report_readiness_path() -> Path:
+    """Return the repository-local background report-readiness fixture path."""
+
+    return Path(__file__).resolve().parents[2] / "tests" / "fixtures" / (
+        "background_report_readiness.json"
     )
 
 
@@ -199,6 +362,24 @@ def load_background_priority_config(
         ),
         local_runner_pathway=str(
             data.get("local_runner_pathway", "github_reproducibility_only")
+        ),
+        never_reviewed_target_boost=float(
+            data.get("never_reviewed_target_boost", DEFAULT_NEVER_REVIEWED_TARGET_BOOST)
+        ),
+        prior_review_penalty_per_entry=float(
+            data.get(
+                "prior_review_penalty_per_entry",
+                DEFAULT_PRIOR_REVIEW_PENALTY_PER_ENTRY,
+            )
+        ),
+        max_prior_review_penalty=float(
+            data.get("max_prior_review_penalty", DEFAULT_MAX_PRIOR_REVIEW_PENALTY)
+        ),
+        needs_follow_up_priority_threshold=float(
+            data.get(
+                "needs_follow_up_priority_threshold",
+                DEFAULT_NEEDS_FOLLOW_UP_PRIORITY_THRESHOLD,
+            )
         ),
     )
 
@@ -265,6 +446,99 @@ def load_candidate_extraction_handoffs(
     )
 
 
+def load_background_reviewed_log(
+    path: Path | None = None,
+) -> tuple[BackgroundReviewedLogEntry, ...]:
+    """Load reviewed background outcome records."""
+
+    reviewed_path = path or default_background_reviewed_log_path()
+    with reviewed_path.open(encoding="utf-8") as handle:
+        data = json.load(handle)
+
+    schema_version = str(data.get("schema_version", ""))
+    if schema_version != BACKGROUND_REVIEWED_LOG_SCHEMA_VERSION:
+        msg = (
+            f"Unsupported background reviewed log schema version "
+            f"{schema_version!r}; expected {BACKGROUND_REVIEWED_LOG_SCHEMA_VERSION!r}"
+        )
+        raise ValueError(msg)
+
+    return tuple(
+        _reviewed_log_entry_from_mapping(entry)
+        for entry in data["reviewed_entries"]
+    )
+
+
+def load_background_needs_follow_up_log(
+    path: Path | None = None,
+) -> tuple[BackgroundNeedsFollowUpEntry, ...]:
+    """Load needs-follow-up background outcome records."""
+
+    follow_up_path = path or default_background_needs_follow_up_log_path()
+    with follow_up_path.open(encoding="utf-8") as handle:
+        data = json.load(handle)
+
+    schema_version = str(data.get("schema_version", ""))
+    if schema_version != BACKGROUND_NEEDS_FOLLOW_UP_SCHEMA_VERSION:
+        msg = (
+            f"Unsupported background needs-follow-up log schema version "
+            f"{schema_version!r}; expected "
+            f"{BACKGROUND_NEEDS_FOLLOW_UP_SCHEMA_VERSION!r}"
+        )
+        raise ValueError(msg)
+
+    return tuple(
+        _needs_follow_up_entry_from_mapping(entry)
+        for entry in data["needs_follow_up_entries"]
+    )
+
+
+def load_background_follow_up_tests(
+    path: Path | None = None,
+) -> tuple[BackgroundFollowUpTestResult, ...]:
+    """Load deterministic local follow-up test results."""
+
+    tests_path = path or default_background_follow_up_tests_path()
+    with tests_path.open(encoding="utf-8") as handle:
+        data = json.load(handle)
+
+    schema_version = str(data.get("schema_version", ""))
+    if schema_version != BACKGROUND_FOLLOW_UP_TEST_SCHEMA_VERSION:
+        msg = (
+            f"Unsupported background follow-up test schema version "
+            f"{schema_version!r}; expected {BACKGROUND_FOLLOW_UP_TEST_SCHEMA_VERSION!r}"
+        )
+        raise ValueError(msg)
+
+    return tuple(
+        _follow_up_test_result_from_mapping(record)
+        for record in data["test_results"]
+    )
+
+
+def load_background_report_readiness(
+    path: Path | None = None,
+) -> tuple[BackgroundReportReadinessRecord, ...]:
+    """Load background report-readiness records."""
+
+    readiness_path = path or default_background_report_readiness_path()
+    with readiness_path.open(encoding="utf-8") as handle:
+        data = json.load(handle)
+
+    schema_version = str(data.get("schema_version", ""))
+    if schema_version != BACKGROUND_REPORT_READINESS_SCHEMA_VERSION:
+        msg = (
+            f"Unsupported background report-readiness schema version "
+            f"{schema_version!r}; expected {BACKGROUND_REPORT_READINESS_SCHEMA_VERSION!r}"
+        )
+        raise ValueError(msg)
+
+    return tuple(
+        _report_readiness_record_from_mapping(record)
+        for record in data["readiness_records"]
+    )
+
+
 def target_priority_score(
     target: BackgroundTarget,
     weights: dict[str, float] | None = None,
@@ -291,9 +565,30 @@ def target_priority_score(
     return round(score, 6)
 
 
+def target_selection_score(
+    target: BackgroundTarget,
+    *,
+    config: BackgroundPriorityConfig | None = None,
+    prior_review_count: int = 0,
+) -> float:
+    """Compute scheduler-oriented target score with review-history adjustments."""
+
+    active_config = config or load_background_priority_config()
+    score = target_priority_score(target, config=active_config)
+    if prior_review_count == 0:
+        score += active_config.never_reviewed_target_boost
+    else:
+        score -= min(
+            active_config.max_prior_review_penalty,
+            active_config.prior_review_penalty_per_entry * prior_review_count,
+        )
+    return round(score, 6)
+
+
 def target_priority_summary(
     path: Path | None = None,
     config_path: Path | None = None,
+    ledger_path: Path | None = None,
 ) -> dict[str, object]:
     """Summarize background target-priority fixture coverage."""
 
@@ -301,19 +596,30 @@ def target_priority_summary(
     resolved_config_path = config_path or default_background_priority_config_path()
     config = load_background_priority_config(resolved_config_path)
     targets = load_background_targets(target_path)
+    prior_review_counts: Counter[str] = Counter()
+    if ledger_path is not None:
+        prior_review_counts.update(
+            entry.target_id for entry in load_background_search_ledger(ledger_path)
+        )
     scored_targets = [
         {
             "target_id": target.target_id,
             "track": target.track.value,
             "source_id": target.source_id,
             "priority_score": target_priority_score(target, config=config),
+            "prior_review_count": prior_review_counts[target.target_id],
+            "selection_score": target_selection_score(
+                target,
+                config=config,
+                prior_review_count=prior_review_counts[target.target_id],
+            ),
             "blocking_issue_count": target.blocking_issue_count,
         }
         for target in targets
     ]
     ranked = sorted(
         scored_targets,
-        key=lambda item: (-float(item["priority_score"]), str(item["target_id"])),
+        key=lambda item: (-float(item["selection_score"]), str(item["target_id"])),
     )
     selected = ranked[0] if ranked else None
 
@@ -328,10 +634,18 @@ def target_priority_summary(
         "weights": dict(sorted(config.weights.items())),
         "blocking_issue_penalty_per_issue": config.blocking_issue_penalty_per_issue,
         "max_blocking_issue_penalty": config.max_blocking_issue_penalty,
+        "never_reviewed_target_boost": config.never_reviewed_target_boost,
+        "prior_review_penalty_per_entry": config.prior_review_penalty_per_entry,
+        "max_prior_review_penalty": config.max_prior_review_penalty,
+        "needs_follow_up_priority_threshold": (
+            config.needs_follow_up_priority_threshold
+        ),
         "passive_runner_requires_opt_in": config.passive_runner_requires_opt_in,
         "network_access_enabled": config.network_access_enabled,
         "selected_target_id": selected["target_id"] if selected else None,
         "selected_priority_score": selected["priority_score"] if selected else None,
+        "selected_selection_score": selected["selection_score"] if selected else None,
+        "ledger_path": str(ledger_path) if ledger_path is not None else None,
         "ranked_targets": ranked,
     }
 
@@ -512,8 +826,191 @@ def candidate_extraction_handoff_summary(
     }
 
 
+def background_reviewed_log_summary(path: Path | None = None) -> dict[str, object]:
+    """Summarize reviewed background outcome records."""
+
+    reviewed_path = path or default_background_reviewed_log_path()
+    entries = load_background_reviewed_log(reviewed_path)
+    reason_codes = [code for entry in entries for code in entry.reason_codes]
+    negative_evidence = [
+        evidence for entry in entries for evidence in entry.negative_evidence
+    ]
+    blocking_issues = [issue for entry in entries for issue in entry.blocking_issues]
+
+    return {
+        "reviewed_log_path": str(reviewed_path),
+        "schema_version": BACKGROUND_REVIEWED_LOG_SCHEMA_VERSION,
+        "disclaimer": BACKGROUND_REVIEWED_LOG_DISCLAIMER,
+        "entry_count": len(entries),
+        "negative_evidence_count": len(negative_evidence),
+        "blocking_issue_count": len(blocking_issues),
+        "network_access_allowed_count": sum(
+            1 for entry in entries if entry.network_access_allowed
+        ),
+        "by_track": _counter_to_dict(Counter(entry.track.value for entry in entries)),
+        "by_outcome_status": _counter_to_dict(
+            Counter(entry.outcome_status for entry in entries)
+        ),
+        "by_recommended_next_action": _counter_to_dict(
+            Counter(entry.recommended_next_action for entry in entries)
+        ),
+        "reason_codes": sorted(set(reason_codes)),
+        "run_ids": sorted(entry.run_id for entry in entries),
+        "target_ids": sorted({entry.target_id for entry in entries}),
+    }
+
+
+def background_needs_follow_up_summary(path: Path | None = None) -> dict[str, object]:
+    """Summarize needs-follow-up background outcome records."""
+
+    follow_up_path = path or default_background_needs_follow_up_log_path()
+    entries = load_background_needs_follow_up_log(follow_up_path)
+    reason_codes = [code for entry in entries for code in entry.reason_codes]
+    trigger_types = [kind for entry in entries for kind in entry.trigger_types]
+    required_tests = [test for entry in entries for test in entry.required_tests]
+    blocking_issues = [issue for entry in entries for issue in entry.blocking_issues]
+
+    return {
+        "needs_follow_up_log_path": str(follow_up_path),
+        "schema_version": BACKGROUND_NEEDS_FOLLOW_UP_SCHEMA_VERSION,
+        "disclaimer": BACKGROUND_NEEDS_FOLLOW_UP_DISCLAIMER,
+        "entry_count": len(entries),
+        "required_test_count": len(required_tests),
+        "mandatory_test_coverage_count": len(set(required_tests)),
+        "blocking_issue_count": len(blocking_issues),
+        "report_required_count": sum(1 for entry in entries if entry.report_required),
+        "human_review_required_count": sum(
+            1 for entry in entries if entry.human_review_required
+        ),
+        "submission_requires_user_approval_count": sum(
+            1 for entry in entries if entry.submission_requires_user_approval
+        ),
+        "network_access_allowed_count": sum(
+            1 for entry in entries if entry.network_access_allowed
+        ),
+        "by_track": _counter_to_dict(Counter(entry.track.value for entry in entries)),
+        "by_follow_up_status": _counter_to_dict(
+            Counter(entry.follow_up_status for entry in entries)
+        ),
+        "by_trigger_type": _counter_to_dict(Counter(trigger_types)),
+        "reason_codes": sorted(set(reason_codes)),
+        "required_tests": sorted(set(required_tests)),
+        "run_ids": sorted(entry.run_id for entry in entries),
+        "target_ids": sorted({entry.target_id for entry in entries}),
+    }
+
+
+def background_follow_up_test_summary(path: Path | None = None) -> dict[str, object]:
+    """Summarize deterministic local follow-up test results."""
+
+    tests_path = path or default_background_follow_up_tests_path()
+    records = load_background_follow_up_tests(tests_path)
+    evidence = [item for record in records for item in record.evidence]
+    negative_evidence = [
+        item for record in records for item in record.negative_evidence
+    ]
+    blocking_issues = [issue for record in records for issue in record.blocking_issues]
+    uncertainty_notes = [
+        note for record in records for note in record.uncertainty_notes
+    ]
+    mandatory_by_follow_up = {
+        follow_up_id: {
+            record.test_name
+            for record in records
+            if record.follow_up_id == follow_up_id
+        }
+        for follow_up_id in {record.follow_up_id for record in records}
+    }
+    complete_follow_up_ids = sorted(
+        follow_up_id
+        for follow_up_id, test_names in mandatory_by_follow_up.items()
+        if set(MANDATORY_FOLLOW_UP_TESTS) <= test_names
+    )
+
+    return {
+        "follow_up_tests_path": str(tests_path),
+        "schema_version": BACKGROUND_FOLLOW_UP_TEST_SCHEMA_VERSION,
+        "disclaimer": BACKGROUND_FOLLOW_UP_TEST_DISCLAIMER,
+        "result_count": len(records),
+        "follow_up_count": len(mandatory_by_follow_up),
+        "complete_follow_up_test_set_count": len(complete_follow_up_ids),
+        "mandatory_test_count": len(MANDATORY_FOLLOW_UP_TESTS),
+        "evidence_count": len(evidence),
+        "negative_evidence_count": len(negative_evidence),
+        "blocking_issue_count": len(blocking_issues),
+        "uncertainty_note_count": len(uncertainty_notes),
+        "network_access_allowed_count": sum(
+            1 for record in records if record.network_access_allowed
+        ),
+        "by_track": _counter_to_dict(Counter(record.track.value for record in records)),
+        "by_test_name": _counter_to_dict(Counter(record.test_name for record in records)),
+        "by_status": _counter_to_dict(Counter(record.status for record in records)),
+        "complete_follow_up_ids": complete_follow_up_ids,
+        "follow_up_ids": sorted(mandatory_by_follow_up),
+        "target_ids": sorted({record.target_id for record in records}),
+        "required_tests": sorted(MANDATORY_FOLLOW_UP_TESTS),
+    }
+
+
+def background_report_readiness_summary(path: Path | None = None) -> dict[str, object]:
+    """Summarize report-readiness gates and submission recommendations."""
+
+    readiness_path = path or default_background_report_readiness_path()
+    records = load_background_report_readiness(readiness_path)
+    recommendations = [
+        recommendation
+        for record in records
+        for recommendation in record.top_three_recommendations
+    ]
+    blocking_issues = [issue for record in records for issue in record.blocking_issues]
+    limitations = [item for record in records for item in record.limitations]
+
+    return {
+        "report_readiness_path": str(readiness_path),
+        "schema_version": BACKGROUND_REPORT_READINESS_SCHEMA_VERSION,
+        "disclaimer": BACKGROUND_REPORT_READINESS_DISCLAIMER,
+        "record_count": len(records),
+        "ready_to_draft_report_count": sum(
+            1 for record in records if record.ready_to_draft_report
+        ),
+        "blocked_count": sum(
+            1
+            for record in records
+            if record.readiness_status == "blocked_pending_tests"
+        ),
+        "report_required_count": sum(1 for record in records if record.report_required),
+        "user_approval_required_count": sum(
+            1 for record in records if record.user_approval_required
+        ),
+        "external_submission_allowed_count": sum(
+            1 for record in records if record.external_submission_allowed
+        ),
+        "network_access_allowed_count": sum(
+            1 for record in records if record.network_access_allowed
+        ),
+        "top_three_recommendation_count": len(recommendations),
+        "blocking_issue_count": len(blocking_issues),
+        "limitation_count": len(limitations),
+        "by_track": _counter_to_dict(Counter(record.track.value for record in records)),
+        "by_readiness_status": _counter_to_dict(
+            Counter(record.readiness_status for record in records)
+        ),
+        "by_recommended_action": _counter_to_dict(
+            Counter(record.recommended_action for record in records)
+        ),
+        "by_destination_action": _counter_to_dict(
+            Counter(recommendation.recommended_action for recommendation in recommendations)
+        ),
+        "readiness_ids": sorted(record.readiness_id for record in records),
+        "follow_up_ids": sorted(record.follow_up_id for record in records),
+        "target_ids": sorted({record.target_id for record in records}),
+    }
+
+
 def run_local_background_search_once(
     ledger_path: Path,
+    reviewed_log_path: Path | None = None,
+    needs_follow_up_log_path: Path | None = None,
     target_path: Path | None = None,
     config_path: Path | None = None,
     run_id: str | None = None,
@@ -537,25 +1034,68 @@ def run_local_background_search_once(
         msg = "No background targets are available to search."
         raise ValueError(msg)
 
+    existing_entries = (
+        load_background_search_ledger(ledger_path) if Path(ledger_path).exists() else ()
+    )
+    prior_review_counts = Counter(entry.target_id for entry in existing_entries)
     selected = sorted(
         targets,
         key=lambda target: (
-            -target_priority_score(target, config=config),
+            -target_selection_score(
+                target,
+                config=config,
+                prior_review_count=prior_review_counts[target.target_id],
+            ),
             target.target_id,
         ),
     )[0]
     priority_score = target_priority_score(selected, config=config)
+    selection_score = target_selection_score(
+        selected,
+        config=config,
+        prior_review_count=prior_review_counts[selected.target_id],
+    )
     timestamp = datetime.now(UTC).isoformat()
+    needs_follow_up = _target_requires_follow_up(
+        selected,
+        selection_score=selection_score,
+        config=config,
+    )
+    status = (
+        "needs_follow_up_logged"
+        if needs_follow_up
+        else BACKGROUND_REVIEWED_NO_FOLLOW_UP_STATUS
+    )
+    reviewed_status = (
+        BACKGROUND_NEEDS_FOLLOW_UP_STATUS
+        if needs_follow_up
+        else BACKGROUND_REVIEWED_NO_FOLLOW_UP_STATUS
+    )
+    recommended_pathways = (
+        ("human_review_queue", "local_follow_up_tests")
+        if needs_follow_up
+        else (config.local_runner_pathway,)
+    )
+    blocking_issues = (
+        _follow_up_blocking_issues(selected)
+        if needs_follow_up
+        else (
+            "local fixture runner found no follow-up trigger under current thresholds",
+        )
+    )
     entry = BackgroundSearchLedgerEntry(
         run_id=run_id or _run_id_from_timestamp(timestamp),
         target_id=selected.target_id,
         track=selected.track,
-        status=config.local_runner_status,
+        status=status,
         query_parameters={
             "mode": LOCAL_BACKGROUND_EXECUTION_MODE,
             "target_path": str(resolved_target_path),
             "config_path": str(resolved_config_path),
             "selected_priority_score": priority_score,
+            "selected_selection_score": selection_score,
+            "prior_review_count": prior_review_counts[selected.target_id],
+            "outcome_log_mode": "reviewed_or_needs_follow_up",
         },
         started_at_utc=timestamp,
         completed_at_utc=timestamp,
@@ -563,28 +1103,55 @@ def run_local_background_search_once(
         code_commit=code_commit,
         cache_key=f"local-fixture-{selected.target_id}-{config.config_version}",
         candidate_count=0,
-        recommended_pathways=(config.local_runner_pathway,),
-        blocking_issues=(
-            "local fixture runner records scheduling only; no candidate extraction was performed",
-        ),
+        recommended_pathways=recommended_pathways,
+        blocking_issues=blocking_issues,
         execution_mode=LOCAL_BACKGROUND_EXECUTION_MODE,
         selected_priority_score=priority_score,
         target_selection_rationale=(
-            "highest configured target-priority score",
+            "highest configured scheduler selection score",
             "false-positive probability and blocking issues penalized",
+            "never-reviewed targets receive an explicit scheduling boost",
+            "previously reviewed targets receive a bounded review-history penalty",
             "local fixture runner does not query live providers",
         ),
         candidate_packet_ids=(),
-        negative_result_logged=True,
-        requires_human_review=False,
-        reviewed_workflow_status=LOCAL_BACKGROUND_REVIEW_STATUS,
+        negative_result_logged=not needs_follow_up,
+        requires_human_review=needs_follow_up,
+        reviewed_workflow_status=reviewed_status,
     )
     append_background_search_ledger_entry(ledger_path, entry)
+    resolved_reviewed_log_path = reviewed_log_path or Path(ledger_path).with_name(
+        "background_reviewed_log.json"
+    )
+    resolved_follow_up_log_path = needs_follow_up_log_path or Path(ledger_path).with_name(
+        "background_needs_follow_up_log.json"
+    )
+    if needs_follow_up:
+        append_background_needs_follow_up_entry(
+            resolved_follow_up_log_path,
+            _needs_follow_up_entry_from_run(entry, selected, config),
+        )
+        outcome_log = {
+            "outcome": "needs_follow_up",
+            "path": str(resolved_follow_up_log_path),
+            "summary": background_needs_follow_up_summary(resolved_follow_up_log_path),
+        }
+    else:
+        append_background_reviewed_log_entry(
+            resolved_reviewed_log_path,
+            _reviewed_log_entry_from_run(entry),
+        )
+        outcome_log = {
+            "outcome": "reviewed",
+            "path": str(resolved_reviewed_log_path),
+            "summary": background_reviewed_log_summary(resolved_reviewed_log_path),
+        }
     return {
         "ok": True,
         "appended_entry": _ledger_entry_to_mapping(entry),
         "ledger_summary": background_search_ledger_summary(ledger_path),
         "review_workflow_summary": background_review_workflow_summary(ledger_path),
+        "outcome_log": outcome_log,
     }
 
 
@@ -622,6 +1189,83 @@ def append_background_search_ledger_entry(
     data["ledger_entries"] = entries
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
     ledger_path.write_text(
+        json.dumps(data, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
+def append_background_reviewed_log_entry(
+    path: Path,
+    entry: BackgroundReviewedLogEntry,
+) -> None:
+    """Append one reviewed outcome entry, creating the log if needed."""
+
+    reviewed_path = Path(path)
+    if reviewed_path.exists():
+        with reviewed_path.open(encoding="utf-8") as handle:
+            data = json.load(handle)
+        schema_version = str(data.get("schema_version", ""))
+        if schema_version != BACKGROUND_REVIEWED_LOG_SCHEMA_VERSION:
+            msg = (
+                f"Unsupported background reviewed log schema version "
+                f"{schema_version!r}; expected {BACKGROUND_REVIEWED_LOG_SCHEMA_VERSION!r}"
+            )
+            raise ValueError(msg)
+        entries = list(data.get("reviewed_entries", []))
+    else:
+        data = {
+            "schema_version": BACKGROUND_REVIEWED_LOG_SCHEMA_VERSION,
+            "description": (
+                "Reviewed local background-search outcomes that do not currently "
+                "require follow-up."
+            ),
+            "disclaimer": BACKGROUND_REVIEWED_LOG_DISCLAIMER,
+        }
+        entries = []
+
+    entries.append(_reviewed_log_entry_to_mapping(entry))
+    data["reviewed_entries"] = entries
+    reviewed_path.parent.mkdir(parents=True, exist_ok=True)
+    reviewed_path.write_text(
+        json.dumps(data, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
+def append_background_needs_follow_up_entry(
+    path: Path,
+    entry: BackgroundNeedsFollowUpEntry,
+) -> None:
+    """Append one needs-follow-up outcome entry, creating the log if needed."""
+
+    follow_up_path = Path(path)
+    if follow_up_path.exists():
+        with follow_up_path.open(encoding="utf-8") as handle:
+            data = json.load(handle)
+        schema_version = str(data.get("schema_version", ""))
+        if schema_version != BACKGROUND_NEEDS_FOLLOW_UP_SCHEMA_VERSION:
+            msg = (
+                f"Unsupported background needs-follow-up log schema version "
+                f"{schema_version!r}; expected "
+                f"{BACKGROUND_NEEDS_FOLLOW_UP_SCHEMA_VERSION!r}"
+            )
+            raise ValueError(msg)
+        entries = list(data.get("needs_follow_up_entries", []))
+    else:
+        data = {
+            "schema_version": BACKGROUND_NEEDS_FOLLOW_UP_SCHEMA_VERSION,
+            "description": (
+                "Local background-search outcomes requiring follow-up tests or "
+                "human review."
+            ),
+            "disclaimer": BACKGROUND_NEEDS_FOLLOW_UP_DISCLAIMER,
+        }
+        entries = []
+
+    entries.append(_needs_follow_up_entry_to_mapping(entry))
+    data["needs_follow_up_entries"] = entries
+    follow_up_path.parent.mkdir(parents=True, exist_ok=True)
+    follow_up_path.write_text(
         json.dumps(data, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
@@ -706,6 +1350,113 @@ def _candidate_extraction_handoff_from_mapping(
     )
 
 
+def _reviewed_log_entry_from_mapping(
+    data: dict[str, Any],
+) -> BackgroundReviewedLogEntry:
+    return BackgroundReviewedLogEntry(
+        review_id=str(data["review_id"]),
+        run_id=str(data["run_id"]),
+        target_id=str(data["target_id"]),
+        track=Track(str(data["track"])),
+        outcome_status=str(data["outcome_status"]),
+        reviewed_at_utc=str(data["reviewed_at_utc"]),
+        reason_codes=tuple(str(item) for item in data.get("reason_codes", ())),
+        negative_evidence=tuple(
+            str(item) for item in data.get("negative_evidence", ())
+        ),
+        blocking_issues=tuple(str(item) for item in data.get("blocking_issues", ())),
+        recommended_next_action=str(data["recommended_next_action"]),
+        network_access_allowed=bool(data["network_access_allowed"]),
+    )
+
+
+def _needs_follow_up_entry_from_mapping(
+    data: dict[str, Any],
+) -> BackgroundNeedsFollowUpEntry:
+    return BackgroundNeedsFollowUpEntry(
+        follow_up_id=str(data["follow_up_id"]),
+        run_id=str(data["run_id"]),
+        target_id=str(data["target_id"]),
+        track=Track(str(data["track"])),
+        follow_up_status=str(data["follow_up_status"]),
+        created_at_utc=str(data["created_at_utc"]),
+        trigger_types=tuple(str(item) for item in data.get("trigger_types", ())),
+        reason_codes=tuple(str(item) for item in data.get("reason_codes", ())),
+        required_tests=tuple(str(item) for item in data.get("required_tests", ())),
+        blocking_issues=tuple(str(item) for item in data.get("blocking_issues", ())),
+        report_required=bool(data["report_required"]),
+        human_review_required=bool(data["human_review_required"]),
+        submission_requires_user_approval=bool(
+            data["submission_requires_user_approval"]
+        ),
+        network_access_allowed=bool(data["network_access_allowed"]),
+    )
+
+
+def _follow_up_test_result_from_mapping(
+    data: dict[str, Any],
+) -> BackgroundFollowUpTestResult:
+    return BackgroundFollowUpTestResult(
+        result_id=str(data["result_id"]),
+        follow_up_id=str(data["follow_up_id"]),
+        run_id=str(data["run_id"]),
+        target_id=str(data["target_id"]),
+        track=Track(str(data["track"])),
+        test_name=str(data["test_name"]),
+        status=str(data["status"]),
+        executed_at_utc=str(data["executed_at_utc"]),
+        evidence=tuple(str(item) for item in data.get("evidence", ())),
+        negative_evidence=tuple(
+            str(item) for item in data.get("negative_evidence", ())
+        ),
+        blocking_issues=tuple(str(item) for item in data.get("blocking_issues", ())),
+        uncertainty_notes=tuple(
+            str(item) for item in data.get("uncertainty_notes", ())
+        ),
+        network_access_allowed=bool(data["network_access_allowed"]),
+    )
+
+
+def _submission_recommendation_from_mapping(
+    data: dict[str, Any],
+) -> SubmissionRecommendation:
+    return SubmissionRecommendation(
+        rank=int(data["rank"]),
+        destination=str(data["destination"]),
+        suitability_rationale=str(data["suitability_rationale"]),
+        risks=tuple(str(item) for item in data.get("risks", ())),
+        prerequisites=tuple(str(item) for item in data.get("prerequisites", ())),
+        recommended_action=str(data["recommended_action"]),
+    )
+
+
+def _report_readiness_record_from_mapping(
+    data: dict[str, Any],
+) -> BackgroundReportReadinessRecord:
+    return BackgroundReportReadinessRecord(
+        readiness_id=str(data["readiness_id"]),
+        follow_up_id=str(data["follow_up_id"]),
+        run_id=str(data["run_id"]),
+        target_id=str(data["target_id"]),
+        track=Track(str(data["track"])),
+        readiness_status=str(data["readiness_status"]),
+        evaluated_at_utc=str(data["evaluated_at_utc"]),
+        mandatory_tests_complete=bool(data["mandatory_tests_complete"]),
+        ready_to_draft_report=bool(data["ready_to_draft_report"]),
+        report_required=bool(data["report_required"]),
+        user_approval_required=bool(data["user_approval_required"]),
+        external_submission_allowed=bool(data["external_submission_allowed"]),
+        recommended_action=str(data["recommended_action"]),
+        blocking_issues=tuple(str(item) for item in data.get("blocking_issues", ())),
+        limitations=tuple(str(item) for item in data.get("limitations", ())),
+        top_three_recommendations=tuple(
+            _submission_recommendation_from_mapping(item)
+            for item in data.get("top_three_recommendations", ())
+        ),
+        network_access_allowed=bool(data["network_access_allowed"]),
+    )
+
+
 def _ledger_entry_to_mapping(entry: BackgroundSearchLedgerEntry) -> dict[str, object]:
     return {
         "run_id": entry.run_id,
@@ -729,6 +1480,157 @@ def _ledger_entry_to_mapping(entry: BackgroundSearchLedgerEntry) -> dict[str, ob
         "requires_human_review": entry.requires_human_review,
         "reviewed_workflow_status": entry.reviewed_workflow_status,
     }
+
+
+def _reviewed_log_entry_to_mapping(
+    entry: BackgroundReviewedLogEntry,
+) -> dict[str, object]:
+    return {
+        "review_id": entry.review_id,
+        "run_id": entry.run_id,
+        "target_id": entry.target_id,
+        "track": entry.track.value,
+        "outcome_status": entry.outcome_status,
+        "reviewed_at_utc": entry.reviewed_at_utc,
+        "reason_codes": list(entry.reason_codes),
+        "negative_evidence": list(entry.negative_evidence),
+        "blocking_issues": list(entry.blocking_issues),
+        "recommended_next_action": entry.recommended_next_action,
+        "network_access_allowed": entry.network_access_allowed,
+    }
+
+
+def _needs_follow_up_entry_to_mapping(
+    entry: BackgroundNeedsFollowUpEntry,
+) -> dict[str, object]:
+    return {
+        "follow_up_id": entry.follow_up_id,
+        "run_id": entry.run_id,
+        "target_id": entry.target_id,
+        "track": entry.track.value,
+        "follow_up_status": entry.follow_up_status,
+        "created_at_utc": entry.created_at_utc,
+        "trigger_types": list(entry.trigger_types),
+        "reason_codes": list(entry.reason_codes),
+        "required_tests": list(entry.required_tests),
+        "blocking_issues": list(entry.blocking_issues),
+        "report_required": entry.report_required,
+        "human_review_required": entry.human_review_required,
+        "submission_requires_user_approval": (
+            entry.submission_requires_user_approval
+        ),
+        "network_access_allowed": entry.network_access_allowed,
+    }
+
+
+def _target_requires_follow_up(
+    target: BackgroundTarget,
+    *,
+    selection_score: float,
+    config: BackgroundPriorityConfig,
+) -> bool:
+    return (
+        selection_score >= config.needs_follow_up_priority_threshold
+        or target.blocking_issue_count > 0
+    )
+
+
+def _follow_up_trigger_types(
+    target: BackgroundTarget,
+    *,
+    selection_score: float,
+    config: BackgroundPriorityConfig,
+) -> tuple[str, ...]:
+    trigger_types: list[str] = []
+    if selection_score >= config.needs_follow_up_priority_threshold:
+        trigger_types.append("quantitative_threshold")
+    if target.blocking_issue_count > 0:
+        trigger_types.append("rule_based_blocking_issue")
+    return tuple(trigger_types)
+
+
+def _follow_up_reason_codes(
+    target: BackgroundTarget,
+    *,
+    selection_score: float,
+    config: BackgroundPriorityConfig,
+) -> tuple[str, ...]:
+    reason_codes: list[str] = []
+    if selection_score >= config.needs_follow_up_priority_threshold:
+        reason_codes.append("selection_score_above_follow_up_threshold")
+    if target.blocking_issue_count > 0:
+        reason_codes.append("blocking_issue_requires_review")
+    if target.false_positive_probability >= 0.30:
+        reason_codes.append("false_positive_probability_requires_context")
+    return tuple(reason_codes)
+
+
+def _follow_up_blocking_issues(target: BackgroundTarget) -> tuple[str, ...]:
+    issues = [
+        "local fixture runner has not performed mandatory follow-up tests",
+        "human review is required before report preparation or submission",
+    ]
+    if target.blocking_issue_count > 0:
+        issues.append(
+            "target-priority fixture reports unresolved blocking issues"
+        )
+    return tuple(issues)
+
+
+def _needs_follow_up_entry_from_run(
+    entry: BackgroundSearchLedgerEntry,
+    target: BackgroundTarget,
+    config: BackgroundPriorityConfig,
+) -> BackgroundNeedsFollowUpEntry:
+    selection_score = _optional_float(entry.query_parameters["selected_selection_score"])
+    if selection_score is None:
+        msg = "Needs-follow-up entries require a selected selection score."
+        raise ValueError(msg)
+    return BackgroundNeedsFollowUpEntry(
+        follow_up_id=f"follow-up-{entry.run_id}",
+        run_id=entry.run_id,
+        target_id=entry.target_id,
+        track=entry.track,
+        follow_up_status=BACKGROUND_NEEDS_FOLLOW_UP_STATUS,
+        created_at_utc=entry.completed_at_utc,
+        trigger_types=_follow_up_trigger_types(
+            target,
+            selection_score=selection_score,
+            config=config,
+        ),
+        reason_codes=_follow_up_reason_codes(
+            target,
+            selection_score=selection_score,
+            config=config,
+        ),
+        required_tests=MANDATORY_FOLLOW_UP_TESTS,
+        blocking_issues=entry.blocking_issues,
+        report_required=True,
+        human_review_required=True,
+        submission_requires_user_approval=True,
+        network_access_allowed=False,
+    )
+
+
+def _reviewed_log_entry_from_run(
+    entry: BackgroundSearchLedgerEntry,
+) -> BackgroundReviewedLogEntry:
+    return BackgroundReviewedLogEntry(
+        review_id=f"reviewed-{entry.run_id}",
+        run_id=entry.run_id,
+        target_id=entry.target_id,
+        track=entry.track,
+        outcome_status=BACKGROUND_REVIEWED_NO_FOLLOW_UP_STATUS,
+        reviewed_at_utc=entry.completed_at_utc,
+        reason_codes=("no_follow_up_trigger_met",),
+        negative_evidence=(
+            "selection score did not meet the configured follow-up threshold",
+            "local fixture runner did not produce a candidate packet",
+        ),
+        blocking_issues=entry.blocking_issues,
+        recommended_next_action="retain_in_reviewed_log",
+        network_access_allowed=False,
+    )
 
 
 def _float_mapping(data: dict[str, Any]) -> dict[str, float]:

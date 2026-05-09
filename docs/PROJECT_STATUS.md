@@ -153,6 +153,12 @@ The project will support three tracks from day one:
 - [x] Background reviewed-workflow counts wired into local validation
 - [x] Candidate-extraction handoff fixture, schema, and summary CLI added
 - [x] Candidate-extraction handoff counts wired into local validation
+- [x] Background reviewed and needs-follow-up outcome log schemas added
+- [x] Reviewed and needs-follow-up outcome summaries wired into local validation
+- [x] Scheduler target selection now accounts for never-reviewed boosts and prior-review penalties
+- [x] Deterministic local follow-up test result schema, fixture, and summary CLI added
+- [x] Report-readiness gate and top-three recommendation fixture added
+- [x] Follow-up test and report-readiness counts wired into local validation
 
 ---
 
@@ -177,9 +183,9 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Add benchmark comparison thresholds once repeated synthetic calibration grids exist.
-2. Expand curated validation readiness examples after real reviewed non-synthetic candidates are available.
-3. Prototype local fixture candidate extraction only after the handoff contract remains stable across review.
+1. Generate conservative draft follow-up reports from report-ready records.
+2. Add a user decision record for approve submission, request more tests, or close as reviewed.
+3. Add external scheduler setup examples for launchd or cron using ignored artifact paths.
 
 ---
 

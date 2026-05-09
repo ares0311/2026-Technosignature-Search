@@ -7,6 +7,10 @@ def test_json_schema_files_are_parseable_and_named() -> None:
     schema_paths = sorted(schema_dir.glob("*.schema.json"))
 
     assert {path.name for path in schema_paths} == {
+        "background_follow_up_tests.schema.json",
+        "background_needs_follow_up_log.schema.json",
+        "background_report_readiness.schema.json",
+        "background_reviewed_log.schema.json",
         "background_search_ledger.schema.json",
         "background_targets.schema.json",
         "batch_manifest.schema.json",
@@ -50,6 +54,26 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     )
     background_ledger_schema = json.loads(
         Path("schemas/background_search_ledger.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    reviewed_log_schema = json.loads(
+        Path("schemas/background_reviewed_log.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    needs_follow_up_schema = json.loads(
+        Path("schemas/background_needs_follow_up_log.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    follow_up_tests_schema = json.loads(
+        Path("schemas/background_follow_up_tests.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    report_readiness_schema = json.loads(
+        Path("schemas/background_report_readiness.schema.json").read_text(
             encoding="utf-8"
         )
     )
@@ -97,6 +121,18 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     background_ledger = json.loads(
         Path("tests/fixtures/background_search_ledger.json").read_text()
     )
+    reviewed_log = json.loads(
+        Path("tests/fixtures/background_reviewed_log.json").read_text()
+    )
+    needs_follow_up = json.loads(
+        Path("tests/fixtures/background_needs_follow_up_log.json").read_text()
+    )
+    follow_up_tests = json.loads(
+        Path("tests/fixtures/background_follow_up_tests.json").read_text()
+    )
+    report_readiness = json.loads(
+        Path("tests/fixtures/background_report_readiness.json").read_text()
+    )
     handoffs = json.loads(
         Path("tests/fixtures/candidate_extraction_handoffs.json").read_text()
     )
@@ -120,6 +156,10 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     assert set(benchmark_run_schema["required"]) <= set(benchmark_runs)
     assert set(background_targets_schema["required"]) <= set(background_targets)
     assert set(background_ledger_schema["required"]) <= set(background_ledger)
+    assert set(reviewed_log_schema["required"]) <= set(reviewed_log)
+    assert set(needs_follow_up_schema["required"]) <= set(needs_follow_up)
+    assert set(follow_up_tests_schema["required"]) <= set(follow_up_tests)
+    assert set(report_readiness_schema["required"]) <= set(report_readiness)
     assert set(handoff_schema["required"]) <= set(handoffs)
     assert set(review_queue_schema["required"]) <= set(review_queue)
     assert set(consensus_schema["required"]) <= set(consensus)
@@ -153,7 +193,7 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     ]
     assert benchmark_runs["runs"][0]["config_version"] == "scoring_v0"
     assert background_targets["schema_version"] == "background_target_priority_v1"
-    assert len(background_targets["targets"]) == 3
+    assert len(background_targets["targets"]) == 4
     assert background_ledger["schema_version"] == "background_search_ledger_v1"
     assert len(background_ledger["ledger_entries"]) == 4
     first_ledger_entry = background_ledger["ledger_entries"][0]
@@ -162,6 +202,37 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     assert "reviewed_workflow_status" in background_ledger_schema["properties"][
         "ledger_entries"
     ]["items"]["properties"]
+    assert reviewed_log["schema_version"] == "background_reviewed_log_v1"
+    assert len(reviewed_log["reviewed_entries"]) == 2
+    assert reviewed_log["reviewed_entries"][0]["network_access_allowed"] is False
+    assert "network_access_allowed" in reviewed_log_schema["properties"][
+        "reviewed_entries"
+    ]["items"]["required"]
+    assert needs_follow_up["schema_version"] == "background_needs_follow_up_log_v1"
+    assert len(needs_follow_up["needs_follow_up_entries"]) == 2
+    assert needs_follow_up["needs_follow_up_entries"][0][
+        "submission_requires_user_approval"
+    ] is True
+    assert "submission_requires_user_approval" in needs_follow_up_schema[
+        "properties"
+    ]["needs_follow_up_entries"]["items"]["required"]
+    assert follow_up_tests["schema_version"] == "background_follow_up_tests_v1"
+    assert len(follow_up_tests["test_results"]) == 12
+    assert follow_up_tests["test_results"][0]["network_access_allowed"] is False
+    assert "network_access_allowed" in follow_up_tests_schema["properties"][
+        "test_results"
+    ]["items"]["required"]
+    assert report_readiness["schema_version"] == "background_report_readiness_v1"
+    assert len(report_readiness["readiness_records"]) == 2
+    assert report_readiness["readiness_records"][0][
+        "external_submission_allowed"
+    ] is False
+    assert len(
+        report_readiness["readiness_records"][0]["top_three_recommendations"]
+    ) == 3
+    assert "top_three_recommendations" in report_readiness_schema["properties"][
+        "readiness_records"
+    ]["items"]["required"]
     assert handoffs["schema_version"] == "candidate_extraction_handoff_v1"
     assert len(handoffs["handoffs"]) == 4
     assert handoffs["handoffs"][0]["network_access_allowed"] is False

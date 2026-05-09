@@ -348,12 +348,15 @@ Print the fixture-backed target-priority ranking used by the passive/background 
 
 ```bash
 .venv/bin/techno-search target-priority-summary
+.venv/bin/techno-search target-priority-summary \
+  --ledger-path artifacts/background_search_ledger.json
 ```
 
-The summary reports target counts by track, versioned priority weights, the selected target ID, and the ranked target list. Target priority is a scheduling aid only; it is not evidence of a technosignature and it is not a discovery claim.
+The summary reports target counts by track, versioned priority weights, the selected target ID, the ranked target list, base priority scores, review-history counts, and scheduler selection scores. With `--ledger-path`, promising never-reviewed targets receive the configured boost and previously reviewed targets receive a bounded review-history penalty. Target priority is a scheduling aid only; it is not evidence of a technosignature and it is not a discovery claim.
 
 Use `--target-path` to inspect a different target-priority JSON file.
 Use `--config-path` to inspect the target list with a different versioned background priority config.
+Use `--ledger-path` to include durable ledger review history in scheduler scoring.
 
 ---
 
@@ -364,19 +367,23 @@ Append one explicit local-only background search ledger entry for the highest-pr
 ```bash
 .venv/bin/techno-search background-run-once \
   --ledger-path artifacts/background_search_ledger.json \
+  --reviewed-log-path artifacts/background_reviewed_log.json \
+  --needs-follow-up-log-path artifacts/background_needs_follow_up_log.json \
   --acknowledge-local-run
 ```
 
-This command is intentionally opt-in. It uses the configured target-priority weights, selects the top ranked fixture target, writes a ledger entry, and does not access live providers or claim candidate extraction.
+This command is intentionally opt-in. It uses the configured target-priority weights plus review-history adjustment, selects the top ranked fixture target, writes one durable ledger entry, writes exactly one reviewed or needs-follow-up outcome entry, and does not access live providers or claim candidate extraction.
 
 Useful options:
 
+- `--reviewed-log-path` writes reviewed outcomes that do not currently require follow-up.
+- `--needs-follow-up-log-path` writes outcomes requiring follow-up tests or human review.
 - `--target-path` selects an alternate target-priority JSON file.
 - `--config-path` selects an alternate background priority config JSON file.
 - `--run-id` records a stable run identifier.
 - `--code-commit` records a commit SHA or workspace identifier.
 
-Generated ledgers should be written to ignored local paths such as `artifacts/` unless they are tiny, reviewed fixtures.
+Generated ledgers and outcome logs should be written to ignored local paths such as `artifacts/` unless they are tiny, reviewed fixtures. External schedulers should call this single-run command rather than duplicating scientific selection logic.
 
 ---
 
@@ -391,6 +398,55 @@ Print passive/background search ledger coverage:
 The summary reports logged search entries, searched targets, candidate counts, blocking issues, run IDs, target IDs, statuses, tracks, and conservative pathway labels. Ledger entries record what was searched and what happened; they do not claim detections or external validation.
 
 Use `--ledger-path` to inspect a different background ledger JSON file.
+
+## Summarize Reviewed Outcomes
+
+Print reviewed outcomes that do not currently require follow-up:
+
+```bash
+.venv/bin/techno-search reviewed-log-summary
+```
+
+The summary reports reviewed entries, negative evidence counts, blocking issues, reason codes, recommended next actions, tracks, and network-access state. Reviewed outcomes are local workflow records only; they are not external validation or discovery claims.
+
+Use `--reviewed-log-path` to inspect a different reviewed outcome log.
+
+## Summarize Needs-Follow-Up Outcomes
+
+Print outcomes requiring follow-up tests or human review:
+
+```bash
+.venv/bin/techno-search needs-follow-up-summary
+```
+
+The summary reports follow-up entries, trigger types, reason codes, mandatory test coverage, blocking issues, report requirements, human-review requirements, submission approval gates, and network-access state. Needs-follow-up records are not detections, not discovery claims, and not submission approvals.
+
+Use `--needs-follow-up-log-path` to inspect a different needs-follow-up log.
+
+## Summarize Follow-Up Tests
+
+Print deterministic local follow-up test results for needs-follow-up entries:
+
+```bash
+.venv/bin/techno-search follow-up-test-summary
+```
+
+The summary reports mandatory test coverage, pass/blocked/uncertain/ready counts, evidence counts, negative evidence counts, blocking issues, uncertainty notes, complete follow-up IDs, and network-access state. These records are local checks only; they are not detections, external validation, or submission approvals.
+
+Use `--follow-up-tests-path` to inspect a different follow-up test result file.
+
+## Summarize Report Readiness
+
+Print report-readiness gates and top-three conservative recommendations:
+
+```bash
+.venv/bin/techno-search report-readiness-summary
+.venv/bin/techno-search submission-recommendation-summary
+```
+
+The summary reports report-ready counts, blocked counts, user-approval requirements, external-submission gate state, top-three recommendation counts, destination action counts, limitations, and blocking issues. `submission-recommendation-summary` is an alias for the same readiness contract focused on routing. A recommendation is not authorization to submit externally.
+
+Use `--report-readiness-path` to inspect a different report-readiness file.
 
 ## Summarize Background Reviewed Workflow
 
@@ -426,7 +482,7 @@ Run the non-network validation summaries used for quick release checks:
 .venv/bin/techno-search validate-all
 ```
 
-This includes example candidate validation, report validation, schema path checks, calibration fixture summary, calibration-by-track diagnostics, false-positive class diagnostics, score regression summary, background target-priority summary, background search ledger summary, background reviewed-workflow summary, candidate extraction handoff summary, human-review queue summary, consensus label summary, consensus export summary, validation dataset manifest summary, validation readiness summary, benchmark metadata summary, and benchmark run-result summary.
+This includes example candidate validation, report validation, schema path checks, calibration fixture summary, calibration-by-track diagnostics, false-positive class diagnostics, score regression summary, background target-priority summary, background search ledger summary, background reviewed-workflow summary, reviewed outcome log summary, needs-follow-up outcome log summary, follow-up test summary, report-readiness summary, candidate extraction handoff summary, human-review queue summary, consensus label summary, consensus export summary, validation dataset manifest summary, validation readiness summary, benchmark metadata summary, and benchmark run-result summary.
 It also reports `catalog_cache_validation` for Git-tracked paths so local untracked caches do not fail default validation.
 
 ---
@@ -439,7 +495,7 @@ Print a concise local health dashboard without network access:
 .venv/bin/techno-search validation-summary
 ```
 
-This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, calibration-by-track, false-positive class, validation-dataset, validation-readiness, benchmark-metadata, benchmark-run, score-regression, background target-priority, background ledger, background reviewed-workflow, candidate extraction handoffs, review-queue, consensus-label, consensus-export, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
+This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, calibration-by-track, false-positive class, validation-dataset, validation-readiness, benchmark-metadata, benchmark-run, score-regression, background target-priority, background ledger, background reviewed-workflow, reviewed outcome, needs-follow-up outcome, follow-up tests, report readiness, candidate extraction handoff, review-queue, consensus-label, consensus-export, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
 
 ---
 

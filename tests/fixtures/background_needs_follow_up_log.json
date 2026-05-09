@@ -1,0 +1,67 @@
+{
+  "schema_version": "background_needs_follow_up_log_v1",
+  "description": "Local background-search outcomes requiring follow-up tests or human review.",
+  "disclaimer": "Needs-follow-up background-search records identify local follow-up work for review; they are not detections, not discovery claims, and not submission approvals.",
+  "needs_follow_up_entries": [
+    {
+      "follow_up_id": "follow-up-background-demo-001",
+      "run_id": "background-demo-001",
+      "target_id": "target-radio-clean-drift",
+      "track": "radio",
+      "follow_up_status": "needs_follow_up_required",
+      "created_at_utc": "2026-05-08T10:00:02+00:00",
+      "trigger_types": [
+        "quantitative_threshold"
+      ],
+      "reason_codes": [
+        "candidate_packet_ready",
+        "selection_score_above_follow_up_threshold"
+      ],
+      "required_tests": [
+        "provenance_check",
+        "false_positive_class_check",
+        "cross_source_consistency_check",
+        "calibration_confidence_check",
+        "reproducibility_check",
+        "human_review_checklist"
+      ],
+      "blocking_issues": [],
+      "report_required": true,
+      "human_review_required": true,
+      "submission_requires_user_approval": true,
+      "network_access_allowed": false
+    },
+    {
+      "follow_up_id": "follow-up-background-demo-002",
+      "run_id": "background-demo-002",
+      "target_id": "target-infrared-excess-review",
+      "track": "infrared",
+      "follow_up_status": "needs_follow_up_required",
+      "created_at_utc": "2026-05-08T10:05:02+00:00",
+      "trigger_types": [
+        "quantitative_threshold",
+        "rule_based_blocking_issue"
+      ],
+      "reason_codes": [
+        "blocking_issue_requires_review",
+        "candidate_packet_blocked",
+        "selection_score_above_follow_up_threshold"
+      ],
+      "required_tests": [
+        "provenance_check",
+        "false_positive_class_check",
+        "cross_source_consistency_check",
+        "calibration_confidence_check",
+        "reproducibility_check",
+        "human_review_checklist"
+      ],
+      "blocking_issues": [
+        "synthetic fixture records one unresolved follow-up context issue"
+      ],
+      "report_required": true,
+      "human_review_required": true,
+      "submission_requires_user_approval": true,
+      "network_access_allowed": false
+    }
+  ]
+}

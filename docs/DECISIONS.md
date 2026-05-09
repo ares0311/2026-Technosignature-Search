@@ -496,3 +496,55 @@ Target selection, candidate extraction, candidate scoring, and reporting are sep
 - Blocked and no-candidate handoffs must preserve blocking issues and negative-result requirements.
 - Candidate packet IDs remain explicit outputs of extraction, not properties of target priority.
 - Handoff summaries are operational diagnostics only; they are not detections, discoveries, external validation, or calibrated survey-performance claims.
+
+---
+
+## DECISION-021: Use External Scheduling With Bifurcated Background Outcome Logs
+
+**Date:** 2026-05-09
+
+**Status:** Accepted
+
+### Decision
+
+Operational background search should be driven by an external scheduler that invokes one bounded `background-run-once` command. The command must write one durable ledger entry and exactly one outcome entry: either a reviewed log entry or a needs-follow-up log entry.
+
+Target selection should use the configured composite priority score plus review-history adjustment. Promising never-reviewed targets receive a bounded boost, and previously reviewed targets receive a bounded penalty so the scheduler explores useful unreviewed targets without erasing prior evidence.
+
+### Rationale
+
+External schedulers make each run auditable, restartable, and easier to reproduce. Separate reviewed and needs-follow-up logs make the operational decision explicit without overloading the durable ledger. Review-history scoring keeps the system from repeatedly selecting the same target when another promising target has not yet been assessed.
+
+### Consequences
+
+- The durable ledger remains the source of truth for every run.
+- Reviewed logs preserve negative evidence and reasons no follow-up is currently required.
+- Needs-follow-up logs preserve trigger types, reason codes, mandatory tests, report requirements, human-review requirements, and the user approval gate.
+- The local runner remains fixture-only and non-networked by default.
+- Needs-follow-up records are not detections, not discovery claims, and not submission approvals.
+
+---
+
+## DECISION-022: Gate Background Reports Behind Mandatory Follow-Up Tests
+
+**Date:** 2026-05-09
+
+**Status:** Accepted
+
+### Decision
+
+Needs-follow-up background records must pass through deterministic local follow-up test records before any draft report is considered ready. Required tests cover provenance, false-positive class, cross-source consistency, calibration confidence, reproducibility, and human-review checklist status.
+
+Report-readiness records must state whether mandatory tests are complete, whether a conservative draft report may be prepared, whether more tests are required, and which top-three review or submission destinations are recommended. External submission must remain disabled until the user explicitly approves it.
+
+### Rationale
+
+A needs-follow-up queue is useful only if it leads to structured review rather than vague escalation. Mandatory tests force the system to preserve negative evidence, blockers, and uncertainty before drafting a report. Ranked recommendations help the user decide where the report might go, while preserving the human approval gate.
+
+### Consequences
+
+- Follow-up tests are local fixtures by default and do not access the network.
+- A passed or ready local test is not external validation.
+- Blocked and uncertain tests must remain visible in summaries.
+- Top-three recommendations may include `Do not submit yet`.
+- Report-readiness records are not discoveries, endorsements, or authorization to submit externally.

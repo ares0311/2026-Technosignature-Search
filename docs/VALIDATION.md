@@ -79,6 +79,10 @@ Committed schemas:
 - `schemas/benchmark_run_results.schema.json`
 - `schemas/background_targets.schema.json`
 - `schemas/background_search_ledger.schema.json`
+- `schemas/background_reviewed_log.schema.json`
+- `schemas/background_needs_follow_up_log.schema.json`
+- `schemas/background_follow_up_tests.schema.json`
+- `schemas/background_report_readiness.schema.json`
 - `schemas/candidate_extraction_handoff.schema.json`
 - `schemas/validation_readiness.schema.json`
 
@@ -191,6 +195,8 @@ Review fixture-backed background target prioritization:
 
 ```bash
 .venv/bin/techno-search target-priority-summary
+.venv/bin/techno-search target-priority-summary \
+  --ledger-path artifacts/background_search_ledger.json
 ```
 
 Run one explicit local-only background ledger append in an ignored output path:
@@ -198,6 +204,8 @@ Run one explicit local-only background ledger append in an ignored output path:
 ```bash
 .venv/bin/techno-search background-run-once \
   --ledger-path artifacts/background_search_ledger.json \
+  --reviewed-log-path artifacts/background_reviewed_log.json \
+  --needs-follow-up-log-path artifacts/background_needs_follow_up_log.json \
   --acknowledge-local-run
 ```
 
@@ -213,13 +221,23 @@ Review background reviewed-workflow state:
 .venv/bin/techno-search background-reviewed-workflow-summary
 ```
 
+Review reviewed and needs-follow-up outcome logs:
+
+```bash
+.venv/bin/techno-search reviewed-log-summary
+.venv/bin/techno-search needs-follow-up-summary
+.venv/bin/techno-search follow-up-test-summary
+.venv/bin/techno-search report-readiness-summary
+.venv/bin/techno-search submission-recommendation-summary
+```
+
 Review candidate-extraction handoff readiness:
 
 ```bash
 .venv/bin/techno-search candidate-extraction-handoff-summary
 ```
 
-`validate-all` and `validation-summary` include calibration-by-track, false-positive class, validation dataset, validation readiness, benchmark metadata, benchmark run-result metadata, background target-priority, background search ledger, background reviewed-workflow, candidate extraction handoff, injection-recovery, reliability, precision-recall, human-review queue, consensus-label, and consensus-export coverage. Benchmark append and compare commands are local workflow helpers for ignored output paths. The reported calibration-by-track coverage, false-positive class coverage, validation dataset coverage, validation readiness counts, benchmark metadata, benchmark run-result metadata, benchmark deltas, target-priority ranking, background ledger counts, background reviewed-workflow counts, candidate extraction handoff counts, recovery rate, false-alarm fraction, reliability errors, precision, recall, F1 score, review queue counts, consensus counts, and consensus export counts are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, per-track survey performance, classification performance estimates, discovery claims, external validation, detections, or scientific performance claims.
+`validate-all` and `validation-summary` include calibration-by-track, false-positive class, validation dataset, validation readiness, benchmark metadata, benchmark run-result metadata, background target-priority, background search ledger, background reviewed-workflow, reviewed outcome log, needs-follow-up outcome log, follow-up test results, report-readiness gates, candidate extraction handoff, injection-recovery, reliability, precision-recall, human-review queue, consensus-label, and consensus-export coverage. Benchmark append and compare commands are local workflow helpers for ignored output paths. The reported calibration-by-track coverage, false-positive class coverage, validation dataset coverage, validation readiness counts, benchmark metadata, benchmark run-result metadata, benchmark deltas, target-priority ranking, background ledger counts, background reviewed-workflow counts, reviewed outcome counts, needs-follow-up counts, follow-up test counts, report-readiness counts, candidate extraction handoff counts, recovery rate, false-alarm fraction, reliability errors, precision, recall, F1 score, review queue counts, consensus counts, and consensus export counts are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, per-track survey performance, classification performance estimates, discovery claims, external validation, detections, submission approvals, or scientific performance claims.
 
 Snapshot fixture:
 
@@ -306,6 +324,24 @@ tests/fixtures/background_search_ledger.json
 ```
 
 The background ledger fixture includes completed synthetic candidate packets, a blocked review handoff, a no-candidate search, and a local scheduling-only runner entry.
+
+Background reviewed and needs-follow-up fixtures:
+
+```text
+tests/fixtures/background_reviewed_log.json
+tests/fixtures/background_needs_follow_up_log.json
+```
+
+The reviewed log records targets that do not currently require follow-up. The needs-follow-up log records reason codes, trigger types, mandatory follow-up tests, report requirements, human-review requirements, and the user-approval gate required before any external submission.
+
+Background follow-up test and report-readiness fixtures:
+
+```text
+tests/fixtures/background_follow_up_tests.json
+tests/fixtures/background_report_readiness.json
+```
+
+The follow-up test fixture records deterministic local outcomes for each mandatory test. The report-readiness fixture records whether a conservative draft report can be prepared, whether more tests are required, and the ranked top-three review destinations. External submission remains disabled until the user explicitly approves it.
 
 Background priority config:
 

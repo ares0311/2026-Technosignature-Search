@@ -233,6 +233,10 @@ Add real data ingestion behind tested abstractions.
 - [x] Explicit local-only passive runner ledger append command
 - [x] Reviewed background workflow ledger semantics and summary command
 - [x] Candidate-extraction handoff contract and summary command
+- [x] Reviewed and needs-follow-up outcome logs for background runs
+- [x] Review-history adjusted target selection for external scheduler use
+- [x] Deterministic local follow-up test results for needs-follow-up records
+- [x] Report-readiness gates with top-three conservative recommendations
 
 ---
 

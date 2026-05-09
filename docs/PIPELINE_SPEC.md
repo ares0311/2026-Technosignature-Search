@@ -209,6 +209,8 @@ Responsibilities:
 - rank candidate targets for future search scheduling
 - keep target priority separate from candidate evidence
 - penalize false-positive probability and unresolved blocking issues
+- boost promising targets that have not yet appeared in the durable ledger
+- apply a bounded penalty to repeatedly reviewed targets
 - preserve the target-priority schema version and weights used
 - avoid interpreting a high target-priority score as a technosignature-interest claim
 
@@ -218,12 +220,19 @@ Current v0 fixture flow:
 background target fixture
 → target priority score
 → ranked target list
+→ review-history adjusted scheduler score
 → selected target ID
 → candidate-extraction handoff readiness check
 → passive/background ledger entry after search
+→ reviewed log OR needs-follow-up log
+→ deterministic local follow-up tests
+→ report-readiness gate
+→ top-three review/submission recommendations
 ```
 
-The passive/background ledger must record searched targets even when no candidate packet is produced. The current local runner is explicitly opt-in, uses `configs/background_priority_v0.json`, does not access network providers, and logs scheduling-only entries as reproducibility records rather than candidate claims.
+The passive/background ledger must record searched targets even when no candidate packet is produced. The current local runner is explicitly opt-in, uses `configs/background_priority_v0.json`, does not access network providers, and writes one durable ledger entry plus exactly one outcome entry. Reviewed outcomes are retained when no follow-up trigger is active. Needs-follow-up outcomes preserve quantitative and rule-based triggers, mandatory follow-up tests, report requirements, human-review requirements, and the user approval gate for any possible external submission.
+
+Follow-up test records must cover provenance, false-positive class, cross-source consistency, calibration confidence, reproducibility, and human-review checklist status. Report-readiness records may recommend a conservative draft report or request more tests, but they must keep `external_submission_allowed` false until the user explicitly approves submission.
 
 Candidate-extraction handoff records define the local contract between a selected target and any candidate packet generation. A handoff must expose required inputs, available inputs, expected candidate packet IDs, fixture paths, blockers, negative-result requirements, human-review requirements, execution mode, and network-access state. In v0, these records are local fixtures only; a handoff status is not a detection, discovery, external validation, or calibrated performance claim.
 

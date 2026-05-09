@@ -87,6 +87,11 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     assert ".venv/bin/techno-search target-priority-summary" in readme
     assert ".venv/bin/techno-search background-ledger-summary" in readme
     assert ".venv/bin/techno-search background-reviewed-workflow-summary" in readme
+    assert ".venv/bin/techno-search reviewed-log-summary" in readme
+    assert ".venv/bin/techno-search needs-follow-up-summary" in readme
+    assert ".venv/bin/techno-search follow-up-test-summary" in readme
+    assert ".venv/bin/techno-search report-readiness-summary" in readme
+    assert ".venv/bin/techno-search submission-recommendation-summary" in readme
     assert ".venv/bin/techno-search candidate-extraction-handoff-summary" in readme
     assert ".venv/bin/techno-search background-run-once" in readme
     assert ".venv/bin/techno-search benchmark-run-append" in readme
@@ -96,6 +101,12 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     assert "Readiness status is a gate, not a scientific result." in readme
     assert "The selected target is a scheduling recommendation only." in readme
     assert "reviewed_workflow_status" in readme
+    assert "background_reviewed_log.json" in readme
+    assert "background_needs_follow_up_log.json" in readme
+    assert "background_follow_up_tests.json" in readme
+    assert "background_report_readiness.json" in readme
+    assert "external_submission_allowed" in readme
+    assert "T_{\\mathrm{sched}}" in readme
     assert "Candidate-extraction handoff records are the next local contract" in readme
     assert "### Quality-Control Matrix" in readme
     assert ".venv/bin/techno-search score examples/candidates/radio_clean_candidate.json" in readme

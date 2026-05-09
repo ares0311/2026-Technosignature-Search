@@ -503,27 +503,36 @@ To ask the current background-search scaffold which target should be searched ne
 
 ```bash
 .venv/bin/techno-search target-priority-summary
+.venv/bin/techno-search target-priority-summary \
+  --ledger-path artifacts/background_search_ledger.json
 ```
 
-This command ranks the committed synthetic target list and returns a selected `target_id`. The selected target is a scheduling recommendation only. It is not evidence of a technosignature and it is not a discovery claim.
+This command ranks the committed synthetic target list and returns a selected `target_id`. When a ledger path is supplied, the scheduler score boosts promising never-reviewed targets and applies a bounded penalty to targets already searched. The selected target is a scheduling recommendation only. It is not evidence of a technosignature and it is not a discovery claim.
 
 To append one local-only passive/background search ledger entry for the highest-priority fixture target, run:
 
 ```bash
 .venv/bin/techno-search background-run-once \
   --ledger-path artifacts/background_search_ledger.json \
+  --reviewed-log-path artifacts/background_reviewed_log.json \
+  --needs-follow-up-log-path artifacts/background_needs_follow_up_log.json \
   --acknowledge-local-run
 ```
 
-The acknowledgement flag is intentional. The command records a local scheduling/search event without network access and without claiming candidate extraction.
+The acknowledgement flag is intentional. The command records a local scheduling/search event without network access and without claiming candidate extraction. Each run writes one durable ledger entry and exactly one outcome entry: either the reviewed log or the needs-follow-up log.
 
 To inspect what the passive/background system has already searched, run:
 
 ```bash
 .venv/bin/techno-search background-ledger-summary
+.venv/bin/techno-search reviewed-log-summary
+.venv/bin/techno-search needs-follow-up-summary
+.venv/bin/techno-search follow-up-test-summary
+.venv/bin/techno-search report-readiness-summary
+.venv/bin/techno-search submission-recommendation-summary
 ```
 
-The ledger summary reports searched targets, candidate counts, blocking issues, conservative pathway labels, and run IDs. Negative searches must still be logged because they are part of the reproducibility record.
+The ledger summary reports searched targets, candidate counts, blocking issues, conservative pathway labels, and run IDs. The reviewed-log summary captures targets that do not currently require follow-up. The needs-follow-up summary captures targets requiring mandatory local tests, human review, and possible report preparation. Follow-up test and report-readiness summaries then show whether mandatory local checks are complete, whether a conservative draft report is allowed, and which top-three review destinations are recommended. Negative searches must still be logged because they are part of the reproducibility record.
 
 To inspect whether logged background runs are ready for reviewed handoff, run:
 
@@ -610,18 +619,20 @@ Readiness status is a gate, not a scientific result. `ready` means the dataset c
 
 ### Target Selection and Background Search Roadmap
 
-The current v0 background-search system is a fixture-backed scaffold. It can rank possible targets, expose the selected highest-priority target, and summarize a passive search ledger. It does not yet run unattended network searches, does not observe the sky by itself, and does not silently promote candidates. A future autonomous runner should be implemented only behind explicit opt-in controls, local logs, cache provenance, and conservative reporting.
+The current v0 background-search system is a fixture-backed scaffold. It can rank possible targets, expose the selected scheduler target, append a durable run ledger, and bifurcate outcomes into reviewed and needs-follow-up logs. It does not run unattended network searches, does not observe the sky by itself, and does not silently promote candidates. Operational background use should call `background-run-once` from an external scheduler rather than placing separate scientific logic in a long-lived process.
 
 ```text
 Target list or provider query
   → target feature summary
-  → priority score
-  → queued search job
+  → priority score plus review-history adjustment
+  → external scheduler invokes one bounded run
   → candidate-extraction handoff check
-  → candidate extraction
-  → candidate scoring
-  → search log entry
-  → review packet if warranted
+  → durable ledger entry
+  → reviewed log OR needs-follow-up log
+  → mandatory follow-up tests when warranted
+  → report-readiness gate
+  → top-three review/submission recommendations
+  → candidate extraction / scoring / report only after gates pass
 ```
 
 Target prioritization should be based on an auditable objective function:
@@ -636,6 +647,16 @@ T =
 $$
 
 where \(T\) is a target-priority score, not evidence of a technosignature. The weights \(\alpha, \beta, \gamma, \delta,\lambda\) are versioned in [`configs/background_priority_v0.json`](configs/background_priority_v0.json) and should eventually be calibrated against validation datasets.
+
+Scheduler selection adds a review-history term:
+
+$$
+T_{\mathrm{sched}} =
+T + b_{\mathrm{new}}\mathbb{1}_{N_{\mathrm{review}}=0}
+- \min(\rho N_{\mathrm{review}}, \rho_{\max})
+$$
+
+where \(b_{\mathrm{new}}\) boosts promising targets that have not yet been reviewed, \(N_{\mathrm{review}}\) is the number of prior ledger entries for the target, and the bounded penalty prevents the runner from repeatedly choosing the same target without new evidence. This is an operational scheduling term, not candidate evidence.
 
 Current v0 target-priority fixture fields:
 
@@ -675,13 +696,25 @@ Any passive/background runner must maintain a search ledger:
 | `recommended_pathways` | Conservative routing results |
 | `blocking_issues` | Missing metadata, failed providers, or invalid candidate packets |
 
-The background system should never silently discard searched targets. A scientifically useful negative result still needs a log entry.
+The background system should never silently discard searched targets. A scientifically useful negative result still needs a log entry. The durable ledger is the source of truth, while the two outcome logs make the decision path easy to review:
+
+| Outcome Log | Purpose |
+|-------------|---------|
+| `background_reviewed_log.json` | Targets searched or assessed with no current follow-up trigger |
+| `background_needs_follow_up_log.json` | Targets that require mandatory tests, report readiness review, or human judgment |
+| `background_follow_up_tests.json` | Deterministic local follow-up test outcomes |
+| `background_report_readiness.json` | Report drafting gates and top-three recommendation records |
 
 In v0, the committed ledger fixture is summarized by:
 
 ```bash
 .venv/bin/techno-search background-ledger-summary
 .venv/bin/techno-search background-reviewed-workflow-summary
+.venv/bin/techno-search reviewed-log-summary
+.venv/bin/techno-search needs-follow-up-summary
+.venv/bin/techno-search follow-up-test-summary
+.venv/bin/techno-search report-readiness-summary
+.venv/bin/techno-search submission-recommendation-summary
 .venv/bin/techno-search candidate-extraction-handoff-summary
 ```
 
@@ -690,12 +723,16 @@ The local append-only runner is invoked explicitly:
 ```bash
 .venv/bin/techno-search background-run-once \
   --ledger-path artifacts/background_search_ledger.json \
+  --reviewed-log-path artifacts/background_reviewed_log.json \
+  --needs-follow-up-log-path artifacts/background_needs_follow_up_log.json \
   --run-id background-local-demo \
   --code-commit "$(git rev-parse --short HEAD)" \
   --acknowledge-local-run
 ```
 
-This runner selects the top ranked fixture target, records a `local_fixture_search_logged` ledger entry, sets `candidate_count` to `0`, sets `reviewed_workflow_status` to `local_scheduling_only`, marks the no-candidate outcome as a logged negative result, and routes the entry to `github_reproducibility_only`. It is a passive-runner scaffold, not a production autonomous search daemon.
+This runner selects the top ranked fixture target after review-history adjustment, records one ledger entry, and appends exactly one reviewed or needs-follow-up outcome entry. Needs-follow-up entries require provenance, false-positive class, cross-source consistency, calibration confidence, reproducibility, and human-review checklist tests before a report can be treated as ready. It is a scheduler-friendly local workflow, not a production autonomous search daemon.
+
+Follow-up test records currently answer whether each mandatory test is `pass`, `ready`, `uncertain`, or `blocked`. Report-readiness records then determine whether a conservative draft report may be prepared or whether the item should request more tests. Submission recommendations are ranked, but `external_submission_allowed` remains `false`; the user must explicitly approve any external action.
 
 Candidate-extraction handoff records are the next local contract after a target has been selected. A handoff may be ready for extraction, blocked, expected to produce no candidate packet, or scheduling-only. A ready handoff still does not claim a detection. It only means the local fixture inputs are present and can be routed into the normal candidate scoring and reporting workflow.
 

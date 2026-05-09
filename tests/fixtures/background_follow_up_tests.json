@@ -1,0 +1,267 @@
+{
+  "schema_version": "background_follow_up_tests_v1",
+  "description": "Deterministic local follow-up test results for background needs-follow-up records.",
+  "disclaimer": "Background follow-up test records describe deterministic local checks only; they are not detections, not external validation, and not submission approvals.",
+  "test_results": [
+    {
+      "result_id": "follow-up-test-radio-001-provenance",
+      "follow_up_id": "follow-up-background-demo-001",
+      "run_id": "background-demo-001",
+      "target_id": "target-radio-clean-drift",
+      "track": "radio",
+      "test_name": "provenance_check",
+      "status": "pass",
+      "executed_at_utc": "2026-05-09T15:00:00+00:00",
+      "evidence": [
+        "candidate packet ID, ledger run ID, schema versions, and fixture path are traceable"
+      ],
+      "negative_evidence": [
+        "no live provider provenance is present because the fixture is local-only"
+      ],
+      "blocking_issues": [],
+      "uncertainty_notes": [
+        "fixture provenance is not external observational validation"
+      ],
+      "network_access_allowed": false
+    },
+    {
+      "result_id": "follow-up-test-radio-001-false-positive",
+      "follow_up_id": "follow-up-background-demo-001",
+      "run_id": "background-demo-001",
+      "target_id": "target-radio-clean-drift",
+      "track": "radio",
+      "test_name": "false_positive_class_check",
+      "status": "pass",
+      "executed_at_utc": "2026-05-09T15:00:01+00:00",
+      "evidence": [
+        "synthetic fixture records low RFI-band overlap and ON/OFF cadence support"
+      ],
+      "negative_evidence": [
+        "RFI and instrumental explanations remain default hypotheses until external review"
+      ],
+      "blocking_issues": [],
+      "uncertainty_notes": [
+        "false-positive rejection is synthetic and not calibrated survey performance"
+      ],
+      "network_access_allowed": false
+    },
+    {
+      "result_id": "follow-up-test-radio-001-cross-source",
+      "follow_up_id": "follow-up-background-demo-001",
+      "run_id": "background-demo-001",
+      "target_id": "target-radio-clean-drift",
+      "track": "radio",
+      "test_name": "cross_source_consistency_check",
+      "status": "pass",
+      "executed_at_utc": "2026-05-09T15:00:02+00:00",
+      "evidence": [
+        "ledger, handoff, and candidate fixture agree on the expected radio packet ID"
+      ],
+      "negative_evidence": [
+        "no independent telescope or catalog confirmation is included"
+      ],
+      "blocking_issues": [],
+      "uncertainty_notes": [
+        "cross-source consistency is limited to committed fixtures"
+      ],
+      "network_access_allowed": false
+    },
+    {
+      "result_id": "follow-up-test-radio-001-calibration",
+      "follow_up_id": "follow-up-background-demo-001",
+      "run_id": "background-demo-001",
+      "target_id": "target-radio-clean-drift",
+      "track": "radio",
+      "test_name": "calibration_confidence_check",
+      "status": "pass",
+      "executed_at_utc": "2026-05-09T15:00:03+00:00",
+      "evidence": [
+        "synthetic reliability and precision-recall fixtures are available for local regression context"
+      ],
+      "negative_evidence": [
+        "calibration remains synthetic and does not establish empirical survey performance"
+      ],
+      "blocking_issues": [],
+      "uncertainty_notes": [
+        "non-synthetic calibration is still deferred"
+      ],
+      "network_access_allowed": false
+    },
+    {
+      "result_id": "follow-up-test-radio-001-reproducibility",
+      "follow_up_id": "follow-up-background-demo-001",
+      "run_id": "background-demo-001",
+      "target_id": "target-radio-clean-drift",
+      "track": "radio",
+      "test_name": "reproducibility_check",
+      "status": "pass",
+      "executed_at_utc": "2026-05-09T15:00:04+00:00",
+      "evidence": [
+        "fixture-backed command outputs are deterministic under the committed config"
+      ],
+      "negative_evidence": [
+        "deterministic local reproducibility does not prove signal reality"
+      ],
+      "blocking_issues": [],
+      "uncertainty_notes": [
+        "repeatability has not been tested against live observations"
+      ],
+      "network_access_allowed": false
+    },
+    {
+      "result_id": "follow-up-test-radio-001-human-review",
+      "follow_up_id": "follow-up-background-demo-001",
+      "run_id": "background-demo-001",
+      "target_id": "target-radio-clean-drift",
+      "track": "radio",
+      "test_name": "human_review_checklist",
+      "status": "ready",
+      "executed_at_utc": "2026-05-09T15:00:05+00:00",
+      "evidence": [
+        "positive evidence, negative evidence, limitations, and next actions can be summarized for a reviewer"
+      ],
+      "negative_evidence": [
+        "reviewer has not approved submission"
+      ],
+      "blocking_issues": [],
+      "uncertainty_notes": [
+        "human review is still required before any external action"
+      ],
+      "network_access_allowed": false
+    },
+    {
+      "result_id": "follow-up-test-infrared-001-provenance",
+      "follow_up_id": "follow-up-background-demo-002",
+      "run_id": "background-demo-002",
+      "target_id": "target-infrared-excess-review",
+      "track": "infrared",
+      "test_name": "provenance_check",
+      "status": "pass",
+      "executed_at_utc": "2026-05-09T15:05:00+00:00",
+      "evidence": [
+        "ledger and handoff records identify the synthetic infrared fixture"
+      ],
+      "negative_evidence": [
+        "provider context remains local fixture metadata only"
+      ],
+      "blocking_issues": [],
+      "uncertainty_notes": [
+        "live catalog provenance is not included"
+      ],
+      "network_access_allowed": false
+    },
+    {
+      "result_id": "follow-up-test-infrared-001-false-positive",
+      "follow_up_id": "follow-up-background-demo-002",
+      "run_id": "background-demo-002",
+      "target_id": "target-infrared-excess-review",
+      "track": "infrared",
+      "test_name": "false_positive_class_check",
+      "status": "uncertain",
+      "executed_at_utc": "2026-05-09T15:05:01+00:00",
+      "evidence": [
+        "infrared excess fixture remains review-worthy"
+      ],
+      "negative_evidence": [
+        "dust, blending, and extragalactic explanations remain plausible without additional context"
+      ],
+      "blocking_issues": [
+        "natural-source false-positive context is incomplete"
+      ],
+      "uncertainty_notes": [
+        "false-positive class cannot be closed using committed fixtures alone"
+      ],
+      "network_access_allowed": false
+    },
+    {
+      "result_id": "follow-up-test-infrared-001-cross-source",
+      "follow_up_id": "follow-up-background-demo-002",
+      "run_id": "background-demo-002",
+      "target_id": "target-infrared-excess-review",
+      "track": "infrared",
+      "test_name": "cross_source_consistency_check",
+      "status": "blocked",
+      "executed_at_utc": "2026-05-09T15:05:02+00:00",
+      "evidence": [
+        "local target and handoff records agree on the expected infrared packet ID"
+      ],
+      "negative_evidence": [
+        "additional photometric context is not available in the committed fixture"
+      ],
+      "blocking_issues": [
+        "reviewed photometric context is incomplete"
+      ],
+      "uncertainty_notes": [
+        "cross-source consistency remains blocked until more reviewed context exists"
+      ],
+      "network_access_allowed": false
+    },
+    {
+      "result_id": "follow-up-test-infrared-001-calibration",
+      "follow_up_id": "follow-up-background-demo-002",
+      "run_id": "background-demo-002",
+      "target_id": "target-infrared-excess-review",
+      "track": "infrared",
+      "test_name": "calibration_confidence_check",
+      "status": "uncertain",
+      "executed_at_utc": "2026-05-09T15:05:03+00:00",
+      "evidence": [
+        "synthetic infrared calibration fixtures exist"
+      ],
+      "negative_evidence": [
+        "calibration is not non-synthetic and cannot support external claims"
+      ],
+      "blocking_issues": [
+        "non-synthetic calibration is unavailable"
+      ],
+      "uncertainty_notes": [
+        "confidence is adequate for internal triage only"
+      ],
+      "network_access_allowed": false
+    },
+    {
+      "result_id": "follow-up-test-infrared-001-reproducibility",
+      "follow_up_id": "follow-up-background-demo-002",
+      "run_id": "background-demo-002",
+      "target_id": "target-infrared-excess-review",
+      "track": "infrared",
+      "test_name": "reproducibility_check",
+      "status": "pass",
+      "executed_at_utc": "2026-05-09T15:05:04+00:00",
+      "evidence": [
+        "fixture summaries reproduce the same blocked review state"
+      ],
+      "negative_evidence": [
+        "reproducibility does not resolve the blocked photometric context"
+      ],
+      "blocking_issues": [],
+      "uncertainty_notes": [
+        "reproducibility is local-only"
+      ],
+      "network_access_allowed": false
+    },
+    {
+      "result_id": "follow-up-test-infrared-001-human-review",
+      "follow_up_id": "follow-up-background-demo-002",
+      "run_id": "background-demo-002",
+      "target_id": "target-infrared-excess-review",
+      "track": "infrared",
+      "test_name": "human_review_checklist",
+      "status": "blocked",
+      "executed_at_utc": "2026-05-09T15:05:05+00:00",
+      "evidence": [
+        "review packet can identify missing context"
+      ],
+      "negative_evidence": [
+        "reviewer does not yet have enough context for a report-ready packet"
+      ],
+      "blocking_issues": [
+        "human review should request more tests before report drafting"
+      ],
+      "uncertainty_notes": [
+        "external submission is not appropriate"
+      ],
+      "network_access_allowed": false
+    }
+  ]
+}

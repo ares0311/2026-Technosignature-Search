@@ -1,0 +1,139 @@
+{
+  "schema_version": "background_report_readiness_v1",
+  "description": "Report-readiness gates and conservative top-three recommendations for background follow-up records.",
+  "disclaimer": "Background report-readiness records gate conservative draft reports and submission recommendations; they are not discoveries, endorsements, or authorization to submit externally.",
+  "readiness_records": [
+    {
+      "readiness_id": "report-readiness-radio-001",
+      "follow_up_id": "follow-up-background-demo-001",
+      "run_id": "background-demo-001",
+      "target_id": "target-radio-clean-drift",
+      "track": "radio",
+      "readiness_status": "ready_for_draft_report",
+      "evaluated_at_utc": "2026-05-09T15:10:00+00:00",
+      "mandatory_tests_complete": true,
+      "ready_to_draft_report": true,
+      "report_required": true,
+      "user_approval_required": true,
+      "external_submission_allowed": false,
+      "recommended_action": "draft_internal_review_report",
+      "blocking_issues": [
+        "human approval is required before any external submission"
+      ],
+      "limitations": [
+        "all evidence is fixture-backed and local-only",
+        "no external validation or live observation has been performed"
+      ],
+      "top_three_recommendations": [
+        {
+          "rank": 1,
+          "destination": "Internal project review packet",
+          "suitability_rationale": "Best fit for a fixture-backed case whose mandatory local checks are complete but not externally validated.",
+          "risks": [
+            "evidence is synthetic/local-only",
+            "submission approval has not been granted"
+          ],
+          "prerequisites": [
+            "human reviewer reads the draft report",
+            "reviewer confirms whether more tests are needed"
+          ],
+          "recommended_action": "internal_review"
+        },
+        {
+          "rank": 2,
+          "destination": "GitHub issue for reproducibility tracking",
+          "suitability_rationale": "Useful for tracking follow-up tasks and preserving local provenance inside the project workflow.",
+          "risks": [
+            "public issue text could be misread as a discovery claim"
+          ],
+          "prerequisites": [
+            "use conservative wording",
+            "include the required disclaimer"
+          ],
+          "recommended_action": "internal_review"
+        },
+        {
+          "rank": 3,
+          "destination": "Observing follow-up planning note",
+          "suitability_rationale": "Appropriate only as a planning artifact if the reviewer wants more observational context.",
+          "risks": [
+            "premature external attention",
+            "no live-provider context in current fixture"
+          ],
+          "prerequisites": [
+            "user approval",
+            "additional non-synthetic context"
+          ],
+          "recommended_action": "request_more_tests"
+        }
+      ],
+      "network_access_allowed": false
+    },
+    {
+      "readiness_id": "report-readiness-infrared-001",
+      "follow_up_id": "follow-up-background-demo-002",
+      "run_id": "background-demo-002",
+      "target_id": "target-infrared-excess-review",
+      "track": "infrared",
+      "readiness_status": "blocked_pending_tests",
+      "evaluated_at_utc": "2026-05-09T15:11:00+00:00",
+      "mandatory_tests_complete": false,
+      "ready_to_draft_report": false,
+      "report_required": true,
+      "user_approval_required": true,
+      "external_submission_allowed": false,
+      "recommended_action": "request_more_tests",
+      "blocking_issues": [
+        "cross-source consistency check is blocked",
+        "false-positive class check remains uncertain",
+        "human review checklist is blocked"
+      ],
+      "limitations": [
+        "photometric context is incomplete",
+        "natural-source explanations remain plausible"
+      ],
+      "top_three_recommendations": [
+        {
+          "rank": 1,
+          "destination": "Do not submit yet",
+          "suitability_rationale": "The mandatory local follow-up tests are not complete.",
+          "risks": [
+            "premature report could overstate fixture evidence"
+          ],
+          "prerequisites": [
+            "resolve blocked cross-source context",
+            "repeat report-readiness review"
+          ],
+          "recommended_action": "do_not_submit_yet"
+        },
+        {
+          "rank": 2,
+          "destination": "Internal project review packet",
+          "suitability_rationale": "Useful only to document blockers and request more tests.",
+          "risks": [
+            "review packet is not report-ready"
+          ],
+          "prerequisites": [
+            "label as blocked",
+            "include missing-test checklist"
+          ],
+          "recommended_action": "request_more_tests"
+        },
+        {
+          "rank": 3,
+          "destination": "Photometric context follow-up checklist",
+          "suitability_rationale": "Best next operational destination for resolving the blocked infrared context.",
+          "risks": [
+            "additional data may reveal an ordinary false positive"
+          ],
+          "prerequisites": [
+            "complete cross-source consistency check",
+            "repeat false-positive class review"
+          ],
+          "recommended_action": "request_more_tests"
+        }
+      ],
+      "network_access_allowed": false
+    }
+  ]
+}

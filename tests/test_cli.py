@@ -226,6 +226,10 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
 
     assert exit_code == 0
     assert set(result) == {
+        "background_follow_up_tests",
+        "background_needs_follow_up_log",
+        "background_report_readiness",
+        "background_reviewed_log",
         "background_search_ledger",
         "background_targets",
         "batch_manifest",
@@ -243,6 +247,18 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
     }
     assert result["background_search_ledger"].endswith(
         "schemas/background_search_ledger.schema.json"
+    )
+    assert result["background_follow_up_tests"].endswith(
+        "schemas/background_follow_up_tests.schema.json"
+    )
+    assert result["background_needs_follow_up_log"].endswith(
+        "schemas/background_needs_follow_up_log.schema.json"
+    )
+    assert result["background_report_readiness"].endswith(
+        "schemas/background_report_readiness.schema.json"
+    )
+    assert result["background_reviewed_log"].endswith(
+        "schemas/background_reviewed_log.schema.json"
     )
     assert result["background_targets"].endswith("schemas/background_targets.schema.json")
     assert result["benchmark_metadata"].endswith("schemas/benchmark_metadata.schema.json")
@@ -552,14 +568,34 @@ def test_cli_target_priority_summary_outputs_selected_target() -> None:
     assert exit_code == 0
     assert result["schema_version"] == "background_target_priority_v1"
     assert result["config_version"] == "background_priority_v0"
-    assert result["target_count"] == 3
-    assert result["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 1}
+    assert result["target_count"] == 4
+    assert result["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 2}
     assert result["selected_target_id"] == "target-radio-clean-drift"
     assert result["selected_priority_score"] == 0.7515
+    assert result["selected_selection_score"] == 0.8315
     assert result["weights"]["false_positive_probability"] < 0
     assert result["passive_runner_requires_opt_in"] is True
     assert result["network_access_enabled"] is False
     assert "not evidence" in result["disclaimer"]
+
+
+def test_cli_target_priority_summary_uses_review_history() -> None:
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "target-priority-summary",
+            "--ledger-path",
+            "tests/fixtures/background_search_ledger.json",
+        ],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["selected_target_id"] == "target-radio-never-reviewed"
+    assert result["selected_selection_score"] == 0.7715
+    assert result["ranked_targets"][0]["prior_review_count"] == 0
 
 
 def test_cli_background_ledger_summary_outputs_logged_searches() -> None:
@@ -590,7 +626,96 @@ def test_cli_background_ledger_summary_outputs_logged_searches() -> None:
         "negative_search_recorded": 1,
         "review_blocked": 1,
     }
+
+
+def test_cli_reviewed_log_summary_outputs_reviewed_outcomes() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["reviewed-log-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "background_reviewed_log_v1"
+    assert result["entry_count"] == 2
+    assert result["negative_evidence_count"] == 4
+    assert result["network_access_allowed_count"] == 0
+    assert result["by_track"] == {"anomaly": 1, "radio": 1}
+    assert "not external validation" in result["disclaimer"]
+
+
+def test_cli_needs_follow_up_summary_outputs_required_tests() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["needs-follow-up-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "background_needs_follow_up_log_v1"
+    assert result["entry_count"] == 2
+    assert result["required_test_count"] == 12
+    assert result["mandatory_test_coverage_count"] == 6
+    assert result["submission_requires_user_approval_count"] == 2
+    assert result["network_access_allowed_count"] == 0
+    assert "human_review_checklist" in result["required_tests"]
+    assert "not detections" in result["disclaimer"]
     assert "not discovery claims" in result["disclaimer"]
+
+
+def test_cli_follow_up_test_summary_outputs_local_test_results() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["follow-up-test-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "background_follow_up_tests_v1"
+    assert result["result_count"] == 12
+    assert result["follow_up_count"] == 2
+    assert result["complete_follow_up_test_set_count"] == 2
+    assert result["mandatory_test_count"] == 6
+    assert result["network_access_allowed_count"] == 0
+    assert result["by_status"] == {
+        "blocked": 2,
+        "pass": 7,
+        "ready": 1,
+        "uncertain": 2,
+    }
+    assert "human_review_checklist" in result["required_tests"]
+    assert "not external validation" in result["disclaimer"]
+
+
+def test_cli_report_readiness_summary_outputs_submission_gate() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["report-readiness-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "background_report_readiness_v1"
+    assert result["record_count"] == 2
+    assert result["ready_to_draft_report_count"] == 1
+    assert result["blocked_count"] == 1
+    assert result["user_approval_required_count"] == 2
+    assert result["external_submission_allowed_count"] == 0
+    assert result["top_three_recommendation_count"] == 6
+    assert result["by_destination_action"] == {
+        "do_not_submit_yet": 1,
+        "internal_review": 2,
+        "request_more_tests": 3,
+    }
+    assert "not discoveries" in result["disclaimer"]
+
+
+def test_cli_submission_recommendation_summary_aliases_report_readiness() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["submission-recommendation-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "background_report_readiness_v1"
+    assert result["top_three_recommendation_count"] == 6
+    assert result["external_submission_allowed_count"] == 0
 
 
 def test_cli_background_reviewed_workflow_summary_outputs_review_state() -> None:
@@ -674,17 +799,19 @@ def test_cli_background_run_once_appends_local_ledger_entry(tmp_path) -> None:
     assert result["ok"] is True
     assert result["appended_entry"]["run_id"] == "cli-local-run-001"
     assert result["appended_entry"]["target_id"] == "target-radio-clean-drift"
-    assert result["appended_entry"]["status"] == "local_fixture_search_logged"
+    assert result["appended_entry"]["status"] == "needs_follow_up_logged"
     assert result["appended_entry"]["execution_mode"] == (
         "local_non_network_fixture_runner"
     )
-    assert result["appended_entry"]["negative_result_logged"] is True
+    assert result["appended_entry"]["negative_result_logged"] is False
     assert result["appended_entry"]["reviewed_workflow_status"] == (
-        "local_scheduling_only"
+        "needs_follow_up_required"
     )
     assert result["ledger_summary"]["entry_count"] == 1
     assert result["ledger_summary"]["candidate_count"] == 0
     assert result["review_workflow_summary"]["local_only_entry_count"] == 1
+    assert result["outcome_log"]["outcome"] == "needs_follow_up"
+    assert (tmp_path / "background_needs_follow_up_log.json").exists()
     assert ledger_path.exists()
 
 
@@ -772,7 +899,7 @@ def test_cli_validate_all_outputs_local_summary() -> None:
     assert result["benchmark_run_summary"]["run_count"] == 3
     assert result["benchmark_run_summary"]["input_case_total"] == 171
     assert result["benchmark_run_summary"]["max_worker_count"] == 12
-    assert result["target_priority_summary"]["target_count"] == 3
+    assert result["target_priority_summary"]["target_count"] == 4
     assert result["target_priority_summary"]["selected_target_id"] == (
         "target-radio-clean-drift"
     )
@@ -786,6 +913,31 @@ def test_cli_validate_all_outputs_local_summary() -> None:
         "negative_result_logged_count"
     ] == 2
     assert result["background_review_workflow_summary"]["local_only_entry_count"] == 1
+    assert result["background_reviewed_log_summary"]["entry_count"] == 2
+    assert result["background_reviewed_log_summary"][
+        "network_access_allowed_count"
+    ] == 0
+    assert result["background_needs_follow_up_summary"]["entry_count"] == 2
+    assert result["background_needs_follow_up_summary"][
+        "submission_requires_user_approval_count"
+    ] == 2
+    assert result["background_needs_follow_up_summary"][
+        "network_access_allowed_count"
+    ] == 0
+    assert result["background_follow_up_test_summary"]["result_count"] == 12
+    assert result["background_follow_up_test_summary"][
+        "complete_follow_up_test_set_count"
+    ] == 2
+    assert result["background_follow_up_test_summary"][
+        "network_access_allowed_count"
+    ] == 0
+    assert result["background_report_readiness_summary"]["record_count"] == 2
+    assert result["background_report_readiness_summary"][
+        "ready_to_draft_report_count"
+    ] == 1
+    assert result["background_report_readiness_summary"][
+        "external_submission_allowed_count"
+    ] == 0
     assert result["candidate_extraction_handoff_summary"]["record_count"] == 4
     assert result["candidate_extraction_handoff_summary"]["ready_count"] == 1
     assert result["candidate_extraction_handoff_summary"][
@@ -809,7 +961,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 14
+    assert result["schema_count"] == 18
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -849,13 +1001,27 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["benchmark_run_count"] == 3
     assert result["benchmark_run_input_case_total"] == 171
     assert result["benchmark_run_max_worker_count"] == 12
-    assert result["target_priority_count"] == 3
+    assert result["target_priority_count"] == 4
     assert result["selected_background_target_id"] == "target-radio-clean-drift"
     assert result["background_ledger_entry_count"] == 4
     assert result["background_ledger_candidate_count"] == 2
     assert result["background_review_workflow_status_count"] == 4
     assert result["background_review_negative_result_logged_count"] == 2
     assert result["background_review_local_only_entry_count"] == 1
+    assert result["background_reviewed_log_entry_count"] == 2
+    assert result["background_reviewed_log_network_access_allowed_count"] == 0
+    assert result["background_needs_follow_up_entry_count"] == 2
+    assert result["background_needs_follow_up_required_test_count"] == 12
+    assert result["background_needs_follow_up_user_approval_count"] == 2
+    assert result["background_needs_follow_up_network_access_allowed_count"] == 0
+    assert result["background_follow_up_test_result_count"] == 12
+    assert result["background_follow_up_test_complete_set_count"] == 2
+    assert result["background_follow_up_test_network_access_allowed_count"] == 0
+    assert result["background_report_readiness_record_count"] == 2
+    assert result["background_report_readiness_ready_to_draft_count"] == 1
+    assert result["background_report_readiness_user_approval_count"] == 2
+    assert result["background_report_readiness_external_submission_allowed_count"] == 0
+    assert result["background_report_readiness_top_three_recommendation_count"] == 6
     assert result["candidate_extraction_handoff_record_count"] == 4
     assert result["candidate_extraction_handoff_ready_count"] == 1
     assert result["candidate_extraction_handoff_blocked_count"] == 1

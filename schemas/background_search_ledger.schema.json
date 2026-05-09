@@ -111,7 +111,9 @@
             "enum": [
               "candidate_packet_ready",
               "local_scheduling_only",
+              "needs_follow_up_required",
               "negative_search_recorded",
+              "reviewed_no_follow_up",
               "review_blocked",
               "unreviewed"
             ]

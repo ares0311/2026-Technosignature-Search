@@ -26,6 +26,17 @@
       "blocking_issue_count": 1
     },
     {
+      "target_id": "target-radio-never-reviewed",
+      "track": "radio",
+      "source_id": "synthetic-radio-target-d",
+      "followup_value": 0.79,
+      "novelty_score": 0.90,
+      "data_quality_score": 0.87,
+      "observability_score": 0.70,
+      "false_positive_probability": 0.18,
+      "blocking_issue_count": 0
+    },
+    {
       "target_id": "target-anomaly-weak-context",
       "track": "anomaly",
       "source_id": "synthetic-archival-target-c",
