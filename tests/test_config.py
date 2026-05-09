@@ -1,5 +1,6 @@
 import pytest
 
+from techno_search.background_search import load_background_priority_config
 from techno_search.config import load_scoring_config, load_track_config
 from techno_search.schemas import Track
 
@@ -35,3 +36,12 @@ def test_radio_config_preserves_rfi_band_metadata() -> None:
     config = load_track_config(Track.RADIO)
 
     assert config.raw["rfi_bands_hz"][0]["name"] == "gps_l1"
+
+
+def test_background_priority_config_is_versioned_and_local_only() -> None:
+    config = load_background_priority_config()
+
+    assert config.config_version == "background_priority_v0"
+    assert config.weights["followup_value"] == 0.35
+    assert config.passive_runner_requires_opt_in is True
+    assert config.network_access_enabled is False

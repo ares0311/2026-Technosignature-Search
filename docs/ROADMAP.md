@@ -229,6 +229,8 @@ Add real data ingestion behind tested abstractions.
 - [x] Provider normalization summary in local validation
 - [x] Fixture-backed background target-priority summary
 - [x] Passive/background search ledger summary
+- [x] Versioned background target-priority config
+- [x] Explicit local-only passive runner ledger append command
 
 ---
 

@@ -292,6 +292,30 @@ Print the fixture-backed target-priority ranking used by the passive/background 
 The summary reports target counts by track, versioned priority weights, the selected target ID, and the ranked target list. Target priority is a scheduling aid only; it is not evidence of a technosignature and it is not a discovery claim.
 
 Use `--target-path` to inspect a different target-priority JSON file.
+Use `--config-path` to inspect the target list with a different versioned background priority config.
+
+---
+
+## Run One Local Background Search
+
+Append one explicit local-only background search ledger entry for the highest-priority fixture target:
+
+```bash
+.venv/bin/techno-search background-run-once \
+  --ledger-path artifacts/background_search_ledger.json \
+  --acknowledge-local-run
+```
+
+This command is intentionally opt-in. It uses the configured target-priority weights, selects the top ranked fixture target, writes a ledger entry, and does not access live providers or claim candidate extraction.
+
+Useful options:
+
+- `--target-path` selects an alternate target-priority JSON file.
+- `--config-path` selects an alternate background priority config JSON file.
+- `--run-id` records a stable run identifier.
+- `--code-commit` records a commit SHA or workspace identifier.
+
+Generated ledgers should be written to ignored local paths such as `artifacts/` unless they are tiny, reviewed fixtures.
 
 ---
 

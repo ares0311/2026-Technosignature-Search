@@ -222,7 +222,7 @@ background target fixture
 → passive/background ledger entry after search
 ```
 
-The passive/background ledger must record searched targets even when no candidate packet is produced.
+The passive/background ledger must record searched targets even when no candidate packet is produced. The current local runner is explicitly opt-in, uses `configs/background_priority_v0.json`, does not access network providers, and logs scheduling-only entries as reproducibility records rather than candidate claims.
 
 ---
 

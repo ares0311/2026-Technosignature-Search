@@ -14,6 +14,7 @@ from typing import TextIO
 
 from techno_search.background_search import (
     background_search_ledger_summary,
+    run_local_background_search_once,
     target_priority_summary,
 )
 from techno_search.benchmark_metadata import (
@@ -239,7 +240,7 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
     if args.command == "target-priority-summary":
         print(
             json.dumps(
-                target_priority_summary(args.target_path),
+                target_priority_summary(args.target_path, args.config_path),
                 indent=2,
                 sort_keys=True,
             ),
@@ -251,6 +252,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(
             json.dumps(
                 background_search_ledger_summary(args.ledger_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "background-run-once":
+        print(
+            json.dumps(
+                run_local_background_search_once(
+                    args.ledger_path,
+                    target_path=args.target_path,
+                    config_path=args.config_path,
+                    run_id=args.run_id,
+                    code_commit=args.code_commit,
+                    opt_in=args.acknowledge_local_run,
+                ),
                 indent=2,
                 sort_keys=True,
             ),
@@ -1099,6 +1118,11 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Optional background target-priority JSON path.",
     )
+    target_priority_parser.add_argument(
+        "--config-path",
+        type=Path,
+        help="Optional background priority config JSON path.",
+    )
     background_ledger_parser = subparsers.add_parser(
         "background-ledger-summary",
         help="Summarize passive/background search ledger fixture coverage.",
@@ -1107,6 +1131,41 @@ def _build_parser() -> argparse.ArgumentParser:
         "--ledger-path",
         type=Path,
         help="Optional background search ledger JSON path.",
+    )
+    background_run_parser = subparsers.add_parser(
+        "background-run-once",
+        help="Append one explicit local-only background search ledger entry.",
+    )
+    background_run_parser.add_argument(
+        "--ledger-path",
+        type=Path,
+        required=True,
+        help="Background search ledger JSON path to create or append.",
+    )
+    background_run_parser.add_argument(
+        "--target-path",
+        type=Path,
+        help="Optional background target-priority JSON path.",
+    )
+    background_run_parser.add_argument(
+        "--config-path",
+        type=Path,
+        help="Optional background priority config JSON path.",
+    )
+    background_run_parser.add_argument(
+        "--run-id",
+        help="Optional stable run ID for reproducibility.",
+    )
+    background_run_parser.add_argument(
+        "--code-commit",
+        default="not-recorded",
+        help="Optional code commit or workspace identifier to record in the ledger.",
+    )
+    background_run_parser.add_argument(
+        "--acknowledge-local-run",
+        action="store_true",
+        required=True,
+        help="Required opt-in flag acknowledging this local runner does not use network data.",
     )
     subparsers.add_parser(
         "validate-all",

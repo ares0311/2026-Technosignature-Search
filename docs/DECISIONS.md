@@ -376,3 +376,26 @@ An automated or semi-automated target selector can be useful for deciding what t
 - False-positive probability and blocking issues must penalize target priority.
 - Passive/background search runs must append ledger entries, including negative searches.
 - A selected target ID must not be presented as evidence of a technosignature-interest candidate.
+
+---
+
+## DECISION-016: Keep The v0 Passive Runner Local-Only And Explicitly Opt-In
+
+**Date:** 2026-05-08
+
+**Status:** Accepted
+
+### Decision
+
+The first passive/background runner must be local-only, fixture-backed, and explicitly opt-in. It may append a ledger entry for the selected target, but it must not query live providers, claim candidate extraction, or bypass the normal candidate scoring/reporting workflow.
+
+### Rationale
+
+Passive search infrastructure is useful only if it improves reproducibility. A background process that silently searches, silently drops negative results, or presents a target-selection score as candidate evidence would undermine the project's scientific guardrails.
+
+### Consequences
+
+- The runner records `candidate_count` as `0` until candidate extraction is implemented.
+- The runner routes scheduling-only entries to `github_reproducibility_only`.
+- The runner requires an explicit CLI acknowledgement flag.
+- Generated local ledgers should be written to ignored paths unless reviewed as tiny fixtures.

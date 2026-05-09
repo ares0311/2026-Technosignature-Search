@@ -162,6 +162,14 @@ Review fixture-backed background target prioritization:
 .venv/bin/techno-search target-priority-summary
 ```
 
+Run one explicit local-only background ledger append in an ignored output path:
+
+```bash
+.venv/bin/techno-search background-run-once \
+  --ledger-path artifacts/background_search_ledger.json \
+  --acknowledge-local-run
+```
+
 Review passive/background search ledger coverage:
 
 ```bash
@@ -246,6 +254,12 @@ Background search ledger fixture:
 
 ```text
 tests/fixtures/background_search_ledger.json
+```
+
+Background priority config:
+
+```text
+configs/background_priority_v0.json
 ```
 
 When scores change, review whether the scoring model, thresholds, or example inputs changed intentionally.

@@ -7,6 +7,32 @@
 
 ---
 
+## 📑 Table of Contents
+
+| Section | Contents |
+|---------|----------|
+| [Introduction](#-introduction) | Abstract, modal search scope, core premise, and at-a-glance summary |
+| [Scientific Motivation](#-scientific-motivation) | Research questions and false-positive-first scientific framing |
+| [Current Status](#-current-status) | Active implementation state and project phase |
+| [Project Roadmap](#-project-roadmap) | Roadmap milestones aligned to the implementation plan |
+| [Pipeline Architecture](#%EF%B8%8F-pipeline-architecture) | Global flow, track-specific flow, null models, and shared stage contract |
+| [Methodology and Scoring Equations](#-methodology-and-scoring-equations) | Roadmap-aligned methodology, Bayesian framing, scoring equations, calibration targets, and hypotheses |
+| [Data Sources](#-data-sources) | Radio, infrared, astrometric, catalog, and archival source roles |
+| [Installation](#-installation) | Local `.venv` setup and editable install instructions |
+| [Quick Start](#-quick-start) | First scoring, report generation, and validation commands |
+| [Using and Recalibrating the Model](#-using-and-recalibrating-the-model) | Operator workflow, recalibration, background target selection, and passive ledger logging |
+| [Quality Control](#-quality-control) | Validation commands, test gates, and risk-control matrix |
+| [Submission Pathways](#-submission-pathways) | Conservative routing from likely false positives to review packets |
+| [Repository Layout](#-repository-layout) | Package, docs, examples, schemas, tests, and fixtures |
+| [Local System Profile](#-local-system-profile) | Hardware-aware defaults without scientific hard-coding |
+| [Guardrails](#-guardrails) | Scientific, engineering, data, and background-search constraints |
+| [Important Disclaimer](#%EF%B8%8F-important-disclaimer) | Explicit limits on claims and interpretation |
+| [Works Cited](#-works-cited) | MLA-style references |
+| [License](#-license) | Apache 2.0 license |
+| [Vision](#-vision) | Long-term project direction |
+
+---
+
 ## 🌌 Introduction
 
 ### Abstract
@@ -97,17 +123,15 @@ The workflow follows the same broad pattern used in exoplanet vetting: detect an
 | Milestone | Description | Status |
 |----------|-------------|--------|
 | 1 | Multi-modal scoring core | ✅ Implemented |
-| 2 | Radio SETI synthetic candidate tests | ✅ Implemented |
-| 3 | Radio ingestion and hit scoring demo | ✅ Prototype |
-| 4 | Infrared catalog anomaly prototype | ✅ Prototype |
-| 5 | Archival anomaly prototype | ✅ Prototype |
-| 6 | Candidate reporting system | ✅ Implemented |
-| 7 | Calibration fixtures and summaries | ✅ Implemented |
-| 8 | Injection-recovery and reliability diagnostics | ✅ Implemented |
-| 9 | Human-review workflow | ✅ Scaffolded |
-| 10 | Guarded live-data integrations | ✅ Scaffolded / opt-in |
-| 11 | Curated non-synthetic validation datasets | ⏳ Planned |
-| 12 | Advanced AI triage after calibration | ⏳ Deferred |
+| 2 | Radio SETI prototype | ✅ Implemented |
+| 3 | Infrared waste-heat prototype | ✅ Implemented |
+| 4 | Archival / catalog anomaly prototype | ✅ Implemented |
+| 5 | Reproducible reporting system | ✅ Implemented |
+| 6 | Injection-recovery diagnostics | ✅ Implemented |
+| 7 | Human-review workflow | ✅ Implemented |
+| 8 | Guarded live-data integrations and background search scaffold | ✅ Scaffolded / opt-in |
+| 9 | Calibration fixtures, summaries, and benchmark metadata | ✅ Implemented |
+| 10 | Advanced AI research track after calibration | ⏳ Deferred |
 
 👉 See [`docs/ROADMAP.md`](docs/ROADMAP.md)
 
@@ -181,6 +205,43 @@ Track C: Archival / Catalog Anomalies
 ## 📐 Methodology and Scoring Equations
 
 The scoring model evaluates multiple hypotheses for each candidate. It is Bayesian in structure, but the v0 implementation uses interpretable log-score approximations until calibrated empirical likelihoods are available.
+
+### Roadmap-Aligned Methodology
+
+The roadmap is methodological, not merely organizational. Each milestone adds a bounded scientific capability while preserving the same conservative inference contract: detect or ingest only enough to build a candidate packet, attack ordinary explanations first, score competing hypotheses, and emit a reproducible review artifact.
+
+| Roadmap Milestone | Methodological Role | README Section That Implements It |
+|-------------------|---------------------|-----------------------------------|
+| 1. Multi-modal scoring core | Define shared hypotheses, posterior-style scores, pathway logic, and false-positive-first interpretation | Feature representation, Bayesian framing, v0 approximation, false-positive probability |
+| 2. Radio SETI prototype | Test narrowband/drift candidates against RFI, cadence, metadata, and instrumental null models | Track-specific flow, evidence and null-model matrix, radio data sources |
+| 3. Infrared waste-heat prototype | Test catalog/SED excess candidates against dust, galaxies, AGN, blending, and photometric artifacts | Track-specific flow, hypotheses, Gaia/2MASS/WISE data sources |
+| 4. Archival/catalog anomaly prototype | Test missing, appearing, displaced, or variable sources against proper motion, depth, moving-object, and artifact explanations | Track-specific flow, null-model matrix, historical/modern catalog sources |
+| 5. Reporting system | Preserve positive evidence, negative evidence, blocking issues, provenance, schema versions, and conservative pathway routing | Shared stage contract, outputs, quality control, submission pathways |
+| 6. Injection-recovery | Measure whether synthetic signals are recovered and whether synthetic false alarms remain controlled | Calibration targets, quality-control matrix |
+| 7. Human review | Treat review labels, consensus, and exports as triage artifacts rather than validation or discovery claims | Using the model, quality control, submission pathways |
+| 8. Live-data integrations | Keep provider access opt-in, cached, provenance-only by default, and compatible with background ledger logging | Data sources, background logging requirements, guardrails |
+| 9. Calibration | Evaluate reliability, precision-recall, false-positive classes, benchmark metadata, and score stability before empirical claims | Calibration targets and recalibration workflow |
+| 10. Advanced AI research | Permit learned triage only after interpretable baselines, validation datasets, provenance, and calibration exist | Guardrails and roadmap deferral |
+
+The resulting staged method can be summarized as:
+
+$$
+\mathcal{M}_{\mathrm{roadmap}} =
+\left[
+\mathrm{score},
+\mathrm{radio},
+\mathrm{infrared},
+\mathrm{anomaly},
+\mathrm{report},
+\mathrm{inject/recover},
+\mathrm{review},
+\mathrm{live\ opt\mbox{-}in},
+\mathrm{calibrate},
+\mathrm{AI\ after\ calibration}
+\right]
+$$
+
+The order matters. Large-scale live search and advanced AI triage are downstream of transparent scoring, fixture coverage, report generation, human review, and calibration diagnostics.
 
 ### Feature Representation
 
@@ -446,6 +507,16 @@ To ask the current background-search scaffold which target should be searched ne
 
 This command ranks the committed synthetic target list and returns a selected `target_id`. The selected target is a scheduling recommendation only. It is not evidence of a technosignature and it is not a discovery claim.
 
+To append one local-only passive/background search ledger entry for the highest-priority fixture target, run:
+
+```bash
+.venv/bin/techno-search background-run-once \
+  --ledger-path artifacts/background_search_ledger.json \
+  --acknowledge-local-run
+```
+
+The acknowledgement flag is intentional. The command records a local scheduling/search event without network access and without claiming candidate extraction.
+
 To inspect what the passive/background system has already searched, run:
 
 ```bash
@@ -517,7 +588,7 @@ T =
 - \lambda P(\mathrm{false\ positive})
 $$
 
-where \(T\) is a target-priority score, not evidence of a technosignature. The weights \(\alpha, \beta, \gamma, \delta,\lambda\) must be versioned in config and calibrated against validation datasets.
+where \(T\) is a target-priority score, not evidence of a technosignature. The weights \(\alpha, \beta, \gamma, \delta,\lambda\) are versioned in [`configs/background_priority_v0.json`](configs/background_priority_v0.json) and should eventually be calibrated against validation datasets.
 
 Current v0 target-priority fixture fields:
 
@@ -557,6 +628,18 @@ In v0, the committed ledger fixture is summarized by:
 ```bash
 .venv/bin/techno-search background-ledger-summary
 ```
+
+The local append-only runner is invoked explicitly:
+
+```bash
+.venv/bin/techno-search background-run-once \
+  --ledger-path artifacts/background_search_ledger.json \
+  --run-id background-local-demo \
+  --code-commit "$(git rev-parse --short HEAD)" \
+  --acknowledge-local-run
+```
+
+This runner selects the top ranked fixture target, records a `local_fixture_search_logged` ledger entry, sets `candidate_count` to `0`, and routes the entry to `github_reproducibility_only`. It is a passive-runner scaffold, not a production autonomous search daemon.
 
 Before any future passive runner is treated as operational, it must:
 

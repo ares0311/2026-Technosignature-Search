@@ -435,11 +435,14 @@ def test_cli_target_priority_summary_outputs_selected_target() -> None:
 
     assert exit_code == 0
     assert result["schema_version"] == "background_target_priority_v1"
+    assert result["config_version"] == "background_priority_v0"
     assert result["target_count"] == 3
     assert result["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 1}
     assert result["selected_target_id"] == "target-radio-clean-drift"
     assert result["selected_priority_score"] == 0.7515
     assert result["weights"]["false_positive_probability"] < 0
+    assert result["passive_runner_requires_opt_in"] is True
+    assert result["network_access_enabled"] is False
     assert "not evidence" in result["disclaimer"]
 
 
@@ -461,6 +464,35 @@ def test_cli_background_ledger_summary_outputs_logged_searches() -> None:
         "searched_no_candidate": 1,
     }
     assert "not discovery claims" in result["disclaimer"]
+
+
+def test_cli_background_run_once_appends_local_ledger_entry(tmp_path) -> None:
+    ledger_path = tmp_path / "background_ledger.json"
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "background-run-once",
+            "--ledger-path",
+            str(ledger_path),
+            "--run-id",
+            "cli-local-run-001",
+            "--code-commit",
+            "cli-test",
+            "--acknowledge-local-run",
+        ],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["ok"] is True
+    assert result["appended_entry"]["run_id"] == "cli-local-run-001"
+    assert result["appended_entry"]["target_id"] == "target-radio-clean-drift"
+    assert result["appended_entry"]["status"] == "local_fixture_search_logged"
+    assert result["ledger_summary"]["entry_count"] == 1
+    assert result["ledger_summary"]["candidate_count"] == 0
+    assert ledger_path.exists()
 
 
 def test_cli_validate_all_outputs_local_summary() -> None:

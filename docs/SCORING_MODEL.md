@@ -401,7 +401,7 @@ T = alpha * followup_value
   - blocking_issue_penalty
 ```
 
-The default fixture weights are:
+The default versioned config is `configs/background_priority_v0.json`. Its fixture weights are:
 
 ```json
 {
@@ -413,7 +413,7 @@ The default fixture weights are:
 }
 ```
 
-This score is a scheduling aid only. It does not claim a confirmed technosignature, detection, external validation, or calibrated survey performance.
+This score is a scheduling aid only. It does not claim a confirmed technosignature, detection, external validation, or calibrated survey performance. The local passive runner must preserve that separation by appending ledger entries with explicit opt-in and no default network access.
 
 ---
 

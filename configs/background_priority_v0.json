@@ -1,0 +1,18 @@
+{
+  "config_version": "background_priority_v0",
+  "description": "Initial conservative target-priority weights and local-only passive runner defaults.",
+  "disclaimer": "Background target priority is a scheduling aid only; it is not evidence of a technosignature or a discovery claim.",
+  "weights": {
+    "followup_value": 0.35,
+    "novelty_score": 0.25,
+    "data_quality_score": 0.2,
+    "observability_score": 0.1,
+    "false_positive_probability": -0.3
+  },
+  "blocking_issue_penalty_per_issue": 0.05,
+  "max_blocking_issue_penalty": 0.25,
+  "passive_runner_requires_opt_in": true,
+  "network_access_enabled": false,
+  "local_runner_status": "local_fixture_search_logged",
+  "local_runner_pathway": "github_reproducibility_only"
+}

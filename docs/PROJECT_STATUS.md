@@ -142,6 +142,8 @@ The project will support three tracks from day one:
 - [x] Background target-priority fixture, schema, and summary CLI added
 - [x] Passive/background search ledger fixture, schema, and summary CLI added
 - [x] Background target-priority and ledger summaries wired into local validation
+- [x] Background target-priority weights promoted into a versioned config file
+- [x] Explicit local-only passive runner added for ledger append tests
 
 ---
 
@@ -166,9 +168,9 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Promote the background target-priority weights from synthetic fixture constants into a versioned config file.
-2. Add an explicit opt-in passive runner that appends ledger entries without using network access by default.
-3. Define a durable benchmark run-result append workflow for future synthetic calibration grids.
+1. Define a durable benchmark run-result append workflow for future synthetic calibration grids.
+2. Add comparison checks for repeated benchmark run-result summaries.
+3. Promote local-only background run fixtures into a reviewed workflow only after ledger semantics stabilize.
 
 ---
 

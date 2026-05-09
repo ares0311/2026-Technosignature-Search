@@ -34,6 +34,7 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     readme = Path("README.md").read_text(encoding="utf-8")
 
     expected_sections = (
+        "## 📑 Table of Contents",
         "## 🌌 Introduction",
         "## 🧠 Scientific Motivation",
         "## 📊 Current Status",
@@ -57,6 +58,8 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     for section in expected_sections:
         assert section in readme
 
+    assert "[Methodology and Scoring Equations](#-methodology-and-scoring-equations)" in readme
+    assert "[Using and Recalibrating the Model](#-using-and-recalibrating-the-model)" in readme
     assert "### Abstract" in readme
     assert "Technosignature searches require an analysis framework" in readme
     assert "calibrated empirical likelihoods are not yet claimed" in readme
@@ -64,6 +67,9 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     assert "Most apparent technosignature-like signals are false positives." in readme
     assert "### Research Questions" in readme
     assert "### Evidence and Null-Model Matrix" in readme
+    assert "### Roadmap-Aligned Methodology" in readme
+    assert "\\mathcal{M}_{\\mathrm{roadmap}}" in readme
+    assert "Advanced AI research track after calibration" in readme
     assert "\\mathcal{H} =" in readme
     assert "K_{ij} =" in readme
     assert "\\mathrm{Brier} =" in readme
@@ -80,6 +86,8 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     assert "search ledger" in readme
     assert ".venv/bin/techno-search target-priority-summary" in readme
     assert ".venv/bin/techno-search background-ledger-summary" in readme
+    assert ".venv/bin/techno-search background-run-once" in readme
+    assert "configs/background_priority_v0.json" in readme
     assert "The selected target is a scheduling recommendation only." in readme
     assert "### Quality-Control Matrix" in readme
     assert ".venv/bin/techno-search score examples/candidates/radio_clean_candidate.json" in readme

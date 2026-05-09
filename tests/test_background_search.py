@@ -6,8 +6,10 @@ from techno_search.background_search import (
     BACKGROUND_SEARCH_LEDGER_DISCLAIMER,
     TARGET_PRIORITY_DISCLAIMER,
     background_search_ledger_summary,
+    load_background_priority_config,
     load_background_search_ledger,
     load_background_targets,
+    run_local_background_search_once,
     target_priority_score,
     target_priority_summary,
 )
@@ -27,9 +29,10 @@ def test_background_targets_load_with_conservative_disclaimer() -> None:
 
 
 def test_target_priority_score_prefers_cleaner_high_value_target() -> None:
+    config = load_background_priority_config()
     targets = load_background_targets()
     scores = {
-        target.target_id: target_priority_score(target)
+        target.target_id: target_priority_score(target, config=config)
         for target in targets
     }
 
@@ -43,11 +46,14 @@ def test_target_priority_summary_ranks_targets_and_exposes_weights() -> None:
     summary = target_priority_summary()
 
     assert summary["schema_version"] == "background_target_priority_v1"
+    assert summary["config_version"] == "background_priority_v0"
     assert summary["target_count"] == 3
     assert summary["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 1}
     assert summary["selected_target_id"] == "target-radio-clean-drift"
     assert summary["selected_priority_score"] == 0.7515
     assert summary["weights"]["false_positive_probability"] < 0
+    assert summary["passive_runner_requires_opt_in"] is True
+    assert summary["network_access_enabled"] is False
     assert "not evidence" in summary["disclaimer"]
     assert [
         target["target_id"] for target in summary["ranked_targets"]
@@ -104,3 +110,67 @@ def test_background_search_rejects_wrong_schema_version(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="Unsupported target priority schema"):
         load_background_targets(target_path)
+
+
+def test_background_priority_config_loads_versioned_weights() -> None:
+    config = load_background_priority_config()
+
+    assert config.config_version == "background_priority_v0"
+    assert config.weights["followup_value"] == 0.35
+    assert config.weights["false_positive_probability"] == -0.3
+    assert config.blocking_issue_penalty_per_issue == 0.05
+    assert config.max_blocking_issue_penalty == 0.25
+    assert config.passive_runner_requires_opt_in is True
+    assert config.network_access_enabled is False
+    assert config.local_runner_pathway == "github_reproducibility_only"
+
+
+def test_local_background_run_requires_explicit_opt_in(tmp_path: Path) -> None:
+    ledger_path = tmp_path / "background_ledger.json"
+
+    with pytest.raises(ValueError, match="explicit opt-in"):
+        run_local_background_search_once(ledger_path)
+
+
+def test_local_background_run_appends_non_network_ledger_entry(tmp_path: Path) -> None:
+    ledger_path = tmp_path / "background_ledger.json"
+
+    result = run_local_background_search_once(
+        ledger_path,
+        run_id="local-test-run-001",
+        code_commit="test-commit",
+        opt_in=True,
+    )
+    entry = result["appended_entry"]
+    summary = result["ledger_summary"]
+
+    assert result["ok"] is True
+    assert ledger_path.exists()
+    assert entry["run_id"] == "local-test-run-001"
+    assert entry["target_id"] == "target-radio-clean-drift"
+    assert entry["status"] == "local_fixture_search_logged"
+    assert entry["config_version"] == "background_priority_v0"
+    assert entry["candidate_count"] == 0
+    assert entry["recommended_pathways"] == ["github_reproducibility_only"]
+    assert entry["query_parameters"]["mode"] == "local_non_network_fixture_runner"
+    assert entry["query_parameters"]["selected_priority_score"] == 0.7515
+    assert summary["entry_count"] == 1
+    assert summary["candidate_count"] == 0
+    assert summary["by_status"] == {"local_fixture_search_logged": 1}
+
+
+def test_local_background_run_appends_to_existing_ledger(tmp_path: Path) -> None:
+    ledger_path = tmp_path / "background_ledger.json"
+    ledger_path.write_text(
+        Path("tests/fixtures/background_search_ledger.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+
+    result = run_local_background_search_once(
+        ledger_path,
+        run_id="local-test-run-002",
+        opt_in=True,
+    )
+
+    assert result["ledger_summary"]["entry_count"] == 4
+    assert result["ledger_summary"]["run_ids"][-1] == "local-test-run-002"

@@ -88,6 +88,33 @@ Merge status: already on `main`; no merge needed.
 
 ---
 
+## Background Config And Local Passive Runner Expansion
+
+User requested the next fifteen steps and asked to push when complete.
+
+Status: implemented in this iteration.
+
+Added:
+
+- `configs/background_priority_v0.json` for versioned target-priority weights and passive-runner defaults
+- background priority config loader and public exports
+- config-backed `target-priority-summary`
+- explicit `techno-search background-run-once` command
+- local-only ledger append helper with required opt-in and no network access
+- tests for config loading, opt-in enforcement, ledger creation, ledger append behavior, and CLI output
+- README, CLI usage, validation, roadmap, scoring model, pipeline spec, project status, and decisions updates
+
+Scientific guardrail:
+
+- the passive runner records scheduling-only local fixture events
+- `candidate_count` remains `0` until candidate extraction is implemented
+- the output pathway is `github_reproducibility_only`
+- no live provider access is performed
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Consensus Export, Promotion, And Benchmark Run Expansion
 
 User requested the next fifteen steps:
