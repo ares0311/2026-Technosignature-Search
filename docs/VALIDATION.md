@@ -79,6 +79,7 @@ Committed schemas:
 - `schemas/benchmark_run_results.schema.json`
 - `schemas/background_targets.schema.json`
 - `schemas/background_search_ledger.schema.json`
+- `schemas/candidate_extraction_handoff.schema.json`
 - `schemas/validation_readiness.schema.json`
 
 ---
@@ -212,7 +213,13 @@ Review background reviewed-workflow state:
 .venv/bin/techno-search background-reviewed-workflow-summary
 ```
 
-`validate-all` and `validation-summary` include calibration-by-track, false-positive class, validation dataset, validation readiness, benchmark metadata, benchmark run-result metadata, background target-priority, background search ledger, background reviewed-workflow, injection-recovery, reliability, precision-recall, human-review queue, consensus-label, and consensus-export coverage. Benchmark append and compare commands are local workflow helpers for ignored output paths. The reported calibration-by-track coverage, false-positive class coverage, validation dataset coverage, validation readiness counts, benchmark metadata, benchmark run-result metadata, benchmark deltas, target-priority ranking, background ledger counts, background reviewed-workflow counts, recovery rate, false-alarm fraction, reliability errors, precision, recall, F1 score, review queue counts, consensus counts, and consensus export counts are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, per-track survey performance, classification performance estimates, discovery claims, external validation, detections, or scientific performance claims.
+Review candidate-extraction handoff readiness:
+
+```bash
+.venv/bin/techno-search candidate-extraction-handoff-summary
+```
+
+`validate-all` and `validation-summary` include calibration-by-track, false-positive class, validation dataset, validation readiness, benchmark metadata, benchmark run-result metadata, background target-priority, background search ledger, background reviewed-workflow, candidate extraction handoff, injection-recovery, reliability, precision-recall, human-review queue, consensus-label, and consensus-export coverage. Benchmark append and compare commands are local workflow helpers for ignored output paths. The reported calibration-by-track coverage, false-positive class coverage, validation dataset coverage, validation readiness counts, benchmark metadata, benchmark run-result metadata, benchmark deltas, target-priority ranking, background ledger counts, background reviewed-workflow counts, candidate extraction handoff counts, recovery rate, false-alarm fraction, reliability errors, precision, recall, F1 score, review queue counts, consensus counts, and consensus export counts are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, per-track survey performance, classification performance estimates, discovery claims, external validation, detections, or scientific performance claims.
 
 Snapshot fixture:
 
@@ -305,6 +312,14 @@ Background priority config:
 ```text
 configs/background_priority_v0.json
 ```
+
+Candidate extraction handoff fixture:
+
+```text
+tests/fixtures/candidate_extraction_handoffs.json
+```
+
+The handoff fixture links local target-selection outputs to candidate-extraction preconditions. It must stay local-only until live automation has an explicit, reviewed design.
 
 When scores change, review whether the scoring model, thresholds, or example inputs changed intentionally.
 

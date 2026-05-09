@@ -1,0 +1,119 @@
+{
+  "schema_version": "candidate_extraction_handoff_v1",
+  "description": "Local-only candidate extraction handoff examples. These records connect background target selection to possible candidate packet generation without live provider access.",
+  "disclaimer": "Candidate extraction handoff records describe local fixture handoffs from target selection to possible candidate packet generation; they are not detections, discoveries, external validation, or calibrated performance claims.",
+  "handoffs": [
+    {
+      "handoff_id": "handoff-radio-ready-001",
+      "target_id": "target-radio-clean-drift",
+      "track": "radio",
+      "source_id": "synthetic-radio-hit-table",
+      "extraction_status": "ready_for_extraction",
+      "execution_mode": "local_fixture_handoff",
+      "ledger_run_id": "background-demo-001",
+      "reviewed_workflow_status": "candidate_packet_ready",
+      "required_inputs": [
+        "target-priority record",
+        "background ledger entry",
+        "radio candidate fixture"
+      ],
+      "available_inputs": [
+        "tests/fixtures/background_targets.json",
+        "tests/fixtures/background_search_ledger.json",
+        "examples/candidates/radio_clean_candidate.json"
+      ],
+      "expected_candidate_packet_ids": [
+        "radio-clean-001"
+      ],
+      "candidate_fixture_path": "examples/candidates/radio_clean_candidate.json",
+      "blocking_issues": [],
+      "negative_result_required": false,
+      "requires_human_review": true,
+      "network_access_allowed": false
+    },
+    {
+      "handoff_id": "handoff-infrared-blocked-001",
+      "target_id": "target-infrared-excess-review",
+      "track": "infrared",
+      "source_id": "synthetic-infrared-catalog-row",
+      "extraction_status": "blocked",
+      "execution_mode": "local_fixture_handoff",
+      "ledger_run_id": "background-demo-002",
+      "reviewed_workflow_status": "review_blocked",
+      "required_inputs": [
+        "target-priority record",
+        "background ledger entry",
+        "infrared candidate fixture",
+        "reviewed photometric context"
+      ],
+      "available_inputs": [
+        "tests/fixtures/background_targets.json",
+        "tests/fixtures/background_search_ledger.json",
+        "examples/candidates/infrared_clean_candidate.json"
+      ],
+      "expected_candidate_packet_ids": [
+        "infrared-clean-001"
+      ],
+      "candidate_fixture_path": "examples/candidates/infrared_clean_candidate.json",
+      "blocking_issues": [
+        "reviewed photometric context is incomplete"
+      ],
+      "negative_result_required": false,
+      "requires_human_review": true,
+      "network_access_allowed": false
+    },
+    {
+      "handoff_id": "handoff-anomaly-negative-001",
+      "target_id": "target-anomaly-weak-context",
+      "track": "anomaly",
+      "source_id": "synthetic-negative-search",
+      "extraction_status": "no_candidate_expected",
+      "execution_mode": "local_fixture_handoff",
+      "ledger_run_id": "background-demo-003",
+      "reviewed_workflow_status": "negative_search_recorded",
+      "required_inputs": [
+        "target-priority record",
+        "background ledger entry",
+        "negative-result ledger semantics"
+      ],
+      "available_inputs": [
+        "tests/fixtures/background_targets.json",
+        "tests/fixtures/background_search_ledger.json"
+      ],
+      "expected_candidate_packet_ids": [],
+      "candidate_fixture_path": null,
+      "blocking_issues": [
+        "weak context does not support candidate packet generation"
+      ],
+      "negative_result_required": true,
+      "requires_human_review": false,
+      "network_access_allowed": false
+    },
+    {
+      "handoff_id": "handoff-radio-scheduling-only-001",
+      "target_id": "target-radio-clean-drift",
+      "track": "radio",
+      "source_id": "synthetic-radio-hit-table",
+      "extraction_status": "scheduling_only",
+      "execution_mode": "local_non_network_fixture_runner",
+      "ledger_run_id": "background-demo-004",
+      "reviewed_workflow_status": "local_scheduling_only",
+      "required_inputs": [
+        "target-priority record",
+        "background ledger entry"
+      ],
+      "available_inputs": [
+        "tests/fixtures/background_targets.json",
+        "tests/fixtures/background_search_ledger.json"
+      ],
+      "expected_candidate_packet_ids": [],
+      "candidate_fixture_path": null,
+      "blocking_issues": [
+        "local fixture runner records scheduling only; no candidate extraction was performed"
+      ],
+      "negative_result_required": true,
+      "requires_human_review": false,
+      "network_access_allowed": false
+    }
+  ]
+}

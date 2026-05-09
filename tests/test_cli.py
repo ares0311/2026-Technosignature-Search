@@ -231,6 +231,7 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "batch_manifest",
         "benchmark_metadata",
         "benchmark_run_results",
+        "candidate_extraction_handoff",
         "candidate_packet",
         "consensus_export",
         "consensus_labels",
@@ -247,6 +248,9 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
     assert result["benchmark_metadata"].endswith("schemas/benchmark_metadata.schema.json")
     assert result["benchmark_run_results"].endswith(
         "schemas/benchmark_run_results.schema.json"
+    )
+    assert result["candidate_extraction_handoff"].endswith(
+        "schemas/candidate_extraction_handoff.schema.json"
     )
     assert result["candidate_packet"].endswith("schemas/candidate_packet.schema.json")
     assert result["consensus_export"].endswith("schemas/consensus_export.schema.json")
@@ -618,6 +622,35 @@ def test_cli_background_reviewed_workflow_summary_outputs_review_state() -> None
     }
 
 
+def test_cli_candidate_extraction_handoff_summary_outputs_contract() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["candidate-extraction-handoff-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "candidate_extraction_handoff_v1"
+    assert result["record_count"] == 4
+    assert result["ready_count"] == 1
+    assert result["blocked_count"] == 1
+    assert result["no_candidate_expected_count"] == 1
+    assert result["scheduling_only_count"] == 1
+    assert result["expected_candidate_packet_count"] == 2
+    assert result["candidate_fixture_count"] == 2
+    assert result["blocking_issue_count"] == 3
+    assert result["negative_result_required_count"] == 2
+    assert result["requires_human_review_count"] == 2
+    assert result["network_access_allowed_count"] == 0
+    assert result["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 2}
+    assert result["by_extraction_status"] == {
+        "blocked": 1,
+        "no_candidate_expected": 1,
+        "ready_for_extraction": 1,
+        "scheduling_only": 1,
+    }
+    assert "not detections" in result["disclaimer"]
+
+
 def test_cli_background_run_once_appends_local_ledger_entry(tmp_path) -> None:
     ledger_path = tmp_path / "background_ledger.json"
     stdout = StringIO()
@@ -753,6 +786,11 @@ def test_cli_validate_all_outputs_local_summary() -> None:
         "negative_result_logged_count"
     ] == 2
     assert result["background_review_workflow_summary"]["local_only_entry_count"] == 1
+    assert result["candidate_extraction_handoff_summary"]["record_count"] == 4
+    assert result["candidate_extraction_handoff_summary"]["ready_count"] == 1
+    assert result["candidate_extraction_handoff_summary"][
+        "network_access_allowed_count"
+    ] == 0
     assert result["catalog_cache_validation"]["forbidden_roots"] == [
         "data",
         "cache",
@@ -771,7 +809,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 13
+    assert result["schema_count"] == 14
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -818,6 +856,12 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["background_review_workflow_status_count"] == 4
     assert result["background_review_negative_result_logged_count"] == 2
     assert result["background_review_local_only_entry_count"] == 1
+    assert result["candidate_extraction_handoff_record_count"] == 4
+    assert result["candidate_extraction_handoff_ready_count"] == 1
+    assert result["candidate_extraction_handoff_blocked_count"] == 1
+    assert result[
+        "candidate_extraction_handoff_negative_result_required_count"
+    ] == 2
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 

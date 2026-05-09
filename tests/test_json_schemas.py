@@ -12,6 +12,7 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "batch_manifest.schema.json",
         "benchmark_metadata.schema.json",
         "benchmark_run_results.schema.json",
+        "candidate_extraction_handoff.schema.json",
         "candidate_packet.schema.json",
         "consensus_export.schema.json",
         "consensus_labels.schema.json",
@@ -49,6 +50,11 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     )
     background_ledger_schema = json.loads(
         Path("schemas/background_search_ledger.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    handoff_schema = json.loads(
+        Path("schemas/candidate_extraction_handoff.schema.json").read_text(
             encoding="utf-8"
         )
     )
@@ -91,6 +97,9 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     background_ledger = json.loads(
         Path("tests/fixtures/background_search_ledger.json").read_text()
     )
+    handoffs = json.loads(
+        Path("tests/fixtures/candidate_extraction_handoffs.json").read_text()
+    )
     review_queue = json.loads(Path("tests/fixtures/review_queue.json").read_text())
     consensus = json.loads(Path("tests/fixtures/consensus_labels.json").read_text())
     consensus_export = json.loads(Path("tests/fixtures/consensus_exports.json").read_text())
@@ -111,6 +120,7 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     assert set(benchmark_run_schema["required"]) <= set(benchmark_runs)
     assert set(background_targets_schema["required"]) <= set(background_targets)
     assert set(background_ledger_schema["required"]) <= set(background_ledger)
+    assert set(handoff_schema["required"]) <= set(handoffs)
     assert set(review_queue_schema["required"]) <= set(review_queue)
     assert set(consensus_schema["required"]) <= set(consensus)
     assert set(consensus_export_schema["required"]) <= set(consensus_export)
@@ -152,6 +162,12 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     assert "reviewed_workflow_status" in background_ledger_schema["properties"][
         "ledger_entries"
     ]["items"]["properties"]
+    assert handoffs["schema_version"] == "candidate_extraction_handoff_v1"
+    assert len(handoffs["handoffs"]) == 4
+    assert handoffs["handoffs"][0]["network_access_allowed"] is False
+    assert "network_access_allowed" in handoff_schema["properties"]["handoffs"][
+        "items"
+    ]["required"]
     assert review_queue["schema_version"] == "human_review_queue_v1"
     assert sorted(review_queue["allowed_triage_labels"]) == [
         "follow_up_target",

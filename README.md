@@ -533,6 +533,14 @@ To inspect whether logged background runs are ready for reviewed handoff, run:
 
 The reviewed-workflow summary reports execution modes, scheduling-only entries, negative-result logging, target-selection rationales, candidate packet IDs, review blockers, and human-review requirements. These fields describe workflow readiness only. They do not turn a target-priority score or a ledger entry into candidate evidence.
 
+To inspect the local handoff contract between a selected target and candidate extraction, run:
+
+```bash
+.venv/bin/techno-search candidate-extraction-handoff-summary
+```
+
+The handoff summary answers a practical operator question: "What must exist before this target can become a candidate packet?" It reports required inputs, available inputs, expected candidate packet IDs, fixture paths, blockers, negative-result requirements, and whether human review is required. All current handoffs are local fixtures with network access disabled.
+
 ### Recalibration Workflow
 
 Recalibration means adjusting scoring assumptions after comparing model outputs against known synthetic injections, known contaminants, curated false-positive examples, or human-reviewed labels. It should not be done by hand-tuning one interesting candidate.
@@ -609,6 +617,7 @@ Target list or provider query
   → target feature summary
   → priority score
   → queued search job
+  → candidate-extraction handoff check
   → candidate extraction
   → candidate scoring
   → search log entry
@@ -673,6 +682,7 @@ In v0, the committed ledger fixture is summarized by:
 ```bash
 .venv/bin/techno-search background-ledger-summary
 .venv/bin/techno-search background-reviewed-workflow-summary
+.venv/bin/techno-search candidate-extraction-handoff-summary
 ```
 
 The local append-only runner is invoked explicitly:
@@ -686,6 +696,8 @@ The local append-only runner is invoked explicitly:
 ```
 
 This runner selects the top ranked fixture target, records a `local_fixture_search_logged` ledger entry, sets `candidate_count` to `0`, sets `reviewed_workflow_status` to `local_scheduling_only`, marks the no-candidate outcome as a logged negative result, and routes the entry to `github_reproducibility_only`. It is a passive-runner scaffold, not a production autonomous search daemon.
+
+Candidate-extraction handoff records are the next local contract after a target has been selected. A handoff may be ready for extraction, blocked, expected to produce no candidate packet, or scheduling-only. A ready handoff still does not claim a detection. It only means the local fixture inputs are present and can be routed into the normal candidate scoring and reporting workflow.
 
 Before any future passive runner is treated as operational, it must:
 
@@ -740,6 +752,7 @@ Scientific quality gates:
 | Premature non-synthetic calibration | Readiness review before curated dataset promotion | `validation-readiness-summary` |
 | Benchmark drift | Append-only local benchmark run results and repeated-run comparison | `benchmark-run-append`, `benchmark-run-compare` |
 | Unreviewed background automation | Reviewed workflow summary for scheduling-only and negative-result ledger entries | `background-reviewed-workflow-summary` |
+| Premature candidate extraction | Local handoff contract before target selection becomes candidate packet generation | `candidate-extraction-handoff-summary` |
 
 👉 See [`docs/VALIDATION.md`](docs/VALIDATION.md)
 

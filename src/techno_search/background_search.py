@@ -24,6 +24,12 @@ BACKGROUND_SEARCH_LEDGER_DISCLAIMER = (
 BACKGROUND_PRIORITY_CONFIG_VERSION = "background_priority_v0"
 LOCAL_BACKGROUND_EXECUTION_MODE = "local_non_network_fixture_runner"
 LOCAL_BACKGROUND_REVIEW_STATUS = "local_scheduling_only"
+CANDIDATE_EXTRACTION_HANDOFF_SCHEMA_VERSION = "candidate_extraction_handoff_v1"
+CANDIDATE_EXTRACTION_HANDOFF_DISCLAIMER = (
+    "Candidate extraction handoff records describe local fixture handoffs from "
+    "target selection to possible candidate packet generation; they are not "
+    "detections, discoveries, external validation, or calibrated performance claims."
+)
 
 DEFAULT_PRIORITY_WEIGHTS = {
     "followup_value": 0.35,
@@ -93,6 +99,28 @@ class BackgroundSearchLedgerEntry:
     reviewed_workflow_status: str = "unreviewed"
 
 
+@dataclass(frozen=True)
+class CandidateExtractionHandoffRecord:
+    """One local-only handoff from background target selection to extraction work."""
+
+    handoff_id: str
+    target_id: str
+    track: Track
+    source_id: str
+    extraction_status: str
+    execution_mode: str
+    ledger_run_id: str
+    reviewed_workflow_status: str
+    required_inputs: tuple[str, ...]
+    available_inputs: tuple[str, ...]
+    expected_candidate_packet_ids: tuple[str, ...]
+    candidate_fixture_path: str | None
+    blocking_issues: tuple[str, ...]
+    negative_result_required: bool
+    requires_human_review: bool
+    network_access_allowed: bool
+
+
 def default_background_priority_config_path() -> Path:
     """Return the repository-local v0 background priority config path."""
 
@@ -114,6 +142,14 @@ def default_background_ledger_path() -> Path:
 
     return Path(__file__).resolve().parents[2] / "tests" / "fixtures" / (
         "background_search_ledger.json"
+    )
+
+
+def default_candidate_extraction_handoff_path() -> Path:
+    """Return the repository-local candidate extraction handoff fixture path."""
+
+    return Path(__file__).resolve().parents[2] / "tests" / "fixtures" / (
+        "candidate_extraction_handoffs.json"
     )
 
 
@@ -203,6 +239,30 @@ def load_background_search_ledger(
         raise ValueError(msg)
 
     return tuple(_ledger_entry_from_mapping(entry) for entry in data["ledger_entries"])
+
+
+def load_candidate_extraction_handoffs(
+    path: Path | None = None,
+) -> tuple[CandidateExtractionHandoffRecord, ...]:
+    """Load local-only candidate extraction handoff records."""
+
+    handoff_path = path or default_candidate_extraction_handoff_path()
+    with handoff_path.open(encoding="utf-8") as handle:
+        data = json.load(handle)
+
+    schema_version = str(data.get("schema_version", ""))
+    if schema_version != CANDIDATE_EXTRACTION_HANDOFF_SCHEMA_VERSION:
+        msg = (
+            f"Unsupported candidate extraction handoff schema version "
+            f"{schema_version!r}; expected "
+            f"{CANDIDATE_EXTRACTION_HANDOFF_SCHEMA_VERSION!r}"
+        )
+        raise ValueError(msg)
+
+    return tuple(
+        _candidate_extraction_handoff_from_mapping(record)
+        for record in data["handoffs"]
+    )
 
 
 def target_priority_score(
@@ -380,6 +440,78 @@ def background_review_workflow_summary(path: Path | None = None) -> dict[str, ob
     }
 
 
+def candidate_extraction_handoff_summary(
+    path: Path | None = None,
+) -> dict[str, object]:
+    """Summarize local-only candidate extraction handoff readiness."""
+
+    handoff_path = path or default_candidate_extraction_handoff_path()
+    records = load_candidate_extraction_handoffs(handoff_path)
+    expected_candidate_ids = [
+        candidate_id
+        for record in records
+        for candidate_id in record.expected_candidate_packet_ids
+    ]
+    blocking_issues = [
+        issue for record in records for issue in record.blocking_issues
+    ]
+    required_inputs = [
+        item for record in records for item in record.required_inputs
+    ]
+    available_inputs = [
+        item for record in records for item in record.available_inputs
+    ]
+
+    return {
+        "handoff_path": str(handoff_path),
+        "schema_version": CANDIDATE_EXTRACTION_HANDOFF_SCHEMA_VERSION,
+        "disclaimer": CANDIDATE_EXTRACTION_HANDOFF_DISCLAIMER,
+        "record_count": len(records),
+        "ready_count": sum(
+            1 for record in records if record.extraction_status == "ready_for_extraction"
+        ),
+        "blocked_count": sum(
+            1 for record in records if record.extraction_status == "blocked"
+        ),
+        "no_candidate_expected_count": sum(
+            1
+            for record in records
+            if record.extraction_status == "no_candidate_expected"
+        ),
+        "scheduling_only_count": sum(
+            1
+            for record in records
+            if record.extraction_status == "scheduling_only"
+        ),
+        "expected_candidate_packet_count": len(expected_candidate_ids),
+        "candidate_fixture_count": sum(
+            1 for record in records if record.candidate_fixture_path is not None
+        ),
+        "blocking_issue_count": len(blocking_issues),
+        "negative_result_required_count": sum(
+            1 for record in records if record.negative_result_required
+        ),
+        "requires_human_review_count": sum(
+            1 for record in records if record.requires_human_review
+        ),
+        "network_access_allowed_count": sum(
+            1 for record in records if record.network_access_allowed
+        ),
+        "required_input_count": len(required_inputs),
+        "available_input_count": len(available_inputs),
+        "by_track": _counter_to_dict(Counter(record.track.value for record in records)),
+        "by_extraction_status": _counter_to_dict(
+            Counter(record.extraction_status for record in records)
+        ),
+        "by_reviewed_workflow_status": _counter_to_dict(
+            Counter(record.reviewed_workflow_status for record in records)
+        ),
+        "handoff_ids": sorted(record.handoff_id for record in records),
+        "target_ids": sorted({record.target_id for record in records}),
+        "expected_candidate_packet_ids": sorted(expected_candidate_ids),
+    }
+
+
 def run_local_background_search_once(
     ledger_path: Path,
     target_path: Path | None = None,
@@ -549,6 +681,31 @@ def _ledger_entry_from_mapping(data: dict[str, Any]) -> BackgroundSearchLedgerEn
     )
 
 
+def _candidate_extraction_handoff_from_mapping(
+    data: dict[str, Any],
+) -> CandidateExtractionHandoffRecord:
+    return CandidateExtractionHandoffRecord(
+        handoff_id=str(data["handoff_id"]),
+        target_id=str(data["target_id"]),
+        track=Track(str(data["track"])),
+        source_id=str(data["source_id"]),
+        extraction_status=str(data["extraction_status"]),
+        execution_mode=str(data["execution_mode"]),
+        ledger_run_id=str(data["ledger_run_id"]),
+        reviewed_workflow_status=str(data["reviewed_workflow_status"]),
+        required_inputs=tuple(str(item) for item in data.get("required_inputs", ())),
+        available_inputs=tuple(str(item) for item in data.get("available_inputs", ())),
+        expected_candidate_packet_ids=tuple(
+            str(item) for item in data.get("expected_candidate_packet_ids", ())
+        ),
+        candidate_fixture_path=_optional_string(data.get("candidate_fixture_path")),
+        blocking_issues=tuple(str(item) for item in data.get("blocking_issues", ())),
+        negative_result_required=bool(data["negative_result_required"]),
+        requires_human_review=bool(data["requires_human_review"]),
+        network_access_allowed=bool(data["network_access_allowed"]),
+    )
+
+
 def _ledger_entry_to_mapping(entry: BackgroundSearchLedgerEntry) -> dict[str, object]:
     return {
         "run_id": entry.run_id,
@@ -585,6 +742,10 @@ def _optional_float(value: object) -> float | None:
         return float(value)
     msg = f"Expected a numeric or string priority score, got {type(value).__name__}"
     raise TypeError(msg)
+
+
+def _optional_string(value: object) -> str | None:
+    return None if value is None else str(value)
 
 
 def _counter_to_dict(counter: Counter[str]) -> dict[str, int]:

@@ -151,6 +151,8 @@ The project will support three tracks from day one:
 - [x] Reviewed background workflow ledger semantics added
 - [x] Background reviewed-workflow summary CLI added
 - [x] Background reviewed-workflow counts wired into local validation
+- [x] Candidate-extraction handoff fixture, schema, and summary CLI added
+- [x] Candidate-extraction handoff counts wired into local validation
 
 ---
 
@@ -177,7 +179,7 @@ The project will support three tracks from day one:
 
 1. Add benchmark comparison thresholds once repeated synthetic calibration grids exist.
 2. Expand curated validation readiness examples after real reviewed non-synthetic candidates are available.
-3. Draft the candidate-extraction handoff contract for the local background runner before any live automation is considered.
+3. Prototype local fixture candidate extraction only after the handoff contract remains stable across review.
 
 ---
 

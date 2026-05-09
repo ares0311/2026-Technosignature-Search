@@ -15,6 +15,7 @@ from typing import TextIO
 from techno_search.background_search import (
     background_review_workflow_summary,
     background_search_ledger_summary,
+    candidate_extraction_handoff_summary,
     run_local_background_search_once,
     target_priority_summary,
 )
@@ -70,6 +71,7 @@ SCHEMA_FILENAMES = {
     "batch_manifest": "batch_manifest.schema.json",
     "benchmark_metadata": "benchmark_metadata.schema.json",
     "benchmark_run_results": "benchmark_run_results.schema.json",
+    "candidate_extraction_handoff": "candidate_extraction_handoff.schema.json",
     "candidate_packet": "candidate_packet.schema.json",
     "consensus_export": "consensus_export.schema.json",
     "consensus_labels": "consensus_labels.schema.json",
@@ -315,6 +317,17 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(
             json.dumps(
                 background_review_workflow_summary(args.ledger_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "candidate-extraction-handoff-summary":
+        print(
+            json.dumps(
+                candidate_extraction_handoff_summary(args.handoff_path),
                 indent=2,
                 sort_keys=True,
             ),
@@ -647,6 +660,11 @@ def validate_all() -> dict[str, object]:
     background_review_status_count = background_review_workflow[
         "reviewed_workflow_status_count"
     ]
+    candidate_handoffs = candidate_extraction_handoff_summary()
+    candidate_handoff_record_count = candidate_handoffs["record_count"]
+    candidate_handoff_network_count = candidate_handoffs[
+        "network_access_allowed_count"
+    ]
 
     ok = (
         all(result["ok"] for result in candidate_results.values())
@@ -703,6 +721,10 @@ def validate_all() -> dict[str, object]:
         and background_ledger_entry_count >= 4
         and isinstance(background_review_status_count, int)
         and background_review_status_count >= 4
+        and isinstance(candidate_handoff_record_count, int)
+        and candidate_handoff_record_count >= 4
+        and isinstance(candidate_handoff_network_count, int)
+        and candidate_handoff_network_count == 0
     )
     return {
         "ok": ok,
@@ -730,6 +752,7 @@ def validate_all() -> dict[str, object]:
         "target_priority_summary": target_priorities,
         "background_ledger_summary": background_ledger,
         "background_review_workflow_summary": background_review_workflow,
+        "candidate_extraction_handoff_summary": candidate_handoffs,
     }
 
 
@@ -760,6 +783,7 @@ def validation_summary() -> dict[str, object]:
     target_priorities = validation["target_priority_summary"]
     background_ledger = validation["background_ledger_summary"]
     background_review_workflow = validation["background_review_workflow_summary"]
+    candidate_handoffs = validation["candidate_extraction_handoff_summary"]
     return {
         "ok": validation["ok"],
         "generated_at_utc": datetime.now(UTC).isoformat(),
@@ -923,6 +947,22 @@ def validation_summary() -> dict[str, object]:
             "local_only_entry_count"
         ]
         if isinstance(background_review_workflow, dict)
+        else 0,
+        "candidate_extraction_handoff_record_count": candidate_handoffs["record_count"]
+        if isinstance(candidate_handoffs, dict)
+        else 0,
+        "candidate_extraction_handoff_ready_count": candidate_handoffs["ready_count"]
+        if isinstance(candidate_handoffs, dict)
+        else 0,
+        "candidate_extraction_handoff_blocked_count": candidate_handoffs[
+            "blocked_count"
+        ]
+        if isinstance(candidate_handoffs, dict)
+        else 0,
+        "candidate_extraction_handoff_negative_result_required_count": (
+            candidate_handoffs["negative_result_required_count"]
+        )
+        if isinstance(candidate_handoffs, dict)
         else 0,
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
@@ -1291,6 +1331,15 @@ def _build_parser() -> argparse.ArgumentParser:
         "--ledger-path",
         type=Path,
         help="Optional background search ledger JSON path.",
+    )
+    handoff_parser = subparsers.add_parser(
+        "candidate-extraction-handoff-summary",
+        help="Summarize local-only candidate extraction handoff readiness.",
+    )
+    handoff_parser.add_argument(
+        "--handoff-path",
+        type=Path,
+        help="Optional candidate extraction handoff JSON path.",
     )
     background_run_parser = subparsers.add_parser(
         "background-run-once",

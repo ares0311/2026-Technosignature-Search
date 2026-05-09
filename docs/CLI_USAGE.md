@@ -159,7 +159,7 @@ Print local JSON schema artifact paths:
 .venv/bin/techno-search schema-paths
 ```
 
-This includes candidate packets, report manifests, batch manifests, background target-priority fixtures, background search ledgers, human-review queue packets, human-review consensus labels, validation dataset manifests, validation readiness records, local benchmark metadata, and benchmark run-result metadata.
+This includes candidate packets, report manifests, batch manifests, background target-priority fixtures, background search ledgers, candidate extraction handoff records, human-review queue packets, human-review consensus labels, validation dataset manifests, validation readiness records, local benchmark metadata, and benchmark run-result metadata.
 
 ---
 
@@ -404,6 +404,18 @@ The summary reports execution modes, reviewed workflow statuses, target-selectio
 
 Use `--ledger-path` to inspect a different background ledger JSON file.
 
+## Summarize Candidate Extraction Handoffs
+
+Print local-only handoff readiness between selected background targets and candidate extraction:
+
+```bash
+.venv/bin/techno-search candidate-extraction-handoff-summary
+```
+
+The summary reports handoff statuses, required inputs, available inputs, expected candidate packet IDs, candidate fixture paths, blockers, negative-result requirements, human-review requirements, and network-access state. Handoff records are operational contracts only; they are not detections, discoveries, external validation, or calibrated performance claims.
+
+Use `--handoff-path` to inspect a different candidate extraction handoff JSON file.
+
 ---
 
 ## Run Local Validation Summary
@@ -414,7 +426,7 @@ Run the non-network validation summaries used for quick release checks:
 .venv/bin/techno-search validate-all
 ```
 
-This includes example candidate validation, report validation, schema path checks, calibration fixture summary, calibration-by-track diagnostics, false-positive class diagnostics, score regression summary, background target-priority summary, background search ledger summary, background reviewed-workflow summary, human-review queue summary, consensus label summary, consensus export summary, validation dataset manifest summary, validation readiness summary, benchmark metadata summary, and benchmark run-result summary.
+This includes example candidate validation, report validation, schema path checks, calibration fixture summary, calibration-by-track diagnostics, false-positive class diagnostics, score regression summary, background target-priority summary, background search ledger summary, background reviewed-workflow summary, candidate extraction handoff summary, human-review queue summary, consensus label summary, consensus export summary, validation dataset manifest summary, validation readiness summary, benchmark metadata summary, and benchmark run-result summary.
 It also reports `catalog_cache_validation` for Git-tracked paths so local untracked caches do not fail default validation.
 
 ---
@@ -427,7 +439,7 @@ Print a concise local health dashboard without network access:
 .venv/bin/techno-search validation-summary
 ```
 
-This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, calibration-by-track, false-positive class, validation-dataset, validation-readiness, benchmark-metadata, benchmark-run, score-regression, background target-priority, background ledger, background reviewed-workflow, review-queue, consensus-label, consensus-export, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
+This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, calibration-by-track, false-positive class, validation-dataset, validation-readiness, benchmark-metadata, benchmark-run, score-regression, background target-priority, background ledger, background reviewed-workflow, candidate extraction handoffs, review-queue, consensus-label, consensus-export, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
 
 ---
 

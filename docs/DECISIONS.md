@@ -470,3 +470,29 @@ Background search infrastructure is useful only when another person can reconstr
 - Candidate packet IDs must be listed separately from target-priority scores.
 - Human-review requirements and blockers must be visible in summaries.
 - Reviewed-workflow summaries remain operational diagnostics only; they are not detections, discoveries, external validation, or calibrated survey-performance claims.
+
+---
+
+## DECISION-020: Require Candidate-Extraction Handoffs Before Background Candidate Generation
+
+**Date:** 2026-05-09
+
+**Status:** Accepted
+
+### Decision
+
+Background-selected targets must pass through an explicit candidate-extraction handoff contract before they can generate or reference candidate packets.
+
+The handoff must record required inputs, available inputs, expected candidate packet IDs, fixture paths, blocking issues, negative-result requirements, human-review requirements, execution mode, and network-access state.
+
+### Rationale
+
+Target selection, candidate extraction, candidate scoring, and reporting are separate scientific stages. Without a handoff contract, a scheduling recommendation could be mistaken for candidate evidence or a local fixture could quietly bypass provenance review.
+
+### Consequences
+
+- The v0 handoff fixture is local-only and has network access disabled.
+- A ready handoff means only that local fixture inputs are present.
+- Blocked and no-candidate handoffs must preserve blocking issues and negative-result requirements.
+- Candidate packet IDs remain explicit outputs of extraction, not properties of target priority.
+- Handoff summaries are operational diagnostics only; they are not detections, discoveries, external validation, or calibrated survey-performance claims.

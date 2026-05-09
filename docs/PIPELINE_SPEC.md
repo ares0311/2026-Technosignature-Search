@@ -219,10 +219,13 @@ background target fixture
 → target priority score
 → ranked target list
 → selected target ID
+→ candidate-extraction handoff readiness check
 → passive/background ledger entry after search
 ```
 
 The passive/background ledger must record searched targets even when no candidate packet is produced. The current local runner is explicitly opt-in, uses `configs/background_priority_v0.json`, does not access network providers, and logs scheduling-only entries as reproducibility records rather than candidate claims.
+
+Candidate-extraction handoff records define the local contract between a selected target and any candidate packet generation. A handoff must expose required inputs, available inputs, expected candidate packet IDs, fixture paths, blockers, negative-result requirements, human-review requirements, execution mode, and network-access state. In v0, these records are local fixtures only; a handoff status is not a detection, discovery, external validation, or calibrated performance claim.
 
 ---
 

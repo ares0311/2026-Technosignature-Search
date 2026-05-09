@@ -4,12 +4,15 @@ import pytest
 
 from techno_search.background_search import (
     BACKGROUND_SEARCH_LEDGER_DISCLAIMER,
+    CANDIDATE_EXTRACTION_HANDOFF_DISCLAIMER,
     TARGET_PRIORITY_DISCLAIMER,
     background_review_workflow_summary,
     background_search_ledger_summary,
+    candidate_extraction_handoff_summary,
     load_background_priority_config,
     load_background_search_ledger,
     load_background_targets,
+    load_candidate_extraction_handoffs,
     run_local_background_search_once,
     target_priority_score,
     target_priority_summary,
@@ -144,6 +147,55 @@ def test_background_review_workflow_summary_exposes_review_semantics() -> None:
     assert summary["local_only_run_ids"] == ["background-demo-004"]
 
 
+def test_candidate_extraction_handoffs_load_local_only_contract() -> None:
+    records = load_candidate_extraction_handoffs()
+
+    assert len(records) == 4
+    assert {record.track.value for record in records} == {
+        "anomaly",
+        "infrared",
+        "radio",
+    }
+    assert records[0].handoff_id == "handoff-radio-ready-001"
+    assert records[0].expected_candidate_packet_ids == ("radio-clean-001",)
+    assert records[1].extraction_status == "blocked"
+    assert records[2].negative_result_required is True
+    assert records[3].execution_mode == "local_non_network_fixture_runner"
+    assert all(record.network_access_allowed is False for record in records)
+    assert "not detections" in CANDIDATE_EXTRACTION_HANDOFF_DISCLAIMER
+
+
+def test_candidate_extraction_handoff_summary_counts_readiness() -> None:
+    summary = candidate_extraction_handoff_summary()
+
+    assert summary["schema_version"] == "candidate_extraction_handoff_v1"
+    assert summary["record_count"] == 4
+    assert summary["ready_count"] == 1
+    assert summary["blocked_count"] == 1
+    assert summary["no_candidate_expected_count"] == 1
+    assert summary["scheduling_only_count"] == 1
+    assert summary["expected_candidate_packet_count"] == 2
+    assert summary["candidate_fixture_count"] == 2
+    assert summary["blocking_issue_count"] == 3
+    assert summary["negative_result_required_count"] == 2
+    assert summary["requires_human_review_count"] == 2
+    assert summary["network_access_allowed_count"] == 0
+    assert summary["required_input_count"] == 12
+    assert summary["available_input_count"] == 10
+    assert summary["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 2}
+    assert summary["by_extraction_status"] == {
+        "blocked": 1,
+        "no_candidate_expected": 1,
+        "ready_for_extraction": 1,
+        "scheduling_only": 1,
+    }
+    assert summary["expected_candidate_packet_ids"] == [
+        "infrared-clean-001",
+        "radio-clean-001",
+    ]
+    assert "not detections" in summary["disclaimer"]
+
+
 def test_background_search_rejects_wrong_schema_version(tmp_path: Path) -> None:
     target_path = tmp_path / "targets.json"
     target_path.write_text(
@@ -153,6 +205,19 @@ def test_background_search_rejects_wrong_schema_version(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="Unsupported target priority schema"):
         load_background_targets(target_path)
+
+
+def test_candidate_extraction_handoff_rejects_wrong_schema_version(
+    tmp_path: Path,
+) -> None:
+    handoff_path = tmp_path / "handoffs.json"
+    handoff_path.write_text(
+        '{"schema_version": "wrong", "handoffs": []}',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="Unsupported candidate extraction handoff"):
+        load_candidate_extraction_handoffs(handoff_path)
 
 
 def test_background_priority_config_loads_versioned_weights() -> None:

@@ -191,6 +191,34 @@ Merge status: already on `main`; no merge needed.
 
 ---
 
+## Candidate Extraction Handoff Contract
+
+User requested the next fifteen steps and asked to push when complete.
+
+Status: implemented in this iteration.
+
+Added:
+
+- local-only candidate extraction handoff schema
+- `tests/fixtures/candidate_extraction_handoffs.json`
+- handoff dataclass, loader, and summary helper
+- `techno-search candidate-extraction-handoff-summary`
+- handoff counts in `validate-all` and `validation-summary`
+- tests for schema coverage, loader behavior, summary counts, CLI output, and no-network guardrails
+- README, CLI usage, validation guide, pipeline spec, roadmap, project status, and decisions updates
+
+Scientific guardrail:
+
+- handoff records are operational contracts only
+- target priority remains separate from candidate evidence
+- ready handoffs only mean local fixture inputs are present
+- blocked and no-candidate handoffs preserve blockers and negative-result requirements
+- no live provider access is enabled by this workflow
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Consensus Export, Promotion, And Benchmark Run Expansion
 
 User requested the next fifteen steps:
