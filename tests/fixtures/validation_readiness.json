@@ -1,0 +1,82 @@
+{
+  "schema_version": "validation_readiness_v1",
+  "description": "Readiness review examples for future curated non-synthetic validation datasets.",
+  "disclaimer": "Validation readiness records describe whether datasets are ready for curated review only; they do not certify discoveries, detections, or calibrated survey performance.",
+  "records": [
+    {
+      "readiness_id": "radio-curated-readiness-v0",
+      "dataset_id": "future-radio-rfi-curated-v0",
+      "track": "radio",
+      "dataset_kind": "curated_non_synthetic_false_positive_suite",
+      "readiness_status": "ready",
+      "current_case_count": 12,
+      "minimum_case_count": 10,
+      "evidence_requirements": [
+        "documented_source_observation",
+        "provenance_fields_complete",
+        "rfi_or_instrumental_label_reviewed",
+        "negative_evidence_reviewed"
+      ],
+      "satisfied_evidence": [
+        "documented_source_observation",
+        "provenance_fields_complete",
+        "rfi_or_instrumental_label_reviewed",
+        "negative_evidence_reviewed"
+      ],
+      "blocking_issues": [],
+      "requires_external_review": true,
+      "promotion_target": "curated_non_synthetic_candidate"
+    },
+    {
+      "readiness_id": "infrared-curated-readiness-v0",
+      "dataset_id": "future-infrared-contaminant-curated-v0",
+      "track": "infrared",
+      "dataset_kind": "curated_non_synthetic_false_positive_suite",
+      "readiness_status": "blocked",
+      "current_case_count": 11,
+      "minimum_case_count": 10,
+      "evidence_requirements": [
+        "catalog_crossmatch_provenance",
+        "photometric_quality_flags_recorded",
+        "natural_explanation_labels_present",
+        "source_license_documented"
+      ],
+      "satisfied_evidence": [
+        "catalog_crossmatch_provenance",
+        "photometric_quality_flags_recorded",
+        "natural_explanation_labels_present"
+      ],
+      "blocking_issues": [
+        "source_license_not_documented",
+        "unreviewed_confusion_flags"
+      ],
+      "requires_external_review": true,
+      "promotion_target": "curated_non_synthetic_candidate"
+    },
+    {
+      "readiness_id": "anomaly-curated-readiness-v0",
+      "dataset_id": "future-anomaly-artifact-curated-v0",
+      "track": "anomaly",
+      "dataset_kind": "curated_non_synthetic_false_positive_suite",
+      "readiness_status": "not_yet_admissible",
+      "current_case_count": 6,
+      "minimum_case_count": 10,
+      "evidence_requirements": [
+        "multi_epoch_provenance",
+        "survey_depth_context_recorded",
+        "artifact_review_completed",
+        "known_object_crossmatch_reviewed"
+      ],
+      "satisfied_evidence": [
+        "multi_epoch_provenance",
+        "survey_depth_context_recorded"
+      ],
+      "blocking_issues": [
+        "minimum_case_count_not_met",
+        "artifact_review_incomplete"
+      ],
+      "requires_external_review": true,
+      "promotion_target": "curated_non_synthetic_candidate"
+    }
+  ]
+}

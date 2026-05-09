@@ -238,6 +238,7 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "review_queue",
         "validation_dataset_manifest",
         "validation_promotion_rules",
+        "validation_readiness",
     }
     assert result["background_search_ledger"].endswith(
         "schemas/background_search_ledger.schema.json"
@@ -256,6 +257,9 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
     )
     assert result["validation_promotion_rules"].endswith(
         "schemas/validation_promotion_rules.schema.json"
+    )
+    assert result["validation_readiness"].endswith(
+        "schemas/validation_readiness.schema.json"
     )
 
 
@@ -393,6 +397,23 @@ def test_cli_validation_promotion_summary_outputs_rule_counts() -> None:
     assert result["blocking_condition_count"] == 9
     assert result["rules_requiring_external_review"] == 3
     assert result["by_from_readiness"] == {"synthetic_scaffold": 3}
+    assert "do not certify discoveries" in result["disclaimer"]
+
+
+def test_cli_validation_readiness_summary_outputs_status_counts() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["validation-readiness-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "validation_readiness_v1"
+    assert result["record_count"] == 3
+    assert result["ready_count"] == 1
+    assert result["blocked_count"] == 1
+    assert result["not_yet_admissible_count"] == 1
+    assert result["blocking_issue_count"] == 4
+    assert result["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 1}
     assert "do not certify discoveries" in result["disclaimer"]
 
 
@@ -661,6 +682,9 @@ def test_cli_validate_all_outputs_local_summary() -> None:
     }
     assert result["validation_promotion_summary"]["rule_count"] == 3
     assert result["validation_promotion_summary"]["blocking_condition_count"] == 9
+    assert result["validation_readiness_summary"]["record_count"] == 3
+    assert result["validation_readiness_summary"]["ready_count"] == 1
+    assert result["validation_readiness_summary"]["blocked_count"] == 1
     assert result["benchmark_metadata_summary"]["command_count"] == 4
     assert result["benchmark_metadata_summary"]["default_cpu_worker_limit"] == 12
     assert result["benchmark_metadata_summary"]["memory_budget_gb"] == 48
@@ -691,7 +715,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 12
+    assert result["schema_count"] == 13
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -720,6 +744,11 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["validation_dataset_case_count"] == 15
     assert result["validation_promotion_rule_count"] == 3
     assert result["validation_promotion_blocking_condition_count"] == 9
+    assert result["validation_readiness_record_count"] == 3
+    assert result["validation_readiness_ready_count"] == 1
+    assert result["validation_readiness_blocked_count"] == 1
+    assert result["validation_readiness_not_yet_admissible_count"] == 1
+    assert result["validation_readiness_blocking_issue_count"] == 4
     assert result["benchmark_command_count"] == 4
     assert result["benchmark_default_cpu_worker_limit"] == 12
     assert result["benchmark_memory_budget_gb"] == 48

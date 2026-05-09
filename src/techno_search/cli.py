@@ -60,6 +60,7 @@ from techno_search.validation import validate_candidate_file, validate_report_di
 from techno_search.validation_datasets import (
     validation_dataset_summary,
     validation_promotion_summary,
+    validation_readiness_summary,
 )
 
 SCHEMA_FILENAMES = {
@@ -75,6 +76,7 @@ SCHEMA_FILENAMES = {
     "review_queue": "review_queue.schema.json",
     "validation_dataset_manifest": "validation_dataset_manifest.schema.json",
     "validation_promotion_rules": "validation_promotion_rules.schema.json",
+    "validation_readiness": "validation_readiness.schema.json",
 }
 
 
@@ -211,6 +213,17 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(
             json.dumps(
                 validation_promotion_summary(args.rules_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "validation-readiness-summary":
+        print(
+            json.dumps(
+                validation_readiness_summary(args.readiness_path),
                 indent=2,
                 sort_keys=True,
             ),
@@ -605,6 +618,9 @@ def validate_all() -> dict[str, object]:
     validation_dataset_case_count = validation_datasets["total_case_count"]
     validation_promotions = validation_promotion_summary()
     validation_promotion_rule_count = validation_promotions["rule_count"]
+    validation_readiness = validation_readiness_summary()
+    validation_readiness_record_count = validation_readiness["record_count"]
+    validation_readiness_ready_count = validation_readiness["ready_count"]
     benchmark_metadata = benchmark_metadata_summary()
     benchmark_command_count = benchmark_metadata["command_count"]
     benchmark_worker_limit = benchmark_metadata["default_cpu_worker_limit"]
@@ -653,6 +669,10 @@ def validate_all() -> dict[str, object]:
         and validation_dataset_case_count >= 15
         and isinstance(validation_promotion_rule_count, int)
         and validation_promotion_rule_count >= 3
+        and isinstance(validation_readiness_record_count, int)
+        and validation_readiness_record_count >= 3
+        and isinstance(validation_readiness_ready_count, int)
+        and validation_readiness_ready_count >= 1
         and isinstance(benchmark_command_count, int)
         and benchmark_command_count >= 4
         and isinstance(benchmark_worker_limit, int)
@@ -686,6 +706,7 @@ def validate_all() -> dict[str, object]:
         "consensus_export_summary": consensus_exports,
         "validation_dataset_summary": validation_datasets,
         "validation_promotion_summary": validation_promotions,
+        "validation_readiness_summary": validation_readiness,
         "benchmark_metadata_summary": benchmark_metadata,
         "benchmark_run_summary": benchmark_runs,
         "target_priority_summary": target_priorities,
@@ -714,6 +735,7 @@ def validation_summary() -> dict[str, object]:
     consensus_exports = validation["consensus_export_summary"]
     validation_datasets = validation["validation_dataset_summary"]
     validation_promotions = validation["validation_promotion_summary"]
+    validation_readiness = validation["validation_readiness_summary"]
     benchmark_metadata = validation["benchmark_metadata_summary"]
     benchmark_runs = validation["benchmark_run_summary"]
     target_priorities = validation["target_priority_summary"]
@@ -815,6 +837,25 @@ def validation_summary() -> dict[str, object]:
             "blocking_condition_count"
         ]
         if isinstance(validation_promotions, dict)
+        else 0,
+        "validation_readiness_record_count": validation_readiness["record_count"]
+        if isinstance(validation_readiness, dict)
+        else 0,
+        "validation_readiness_ready_count": validation_readiness["ready_count"]
+        if isinstance(validation_readiness, dict)
+        else 0,
+        "validation_readiness_blocked_count": validation_readiness["blocked_count"]
+        if isinstance(validation_readiness, dict)
+        else 0,
+        "validation_readiness_not_yet_admissible_count": validation_readiness[
+            "not_yet_admissible_count"
+        ]
+        if isinstance(validation_readiness, dict)
+        else 0,
+        "validation_readiness_blocking_issue_count": validation_readiness[
+            "blocking_issue_count"
+        ]
+        if isinstance(validation_readiness, dict)
         else 0,
         "benchmark_command_count": benchmark_metadata["command_count"]
         if isinstance(benchmark_metadata, dict)
@@ -1128,6 +1169,15 @@ def _build_parser() -> argparse.ArgumentParser:
         "--rules-path",
         type=Path,
         help="Optional validation promotion rules JSON path.",
+    )
+    validation_readiness_parser = subparsers.add_parser(
+        "validation-readiness-summary",
+        help="Summarize validation dataset readiness review coverage.",
+    )
+    validation_readiness_parser.add_argument(
+        "--readiness-path",
+        type=Path,
+        help="Optional validation readiness JSON path.",
     )
     benchmark_metadata_parser = subparsers.add_parser(
         "benchmark-metadata-summary",

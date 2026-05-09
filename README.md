@@ -556,6 +556,7 @@ Recommended recalibration checks:
 .venv/bin/techno-search calibration-summary
 .venv/bin/techno-search calibration-track-summary
 .venv/bin/techno-search false-positive-summary
+.venv/bin/techno-search validation-readiness-summary
 .venv/bin/techno-search reliability-summary
 .venv/bin/techno-search precision-recall-summary
 .venv/bin/techno-search score-regression-summary
@@ -582,6 +583,14 @@ When recording local benchmark runs, append rather than overwrite:
 ```
 
 Benchmark run results record local execution context only. They are not calibrated survey sensitivity estimates or candidate-quality claims.
+
+Before any curated non-synthetic dataset is used for calibration claims, inspect readiness:
+
+```bash
+.venv/bin/techno-search validation-readiness-summary
+```
+
+Readiness status is a gate, not a scientific result. `ready` means the dataset can be considered for curated review; `blocked` means unresolved provenance, licensing, labeling, or review issues remain; `not_yet_admissible` means the dataset is not currently suitable for calibration use.
 
 ### Target Selection and Background Search Roadmap
 
@@ -712,6 +721,7 @@ Scientific quality gates:
 | Hidden data dependency | Synthetic fixtures and mocked services by default | `pytest`, live-data opt-in guards |
 | Lost provenance | Manifest and provenance summary validation | Report manifests and provenance summary CLI |
 | Misleading calibration | Synthetic-only disclaimers on reliability and PR summaries | Validation summary commands |
+| Premature non-synthetic calibration | Readiness review before curated dataset promotion | `validation-readiness-summary` |
 | Benchmark drift | Append-only local benchmark run results and repeated-run comparison | `benchmark-run-append`, `benchmark-run-compare` |
 
 👉 See [`docs/VALIDATION.md`](docs/VALIDATION.md)

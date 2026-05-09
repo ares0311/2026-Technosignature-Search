@@ -89,7 +89,9 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     assert ".venv/bin/techno-search background-run-once" in readme
     assert ".venv/bin/techno-search benchmark-run-append" in readme
     assert ".venv/bin/techno-search benchmark-run-compare" in readme
+    assert ".venv/bin/techno-search validation-readiness-summary" in readme
     assert "configs/background_priority_v0.json" in readme
+    assert "Readiness status is a gate, not a scientific result." in readme
     assert "The selected target is a scheduling recommendation only." in readme
     assert "### Quality-Control Matrix" in readme
     assert ".venv/bin/techno-search score examples/candidates/radio_clean_candidate.json" in readme

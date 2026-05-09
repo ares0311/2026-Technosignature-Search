@@ -1,10 +1,13 @@
 from techno_search.validation_datasets import (
     VALIDATION_DATASET_DISCLAIMER,
     VALIDATION_PROMOTION_DISCLAIMER,
+    VALIDATION_READINESS_DISCLAIMER,
     load_validation_dataset_entries,
     load_validation_promotion_rules,
+    load_validation_readiness_records,
     validation_dataset_summary,
     validation_promotion_summary,
+    validation_readiness_summary,
 )
 
 
@@ -60,3 +63,49 @@ def test_validation_promotion_summary_counts_rules_and_requirements() -> None:
     assert summary["rules_requiring_external_review"] == 3
     assert summary["by_from_readiness"] == {"synthetic_scaffold": 3}
     assert summary["by_to_readiness"] == {"curated_non_synthetic_candidate": 3}
+
+
+def test_validation_readiness_records_load_statuses_and_blockers() -> None:
+    records = load_validation_readiness_records()
+
+    assert len(records) == 3
+    assert {record.track.value for record in records} == {
+        "anomaly",
+        "infrared",
+        "radio",
+    }
+    assert {record.readiness_status for record in records} == {
+        "blocked",
+        "not_yet_admissible",
+        "ready",
+    }
+    assert all(record.requires_external_review for record in records)
+    assert records[0].readiness_status == "ready"
+    assert records[1].blocking_issues == (
+        "source_license_not_documented",
+        "unreviewed_confusion_flags",
+    )
+    assert "do not certify discoveries" in VALIDATION_READINESS_DISCLAIMER
+
+
+def test_validation_readiness_summary_counts_statuses_and_requirements() -> None:
+    summary = validation_readiness_summary()
+
+    assert summary["schema_version"] == "validation_readiness_v1"
+    assert summary["record_count"] == 3
+    assert summary["ready_count"] == 1
+    assert summary["blocked_count"] == 1
+    assert summary["not_yet_admissible_count"] == 1
+    assert summary["evidence_requirement_count"] == 12
+    assert summary["satisfied_evidence_count"] == 9
+    assert summary["blocking_issue_count"] == 4
+    assert summary["records_requiring_external_review"] == 3
+    assert summary["minimum_case_count_floor"] == 10
+    assert summary["total_current_case_count"] == 29
+    assert summary["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 1}
+    assert summary["by_status"] == {
+        "blocked": 1,
+        "not_yet_admissible": 1,
+        "ready": 1,
+    }
+    assert summary["ready_dataset_ids"] == ["future-radio-rfi-curated-v0"]

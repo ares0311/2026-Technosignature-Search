@@ -159,7 +159,7 @@ Print local JSON schema artifact paths:
 .venv/bin/techno-search schema-paths
 ```
 
-This includes candidate packets, report manifests, batch manifests, background target-priority fixtures, background search ledgers, human-review queue packets, human-review consensus labels, validation dataset manifests, local benchmark metadata, and benchmark run-result metadata.
+This includes candidate packets, report manifests, batch manifests, background target-priority fixtures, background search ledgers, human-review queue packets, human-review consensus labels, validation dataset manifests, validation readiness records, local benchmark metadata, and benchmark run-result metadata.
 
 ---
 
@@ -254,6 +254,32 @@ Print validation dataset manifest coverage:
 ```
 
 The summary reports dataset counts, total cases, false-positive class coverage, expected pathway coverage, and counts by track, dataset kind, and readiness. Manifests describe coverage and readiness only; they are not calibrated survey performance claims.
+
+---
+
+## Summarize Validation Readiness
+
+Print readiness review coverage for future curated non-synthetic validation datasets:
+
+```bash
+.venv/bin/techno-search validation-readiness-summary
+```
+
+The summary reports readiness records by track, status counts for `ready`, `blocked`, and `not_yet_admissible`, evidence requirements, satisfied evidence, blocking issues, and datasets ready for curated review. Readiness records are gates for review only; they do not certify discoveries, detections, or calibrated survey performance.
+
+Use `--readiness-path` to inspect a different validation readiness JSON file.
+
+---
+
+## Summarize Validation Promotion Rules
+
+Print promotion rule coverage for moving validation datasets toward stronger readiness tiers:
+
+```bash
+.venv/bin/techno-search validation-promotion-summary
+```
+
+Promotion rules describe required evidence and blocking conditions. They do not certify discoveries or calibrated survey performance.
 
 ---
 
@@ -376,7 +402,7 @@ Run the non-network validation summaries used for quick release checks:
 .venv/bin/techno-search validate-all
 ```
 
-This includes example candidate validation, report validation, schema path checks, calibration fixture summary, calibration-by-track diagnostics, false-positive class diagnostics, score regression summary, background target-priority summary, background search ledger summary, human-review queue summary, consensus label summary, consensus export summary, validation dataset manifest summary, benchmark metadata summary, and benchmark run-result summary.
+This includes example candidate validation, report validation, schema path checks, calibration fixture summary, calibration-by-track diagnostics, false-positive class diagnostics, score regression summary, background target-priority summary, background search ledger summary, human-review queue summary, consensus label summary, consensus export summary, validation dataset manifest summary, validation readiness summary, benchmark metadata summary, and benchmark run-result summary.
 It also reports `catalog_cache_validation` for Git-tracked paths so local untracked caches do not fail default validation.
 
 ---
@@ -389,7 +415,7 @@ Print a concise local health dashboard without network access:
 .venv/bin/techno-search validation-summary
 ```
 
-This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, calibration-by-track, false-positive class, validation-dataset, benchmark-metadata, benchmark-run, score-regression, background target-priority, background ledger, review-queue, consensus-label, consensus-export, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
+This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, calibration-by-track, false-positive class, validation-dataset, validation-readiness, benchmark-metadata, benchmark-run, score-regression, background target-priority, background ledger, review-queue, consensus-label, consensus-export, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
 
 ---
 

@@ -422,3 +422,25 @@ Benchmark metadata is useful for reproducibility only when it preserves executio
 - Each run records command name, command kind, status, worker count, input case count, duration, git commit, and config version.
 - Repeated-run comparison reports deltas for local validation drift only.
 - Benchmark deltas are not survey sensitivity estimates, candidate-quality metrics, discovery claims, or calibrated scientific performance claims.
+
+---
+
+## DECISION-018: Require Readiness Review Before Curated Non-Synthetic Calibration
+
+**Date:** 2026-05-08
+
+**Status:** Accepted
+
+### Decision
+
+Curated non-synthetic validation datasets must pass an explicit readiness review before they can be used to support calibration or performance claims.
+
+### Rationale
+
+Non-synthetic examples can improve scientific relevance, but they also introduce licensing, provenance, labeling, catalog ambiguity, and review risks. A dataset that is interesting is not automatically admissible for calibration. Readiness review forces the project to surface missing evidence and blocking issues before using non-synthetic data to tune or characterize the model.
+
+### Consequences
+
+- Readiness records must distinguish `ready`, `blocked`, and `not_yet_admissible` states.
+- Readiness summaries must expose evidence requirements, satisfied evidence, blocking issues, and external-review requirements.
+- A readiness status is a review gate only; it is not a detection, discovery, external validation, or calibrated survey-performance claim.

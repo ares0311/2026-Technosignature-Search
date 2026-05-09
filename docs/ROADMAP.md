@@ -243,6 +243,7 @@ Make scores empirically meaningful.
 ## Tasks
 
 - [x] Build validation dataset manifests
+- [x] Curated validation readiness records
 - [x] Synthetic false-positive fixture set
 - [x] Score regression snapshots
 - [x] False-positive class summary tooling

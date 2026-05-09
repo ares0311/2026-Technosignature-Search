@@ -20,6 +20,12 @@ VALIDATION_PROMOTION_DISCLAIMER = (
     "Validation dataset promotion rules describe readiness requirements only; they "
     "do not certify discoveries or calibrated survey performance."
 )
+VALIDATION_READINESS_SCHEMA_VERSION = "validation_readiness_v1"
+VALIDATION_READINESS_DISCLAIMER = (
+    "Validation readiness records describe whether datasets are ready for curated "
+    "review only; they do not certify discoveries, detections, or calibrated "
+    "survey performance."
+)
 
 
 @dataclass(frozen=True)
@@ -49,6 +55,24 @@ class ValidationPromotionRule:
     requires_external_review: bool
 
 
+@dataclass(frozen=True)
+class ValidationReadinessRecord:
+    """One readiness review record for a future curated validation dataset."""
+
+    readiness_id: str
+    dataset_id: str
+    track: Track
+    dataset_kind: str
+    readiness_status: str
+    current_case_count: int
+    minimum_case_count: int
+    evidence_requirements: tuple[str, ...]
+    satisfied_evidence: tuple[str, ...]
+    blocking_issues: tuple[str, ...]
+    requires_external_review: bool
+    promotion_target: str
+
+
 def default_validation_dataset_manifest_path() -> Path:
     """Return the repository-local validation dataset manifest fixture path."""
 
@@ -62,6 +86,14 @@ def default_validation_promotion_rules_path() -> Path:
 
     return Path(__file__).resolve().parents[2] / "tests" / "fixtures" / (
         "validation_promotion_rules.json"
+    )
+
+
+def default_validation_readiness_path() -> Path:
+    """Return the repository-local validation readiness fixture path."""
+
+    return Path(__file__).resolve().parents[2] / "tests" / "fixtures" / (
+        "validation_readiness.json"
     )
 
 
@@ -105,6 +137,26 @@ def load_validation_promotion_rules(
     return tuple(_promotion_rule_from_mapping(rule) for rule in data["rules"])
 
 
+def load_validation_readiness_records(
+    path: Path | None = None,
+) -> tuple[ValidationReadinessRecord, ...]:
+    """Load validation dataset readiness review records."""
+
+    readiness_path = path or default_validation_readiness_path()
+    with readiness_path.open(encoding="utf-8") as handle:
+        data = json.load(handle)
+
+    schema_version = str(data.get("schema_version", ""))
+    if schema_version != VALIDATION_READINESS_SCHEMA_VERSION:
+        msg = (
+            f"Unsupported validation readiness schema version {schema_version!r}; "
+            f"expected {VALIDATION_READINESS_SCHEMA_VERSION!r}"
+        )
+        raise ValueError(msg)
+
+    return tuple(_readiness_record_from_mapping(record) for record in data["records"])
+
+
 def validation_dataset_summary(path: Path | None = None) -> dict[str, object]:
     """Summarize validation dataset manifest coverage."""
 
@@ -132,6 +184,61 @@ def validation_dataset_summary(path: Path | None = None) -> dict[str, object]:
         "by_readiness": _counter_to_dict(Counter(entry.readiness for entry in entries)),
         "dataset_ids": sorted(entry.dataset_id for entry in entries),
         "source_fixture_paths": sorted(entry.source_fixture_path for entry in entries),
+    }
+
+
+def validation_readiness_summary(path: Path | None = None) -> dict[str, object]:
+    """Summarize validation dataset readiness review coverage."""
+
+    readiness_path = path or default_validation_readiness_path()
+    records = load_validation_readiness_records(readiness_path)
+    all_evidence_requirements = {
+        evidence
+        for record in records
+        for evidence in record.evidence_requirements
+    }
+    all_blocking_issues = {
+        issue for record in records for issue in record.blocking_issues
+    }
+    ready_dataset_ids = [
+        record.dataset_id
+        for record in records
+        if record.readiness_status == "ready"
+    ]
+
+    return {
+        "readiness_path": str(readiness_path),
+        "schema_version": VALIDATION_READINESS_SCHEMA_VERSION,
+        "disclaimer": VALIDATION_READINESS_DISCLAIMER,
+        "record_count": len(records),
+        "ready_count": sum(
+            1 for record in records if record.readiness_status == "ready"
+        ),
+        "blocked_count": sum(
+            1 for record in records if record.readiness_status == "blocked"
+        ),
+        "not_yet_admissible_count": sum(
+            1
+            for record in records
+            if record.readiness_status == "not_yet_admissible"
+        ),
+        "evidence_requirement_count": len(all_evidence_requirements),
+        "satisfied_evidence_count": sum(
+            len(record.satisfied_evidence) for record in records
+        ),
+        "blocking_issue_count": len(all_blocking_issues),
+        "records_requiring_external_review": sum(
+            1 for record in records if record.requires_external_review
+        ),
+        "minimum_case_count_floor": min(
+            (record.minimum_case_count for record in records), default=0
+        ),
+        "total_current_case_count": sum(record.current_case_count for record in records),
+        "by_track": _counter_to_dict(Counter(record.track.value for record in records)),
+        "by_status": _counter_to_dict(Counter(record.readiness_status for record in records)),
+        "by_dataset_kind": _counter_to_dict(Counter(record.dataset_kind for record in records)),
+        "ready_dataset_ids": sorted(ready_dataset_ids),
+        "record_ids": sorted(record.readiness_id for record in records),
     }
 
 
@@ -193,6 +300,29 @@ def _promotion_rule_from_mapping(data: dict[str, Any]) -> ValidationPromotionRul
         ),
         minimum_case_count=int(data["minimum_case_count"]),
         requires_external_review=bool(data["requires_external_review"]),
+    )
+
+
+def _readiness_record_from_mapping(data: dict[str, Any]) -> ValidationReadinessRecord:
+    return ValidationReadinessRecord(
+        readiness_id=str(data["readiness_id"]),
+        dataset_id=str(data["dataset_id"]),
+        track=Track(str(data["track"])),
+        dataset_kind=str(data["dataset_kind"]),
+        readiness_status=str(data["readiness_status"]),
+        current_case_count=int(data["current_case_count"]),
+        minimum_case_count=int(data["minimum_case_count"]),
+        evidence_requirements=tuple(
+            str(item) for item in data.get("evidence_requirements", ())
+        ),
+        satisfied_evidence=tuple(
+            str(item) for item in data.get("satisfied_evidence", ())
+        ),
+        blocking_issues=tuple(
+            str(item) for item in data.get("blocking_issues", ())
+        ),
+        requires_external_review=bool(data["requires_external_review"]),
+        promotion_target=str(data["promotion_target"]),
     )
 
 

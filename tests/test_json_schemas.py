@@ -19,6 +19,7 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "review_queue.schema.json",
         "validation_dataset_manifest.schema.json",
         "validation_promotion_rules.schema.json",
+        "validation_readiness.schema.json",
     }
     for path in schema_paths:
         schema = json.loads(path.read_text(encoding="utf-8"))
@@ -70,6 +71,11 @@ def test_schema_required_fields_match_example_artifacts() -> None:
             encoding="utf-8"
         )
     )
+    validation_readiness_schema = json.loads(
+        Path("schemas/validation_readiness.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
     packet = json.loads(Path("examples/reports/example-radio-clean.json").read_text())
     manifest = json.loads(
         Path("examples/reports/example-radio-clean.manifest.json").read_text()
@@ -94,6 +100,9 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     validation_promotion = json.loads(
         Path("tests/fixtures/validation_promotion_rules.json").read_text()
     )
+    validation_readiness = json.loads(
+        Path("tests/fixtures/validation_readiness.json").read_text()
+    )
 
     assert set(packet_schema["required"]) <= set(packet)
     assert set(manifest_schema["required"]) <= set(manifest)
@@ -107,6 +116,7 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     assert set(consensus_export_schema["required"]) <= set(consensus_export)
     assert set(validation_dataset_schema["required"]) <= set(validation_dataset)
     assert set(validation_promotion_schema["required"]) <= set(validation_promotion)
+    assert set(validation_readiness_schema["required"]) <= set(validation_readiness)
     assert "schema_version" in packet_schema["required"]
     assert "schema_version" in manifest_schema["required"]
     assert "schema_version" in batch_schema["required"]
@@ -158,3 +168,5 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     assert len(validation_dataset["datasets"]) == 3
     assert validation_promotion["schema_version"] == "validation_dataset_promotion_rules_v1"
     assert len(validation_promotion["rules"]) == 3
+    assert validation_readiness["schema_version"] == "validation_readiness_v1"
+    assert len(validation_readiness["records"]) == 3

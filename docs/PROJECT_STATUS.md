@@ -132,6 +132,8 @@ The project will support three tracks from day one:
 - [x] Validation dataset manifest schema added
 - [x] Validation dataset summary CLI added
 - [x] Validation dataset summary wired into local validation
+- [x] Validation readiness fixture, schema, and summary CLI added
+- [x] Validation readiness summary wired into local validation
 - [x] Benchmark metadata schema added
 - [x] Benchmark metadata summary CLI added
 - [x] Benchmark metadata summary wired into local validation
@@ -171,8 +173,8 @@ The project will support three tracks from day one:
 ## Next 3 Actions
 
 1. Promote local-only background run fixtures into a reviewed workflow only after ledger semantics stabilize.
-2. Add curated non-synthetic validation dataset readiness documentation.
-3. Add benchmark comparison thresholds once repeated synthetic calibration grids exist.
+2. Add benchmark comparison thresholds once repeated synthetic calibration grids exist.
+3. Expand curated validation readiness examples after real reviewed non-synthetic candidates are available.
 
 ---
 

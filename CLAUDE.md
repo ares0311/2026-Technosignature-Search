@@ -140,6 +140,31 @@ Merge status: already on `main`; no merge needed.
 
 ---
 
+## Validation Readiness Workflow
+
+User requested the next fifteen steps and asked to push when complete.
+
+Status: implemented in this iteration.
+
+Added:
+
+- `schemas/validation_readiness.schema.json`
+- `tests/fixtures/validation_readiness.json`
+- validation readiness dataclass, loader, and summary helper
+- `techno-search validation-readiness-summary`
+- validation readiness coverage in `validate-all` and `validation-summary`
+- tests for readiness statuses, blockers, CLI output, schema coverage, and docs drift
+- README, CLI usage, validation guide, roadmap, project status, and decisions updates
+
+Scientific guardrail:
+
+- readiness status is a curated-review gate only
+- readiness summaries do not certify discoveries, detections, external validation, or calibrated survey performance
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Consensus Export, Promotion, And Benchmark Run Expansion
 
 User requested the next fifteen steps:

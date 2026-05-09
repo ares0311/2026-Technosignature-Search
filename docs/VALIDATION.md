@@ -79,6 +79,7 @@ Committed schemas:
 - `schemas/benchmark_run_results.schema.json`
 - `schemas/background_targets.schema.json`
 - `schemas/background_search_ledger.schema.json`
+- `schemas/validation_readiness.schema.json`
 
 ---
 
@@ -144,6 +145,12 @@ Review validation dataset manifest coverage:
 .venv/bin/techno-search validation-dataset-summary
 ```
 
+Review curated non-synthetic dataset readiness:
+
+```bash
+.venv/bin/techno-search validation-readiness-summary
+```
+
 Review local synthetic benchmark metadata:
 
 ```bash
@@ -199,7 +206,7 @@ Review passive/background search ledger coverage:
 .venv/bin/techno-search background-ledger-summary
 ```
 
-`validate-all` and `validation-summary` include calibration-by-track, false-positive class, validation dataset, benchmark metadata, benchmark run-result metadata, background target-priority, background search ledger, injection-recovery, reliability, precision-recall, human-review queue, consensus-label, and consensus-export coverage. Benchmark append and compare commands are local workflow helpers for ignored output paths. The reported calibration-by-track coverage, false-positive class coverage, validation dataset coverage, benchmark metadata, benchmark run-result metadata, benchmark deltas, target-priority ranking, background ledger counts, recovery rate, false-alarm fraction, reliability errors, precision, recall, F1 score, review queue counts, consensus counts, and consensus export counts are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, per-track survey performance, classification performance estimates, discovery claims, external validation, detections, or scientific performance claims.
+`validate-all` and `validation-summary` include calibration-by-track, false-positive class, validation dataset, validation readiness, benchmark metadata, benchmark run-result metadata, background target-priority, background search ledger, injection-recovery, reliability, precision-recall, human-review queue, consensus-label, and consensus-export coverage. Benchmark append and compare commands are local workflow helpers for ignored output paths. The reported calibration-by-track coverage, false-positive class coverage, validation dataset coverage, validation readiness counts, benchmark metadata, benchmark run-result metadata, benchmark deltas, target-priority ranking, background ledger counts, recovery rate, false-alarm fraction, reliability errors, precision, recall, F1 score, review queue counts, consensus counts, and consensus export counts are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, per-track survey performance, classification performance estimates, discovery claims, external validation, detections, or scientific performance claims.
 
 Snapshot fixture:
 
@@ -253,6 +260,12 @@ Validation dataset manifest fixture:
 
 ```text
 tests/fixtures/validation_dataset_manifest.json
+```
+
+Validation readiness fixture:
+
+```text
+tests/fixtures/validation_readiness.json
 ```
 
 Benchmark metadata fixture:
