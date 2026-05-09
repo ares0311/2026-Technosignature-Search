@@ -165,6 +165,32 @@ Merge status: already on `main`; no merge needed.
 
 ---
 
+## Background Reviewed Workflow Ledger Expansion
+
+User requested the next fifteen steps and asked to push when complete.
+
+Status: implemented in this iteration.
+
+Added:
+
+- reviewed-workflow fields on background search ledger entries
+- fixture coverage for candidate-packet-ready, review-blocked, negative-search, and local-scheduling-only states
+- `techno-search background-reviewed-workflow-summary`
+- reviewed-workflow counts in `validate-all` and `validation-summary`
+- tests for local-only run semantics, negative-result logging, target-selection rationale, schema coverage, and CLI output
+- README, CLI usage, validation guide, roadmap, project status, and decisions updates
+
+Scientific guardrail:
+
+- reviewed-workflow status is an operational handoff state only
+- target-priority scores remain scheduling aids
+- local runner entries remain non-networked and scheduling-only
+- negative-result logs and candidate packet IDs are provenance records, not discovery or detection claims
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Consensus Export, Promotion, And Benchmark Run Expansion
 
 User requested the next fifteen steps:

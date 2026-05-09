@@ -145,7 +145,13 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     assert background_targets["schema_version"] == "background_target_priority_v1"
     assert len(background_targets["targets"]) == 3
     assert background_ledger["schema_version"] == "background_search_ledger_v1"
-    assert len(background_ledger["ledger_entries"]) == 3
+    assert len(background_ledger["ledger_entries"]) == 4
+    first_ledger_entry = background_ledger["ledger_entries"][0]
+    assert first_ledger_entry["reviewed_workflow_status"] == "candidate_packet_ready"
+    assert first_ledger_entry["candidate_packet_ids"] == ["radio-clean-001"]
+    assert "reviewed_workflow_status" in background_ledger_schema["properties"][
+        "ledger_entries"
+    ]["items"]["properties"]
     assert review_queue["schema_version"] == "human_review_queue_v1"
     assert sorted(review_queue["allowed_triage_labels"]) == [
         "follow_up_target",

@@ -566,16 +566,56 @@ def test_cli_background_ledger_summary_outputs_logged_searches() -> None:
 
     assert exit_code == 0
     assert result["schema_version"] == "background_search_ledger_v1"
-    assert result["entry_count"] == 3
+    assert result["entry_count"] == 4
     assert result["searched_target_count"] == 3
     assert result["candidate_count"] == 2
-    assert result["blocking_issue_count"] == 3
+    assert result["candidate_packet_id_count"] == 2
+    assert result["blocking_issue_count"] == 4
+    assert result["negative_result_logged_count"] == 2
+    assert result["requires_human_review_count"] == 2
+    assert result["scheduling_only_count"] == 1
     assert result["by_status"] == {
         "completed": 1,
         "completed_with_blockers": 1,
+        "local_fixture_search_logged": 1,
         "searched_no_candidate": 1,
     }
+    assert result["by_reviewed_workflow_status"] == {
+        "candidate_packet_ready": 1,
+        "local_scheduling_only": 1,
+        "negative_search_recorded": 1,
+        "review_blocked": 1,
+    }
     assert "not discovery claims" in result["disclaimer"]
+
+
+def test_cli_background_reviewed_workflow_summary_outputs_review_state() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["background-reviewed-workflow-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "background_search_ledger_v1"
+    assert result["entry_count"] == 4
+    assert result["reviewed_workflow_status_count"] == 4
+    assert result["target_selection_rationale_count"] == 12
+    assert result["negative_result_logged_count"] == 2
+    assert result["requires_human_review_count"] == 2
+    assert result["local_only_entry_count"] == 1
+    assert result["scheduling_only_count"] == 1
+    assert result["candidate_packet_id_count"] == 2
+    assert result["blocked_entry_count"] == 3
+    assert result["by_execution_mode"] == {
+        "local_non_network_fixture_runner": 1,
+        "synthetic_priority_demo": 3,
+    }
+    assert result["by_reviewed_workflow_status"] == {
+        "candidate_packet_ready": 1,
+        "local_scheduling_only": 1,
+        "negative_search_recorded": 1,
+        "review_blocked": 1,
+    }
 
 
 def test_cli_background_run_once_appends_local_ledger_entry(tmp_path) -> None:
@@ -602,8 +642,16 @@ def test_cli_background_run_once_appends_local_ledger_entry(tmp_path) -> None:
     assert result["appended_entry"]["run_id"] == "cli-local-run-001"
     assert result["appended_entry"]["target_id"] == "target-radio-clean-drift"
     assert result["appended_entry"]["status"] == "local_fixture_search_logged"
+    assert result["appended_entry"]["execution_mode"] == (
+        "local_non_network_fixture_runner"
+    )
+    assert result["appended_entry"]["negative_result_logged"] is True
+    assert result["appended_entry"]["reviewed_workflow_status"] == (
+        "local_scheduling_only"
+    )
     assert result["ledger_summary"]["entry_count"] == 1
     assert result["ledger_summary"]["candidate_count"] == 0
+    assert result["review_workflow_summary"]["local_only_entry_count"] == 1
     assert ledger_path.exists()
 
 
@@ -695,8 +743,16 @@ def test_cli_validate_all_outputs_local_summary() -> None:
     assert result["target_priority_summary"]["selected_target_id"] == (
         "target-radio-clean-drift"
     )
-    assert result["background_ledger_summary"]["entry_count"] == 3
+    assert result["background_ledger_summary"]["entry_count"] == 4
     assert result["background_ledger_summary"]["candidate_count"] == 2
+    assert result["background_review_workflow_summary"]["entry_count"] == 4
+    assert result["background_review_workflow_summary"][
+        "reviewed_workflow_status_count"
+    ] == 4
+    assert result["background_review_workflow_summary"][
+        "negative_result_logged_count"
+    ] == 2
+    assert result["background_review_workflow_summary"]["local_only_entry_count"] == 1
     assert result["catalog_cache_validation"]["forbidden_roots"] == [
         "data",
         "cache",
@@ -757,8 +813,11 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["benchmark_run_max_worker_count"] == 12
     assert result["target_priority_count"] == 3
     assert result["selected_background_target_id"] == "target-radio-clean-drift"
-    assert result["background_ledger_entry_count"] == 3
+    assert result["background_ledger_entry_count"] == 4
     assert result["background_ledger_candidate_count"] == 2
+    assert result["background_review_workflow_status_count"] == 4
+    assert result["background_review_negative_result_logged_count"] == 2
+    assert result["background_review_local_only_entry_count"] == 1
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 

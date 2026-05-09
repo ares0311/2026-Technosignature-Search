@@ -525,6 +525,14 @@ To inspect what the passive/background system has already searched, run:
 
 The ledger summary reports searched targets, candidate counts, blocking issues, conservative pathway labels, and run IDs. Negative searches must still be logged because they are part of the reproducibility record.
 
+To inspect whether logged background runs are ready for reviewed handoff, run:
+
+```bash
+.venv/bin/techno-search background-reviewed-workflow-summary
+```
+
+The reviewed-workflow summary reports execution modes, scheduling-only entries, negative-result logging, target-selection rationales, candidate packet IDs, review blockers, and human-review requirements. These fields describe workflow readiness only. They do not turn a target-priority score or a ledger entry into candidate evidence.
+
 ### Recalibration Workflow
 
 Recalibration means adjusting scoring assumptions after comparing model outputs against known synthetic injections, known contaminants, curated false-positive examples, or human-reviewed labels. It should not be done by hand-tuning one interesting candidate.
@@ -648,6 +656,13 @@ Any passive/background runner must maintain a search ledger:
 | `code_commit` | Reproducibility anchor |
 | `cache_key` | Provider/cache provenance when applicable |
 | `candidate_count` | Number of candidates generated |
+| `execution_mode` | Local fixture runner, synthetic fixture, or future provider mode |
+| `selected_priority_score` | Target-priority score that led to the search |
+| `target_selection_rationale` | Auditable reasons the target was searched |
+| `candidate_packet_ids` | Candidate packets produced, if any |
+| `negative_result_logged` | Whether a no-candidate search was explicitly preserved |
+| `requires_human_review` | Whether the logged result needs human review |
+| `reviewed_workflow_status` | Candidate-packet-ready, blocked, negative-search, or scheduling-only state |
 | `recommended_pathways` | Conservative routing results |
 | `blocking_issues` | Missing metadata, failed providers, or invalid candidate packets |
 
@@ -657,6 +672,7 @@ In v0, the committed ledger fixture is summarized by:
 
 ```bash
 .venv/bin/techno-search background-ledger-summary
+.venv/bin/techno-search background-reviewed-workflow-summary
 ```
 
 The local append-only runner is invoked explicitly:
@@ -669,7 +685,7 @@ The local append-only runner is invoked explicitly:
   --acknowledge-local-run
 ```
 
-This runner selects the top ranked fixture target, records a `local_fixture_search_logged` ledger entry, sets `candidate_count` to `0`, and routes the entry to `github_reproducibility_only`. It is a passive-runner scaffold, not a production autonomous search daemon.
+This runner selects the top ranked fixture target, records a `local_fixture_search_logged` ledger entry, sets `candidate_count` to `0`, sets `reviewed_workflow_status` to `local_scheduling_only`, marks the no-candidate outcome as a logged negative result, and routes the entry to `github_reproducibility_only`. It is a passive-runner scaffold, not a production autonomous search daemon.
 
 Before any future passive runner is treated as operational, it must:
 
@@ -723,6 +739,7 @@ Scientific quality gates:
 | Misleading calibration | Synthetic-only disclaimers on reliability and PR summaries | Validation summary commands |
 | Premature non-synthetic calibration | Readiness review before curated dataset promotion | `validation-readiness-summary` |
 | Benchmark drift | Append-only local benchmark run results and repeated-run comparison | `benchmark-run-append`, `benchmark-run-compare` |
+| Unreviewed background automation | Reviewed workflow summary for scheduling-only and negative-result ledger entries | `background-reviewed-workflow-summary` |
 
 👉 See [`docs/VALIDATION.md`](docs/VALIDATION.md)
 

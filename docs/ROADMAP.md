@@ -231,6 +231,7 @@ Add real data ingestion behind tested abstractions.
 - [x] Passive/background search ledger summary
 - [x] Versioned background target-priority config
 - [x] Explicit local-only passive runner ledger append command
+- [x] Reviewed background workflow ledger semantics and summary command
 
 ---
 

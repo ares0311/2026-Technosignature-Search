@@ -22,6 +22,8 @@ BACKGROUND_SEARCH_LEDGER_DISCLAIMER = (
     "reproducibility; they are not discovery claims."
 )
 BACKGROUND_PRIORITY_CONFIG_VERSION = "background_priority_v0"
+LOCAL_BACKGROUND_EXECUTION_MODE = "local_non_network_fixture_runner"
+LOCAL_BACKGROUND_REVIEW_STATUS = "local_scheduling_only"
 
 DEFAULT_PRIORITY_WEIGHTS = {
     "followup_value": 0.35,
@@ -82,6 +84,13 @@ class BackgroundSearchLedgerEntry:
     candidate_count: int
     recommended_pathways: tuple[str, ...]
     blocking_issues: tuple[str, ...]
+    execution_mode: str = "unspecified"
+    selected_priority_score: float | None = None
+    target_selection_rationale: tuple[str, ...] = ()
+    candidate_packet_ids: tuple[str, ...] = ()
+    negative_result_logged: bool = False
+    requires_human_review: bool = False
+    reviewed_workflow_status: str = "unreviewed"
 
 
 def default_background_priority_config_path() -> Path:
@@ -149,7 +158,9 @@ def load_background_priority_config(
             data.get("passive_runner_requires_opt_in", True)
         ),
         network_access_enabled=bool(data.get("network_access_enabled", False)),
-        local_runner_status=str(data.get("local_runner_status", "local_fixture_search_logged")),
+        local_runner_status=str(
+            data.get("local_runner_status", "local_fixture_search_logged")
+        ),
         local_runner_pathway=str(
             data.get("local_runner_pathway", "github_reproducibility_only")
         ),
@@ -277,6 +288,9 @@ def background_search_ledger_summary(path: Path | None = None) -> dict[str, obje
     pathways = [
         pathway for entry in entries for pathway in entry.recommended_pathways
     ]
+    candidate_packet_ids = [
+        candidate_id for entry in entries for candidate_id in entry.candidate_packet_ids
+    ]
 
     return {
         "ledger_path": str(ledger_path),
@@ -285,12 +299,84 @@ def background_search_ledger_summary(path: Path | None = None) -> dict[str, obje
         "entry_count": len(entries),
         "searched_target_count": len(searched_targets),
         "candidate_count": sum(entry.candidate_count for entry in entries),
+        "candidate_packet_id_count": len(candidate_packet_ids),
         "blocking_issue_count": len(all_blocking_issues),
+        "negative_result_logged_count": sum(
+            1 for entry in entries if entry.negative_result_logged
+        ),
+        "requires_human_review_count": sum(
+            1 for entry in entries if entry.requires_human_review
+        ),
+        "scheduling_only_count": sum(
+            1
+            for entry in entries
+            if entry.reviewed_workflow_status == LOCAL_BACKGROUND_REVIEW_STATUS
+        ),
         "by_track": _counter_to_dict(Counter(entry.track.value for entry in entries)),
         "by_status": _counter_to_dict(Counter(entry.status for entry in entries)),
+        "by_execution_mode": _counter_to_dict(
+            Counter(entry.execution_mode for entry in entries)
+        ),
+        "by_reviewed_workflow_status": _counter_to_dict(
+            Counter(entry.reviewed_workflow_status for entry in entries)
+        ),
         "by_recommended_pathway": _counter_to_dict(Counter(pathways)),
         "run_ids": sorted(entry.run_id for entry in entries),
         "target_ids": sorted(searched_targets),
+        "candidate_packet_ids": sorted(candidate_packet_ids),
+    }
+
+
+def background_review_workflow_summary(path: Path | None = None) -> dict[str, object]:
+    """Summarize reviewed workflow semantics for passive/background ledger entries."""
+
+    ledger_path = path or default_background_ledger_path()
+    entries = load_background_search_ledger(ledger_path)
+    rationale_count = sum(len(entry.target_selection_rationale) for entry in entries)
+    blocked_entries = [
+        entry.run_id
+        for entry in entries
+        if entry.blocking_issues or entry.reviewed_workflow_status == "review_blocked"
+    ]
+    local_only_entries = [
+        entry.run_id
+        for entry in entries
+        if entry.execution_mode == LOCAL_BACKGROUND_EXECUTION_MODE
+    ]
+
+    return {
+        "ledger_path": str(ledger_path),
+        "schema_version": BACKGROUND_SEARCH_LEDGER_SCHEMA_VERSION,
+        "disclaimer": BACKGROUND_SEARCH_LEDGER_DISCLAIMER,
+        "entry_count": len(entries),
+        "reviewed_workflow_status_count": len(
+            {entry.reviewed_workflow_status for entry in entries}
+        ),
+        "target_selection_rationale_count": rationale_count,
+        "negative_result_logged_count": sum(
+            1 for entry in entries if entry.negative_result_logged
+        ),
+        "requires_human_review_count": sum(
+            1 for entry in entries if entry.requires_human_review
+        ),
+        "local_only_entry_count": len(local_only_entries),
+        "scheduling_only_count": sum(
+            1
+            for entry in entries
+            if entry.reviewed_workflow_status == LOCAL_BACKGROUND_REVIEW_STATUS
+        ),
+        "candidate_packet_id_count": sum(
+            len(entry.candidate_packet_ids) for entry in entries
+        ),
+        "blocked_entry_count": len(blocked_entries),
+        "by_execution_mode": _counter_to_dict(
+            Counter(entry.execution_mode for entry in entries)
+        ),
+        "by_reviewed_workflow_status": _counter_to_dict(
+            Counter(entry.reviewed_workflow_status for entry in entries)
+        ),
+        "blocked_run_ids": sorted(blocked_entries),
+        "local_only_run_ids": sorted(local_only_entries),
     }
 
 
@@ -334,7 +420,7 @@ def run_local_background_search_once(
         track=selected.track,
         status=config.local_runner_status,
         query_parameters={
-            "mode": "local_non_network_fixture_runner",
+            "mode": LOCAL_BACKGROUND_EXECUTION_MODE,
             "target_path": str(resolved_target_path),
             "config_path": str(resolved_config_path),
             "selected_priority_score": priority_score,
@@ -349,12 +435,24 @@ def run_local_background_search_once(
         blocking_issues=(
             "local fixture runner records scheduling only; no candidate extraction was performed",
         ),
+        execution_mode=LOCAL_BACKGROUND_EXECUTION_MODE,
+        selected_priority_score=priority_score,
+        target_selection_rationale=(
+            "highest configured target-priority score",
+            "false-positive probability and blocking issues penalized",
+            "local fixture runner does not query live providers",
+        ),
+        candidate_packet_ids=(),
+        negative_result_logged=True,
+        requires_human_review=False,
+        reviewed_workflow_status=LOCAL_BACKGROUND_REVIEW_STATUS,
     )
     append_background_search_ledger_entry(ledger_path, entry)
     return {
         "ok": True,
         "appended_entry": _ledger_entry_to_mapping(entry),
         "ledger_summary": background_search_ledger_summary(ledger_path),
+        "review_workflow_summary": background_review_workflow_summary(ledger_path),
     }
 
 
@@ -430,6 +528,24 @@ def _ledger_entry_from_mapping(data: dict[str, Any]) -> BackgroundSearchLedgerEn
         blocking_issues=tuple(
             str(issue) for issue in data.get("blocking_issues", ())
         ),
+        execution_mode=str(
+            data.get(
+                "execution_mode",
+                data.get("query_parameters", {}).get("mode", "unspecified"),
+            )
+        ),
+        selected_priority_score=_optional_float(data.get("selected_priority_score")),
+        target_selection_rationale=tuple(
+            str(reason) for reason in data.get("target_selection_rationale", ())
+        ),
+        candidate_packet_ids=tuple(
+            str(candidate_id) for candidate_id in data.get("candidate_packet_ids", ())
+        ),
+        negative_result_logged=bool(data.get("negative_result_logged", False)),
+        requires_human_review=bool(data.get("requires_human_review", False)),
+        reviewed_workflow_status=str(
+            data.get("reviewed_workflow_status", "unreviewed")
+        ),
     )
 
 
@@ -448,11 +564,27 @@ def _ledger_entry_to_mapping(entry: BackgroundSearchLedgerEntry) -> dict[str, ob
         "candidate_count": entry.candidate_count,
         "recommended_pathways": list(entry.recommended_pathways),
         "blocking_issues": list(entry.blocking_issues),
+        "execution_mode": entry.execution_mode,
+        "selected_priority_score": entry.selected_priority_score,
+        "target_selection_rationale": list(entry.target_selection_rationale),
+        "candidate_packet_ids": list(entry.candidate_packet_ids),
+        "negative_result_logged": entry.negative_result_logged,
+        "requires_human_review": entry.requires_human_review,
+        "reviewed_workflow_status": entry.reviewed_workflow_status,
     }
 
 
 def _float_mapping(data: dict[str, Any]) -> dict[str, float]:
     return {str(key): float(value) for key, value in data.items()}
+
+
+def _optional_float(value: object) -> float | None:
+    if value is None:
+        return None
+    if isinstance(value, str | int | float):
+        return float(value)
+    msg = f"Expected a numeric or string priority score, got {type(value).__name__}"
+    raise TypeError(msg)
 
 
 def _counter_to_dict(counter: Counter[str]) -> dict[str, int]:

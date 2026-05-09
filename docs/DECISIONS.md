@@ -444,3 +444,29 @@ Non-synthetic examples can improve scientific relevance, but they also introduce
 - Readiness records must distinguish `ready`, `blocked`, and `not_yet_admissible` states.
 - Readiness summaries must expose evidence requirements, satisfied evidence, blocking issues, and external-review requirements.
 - A readiness status is a review gate only; it is not a detection, discovery, external validation, or calibrated survey-performance claim.
+
+---
+
+## DECISION-019: Preserve Reviewed Workflow Semantics In Background Search Ledgers
+
+**Date:** 2026-05-09
+
+**Status:** Accepted
+
+### Decision
+
+Passive/background search ledger entries must record reviewed-workflow semantics in addition to basic run metadata.
+
+Required reviewed-workflow fields include execution mode, selected priority score, target-selection rationale, candidate packet IDs, negative-result logging, human-review requirement, and reviewed workflow status.
+
+### Rationale
+
+Background search infrastructure is useful only when another person can reconstruct what was searched, why it was searched, whether a candidate packet exists, and what ordinary blocking issues remain. A ledger that only records target IDs and counts is not enough for conservative review handoff.
+
+### Consequences
+
+- Scheduling-only local runs must be labeled as `local_scheduling_only`.
+- No-candidate runs must preserve `negative_result_logged`.
+- Candidate packet IDs must be listed separately from target-priority scores.
+- Human-review requirements and blockers must be visible in summaries.
+- Reviewed-workflow summaries remain operational diagnostics only; they are not detections, discoveries, external validation, or calibrated survey-performance claims.

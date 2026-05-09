@@ -80,6 +80,42 @@
             "type": "integer",
             "minimum": 0
           },
+          "execution_mode": {
+            "type": "string"
+          },
+          "selected_priority_score": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "target_selection_rationale": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "candidate_packet_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "negative_result_logged": {
+            "type": "boolean"
+          },
+          "requires_human_review": {
+            "type": "boolean"
+          },
+          "reviewed_workflow_status": {
+            "enum": [
+              "candidate_packet_ready",
+              "local_scheduling_only",
+              "negative_search_recorded",
+              "review_blocked",
+              "unreviewed"
+            ]
+          },
           "recommended_pathways": {
             "type": "array",
             "items": {

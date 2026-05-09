@@ -18,6 +18,19 @@
       "code_commit": "synthetic-fixture",
       "cache_key": "synthetic-radio-priority-demo",
       "candidate_count": 1,
+      "execution_mode": "synthetic_priority_demo",
+      "selected_priority_score": 0.7515,
+      "target_selection_rationale": [
+        "highest configured target-priority score",
+        "low false-positive probability in synthetic fixture",
+        "candidate packet exists for reviewed handoff"
+      ],
+      "candidate_packet_ids": [
+        "radio-clean-001"
+      ],
+      "negative_result_logged": false,
+      "requires_human_review": true,
+      "reviewed_workflow_status": "candidate_packet_ready",
       "recommended_pathways": [
         "candidate_review_packet"
       ],
@@ -38,6 +51,19 @@
       "code_commit": "synthetic-fixture",
       "cache_key": "synthetic-infrared-priority-demo",
       "candidate_count": 1,
+      "execution_mode": "synthetic_priority_demo",
+      "selected_priority_score": 0.613,
+      "target_selection_rationale": [
+        "review-worthy target-priority score",
+        "infrared context remains incomplete",
+        "blocking issue must be resolved before external attention"
+      ],
+      "candidate_packet_ids": [
+        "infrared-clean-001"
+      ],
+      "negative_result_logged": false,
+      "requires_human_review": true,
+      "reviewed_workflow_status": "review_blocked",
       "recommended_pathways": [
         "human_review_queue"
       ],
@@ -60,12 +86,58 @@
       "code_commit": "synthetic-fixture",
       "cache_key": "synthetic-anomaly-negative-demo",
       "candidate_count": 0,
+      "execution_mode": "synthetic_priority_demo",
+      "selected_priority_score": 0.335,
+      "target_selection_rationale": [
+        "target retained to document weak-context search behavior",
+        "candidate extraction produced no packet",
+        "negative result remains part of the reproducibility record"
+      ],
+      "candidate_packet_ids": [],
+      "negative_result_logged": true,
+      "requires_human_review": false,
+      "reviewed_workflow_status": "negative_search_recorded",
       "recommended_pathways": [
         "github_reproducibility_only"
       ],
       "blocking_issues": [
         "synthetic fixture intentionally records weak context",
         "no candidate packet generated"
+      ]
+    },
+    {
+      "run_id": "background-demo-004",
+      "target_id": "target-radio-clean-drift",
+      "track": "radio",
+      "status": "local_fixture_search_logged",
+      "query_parameters": {
+        "config_path": "configs/background_priority_v0.json",
+        "mode": "local_non_network_fixture_runner",
+        "selected_priority_score": 0.7515,
+        "target_path": "tests/fixtures/background_targets.json"
+      },
+      "started_at_utc": "2026-05-08T10:15:00+00:00",
+      "completed_at_utc": "2026-05-08T10:15:00+00:00",
+      "config_version": "background_priority_v0",
+      "code_commit": "synthetic-fixture",
+      "cache_key": "local-fixture-target-radio-clean-drift-background_priority_v0",
+      "candidate_count": 0,
+      "execution_mode": "local_non_network_fixture_runner",
+      "selected_priority_score": 0.7515,
+      "target_selection_rationale": [
+        "highest configured target-priority score",
+        "false-positive probability and blocking issues penalized",
+        "local fixture runner does not query live providers"
+      ],
+      "candidate_packet_ids": [],
+      "negative_result_logged": true,
+      "requires_human_review": false,
+      "reviewed_workflow_status": "local_scheduling_only",
+      "recommended_pathways": [
+        "github_reproducibility_only"
+      ],
+      "blocking_issues": [
+        "local fixture runner records scheduling only; no candidate extraction was performed"
       ]
     }
   ]

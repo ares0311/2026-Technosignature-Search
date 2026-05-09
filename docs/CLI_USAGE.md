@@ -392,6 +392,18 @@ The summary reports logged search entries, searched targets, candidate counts, b
 
 Use `--ledger-path` to inspect a different background ledger JSON file.
 
+## Summarize Background Reviewed Workflow
+
+Print reviewed-workflow semantics from the passive/background search ledger:
+
+```bash
+.venv/bin/techno-search background-reviewed-workflow-summary
+```
+
+The summary reports execution modes, reviewed workflow statuses, target-selection rationale counts, negative-result logging, local-only entries, candidate packet IDs, blocked entries, and human-review requirements. It is a workflow-readiness diagnostic only; it does not claim detections, discoveries, external validation, or calibrated survey performance.
+
+Use `--ledger-path` to inspect a different background ledger JSON file.
+
 ---
 
 ## Run Local Validation Summary
@@ -402,7 +414,7 @@ Run the non-network validation summaries used for quick release checks:
 .venv/bin/techno-search validate-all
 ```
 
-This includes example candidate validation, report validation, schema path checks, calibration fixture summary, calibration-by-track diagnostics, false-positive class diagnostics, score regression summary, background target-priority summary, background search ledger summary, human-review queue summary, consensus label summary, consensus export summary, validation dataset manifest summary, validation readiness summary, benchmark metadata summary, and benchmark run-result summary.
+This includes example candidate validation, report validation, schema path checks, calibration fixture summary, calibration-by-track diagnostics, false-positive class diagnostics, score regression summary, background target-priority summary, background search ledger summary, background reviewed-workflow summary, human-review queue summary, consensus label summary, consensus export summary, validation dataset manifest summary, validation readiness summary, benchmark metadata summary, and benchmark run-result summary.
 It also reports `catalog_cache_validation` for Git-tracked paths so local untracked caches do not fail default validation.
 
 ---
@@ -415,7 +427,7 @@ Print a concise local health dashboard without network access:
 .venv/bin/techno-search validation-summary
 ```
 
-This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, calibration-by-track, false-positive class, validation-dataset, validation-readiness, benchmark-metadata, benchmark-run, score-regression, background target-priority, background ledger, review-queue, consensus-label, consensus-export, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
+This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, calibration-by-track, false-positive class, validation-dataset, validation-readiness, benchmark-metadata, benchmark-run, score-regression, background target-priority, background ledger, background reviewed-workflow, review-queue, consensus-label, consensus-export, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
 
 ---
 

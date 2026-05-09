@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import TextIO
 
 from techno_search.background_search import (
+    background_review_workflow_summary,
     background_search_ledger_summary,
     run_local_background_search_once,
     target_priority_summary,
@@ -303,6 +304,17 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(
             json.dumps(
                 background_search_ledger_summary(args.ledger_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "background-reviewed-workflow-summary":
+        print(
+            json.dumps(
+                background_review_workflow_summary(args.ledger_path),
                 indent=2,
                 sort_keys=True,
             ),
@@ -631,6 +643,10 @@ def validate_all() -> dict[str, object]:
     target_count = target_priorities["target_count"]
     background_ledger = background_search_ledger_summary()
     background_ledger_entry_count = background_ledger["entry_count"]
+    background_review_workflow = background_review_workflow_summary()
+    background_review_status_count = background_review_workflow[
+        "reviewed_workflow_status_count"
+    ]
 
     ok = (
         all(result["ok"] for result in candidate_results.values())
@@ -684,7 +700,9 @@ def validate_all() -> dict[str, object]:
         and isinstance(target_count, int)
         and target_count >= 3
         and isinstance(background_ledger_entry_count, int)
-        and background_ledger_entry_count >= 3
+        and background_ledger_entry_count >= 4
+        and isinstance(background_review_status_count, int)
+        and background_review_status_count >= 4
     )
     return {
         "ok": ok,
@@ -711,6 +729,7 @@ def validate_all() -> dict[str, object]:
         "benchmark_run_summary": benchmark_runs,
         "target_priority_summary": target_priorities,
         "background_ledger_summary": background_ledger,
+        "background_review_workflow_summary": background_review_workflow,
     }
 
 
@@ -740,6 +759,7 @@ def validation_summary() -> dict[str, object]:
     benchmark_runs = validation["benchmark_run_summary"]
     target_priorities = validation["target_priority_summary"]
     background_ledger = validation["background_ledger_summary"]
+    background_review_workflow = validation["background_review_workflow_summary"]
     return {
         "ok": validation["ok"],
         "generated_at_utc": datetime.now(UTC).isoformat(),
@@ -888,6 +908,21 @@ def validation_summary() -> dict[str, object]:
         else 0,
         "background_ledger_candidate_count": background_ledger["candidate_count"]
         if isinstance(background_ledger, dict)
+        else 0,
+        "background_review_workflow_status_count": background_review_workflow[
+            "reviewed_workflow_status_count"
+        ]
+        if isinstance(background_review_workflow, dict)
+        else 0,
+        "background_review_negative_result_logged_count": background_review_workflow[
+            "negative_result_logged_count"
+        ]
+        if isinstance(background_review_workflow, dict)
+        else 0,
+        "background_review_local_only_entry_count": background_review_workflow[
+            "local_only_entry_count"
+        ]
+        if isinstance(background_review_workflow, dict)
         else 0,
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
@@ -1244,6 +1279,15 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize passive/background search ledger fixture coverage.",
     )
     background_ledger_parser.add_argument(
+        "--ledger-path",
+        type=Path,
+        help="Optional background search ledger JSON path.",
+    )
+    background_review_parser = subparsers.add_parser(
+        "background-reviewed-workflow-summary",
+        help="Summarize reviewed workflow semantics in the background ledger.",
+    )
+    background_review_parser.add_argument(
         "--ledger-path",
         type=Path,
         help="Optional background search ledger JSON path.",

@@ -5,6 +5,7 @@ import pytest
 from techno_search.background_search import (
     BACKGROUND_SEARCH_LEDGER_DISCLAIMER,
     TARGET_PRIORITY_DISCLAIMER,
+    background_review_workflow_summary,
     background_search_ledger_summary,
     load_background_priority_config,
     load_background_search_ledger,
@@ -67,10 +68,15 @@ def test_target_priority_summary_ranks_targets_and_exposes_weights() -> None:
 def test_background_search_ledger_loads_audited_search_entries() -> None:
     entries = load_background_search_ledger()
 
-    assert len(entries) == 3
+    assert len(entries) == 4
     assert entries[0].run_id == "background-demo-001"
     assert entries[0].recommended_pathways == ("candidate_review_packet",)
+    assert entries[0].candidate_packet_ids == ("radio-clean-001",)
+    assert entries[1].reviewed_workflow_status == "review_blocked"
+    assert entries[2].negative_result_logged is True
     assert entries[2].candidate_count == 0
+    assert entries[3].execution_mode == "local_non_network_fixture_runner"
+    assert entries[3].reviewed_workflow_status == "local_scheduling_only"
     assert BACKGROUND_SEARCH_LEDGER_DISCLAIMER.endswith("discovery claims.")
 
 
@@ -78,19 +84,30 @@ def test_background_search_ledger_summary_counts_searched_targets() -> None:
     summary = background_search_ledger_summary()
 
     assert summary["schema_version"] == "background_search_ledger_v1"
-    assert summary["entry_count"] == 3
+    assert summary["entry_count"] == 4
     assert summary["searched_target_count"] == 3
     assert summary["candidate_count"] == 2
-    assert summary["blocking_issue_count"] == 3
-    assert summary["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 1}
+    assert summary["candidate_packet_id_count"] == 2
+    assert summary["blocking_issue_count"] == 4
+    assert summary["negative_result_logged_count"] == 2
+    assert summary["requires_human_review_count"] == 2
+    assert summary["scheduling_only_count"] == 1
+    assert summary["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 2}
     assert summary["by_status"] == {
         "completed": 1,
         "completed_with_blockers": 1,
+        "local_fixture_search_logged": 1,
         "searched_no_candidate": 1,
+    }
+    assert summary["by_reviewed_workflow_status"] == {
+        "candidate_packet_ready": 1,
+        "local_scheduling_only": 1,
+        "negative_search_recorded": 1,
+        "review_blocked": 1,
     }
     assert summary["by_recommended_pathway"] == {
         "candidate_review_packet": 1,
-        "github_reproducibility_only": 1,
+        "github_reproducibility_only": 2,
         "human_review_queue": 1,
     }
     assert summary["target_ids"] == [
@@ -99,6 +116,32 @@ def test_background_search_ledger_summary_counts_searched_targets() -> None:
         "target-radio-clean-drift",
     ]
     assert "not discovery claims" in summary["disclaimer"]
+
+
+def test_background_review_workflow_summary_exposes_review_semantics() -> None:
+    summary = background_review_workflow_summary()
+
+    assert summary["schema_version"] == "background_search_ledger_v1"
+    assert summary["entry_count"] == 4
+    assert summary["reviewed_workflow_status_count"] == 4
+    assert summary["target_selection_rationale_count"] == 12
+    assert summary["negative_result_logged_count"] == 2
+    assert summary["requires_human_review_count"] == 2
+    assert summary["local_only_entry_count"] == 1
+    assert summary["scheduling_only_count"] == 1
+    assert summary["candidate_packet_id_count"] == 2
+    assert summary["blocked_entry_count"] == 3
+    assert summary["by_execution_mode"] == {
+        "local_non_network_fixture_runner": 1,
+        "synthetic_priority_demo": 3,
+    }
+    assert summary["by_reviewed_workflow_status"] == {
+        "candidate_packet_ready": 1,
+        "local_scheduling_only": 1,
+        "negative_search_recorded": 1,
+        "review_blocked": 1,
+    }
+    assert summary["local_only_run_ids"] == ["background-demo-004"]
 
 
 def test_background_search_rejects_wrong_schema_version(tmp_path: Path) -> None:
@@ -154,9 +197,21 @@ def test_local_background_run_appends_non_network_ledger_entry(tmp_path: Path) -
     assert entry["recommended_pathways"] == ["github_reproducibility_only"]
     assert entry["query_parameters"]["mode"] == "local_non_network_fixture_runner"
     assert entry["query_parameters"]["selected_priority_score"] == 0.7515
+    assert entry["execution_mode"] == "local_non_network_fixture_runner"
+    assert entry["selected_priority_score"] == 0.7515
+    assert entry["negative_result_logged"] is True
+    assert entry["requires_human_review"] is False
+    assert entry["reviewed_workflow_status"] == "local_scheduling_only"
+    assert entry["target_selection_rationale"] == [
+        "highest configured target-priority score",
+        "false-positive probability and blocking issues penalized",
+        "local fixture runner does not query live providers",
+    ]
     assert summary["entry_count"] == 1
     assert summary["candidate_count"] == 0
     assert summary["by_status"] == {"local_fixture_search_logged": 1}
+    assert result["review_workflow_summary"]["local_only_entry_count"] == 1
+    assert result["review_workflow_summary"]["negative_result_logged_count"] == 1
 
 
 def test_local_background_run_appends_to_existing_ledger(tmp_path: Path) -> None:
@@ -172,5 +227,6 @@ def test_local_background_run_appends_to_existing_ledger(tmp_path: Path) -> None
         opt_in=True,
     )
 
-    assert result["ledger_summary"]["entry_count"] == 4
+    assert result["ledger_summary"]["entry_count"] == 5
     assert result["ledger_summary"]["run_ids"][-1] == "local-test-run-002"
+    assert result["review_workflow_summary"]["local_only_entry_count"] == 2

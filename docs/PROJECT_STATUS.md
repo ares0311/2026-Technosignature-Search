@@ -148,6 +148,9 @@ The project will support three tracks from day one:
 - [x] Background target-priority and ledger summaries wired into local validation
 - [x] Background target-priority weights promoted into a versioned config file
 - [x] Explicit local-only passive runner added for ledger append tests
+- [x] Reviewed background workflow ledger semantics added
+- [x] Background reviewed-workflow summary CLI added
+- [x] Background reviewed-workflow counts wired into local validation
 
 ---
 
@@ -172,9 +175,9 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Promote local-only background run fixtures into a reviewed workflow only after ledger semantics stabilize.
-2. Add benchmark comparison thresholds once repeated synthetic calibration grids exist.
-3. Expand curated validation readiness examples after real reviewed non-synthetic candidates are available.
+1. Add benchmark comparison thresholds once repeated synthetic calibration grids exist.
+2. Expand curated validation readiness examples after real reviewed non-synthetic candidates are available.
+3. Draft the candidate-extraction handoff contract for the local background runner before any live automation is considered.
 
 ---
 

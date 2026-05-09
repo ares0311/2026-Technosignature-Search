@@ -86,6 +86,7 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     assert "search ledger" in readme
     assert ".venv/bin/techno-search target-priority-summary" in readme
     assert ".venv/bin/techno-search background-ledger-summary" in readme
+    assert ".venv/bin/techno-search background-reviewed-workflow-summary" in readme
     assert ".venv/bin/techno-search background-run-once" in readme
     assert ".venv/bin/techno-search benchmark-run-append" in readme
     assert ".venv/bin/techno-search benchmark-run-compare" in readme
@@ -93,6 +94,7 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     assert "configs/background_priority_v0.json" in readme
     assert "Readiness status is a gate, not a scientific result." in readme
     assert "The selected target is a scheduling recommendation only." in readme
+    assert "reviewed_workflow_status" in readme
     assert "### Quality-Control Matrix" in readme
     assert ".venv/bin/techno-search score examples/candidates/radio_clean_candidate.json" in readme
     assert ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing" in readme
