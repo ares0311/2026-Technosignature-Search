@@ -448,6 +448,36 @@ The summary reports report-ready counts, blocked counts, user-approval requireme
 
 Use `--report-readiness-path` to inspect a different report-readiness file.
 
+## Summarize Draft Follow-Up Reports
+
+Generate conservative draft follow-up report summaries from report-readiness records:
+
+```bash
+.venv/bin/techno-search draft-follow-up-report-summary
+```
+
+The summary reports draft-ready and blocked counts, negative evidence, uncertainty and limitation coverage, blocking issues, next steps, user-approval requirements, and external-submission gate state. Draft reports are internal review summaries only; they are not detections, discovery claims, external validation, or submission approval.
+
+Use `--report-readiness-path` to inspect a different report-readiness file.
+
+To inspect the committed draft-report fixture directly, run:
+
+```bash
+.venv/bin/techno-search draft-report-fixture-summary
+```
+
+## Summarize User Decisions
+
+Print explicit user decision records for background report handling:
+
+```bash
+.venv/bin/techno-search user-decision-summary
+```
+
+The summary reports decisions to request more tests or close as reviewed, required next actions, blocking issues, and whether external submission has been explicitly approved. The committed fixture keeps `external_submission_approved` false for every record.
+
+Use `--user-decision-path` to inspect a different user decision JSON file.
+
 ## Summarize Background Reviewed Workflow
 
 Print reviewed-workflow semantics from the passive/background search ledger:
@@ -482,7 +512,7 @@ Run the non-network validation summaries used for quick release checks:
 .venv/bin/techno-search validate-all
 ```
 
-This includes example candidate validation, report validation, schema path checks, calibration fixture summary, calibration-by-track diagnostics, false-positive class diagnostics, score regression summary, background target-priority summary, background search ledger summary, background reviewed-workflow summary, reviewed outcome log summary, needs-follow-up outcome log summary, follow-up test summary, report-readiness summary, candidate extraction handoff summary, human-review queue summary, consensus label summary, consensus export summary, validation dataset manifest summary, validation readiness summary, benchmark metadata summary, and benchmark run-result summary.
+This includes example candidate validation, report validation, schema path checks, calibration fixture summary, calibration-by-track diagnostics, false-positive class diagnostics, score regression summary, background target-priority summary, background search ledger summary, background reviewed-workflow summary, reviewed outcome log summary, needs-follow-up outcome log summary, follow-up test summary, report-readiness summary, draft follow-up report summary, user decision summary, candidate extraction handoff summary, human-review queue summary, consensus label summary, consensus export summary, validation dataset manifest summary, validation readiness summary, benchmark metadata summary, and benchmark run-result summary.
 It also reports `catalog_cache_validation` for Git-tracked paths so local untracked caches do not fail default validation.
 
 ---
@@ -496,6 +526,8 @@ Print a concise local health dashboard without network access:
 ```
 
 This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, calibration-by-track, false-positive class, validation-dataset, validation-readiness, benchmark-metadata, benchmark-run, score-regression, background target-priority, background ledger, background reviewed-workflow, reviewed outcome, needs-follow-up outcome, follow-up tests, report readiness, candidate extraction handoff, review-queue, consensus-label, consensus-export, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
+
+It also reports conservative draft follow-up report counts and user decision gate counts. These counts remain workflow diagnostics only; they are not submission approvals.
 
 ---
 

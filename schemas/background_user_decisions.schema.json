@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/techno-search/background_user_decisions.schema.json",
+  "title": "Technosignature Search background user decision records",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "description",
+    "disclaimer",
+    "decisions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "background_user_decisions_v1"
+    },
+    "description": {
+      "type": "string"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "decisions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "decision_id",
+          "readiness_id",
+          "follow_up_id",
+          "target_id",
+          "track",
+          "decision",
+          "decided_at_utc",
+          "rationale",
+          "required_next_actions",
+          "external_submission_approved",
+          "request_more_tests",
+          "close_as_reviewed",
+          "submission_destination",
+          "blocking_issues",
+          "network_access_allowed"
+        ],
+        "properties": {
+          "decision_id": {
+            "type": "string"
+          },
+          "readiness_id": {
+            "type": "string"
+          },
+          "follow_up_id": {
+            "type": "string"
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "track": {
+            "enum": [
+              "radio",
+              "infrared",
+              "anomaly"
+            ]
+          },
+          "decision": {
+            "enum": [
+              "approve_submission",
+              "request_more_tests",
+              "close_as_reviewed"
+            ]
+          },
+          "decided_at_utc": {
+            "type": "string"
+          },
+          "rationale": {
+            "type": "string"
+          },
+          "required_next_actions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "external_submission_approved": {
+            "const": false
+          },
+          "request_more_tests": {
+            "type": "boolean"
+          },
+          "close_as_reviewed": {
+            "type": "boolean"
+          },
+          "submission_destination": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "blocking_issues": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "network_access_allowed": {
+            "const": false
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/techno-search/background_draft_follow_up_reports.schema.json",
+  "title": "Technosignature Search conservative background draft follow-up reports",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "description",
+    "disclaimer",
+    "draft_reports"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "background_draft_follow_up_reports_v1"
+    },
+    "description": {
+      "type": "string"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "draft_reports": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "draft_id",
+          "readiness_id",
+          "follow_up_id",
+          "run_id",
+          "target_id",
+          "track",
+          "draft_status",
+          "generated_at_utc",
+          "report_title",
+          "abstract",
+          "methodology_summary",
+          "evidence_supporting_follow_up",
+          "negative_evidence",
+          "uncertainty_and_limitations",
+          "blocking_issues",
+          "recommended_next_steps",
+          "user_approval_required",
+          "external_submission_allowed",
+          "network_access_allowed"
+        ],
+        "properties": {
+          "draft_id": {
+            "type": "string"
+          },
+          "readiness_id": {
+            "type": "string"
+          },
+          "follow_up_id": {
+            "type": "string"
+          },
+          "run_id": {
+            "type": "string"
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "track": {
+            "enum": [
+              "radio",
+              "infrared",
+              "anomaly"
+            ]
+          },
+          "draft_status": {
+            "enum": [
+              "draft_ready",
+              "blocked_not_ready"
+            ]
+          },
+          "generated_at_utc": {
+            "type": "string"
+          },
+          "report_title": {
+            "type": "string"
+          },
+          "abstract": {
+            "type": "string"
+          },
+          "methodology_summary": {
+            "type": "string"
+          },
+          "evidence_supporting_follow_up": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "negative_evidence": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "uncertainty_and_limitations": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "blocking_issues": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "recommended_next_steps": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "user_approval_required": {
+            "const": true
+          },
+          "external_submission_allowed": {
+            "const": false
+          },
+          "network_access_allowed": {
+            "const": false
+          }
+        }
+      }
+    }
+  }
+}

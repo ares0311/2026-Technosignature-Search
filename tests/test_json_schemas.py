@@ -7,12 +7,14 @@ def test_json_schema_files_are_parseable_and_named() -> None:
     schema_paths = sorted(schema_dir.glob("*.schema.json"))
 
     assert {path.name for path in schema_paths} == {
+        "background_draft_follow_up_reports.schema.json",
         "background_follow_up_tests.schema.json",
         "background_needs_follow_up_log.schema.json",
         "background_report_readiness.schema.json",
         "background_reviewed_log.schema.json",
         "background_search_ledger.schema.json",
         "background_targets.schema.json",
+        "background_user_decisions.schema.json",
         "batch_manifest.schema.json",
         "benchmark_metadata.schema.json",
         "benchmark_run_results.schema.json",
@@ -77,6 +79,16 @@ def test_schema_required_fields_match_example_artifacts() -> None:
             encoding="utf-8"
         )
     )
+    draft_reports_schema = json.loads(
+        Path("schemas/background_draft_follow_up_reports.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    user_decisions_schema = json.loads(
+        Path("schemas/background_user_decisions.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
     handoff_schema = json.loads(
         Path("schemas/candidate_extraction_handoff.schema.json").read_text(
             encoding="utf-8"
@@ -133,6 +145,12 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     report_readiness = json.loads(
         Path("tests/fixtures/background_report_readiness.json").read_text()
     )
+    draft_reports = json.loads(
+        Path("tests/fixtures/background_draft_follow_up_reports.json").read_text()
+    )
+    user_decisions = json.loads(
+        Path("tests/fixtures/background_user_decisions.json").read_text()
+    )
     handoffs = json.loads(
         Path("tests/fixtures/candidate_extraction_handoffs.json").read_text()
     )
@@ -160,6 +178,8 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     assert set(needs_follow_up_schema["required"]) <= set(needs_follow_up)
     assert set(follow_up_tests_schema["required"]) <= set(follow_up_tests)
     assert set(report_readiness_schema["required"]) <= set(report_readiness)
+    assert set(draft_reports_schema["required"]) <= set(draft_reports)
+    assert set(user_decisions_schema["required"]) <= set(user_decisions)
     assert set(handoff_schema["required"]) <= set(handoffs)
     assert set(review_queue_schema["required"]) <= set(review_queue)
     assert set(consensus_schema["required"]) <= set(consensus)
@@ -232,6 +252,22 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     ) == 3
     assert "top_three_recommendations" in report_readiness_schema["properties"][
         "readiness_records"
+    ]["items"]["required"]
+    assert draft_reports["schema_version"] == "background_draft_follow_up_reports_v1"
+    assert len(draft_reports["draft_reports"]) == 2
+    assert draft_reports["draft_reports"][0]["draft_status"] == "draft_ready"
+    assert draft_reports["draft_reports"][0]["external_submission_allowed"] is False
+    assert "negative_evidence" in draft_reports_schema["properties"][
+        "draft_reports"
+    ]["items"]["required"]
+    assert user_decisions["schema_version"] == "background_user_decisions_v1"
+    assert len(user_decisions["decisions"]) == 3
+    assert all(
+        decision["external_submission_approved"] is False
+        for decision in user_decisions["decisions"]
+    )
+    assert "external_submission_approved" in user_decisions_schema["properties"][
+        "decisions"
     ]["items"]["required"]
     assert handoffs["schema_version"] == "candidate_extraction_handoff_v1"
     assert len(handoffs["handoffs"]) == 4

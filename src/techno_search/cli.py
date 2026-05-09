@@ -13,12 +13,14 @@ from pathlib import Path
 from typing import TextIO
 
 from techno_search.background_search import (
+    background_draft_follow_up_report_summary,
     background_follow_up_test_summary,
     background_needs_follow_up_summary,
     background_report_readiness_summary,
     background_review_workflow_summary,
     background_reviewed_log_summary,
     background_search_ledger_summary,
+    background_user_decision_summary,
     candidate_extraction_handoff_summary,
     run_local_background_search_once,
     target_priority_summary,
@@ -70,12 +72,14 @@ from techno_search.validation_datasets import (
 )
 
 SCHEMA_FILENAMES = {
+    "background_draft_follow_up_reports": "background_draft_follow_up_reports.schema.json",
     "background_follow_up_tests": "background_follow_up_tests.schema.json",
     "background_needs_follow_up_log": "background_needs_follow_up_log.schema.json",
     "background_report_readiness": "background_report_readiness.schema.json",
     "background_reviewed_log": "background_reviewed_log.schema.json",
     "background_search_ledger": "background_search_ledger.schema.json",
     "background_targets": "background_targets.schema.json",
+    "background_user_decisions": "background_user_decisions.schema.json",
     "batch_manifest": "batch_manifest.schema.json",
     "benchmark_metadata": "benchmark_metadata.schema.json",
     "benchmark_run_results": "benchmark_run_results.schema.json",
@@ -373,6 +377,42 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(
             json.dumps(
                 background_report_readiness_summary(args.report_readiness_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "draft-follow-up-report-summary":
+        print(
+            json.dumps(
+                background_draft_follow_up_report_summary(
+                    args.report_readiness_path,
+                    from_readiness=True,
+                ),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "draft-report-fixture-summary":
+        print(
+            json.dumps(
+                background_draft_follow_up_report_summary(args.draft_report_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "user-decision-summary":
+        print(
+            json.dumps(
+                background_user_decision_summary(args.user_decision_path),
                 indent=2,
                 sort_keys=True,
             ),
@@ -750,6 +790,19 @@ def validate_all() -> dict[str, object]:
         "external_submission_allowed_count"
     ]
     report_readiness_network_count = report_readiness["network_access_allowed_count"]
+    draft_reports = background_draft_follow_up_report_summary(from_readiness=True)
+    draft_report_count = draft_reports["draft_report_count"]
+    draft_ready_count = draft_reports["draft_ready_count"]
+    draft_external_allowed_count = draft_reports[
+        "external_submission_allowed_count"
+    ]
+    draft_network_count = draft_reports["network_access_allowed_count"]
+    user_decisions = background_user_decision_summary()
+    user_decision_count = user_decisions["decision_count"]
+    user_decision_external_approved_count = user_decisions[
+        "external_submission_approved_count"
+    ]
+    user_decision_network_count = user_decisions["network_access_allowed_count"]
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -837,6 +890,20 @@ def validate_all() -> dict[str, object]:
         and report_readiness_external_allowed_count == 0
         and isinstance(report_readiness_network_count, int)
         and report_readiness_network_count == 0
+        and isinstance(draft_report_count, int)
+        and draft_report_count >= 2
+        and isinstance(draft_ready_count, int)
+        and draft_ready_count >= 1
+        and isinstance(draft_external_allowed_count, int)
+        and draft_external_allowed_count == 0
+        and isinstance(draft_network_count, int)
+        and draft_network_count == 0
+        and isinstance(user_decision_count, int)
+        and user_decision_count >= 3
+        and isinstance(user_decision_external_approved_count, int)
+        and user_decision_external_approved_count == 0
+        and isinstance(user_decision_network_count, int)
+        and user_decision_network_count == 0
         and isinstance(candidate_handoff_record_count, int)
         and candidate_handoff_record_count >= 4
         and isinstance(candidate_handoff_network_count, int)
@@ -872,6 +939,8 @@ def validate_all() -> dict[str, object]:
         "background_needs_follow_up_summary": needs_follow_up_log,
         "background_follow_up_test_summary": follow_up_tests,
         "background_report_readiness_summary": report_readiness,
+        "background_draft_follow_up_report_summary": draft_reports,
+        "background_user_decision_summary": user_decisions,
         "candidate_extraction_handoff_summary": candidate_handoffs,
     }
 
@@ -907,6 +976,8 @@ def validation_summary() -> dict[str, object]:
     needs_follow_up_log = validation["background_needs_follow_up_summary"]
     follow_up_tests = validation["background_follow_up_test_summary"]
     report_readiness = validation["background_report_readiness_summary"]
+    draft_reports = validation["background_draft_follow_up_report_summary"]
+    user_decisions = validation["background_user_decision_summary"]
     candidate_handoffs = validation["candidate_extraction_handoff_summary"]
     return {
         "ok": validation["ok"],
@@ -1133,6 +1204,35 @@ def validation_summary() -> dict[str, object]:
             report_readiness["top_three_recommendation_count"]
         )
         if isinstance(report_readiness, dict)
+        else 0,
+        "background_draft_report_count": draft_reports["draft_report_count"]
+        if isinstance(draft_reports, dict)
+        else 0,
+        "background_draft_report_ready_count": draft_reports["draft_ready_count"]
+        if isinstance(draft_reports, dict)
+        else 0,
+        "background_draft_report_external_submission_allowed_count": (
+            draft_reports["external_submission_allowed_count"]
+        )
+        if isinstance(draft_reports, dict)
+        else 0,
+        "background_user_decision_count": user_decisions["decision_count"]
+        if isinstance(user_decisions, dict)
+        else 0,
+        "background_user_decision_external_submission_approved_count": (
+            user_decisions["external_submission_approved_count"]
+        )
+        if isinstance(user_decisions, dict)
+        else 0,
+        "background_user_decision_request_more_tests_count": (
+            user_decisions["request_more_tests_count"]
+        )
+        if isinstance(user_decisions, dict)
+        else 0,
+        "background_user_decision_close_as_reviewed_count": (
+            user_decisions["close_as_reviewed_count"]
+        )
+        if isinstance(user_decisions, dict)
         else 0,
         "candidate_extraction_handoff_record_count": candidate_handoffs["record_count"]
         if isinstance(candidate_handoffs, dict)
@@ -1558,6 +1658,33 @@ def _build_parser() -> argparse.ArgumentParser:
         "--report-readiness-path",
         type=Path,
         help="Optional background report-readiness JSON path.",
+    )
+    draft_report_parser = subparsers.add_parser(
+        "draft-follow-up-report-summary",
+        help="Generate conservative draft report summaries from readiness records.",
+    )
+    draft_report_parser.add_argument(
+        "--report-readiness-path",
+        type=Path,
+        help="Optional background report-readiness JSON path.",
+    )
+    draft_fixture_parser = subparsers.add_parser(
+        "draft-report-fixture-summary",
+        help="Summarize committed conservative draft follow-up report fixtures.",
+    )
+    draft_fixture_parser.add_argument(
+        "--draft-report-path",
+        type=Path,
+        help="Optional background draft follow-up report JSON path.",
+    )
+    user_decision_parser = subparsers.add_parser(
+        "user-decision-summary",
+        help="Summarize explicit user decision records for background reports.",
+    )
+    user_decision_parser.add_argument(
+        "--user-decision-path",
+        type=Path,
+        help="Optional background user decision JSON path.",
     )
     submission_recommendation_parser = subparsers.add_parser(
         "submission-recommendation-summary",

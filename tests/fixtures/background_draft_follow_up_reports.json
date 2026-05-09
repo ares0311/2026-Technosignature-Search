@@ -1,0 +1,84 @@
+{
+  "schema_version": "background_draft_follow_up_reports_v1",
+  "description": "Conservative draft follow-up reports generated from background report-readiness records.",
+  "disclaimer": "Background draft follow-up reports are conservative internal summaries for review-ready records; they are not discoveries, detections, external validation, or authorization to submit externally.",
+  "draft_reports": [
+    {
+      "draft_id": "draft-report-readiness-radio-001",
+      "readiness_id": "report-readiness-radio-001",
+      "follow_up_id": "follow-up-background-demo-001",
+      "run_id": "background-demo-001",
+      "target_id": "target-radio-clean-drift",
+      "track": "radio",
+      "draft_status": "draft_ready",
+      "generated_at_utc": "2026-05-09T15:10:00+00:00",
+      "report_title": "Conservative follow-up report draft for target-radio-clean-drift",
+      "abstract": "target-radio-clean-drift is a local, fixture-backed follow-up target with completed mandatory checks. This draft preserves uncertainty and does not claim a confirmed technosignature.",
+      "methodology_summary": "Summary generated from the background report-readiness fixture; it uses local records only and preserves conservative pathway gates.",
+      "evidence_supporting_follow_up": [
+        "report-readiness gate is ready for draft preparation",
+        "mandatory local follow-up tests are complete",
+        "top-three conservative recommendations are available"
+      ],
+      "negative_evidence": [
+        "external submission is not allowed by the readiness gate",
+        "no external validation has been recorded",
+        "false positives remain the default hypothesis"
+      ],
+      "uncertainty_and_limitations": [
+        "all evidence is fixture-backed and local-only",
+        "no external validation or live observation has been performed"
+      ],
+      "blocking_issues": [
+        "human approval is required before any external submission"
+      ],
+      "recommended_next_steps": [
+        "human reviewer inspects the draft report",
+        "decide whether to request more tests or close as reviewed",
+        "keep external submission disabled unless the user explicitly approves"
+      ],
+      "user_approval_required": true,
+      "external_submission_allowed": false,
+      "network_access_allowed": false
+    },
+    {
+      "draft_id": "draft-report-readiness-infrared-001",
+      "readiness_id": "report-readiness-infrared-001",
+      "follow_up_id": "follow-up-background-demo-002",
+      "run_id": "background-demo-002",
+      "target_id": "target-infrared-excess-review",
+      "track": "infrared",
+      "draft_status": "blocked_not_ready",
+      "generated_at_utc": "2026-05-09T15:11:00+00:00",
+      "report_title": "Blocked follow-up report note for target-infrared-excess-review",
+      "abstract": "target-infrared-excess-review is not ready for a follow-up report because mandatory local checks or review gates remain unresolved.",
+      "methodology_summary": "Summary generated from the background report-readiness fixture; it uses local records only and preserves conservative pathway gates.",
+      "evidence_supporting_follow_up": [
+        "report-readiness gate requested more tests",
+        "blocked tests or limitations remain visible"
+      ],
+      "negative_evidence": [
+        "external submission is not allowed by the readiness gate",
+        "no external validation has been recorded",
+        "false positives remain the default hypothesis"
+      ],
+      "uncertainty_and_limitations": [
+        "photometric context is incomplete",
+        "natural-source explanations remain plausible"
+      ],
+      "blocking_issues": [
+        "cross-source consistency check is blocked",
+        "false-positive class check remains uncertain",
+        "human review checklist is blocked"
+      ],
+      "recommended_next_steps": [
+        "resolve blocking issues before drafting a report",
+        "repeat report-readiness review after more tests",
+        "do not submit externally"
+      ],
+      "user_approval_required": true,
+      "external_submission_allowed": false,
+      "network_access_allowed": false
+    }
+  ]
+}

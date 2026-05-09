@@ -214,6 +214,7 @@ project-search needs-follow-up-summary
 project-search follow-up-test-summary
 project-search draft-report-summary
 project-search submission-recommendation-summary
+project-search user-decision-summary
 project-search validation-summary
 ```
 
@@ -251,4 +252,3 @@ A project has implemented this blueprint when:
 - external submission requires human approval
 - tests validate schemas, logs, CLI behavior, and guardrails
 - documentation explains scheduler setup and operational safety
-

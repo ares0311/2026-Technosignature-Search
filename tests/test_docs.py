@@ -125,3 +125,18 @@ def test_publishing_docs_reference_current_validation_commands() -> None:
     assert ".venv/bin/python -m ruff check ." in doc
     assert ".venv/bin/python -m mypy src" in doc
     assert "git diff --check" in doc
+
+
+def test_background_scheduler_templates_use_ignored_artifact_paths() -> None:
+    cron = Path("docs/templates/background-search.cron").read_text(encoding="utf-8")
+    launchd = Path("docs/templates/background-search.launchd.plist").read_text(
+        encoding="utf-8"
+    )
+
+    for template in (cron, launchd):
+        assert ".venv/bin/techno-search background-run-once" in template
+        assert "artifacts/background_search_ledger.json" in template
+        assert "artifacts/background_reviewed_log.json" in template
+        assert "artifacts/background_needs_follow_up_log.json" in template
+        assert "--acknowledge-local-run" in template
+        assert "TECHNO_SEARCH_ENABLE_LIVE_DATA" not in template

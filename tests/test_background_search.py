@@ -3,21 +3,27 @@ from pathlib import Path
 import pytest
 
 from techno_search.background_search import (
+    BACKGROUND_DRAFT_REPORT_DISCLAIMER,
     BACKGROUND_FOLLOW_UP_TEST_DISCLAIMER,
     BACKGROUND_NEEDS_FOLLOW_UP_DISCLAIMER,
     BACKGROUND_REPORT_READINESS_DISCLAIMER,
     BACKGROUND_REVIEWED_LOG_DISCLAIMER,
     BACKGROUND_SEARCH_LEDGER_DISCLAIMER,
+    BACKGROUND_USER_DECISION_DISCLAIMER,
     CANDIDATE_EXTRACTION_HANDOFF_DISCLAIMER,
     MANDATORY_FOLLOW_UP_TESTS,
     TARGET_PRIORITY_DISCLAIMER,
+    background_draft_follow_up_report_summary,
     background_follow_up_test_summary,
     background_needs_follow_up_summary,
     background_report_readiness_summary,
     background_review_workflow_summary,
     background_reviewed_log_summary,
     background_search_ledger_summary,
+    background_user_decision_summary,
     candidate_extraction_handoff_summary,
+    draft_follow_up_reports_from_readiness,
+    load_background_draft_reports,
     load_background_follow_up_tests,
     load_background_needs_follow_up_log,
     load_background_priority_config,
@@ -25,6 +31,7 @@ from techno_search.background_search import (
     load_background_reviewed_log,
     load_background_search_ledger,
     load_background_targets,
+    load_background_user_decisions,
     load_candidate_extraction_handoffs,
     run_local_background_search_once,
     target_priority_score,
@@ -306,6 +313,93 @@ def test_background_report_readiness_summary_counts_top_three() -> None:
         "request_more_tests": 3,
     }
     assert "not discoveries" in summary["disclaimer"]
+
+
+def test_draft_follow_up_reports_preserve_conservative_language() -> None:
+    records = load_background_draft_reports()
+
+    assert len(records) == 2
+    assert records[0].draft_status == "draft_ready"
+    assert records[1].draft_status == "blocked_not_ready"
+    assert records[0].external_submission_allowed is False
+    assert all(record.user_approval_required is True for record in records)
+    assert all(record.network_access_allowed is False for record in records)
+    assert "not discoveries" in BACKGROUND_DRAFT_REPORT_DISCLAIMER
+    assert "confirmed technosignature" in records[0].abstract
+    assert "does not claim" in records[0].abstract
+
+
+def test_draft_follow_up_report_summary_counts_generated_records() -> None:
+    summary = background_draft_follow_up_report_summary(from_readiness=True)
+
+    assert summary["schema_version"] == "background_draft_follow_up_reports_v1"
+    assert summary["draft_report_count"] == 2
+    assert summary["draft_ready_count"] == 1
+    assert summary["blocked_count"] == 1
+    assert summary["negative_evidence_count"] == 6
+    assert summary["limitation_count"] == 4
+    assert summary["blocking_issue_count"] == 4
+    assert summary["recommended_next_step_count"] == 6
+    assert summary["user_approval_required_count"] == 2
+    assert summary["external_submission_allowed_count"] == 0
+    assert summary["network_access_allowed_count"] == 0
+    assert summary["by_track"] == {"infrared": 1, "radio": 1}
+    assert summary["by_draft_status"] == {
+        "blocked_not_ready": 1,
+        "draft_ready": 1,
+    }
+    assert "not discoveries" in summary["disclaimer"]
+
+
+def test_draft_follow_up_reports_can_be_generated_from_readiness() -> None:
+    records = draft_follow_up_reports_from_readiness()
+
+    assert [record.draft_id for record in records] == [
+        "draft-report-readiness-radio-001",
+        "draft-report-readiness-infrared-001",
+    ]
+    assert records[0].negative_evidence == (
+        "external submission is not allowed by the readiness gate",
+        "no external validation has been recorded",
+        "false positives remain the default hypothesis",
+    )
+    assert records[1].recommended_next_steps[-1] == "do not submit externally"
+
+
+def test_user_decisions_load_explicit_human_gate_records() -> None:
+    records = load_background_user_decisions()
+
+    assert len(records) == 3
+    assert {record.decision for record in records} == {
+        "request_more_tests",
+        "close_as_reviewed",
+    }
+    assert all(record.external_submission_approved is False for record in records)
+    assert all(record.network_access_allowed is False for record in records)
+    assert records[0].request_more_tests is True
+    assert records[2].close_as_reviewed is True
+    assert "do not create external submission approval" in (
+        BACKGROUND_USER_DECISION_DISCLAIMER
+    )
+
+
+def test_user_decision_summary_keeps_submission_closed_by_default() -> None:
+    summary = background_user_decision_summary()
+
+    assert summary["schema_version"] == "background_user_decisions_v1"
+    assert summary["decision_count"] == 3
+    assert summary["external_submission_approved_count"] == 0
+    assert summary["request_more_tests_count"] == 2
+    assert summary["close_as_reviewed_count"] == 1
+    assert summary["blocking_issue_count"] == 5
+    assert summary["required_next_action_count"] == 6
+    assert summary["network_access_allowed_count"] == 0
+    assert summary["by_track"] == {"infrared": 1, "radio": 2}
+    assert summary["by_decision"] == {
+        "close_as_reviewed": 1,
+        "request_more_tests": 2,
+    }
+    assert "do not create external submission approval" in summary["disclaimer"]
 
 
 def test_background_review_workflow_summary_exposes_review_semantics() -> None:

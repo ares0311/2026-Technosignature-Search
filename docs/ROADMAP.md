@@ -237,6 +237,9 @@ Add real data ingestion behind tested abstractions.
 - [x] Review-history adjusted target selection for external scheduler use
 - [x] Deterministic local follow-up test results for needs-follow-up records
 - [x] Report-readiness gates with top-three conservative recommendations
+- [x] Conservative draft follow-up report summaries
+- [x] Explicit user decision records before external submission
+- [x] External scheduler templates for cron and launchd
 
 ---
 

@@ -226,12 +226,14 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
 
     assert exit_code == 0
     assert set(result) == {
+        "background_draft_follow_up_reports",
         "background_follow_up_tests",
         "background_needs_follow_up_log",
         "background_report_readiness",
         "background_reviewed_log",
         "background_search_ledger",
         "background_targets",
+        "background_user_decisions",
         "batch_manifest",
         "benchmark_metadata",
         "benchmark_run_results",
@@ -247,6 +249,12 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
     }
     assert result["background_search_ledger"].endswith(
         "schemas/background_search_ledger.schema.json"
+    )
+    assert result["background_draft_follow_up_reports"].endswith(
+        "schemas/background_draft_follow_up_reports.schema.json"
+    )
+    assert result["background_user_decisions"].endswith(
+        "schemas/background_user_decisions.schema.json"
     )
     assert result["background_follow_up_tests"].endswith(
         "schemas/background_follow_up_tests.schema.json"
@@ -706,6 +714,60 @@ def test_cli_report_readiness_summary_outputs_submission_gate() -> None:
     assert "not discoveries" in result["disclaimer"]
 
 
+def test_cli_draft_follow_up_report_summary_generates_conservative_reports() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["draft-follow-up-report-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "background_draft_follow_up_reports_v1"
+    assert result["draft_report_count"] == 2
+    assert result["draft_ready_count"] == 1
+    assert result["blocked_count"] == 1
+    assert result["negative_evidence_count"] == 6
+    assert result["external_submission_allowed_count"] == 0
+    assert result["network_access_allowed_count"] == 0
+    assert result["by_draft_status"] == {
+        "blocked_not_ready": 1,
+        "draft_ready": 1,
+    }
+    assert "not discoveries" in result["disclaimer"]
+
+
+def test_cli_draft_report_fixture_summary_outputs_fixture_counts() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["draft-report-fixture-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "background_draft_follow_up_reports_v1"
+    assert result["draft_report_count"] == 2
+    assert result["draft_ready_count"] == 1
+    assert result["external_submission_allowed_count"] == 0
+
+
+def test_cli_user_decision_summary_outputs_human_gate_counts() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["user-decision-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "background_user_decisions_v1"
+    assert result["decision_count"] == 3
+    assert result["external_submission_approved_count"] == 0
+    assert result["request_more_tests_count"] == 2
+    assert result["close_as_reviewed_count"] == 1
+    assert result["network_access_allowed_count"] == 0
+    assert result["by_decision"] == {
+        "close_as_reviewed": 1,
+        "request_more_tests": 2,
+    }
+    assert "do not create external submission approval" in result["disclaimer"]
+
+
 def test_cli_submission_recommendation_summary_aliases_report_readiness() -> None:
     stdout = StringIO()
 
@@ -938,6 +1000,16 @@ def test_cli_validate_all_outputs_local_summary() -> None:
     assert result["background_report_readiness_summary"][
         "external_submission_allowed_count"
     ] == 0
+    assert result["background_draft_follow_up_report_summary"][
+        "draft_report_count"
+    ] == 2
+    assert result["background_draft_follow_up_report_summary"][
+        "external_submission_allowed_count"
+    ] == 0
+    assert result["background_user_decision_summary"]["decision_count"] == 3
+    assert result["background_user_decision_summary"][
+        "external_submission_approved_count"
+    ] == 0
     assert result["candidate_extraction_handoff_summary"]["record_count"] == 4
     assert result["candidate_extraction_handoff_summary"]["ready_count"] == 1
     assert result["candidate_extraction_handoff_summary"][
@@ -961,7 +1033,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 18
+    assert result["schema_count"] == 20
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -1022,6 +1094,13 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["background_report_readiness_user_approval_count"] == 2
     assert result["background_report_readiness_external_submission_allowed_count"] == 0
     assert result["background_report_readiness_top_three_recommendation_count"] == 6
+    assert result["background_draft_report_count"] == 2
+    assert result["background_draft_report_ready_count"] == 1
+    assert result["background_draft_report_external_submission_allowed_count"] == 0
+    assert result["background_user_decision_count"] == 3
+    assert result["background_user_decision_external_submission_approved_count"] == 0
+    assert result["background_user_decision_request_more_tests_count"] == 2
+    assert result["background_user_decision_close_as_reviewed_count"] == 1
     assert result["candidate_extraction_handoff_record_count"] == 4
     assert result["candidate_extraction_handoff_ready_count"] == 1
     assert result["candidate_extraction_handoff_blocked_count"] == 1

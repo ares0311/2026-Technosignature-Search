@@ -159,6 +159,9 @@ The project will support three tracks from day one:
 - [x] Deterministic local follow-up test result schema, fixture, and summary CLI added
 - [x] Report-readiness gate and top-three recommendation fixture added
 - [x] Follow-up test and report-readiness counts wired into local validation
+- [x] Conservative draft follow-up report schema, fixture, and summary CLI added
+- [x] Explicit user decision schema, fixture, and summary CLI added
+- [x] External scheduler templates added for cron and launchd with ignored artifact paths
 
 ---
 
@@ -183,9 +186,9 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Generate conservative draft follow-up reports from report-ready records.
-2. Add a user decision record for approve submission, request more tests, or close as reviewed.
-3. Add external scheduler setup examples for launchd or cron using ignored artifact paths.
+1. Add optional persisted Markdown writers for conservative draft follow-up reports.
+2. Add operator documentation for reviewing user decision records before any external action.
+3. Add a dry-run scheduler smoke test that writes to a temporary artifact directory.
 
 ---
 

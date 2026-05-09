@@ -530,9 +530,11 @@ To inspect what the passive/background system has already searched, run:
 .venv/bin/techno-search follow-up-test-summary
 .venv/bin/techno-search report-readiness-summary
 .venv/bin/techno-search submission-recommendation-summary
+.venv/bin/techno-search draft-follow-up-report-summary
+.venv/bin/techno-search user-decision-summary
 ```
 
-The ledger summary reports searched targets, candidate counts, blocking issues, conservative pathway labels, and run IDs. The reviewed-log summary captures targets that do not currently require follow-up. The needs-follow-up summary captures targets requiring mandatory local tests, human review, and possible report preparation. Follow-up test and report-readiness summaries then show whether mandatory local checks are complete, whether a conservative draft report is allowed, and which top-three review destinations are recommended. Negative searches must still be logged because they are part of the reproducibility record.
+The ledger summary reports searched targets, candidate counts, blocking issues, conservative pathway labels, and run IDs. The reviewed-log summary captures targets that do not currently require follow-up. The needs-follow-up summary captures targets requiring mandatory local tests, human review, and possible report preparation. Follow-up test and report-readiness summaries then show whether mandatory local checks are complete, whether a conservative draft report is allowed, and which top-three review destinations are recommended. Draft follow-up report summaries preserve evidence, negative evidence, uncertainty, limitations, blockers, and next steps. User-decision summaries preserve explicit choices to request more tests or close as reviewed while keeping external submission disabled unless the user explicitly approves it. Negative searches must still be logged because they are part of the reproducibility record.
 
 To inspect whether logged background runs are ready for reviewed handoff, run:
 
@@ -704,6 +706,8 @@ The background system should never silently discard searched targets. A scientif
 | `background_needs_follow_up_log.json` | Targets that require mandatory tests, report readiness review, or human judgment |
 | `background_follow_up_tests.json` | Deterministic local follow-up test outcomes |
 | `background_report_readiness.json` | Report drafting gates and top-three recommendation records |
+| `background_draft_follow_up_reports.json` | Conservative draft report summaries for ready or blocked records |
+| `background_user_decisions.json` | Explicit user decisions to request more tests, close as reviewed, or approve submission |
 
 In v0, the committed ledger fixture is summarized by:
 
@@ -715,6 +719,8 @@ In v0, the committed ledger fixture is summarized by:
 .venv/bin/techno-search follow-up-test-summary
 .venv/bin/techno-search report-readiness-summary
 .venv/bin/techno-search submission-recommendation-summary
+.venv/bin/techno-search draft-follow-up-report-summary
+.venv/bin/techno-search user-decision-summary
 .venv/bin/techno-search candidate-extraction-handoff-summary
 ```
 
@@ -732,7 +738,9 @@ The local append-only runner is invoked explicitly:
 
 This runner selects the top ranked fixture target after review-history adjustment, records one ledger entry, and appends exactly one reviewed or needs-follow-up outcome entry. Needs-follow-up entries require provenance, false-positive class, cross-source consistency, calibration confidence, reproducibility, and human-review checklist tests before a report can be treated as ready. It is a scheduler-friendly local workflow, not a production autonomous search daemon.
 
-Follow-up test records currently answer whether each mandatory test is `pass`, `ready`, `uncertain`, or `blocked`. Report-readiness records then determine whether a conservative draft report may be prepared or whether the item should request more tests. Submission recommendations are ranked, but `external_submission_allowed` remains `false`; the user must explicitly approve any external action.
+Follow-up test records currently answer whether each mandatory test is `pass`, `ready`, `uncertain`, or `blocked`. Report-readiness records then determine whether a conservative draft report may be prepared or whether the item should request more tests. Draft report summaries are internal review artifacts only. Submission recommendations are ranked, but `external_submission_allowed` remains `false`; the user must explicitly approve any external action, and user-decision records preserve that approval gate.
+
+Scheduler templates live under `docs/templates/background-search.cron` and `docs/templates/background-search.launchd.plist`. Both examples write to ignored `artifacts/` paths, call the single-run command, and do not enable live provider access.
 
 Candidate-extraction handoff records are the next local contract after a target has been selected. A handoff may be ready for extraction, blocked, expected to produce no candidate packet, or scheduling-only. A ready handoff still does not claim a detection. It only means the local fixture inputs are present and can be routed into the normal candidate scoring and reporting workflow.
 

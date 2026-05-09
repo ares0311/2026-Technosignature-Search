@@ -24,6 +24,52 @@ Overall status: all three requested steps are implemented.
 
 ---
 
+## Background Draft Reports, User Decisions, And Scheduler Templates
+
+User requested applying all system directives, completing the next fifteen
+background automation steps, and publishing the work.
+
+Status: implemented in this iteration.
+
+Added:
+
+- conservative draft follow-up report schema, fixture, loader, generated summary helper, and CLI commands
+- explicit user decision schema, fixture, loader, summary helper, and CLI command
+- validation-summary and validate-all wiring for draft-report and user-decision gates
+- cron and launchd scheduler templates that call `background-run-once` with ignored `artifacts/` paths
+- tests for schema coverage, CLI output, conservative language, disabled external submission, and scheduler templates
+- README, CLI usage, validation guide, roadmap, project status, release checklist, and decisions updates
+
+Scientific guardrail:
+
+- draft reports are internal review summaries only
+- user decisions keep external submission approval false in committed fixtures
+- scheduler templates do not enable live provider access and do not authorize external contact
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest tests/test_background_search.py tests/test_cli.py tests/test_json_schemas.py tests/test_docs.py
+.venv/bin/python -m pytest
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/python -m ruff check .
+.venv/bin/python -m mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 228 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+- `validate-all` passed
+
+---
+
 ## README Style Refresh
 
 User requested extracting the style DNA from the sibling exoplanet project README and applying it to this repository.

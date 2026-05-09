@@ -548,3 +548,28 @@ A needs-follow-up queue is useful only if it leads to structured review rather t
 - Blocked and uncertain tests must remain visible in summaries.
 - Top-three recommendations may include `Do not submit yet`.
 - Report-readiness records are not discoveries, endorsements, or authorization to submit externally.
+
+---
+
+## DECISION-023: Preserve Draft Reports And User Decisions As Separate Gates
+
+**Date:** 2026-05-09
+
+**Status:** Accepted
+
+### Decision
+
+Background draft follow-up reports and user decisions must remain separate records.
+
+Draft reports may summarize report-ready or blocked records conservatively, but they must not authorize external submission. User decisions may request more tests, close an item as reviewed, or explicitly approve submission. The committed v0 fixtures keep external submission approval false.
+
+### Rationale
+
+Report drafting and submission approval are different scientific workflow steps. A draft report helps a reviewer inspect evidence, negative evidence, uncertainty, limitations, and blockers. Approval requires an explicit human decision and should not be inferred from readiness, recommendations, or draft generation.
+
+### Consequences
+
+- Draft report summaries must preserve negative evidence, limitations, blocking issues, and conservative next steps.
+- User decision records must expose whether external submission was explicitly approved.
+- External submission remains blocked by default.
+- Scheduler examples may produce logs and summaries, but they must not contact outside parties or enable live provider access by default.

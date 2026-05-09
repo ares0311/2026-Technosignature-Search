@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>org.techno-search.background-run-once</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/zsh</string>
+    <string>-lc</string>
+    <string>cd "/path/to/2026 Technosignatures" &amp;&amp; .venv/bin/techno-search background-run-once --ledger-path artifacts/background_search_ledger.json --reviewed-log-path artifacts/background_reviewed_log.json --needs-follow-up-log-path artifacts/background_needs_follow_up_log.json --code-commit "$(git rev-parse --short HEAD 2&gt;/dev/null || echo not-recorded)" --acknowledge-local-run</string>
+  </array>
+  <key>StartInterval</key>
+  <integer>3600</integer>
+  <key>StandardOutPath</key>
+  <string>/path/to/2026 Technosignatures/artifacts/background_search.launchd.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/path/to/2026 Technosignatures/artifacts/background_search.launchd.err.log</string>
+  <key>RunAtLoad</key>
+  <false/>
+</dict>
+</plist>

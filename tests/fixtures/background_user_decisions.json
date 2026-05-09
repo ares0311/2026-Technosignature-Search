@@ -1,0 +1,75 @@
+{
+  "schema_version": "background_user_decisions_v1",
+  "description": "Explicit user decision records for conservative background follow-up reports.",
+  "disclaimer": "Background user decision records preserve explicit human choices about follow-up reports; they do not create external submission approval unless that approval is recorded directly by the user.",
+  "decisions": [
+    {
+      "decision_id": "decision-radio-request-more-tests-001",
+      "readiness_id": "report-readiness-radio-001",
+      "follow_up_id": "follow-up-background-demo-001",
+      "target_id": "target-radio-clean-drift",
+      "track": "radio",
+      "decision": "request_more_tests",
+      "decided_at_utc": "2026-05-09T15:20:00+00:00",
+      "rationale": "The draft is internally useful, but the record remains fixture-backed and has no external validation.",
+      "required_next_actions": [
+        "preserve the draft as an internal review artifact",
+        "add non-synthetic context before any external discussion"
+      ],
+      "external_submission_approved": false,
+      "request_more_tests": true,
+      "close_as_reviewed": false,
+      "submission_destination": null,
+      "blocking_issues": [
+        "external submission has not been approved",
+        "non-synthetic context is absent"
+      ],
+      "network_access_allowed": false
+    },
+    {
+      "decision_id": "decision-infrared-request-more-tests-001",
+      "readiness_id": "report-readiness-infrared-001",
+      "follow_up_id": "follow-up-background-demo-002",
+      "target_id": "target-infrared-excess-review",
+      "track": "infrared",
+      "decision": "request_more_tests",
+      "decided_at_utc": "2026-05-09T15:21:00+00:00",
+      "rationale": "Mandatory local follow-up tests are blocked or uncertain.",
+      "required_next_actions": [
+        "complete cross-source consistency review",
+        "repeat false-positive class review"
+      ],
+      "external_submission_approved": false,
+      "request_more_tests": true,
+      "close_as_reviewed": false,
+      "submission_destination": null,
+      "blocking_issues": [
+        "cross-source consistency check is blocked",
+        "human review checklist is blocked"
+      ],
+      "network_access_allowed": false
+    },
+    {
+      "decision_id": "decision-radio-close-reviewed-001",
+      "readiness_id": "report-readiness-radio-001",
+      "follow_up_id": "follow-up-background-demo-001",
+      "target_id": "target-radio-clean-drift",
+      "track": "radio",
+      "decision": "close_as_reviewed",
+      "decided_at_utc": "2026-05-09T15:22:00+00:00",
+      "rationale": "The fixture-backed draft was reviewed as an internal reproducibility artifact only.",
+      "required_next_actions": [
+        "retain provenance in reviewed records",
+        "do not submit externally"
+      ],
+      "external_submission_approved": false,
+      "request_more_tests": false,
+      "close_as_reviewed": true,
+      "submission_destination": null,
+      "blocking_issues": [
+        "external submission has not been approved"
+      ],
+      "network_access_allowed": false
+    }
+  ]
+}

@@ -43,6 +43,18 @@ BACKGROUND_REPORT_READINESS_DISCLAIMER = (
     "submission recommendations; they are not discoveries, endorsements, or "
     "authorization to submit externally."
 )
+BACKGROUND_DRAFT_REPORT_SCHEMA_VERSION = "background_draft_follow_up_reports_v1"
+BACKGROUND_DRAFT_REPORT_DISCLAIMER = (
+    "Background draft follow-up reports are conservative internal summaries for "
+    "review-ready records; they are not discoveries, detections, external "
+    "validation, or authorization to submit externally."
+)
+BACKGROUND_USER_DECISION_SCHEMA_VERSION = "background_user_decisions_v1"
+BACKGROUND_USER_DECISION_DISCLAIMER = (
+    "Background user decision records preserve explicit human choices about "
+    "follow-up reports; they do not create external submission approval unless "
+    "that approval is recorded directly by the user."
+)
 BACKGROUND_PRIORITY_CONFIG_VERSION = "background_priority_v0"
 LOCAL_BACKGROUND_EXECUTION_MODE = "local_non_network_fixture_runner"
 LOCAL_BACKGROUND_REVIEW_STATUS = "local_scheduling_only"
@@ -231,6 +243,52 @@ class BackgroundReportReadinessRecord:
 
 
 @dataclass(frozen=True)
+class BackgroundDraftFollowUpReport:
+    """One conservative draft follow-up report summary."""
+
+    draft_id: str
+    readiness_id: str
+    follow_up_id: str
+    run_id: str
+    target_id: str
+    track: Track
+    draft_status: str
+    generated_at_utc: str
+    report_title: str
+    abstract: str
+    methodology_summary: str
+    evidence_supporting_follow_up: tuple[str, ...]
+    negative_evidence: tuple[str, ...]
+    uncertainty_and_limitations: tuple[str, ...]
+    blocking_issues: tuple[str, ...]
+    recommended_next_steps: tuple[str, ...]
+    user_approval_required: bool
+    external_submission_allowed: bool
+    network_access_allowed: bool
+
+
+@dataclass(frozen=True)
+class BackgroundUserDecisionRecord:
+    """One explicit human decision about a background follow-up item."""
+
+    decision_id: str
+    readiness_id: str
+    follow_up_id: str
+    target_id: str
+    track: Track
+    decision: str
+    decided_at_utc: str
+    rationale: str
+    required_next_actions: tuple[str, ...]
+    external_submission_approved: bool
+    request_more_tests: bool
+    close_as_reviewed: bool
+    submission_destination: str | None
+    blocking_issues: tuple[str, ...]
+    network_access_allowed: bool
+
+
+@dataclass(frozen=True)
 class CandidateExtractionHandoffRecord:
     """One local-only handoff from background target selection to extraction work."""
 
@@ -305,6 +363,22 @@ def default_background_report_readiness_path() -> Path:
 
     return Path(__file__).resolve().parents[2] / "tests" / "fixtures" / (
         "background_report_readiness.json"
+    )
+
+
+def default_background_draft_reports_path() -> Path:
+    """Return the repository-local background draft follow-up report fixture path."""
+
+    return Path(__file__).resolve().parents[2] / "tests" / "fixtures" / (
+        "background_draft_follow_up_reports.json"
+    )
+
+
+def default_background_user_decisions_path() -> Path:
+    """Return the repository-local background user decision fixture path."""
+
+    return Path(__file__).resolve().parents[2] / "tests" / "fixtures" / (
+        "background_user_decisions.json"
     )
 
 
@@ -536,6 +610,51 @@ def load_background_report_readiness(
     return tuple(
         _report_readiness_record_from_mapping(record)
         for record in data["readiness_records"]
+    )
+
+
+def load_background_draft_reports(
+    path: Path | None = None,
+) -> tuple[BackgroundDraftFollowUpReport, ...]:
+    """Load conservative draft follow-up report records."""
+
+    draft_path = path or default_background_draft_reports_path()
+    with draft_path.open(encoding="utf-8") as handle:
+        data = json.load(handle)
+
+    schema_version = str(data.get("schema_version", ""))
+    if schema_version != BACKGROUND_DRAFT_REPORT_SCHEMA_VERSION:
+        msg = (
+            f"Unsupported background draft report schema version "
+            f"{schema_version!r}; expected {BACKGROUND_DRAFT_REPORT_SCHEMA_VERSION!r}"
+        )
+        raise ValueError(msg)
+
+    return tuple(
+        _draft_follow_up_report_from_mapping(record)
+        for record in data["draft_reports"]
+    )
+
+
+def load_background_user_decisions(
+    path: Path | None = None,
+) -> tuple[BackgroundUserDecisionRecord, ...]:
+    """Load explicit user decision records for background follow-up reports."""
+
+    decisions_path = path or default_background_user_decisions_path()
+    with decisions_path.open(encoding="utf-8") as handle:
+        data = json.load(handle)
+
+    schema_version = str(data.get("schema_version", ""))
+    if schema_version != BACKGROUND_USER_DECISION_SCHEMA_VERSION:
+        msg = (
+            f"Unsupported background user decision schema version "
+            f"{schema_version!r}; expected {BACKGROUND_USER_DECISION_SCHEMA_VERSION!r}"
+        )
+        raise ValueError(msg)
+
+    return tuple(
+        _user_decision_record_from_mapping(record) for record in data["decisions"]
     )
 
 
@@ -1007,6 +1126,108 @@ def background_report_readiness_summary(path: Path | None = None) -> dict[str, o
     }
 
 
+def draft_follow_up_reports_from_readiness(
+    path: Path | None = None,
+) -> tuple[BackgroundDraftFollowUpReport, ...]:
+    """Create conservative draft report summaries from report-readiness records."""
+
+    records = load_background_report_readiness(path)
+    return tuple(_draft_report_from_readiness(record) for record in records)
+
+
+def background_draft_follow_up_report_summary(
+    path: Path | None = None,
+    *,
+    from_readiness: bool = False,
+) -> dict[str, object]:
+    """Summarize conservative draft follow-up report records."""
+
+    if from_readiness:
+        source_path = path or default_background_report_readiness_path()
+        records = draft_follow_up_reports_from_readiness(source_path)
+        source_key = "report_readiness_path"
+    else:
+        source_path = path or default_background_draft_reports_path()
+        records = load_background_draft_reports(source_path)
+        source_key = "draft_report_path"
+    blocking_issues = [issue for record in records for issue in record.blocking_issues]
+    negative_evidence = [
+        evidence for record in records for evidence in record.negative_evidence
+    ]
+    limitations = [
+        item for record in records for item in record.uncertainty_and_limitations
+    ]
+    next_steps = [step for record in records for step in record.recommended_next_steps]
+
+    return {
+        source_key: str(source_path),
+        "schema_version": BACKGROUND_DRAFT_REPORT_SCHEMA_VERSION,
+        "disclaimer": BACKGROUND_DRAFT_REPORT_DISCLAIMER,
+        "draft_report_count": len(records),
+        "draft_ready_count": sum(
+            1 for record in records if record.draft_status == "draft_ready"
+        ),
+        "blocked_count": sum(
+            1 for record in records if record.draft_status == "blocked_not_ready"
+        ),
+        "negative_evidence_count": len(negative_evidence),
+        "limitation_count": len(limitations),
+        "blocking_issue_count": len(blocking_issues),
+        "recommended_next_step_count": len(next_steps),
+        "user_approval_required_count": sum(
+            1 for record in records if record.user_approval_required
+        ),
+        "external_submission_allowed_count": sum(
+            1 for record in records if record.external_submission_allowed
+        ),
+        "network_access_allowed_count": sum(
+            1 for record in records if record.network_access_allowed
+        ),
+        "by_track": _counter_to_dict(Counter(record.track.value for record in records)),
+        "by_draft_status": _counter_to_dict(
+            Counter(record.draft_status for record in records)
+        ),
+        "draft_ids": sorted(record.draft_id for record in records),
+        "readiness_ids": sorted(record.readiness_id for record in records),
+        "target_ids": sorted({record.target_id for record in records}),
+    }
+
+
+def background_user_decision_summary(path: Path | None = None) -> dict[str, object]:
+    """Summarize explicit user decision records."""
+
+    decisions_path = path or default_background_user_decisions_path()
+    records = load_background_user_decisions(decisions_path)
+    blocking_issues = [issue for record in records for issue in record.blocking_issues]
+    next_actions = [action for record in records for action in record.required_next_actions]
+
+    return {
+        "user_decision_path": str(decisions_path),
+        "schema_version": BACKGROUND_USER_DECISION_SCHEMA_VERSION,
+        "disclaimer": BACKGROUND_USER_DECISION_DISCLAIMER,
+        "decision_count": len(records),
+        "external_submission_approved_count": sum(
+            1 for record in records if record.external_submission_approved
+        ),
+        "request_more_tests_count": sum(
+            1 for record in records if record.request_more_tests
+        ),
+        "close_as_reviewed_count": sum(
+            1 for record in records if record.close_as_reviewed
+        ),
+        "blocking_issue_count": len(blocking_issues),
+        "required_next_action_count": len(next_actions),
+        "network_access_allowed_count": sum(
+            1 for record in records if record.network_access_allowed
+        ),
+        "by_track": _counter_to_dict(Counter(record.track.value for record in records)),
+        "by_decision": _counter_to_dict(Counter(record.decision for record in records)),
+        "decision_ids": sorted(record.decision_id for record in records),
+        "readiness_ids": sorted(record.readiness_id for record in records),
+        "target_ids": sorted({record.target_id for record in records}),
+    }
+
+
 def run_local_background_search_once(
     ledger_path: Path,
     reviewed_log_path: Path | None = None,
@@ -1454,6 +1675,134 @@ def _report_readiness_record_from_mapping(
             for item in data.get("top_three_recommendations", ())
         ),
         network_access_allowed=bool(data["network_access_allowed"]),
+    )
+
+
+def _draft_follow_up_report_from_mapping(
+    data: dict[str, Any],
+) -> BackgroundDraftFollowUpReport:
+    return BackgroundDraftFollowUpReport(
+        draft_id=str(data["draft_id"]),
+        readiness_id=str(data["readiness_id"]),
+        follow_up_id=str(data["follow_up_id"]),
+        run_id=str(data["run_id"]),
+        target_id=str(data["target_id"]),
+        track=Track(str(data["track"])),
+        draft_status=str(data["draft_status"]),
+        generated_at_utc=str(data["generated_at_utc"]),
+        report_title=str(data["report_title"]),
+        abstract=str(data["abstract"]),
+        methodology_summary=str(data["methodology_summary"]),
+        evidence_supporting_follow_up=tuple(
+            str(item) for item in data.get("evidence_supporting_follow_up", ())
+        ),
+        negative_evidence=tuple(
+            str(item) for item in data.get("negative_evidence", ())
+        ),
+        uncertainty_and_limitations=tuple(
+            str(item) for item in data.get("uncertainty_and_limitations", ())
+        ),
+        blocking_issues=tuple(str(item) for item in data.get("blocking_issues", ())),
+        recommended_next_steps=tuple(
+            str(item) for item in data.get("recommended_next_steps", ())
+        ),
+        user_approval_required=bool(data["user_approval_required"]),
+        external_submission_allowed=bool(data["external_submission_allowed"]),
+        network_access_allowed=bool(data["network_access_allowed"]),
+    )
+
+
+def _user_decision_record_from_mapping(
+    data: dict[str, Any],
+) -> BackgroundUserDecisionRecord:
+    return BackgroundUserDecisionRecord(
+        decision_id=str(data["decision_id"]),
+        readiness_id=str(data["readiness_id"]),
+        follow_up_id=str(data["follow_up_id"]),
+        target_id=str(data["target_id"]),
+        track=Track(str(data["track"])),
+        decision=str(data["decision"]),
+        decided_at_utc=str(data["decided_at_utc"]),
+        rationale=str(data["rationale"]),
+        required_next_actions=tuple(
+            str(item) for item in data.get("required_next_actions", ())
+        ),
+        external_submission_approved=bool(data["external_submission_approved"]),
+        request_more_tests=bool(data["request_more_tests"]),
+        close_as_reviewed=bool(data["close_as_reviewed"]),
+        submission_destination=_optional_string(data.get("submission_destination")),
+        blocking_issues=tuple(str(item) for item in data.get("blocking_issues", ())),
+        network_access_allowed=bool(data["network_access_allowed"]),
+    )
+
+
+def _draft_report_from_readiness(
+    record: BackgroundReportReadinessRecord,
+) -> BackgroundDraftFollowUpReport:
+    ready = record.ready_to_draft_report and record.mandatory_tests_complete
+    draft_status = "draft_ready" if ready else "blocked_not_ready"
+    evidence: tuple[str, ...]
+    next_steps: tuple[str, ...]
+    if ready:
+        title = f"Conservative follow-up report draft for {record.target_id}"
+        abstract = (
+            f"{record.target_id} is a local, fixture-backed follow-up target "
+            "with completed mandatory checks. This draft preserves uncertainty "
+            "and does not claim a confirmed technosignature."
+        )
+        next_steps = (
+            "human reviewer inspects the draft report",
+            "decide whether to request more tests or close as reviewed",
+            "keep external submission disabled unless the user explicitly approves",
+        )
+        evidence = (
+            "report-readiness gate is ready for draft preparation",
+            "mandatory local follow-up tests are complete",
+            "top-three conservative recommendations are available",
+        )
+    else:
+        title = f"Blocked follow-up report note for {record.target_id}"
+        abstract = (
+            f"{record.target_id} is not ready for a follow-up report because "
+            "mandatory local checks or review gates remain unresolved."
+        )
+        next_steps = (
+            "resolve blocking issues before drafting a report",
+            "repeat report-readiness review after more tests",
+            "do not submit externally",
+        )
+        evidence = (
+            "report-readiness gate requested more tests",
+            "blocked tests or limitations remain visible",
+        )
+    negative_evidence = (
+        "external submission is not allowed by the readiness gate",
+        "no external validation has been recorded",
+        "false positives remain the default hypothesis",
+    )
+    return BackgroundDraftFollowUpReport(
+        draft_id=f"draft-{record.readiness_id}",
+        readiness_id=record.readiness_id,
+        follow_up_id=record.follow_up_id,
+        run_id=record.run_id,
+        target_id=record.target_id,
+        track=record.track,
+        draft_status=draft_status,
+        generated_at_utc=record.evaluated_at_utc,
+        report_title=title,
+        abstract=abstract,
+        methodology_summary=(
+            "Summary generated from the background report-readiness fixture; "
+            "it uses local records only and preserves conservative pathway gates."
+        ),
+        evidence_supporting_follow_up=evidence,
+        negative_evidence=negative_evidence,
+        uncertainty_and_limitations=record.limitations,
+        blocking_issues=record.blocking_issues,
+        recommended_next_steps=next_steps,
+        user_approval_required=record.user_approval_required,
+        external_submission_allowed=record.external_submission_allowed,
+        network_access_allowed=record.network_access_allowed,
     )
 
 
