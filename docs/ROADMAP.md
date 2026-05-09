@@ -240,6 +240,9 @@ Add real data ingestion behind tested abstractions.
 - [x] Conservative draft follow-up report summaries
 - [x] Explicit user decision records before external submission
 - [x] External scheduler templates for cron and launchd
+- [x] Persisted draft report Markdown writer and validation
+- [x] User decision append helper with explicit approval guard
+- [x] Scheduler dry-run smoke path for temporary artifact directories
 
 ---
 

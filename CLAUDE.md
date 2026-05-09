@@ -18,9 +18,58 @@ User requested three iterative steps:
 
 After each step, update this file and merge to `main` if needed.
 
-Current branch: `main`. No merge has been needed so far.
+Current branch: `codex/background-report-decision-scheduler`.
 
 Overall status: all three requested steps are implemented.
+
+---
+
+## Persisted Background Draft Reports And Decision Append Workflow
+
+User requested applying all system directives, completing the next fifteen
+background automation steps, and publishing well-tested code.
+
+Status: implemented in this iteration.
+
+Added:
+
+- persisted background draft follow-up report Markdown writer with manifest output
+- draft report directory validation for manifest consistency, conservative sections, disabled network access, disabled external submission, and required disclaimer text
+- explicit user-decision append helper and CLI command with a required approval flag for external-submission decisions
+- scheduler dry-run CLI command that exercises the local non-networked runner without writing production artifacts
+- manifest schema coverage for persisted draft reports
+- README, CLI usage, validation guide, roadmap, project status, release checklist, automation blueprint, and decisions updates
+
+Scientific guardrail:
+
+- persisted draft reports are local internal review artifacts only
+- reports must preserve negative evidence, limitations, blocking issues, and explicit gates
+- external submission stays blocked unless the user records approval directly
+- scheduler dry runs keep network access disabled and do not authorize external contact
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest tests/test_background_search.py tests/test_cli.py tests/test_json_schemas.py tests/test_docs.py
+.venv/bin/python -m pytest
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/python -m ruff check .
+.venv/bin/python -m mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 237 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+- `validate-all` passed
+
+Merge status: work is on `codex/background-report-decision-scheduler` for push to GitHub.
 
 ---
 

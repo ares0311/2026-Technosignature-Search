@@ -140,3 +140,14 @@ def test_background_scheduler_templates_use_ignored_artifact_paths() -> None:
         assert "artifacts/background_needs_follow_up_log.json" in template
         assert "--acknowledge-local-run" in template
         assert "TECHNO_SEARCH_ENABLE_LIVE_DATA" not in template
+
+
+def test_cli_docs_include_draft_report_and_decision_workflows() -> None:
+    doc = Path("docs/CLI_USAGE.md").read_text(encoding="utf-8")
+
+    assert ".venv/bin/techno-search draft-follow-up-report-write" in doc
+    assert ".venv/bin/techno-search validate-draft-reports" in doc
+    assert ".venv/bin/techno-search user-decision-record" in doc
+    assert ".venv/bin/techno-search scheduler-dry-run" in doc
+    assert "--confirm-external-submission-approval" in doc
+    assert "request_more_tests` and `close_as_reviewed` never imply" in doc

@@ -13,6 +13,8 @@ from pathlib import Path
 from typing import TextIO
 
 from techno_search.background_search import (
+    BackgroundUserDecisionRecord,
+    append_background_user_decision_record,
     background_draft_follow_up_report_summary,
     background_follow_up_test_summary,
     background_needs_follow_up_summary,
@@ -23,7 +25,9 @@ from techno_search.background_search import (
     background_user_decision_summary,
     candidate_extraction_handoff_summary,
     run_local_background_search_once,
+    scheduler_dry_run,
     target_priority_summary,
+    write_background_draft_follow_up_reports,
 )
 from techno_search.benchmark_metadata import (
     BenchmarkRunResult,
@@ -62,9 +66,13 @@ from techno_search.review_queue import (
     consensus_summary,
     review_queue_summary,
 )
-from techno_search.schemas import Candidate, candidate_from_mapping
+from techno_search.schemas import Candidate, Track, candidate_from_mapping
 from techno_search.scoring import score_candidate
-from techno_search.validation import validate_candidate_file, validate_report_directory
+from techno_search.validation import (
+    validate_candidate_file,
+    validate_draft_report_directory,
+    validate_report_directory,
+)
 from techno_search.validation_datasets import (
     validation_dataset_summary,
     validation_promotion_summary,
@@ -73,6 +81,7 @@ from techno_search.validation_datasets import (
 
 SCHEMA_FILENAMES = {
     "background_draft_follow_up_reports": "background_draft_follow_up_reports.schema.json",
+    "background_draft_report_manifest": "background_draft_report_manifest.schema.json",
     "background_follow_up_tests": "background_follow_up_tests.schema.json",
     "background_needs_follow_up_log": "background_needs_follow_up_log.schema.json",
     "background_report_readiness": "background_report_readiness.schema.json",
@@ -409,10 +418,74 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "draft-follow-up-report-write":
+        write_result = write_background_draft_follow_up_reports(
+            args.output_dir,
+            readiness_path=args.report_readiness_path,
+        )
+        print(
+            json.dumps(
+                {
+                    "ok": True,
+                    "output_dir": str(write_result.output_dir),
+                    "manifest_path": str(write_result.manifest_path),
+                    "markdown_paths": [
+                        str(path) for path in write_result.markdown_paths
+                    ],
+                    "summary": background_draft_follow_up_report_summary(
+                        args.report_readiness_path,
+                        from_readiness=True,
+                    ),
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "validate-draft-reports":
+        result = validate_draft_report_directory(args.report_dir)
+        print(json.dumps(result.as_dict(), indent=2, sort_keys=True), file=out)
+        return 0 if result.ok else 1
+
     if args.command == "user-decision-summary":
         print(
             json.dumps(
                 background_user_decision_summary(args.user_decision_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "user-decision-record":
+        external_approved = bool(args.confirm_external_submission_approval)
+        record = BackgroundUserDecisionRecord(
+            decision_id=args.decision_id,
+            readiness_id=args.readiness_id,
+            follow_up_id=args.follow_up_id,
+            target_id=args.target_id,
+            track=Track(args.track),
+            decision=args.decision,
+            decided_at_utc=args.decided_at_utc
+            or datetime.now(UTC).isoformat(),
+            rationale=args.rationale,
+            required_next_actions=tuple(args.required_next_action or ()),
+            external_submission_approved=external_approved,
+            request_more_tests=args.decision == "request_more_tests",
+            close_as_reviewed=args.decision == "close_as_reviewed",
+            submission_destination=args.submission_destination,
+            blocking_issues=tuple(args.blocking_issue or ()),
+            network_access_allowed=False,
+        )
+        print(
+            json.dumps(
+                append_background_user_decision_record(
+                    args.user_decision_path,
+                    record,
+                ),
                 indent=2,
                 sort_keys=True,
             ),
@@ -454,6 +527,21 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                     run_id=args.run_id,
                     code_commit=args.code_commit,
                     opt_in=args.acknowledge_local_run,
+                ),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "scheduler-dry-run":
+        print(
+            json.dumps(
+                scheduler_dry_run(
+                    args.artifact_dir,
+                    run_id=args.run_id,
+                    code_commit=args.code_commit,
                 ),
                 indent=2,
                 sort_keys=True,
@@ -783,6 +871,11 @@ def validate_all() -> dict[str, object]:
     follow_up_test_complete_count = follow_up_tests["complete_follow_up_test_set_count"]
     follow_up_test_network_count = follow_up_tests["network_access_allowed_count"]
     report_readiness = background_report_readiness_summary()
+    draft_report_output_dir = root / "artifacts" / "validation_draft_reports"
+    write_background_draft_follow_up_reports(draft_report_output_dir)
+    draft_report_validation = validate_draft_report_directory(
+        draft_report_output_dir
+    ).as_dict()
     report_readiness_record_count = report_readiness["record_count"]
     report_readiness_ready_count = report_readiness["ready_to_draft_report_count"]
     report_readiness_approval_count = report_readiness["user_approval_required_count"]
@@ -890,6 +983,7 @@ def validate_all() -> dict[str, object]:
         and report_readiness_external_allowed_count == 0
         and isinstance(report_readiness_network_count, int)
         and report_readiness_network_count == 0
+        and bool(draft_report_validation["ok"])
         and isinstance(draft_report_count, int)
         and draft_report_count >= 2
         and isinstance(draft_ready_count, int)
@@ -939,6 +1033,7 @@ def validate_all() -> dict[str, object]:
         "background_needs_follow_up_summary": needs_follow_up_log,
         "background_follow_up_test_summary": follow_up_tests,
         "background_report_readiness_summary": report_readiness,
+        "background_draft_report_validation": draft_report_validation,
         "background_draft_follow_up_report_summary": draft_reports,
         "background_user_decision_summary": user_decisions,
         "candidate_extraction_handoff_summary": candidate_handoffs,
@@ -977,6 +1072,7 @@ def validation_summary() -> dict[str, object]:
     follow_up_tests = validation["background_follow_up_test_summary"]
     report_readiness = validation["background_report_readiness_summary"]
     draft_reports = validation["background_draft_follow_up_report_summary"]
+    draft_report_validation = validation["background_draft_report_validation"]
     user_decisions = validation["background_user_decision_summary"]
     candidate_handoffs = validation["candidate_extraction_handoff_summary"]
     return {
@@ -1216,6 +1312,11 @@ def validation_summary() -> dict[str, object]:
         )
         if isinstance(draft_reports, dict)
         else 0,
+        "background_draft_report_validation_ok": bool(
+            draft_report_validation["ok"]
+        )
+        if isinstance(draft_report_validation, dict)
+        else False,
         "background_user_decision_count": user_decisions["decision_count"]
         if isinstance(user_decisions, dict)
         else 0,
@@ -1668,6 +1769,30 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Optional background report-readiness JSON path.",
     )
+    draft_write_parser = subparsers.add_parser(
+        "draft-follow-up-report-write",
+        help="Write conservative draft follow-up reports as Markdown files.",
+    )
+    draft_write_parser.add_argument(
+        "--output-dir",
+        type=Path,
+        required=True,
+        help="Directory for draft Markdown reports and manifest.",
+    )
+    draft_write_parser.add_argument(
+        "--report-readiness-path",
+        type=Path,
+        help="Optional background report-readiness JSON path.",
+    )
+    validate_draft_parser = subparsers.add_parser(
+        "validate-draft-reports",
+        help="Validate persisted conservative draft follow-up reports.",
+    )
+    validate_draft_parser.add_argument(
+        "report_dir",
+        type=Path,
+        help="Directory containing draft report Markdown and manifest.",
+    )
     draft_fixture_parser = subparsers.add_parser(
         "draft-report-fixture-summary",
         help="Summarize committed conservative draft follow-up report fixtures.",
@@ -1685,6 +1810,51 @@ def _build_parser() -> argparse.ArgumentParser:
         "--user-decision-path",
         type=Path,
         help="Optional background user decision JSON path.",
+    )
+    user_decision_record_parser = subparsers.add_parser(
+        "user-decision-record",
+        help="Append one explicit local user decision record.",
+    )
+    user_decision_record_parser.add_argument(
+        "--user-decision-path",
+        type=Path,
+        required=True,
+        help="User decision JSON path to create or append.",
+    )
+    user_decision_record_parser.add_argument("--decision-id", required=True)
+    user_decision_record_parser.add_argument("--readiness-id", required=True)
+    user_decision_record_parser.add_argument("--follow-up-id", required=True)
+    user_decision_record_parser.add_argument("--target-id", required=True)
+    user_decision_record_parser.add_argument(
+        "--track",
+        required=True,
+        choices=["radio", "infrared", "anomaly"],
+    )
+    user_decision_record_parser.add_argument(
+        "--decision",
+        required=True,
+        choices=["approve_submission", "request_more_tests", "close_as_reviewed"],
+    )
+    user_decision_record_parser.add_argument("--rationale", required=True)
+    user_decision_record_parser.add_argument("--decided-at-utc")
+    user_decision_record_parser.add_argument(
+        "--required-next-action",
+        action="append",
+        default=[],
+    )
+    user_decision_record_parser.add_argument(
+        "--blocking-issue",
+        action="append",
+        default=[],
+    )
+    user_decision_record_parser.add_argument("--submission-destination")
+    user_decision_record_parser.add_argument(
+        "--confirm-external-submission-approval",
+        action="store_true",
+        help=(
+            "Explicitly approve external submission. Required with "
+            "approve_submission and never inferred for other decisions."
+        ),
     )
     submission_recommendation_parser = subparsers.add_parser(
         "submission-recommendation-summary",
@@ -1754,6 +1924,24 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         required=True,
         help="Required opt-in flag acknowledging this local runner does not use network data.",
+    )
+    scheduler_dry_run_parser = subparsers.add_parser(
+        "scheduler-dry-run",
+        help="Run the bounded local scheduler path against a temporary artifact directory.",
+    )
+    scheduler_dry_run_parser.add_argument(
+        "--artifact-dir",
+        type=Path,
+        required=True,
+        help="Temporary artifact directory for dry-run ledger and outcome logs.",
+    )
+    scheduler_dry_run_parser.add_argument(
+        "--run-id",
+        default="scheduler-dry-run",
+    )
+    scheduler_dry_run_parser.add_argument(
+        "--code-commit",
+        default="dry-run",
     )
     subparsers.add_parser(
         "validate-all",

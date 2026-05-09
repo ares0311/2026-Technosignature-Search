@@ -40,6 +40,7 @@ Before release, verify:
 - generated packets include the required disclaimer
 - generated packets expose negative evidence and blocking issues
 - background draft reports preserve limitations and keep external submission disabled
+- persisted draft report manifests validate when draft reports are written
 - user decision records do not imply submission approval unless explicitly recorded
 
 Useful commands:

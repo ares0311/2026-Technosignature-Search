@@ -162,6 +162,10 @@ The project will support three tracks from day one:
 - [x] Conservative draft follow-up report schema, fixture, and summary CLI added
 - [x] Explicit user decision schema, fixture, and summary CLI added
 - [x] External scheduler templates added for cron and launchd with ignored artifact paths
+- [x] Persisted Markdown writer and manifest for conservative draft follow-up reports added
+- [x] Draft follow-up report validation wired into local validation
+- [x] User-decision append helper added with explicit external-submission approval guard
+- [x] Scheduler dry-run command added for temporary artifact directories
 
 ---
 
@@ -186,9 +190,9 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Add optional persisted Markdown writers for conservative draft follow-up reports.
-2. Add operator documentation for reviewing user decision records before any external action.
-3. Add a dry-run scheduler smoke test that writes to a temporary artifact directory.
+1. Add persisted Markdown report examples to release documentation once the operator chooses a stable artifact location.
+2. Add optional cleanup guidance for local background `artifacts/` directories.
+3. Add a future ready-for-review PR checklist after GitHub CLI or app permissions are available.
 
 ---
 

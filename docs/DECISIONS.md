@@ -573,3 +573,28 @@ Report drafting and submission approval are different scientific workflow steps.
 - User decision records must expose whether external submission was explicitly approved.
 - External submission remains blocked by default.
 - Scheduler examples may produce logs and summaries, but they must not contact outside parties or enable live provider access by default.
+
+---
+
+## DECISION-024: Persist Draft Reports Only As Local Review Artifacts
+
+**Date:** 2026-05-09
+
+**Status:** Accepted
+
+### Decision
+
+Persisted background draft follow-up reports may be written as Markdown plus a manifest, but they remain local review artifacts. The writer should target ignored `artifacts/` paths by default in examples, and validation must require the conservative disclaimer, negative evidence, uncertainty, blocking issues, and disabled external-submission and network-access gates.
+
+User-decision authoring may append local decision records. `request_more_tests` and `close_as_reviewed` must not imply submission approval. `approve_submission` requires explicit approval, destination, and rationale fields.
+
+### Rationale
+
+Operators need files they can read and review, but persisted reports create a higher risk of being mistaken for shareable scientific claims. The manifest and validator make the gate visible and machine-checkable.
+
+### Consequences
+
+- Draft report Markdown must include evidence, negative evidence, uncertainty, limitations, blocking issues, next steps, and gate states.
+- Validation checks persisted draft report directories.
+- Scheduler dry-runs write to temporary artifact directories without live provider access.
+- External submission still requires explicit human approval outside ordinary report generation.

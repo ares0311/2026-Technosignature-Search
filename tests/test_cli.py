@@ -1,5 +1,8 @@
 import json
 from io import StringIO
+from pathlib import Path
+
+import pytest
 
 from techno_search.cli import main, score_batch
 
@@ -227,6 +230,7 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
     assert exit_code == 0
     assert set(result) == {
         "background_draft_follow_up_reports",
+        "background_draft_report_manifest",
         "background_follow_up_tests",
         "background_needs_follow_up_log",
         "background_report_readiness",
@@ -252,6 +256,9 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
     )
     assert result["background_draft_follow_up_reports"].endswith(
         "schemas/background_draft_follow_up_reports.schema.json"
+    )
+    assert result["background_draft_report_manifest"].endswith(
+        "schemas/background_draft_report_manifest.schema.json"
     )
     assert result["background_user_decisions"].endswith(
         "schemas/background_user_decisions.schema.json"
@@ -748,6 +755,34 @@ def test_cli_draft_report_fixture_summary_outputs_fixture_counts() -> None:
     assert result["external_submission_allowed_count"] == 0
 
 
+def test_cli_writes_and_validates_draft_follow_up_reports(tmp_path) -> None:
+    output_dir = tmp_path / "draft_reports"
+    stdout = StringIO()
+
+    exit_code = main(
+        ["draft-follow-up-report-write", "--output-dir", str(output_dir)],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["ok"] is True
+    assert result["summary"]["draft_report_count"] == 2
+    assert Path(result["manifest_path"]).exists()
+    assert all(Path(path).exists() for path in result["markdown_paths"])
+
+    validate_stdout = StringIO()
+    validate_exit_code = main(
+        ["validate-draft-reports", str(output_dir)],
+        stdout=validate_stdout,
+    )
+    validation = json.loads(validate_stdout.getvalue())
+
+    assert validate_exit_code == 0
+    assert validation["ok"] is True
+    assert validation["errors"] == []
+
+
 def test_cli_user_decision_summary_outputs_human_gate_counts() -> None:
     stdout = StringIO()
 
@@ -766,6 +801,78 @@ def test_cli_user_decision_summary_outputs_human_gate_counts() -> None:
         "request_more_tests": 2,
     }
     assert "do not create external submission approval" in result["disclaimer"]
+
+
+def test_cli_user_decision_record_appends_request_more_tests(tmp_path) -> None:
+    decisions_path = tmp_path / "background_user_decisions.json"
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "user-decision-record",
+            "--user-decision-path",
+            str(decisions_path),
+            "--decision-id",
+            "decision-cli-001",
+            "--readiness-id",
+            "readiness-cli",
+            "--follow-up-id",
+            "follow-up-cli",
+            "--target-id",
+            "target-cli",
+            "--track",
+            "radio",
+            "--decision",
+            "request_more_tests",
+            "--rationale",
+            "More local review is required.",
+            "--required-next-action",
+            "repeat local review",
+            "--blocking-issue",
+            "external submission has not been approved",
+        ],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["ok"] is True
+    assert result["summary"]["decision_count"] == 1
+    assert result["summary"]["external_submission_approved_count"] == 0
+    assert decisions_path.exists()
+
+
+def test_cli_user_decision_record_blocks_unconfirmed_submission(tmp_path) -> None:
+    decisions_path = tmp_path / "background_user_decisions.json"
+    stdout = StringIO()
+
+    with pytest.raises(ValueError, match="explicit external submission approval"):
+        main(
+            [
+                "user-decision-record",
+                "--user-decision-path",
+                str(decisions_path),
+                "--decision-id",
+                "decision-cli-approve-001",
+                "--readiness-id",
+                "readiness-cli",
+                "--follow-up-id",
+                "follow-up-cli",
+                "--target-id",
+                "target-cli",
+                "--track",
+                "radio",
+                "--decision",
+                "approve_submission",
+                "--rationale",
+                "User is testing the approval gate.",
+                "--submission-destination",
+                "Internal test destination",
+            ],
+            stdout=stdout,
+        )
+
+    assert not decisions_path.exists()
 
 
 def test_cli_submission_recommendation_summary_aliases_report_readiness() -> None:
@@ -875,6 +982,29 @@ def test_cli_background_run_once_appends_local_ledger_entry(tmp_path) -> None:
     assert result["outcome_log"]["outcome"] == "needs_follow_up"
     assert (tmp_path / "background_needs_follow_up_log.json").exists()
     assert ledger_path.exists()
+
+
+def test_cli_scheduler_dry_run_writes_temporary_artifacts(tmp_path) -> None:
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "scheduler-dry-run",
+            "--artifact-dir",
+            str(tmp_path),
+            "--run-id",
+            "cli-scheduler-dry-run",
+        ],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["ok"] is True
+    assert result["network_access_enabled"] is False
+    assert result["external_submission_allowed"] is False
+    assert (tmp_path / "background_search_ledger.json").exists()
+    assert (tmp_path / "background_needs_follow_up_log.json").exists()
 
 
 def test_cli_validate_all_outputs_local_summary() -> None:
@@ -1000,6 +1130,7 @@ def test_cli_validate_all_outputs_local_summary() -> None:
     assert result["background_report_readiness_summary"][
         "external_submission_allowed_count"
     ] == 0
+    assert result["background_draft_report_validation"]["ok"] is True
     assert result["background_draft_follow_up_report_summary"][
         "draft_report_count"
     ] == 2
@@ -1033,7 +1164,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 20
+    assert result["schema_count"] == 21
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -1097,6 +1228,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["background_draft_report_count"] == 2
     assert result["background_draft_report_ready_count"] == 1
     assert result["background_draft_report_external_submission_allowed_count"] == 0
+    assert result["background_draft_report_validation_ok"] is True
     assert result["background_user_decision_count"] == 3
     assert result["background_user_decision_external_submission_approved_count"] == 0
     assert result["background_user_decision_request_more_tests_count"] == 2

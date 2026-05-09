@@ -13,6 +13,8 @@ from techno_search.background_search import (
     CANDIDATE_EXTRACTION_HANDOFF_DISCLAIMER,
     MANDATORY_FOLLOW_UP_TESTS,
     TARGET_PRIORITY_DISCLAIMER,
+    BackgroundUserDecisionRecord,
+    append_background_user_decision_record,
     background_draft_follow_up_report_summary,
     background_follow_up_test_summary,
     background_needs_follow_up_summary,
@@ -34,10 +36,13 @@ from techno_search.background_search import (
     load_background_user_decisions,
     load_candidate_extraction_handoffs,
     run_local_background_search_once,
+    scheduler_dry_run,
     target_priority_score,
     target_priority_summary,
     target_selection_score,
+    write_background_draft_follow_up_reports,
 )
+from techno_search.schemas import Track
 
 
 def test_background_targets_load_with_conservative_disclaimer() -> None:
@@ -366,6 +371,22 @@ def test_draft_follow_up_reports_can_be_generated_from_readiness() -> None:
     assert records[1].recommended_next_steps[-1] == "do not submit externally"
 
 
+def test_write_background_draft_reports_persists_markdown_and_manifest(
+    tmp_path: Path,
+) -> None:
+    result = write_background_draft_follow_up_reports(tmp_path)
+
+    assert result.manifest_path.exists()
+    assert len(result.markdown_paths) == 2
+    assert result.manifest["schema_version"] == "background_draft_report_manifest_v1"
+    first_markdown = result.markdown_paths[0].read_text(encoding="utf-8")
+    assert "## Evidence Supporting Follow-Up" in first_markdown
+    assert "## Negative Evidence" in first_markdown
+    assert "## Uncertainty And Limitations" in first_markdown
+    assert "External submission allowed: `False`" in first_markdown
+    assert "not discoveries" in first_markdown
+
+
 def test_user_decisions_load_explicit_human_gate_records() -> None:
     records = load_background_user_decisions()
 
@@ -400,6 +421,74 @@ def test_user_decision_summary_keeps_submission_closed_by_default() -> None:
         "request_more_tests": 2,
     }
     assert "do not create external submission approval" in summary["disclaimer"]
+
+
+def test_append_user_decision_records_request_more_tests_without_submission(
+    tmp_path: Path,
+) -> None:
+    decisions_path = tmp_path / "background_user_decisions.json"
+    result = append_background_user_decision_record(
+        decisions_path,
+        BackgroundUserDecisionRecord(
+            decision_id="decision-test-001",
+            readiness_id="readiness-test",
+            follow_up_id="follow-up-test",
+            target_id="target-test",
+            track=Track.RADIO,
+            decision="request_more_tests",
+            decided_at_utc="2026-05-09T16:00:00+00:00",
+            rationale="More local context is required.",
+            required_next_actions=("repeat local review",),
+            external_submission_approved=False,
+            request_more_tests=True,
+            close_as_reviewed=False,
+            submission_destination=None,
+            blocking_issues=("external submission has not been approved",),
+            network_access_allowed=False,
+        ),
+    )
+
+    assert result["ok"] is True
+    assert decisions_path.exists()
+    assert result["summary"]["decision_count"] == 1
+    assert result["summary"]["external_submission_approved_count"] == 0
+
+
+def test_append_user_decision_requires_explicit_approval_for_submission(
+    tmp_path: Path,
+) -> None:
+    decisions_path = tmp_path / "background_user_decisions.json"
+    record = BackgroundUserDecisionRecord(
+        decision_id="decision-test-approve-001",
+        readiness_id="readiness-test",
+        follow_up_id="follow-up-test",
+        target_id="target-test",
+        track=Track.RADIO,
+        decision="approve_submission",
+        decided_at_utc="2026-05-09T16:00:00+00:00",
+        rationale="",
+        required_next_actions=(),
+        external_submission_approved=False,
+        request_more_tests=False,
+        close_as_reviewed=False,
+        submission_destination=None,
+        blocking_issues=(),
+        network_access_allowed=False,
+    )
+
+    with pytest.raises(ValueError, match="explicit external submission approval"):
+        append_background_user_decision_record(decisions_path, record)
+
+
+def test_scheduler_dry_run_writes_temporary_artifacts(tmp_path: Path) -> None:
+    result = scheduler_dry_run(tmp_path, run_id="scheduler-test-run")
+
+    assert result["ok"] is True
+    assert result["network_access_enabled"] is False
+    assert result["external_submission_allowed"] is False
+    assert (tmp_path / "background_search_ledger.json").exists()
+    assert (tmp_path / "background_needs_follow_up_log.json").exists()
+    assert result["result"]["appended_entry"]["run_id"] == "scheduler-test-run"
 
 
 def test_background_review_workflow_summary_exposes_review_semantics() -> None:

@@ -385,6 +385,15 @@ Useful options:
 
 Generated ledgers and outcome logs should be written to ignored local paths such as `artifacts/` unless they are tiny, reviewed fixtures. External schedulers should call this single-run command rather than duplicating scientific selection logic.
 
+Smoke-test scheduler wiring against a temporary artifact directory:
+
+```bash
+.venv/bin/techno-search scheduler-dry-run \
+  --artifact-dir artifacts/background_scheduler_dry_run
+```
+
+The dry-run command uses the same bounded local runner, writes a temporary ledger and outcome log, leaves live-provider access disabled, and does not authorize external submission.
+
 ---
 
 ## Summarize Background Search Ledger
@@ -460,6 +469,21 @@ The summary reports draft-ready and blocked counts, negative evidence, uncertain
 
 Use `--report-readiness-path` to inspect a different report-readiness file.
 
+Persist the conservative drafts as Markdown plus a manifest:
+
+```bash
+.venv/bin/techno-search draft-follow-up-report-write \
+  --output-dir artifacts/background_draft_reports
+```
+
+Validate persisted draft reports:
+
+```bash
+.venv/bin/techno-search validate-draft-reports artifacts/background_draft_reports
+```
+
+Persisted draft reports are local review artifacts. They must preserve evidence, negative evidence, uncertainty, limitations, blocking issues, and the external-submission gate.
+
 To inspect the committed draft-report fixture directly, run:
 
 ```bash
@@ -477,6 +501,24 @@ Print explicit user decision records for background report handling:
 The summary reports decisions to request more tests or close as reviewed, required next actions, blocking issues, and whether external submission has been explicitly approved. The committed fixture keeps `external_submission_approved` false for every record.
 
 Use `--user-decision-path` to inspect a different user decision JSON file.
+
+Append one explicit local user decision record:
+
+```bash
+.venv/bin/techno-search user-decision-record \
+  --user-decision-path artifacts/background_user_decisions.json \
+  --decision-id decision-local-001 \
+  --readiness-id report-readiness-radio-001 \
+  --follow-up-id follow-up-background-demo-001 \
+  --target-id target-radio-clean-drift \
+  --track radio \
+  --decision request_more_tests \
+  --rationale "More local context is required before any external action." \
+  --required-next-action "complete non-synthetic context review" \
+  --blocking-issue "external submission has not been approved"
+```
+
+`request_more_tests` and `close_as_reviewed` never imply external submission approval. `approve_submission` requires the explicit `--confirm-external-submission-approval` flag, a destination, and a rationale; it should be used only when the project owner has explicitly approved external action.
 
 ## Summarize Background Reviewed Workflow
 
@@ -512,7 +554,7 @@ Run the non-network validation summaries used for quick release checks:
 .venv/bin/techno-search validate-all
 ```
 
-This includes example candidate validation, report validation, schema path checks, calibration fixture summary, calibration-by-track diagnostics, false-positive class diagnostics, score regression summary, background target-priority summary, background search ledger summary, background reviewed-workflow summary, reviewed outcome log summary, needs-follow-up outcome log summary, follow-up test summary, report-readiness summary, draft follow-up report summary, user decision summary, candidate extraction handoff summary, human-review queue summary, consensus label summary, consensus export summary, validation dataset manifest summary, validation readiness summary, benchmark metadata summary, and benchmark run-result summary.
+This includes example candidate validation, report validation, persisted draft-report validation, schema path checks, calibration fixture summary, calibration-by-track diagnostics, false-positive class diagnostics, score regression summary, background target-priority summary, background search ledger summary, background reviewed-workflow summary, reviewed outcome log summary, needs-follow-up outcome log summary, follow-up test summary, report-readiness summary, draft follow-up report summary, user decision summary, candidate extraction handoff summary, human-review queue summary, consensus label summary, consensus export summary, validation dataset manifest summary, validation readiness summary, benchmark metadata summary, and benchmark run-result summary.
 It also reports `catalog_cache_validation` for Git-tracked paths so local untracked caches do not fail default validation.
 
 ---

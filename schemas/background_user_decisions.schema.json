@@ -83,7 +83,7 @@
             }
           },
           "external_submission_approved": {
-            "const": false
+            "type": "boolean"
           },
           "request_more_tests": {
             "type": "boolean"

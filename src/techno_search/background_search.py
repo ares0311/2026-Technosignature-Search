@@ -44,6 +44,9 @@ BACKGROUND_REPORT_READINESS_DISCLAIMER = (
     "authorization to submit externally."
 )
 BACKGROUND_DRAFT_REPORT_SCHEMA_VERSION = "background_draft_follow_up_reports_v1"
+BACKGROUND_DRAFT_REPORT_MANIFEST_SCHEMA_VERSION = (
+    "background_draft_report_manifest_v1"
+)
 BACKGROUND_DRAFT_REPORT_DISCLAIMER = (
     "Background draft follow-up reports are conservative internal summaries for "
     "review-ready records; they are not discoveries, detections, external "
@@ -286,6 +289,16 @@ class BackgroundUserDecisionRecord:
     submission_destination: str | None
     blocking_issues: tuple[str, ...]
     network_access_allowed: bool
+
+
+@dataclass(frozen=True)
+class BackgroundDraftReportWriteResult:
+    """Paths and manifest for persisted conservative draft reports."""
+
+    output_dir: Path
+    manifest_path: Path
+    markdown_paths: tuple[Path, ...]
+    manifest: dict[str, object]
 
 
 @dataclass(frozen=True)
@@ -1193,6 +1206,63 @@ def background_draft_follow_up_report_summary(
     }
 
 
+def write_background_draft_follow_up_reports(
+    output_dir: Path,
+    readiness_path: Path | None = None,
+) -> BackgroundDraftReportWriteResult:
+    """Persist conservative draft follow-up reports as Markdown plus manifest."""
+
+    destination = Path(output_dir)
+    destination.mkdir(parents=True, exist_ok=True)
+    source_path = readiness_path or default_background_report_readiness_path()
+    records = draft_follow_up_reports_from_readiness(source_path)
+    markdown_paths: list[Path] = []
+    manifest_entries: list[dict[str, object]] = []
+    generated_at = datetime.now(UTC).isoformat()
+    for record in records:
+        markdown_path = destination / f"{_safe_filename(record.draft_id)}.md"
+        markdown_path.write_text(_draft_report_markdown(record), encoding="utf-8")
+        markdown_paths.append(markdown_path)
+        manifest_entries.append(
+            {
+                "draft_id": record.draft_id,
+                "readiness_id": record.readiness_id,
+                "follow_up_id": record.follow_up_id,
+                "run_id": record.run_id,
+                "target_id": record.target_id,
+                "track": record.track.value,
+                "draft_status": record.draft_status,
+                "markdown_path": str(markdown_path),
+                "user_approval_required": record.user_approval_required,
+                "external_submission_allowed": record.external_submission_allowed,
+                "network_access_allowed": record.network_access_allowed,
+                "blocking_issue_count": len(record.blocking_issues),
+                "negative_evidence_count": len(record.negative_evidence),
+                "limitation_count": len(record.uncertainty_and_limitations),
+            }
+        )
+    manifest = {
+        "schema_version": BACKGROUND_DRAFT_REPORT_MANIFEST_SCHEMA_VERSION,
+        "generated_at_utc": generated_at,
+        "source_readiness_path": str(source_path),
+        "output_dir": str(destination),
+        "draft_report_count": len(records),
+        "disclaimer": BACKGROUND_DRAFT_REPORT_DISCLAIMER,
+        "reports": manifest_entries,
+    }
+    manifest_path = destination / "background_draft_report_manifest.json"
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return BackgroundDraftReportWriteResult(
+        output_dir=destination,
+        manifest_path=manifest_path,
+        markdown_paths=tuple(markdown_paths),
+        manifest=manifest,
+    )
+
+
 def background_user_decision_summary(path: Path | None = None) -> dict[str, object]:
     """Summarize explicit user decision records."""
 
@@ -1225,6 +1295,99 @@ def background_user_decision_summary(path: Path | None = None) -> dict[str, obje
         "decision_ids": sorted(record.decision_id for record in records),
         "readiness_ids": sorted(record.readiness_id for record in records),
         "target_ids": sorted({record.target_id for record in records}),
+    }
+
+
+def append_background_user_decision_record(
+    path: Path,
+    record: BackgroundUserDecisionRecord,
+) -> dict[str, object]:
+    """Append one explicit user decision record, creating the file if needed."""
+
+    if record.decision == "approve_submission":
+        if not record.external_submission_approved:
+            msg = "approve_submission requires explicit external submission approval."
+            raise ValueError(msg)
+        if not record.submission_destination:
+            msg = "approve_submission requires a submission destination."
+            raise ValueError(msg)
+        if not record.rationale:
+            msg = "approve_submission requires a rationale."
+            raise ValueError(msg)
+    elif record.external_submission_approved:
+        msg = (
+            "Only approve_submission decisions may set external submission "
+            "approval."
+        )
+        raise ValueError(msg)
+
+    decision_path = Path(path)
+    if decision_path.exists():
+        with decision_path.open(encoding="utf-8") as handle:
+            data = json.load(handle)
+        schema_version = str(data.get("schema_version", ""))
+        if schema_version != BACKGROUND_USER_DECISION_SCHEMA_VERSION:
+            msg = (
+                f"Unsupported background user decision schema version "
+                f"{schema_version!r}; expected "
+                f"{BACKGROUND_USER_DECISION_SCHEMA_VERSION!r}"
+            )
+            raise ValueError(msg)
+        decisions = list(data.get("decisions", []))
+    else:
+        data = {
+            "schema_version": BACKGROUND_USER_DECISION_SCHEMA_VERSION,
+            "description": (
+                "Explicit user decision records for conservative background "
+                "follow-up reports."
+            ),
+            "disclaimer": BACKGROUND_USER_DECISION_DISCLAIMER,
+        }
+        decisions = []
+
+    decisions.append(_user_decision_record_to_mapping(record))
+    data["decisions"] = decisions
+    decision_path.parent.mkdir(parents=True, exist_ok=True)
+    decision_path.write_text(
+        json.dumps(data, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return {
+        "ok": True,
+        "appended_decision": _user_decision_record_to_mapping(record),
+        "summary": background_user_decision_summary(decision_path),
+    }
+
+
+def scheduler_dry_run(
+    artifact_dir: Path,
+    *,
+    run_id: str = "scheduler-dry-run",
+    code_commit: str = "dry-run",
+) -> dict[str, object]:
+    """Run the local background scheduler path against temporary artifacts."""
+
+    destination = Path(artifact_dir)
+    ledger_path = destination / "background_search_ledger.json"
+    reviewed_log_path = destination / "background_reviewed_log.json"
+    needs_follow_up_log_path = destination / "background_needs_follow_up_log.json"
+    result = run_local_background_search_once(
+        ledger_path,
+        reviewed_log_path=reviewed_log_path,
+        needs_follow_up_log_path=needs_follow_up_log_path,
+        run_id=run_id,
+        code_commit=code_commit,
+        opt_in=True,
+    )
+    return {
+        "ok": bool(result["ok"]),
+        "artifact_dir": str(destination),
+        "ledger_path": str(ledger_path),
+        "reviewed_log_path": str(reviewed_log_path),
+        "needs_follow_up_log_path": str(needs_follow_up_log_path),
+        "network_access_enabled": False,
+        "external_submission_allowed": False,
+        "result": result,
     }
 
 
@@ -1736,6 +1899,28 @@ def _user_decision_record_from_mapping(
     )
 
 
+def _user_decision_record_to_mapping(
+    record: BackgroundUserDecisionRecord,
+) -> dict[str, object]:
+    return {
+        "decision_id": record.decision_id,
+        "readiness_id": record.readiness_id,
+        "follow_up_id": record.follow_up_id,
+        "target_id": record.target_id,
+        "track": record.track.value,
+        "decision": record.decision,
+        "decided_at_utc": record.decided_at_utc,
+        "rationale": record.rationale,
+        "required_next_actions": list(record.required_next_actions),
+        "external_submission_approved": record.external_submission_approved,
+        "request_more_tests": record.request_more_tests,
+        "close_as_reviewed": record.close_as_reviewed,
+        "submission_destination": record.submission_destination,
+        "blocking_issues": list(record.blocking_issues),
+        "network_access_allowed": record.network_access_allowed,
+    }
+
+
 def _draft_report_from_readiness(
     record: BackgroundReportReadinessRecord,
 ) -> BackgroundDraftFollowUpReport:
@@ -1804,6 +1989,63 @@ def _draft_report_from_readiness(
         external_submission_allowed=record.external_submission_allowed,
         network_access_allowed=record.network_access_allowed,
     )
+
+
+def _draft_report_markdown(record: BackgroundDraftFollowUpReport) -> str:
+    lines = [
+        f"# {record.report_title}",
+        "",
+        BACKGROUND_DRAFT_REPORT_DISCLAIMER,
+        "",
+        "## Summary",
+        "",
+        record.abstract,
+        "",
+        "## Methodology",
+        "",
+        record.methodology_summary,
+        "",
+        "## Evidence Supporting Follow-Up",
+        "",
+        *_markdown_list(record.evidence_supporting_follow_up),
+        "",
+        "## Negative Evidence",
+        "",
+        *_markdown_list(record.negative_evidence),
+        "",
+        "## Uncertainty And Limitations",
+        "",
+        *_markdown_list(record.uncertainty_and_limitations),
+        "",
+        "## Blocking Issues",
+        "",
+        *_markdown_list(record.blocking_issues or ("None recorded.",)),
+        "",
+        "## Recommended Next Steps",
+        "",
+        *_markdown_list(record.recommended_next_steps),
+        "",
+        "## Gates",
+        "",
+        f"- Draft status: `{record.draft_status}`",
+        f"- User approval required: `{record.user_approval_required}`",
+        f"- External submission allowed: `{record.external_submission_allowed}`",
+        f"- Network access allowed: `{record.network_access_allowed}`",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def _markdown_list(items: tuple[str, ...]) -> list[str]:
+    return [f"- {item}" for item in items]
+
+
+def _safe_filename(value: str) -> str:
+    safe = "".join(
+        character if character.isalnum() or character in ("-", "_") else "-"
+        for character in value.lower()
+    ).strip("-")
+    return safe or "draft-report"
 
 
 def _ledger_entry_to_mapping(entry: BackgroundSearchLedgerEntry) -> dict[str, object]:

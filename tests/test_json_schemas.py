@@ -8,6 +8,7 @@ def test_json_schema_files_are_parseable_and_named() -> None:
 
     assert {path.name for path in schema_paths} == {
         "background_draft_follow_up_reports.schema.json",
+        "background_draft_report_manifest.schema.json",
         "background_follow_up_tests.schema.json",
         "background_needs_follow_up_log.schema.json",
         "background_report_readiness.schema.json",

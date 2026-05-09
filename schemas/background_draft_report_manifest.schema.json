@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/techno-search/background_draft_report_manifest.schema.json",
+  "title": "Technosignature Search persisted background draft report manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at_utc",
+    "source_readiness_path",
+    "output_dir",
+    "draft_report_count",
+    "disclaimer",
+    "reports"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "background_draft_report_manifest_v1"
+    },
+    "generated_at_utc": {
+      "type": "string"
+    },
+    "source_readiness_path": {
+      "type": "string"
+    },
+    "output_dir": {
+      "type": "string"
+    },
+    "draft_report_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "reports": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "draft_id",
+          "readiness_id",
+          "follow_up_id",
+          "run_id",
+          "target_id",
+          "track",
+          "draft_status",
+          "markdown_path",
+          "user_approval_required",
+          "external_submission_allowed",
+          "network_access_allowed",
+          "blocking_issue_count",
+          "negative_evidence_count",
+          "limitation_count"
+        ],
+        "properties": {
+          "draft_id": {
+            "type": "string"
+          },
+          "readiness_id": {
+            "type": "string"
+          },
+          "follow_up_id": {
+            "type": "string"
+          },
+          "run_id": {
+            "type": "string"
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "track": {
+            "enum": [
+              "radio",
+              "infrared",
+              "anomaly"
+            ]
+          },
+          "draft_status": {
+            "enum": [
+              "draft_ready",
+              "blocked_not_ready"
+            ]
+          },
+          "markdown_path": {
+            "type": "string"
+          },
+          "user_approval_required": {
+            "const": true
+          },
+          "external_submission_allowed": {
+            "const": false
+          },
+          "network_access_allowed": {
+            "const": false
+          },
+          "blocking_issue_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "negative_evidence_count": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "limitation_count": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    }
+  }
+}

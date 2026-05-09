@@ -8,6 +8,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from techno_search.background_search import (
+    BACKGROUND_DRAFT_REPORT_DISCLAIMER,
+    BACKGROUND_DRAFT_REPORT_MANIFEST_SCHEMA_VERSION,
+)
 from techno_search.reporting import REQUIRED_DISCLAIMER
 from techno_search.schemas import PosteriorClass, Track, candidate_from_mapping
 
@@ -47,6 +51,30 @@ REQUIRED_MANIFEST_FIELDS = {
     "code_commit",
     "generated_at_utc",
     "provenance_summary",
+}
+
+REQUIRED_DRAFT_REPORT_MANIFEST_FIELDS = {
+    "schema_version",
+    "generated_at_utc",
+    "source_readiness_path",
+    "output_dir",
+    "draft_report_count",
+    "disclaimer",
+    "reports",
+}
+
+REQUIRED_DRAFT_REPORT_ENTRY_FIELDS = {
+    "draft_id",
+    "readiness_id",
+    "follow_up_id",
+    "run_id",
+    "target_id",
+    "track",
+    "draft_status",
+    "markdown_path",
+    "user_approval_required",
+    "external_submission_allowed",
+    "network_access_allowed",
 }
 
 
@@ -204,6 +232,104 @@ def validate_report_directory(path: Path | str) -> ValidationResult:
             f"{manifest_path.name}: {warning}" for warning in manifest_result.warnings
         )
 
+    return ValidationResult(tuple(errors), tuple(warnings))
+
+
+def validate_draft_report_manifest(data: Mapping[str, Any]) -> ValidationResult:
+    """Validate a persisted background draft report manifest."""
+
+    errors: list[str] = []
+    _require_mapping_fields(
+        data,
+        required=tuple(sorted(REQUIRED_DRAFT_REPORT_MANIFEST_FIELDS)),
+        context="draft report manifest",
+        errors=errors,
+    )
+    if data.get("schema_version") != BACKGROUND_DRAFT_REPORT_MANIFEST_SCHEMA_VERSION:
+        errors.append("draft report manifest schema_version is unsupported")
+    if data.get("disclaimer") != BACKGROUND_DRAFT_REPORT_DISCLAIMER:
+        errors.append("draft report manifest disclaimer is unsupported")
+    reports = data.get("reports")
+    if not isinstance(reports, list) or not reports:
+        errors.append("draft report manifest reports must be a non-empty list")
+    else:
+        for index, report in enumerate(reports):
+            if not isinstance(report, Mapping):
+                errors.append(f"draft report manifest report {index} must be a mapping")
+                continue
+            _require_mapping_fields(
+                report,
+                required=tuple(sorted(REQUIRED_DRAFT_REPORT_ENTRY_FIELDS)),
+                context=f"draft report manifest report {index}",
+                errors=errors,
+            )
+            if report.get("external_submission_allowed") is not False:
+                errors.append(
+                    f"draft report manifest report {index} allows external submission"
+                )
+            if report.get("network_access_allowed") is not False:
+                errors.append(
+                    f"draft report manifest report {index} allows network access"
+                )
+    return ValidationResult(tuple(errors))
+
+
+def validate_draft_report_directory(path: Path | str) -> ValidationResult:
+    """Validate persisted conservative draft report Markdown and manifest files."""
+
+    report_dir = Path(path)
+    errors: list[str] = []
+    warnings: list[str] = []
+    if not report_dir.exists():
+        return ValidationResult(
+            errors=(f"draft report directory does not exist: {report_dir}",)
+        )
+    manifest_path = report_dir / "background_draft_report_manifest.json"
+    if not manifest_path.exists():
+        return ValidationResult(
+            errors=(f"draft report manifest does not exist: {manifest_path}",)
+        )
+    manifest_result = _validate_json_file(
+        manifest_path,
+        validate_draft_report_manifest,
+    )
+    errors.extend(manifest_result.errors)
+    warnings.extend(manifest_result.warnings)
+    try:
+        manifest = _load_json_mapping(manifest_path)
+    except (OSError, json.JSONDecodeError, TypeError) as exc:
+        return ValidationResult(errors=(f"draft report manifest cannot be read: {exc}",))
+    for report in manifest.get("reports", ()):
+        if not isinstance(report, Mapping):
+            continue
+        markdown_path = Path(str(report.get("markdown_path", "")))
+        if not markdown_path.exists():
+            errors.append(f"draft report Markdown does not exist: {markdown_path}")
+            continue
+        text = markdown_path.read_text(encoding="utf-8")
+        required_sections = (
+            "## Evidence Supporting Follow-Up",
+            "## Negative Evidence",
+            "## Uncertainty And Limitations",
+            "## Blocking Issues",
+            "## Recommended Next Steps",
+            "## Gates",
+        )
+        for section in required_sections:
+            if section not in text:
+                errors.append(f"{markdown_path.name}: missing section {section}")
+        if BACKGROUND_DRAFT_REPORT_DISCLAIMER not in text:
+            errors.append(f"{markdown_path.name}: missing draft report disclaimer")
+        if "External submission allowed: `False`" not in text:
+            errors.append(f"{markdown_path.name}: external submission gate missing")
+        if "Network access allowed: `False`" not in text:
+            errors.append(f"{markdown_path.name}: network access gate missing")
+        lowered = text.lower()
+        for phrase in BANNED_REPORT_PHRASES:
+            if phrase in lowered:
+                errors.append(
+                    f"{markdown_path.name}: uses unsupported phrase {phrase!r}"
+                )
     return ValidationResult(tuple(errors), tuple(warnings))
 
 

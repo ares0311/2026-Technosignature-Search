@@ -213,8 +213,11 @@ project-search reviewed-log-summary
 project-search needs-follow-up-summary
 project-search follow-up-test-summary
 project-search draft-report-summary
+project-search draft-report-write
+project-search validate-draft-reports
 project-search submission-recommendation-summary
 project-search user-decision-summary
+project-search scheduler-dry-run
 project-search validation-summary
 ```
 
