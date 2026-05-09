@@ -43,6 +43,7 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
         "## 🔭 Data Sources",
         "## 🚀 Installation",
         "## ⚡ Quick Start",
+        "## 🧭 Using and Recalibrating the Model",
         "## 🧪 Quality Control",
         "## 📤 Submission Pathways",
         "## 📂 Repository Layout",
@@ -71,6 +72,15 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     assert "\\sum_k w_{ik}x_k" in readme
     assert "P(\\mathrm{false\\ positive}) =" in readme
     assert "Breakthrough Listen-style radio data" in readme
+    assert "### What the Model Does Today" in readme
+    assert "### Recalibration Workflow" in readme
+    assert "### Target Selection and Background Search Roadmap" in readme
+    assert "### Background Logging Requirements" in readme
+    assert "T =" in readme
+    assert "search ledger" in readme
+    assert ".venv/bin/techno-search target-priority-summary" in readme
+    assert ".venv/bin/techno-search background-ledger-summary" in readme
+    assert "The selected target is a scheduling recommendation only." in readme
     assert "### Quality-Control Matrix" in readme
     assert ".venv/bin/techno-search score examples/candidates/radio_clean_candidate.json" in readme
     assert ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing" in readme

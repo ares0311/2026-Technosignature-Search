@@ -226,6 +226,8 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
 
     assert exit_code == 0
     assert set(result) == {
+        "background_search_ledger",
+        "background_targets",
         "batch_manifest",
         "benchmark_metadata",
         "benchmark_run_results",
@@ -237,6 +239,10 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "validation_dataset_manifest",
         "validation_promotion_rules",
     }
+    assert result["background_search_ledger"].endswith(
+        "schemas/background_search_ledger.schema.json"
+    )
+    assert result["background_targets"].endswith("schemas/background_targets.schema.json")
     assert result["benchmark_metadata"].endswith("schemas/benchmark_metadata.schema.json")
     assert result["benchmark_run_results"].endswith(
         "schemas/benchmark_run_results.schema.json"
@@ -421,6 +427,42 @@ def test_cli_benchmark_run_summary_outputs_local_run_results() -> None:
     assert "not scientific performance claims" in result["disclaimer"]
 
 
+def test_cli_target_priority_summary_outputs_selected_target() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["target-priority-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "background_target_priority_v1"
+    assert result["target_count"] == 3
+    assert result["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 1}
+    assert result["selected_target_id"] == "target-radio-clean-drift"
+    assert result["selected_priority_score"] == 0.7515
+    assert result["weights"]["false_positive_probability"] < 0
+    assert "not evidence" in result["disclaimer"]
+
+
+def test_cli_background_ledger_summary_outputs_logged_searches() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["background-ledger-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "background_search_ledger_v1"
+    assert result["entry_count"] == 3
+    assert result["searched_target_count"] == 3
+    assert result["candidate_count"] == 2
+    assert result["blocking_issue_count"] == 3
+    assert result["by_status"] == {
+        "completed": 1,
+        "completed_with_blockers": 1,
+        "searched_no_candidate": 1,
+    }
+    assert "not discovery claims" in result["disclaimer"]
+
+
 def test_cli_validate_all_outputs_local_summary() -> None:
     stdout = StringIO()
 
@@ -502,6 +544,12 @@ def test_cli_validate_all_outputs_local_summary() -> None:
     assert result["benchmark_run_summary"]["run_count"] == 3
     assert result["benchmark_run_summary"]["input_case_total"] == 171
     assert result["benchmark_run_summary"]["max_worker_count"] == 12
+    assert result["target_priority_summary"]["target_count"] == 3
+    assert result["target_priority_summary"]["selected_target_id"] == (
+        "target-radio-clean-drift"
+    )
+    assert result["background_ledger_summary"]["entry_count"] == 3
+    assert result["background_ledger_summary"]["candidate_count"] == 2
     assert result["catalog_cache_validation"]["forbidden_roots"] == [
         "data",
         "cache",
@@ -520,7 +568,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 10
+    assert result["schema_count"] == 12
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -555,6 +603,10 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["benchmark_run_count"] == 3
     assert result["benchmark_run_input_case_total"] == 171
     assert result["benchmark_run_max_worker_count"] == 12
+    assert result["target_priority_count"] == 3
+    assert result["selected_background_target_id"] == "target-radio-clean-drift"
+    assert result["background_ledger_entry_count"] == 3
+    assert result["background_ledger_candidate_count"] == 2
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 

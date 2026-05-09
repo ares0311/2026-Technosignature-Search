@@ -353,3 +353,26 @@ When Markdown and JSON candidate packets are written to disk, also write a manif
 - Report writers emit three files: Markdown, JSON packet, and manifest JSON.
 - Manifest code commit is best-effort and may be null when Git metadata is unavailable.
 - Future batch report writers should aggregate these per-candidate manifests.
+
+---
+
+## DECISION-015: Separate Background Target Priority From Candidate Evidence
+
+**Date:** 2026-05-08
+
+**Status:** Accepted
+
+### Decision
+
+Background/passive search target priority is a scheduling aid only. It must remain separate from candidate scoring, discovery language, and external submission pathways.
+
+### Rationale
+
+An automated or semi-automated target selector can be useful for deciding what to inspect next, but a high-priority target can still be an ordinary false positive, a weak metadata packet, or a negative search result. The system must therefore log searched targets, expose blocking issues, and route any generated candidates through the normal conservative scoring and review packet workflow.
+
+### Consequences
+
+- Target-priority weights must be versioned and auditable.
+- False-positive probability and blocking issues must penalize target priority.
+- Passive/background search runs must append ledger entries, including negative searches.
+- A selected target ID must not be presented as evidence of a technosignature-interest candidate.

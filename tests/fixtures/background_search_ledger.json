@@ -1,0 +1,72 @@
+{
+  "schema_version": "background_search_ledger_v1",
+  "description": "Synthetic passive/background search ledger examples. Entries record searched targets, not discoveries.",
+  "disclaimer": "Background search ledger entries record searched targets and outcomes for reproducibility; they are not discovery claims.",
+  "ledger_entries": [
+    {
+      "run_id": "background-demo-001",
+      "target_id": "target-radio-clean-drift",
+      "track": "radio",
+      "status": "completed",
+      "query_parameters": {
+        "fixture": "examples/candidates/radio_clean_candidate.json",
+        "mode": "synthetic_priority_demo"
+      },
+      "started_at_utc": "2026-05-08T10:00:00+00:00",
+      "completed_at_utc": "2026-05-08T10:00:02+00:00",
+      "config_version": "background_priority_v0",
+      "code_commit": "synthetic-fixture",
+      "cache_key": "synthetic-radio-priority-demo",
+      "candidate_count": 1,
+      "recommended_pathways": [
+        "candidate_review_packet"
+      ],
+      "blocking_issues": []
+    },
+    {
+      "run_id": "background-demo-002",
+      "target_id": "target-infrared-excess-review",
+      "track": "infrared",
+      "status": "completed_with_blockers",
+      "query_parameters": {
+        "fixture": "examples/candidates/infrared_clean_candidate.json",
+        "mode": "synthetic_priority_demo"
+      },
+      "started_at_utc": "2026-05-08T10:05:00+00:00",
+      "completed_at_utc": "2026-05-08T10:05:02+00:00",
+      "config_version": "background_priority_v0",
+      "code_commit": "synthetic-fixture",
+      "cache_key": "synthetic-infrared-priority-demo",
+      "candidate_count": 1,
+      "recommended_pathways": [
+        "human_review_queue"
+      ],
+      "blocking_issues": [
+        "synthetic fixture records one unresolved follow-up context issue"
+      ]
+    },
+    {
+      "run_id": "background-demo-003",
+      "target_id": "target-anomaly-weak-context",
+      "track": "anomaly",
+      "status": "searched_no_candidate",
+      "query_parameters": {
+        "fixture": "synthetic-negative-search",
+        "mode": "synthetic_priority_demo"
+      },
+      "started_at_utc": "2026-05-08T10:10:00+00:00",
+      "completed_at_utc": "2026-05-08T10:10:01+00:00",
+      "config_version": "background_priority_v0",
+      "code_commit": "synthetic-fixture",
+      "cache_key": "synthetic-anomaly-negative-demo",
+      "candidate_count": 0,
+      "recommended_pathways": [
+        "github_reproducibility_only"
+      ],
+      "blocking_issues": [
+        "synthetic fixture intentionally records weak context",
+        "no candidate packet generated"
+      ]
+    }
+  ]
+}

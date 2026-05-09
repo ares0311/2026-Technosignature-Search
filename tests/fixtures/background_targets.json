@@ -1,0 +1,40 @@
+{
+  "schema_version": "background_target_priority_v1",
+  "description": "Synthetic target-priority examples for future passive background search scheduling.",
+  "disclaimer": "Target priority scores are scheduling aids only; they are not evidence of a technosignature or a discovery claim.",
+  "targets": [
+    {
+      "target_id": "target-radio-clean-drift",
+      "track": "radio",
+      "source_id": "synthetic-radio-target-a",
+      "followup_value": 0.91,
+      "novelty_score": 0.86,
+      "data_quality_score": 0.92,
+      "observability_score": 0.70,
+      "false_positive_probability": 0.12,
+      "blocking_issue_count": 0
+    },
+    {
+      "target_id": "target-infrared-excess-review",
+      "track": "infrared",
+      "source_id": "synthetic-gaia-wise-target-b",
+      "followup_value": 0.82,
+      "novelty_score": 0.78,
+      "data_quality_score": 0.88,
+      "observability_score": 0.65,
+      "false_positive_probability": 0.20,
+      "blocking_issue_count": 1
+    },
+    {
+      "target_id": "target-anomaly-weak-context",
+      "track": "anomaly",
+      "source_id": "synthetic-archival-target-c",
+      "followup_value": 0.60,
+      "novelty_score": 0.74,
+      "data_quality_score": 0.58,
+      "observability_score": 0.50,
+      "false_positive_probability": 0.42,
+      "blocking_issue_count": 2
+    }
+  ]
+}

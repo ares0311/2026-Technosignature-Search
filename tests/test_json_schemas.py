@@ -7,6 +7,8 @@ def test_json_schema_files_are_parseable_and_named() -> None:
     schema_paths = sorted(schema_dir.glob("*.schema.json"))
 
     assert {path.name for path in schema_paths} == {
+        "background_search_ledger.schema.json",
+        "background_targets.schema.json",
         "batch_manifest.schema.json",
         "benchmark_metadata.schema.json",
         "benchmark_run_results.schema.json",
@@ -41,6 +43,14 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     benchmark_run_schema = json.loads(
         Path("schemas/benchmark_run_results.schema.json").read_text(encoding="utf-8")
     )
+    background_targets_schema = json.loads(
+        Path("schemas/background_targets.schema.json").read_text(encoding="utf-8")
+    )
+    background_ledger_schema = json.loads(
+        Path("schemas/background_search_ledger.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
     review_queue_schema = json.loads(
         Path("schemas/review_queue.schema.json").read_text(encoding="utf-8")
     )
@@ -69,6 +79,12 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     benchmark_runs = json.loads(
         Path("tests/fixtures/benchmark_run_results.json").read_text()
     )
+    background_targets = json.loads(
+        Path("tests/fixtures/background_targets.json").read_text()
+    )
+    background_ledger = json.loads(
+        Path("tests/fixtures/background_search_ledger.json").read_text()
+    )
     review_queue = json.loads(Path("tests/fixtures/review_queue.json").read_text())
     consensus = json.loads(Path("tests/fixtures/consensus_labels.json").read_text())
     consensus_export = json.loads(Path("tests/fixtures/consensus_exports.json").read_text())
@@ -84,6 +100,8 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     assert set(batch_schema["required"]) <= set(batch)
     assert set(benchmark_schema["required"]) <= set(benchmark)
     assert set(benchmark_run_schema["required"]) <= set(benchmark_runs)
+    assert set(background_targets_schema["required"]) <= set(background_targets)
+    assert set(background_ledger_schema["required"]) <= set(background_ledger)
     assert set(review_queue_schema["required"]) <= set(review_queue)
     assert set(consensus_schema["required"]) <= set(consensus)
     assert set(consensus_export_schema["required"]) <= set(consensus_export)
@@ -110,6 +128,10 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     assert benchmark["recommended_limits"]["cpu_workers"] == 12
     assert benchmark_runs["schema_version"] == "synthetic_benchmark_run_result_v1"
     assert len(benchmark_runs["runs"]) == 3
+    assert background_targets["schema_version"] == "background_target_priority_v1"
+    assert len(background_targets["targets"]) == 3
+    assert background_ledger["schema_version"] == "background_search_ledger_v1"
+    assert len(background_ledger["ledger_entries"]) == 3
     assert review_queue["schema_version"] == "human_review_queue_v1"
     assert sorted(review_queue["allowed_triage_labels"]) == [
         "follow_up_target",

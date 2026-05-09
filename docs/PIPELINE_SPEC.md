@@ -202,6 +202,28 @@ Responsibilities:
 - include provenance
 - avoid confirmation language
 
+## Background Target Selection
+
+Responsibilities:
+
+- rank candidate targets for future search scheduling
+- keep target priority separate from candidate evidence
+- penalize false-positive probability and unresolved blocking issues
+- preserve the target-priority schema version and weights used
+- avoid interpreting a high target-priority score as a technosignature-interest claim
+
+Current v0 fixture flow:
+
+```text
+background target fixture
+→ target priority score
+→ ranked target list
+→ selected target ID
+→ passive/background ledger entry after search
+```
+
+The passive/background ledger must record searched targets even when no candidate packet is produced.
+
 ---
 
 # 6. Shared Candidate Outputs

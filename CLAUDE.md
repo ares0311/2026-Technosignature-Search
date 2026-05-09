@@ -61,6 +61,33 @@ Merge status: already on `main`; no merge needed.
 
 ---
 
+## Background Target Priority And Passive Search Ledger Expansion
+
+User requested prioritizing the background searching system discussed in the README.
+
+Status: implemented in this iteration.
+
+Added:
+
+- fixture-backed background target-priority model in `src/techno_search/background_search.py`
+- passive/background search ledger loader and summary helper
+- `techno-search target-priority-summary`
+- `techno-search background-ledger-summary`
+- JSON schemas for target-priority and background-ledger fixtures
+- local validation wiring through `validate-all` and `validation-summary`
+- tests for target scoring, selected target behavior, ledger coverage, schema coverage, and CLI output
+- README/docs updates explaining layperson operation, recalibration, target selection, passive logging, and guardrails
+
+Scientific guardrail:
+
+- target priority is a scheduling aid only
+- ledger entries are reproducibility records only
+- neither output is evidence of a technosignature or a discovery claim
+
+Merge status: already on `main`; no merge needed.
+
+---
+
 ## Fifteen-Step Consensus Export, Promotion, And Benchmark Run Expansion
 
 User requested the next fifteen steps:

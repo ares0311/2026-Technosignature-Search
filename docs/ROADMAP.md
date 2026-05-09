@@ -227,6 +227,8 @@ Add real data ingestion behind tested abstractions.
 - [x] Catalog cache storage implementation
 - [x] Provider normalization regression fixtures
 - [x] Provider normalization summary in local validation
+- [x] Fixture-backed background target-priority summary
+- [x] Passive/background search ledger summary
 
 ---
 

@@ -139,6 +139,9 @@ The project will support three tracks from day one:
 - [x] Benchmark run-result summary CLI added
 - [x] Benchmark run-result summary wired into local validation
 - [x] README public entrypoint refreshed with compact project overview
+- [x] Background target-priority fixture, schema, and summary CLI added
+- [x] Passive/background search ledger fixture, schema, and summary CLI added
+- [x] Background target-priority and ledger summaries wired into local validation
 
 ---
 
@@ -163,9 +166,9 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Define a durable benchmark run-result append workflow for future synthetic calibration grids.
-2. Add promotion readiness documentation for future non-synthetic validation datasets.
-3. Add benchmark run-result comparison checks once repeated synthetic calibration grids exist.
+1. Promote the background target-priority weights from synthetic fixture constants into a versioned config file.
+2. Add an explicit opt-in passive runner that appends ledger entries without using network access by default.
+3. Define a durable benchmark run-result append workflow for future synthetic calibration grids.
 
 ---
 

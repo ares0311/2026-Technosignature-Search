@@ -12,6 +12,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TextIO
 
+from techno_search.background_search import (
+    background_search_ledger_summary,
+    target_priority_summary,
+)
 from techno_search.benchmark_metadata import (
     benchmark_metadata_summary,
     benchmark_run_result_summary,
@@ -55,6 +59,8 @@ from techno_search.validation_datasets import (
 )
 
 SCHEMA_FILENAMES = {
+    "background_search_ledger": "background_search_ledger.schema.json",
+    "background_targets": "background_targets.schema.json",
     "batch_manifest": "batch_manifest.schema.json",
     "benchmark_metadata": "benchmark_metadata.schema.json",
     "benchmark_run_results": "benchmark_run_results.schema.json",
@@ -223,6 +229,28 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(
             json.dumps(
                 benchmark_run_result_summary(args.results_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "target-priority-summary":
+        print(
+            json.dumps(
+                target_priority_summary(args.target_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "background-ledger-summary":
+        print(
+            json.dumps(
+                background_search_ledger_summary(args.ledger_path),
                 indent=2,
                 sort_keys=True,
             ),
@@ -526,6 +554,10 @@ def validate_all() -> dict[str, object]:
     benchmark_runs = benchmark_run_result_summary()
     benchmark_run_count = benchmark_runs["run_count"]
     benchmark_run_worker_limit = benchmark_runs["max_worker_count"]
+    target_priorities = target_priority_summary()
+    target_count = target_priorities["target_count"]
+    background_ledger = background_search_ledger_summary()
+    background_ledger_entry_count = background_ledger["entry_count"]
 
     ok = (
         all(result["ok"] for result in candidate_results.values())
@@ -572,6 +604,10 @@ def validate_all() -> dict[str, object]:
         and benchmark_run_count >= 3
         and isinstance(benchmark_run_worker_limit, int)
         and benchmark_run_worker_limit <= 12
+        and isinstance(target_count, int)
+        and target_count >= 3
+        and isinstance(background_ledger_entry_count, int)
+        and background_ledger_entry_count >= 3
     )
     return {
         "ok": ok,
@@ -595,6 +631,8 @@ def validate_all() -> dict[str, object]:
         "validation_promotion_summary": validation_promotions,
         "benchmark_metadata_summary": benchmark_metadata,
         "benchmark_run_summary": benchmark_runs,
+        "target_priority_summary": target_priorities,
+        "background_ledger_summary": background_ledger,
     }
 
 
@@ -621,6 +659,8 @@ def validation_summary() -> dict[str, object]:
     validation_promotions = validation["validation_promotion_summary"]
     benchmark_metadata = validation["benchmark_metadata_summary"]
     benchmark_runs = validation["benchmark_run_summary"]
+    target_priorities = validation["target_priority_summary"]
+    background_ledger = validation["background_ledger_summary"]
     return {
         "ok": validation["ok"],
         "generated_at_utc": datetime.now(UTC).isoformat(),
@@ -738,6 +778,18 @@ def validation_summary() -> dict[str, object]:
         else 0,
         "benchmark_run_max_worker_count": benchmark_runs["max_worker_count"]
         if isinstance(benchmark_runs, dict)
+        else 0,
+        "target_priority_count": target_priorities["target_count"]
+        if isinstance(target_priorities, dict)
+        else 0,
+        "selected_background_target_id": target_priorities["selected_target_id"]
+        if isinstance(target_priorities, dict)
+        else None,
+        "background_ledger_entry_count": background_ledger["entry_count"]
+        if isinstance(background_ledger, dict)
+        else 0,
+        "background_ledger_candidate_count": background_ledger["candidate_count"]
+        if isinstance(background_ledger, dict)
         else 0,
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
@@ -1037,6 +1089,24 @@ def _build_parser() -> argparse.ArgumentParser:
         "--results-path",
         type=Path,
         help="Optional benchmark run-result JSON path.",
+    )
+    target_priority_parser = subparsers.add_parser(
+        "target-priority-summary",
+        help="Summarize background target-priority fixture coverage.",
+    )
+    target_priority_parser.add_argument(
+        "--target-path",
+        type=Path,
+        help="Optional background target-priority JSON path.",
+    )
+    background_ledger_parser = subparsers.add_parser(
+        "background-ledger-summary",
+        help="Summarize passive/background search ledger fixture coverage.",
+    )
+    background_ledger_parser.add_argument(
+        "--ledger-path",
+        type=Path,
+        help="Optional background search ledger JSON path.",
     )
     subparsers.add_parser(
         "validate-all",

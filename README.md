@@ -392,6 +392,185 @@ Run local validation summaries:
 
 ---
 
+## 🧭 Using and Recalibrating the Model
+
+This section is for a non-specialist operator who wants to run the current scorer, understand what the output means, and eventually recalibrate it as better validation data becomes available.
+
+### What the Model Does Today
+
+The current v0 model is an interpretable scoring engine. It does not learn from the internet, does not observe the sky by itself, and does not claim discoveries. It reads a normalized candidate JSON packet, scores competing hypotheses, and writes a conservative review packet.
+
+```text
+Candidate JSON
+  → feature validation
+  → posterior-style hypothesis scores
+  → false-positive probability
+  → pathway recommendation
+  → Markdown / JSON review packet
+```
+
+For a layperson, the most important fields are:
+
+| Output Field | Plain-English Meaning | How to Use It |
+|--------------|-----------------------|---------------|
+| `false_positive_probability` | How strongly the current evidence points away from candidate interest | High values usually mean do not follow up |
+| `signal_reality_confidence` | Whether the signal/anomaly appears real independent of interpretation | Low values mean the data itself is weak |
+| `followup_value` | Whether more review or observation could be useful | High values identify worthwhile review targets |
+| `review_readiness` | Whether the packet has enough context for another person to inspect | Low values mean provenance, metadata, or diagnostics are missing |
+| `recommended_pathway` | Conservative routing decision | Use this as a triage label, not a claim |
+
+### Current Operator Workflow
+
+```text
+1. Choose or create a candidate JSON file.
+2. Run `techno-search score`.
+3. Read the Markdown packet.
+4. Inspect positive evidence, negative evidence, and blocking issues.
+5. Use the recommended pathway to decide whether to ignore, review, or preserve the result.
+```
+
+Example:
+
+```bash
+.venv/bin/techno-search score \
+  examples/candidates/radio_clean_candidate.json \
+  --output-dir examples/reports \
+  --prefix example-radio-clean
+```
+
+To ask the current background-search scaffold which target should be searched next, run:
+
+```bash
+.venv/bin/techno-search target-priority-summary
+```
+
+This command ranks the committed synthetic target list and returns a selected `target_id`. The selected target is a scheduling recommendation only. It is not evidence of a technosignature and it is not a discovery claim.
+
+To inspect what the passive/background system has already searched, run:
+
+```bash
+.venv/bin/techno-search background-ledger-summary
+```
+
+The ledger summary reports searched targets, candidate counts, blocking issues, conservative pathway labels, and run IDs. Negative searches must still be logged because they are part of the reproducibility record.
+
+### Recalibration Workflow
+
+Recalibration means adjusting scoring assumptions after comparing model outputs against known synthetic injections, known contaminants, curated false-positive examples, or human-reviewed labels. It should not be done by hand-tuning one interesting candidate.
+
+```text
+Calibration fixtures
+  → score candidates
+  → compare expected vs. observed pathways
+  → review reliability / precision / recall summaries
+  → update versioned config or weights
+  → rerun regression tests
+  → document the change
+```
+
+Recalibration should preserve these rules:
+
+| Rule | Reason |
+|------|--------|
+| Use validation sets, not single anecdotes | Prevents chasing noise |
+| Keep synthetic and non-synthetic calibration separate | Avoids overstating real-world performance |
+| Version every config change | Keeps scores reproducible |
+| Rerun score-regression snapshots | Exposes unintended score drift |
+| Preserve false-positive fixtures | Ensures obvious contaminants still reject conservatively |
+| Document thresholds and rationale | Makes scientific choices auditable |
+
+Recommended recalibration checks:
+
+```bash
+.venv/bin/techno-search calibration-summary
+.venv/bin/techno-search calibration-track-summary
+.venv/bin/techno-search false-positive-summary
+.venv/bin/techno-search reliability-summary
+.venv/bin/techno-search precision-recall-summary
+.venv/bin/techno-search score-regression-summary
+.venv/bin/techno-search validate-all
+```
+
+### Target Selection and Background Search Roadmap
+
+The current v0 background-search system is a fixture-backed scaffold. It can rank possible targets, expose the selected highest-priority target, and summarize a passive search ledger. It does not yet run unattended network searches, does not observe the sky by itself, and does not silently promote candidates. A future autonomous runner should be implemented only behind explicit opt-in controls, local logs, cache provenance, and conservative reporting.
+
+```text
+Target list or provider query
+  → target feature summary
+  → priority score
+  → queued search job
+  → candidate extraction
+  → candidate scoring
+  → search log entry
+  → review packet if warranted
+```
+
+Target prioritization should be based on an auditable objective function:
+
+$$
+T =
+\alpha S_{\mathrm{followup}}
++ \beta S_{\mathrm{novelty}}
++ \gamma S_{\mathrm{data\ quality}}
++ \delta S_{\mathrm{observability}}
+- \lambda P(\mathrm{false\ positive})
+$$
+
+where \(T\) is a target-priority score, not evidence of a technosignature. The weights \(\alpha, \beta, \gamma, \delta,\lambda\) must be versioned in config and calibrated against validation datasets.
+
+Current v0 target-priority fixture fields:
+
+| Field | Plain-English Meaning |
+|-------|-----------------------|
+| `followup_value` | Whether another observation or human review would be useful |
+| `novelty_score` | Whether the target looks unusual relative to synthetic comparison examples |
+| `data_quality_score` | Whether the supporting metadata and observations are usable |
+| `observability_score` | Whether the target is practical to revisit or inspect |
+| `false_positive_probability` | How much the current evidence favors ordinary explanations |
+| `blocking_issue_count` | How many unresolved issues should penalize priority |
+
+The target selector deliberately subtracts false-positive probability and unresolved blocking issues. In other words, a target can look interesting and still lose priority if the ordinary explanations are too strong or if the packet is not review-ready.
+
+### Background Logging Requirements
+
+Any passive/background runner must maintain a search ledger:
+
+| Log Field | Purpose |
+|-----------|---------|
+| `run_id` | Stable identifier for the background run |
+| `target_id` | Source, coordinate, object name, or catalog identifier searched |
+| `track` | Radio, infrared, or anomaly |
+| `query_parameters` | Provider query, radius, filters, file path, or fixture ID |
+| `started_at_utc` / `completed_at_utc` | Runtime provenance |
+| `config_version` | Scoring and target-priority settings |
+| `code_commit` | Reproducibility anchor |
+| `cache_key` | Provider/cache provenance when applicable |
+| `candidate_count` | Number of candidates generated |
+| `recommended_pathways` | Conservative routing results |
+| `blocking_issues` | Missing metadata, failed providers, or invalid candidate packets |
+
+The background system should never silently discard searched targets. A scientifically useful negative result still needs a log entry.
+
+In v0, the committed ledger fixture is summarized by:
+
+```bash
+.venv/bin/techno-search background-ledger-summary
+```
+
+Before any future passive runner is treated as operational, it must:
+
+| Requirement | Guardrail |
+|-------------|-----------|
+| Use explicit opt-in execution | No surprise network or long-running searches |
+| Record every target searched | Negative results remain auditable |
+| Preserve provider/cache provenance | Queries can be reproduced or challenged |
+| Keep candidate scoring separate from target scheduling | A high target priority is not a candidate claim |
+| Surface blocking issues | Missing metadata must not disappear into a summary score |
+| Route outputs through review packets | Human review sees positive and negative evidence |
+
+---
+
 ## 🧪 Quality Control
 
 Minimum validation:

@@ -386,7 +386,38 @@ No live data required for v0.
 
 ---
 
-# 13. Future AI Research Direction
+# 13. Background Target Priority
+
+Passive/background searching needs a scheduling score that is intentionally separate from candidate-interest scoring. A target-priority score may decide what to inspect next, but it must not be interpreted as evidence for any candidate hypothesis.
+
+Current v0 target-priority form:
+
+```text
+T = alpha * followup_value
+  + beta * novelty_score
+  + gamma * data_quality_score
+  + delta * observability_score
+  - lambda * false_positive_probability
+  - blocking_issue_penalty
+```
+
+The default fixture weights are:
+
+```json
+{
+  "followup_value": 0.35,
+  "novelty_score": 0.25,
+  "data_quality_score": 0.20,
+  "observability_score": 0.10,
+  "false_positive_probability": -0.30
+}
+```
+
+This score is a scheduling aid only. It does not claim a confirmed technosignature, detection, external validation, or calibrated survey performance.
+
+---
+
+# 14. Future AI Research Direction
 
 After the v0 interpretable scoring model, reporting system, injection-recovery tests, and calibration datasets exist, the project should evaluate modern AI methods for candidate triage and feature extraction.
 
