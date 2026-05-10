@@ -44,6 +44,7 @@ Before release, verify:
 - user decision records do not imply submission approval unless explicitly recorded
 - top-level SQLite logs validate one-run/one-outcome invariants
 - generated `logs/*.sqlite3` databases are not committed
+- SQLite review-safe exports preserve blockers, negative evidence, provenance, and uncertainty notes
 
 Useful commands:
 
@@ -54,6 +55,8 @@ Useful commands:
 .venv/bin/techno-search score-regression-summary
 .venv/bin/techno-search catalog-cache-policy
 .venv/bin/techno-search catalog-cache-validate docs/CATALOG_CACHE_POLICY.md
+.venv/bin/techno-search sqlite-log-commit-guard
+.venv/bin/techno-search sqlite-log-integrity-summary --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search validate-sqlite-logs --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search validate-all
 ```

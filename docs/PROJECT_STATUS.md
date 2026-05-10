@@ -168,6 +168,8 @@ The project will support three tracks from day one:
 - [x] Scheduler dry-run command added for temporary artifact directories
 - [x] Top-level `logs/` policy added for local SQLite operational logs
 - [x] SQLite log initialization, background-run mirroring, summary, and validation commands added
+- [x] SQLite integrity, migration, recent-run, needs-follow-up, and review-safe export commands added
+- [x] Generated top-level SQLite log commit guard added
 
 ---
 
@@ -192,9 +194,9 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Add operator guidance for rotating or archiving local `logs/*.sqlite3` databases.
-2. Add persisted Markdown report examples to release documentation once the operator chooses a stable artifact location.
-3. Add optional cleanup guidance for local background `artifacts/` directories.
+1. Add persisted Markdown report examples to release documentation once the operator chooses a stable artifact location.
+2. Add optional cleanup guidance for local background `artifacts/` directories.
+3. Add future SQLite migration implementation when the schema needs to change.
 
 ---
 

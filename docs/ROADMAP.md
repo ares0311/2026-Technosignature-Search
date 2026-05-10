@@ -245,6 +245,7 @@ Add real data ingestion behind tested abstractions.
 - [x] Scheduler dry-run smoke path for temporary artifact directories
 - [x] Top-level SQLite operational logs for bounded background runs
 - [x] SQLite log initialization, summary, validation, and CLI wiring
+- [x] SQLite integrity, migration, recent-run, needs-follow-up, export, and commit-guard commands
 
 ---
 

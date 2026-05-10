@@ -17,6 +17,15 @@ TOP_LEVEL_SQLITE_LOG_DISCLAIMER = (
     "submission approval."
 )
 DEFAULT_SQLITE_LOG_PATH = Path("logs/techno_search.sqlite3")
+REQUIRED_SQLITE_METADATA_KEYS = (
+    "schema_version",
+    "disclaimer",
+    "created_at_utc",
+    "code_commit",
+    "config_version",
+)
+FORBIDDEN_SQLITE_LOG_SUFFIXES = (".sqlite", ".sqlite3", ".db")
+FORBIDDEN_SQLITE_LOG_FILENAMES = ("-wal", "-shm")
 
 
 def default_sqlite_log_path(project_root: Path | None = None) -> Path:
@@ -136,29 +145,53 @@ def sqlite_log_summary(db_path: Path) -> dict[str, object]:
             "outcome_count": 0,
         }
 
-    with closing(sqlite3.connect(resolved)) as connection:
-        connection.row_factory = sqlite3.Row
-        metadata = _metadata(connection)
-        run_rows = connection.execute("SELECT * FROM background_runs").fetchall()
-        reviewed_rows = connection.execute("SELECT * FROM reviewed_outcomes").fetchall()
-        follow_up_rows = connection.execute(
-            "SELECT * FROM needs_follow_up_outcomes"
-        ).fetchall()
+    try:
+        with closing(sqlite3.connect(resolved)) as connection:
+            connection.row_factory = sqlite3.Row
+            metadata = _metadata(connection)
+            run_rows = connection.execute("SELECT * FROM background_runs").fetchall()
+            reviewed_rows = connection.execute(
+                "SELECT * FROM reviewed_outcomes"
+            ).fetchall()
+            follow_up_rows = connection.execute(
+                "SELECT * FROM needs_follow_up_outcomes"
+            ).fetchall()
+    except sqlite3.DatabaseError as exc:
+        return {
+            "ok": False,
+            "db_path": str(resolved),
+            "schema_version": None,
+            "disclaimer": TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
+            "database_exists": True,
+            "database_readable": False,
+            "database_error": str(exc),
+            "run_count": 0,
+            "outcome_count": 0,
+        }
 
     run_ids = {str(row["run_id"]) for row in run_rows}
     reviewed_run_ids = {str(row["run_id"]) for row in reviewed_rows}
     follow_up_run_ids = {str(row["run_id"]) for row in follow_up_rows}
     outcome_run_ids = reviewed_run_ids | follow_up_run_ids
     multiple_outcome_run_ids = reviewed_run_ids & follow_up_run_ids
+    missing_metadata_keys = sorted(set(REQUIRED_SQLITE_METADATA_KEYS) - set(metadata))
+    schema_version = metadata.get("schema_version")
 
     return {
-        "ok": not multiple_outcome_run_ids and run_ids <= outcome_run_ids,
-        "db_path": str(resolved),
-        "schema_version": metadata.get(
-            "schema_version", TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION
+        "ok": (
+            not missing_metadata_keys
+            and schema_version == TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION
+            and not multiple_outcome_run_ids
+            and run_ids <= outcome_run_ids
         ),
+        "db_path": str(resolved),
+        "schema_version": schema_version,
         "disclaimer": metadata.get("disclaimer", TOP_LEVEL_SQLITE_LOG_DISCLAIMER),
         "database_exists": True,
+        "database_readable": True,
+        "metadata_ok": not missing_metadata_keys,
+        "metadata_missing_keys": missing_metadata_keys,
+        "migration_required": schema_version != TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
         "run_count": len(run_rows),
         "outcome_count": len(reviewed_rows) + len(follow_up_rows),
         "reviewed_outcome_count": len(reviewed_rows),
@@ -184,6 +217,14 @@ def sqlite_log_validation_errors(db_path: Path) -> tuple[str, ...]:
     if not summary.get("database_exists", False):
         errors.append(f"SQLite log database does not exist: {db_path}")
         return tuple(errors)
+    if not summary.get("database_readable", True):
+        errors.append(f"SQLite log database cannot be read: {summary.get('database_error')}")
+        return tuple(errors)
+    if summary.get("metadata_missing_keys"):
+        errors.append(
+            "SQLite log metadata is missing required keys: "
+            f"{summary['metadata_missing_keys']}"
+        )
     if summary.get("schema_version") != TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION:
         errors.append("SQLite log schema version is unsupported")
     if summary.get("missing_outcome_run_ids"):
@@ -201,6 +242,150 @@ def sqlite_log_validation_errors(db_path: Path) -> tuple[str, ...]:
     if int(str(summary.get("external_submission_approved_count", 0))) != 0:
         errors.append("SQLite log contains external submission approvals")
     return tuple(errors)
+
+
+def sqlite_log_integrity_summary(db_path: Path) -> dict[str, object]:
+    """Return scheduler-friendly SQLite log health checks."""
+
+    summary = sqlite_log_summary(db_path)
+    errors = sqlite_log_validation_errors(db_path)
+    return {
+        "ok": not errors,
+        "db_path": str(db_path),
+        "schema_version": summary.get("schema_version"),
+        "expected_schema_version": TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
+        "migration_required": bool(summary.get("migration_required", False)),
+        "metadata_ok": bool(summary.get("metadata_ok", False)),
+        "database_readable": bool(summary.get("database_readable", False)),
+        "run_count": int(str(summary.get("run_count", 0))),
+        "outcome_count": int(str(summary.get("outcome_count", 0))),
+        "missing_outcome_run_ids": _object_string_list(
+            summary.get("missing_outcome_run_ids", [])
+        ),
+        "multiple_outcome_run_ids": _object_string_list(
+            summary.get("multiple_outcome_run_ids", [])
+        ),
+        "network_access_allowed_count": int(
+            str(summary.get("network_access_allowed_count", 0))
+        ),
+        "external_submission_approved_count": int(
+            str(summary.get("external_submission_approved_count", 0))
+        ),
+        "errors": list(errors),
+        "disclaimer": TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
+    }
+
+
+def sqlite_log_migration_summary(db_path: Path) -> dict[str, object]:
+    """Return current SQLite schema-version compatibility status."""
+
+    summary = sqlite_log_summary(db_path)
+    return {
+        "db_path": str(db_path),
+        "current_schema_version": summary.get("schema_version"),
+        "expected_schema_version": TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
+        "migration_required": summary.get("schema_version")
+        != TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
+        "supported_migrations": [],
+        "disclaimer": TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
+    }
+
+
+def sqlite_recent_runs(db_path: Path, *, limit: int = 10) -> dict[str, object]:
+    """Return recent background runs from the SQLite operational log."""
+
+    rows = _fetch_rows(
+        db_path,
+        """
+        SELECT *
+        FROM background_runs
+        ORDER BY completed_at_utc DESC, run_id DESC
+        LIMIT ?
+        """,
+        (max(1, limit),),
+    )
+    return {
+        "db_path": str(db_path),
+        "schema_version": TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
+        "disclaimer": TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
+        "run_count": len(rows),
+        "runs": [_run_row_to_mapping(row) for row in rows],
+    }
+
+
+def sqlite_needs_follow_up(db_path: Path, *, limit: int = 10) -> dict[str, object]:
+    """Return recent needs-follow-up outcomes from SQLite."""
+
+    rows = _fetch_rows(
+        db_path,
+        """
+        SELECT *
+        FROM needs_follow_up_outcomes
+        ORDER BY created_at_utc DESC, follow_up_id DESC
+        LIMIT ?
+        """,
+        (max(1, limit),),
+    )
+    return {
+        "db_path": str(db_path),
+        "schema_version": TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
+        "disclaimer": TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
+        "needs_follow_up_count": len(rows),
+        "needs_follow_up": [_needs_follow_up_row_to_mapping(row) for row in rows],
+    }
+
+
+def sqlite_log_export(db_path: Path, *, limit: int = 10) -> dict[str, object]:
+    """Export a small review-safe JSON summary from SQLite logs."""
+
+    return {
+        "db_path": str(db_path),
+        "schema_version": TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
+        "disclaimer": TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
+        "export_scope": "review_safe_summary",
+        "summary": sqlite_log_summary(db_path),
+        "integrity": sqlite_log_integrity_summary(db_path),
+        "migration": sqlite_log_migration_summary(db_path),
+        "recent_runs": sqlite_recent_runs(db_path, limit=limit)["runs"],
+        "needs_follow_up": sqlite_needs_follow_up(db_path, limit=limit)[
+            "needs_follow_up"
+        ],
+        "uncertainty_and_limitations": [
+            "SQLite exports are local workflow summaries only.",
+            "A logged run is not a detection, discovery, or external validation.",
+            "Needs-follow-up outcomes require human review and mandatory local tests.",
+        ],
+    }
+
+
+def validate_sqlite_log_commit_paths(
+    paths: list[Path] | tuple[Path, ...],
+    *,
+    project_root: Path | None = None,
+) -> dict[str, object]:
+    """Reject generated top-level SQLite log databases in tracked/staged paths."""
+
+    root = project_root or Path.cwd()
+    forbidden: list[str] = []
+    for path in paths:
+        resolved = Path(path)
+        rel = _relative_path(resolved, root)
+        if _is_forbidden_top_level_sqlite_log(rel):
+            forbidden.append(rel.as_posix())
+    return {
+        "ok": not forbidden,
+        "project_root": str(root),
+        "forbidden_path_count": len(forbidden),
+        "forbidden_paths": sorted(forbidden),
+        "forbidden_patterns": [
+            "logs/*.sqlite",
+            "logs/*.sqlite3",
+            "logs/*.db",
+            "logs/*-wal",
+            "logs/*-shm",
+        ],
+        "disclaimer": TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
+    }
 
 
 def _create_schema(connection: sqlite3.Connection) -> None:
@@ -406,6 +591,112 @@ def _count_external_approvals(db_path: Path) -> int:
         except sqlite3.OperationalError:
             return 0
     return int(row[0]) if row is not None else 0
+
+
+def _fetch_rows(
+    db_path: Path,
+    query: str,
+    parameters: tuple[object, ...] = (),
+) -> list[sqlite3.Row]:
+    if not Path(db_path).exists():
+        return []
+    with closing(sqlite3.connect(db_path)) as connection:
+        connection.row_factory = sqlite3.Row
+        try:
+            return list(connection.execute(query, parameters).fetchall())
+        except sqlite3.DatabaseError:
+            return []
+
+
+def _run_row_to_mapping(row: sqlite3.Row) -> dict[str, object]:
+    return {
+        "run_id": str(row["run_id"]),
+        "target_id": str(row["target_id"]),
+        "track": str(row["track"]),
+        "status": str(row["status"]),
+        "started_at_utc": str(row["started_at_utc"]),
+        "completed_at_utc": str(row["completed_at_utc"]),
+        "config_version": str(row["config_version"]),
+        "code_commit": str(row["code_commit"]),
+        "candidate_count": int(row["candidate_count"]),
+        "execution_mode": str(row["execution_mode"]),
+        "selected_priority_score": row["selected_priority_score"],
+        "recommended_pathways": _json_list(row["recommended_pathways_json"]),
+        "blocking_issues": _json_list(row["blocking_issues_json"]),
+        "target_selection_rationale": _json_list(
+            row["target_selection_rationale_json"]
+        ),
+        "negative_result_logged": bool(row["negative_result_logged"]),
+        "requires_human_review": bool(row["requires_human_review"]),
+        "reviewed_workflow_status": str(row["reviewed_workflow_status"]),
+        "network_access_allowed": bool(row["network_access_allowed"]),
+        "uncertainty_notes": [
+            "Run records describe local workflow state only.",
+            "Target-priority and scheduler scores are not candidate evidence.",
+        ],
+    }
+
+
+def _needs_follow_up_row_to_mapping(row: sqlite3.Row) -> dict[str, object]:
+    return {
+        "follow_up_id": str(row["follow_up_id"]),
+        "run_id": str(row["run_id"]),
+        "target_id": str(row["target_id"]),
+        "track": str(row["track"]),
+        "follow_up_status": str(row["follow_up_status"]),
+        "created_at_utc": str(row["created_at_utc"]),
+        "trigger_types": _json_list(row["trigger_types_json"]),
+        "reason_codes": _json_list(row["reason_codes_json"]),
+        "required_tests": _json_list(row["required_tests_json"]),
+        "blocking_issues": _json_list(row["blocking_issues_json"]),
+        "report_required": bool(row["report_required"]),
+        "human_review_required": bool(row["human_review_required"]),
+        "submission_requires_user_approval": bool(
+            row["submission_requires_user_approval"]
+        ),
+        "network_access_allowed": bool(row["network_access_allowed"]),
+        "negative_evidence": [
+            "Needs-follow-up is not a detection or external validation.",
+            "False-positive explanations remain the default hypothesis.",
+        ],
+        "uncertainty_notes": [
+            "Mandatory local tests and human review are still required.",
+            "External submission remains blocked unless directly approved by the user.",
+        ],
+    }
+
+
+def _json_list(value: object) -> list[str]:
+    data = json.loads(str(value))
+    if not isinstance(data, list):
+        return []
+    return [str(item) for item in data]
+
+
+def _object_string_list(value: object) -> list[str]:
+    if not isinstance(value, list | tuple):
+        return []
+    return [str(item) for item in value]
+
+
+def _relative_path(path: Path, root: Path) -> Path:
+    try:
+        return path.resolve().relative_to(root.resolve())
+    except ValueError:
+        return path
+
+
+def _is_forbidden_top_level_sqlite_log(path: Path) -> bool:
+    parts = path.parts
+    if len(parts) < 2 or parts[0] != "logs":
+        return False
+    if len(parts) != 2:
+        return False
+    name = parts[-1]
+    return (
+        path.suffix in FORBIDDEN_SQLITE_LOG_SUFFIXES
+        or name.endswith(FORBIDDEN_SQLITE_LOG_FILENAMES)
+    )
 
 
 def _json_text(value: object) -> str:

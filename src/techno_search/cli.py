@@ -59,7 +59,13 @@ from techno_search.live_data import (
 from techno_search.log_store import (
     default_sqlite_log_path,
     init_sqlite_log_db,
+    sqlite_log_export,
+    sqlite_log_integrity_summary,
+    sqlite_log_migration_summary,
     sqlite_log_summary,
+    sqlite_needs_follow_up,
+    sqlite_recent_runs,
+    validate_sqlite_log_commit_paths,
 )
 from techno_search.plotting import plot_artifact_summary
 from techno_search.reporting import (
@@ -568,6 +574,70 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "sqlite-log-integrity-summary":
+        print(
+            json.dumps(
+                sqlite_log_integrity_summary(args.db_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "sqlite-log-export":
+        print(
+            json.dumps(
+                sqlite_log_export(args.db_path, limit=args.limit),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "sqlite-recent-runs":
+        print(
+            json.dumps(
+                sqlite_recent_runs(args.db_path, limit=args.limit),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "sqlite-needs-follow-up":
+        print(
+            json.dumps(
+                sqlite_needs_follow_up(args.db_path, limit=args.limit),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "sqlite-migration-summary":
+        print(
+            json.dumps(
+                sqlite_log_migration_summary(args.db_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "sqlite-log-commit-guard":
+        commit_guard_paths = args.paths or git_tracked_paths(default_project_root())
+        commit_guard_result = validate_sqlite_log_commit_paths(
+            [Path(path) for path in commit_guard_paths],
+            project_root=default_project_root(),
+        )
+        print(json.dumps(commit_guard_result, indent=2, sort_keys=True), file=out)
+        return 0 if commit_guard_result["ok"] else 1
+
     if args.command == "validate-sqlite-logs":
         result = validate_sqlite_log_database(args.db_path)
         print(json.dumps(result.as_dict(), indent=2, sort_keys=True), file=out)
@@ -857,7 +927,12 @@ def validate_all() -> dict[str, object]:
     false_positive_case_count = false_positive_analysis["case_count"]
     false_positive_class_count = false_positive_analysis["class_count"]
     regression = score_regression_summary()
-    catalog_cache = catalog_cache_validation_summary(git_tracked_paths(root), project_root=root)
+    tracked_paths = git_tracked_paths(root)
+    catalog_cache = catalog_cache_validation_summary(tracked_paths, project_root=root)
+    sqlite_commit_guard = validate_sqlite_log_commit_paths(
+        tracked_paths,
+        project_root=root,
+    )
     provider_normalization = provider_normalization_regression_summary()
     provider_normalization_case_count = provider_normalization["case_count"]
     injection_recovery = injection_recovery_summary()
@@ -957,6 +1032,15 @@ def validate_all() -> dict[str, object]:
         opt_in=True,
     )
     sqlite_logs = sqlite_log_summary(sqlite_validation_db)
+    sqlite_integrity = sqlite_log_integrity_summary(sqlite_validation_db)
+    sqlite_migration = sqlite_log_migration_summary(sqlite_validation_db)
+    sqlite_export = sqlite_log_export(sqlite_validation_db, limit=3)
+    sqlite_export_summary = sqlite_export.get("summary", {})
+    sqlite_export_ok = (
+        bool(sqlite_export_summary.get("ok"))
+        if isinstance(sqlite_export_summary, dict)
+        else False
+    )
     sqlite_log_validation = validate_sqlite_log_database(sqlite_validation_db).as_dict()
     sqlite_run_count = sqlite_logs["run_count"]
     sqlite_outcome_count = sqlite_logs["outcome_count"]
@@ -968,6 +1052,7 @@ def validate_all() -> dict[str, object]:
         and bool(report_result["ok"])
         and all(schema_results.values())
         and bool(catalog_cache["ok"])
+        and bool(sqlite_commit_guard["ok"])
         and isinstance(calibration_track_count, int)
         and calibration_track_count >= 3
         and isinstance(calibration_minimum_track_case_count, int)
@@ -1064,6 +1149,9 @@ def validate_all() -> dict[str, object]:
         and isinstance(candidate_handoff_network_count, int)
         and candidate_handoff_network_count == 0
         and bool(sqlite_log_validation["ok"])
+        and bool(sqlite_integrity["ok"])
+        and not bool(sqlite_migration["migration_required"])
+        and sqlite_export_ok
         and isinstance(sqlite_run_count, int)
         and sqlite_run_count >= 1
         and sqlite_outcome_count == sqlite_run_count
@@ -1107,7 +1195,11 @@ def validate_all() -> dict[str, object]:
         "background_user_decision_summary": user_decisions,
         "candidate_extraction_handoff_summary": candidate_handoffs,
         "top_level_sqlite_log_summary": sqlite_logs,
+        "top_level_sqlite_log_integrity_summary": sqlite_integrity,
+        "top_level_sqlite_log_migration_summary": sqlite_migration,
+        "top_level_sqlite_log_export": sqlite_export,
         "top_level_sqlite_log_validation": sqlite_log_validation,
+        "top_level_sqlite_log_commit_guard": sqlite_commit_guard,
     }
 
 
@@ -1147,6 +1239,9 @@ def validation_summary() -> dict[str, object]:
     user_decisions = validation["background_user_decision_summary"]
     candidate_handoffs = validation["candidate_extraction_handoff_summary"]
     sqlite_logs = validation["top_level_sqlite_log_summary"]
+    sqlite_integrity = validation["top_level_sqlite_log_integrity_summary"]
+    sqlite_migration = validation["top_level_sqlite_log_migration_summary"]
+    sqlite_commit_guard = validation["top_level_sqlite_log_commit_guard"]
     sqlite_log_validation = validation["top_level_sqlite_log_validation"]
     return {
         "ok": validation["ok"],
@@ -1426,6 +1521,17 @@ def validation_summary() -> dict[str, object]:
         else 0,
         "top_level_sqlite_log_validation_ok": bool(sqlite_log_validation["ok"])
         if isinstance(sqlite_log_validation, dict)
+        else False,
+        "top_level_sqlite_log_integrity_ok": bool(sqlite_integrity["ok"])
+        if isinstance(sqlite_integrity, dict)
+        else False,
+        "top_level_sqlite_log_migration_required": bool(
+            sqlite_migration["migration_required"]
+        )
+        if isinstance(sqlite_migration, dict)
+        else False,
+        "top_level_sqlite_log_commit_guard_ok": bool(sqlite_commit_guard["ok"])
+        if isinstance(sqlite_commit_guard, dict)
         else False,
         "top_level_sqlite_log_run_count": sqlite_logs["run_count"]
         if isinstance(sqlite_logs, dict)
@@ -2054,6 +2160,86 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=default_sqlite_log_path(default_project_root()),
         help="SQLite log database path. Defaults to logs/techno_search.sqlite3.",
+    )
+    sqlite_integrity_parser = subparsers.add_parser(
+        "sqlite-log-integrity-summary",
+        help="Summarize scheduler-facing SQLite log integrity checks.",
+    )
+    sqlite_integrity_parser.add_argument(
+        "--db-path",
+        type=Path,
+        default=default_sqlite_log_path(default_project_root()),
+        help="SQLite log database path. Defaults to logs/techno_search.sqlite3.",
+    )
+    sqlite_export_parser = subparsers.add_parser(
+        "sqlite-log-export",
+        help="Export a small review-safe JSON summary from SQLite logs.",
+    )
+    sqlite_export_parser.add_argument(
+        "--db-path",
+        type=Path,
+        default=default_sqlite_log_path(default_project_root()),
+        help="SQLite log database path. Defaults to logs/techno_search.sqlite3.",
+    )
+    sqlite_export_parser.add_argument(
+        "--limit",
+        type=int,
+        default=10,
+        help="Maximum recent runs and follow-up outcomes to include.",
+    )
+    sqlite_recent_runs_parser = subparsers.add_parser(
+        "sqlite-recent-runs",
+        help="List recent background runs from SQLite logs.",
+    )
+    sqlite_recent_runs_parser.add_argument(
+        "--db-path",
+        type=Path,
+        default=default_sqlite_log_path(default_project_root()),
+        help="SQLite log database path. Defaults to logs/techno_search.sqlite3.",
+    )
+    sqlite_recent_runs_parser.add_argument(
+        "--limit",
+        type=int,
+        default=10,
+        help="Maximum recent runs to include.",
+    )
+    sqlite_follow_up_parser = subparsers.add_parser(
+        "sqlite-needs-follow-up",
+        help="List recent needs-follow-up outcomes from SQLite logs.",
+    )
+    sqlite_follow_up_parser.add_argument(
+        "--db-path",
+        type=Path,
+        default=default_sqlite_log_path(default_project_root()),
+        help="SQLite log database path. Defaults to logs/techno_search.sqlite3.",
+    )
+    sqlite_follow_up_parser.add_argument(
+        "--limit",
+        type=int,
+        default=10,
+        help="Maximum needs-follow-up outcomes to include.",
+    )
+    sqlite_migration_parser = subparsers.add_parser(
+        "sqlite-migration-summary",
+        help="Report SQLite log schema migration status.",
+    )
+    sqlite_migration_parser.add_argument(
+        "--db-path",
+        type=Path,
+        default=default_sqlite_log_path(default_project_root()),
+        help="SQLite log database path. Defaults to logs/techno_search.sqlite3.",
+    )
+    sqlite_commit_guard_parser = subparsers.add_parser(
+        "sqlite-log-commit-guard",
+        help="Reject generated top-level SQLite log databases in commit paths.",
+    )
+    sqlite_commit_guard_parser.add_argument(
+        "paths",
+        nargs="*",
+        type=Path,
+        help=(
+            "Optional paths to validate. Defaults to Git-tracked paths when omitted."
+        ),
     )
     validate_sqlite_parser = subparsers.add_parser(
         "validate-sqlite-logs",

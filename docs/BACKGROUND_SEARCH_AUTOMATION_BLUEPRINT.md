@@ -227,6 +227,12 @@ project-search submission-recommendation-summary
 project-search user-decision-summary
 project-search init-logs
 project-search sqlite-log-summary
+project-search sqlite-log-integrity-summary
+project-search sqlite-recent-runs
+project-search sqlite-needs-follow-up
+project-search sqlite-log-export
+project-search sqlite-migration-summary
+project-search sqlite-log-commit-guard
 project-search validate-sqlite-logs
 project-search scheduler-dry-run
 project-search validation-summary
@@ -252,6 +258,7 @@ The CLI should produce structured JSON by default or offer a JSON mode so that s
 14. Add validation-summary integration.
 15. Add tests for schemas, CLI outputs, log invariants, and guardrail language.
 16. Promote operational logs into a top-level SQLite database while preserving small JSON fixtures for regression tests.
+17. Add SQLite integrity summaries, migration checks, review-safe exports, and commit guards for generated databases.
 
 ## Definition of Done
 
@@ -260,6 +267,8 @@ A project has implemented this blueprint when:
 - every background run writes a durable ledger entry
 - every run writes exactly one outcome entry
 - operational runs are mirrored into top-level SQLite logs
+- generated SQLite databases are not committed
+- SQLite exports preserve blockers, negative evidence, provenance, and uncertainty notes
 - target selection exposes its composite factors
 - never-reviewed promising targets are prioritized
 - needs-follow-up records trigger mandatory tests

@@ -394,11 +394,22 @@ Initialize, summarize, and validate the top-level SQLite logs:
   --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-summary \
   --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search sqlite-log-integrity-summary \
+  --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search sqlite-recent-runs \
+  --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search sqlite-needs-follow-up \
+  --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search sqlite-log-export \
+  --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search sqlite-migration-summary \
+  --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search sqlite-log-commit-guard
 .venv/bin/techno-search validate-sqlite-logs \
   --db-path logs/techno_search.sqlite3
 ```
 
-The SQLite log records background runs, exactly one reviewed or needs-follow-up outcome per run, draft-report references, user-decision slots, and validation events. These are workflow/provenance records only; they are not detections, discoveries, external validation, or authorization to submit externally.
+The SQLite log records background runs, exactly one reviewed or needs-follow-up outcome per run, draft-report references, user-decision slots, and validation events. Integrity checks are intended for scheduler health monitoring. Recent-run and needs-follow-up views are small operator summaries. `sqlite-log-export` emits a review-safe JSON summary rather than the full database. `sqlite-log-commit-guard` rejects generated top-level databases such as `logs/*.sqlite3`, `logs/*.db`, `logs/*-wal`, and `logs/*-shm` from commit paths. These are workflow/provenance records only; they are not detections, discoveries, external validation, or authorization to submit externally.
 
 Smoke-test scheduler wiring against a temporary artifact directory:
 

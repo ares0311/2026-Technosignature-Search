@@ -117,6 +117,52 @@ Full validation still needed before committing or publishing this iteration.
 
 ---
 
+## SQLite Log Hardening And Review-Safe Exports
+
+User requested applying all system directives, completing the next fifteen
+steps, and keeping top-level SQLite logs.
+
+Status: implemented in this iteration.
+
+Added:
+
+- `techno-search sqlite-log-integrity-summary`
+- `techno-search sqlite-log-export`
+- `techno-search sqlite-recent-runs`
+- `techno-search sqlite-needs-follow-up`
+- `techno-search sqlite-migration-summary`
+- `techno-search sqlite-log-commit-guard`
+- metadata validation for missing or unsupported SQLite schema records
+- tests for missing outcomes, conflicting outcomes, missing metadata, migration checks, generated-log commit guards, and review-safe exports
+- validation-summary and validate-all coverage for SQLite integrity, migration, export, and generated database commit guardrails
+- rotation, retention, backup, and pruning guidance in `logs/README.md`
+- README, CLI usage, validation guide, roadmap, project status, release checklist, automation blueprint, and decisions updates
+
+Scientific guardrail:
+
+- SQLite recent-run and export views are review-safe summaries only
+- exports preserve blockers, negative evidence, provenance, and uncertainty notes
+- generated SQLite databases remain ignored and must not be committed
+- no SQLite command authorizes external submission or claims a detection
+
+Focused validation passed:
+
+```bash
+.venv/bin/python -m pytest tests/test_log_store.py tests/test_cli.py tests/test_docs.py
+.venv/bin/python -m ruff check src/techno_search/log_store.py src/techno_search/cli.py tests/test_log_store.py tests/test_cli.py tests/test_docs.py
+.venv/bin/python -m mypy src
+```
+
+Result:
+
+- 76 focused tests passed
+- focused Ruff passed
+- mypy passed
+
+Full validation still needed before committing or publishing this iteration.
+
+---
+
 ## Background Draft Reports, User Decisions, And Scheduler Templates
 
 User requested applying all system directives, completing the next fifteen

@@ -1053,6 +1053,72 @@ def test_cli_top_level_sqlite_log_commands_validate_background_run(
     assert validate_exit_code == 0
     assert validation["ok"] is True
 
+    stdout = StringIO()
+    integrity_exit_code = main(
+        ["sqlite-log-integrity-summary", "--db-path", str(db_path)],
+        stdout=stdout,
+    )
+    integrity = json.loads(stdout.getvalue())
+    assert integrity_exit_code == 0
+    assert integrity["ok"] is True
+
+    stdout = StringIO()
+    recent_exit_code = main(
+        ["sqlite-recent-runs", "--db-path", str(db_path), "--limit", "1"],
+        stdout=stdout,
+    )
+    recent = json.loads(stdout.getvalue())
+    assert recent_exit_code == 0
+    assert recent["run_count"] == 1
+    assert recent["runs"][0]["run_id"] == "cli-sqlite-run-001"
+
+    stdout = StringIO()
+    follow_up_exit_code = main(
+        ["sqlite-needs-follow-up", "--db-path", str(db_path), "--limit", "1"],
+        stdout=stdout,
+    )
+    follow_up = json.loads(stdout.getvalue())
+    assert follow_up_exit_code == 0
+    assert follow_up["needs_follow_up_count"] == 1
+    assert follow_up["needs_follow_up"][0]["negative_evidence"]
+
+    stdout = StringIO()
+    export_exit_code = main(
+        ["sqlite-log-export", "--db-path", str(db_path), "--limit", "1"],
+        stdout=stdout,
+    )
+    exported = json.loads(stdout.getvalue())
+    assert export_exit_code == 0
+    assert exported["summary"]["ok"] is True
+    assert exported["recent_runs"][0]["uncertainty_notes"]
+
+    stdout = StringIO()
+    migration_exit_code = main(
+        ["sqlite-migration-summary", "--db-path", str(db_path)],
+        stdout=stdout,
+    )
+    migration = json.loads(stdout.getvalue())
+    assert migration_exit_code == 0
+    assert migration["migration_required"] is False
+
+
+def test_cli_sqlite_log_commit_guard_rejects_generated_logs(tmp_path) -> None:
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "sqlite-log-commit-guard",
+            "logs/README.md",
+            "logs/techno_search.sqlite3",
+        ],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 1
+    assert result["ok"] is False
+    assert result["forbidden_paths"] == ["logs/techno_search.sqlite3"]
+
 
 def test_cli_scheduler_dry_run_writes_temporary_artifacts(tmp_path) -> None:
     stdout = StringIO()
@@ -1218,6 +1284,12 @@ def test_cli_validate_all_outputs_local_summary() -> None:
         "network_access_allowed_count"
     ] == 0
     assert result["top_level_sqlite_log_validation"]["ok"] is True
+    assert result["top_level_sqlite_log_integrity_summary"]["ok"] is True
+    assert result["top_level_sqlite_log_migration_summary"][
+        "migration_required"
+    ] is False
+    assert result["top_level_sqlite_log_commit_guard"]["ok"] is True
+    assert result["top_level_sqlite_log_export"]["summary"]["ok"] is True
     assert result["top_level_sqlite_log_summary"]["run_count"] >= 1
     assert result["top_level_sqlite_log_summary"]["outcome_count"] == (
         result["top_level_sqlite_log_summary"]["run_count"]
@@ -1322,6 +1394,9 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
         "candidate_extraction_handoff_negative_result_required_count"
     ] == 2
     assert result["top_level_sqlite_log_validation_ok"] is True
+    assert result["top_level_sqlite_log_integrity_ok"] is True
+    assert result["top_level_sqlite_log_migration_required"] is False
+    assert result["top_level_sqlite_log_commit_guard_ok"] is True
     assert result["top_level_sqlite_log_run_count"] >= 1
     assert result["top_level_sqlite_log_outcome_count"] == (
         result["top_level_sqlite_log_run_count"]

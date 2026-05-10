@@ -625,3 +625,4 @@ SQLite gives the project a durable, queryable, transactional log without adding 
 - Network access remains disabled by default in SQLite logs.
 - External submission approval must not appear unless directly recorded by the user.
 - SQLite rows are workflow and provenance records only; they are not detections, discoveries, external validation, or submission approval.
+- SQLite integrity summaries, migration checks, review-safe exports, and commit guards are part of the operational safety boundary.

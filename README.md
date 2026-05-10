@@ -538,12 +538,18 @@ To inspect what the passive/background system has already searched, run:
 .venv/bin/techno-search user-decision-summary
 .venv/bin/techno-search init-logs
 .venv/bin/techno-search sqlite-log-summary
+.venv/bin/techno-search sqlite-log-integrity-summary
+.venv/bin/techno-search sqlite-recent-runs
+.venv/bin/techno-search sqlite-needs-follow-up
+.venv/bin/techno-search sqlite-log-export
+.venv/bin/techno-search sqlite-migration-summary
+.venv/bin/techno-search sqlite-log-commit-guard
 .venv/bin/techno-search validate-sqlite-logs
 .venv/bin/techno-search scheduler-dry-run \
   --artifact-dir artifacts/background_scheduler_dry_run
 ```
 
-The ledger summary reports searched targets, candidate counts, blocking issues, conservative pathway labels, and run IDs. The reviewed-log summary captures targets that do not currently require follow-up. The needs-follow-up summary captures targets requiring mandatory local tests, human review, and possible report preparation. Follow-up test and report-readiness summaries then show whether mandatory local checks are complete, whether a conservative draft report is allowed, and which top-three review destinations are recommended. Draft follow-up report summaries preserve evidence, negative evidence, uncertainty, limitations, blockers, and next steps; the writer can persist Markdown plus a manifest under ignored `artifacts/` paths. User-decision summaries preserve explicit choices to request more tests or close as reviewed while keeping external submission disabled unless the user explicitly approves it. The top-level SQLite log commands initialize, summarize, and validate `logs/techno_search.sqlite3`. The scheduler dry-run writes temporary local artifacts without enabling live provider access. Negative searches must still be logged because they are part of the reproducibility record.
+The ledger summary reports searched targets, candidate counts, blocking issues, conservative pathway labels, and run IDs. The reviewed-log summary captures targets that do not currently require follow-up. The needs-follow-up summary captures targets requiring mandatory local tests, human review, and possible report preparation. Follow-up test and report-readiness summaries then show whether mandatory local checks are complete, whether a conservative draft report is allowed, and which top-three review destinations are recommended. Draft follow-up report summaries preserve evidence, negative evidence, uncertainty, limitations, blockers, and next steps; the writer can persist Markdown plus a manifest under ignored `artifacts/` paths. User-decision summaries preserve explicit choices to request more tests or close as reviewed while keeping external submission disabled unless the user explicitly approves it. The top-level SQLite log commands initialize, summarize, query, export, check migration status, and validate `logs/techno_search.sqlite3`. The scheduler dry-run writes temporary local artifacts without enabling live provider access. Negative searches must still be logged because they are part of the reproducibility record.
 
 To inspect whether logged background runs are ready for reviewed handoff, run:
 
@@ -737,6 +743,12 @@ In v0, the committed ledger fixture is summarized by:
 .venv/bin/techno-search candidate-extraction-handoff-summary
 .venv/bin/techno-search init-logs
 .venv/bin/techno-search sqlite-log-summary
+.venv/bin/techno-search sqlite-log-integrity-summary
+.venv/bin/techno-search sqlite-recent-runs
+.venv/bin/techno-search sqlite-needs-follow-up
+.venv/bin/techno-search sqlite-log-export
+.venv/bin/techno-search sqlite-migration-summary
+.venv/bin/techno-search sqlite-log-commit-guard
 .venv/bin/techno-search validate-sqlite-logs
 ```
 
