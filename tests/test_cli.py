@@ -947,6 +947,7 @@ def test_cli_candidate_extraction_handoff_summary_outputs_contract() -> None:
 
 def test_cli_background_run_once_appends_local_ledger_entry(tmp_path) -> None:
     ledger_path = tmp_path / "background_ledger.json"
+    sqlite_log_path = tmp_path / "logs" / "techno_search.sqlite3"
     stdout = StringIO()
 
     exit_code = main(
@@ -954,6 +955,8 @@ def test_cli_background_run_once_appends_local_ledger_entry(tmp_path) -> None:
             "background-run-once",
             "--ledger-path",
             str(ledger_path),
+            "--sqlite-log-path",
+            str(sqlite_log_path),
             "--run-id",
             "cli-local-run-001",
             "--code-commit",
@@ -982,6 +985,73 @@ def test_cli_background_run_once_appends_local_ledger_entry(tmp_path) -> None:
     assert result["outcome_log"]["outcome"] == "needs_follow_up"
     assert (tmp_path / "background_needs_follow_up_log.json").exists()
     assert ledger_path.exists()
+    assert sqlite_log_path.exists()
+    assert result["sqlite_log_path"] == str(sqlite_log_path)
+
+
+def test_cli_top_level_sqlite_log_commands_validate_background_run(
+    tmp_path,
+) -> None:
+    db_path = tmp_path / "logs" / "techno_search.sqlite3"
+    stdout = StringIO()
+
+    init_exit_code = main(
+        [
+            "init-logs",
+            "--db-path",
+            str(db_path),
+            "--code-commit",
+            "cli-test",
+            "--config-version",
+            "background_priority_v0",
+        ],
+        stdout=stdout,
+    )
+    init_result = json.loads(stdout.getvalue())
+
+    assert init_exit_code == 0
+    assert init_result["database_exists"] is True
+    assert init_result["run_count"] == 0
+
+    stdout = StringIO()
+    main(
+        [
+            "background-run-once",
+            "--ledger-path",
+            str(tmp_path / "artifacts" / "background_search_ledger.json"),
+            "--sqlite-log-path",
+            str(db_path),
+            "--run-id",
+            "cli-sqlite-run-001",
+            "--code-commit",
+            "cli-test",
+            "--acknowledge-local-run",
+        ],
+        stdout=stdout,
+    )
+
+    stdout = StringIO()
+    summary_exit_code = main(
+        ["sqlite-log-summary", "--db-path", str(db_path)],
+        stdout=stdout,
+    )
+    summary = json.loads(stdout.getvalue())
+
+    assert summary_exit_code == 0
+    assert summary["run_count"] == 1
+    assert summary["outcome_count"] == 1
+    assert summary["network_access_allowed_count"] == 0
+    assert summary["external_submission_approved_count"] == 0
+
+    stdout = StringIO()
+    validate_exit_code = main(
+        ["validate-sqlite-logs", "--db-path", str(db_path)],
+        stdout=stdout,
+    )
+    validation = json.loads(stdout.getvalue())
+
+    assert validate_exit_code == 0
+    assert validation["ok"] is True
 
 
 def test_cli_scheduler_dry_run_writes_temporary_artifacts(tmp_path) -> None:
@@ -1005,6 +1075,7 @@ def test_cli_scheduler_dry_run_writes_temporary_artifacts(tmp_path) -> None:
     assert result["external_submission_allowed"] is False
     assert (tmp_path / "background_search_ledger.json").exists()
     assert (tmp_path / "background_needs_follow_up_log.json").exists()
+    assert (tmp_path / "background_logs.sqlite3").exists()
 
 
 def test_cli_validate_all_outputs_local_summary() -> None:
@@ -1146,6 +1217,17 @@ def test_cli_validate_all_outputs_local_summary() -> None:
     assert result["candidate_extraction_handoff_summary"][
         "network_access_allowed_count"
     ] == 0
+    assert result["top_level_sqlite_log_validation"]["ok"] is True
+    assert result["top_level_sqlite_log_summary"]["run_count"] >= 1
+    assert result["top_level_sqlite_log_summary"]["outcome_count"] == (
+        result["top_level_sqlite_log_summary"]["run_count"]
+    )
+    assert result["top_level_sqlite_log_summary"][
+        "network_access_allowed_count"
+    ] == 0
+    assert result["top_level_sqlite_log_summary"][
+        "external_submission_approved_count"
+    ] == 0
     assert result["catalog_cache_validation"]["forbidden_roots"] == [
         "data",
         "cache",
@@ -1239,6 +1321,13 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result[
         "candidate_extraction_handoff_negative_result_required_count"
     ] == 2
+    assert result["top_level_sqlite_log_validation_ok"] is True
+    assert result["top_level_sqlite_log_run_count"] >= 1
+    assert result["top_level_sqlite_log_outcome_count"] == (
+        result["top_level_sqlite_log_run_count"]
+    )
+    assert result["top_level_sqlite_log_network_access_allowed_count"] == 0
+    assert result["top_level_sqlite_log_external_submission_approved_count"] == 0
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 

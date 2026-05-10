@@ -369,10 +369,11 @@ Append one explicit local-only background search ledger entry for the highest-pr
   --ledger-path artifacts/background_search_ledger.json \
   --reviewed-log-path artifacts/background_reviewed_log.json \
   --needs-follow-up-log-path artifacts/background_needs_follow_up_log.json \
+  --sqlite-log-path logs/techno_search.sqlite3 \
   --acknowledge-local-run
 ```
 
-This command is intentionally opt-in. It uses the configured target-priority weights plus review-history adjustment, selects the top ranked fixture target, writes one durable ledger entry, writes exactly one reviewed or needs-follow-up outcome entry, and does not access live providers or claim candidate extraction.
+This command is intentionally opt-in. It uses the configured target-priority weights plus review-history adjustment, selects the top ranked fixture target, writes one durable ledger entry, writes exactly one reviewed or needs-follow-up outcome entry, mirrors operational state into SQLite when `--sqlite-log-path` is supplied, and does not access live providers or claim candidate extraction.
 
 Useful options:
 
@@ -382,8 +383,22 @@ Useful options:
 - `--config-path` selects an alternate background priority config JSON file.
 - `--run-id` records a stable run identifier.
 - `--code-commit` records a commit SHA or workspace identifier.
+- `--sqlite-log-path` writes the operational run and outcome to a SQLite database. The recommended project default is `logs/techno_search.sqlite3`.
 
-Generated ledgers and outcome logs should be written to ignored local paths such as `artifacts/` unless they are tiny, reviewed fixtures. External schedulers should call this single-run command rather than duplicating scientific selection logic.
+Generated JSON ledgers and outcome logs should be written to ignored local paths such as `artifacts/` unless they are tiny, reviewed fixtures. Operational logs should live in the top-level SQLite database under `logs/`. External schedulers should call this single-run command rather than duplicating scientific selection logic.
+
+Initialize, summarize, and validate the top-level SQLite logs:
+
+```bash
+.venv/bin/techno-search init-logs \
+  --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search sqlite-log-summary \
+  --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search validate-sqlite-logs \
+  --db-path logs/techno_search.sqlite3
+```
+
+The SQLite log records background runs, exactly one reviewed or needs-follow-up outcome per run, draft-report references, user-decision slots, and validation events. These are workflow/provenance records only; they are not detections, discoveries, external validation, or authorization to submit externally.
 
 Smoke-test scheduler wiring against a temporary artifact directory:
 
@@ -392,7 +407,7 @@ Smoke-test scheduler wiring against a temporary artifact directory:
   --artifact-dir artifacts/background_scheduler_dry_run
 ```
 
-The dry-run command uses the same bounded local runner, writes a temporary ledger and outcome log, leaves live-provider access disabled, and does not authorize external submission.
+The dry-run command uses the same bounded local runner, writes a temporary ledger, outcome log, and SQLite database, leaves live-provider access disabled, and does not authorize external submission.
 
 ---
 

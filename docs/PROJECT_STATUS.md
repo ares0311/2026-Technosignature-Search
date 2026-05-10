@@ -166,6 +166,8 @@ The project will support three tracks from day one:
 - [x] Draft follow-up report validation wired into local validation
 - [x] User-decision append helper added with explicit external-submission approval guard
 - [x] Scheduler dry-run command added for temporary artifact directories
+- [x] Top-level `logs/` policy added for local SQLite operational logs
+- [x] SQLite log initialization, background-run mirroring, summary, and validation commands added
 
 ---
 
@@ -190,9 +192,9 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Add persisted Markdown report examples to release documentation once the operator chooses a stable artifact location.
-2. Add optional cleanup guidance for local background `artifacts/` directories.
-3. Add a future ready-for-review PR checklist after GitHub CLI or app permissions are available.
+1. Add operator guidance for rotating or archiving local `logs/*.sqlite3` databases.
+2. Add persisted Markdown report examples to release documentation once the operator chooses a stable artifact location.
+3. Add optional cleanup guidance for local background `artifacts/` directories.
 
 ---
 

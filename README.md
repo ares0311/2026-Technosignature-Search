@@ -516,10 +516,11 @@ To append one local-only passive/background search ledger entry for the highest-
   --ledger-path artifacts/background_search_ledger.json \
   --reviewed-log-path artifacts/background_reviewed_log.json \
   --needs-follow-up-log-path artifacts/background_needs_follow_up_log.json \
+  --sqlite-log-path logs/techno_search.sqlite3 \
   --acknowledge-local-run
 ```
 
-The acknowledgement flag is intentional. The command records a local scheduling/search event without network access and without claiming candidate extraction. Each run writes one durable ledger entry and exactly one outcome entry: either the reviewed log or the needs-follow-up log.
+The acknowledgement flag is intentional. The command records a local scheduling/search event without network access and without claiming candidate extraction. Each run writes one durable ledger entry and exactly one outcome entry: either the reviewed log or the needs-follow-up log. Operational logs should also be mirrored into the top-level SQLite database under `logs/`.
 
 To inspect what the passive/background system has already searched, run:
 
@@ -535,11 +536,14 @@ To inspect what the passive/background system has already searched, run:
   --output-dir artifacts/background_draft_reports
 .venv/bin/techno-search validate-draft-reports artifacts/background_draft_reports
 .venv/bin/techno-search user-decision-summary
+.venv/bin/techno-search init-logs
+.venv/bin/techno-search sqlite-log-summary
+.venv/bin/techno-search validate-sqlite-logs
 .venv/bin/techno-search scheduler-dry-run \
   --artifact-dir artifacts/background_scheduler_dry_run
 ```
 
-The ledger summary reports searched targets, candidate counts, blocking issues, conservative pathway labels, and run IDs. The reviewed-log summary captures targets that do not currently require follow-up. The needs-follow-up summary captures targets requiring mandatory local tests, human review, and possible report preparation. Follow-up test and report-readiness summaries then show whether mandatory local checks are complete, whether a conservative draft report is allowed, and which top-three review destinations are recommended. Draft follow-up report summaries preserve evidence, negative evidence, uncertainty, limitations, blockers, and next steps; the writer can persist Markdown plus a manifest under ignored `artifacts/` paths. User-decision summaries preserve explicit choices to request more tests or close as reviewed while keeping external submission disabled unless the user explicitly approves it. The scheduler dry-run writes temporary local artifacts without enabling live provider access. Negative searches must still be logged because they are part of the reproducibility record.
+The ledger summary reports searched targets, candidate counts, blocking issues, conservative pathway labels, and run IDs. The reviewed-log summary captures targets that do not currently require follow-up. The needs-follow-up summary captures targets requiring mandatory local tests, human review, and possible report preparation. Follow-up test and report-readiness summaries then show whether mandatory local checks are complete, whether a conservative draft report is allowed, and which top-three review destinations are recommended. Draft follow-up report summaries preserve evidence, negative evidence, uncertainty, limitations, blockers, and next steps; the writer can persist Markdown plus a manifest under ignored `artifacts/` paths. User-decision summaries preserve explicit choices to request more tests or close as reviewed while keeping external submission disabled unless the user explicitly approves it. The top-level SQLite log commands initialize, summarize, and validate `logs/techno_search.sqlite3`. The scheduler dry-run writes temporary local artifacts without enabling live provider access. Negative searches must still be logged because they are part of the reproducibility record.
 
 To inspect whether logged background runs are ready for reviewed handoff, run:
 
@@ -680,7 +684,7 @@ The target selector deliberately subtracts false-positive probability and unreso
 
 ### Background Logging Requirements
 
-Any passive/background runner must maintain a search ledger:
+Any passive/background runner must maintain a search ledger. The operational log lives in a top-level SQLite database under `logs/`; the committed JSON fixtures remain small regression examples and compatibility artifacts.
 
 | Log Field | Purpose |
 |-----------|---------|
@@ -703,10 +707,11 @@ Any passive/background runner must maintain a search ledger:
 | `recommended_pathways` | Conservative routing results |
 | `blocking_issues` | Missing metadata, failed providers, or invalid candidate packets |
 
-The background system should never silently discard searched targets. A scientifically useful negative result still needs a log entry. The durable ledger is the source of truth, while the two outcome logs make the decision path easy to review:
+The background system should never silently discard searched targets. A scientifically useful negative result still needs a log entry. The top-level SQLite database is the operational source of truth, while the JSON fixtures and outcome logs make the decision path easy to review:
 
 | Outcome Log | Purpose |
 |-------------|---------|
+| `logs/techno_search.sqlite3` | Local operational SQLite database for runs, outcomes, draft report references, user decisions, and validation events |
 | `background_reviewed_log.json` | Targets searched or assessed with no current follow-up trigger |
 | `background_needs_follow_up_log.json` | Targets that require mandatory tests, report readiness review, or human judgment |
 | `background_follow_up_tests.json` | Deterministic local follow-up test outcomes |
@@ -730,6 +735,9 @@ In v0, the committed ledger fixture is summarized by:
 .venv/bin/techno-search validate-draft-reports artifacts/background_draft_reports
 .venv/bin/techno-search user-decision-summary
 .venv/bin/techno-search candidate-extraction-handoff-summary
+.venv/bin/techno-search init-logs
+.venv/bin/techno-search sqlite-log-summary
+.venv/bin/techno-search validate-sqlite-logs
 ```
 
 The local append-only runner is invoked explicitly:
@@ -739,16 +747,17 @@ The local append-only runner is invoked explicitly:
   --ledger-path artifacts/background_search_ledger.json \
   --reviewed-log-path artifacts/background_reviewed_log.json \
   --needs-follow-up-log-path artifacts/background_needs_follow_up_log.json \
+  --sqlite-log-path logs/techno_search.sqlite3 \
   --run-id background-local-demo \
   --code-commit "$(git rev-parse --short HEAD)" \
   --acknowledge-local-run
 ```
 
-This runner selects the top ranked fixture target after review-history adjustment, records one ledger entry, and appends exactly one reviewed or needs-follow-up outcome entry. Needs-follow-up entries require provenance, false-positive class, cross-source consistency, calibration confidence, reproducibility, and human-review checklist tests before a report can be treated as ready. It is a scheduler-friendly local workflow, not a production autonomous search daemon.
+This runner selects the top ranked fixture target after review-history adjustment, records one ledger entry, appends exactly one reviewed or needs-follow-up outcome entry, and mirrors that run into SQLite when `--sqlite-log-path` is supplied. Needs-follow-up entries require provenance, false-positive class, cross-source consistency, calibration confidence, reproducibility, and human-review checklist tests before a report can be treated as ready. It is a scheduler-friendly local workflow, not a production autonomous search daemon.
 
 Follow-up test records currently answer whether each mandatory test is `pass`, `ready`, `uncertain`, or `blocked`. Report-readiness records then determine whether a conservative draft report may be prepared or whether the item should request more tests. Draft report summaries are internal review artifacts only. Submission recommendations are ranked, but `external_submission_allowed` remains `false`; the user must explicitly approve any external action, and user-decision records preserve that approval gate.
 
-Scheduler templates live under `docs/templates/background-search.cron` and `docs/templates/background-search.launchd.plist`. Both examples write to ignored `artifacts/` paths, call the single-run command, and do not enable live provider access. Use `techno-search scheduler-dry-run --artifact-dir artifacts/background_scheduler_dry_run` to smoke-test the same local path before installing a scheduler entry.
+Scheduler templates live under `docs/templates/background-search.cron` and `docs/templates/background-search.launchd.plist`. Both examples write JSON compatibility logs to ignored `artifacts/` paths, mirror operational state into `logs/techno_search.sqlite3`, call the single-run command, and do not enable live provider access. Use `techno-search scheduler-dry-run --artifact-dir artifacts/background_scheduler_dry_run` to smoke-test the same local path before installing a scheduler entry.
 
 Candidate-extraction handoff records are the next local contract after a target has been selected. A handoff may be ready for extraction, blocked, expected to produce no candidate packet, or scheduling-only. A ready handoff still does not claim a detection. It only means the local fixture inputs are present and can be routed into the normal candidate scoring and reporting workflow.
 

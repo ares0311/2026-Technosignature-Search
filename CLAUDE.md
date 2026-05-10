@@ -73,6 +73,50 @@ Merge status: work is on `codex/background-report-decision-scheduler` for push t
 
 ---
 
+## Top-Level SQLite Background Logs
+
+User requested applying all system directives, completing the next fifteen
+steps, and requiring top-level SQLite logs.
+
+Status: implemented in this iteration.
+
+Added:
+
+- top-level `logs/README.md` policy and `.gitignore` rules for generated SQLite databases
+- `src/techno_search/log_store.py` using stdlib `sqlite3`
+- SQLite schema for background runs, reviewed outcomes, needs-follow-up outcomes, draft-report slots, user-decision slots, validation events, and metadata
+- `techno-search init-logs`
+- `techno-search sqlite-log-summary`
+- `techno-search validate-sqlite-logs`
+- optional `--sqlite-log-path` mirroring for `background-run-once`
+- scheduler dry-run SQLite output
+- `validate-all` and `validation-summary` coverage for SQLite log invariants
+- tests for initialization, append-only run/outcome behavior, duplicate run rejection, CLI commands, docs drift, and scheduler templates
+- README, CLI usage, validation guide, pipeline spec, roadmap, project status, release checklist, automation blueprint, and decisions updates
+
+Scientific guardrail:
+
+- SQLite logs are operational workflow/provenance records only
+- each background run must have exactly one reviewed or needs-follow-up outcome
+- network access remains disabled by default
+- external submission approval must remain absent unless explicitly recorded by the user
+
+Focused validation passed:
+
+```bash
+.venv/bin/python -m pytest tests/test_log_store.py tests/test_cli.py tests/test_docs.py
+.venv/bin/python -m ruff check src/techno_search/log_store.py src/techno_search/background_search.py src/techno_search/cli.py src/techno_search/validation.py tests/test_log_store.py tests/test_cli.py tests/test_docs.py
+```
+
+Result:
+
+- 69 focused tests passed
+- focused Ruff passed
+
+Full validation still needed before committing or publishing this iteration.
+
+---
+
 ## Background Draft Reports, User Decisions, And Scheduler Templates
 
 User requested applying all system directives, completing the next fifteen

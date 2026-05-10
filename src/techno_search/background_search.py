@@ -1364,6 +1364,7 @@ def scheduler_dry_run(
     *,
     run_id: str = "scheduler-dry-run",
     code_commit: str = "dry-run",
+    sqlite_log_path: Path | None = None,
 ) -> dict[str, object]:
     """Run the local background scheduler path against temporary artifacts."""
 
@@ -1371,10 +1372,12 @@ def scheduler_dry_run(
     ledger_path = destination / "background_search_ledger.json"
     reviewed_log_path = destination / "background_reviewed_log.json"
     needs_follow_up_log_path = destination / "background_needs_follow_up_log.json"
+    resolved_sqlite_log_path = sqlite_log_path or destination / "background_logs.sqlite3"
     result = run_local_background_search_once(
         ledger_path,
         reviewed_log_path=reviewed_log_path,
         needs_follow_up_log_path=needs_follow_up_log_path,
+        sqlite_log_path=resolved_sqlite_log_path,
         run_id=run_id,
         code_commit=code_commit,
         opt_in=True,
@@ -1385,6 +1388,7 @@ def scheduler_dry_run(
         "ledger_path": str(ledger_path),
         "reviewed_log_path": str(reviewed_log_path),
         "needs_follow_up_log_path": str(needs_follow_up_log_path),
+        "sqlite_log_path": str(resolved_sqlite_log_path),
         "network_access_enabled": False,
         "external_submission_allowed": False,
         "result": result,
@@ -1395,6 +1399,7 @@ def run_local_background_search_once(
     ledger_path: Path,
     reviewed_log_path: Path | None = None,
     needs_follow_up_log_path: Path | None = None,
+    sqlite_log_path: Path | None = None,
     target_path: Path | None = None,
     config_path: Path | None = None,
     run_id: str | None = None,
@@ -1511,20 +1516,36 @@ def run_local_background_search_once(
         "background_needs_follow_up_log.json"
     )
     if needs_follow_up:
+        needs_follow_up_entry = _needs_follow_up_entry_from_run(entry, selected, config)
         append_background_needs_follow_up_entry(
             resolved_follow_up_log_path,
-            _needs_follow_up_entry_from_run(entry, selected, config),
+            needs_follow_up_entry,
         )
+        if sqlite_log_path is not None:
+            _append_background_run_sqlite_log(
+                sqlite_log_path,
+                entry=entry,
+                outcome_kind="needs_follow_up",
+                outcome_entry=needs_follow_up_entry,
+            )
         outcome_log = {
             "outcome": "needs_follow_up",
             "path": str(resolved_follow_up_log_path),
             "summary": background_needs_follow_up_summary(resolved_follow_up_log_path),
         }
     else:
+        reviewed_entry = _reviewed_log_entry_from_run(entry)
         append_background_reviewed_log_entry(
             resolved_reviewed_log_path,
-            _reviewed_log_entry_from_run(entry),
+            reviewed_entry,
         )
+        if sqlite_log_path is not None:
+            _append_background_run_sqlite_log(
+                sqlite_log_path,
+                entry=entry,
+                outcome_kind="reviewed",
+                outcome_entry=reviewed_entry,
+            )
         outcome_log = {
             "outcome": "reviewed",
             "path": str(resolved_reviewed_log_path),
@@ -1533,10 +1554,34 @@ def run_local_background_search_once(
     return {
         "ok": True,
         "appended_entry": _ledger_entry_to_mapping(entry),
+        "sqlite_log_path": str(sqlite_log_path) if sqlite_log_path is not None else None,
         "ledger_summary": background_search_ledger_summary(ledger_path),
         "review_workflow_summary": background_review_workflow_summary(ledger_path),
         "outcome_log": outcome_log,
     }
+
+
+def _append_background_run_sqlite_log(
+    sqlite_log_path: Path,
+    *,
+    entry: BackgroundSearchLedgerEntry,
+    outcome_kind: str,
+    outcome_entry: BackgroundReviewedLogEntry | BackgroundNeedsFollowUpEntry,
+) -> None:
+    """Mirror one local background run into the top-level SQLite log store."""
+
+    from techno_search.log_store import append_background_run_to_sqlite
+
+    if isinstance(outcome_entry, BackgroundReviewedLogEntry):
+        outcome_mapping = _reviewed_log_entry_to_mapping(outcome_entry)
+    else:
+        outcome_mapping = _needs_follow_up_entry_to_mapping(outcome_entry)
+    append_background_run_to_sqlite(
+        sqlite_log_path,
+        ledger_entry=_ledger_entry_to_mapping(entry),
+        outcome_kind=outcome_kind,
+        outcome_entry=outcome_mapping,
+    )
 
 
 def append_background_search_ledger_entry(

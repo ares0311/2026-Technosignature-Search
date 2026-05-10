@@ -94,6 +94,9 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     assert ".venv/bin/techno-search submission-recommendation-summary" in readme
     assert ".venv/bin/techno-search candidate-extraction-handoff-summary" in readme
     assert ".venv/bin/techno-search background-run-once" in readme
+    assert ".venv/bin/techno-search init-logs" in readme
+    assert ".venv/bin/techno-search sqlite-log-summary" in readme
+    assert ".venv/bin/techno-search validate-sqlite-logs" in readme
     assert ".venv/bin/techno-search benchmark-run-append" in readme
     assert ".venv/bin/techno-search benchmark-run-compare" in readme
     assert ".venv/bin/techno-search validation-readiness-summary" in readme
@@ -105,6 +108,8 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     assert "background_needs_follow_up_log.json" in readme
     assert "background_follow_up_tests.json" in readme
     assert "background_report_readiness.json" in readme
+    assert "logs/techno_search.sqlite3" in readme
+    assert "top-level SQLite" in readme
     assert "external_submission_allowed" in readme
     assert "T_{\\mathrm{sched}}" in readme
     assert "Candidate-extraction handoff records are the next local contract" in readme
@@ -138,6 +143,8 @@ def test_background_scheduler_templates_use_ignored_artifact_paths() -> None:
         assert "artifacts/background_search_ledger.json" in template
         assert "artifacts/background_reviewed_log.json" in template
         assert "artifacts/background_needs_follow_up_log.json" in template
+        assert "logs/techno_search.sqlite3" in template
+        assert "--sqlite-log-path" in template
         assert "--acknowledge-local-run" in template
         assert "TECHNO_SEARCH_ENABLE_LIVE_DATA" not in template
 
@@ -148,6 +155,10 @@ def test_cli_docs_include_draft_report_and_decision_workflows() -> None:
     assert ".venv/bin/techno-search draft-follow-up-report-write" in doc
     assert ".venv/bin/techno-search validate-draft-reports" in doc
     assert ".venv/bin/techno-search user-decision-record" in doc
+    assert ".venv/bin/techno-search init-logs" in doc
+    assert ".venv/bin/techno-search sqlite-log-summary" in doc
+    assert ".venv/bin/techno-search validate-sqlite-logs" in doc
     assert ".venv/bin/techno-search scheduler-dry-run" in doc
+    assert "--sqlite-log-path" in doc
     assert "--confirm-external-submission-approval" in doc
     assert "request_more_tests` and `close_as_reviewed` never imply" in doc

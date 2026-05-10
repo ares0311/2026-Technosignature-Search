@@ -56,6 +56,11 @@ from techno_search.live_data import (
     provider_normalization_regression_summary,
     validate_catalog_cache_commit_paths,
 )
+from techno_search.log_store import (
+    default_sqlite_log_path,
+    init_sqlite_log_db,
+    sqlite_log_summary,
+)
 from techno_search.plotting import plot_artifact_summary
 from techno_search.reporting import (
     candidate_packet_json,
@@ -72,6 +77,7 @@ from techno_search.validation import (
     validate_candidate_file,
     validate_draft_report_directory,
     validate_report_directory,
+    validate_sqlite_log_database,
 )
 from techno_search.validation_datasets import (
     validation_dataset_summary,
@@ -522,6 +528,7 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                     args.ledger_path,
                     reviewed_log_path=args.reviewed_log_path,
                     needs_follow_up_log_path=args.needs_follow_up_log_path,
+                    sqlite_log_path=args.sqlite_log_path,
                     target_path=args.target_path,
                     config_path=args.config_path,
                     run_id=args.run_id,
@@ -535,6 +542,37 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "init-logs":
+        print(
+            json.dumps(
+                init_sqlite_log_db(
+                    args.db_path,
+                    code_commit=args.code_commit,
+                    config_version=args.config_version,
+                ),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "sqlite-log-summary":
+        print(
+            json.dumps(
+                sqlite_log_summary(args.db_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "validate-sqlite-logs":
+        result = validate_sqlite_log_database(args.db_path)
+        print(json.dumps(result.as_dict(), indent=2, sort_keys=True), file=out)
+        return 0 if result.ok else 1
+
     if args.command == "scheduler-dry-run":
         print(
             json.dumps(
@@ -542,6 +580,7 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                     args.artifact_dir,
                     run_id=args.run_id,
                     code_commit=args.code_commit,
+                    sqlite_log_path=args.sqlite_log_path,
                 ),
                 indent=2,
                 sort_keys=True,
@@ -901,6 +940,28 @@ def validate_all() -> dict[str, object]:
     candidate_handoff_network_count = candidate_handoffs[
         "network_access_allowed_count"
     ]
+    sqlite_validation_db = root / "logs" / "validation.sqlite3"
+    sqlite_validation_artifact_dir = root / "artifacts" / "validation_sqlite_logs"
+    sqlite_validation_run_id = (
+        "validation-sqlite-" + datetime.now(UTC).strftime("%Y%m%d%H%M%S%f")
+    )
+    run_local_background_search_once(
+        sqlite_validation_artifact_dir / "background_search_ledger.json",
+        reviewed_log_path=sqlite_validation_artifact_dir / "background_reviewed_log.json",
+        needs_follow_up_log_path=(
+            sqlite_validation_artifact_dir / "background_needs_follow_up_log.json"
+        ),
+        sqlite_log_path=sqlite_validation_db,
+        run_id=sqlite_validation_run_id,
+        code_commit="validation-local",
+        opt_in=True,
+    )
+    sqlite_logs = sqlite_log_summary(sqlite_validation_db)
+    sqlite_log_validation = validate_sqlite_log_database(sqlite_validation_db).as_dict()
+    sqlite_run_count = sqlite_logs["run_count"]
+    sqlite_outcome_count = sqlite_logs["outcome_count"]
+    sqlite_network_count = sqlite_logs["network_access_allowed_count"]
+    sqlite_external_approved_count = sqlite_logs["external_submission_approved_count"]
 
     ok = (
         all(result["ok"] for result in candidate_results.values())
@@ -1002,6 +1063,14 @@ def validate_all() -> dict[str, object]:
         and candidate_handoff_record_count >= 4
         and isinstance(candidate_handoff_network_count, int)
         and candidate_handoff_network_count == 0
+        and bool(sqlite_log_validation["ok"])
+        and isinstance(sqlite_run_count, int)
+        and sqlite_run_count >= 1
+        and sqlite_outcome_count == sqlite_run_count
+        and isinstance(sqlite_network_count, int)
+        and sqlite_network_count == 0
+        and isinstance(sqlite_external_approved_count, int)
+        and sqlite_external_approved_count == 0
     )
     return {
         "ok": ok,
@@ -1037,6 +1106,8 @@ def validate_all() -> dict[str, object]:
         "background_draft_follow_up_report_summary": draft_reports,
         "background_user_decision_summary": user_decisions,
         "candidate_extraction_handoff_summary": candidate_handoffs,
+        "top_level_sqlite_log_summary": sqlite_logs,
+        "top_level_sqlite_log_validation": sqlite_log_validation,
     }
 
 
@@ -1075,6 +1146,8 @@ def validation_summary() -> dict[str, object]:
     draft_report_validation = validation["background_draft_report_validation"]
     user_decisions = validation["background_user_decision_summary"]
     candidate_handoffs = validation["candidate_extraction_handoff_summary"]
+    sqlite_logs = validation["top_level_sqlite_log_summary"]
+    sqlite_log_validation = validation["top_level_sqlite_log_validation"]
     return {
         "ok": validation["ok"],
         "generated_at_utc": datetime.now(UTC).isoformat(),
@@ -1350,6 +1423,25 @@ def validation_summary() -> dict[str, object]:
             candidate_handoffs["negative_result_required_count"]
         )
         if isinstance(candidate_handoffs, dict)
+        else 0,
+        "top_level_sqlite_log_validation_ok": bool(sqlite_log_validation["ok"])
+        if isinstance(sqlite_log_validation, dict)
+        else False,
+        "top_level_sqlite_log_run_count": sqlite_logs["run_count"]
+        if isinstance(sqlite_logs, dict)
+        else 0,
+        "top_level_sqlite_log_outcome_count": sqlite_logs["outcome_count"]
+        if isinstance(sqlite_logs, dict)
+        else 0,
+        "top_level_sqlite_log_network_access_allowed_count": sqlite_logs[
+            "network_access_allowed_count"
+        ]
+        if isinstance(sqlite_logs, dict)
+        else 0,
+        "top_level_sqlite_log_external_submission_approved_count": sqlite_logs[
+            "external_submission_approved_count"
+        ]
+        if isinstance(sqlite_logs, dict)
         else 0,
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
@@ -1901,6 +1993,14 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     background_run_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help=(
+            "Optional top-level SQLite log database path. Recommended operational "
+            "default: logs/techno_search.sqlite3."
+        ),
+    )
+    background_run_parser.add_argument(
         "--target-path",
         type=Path,
         help="Optional background target-priority JSON path.",
@@ -1925,6 +2025,46 @@ def _build_parser() -> argparse.ArgumentParser:
         required=True,
         help="Required opt-in flag acknowledging this local runner does not use network data.",
     )
+    init_logs_parser = subparsers.add_parser(
+        "init-logs",
+        help="Initialize the top-level SQLite operational log database.",
+    )
+    init_logs_parser.add_argument(
+        "--db-path",
+        type=Path,
+        default=default_sqlite_log_path(default_project_root()),
+        help="SQLite log database path. Defaults to logs/techno_search.sqlite3.",
+    )
+    init_logs_parser.add_argument(
+        "--code-commit",
+        default="not-recorded",
+        help="Optional code commit or workspace identifier to store in metadata.",
+    )
+    init_logs_parser.add_argument(
+        "--config-version",
+        default="not-recorded",
+        help="Optional config version to store in metadata.",
+    )
+    sqlite_summary_parser = subparsers.add_parser(
+        "sqlite-log-summary",
+        help="Summarize top-level SQLite operational logs.",
+    )
+    sqlite_summary_parser.add_argument(
+        "--db-path",
+        type=Path,
+        default=default_sqlite_log_path(default_project_root()),
+        help="SQLite log database path. Defaults to logs/techno_search.sqlite3.",
+    )
+    validate_sqlite_parser = subparsers.add_parser(
+        "validate-sqlite-logs",
+        help="Validate top-level SQLite operational log invariants.",
+    )
+    validate_sqlite_parser.add_argument(
+        "--db-path",
+        type=Path,
+        default=default_sqlite_log_path(default_project_root()),
+        help="SQLite log database path. Defaults to logs/techno_search.sqlite3.",
+    )
     scheduler_dry_run_parser = subparsers.add_parser(
         "scheduler-dry-run",
         help="Run the bounded local scheduler path against a temporary artifact directory.",
@@ -1942,6 +2082,14 @@ def _build_parser() -> argparse.ArgumentParser:
     scheduler_dry_run_parser.add_argument(
         "--code-commit",
         default="dry-run",
+    )
+    scheduler_dry_run_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help=(
+            "Optional SQLite log database path. Defaults to background_logs.sqlite3 "
+            "inside the dry-run artifact directory."
+        ),
     )
     subparsers.add_parser(
         "validate-all",

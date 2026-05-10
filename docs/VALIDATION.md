@@ -209,6 +209,7 @@ Run one explicit local-only background ledger append in an ignored output path:
   --ledger-path artifacts/background_search_ledger.json \
   --reviewed-log-path artifacts/background_reviewed_log.json \
   --needs-follow-up-log-path artifacts/background_needs_follow_up_log.json \
+  --sqlite-log-path logs/techno_search.sqlite3 \
   --acknowledge-local-run
 ```
 
@@ -237,6 +238,12 @@ Review reviewed and needs-follow-up outcome logs:
   --output-dir artifacts/background_draft_reports
 .venv/bin/techno-search validate-draft-reports artifacts/background_draft_reports
 .venv/bin/techno-search user-decision-summary
+.venv/bin/techno-search init-logs \
+  --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search sqlite-log-summary \
+  --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search validate-sqlite-logs \
+  --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search scheduler-dry-run \
   --artifact-dir artifacts/background_scheduler_dry_run
 ```
@@ -247,7 +254,9 @@ Review candidate-extraction handoff readiness:
 .venv/bin/techno-search candidate-extraction-handoff-summary
 ```
 
-`validate-all` and `validation-summary` include calibration-by-track, false-positive class, validation dataset, validation readiness, benchmark metadata, benchmark run-result metadata, background target-priority, background search ledger, background reviewed-workflow, reviewed outcome log, needs-follow-up outcome log, follow-up test results, report-readiness gates, conservative draft report summaries, persisted draft-report validation, user decision records, candidate extraction handoff, injection-recovery, reliability, precision-recall, human-review queue, consensus-label, and consensus-export coverage. Benchmark append and compare commands are local workflow helpers for ignored output paths. The reported calibration-by-track coverage, false-positive class coverage, validation dataset coverage, validation readiness counts, benchmark metadata, benchmark run-result metadata, benchmark deltas, target-priority ranking, background ledger counts, background reviewed-workflow counts, reviewed outcome counts, needs-follow-up counts, follow-up test counts, report-readiness counts, draft report counts, user decision counts, candidate extraction handoff counts, recovery rate, false-alarm fraction, reliability errors, precision, recall, F1 score, review queue counts, consensus counts, and consensus export counts are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, per-track survey performance, classification performance estimates, discovery claims, external validation, detections, submission approvals, or scientific performance claims.
+`validate-all` and `validation-summary` include calibration-by-track, false-positive class, validation dataset, validation readiness, benchmark metadata, benchmark run-result metadata, background target-priority, background search ledger, background reviewed-workflow, reviewed outcome log, needs-follow-up outcome log, follow-up test results, report-readiness gates, conservative draft report summaries, persisted draft-report validation, user decision records, top-level SQLite log validation, candidate extraction handoff, injection-recovery, reliability, precision-recall, human-review queue, consensus-label, and consensus-export coverage. Benchmark append and compare commands are local workflow helpers for ignored output paths. The reported calibration-by-track coverage, false-positive class coverage, validation dataset coverage, validation readiness counts, benchmark metadata, benchmark run-result metadata, benchmark deltas, target-priority ranking, background ledger counts, background reviewed-workflow counts, reviewed outcome counts, needs-follow-up counts, follow-up test counts, report-readiness counts, draft report counts, user decision counts, SQLite run and outcome counts, candidate extraction handoff counts, recovery rate, false-alarm fraction, reliability errors, precision, recall, F1 score, review queue counts, consensus counts, and consensus export counts are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, per-track survey performance, classification performance estimates, discovery claims, external validation, detections, submission approvals, or scientific performance claims.
+
+Top-level SQLite logs under `logs/` are the operational source of truth for local background automation. Validation checks that each run has exactly one outcome, network access remains disabled by default, and no external submission approval is present unless explicitly recorded by the user.
 
 Snapshot fixture:
 
@@ -362,7 +371,7 @@ docs/templates/background-search.cron
 docs/templates/background-search.launchd.plist
 ```
 
-These examples call `background-run-once` against ignored `artifacts/` paths. They do not set live-data opt-in and they do not authorize external submission.
+These examples call `background-run-once` against ignored `artifacts/` paths and mirror operational state into `logs/techno_search.sqlite3`. They do not set live-data opt-in and they do not authorize external submission.
 
 Background priority config:
 

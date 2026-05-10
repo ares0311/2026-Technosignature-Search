@@ -1,7 +1,8 @@
 # Example cron entry for one bounded local background run.
-# Edit PROJECT_ROOT before use. Outputs go to ignored artifacts/ paths.
+# Edit PROJECT_ROOT before use. JSON compatibility outputs go to ignored artifacts/
+# paths; operational logs go to top-level SQLite under logs/.
 # This does not enable live data and does not submit externally.
 
 PROJECT_ROOT="/path/to/2026 Technosignatures"
 
-17 * * * * cd "$PROJECT_ROOT" && .venv/bin/techno-search background-run-once --ledger-path artifacts/background_search_ledger.json --reviewed-log-path artifacts/background_reviewed_log.json --needs-follow-up-log-path artifacts/background_needs_follow_up_log.json --code-commit "$(git rev-parse --short HEAD 2>/dev/null || echo not-recorded)" --acknowledge-local-run >> artifacts/background_search.cron.log 2>&1
+17 * * * * cd "$PROJECT_ROOT" && .venv/bin/techno-search background-run-once --ledger-path artifacts/background_search_ledger.json --reviewed-log-path artifacts/background_reviewed_log.json --needs-follow-up-log-path artifacts/background_needs_follow_up_log.json --sqlite-log-path logs/techno_search.sqlite3 --code-commit "$(git rev-parse --short HEAD 2>/dev/null || echo not-recorded)" --acknowledge-local-run >> artifacts/background_search.cron.log 2>&1

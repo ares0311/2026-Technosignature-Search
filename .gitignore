@@ -22,6 +22,11 @@ data/external/
 data/processed/
 cache/
 artifacts/
+logs/*.sqlite
+logs/*.sqlite3
+logs/*.db
+logs/*-wal
+logs/*-shm
 
 # Secrets and local configuration
 .env

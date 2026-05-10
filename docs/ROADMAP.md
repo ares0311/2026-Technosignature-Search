@@ -243,6 +243,8 @@ Add real data ingestion behind tested abstractions.
 - [x] Persisted draft report Markdown writer and validation
 - [x] User decision append helper with explicit approval guard
 - [x] Scheduler dry-run smoke path for temporary artifact directories
+- [x] Top-level SQLite operational logs for bounded background runs
+- [x] SQLite log initialization, summary, validation, and CLI wiring
 
 ---
 

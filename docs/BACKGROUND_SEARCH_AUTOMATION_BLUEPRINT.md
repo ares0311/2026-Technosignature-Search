@@ -42,7 +42,15 @@ Automation must be constrained by explicit project policy.
 
 ## State Model
 
-Use three durable logs as the minimum operational state.
+Use top-level SQLite logs as the operational state, with three logical logs as the minimum background-search contract.
+
+Generated databases should live under a top-level `logs/` directory, for example:
+
+```text
+logs/techno_search.sqlite3
+```
+
+Small JSON files may still be useful as fixtures, exports, or compatibility artifacts, but the scheduled operational record should be SQLite so runs and outcomes are queryable and transactionally appended.
 
 | Log | Purpose | Append Rule |
 | --- | --- | --- |
@@ -217,6 +225,9 @@ project-search draft-report-write
 project-search validate-draft-reports
 project-search submission-recommendation-summary
 project-search user-decision-summary
+project-search init-logs
+project-search sqlite-log-summary
+project-search validate-sqlite-logs
 project-search scheduler-dry-run
 project-search validation-summary
 ```
@@ -240,6 +251,7 @@ The CLI should produce structured JSON by default or offer a JSON mode so that s
 13. Add scheduler documentation for cron, launchd, or the project’s preferred scheduler.
 14. Add validation-summary integration.
 15. Add tests for schemas, CLI outputs, log invariants, and guardrail language.
+16. Promote operational logs into a top-level SQLite database while preserving small JSON fixtures for regression tests.
 
 ## Definition of Done
 
@@ -247,6 +259,7 @@ A project has implemented this blueprint when:
 
 - every background run writes a durable ledger entry
 - every run writes exactly one outcome entry
+- operational runs are mirrored into top-level SQLite logs
 - target selection exposes its composite factors
 - never-reviewed promising targets are prioritized
 - needs-follow-up records trigger mandatory tests

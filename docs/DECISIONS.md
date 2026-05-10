@@ -598,3 +598,30 @@ Operators need files they can read and review, but persisted reports create a hi
 - Validation checks persisted draft report directories.
 - Scheduler dry-runs write to temporary artifact directories without live provider access.
 - External submission still requires explicit human approval outside ordinary report generation.
+
+---
+
+## DECISION-025: Use Top-Level SQLite Logs For Operational Background Runs
+
+**Date:** 2026-05-09
+
+**Status:** Accepted
+
+### Decision
+
+Operational background-search logs must live in a top-level SQLite database under `logs/`, with `logs/techno_search.sqlite3` as the default local path. JSON ledgers and outcome files may remain as small fixtures and compatibility artifacts, but SQLite is the operational source of truth for scheduled or local background runs.
+
+The SQLite log must record each background run, exactly one reviewed or needs-follow-up outcome per run, schema metadata, code commit, config version, target-selection rationale, negative evidence, blocking issues, draft-report slots, user-decision slots, and validation events.
+
+### Rationale
+
+SQLite gives the project a durable, queryable, transactional log without adding a third-party dependency. A top-level `logs/` directory makes operational state obvious to operators while allowing generated databases to stay ignored by Git. This also reduces drift between scheduler output, review summaries, and validation checks.
+
+### Consequences
+
+- Generated SQLite databases are not committed.
+- The local runner can mirror each bounded run into SQLite with `--sqlite-log-path`.
+- Validation checks that every SQLite run has exactly one outcome.
+- Network access remains disabled by default in SQLite logs.
+- External submission approval must not appear unless directly recorded by the user.
+- SQLite rows are workflow and provenance records only; they are not detections, discoveries, external validation, or submission approval.
