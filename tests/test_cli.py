@@ -1101,6 +1101,44 @@ def test_cli_top_level_sqlite_log_commands_validate_background_run(
     assert migration_exit_code == 0
     assert migration["migration_required"] is False
 
+    stdout = StringIO()
+    pragmas_exit_code = main(
+        ["sqlite-log-pragmas", "--db-path", str(db_path)],
+        stdout=stdout,
+    )
+    pragmas = json.loads(stdout.getvalue())
+    assert pragmas_exit_code == 0
+    assert pragmas["ok"] is True
+    assert pragmas["integrity_check"] == "ok"
+
+    stdout = StringIO()
+    backup_exit_code = main(
+        ["sqlite-log-backup", "--db-path", str(db_path)],
+        stdout=stdout,
+    )
+    backup = json.loads(stdout.getvalue())
+    assert backup_exit_code == 0
+    assert backup["ok"] is True
+
+    stdout = StringIO()
+    retention_exit_code = main(
+        ["sqlite-log-retention-summary", "--db-path", str(db_path)],
+        stdout=stdout,
+    )
+    retention = json.loads(stdout.getvalue())
+    assert retention_exit_code == 0
+    assert retention["ok"] is True
+    assert retention["backup_count"] >= 1
+
+    stdout = StringIO()
+    vacuum_exit_code = main(
+        ["sqlite-log-vacuum", "--db-path", str(db_path)],
+        stdout=stdout,
+    )
+    vacuum = json.loads(stdout.getvalue())
+    assert vacuum_exit_code == 0
+    assert vacuum["ok"] is True
+
 
 def test_cli_sqlite_log_commit_guard_rejects_generated_logs(tmp_path) -> None:
     stdout = StringIO()
@@ -1290,6 +1328,11 @@ def test_cli_validate_all_outputs_local_summary() -> None:
     ] is False
     assert result["top_level_sqlite_log_commit_guard"]["ok"] is True
     assert result["top_level_sqlite_log_export"]["summary"]["ok"] is True
+    assert result["top_level_sqlite_log_backup"]["ok"] is True
+    assert result["top_level_sqlite_log_retention_summary"]["ok"] is True
+    assert result["top_level_sqlite_log_retention_summary"]["backup_count"] >= 1
+    assert result["top_level_sqlite_log_pragmas"]["ok"] is True
+    assert result["top_level_sqlite_log_pragmas"]["integrity_check"] == "ok"
     assert result["top_level_sqlite_log_summary"]["run_count"] >= 1
     assert result["top_level_sqlite_log_summary"]["outcome_count"] == (
         result["top_level_sqlite_log_summary"]["run_count"]
@@ -1397,6 +1440,11 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["top_level_sqlite_log_integrity_ok"] is True
     assert result["top_level_sqlite_log_migration_required"] is False
     assert result["top_level_sqlite_log_commit_guard_ok"] is True
+    assert result["top_level_sqlite_log_backup_ok"] is True
+    assert result["top_level_sqlite_log_backup_count"] >= 1
+    assert result["top_level_sqlite_log_retention_ok"] is True
+    assert result["top_level_sqlite_log_pragmas_ok"] is True
+    assert result["top_level_sqlite_log_integrity_check"] == "ok"
     assert result["top_level_sqlite_log_run_count"] >= 1
     assert result["top_level_sqlite_log_outcome_count"] == (
         result["top_level_sqlite_log_run_count"]

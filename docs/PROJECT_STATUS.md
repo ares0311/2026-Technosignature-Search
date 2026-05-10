@@ -170,6 +170,7 @@ The project will support three tracks from day one:
 - [x] SQLite log initialization, background-run mirroring, summary, and validation commands added
 - [x] SQLite integrity, migration, recent-run, needs-follow-up, and review-safe export commands added
 - [x] Generated top-level SQLite log commit guard added
+- [x] SQLite PRAGMA diagnostics, ignored backups, retention summaries, and vacuum maintenance commands added
 
 ---
 

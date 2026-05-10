@@ -11,10 +11,14 @@ from techno_search.log_store import (
     TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
     TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
     init_sqlite_log_db,
+    sqlite_log_backup,
     sqlite_log_export,
     sqlite_log_integrity_summary,
     sqlite_log_migration_summary,
+    sqlite_log_pragmas,
+    sqlite_log_retention_summary,
     sqlite_log_summary,
+    sqlite_log_vacuum,
     sqlite_needs_follow_up,
     sqlite_recent_runs,
     validate_sqlite_log_commit_paths,
@@ -229,6 +233,7 @@ def test_sqlite_commit_path_guard_rejects_generated_top_level_logs(
             tmp_path / "logs" / "README.md",
             tmp_path / "logs" / "techno_search.sqlite3",
             tmp_path / "logs" / "techno_search.sqlite3-wal",
+            tmp_path / "logs" / "backups" / "techno_search.sqlite3",
             tmp_path / "artifacts" / "temporary.sqlite3",
         ],
         project_root=tmp_path,
@@ -236,9 +241,40 @@ def test_sqlite_commit_path_guard_rejects_generated_top_level_logs(
 
     assert not result["ok"]
     assert result["forbidden_paths"] == [
+        "logs/backups/techno_search.sqlite3",
         "logs/techno_search.sqlite3",
         "logs/techno_search.sqlite3-wal",
     ]
+
+
+def test_sqlite_backup_retention_vacuum_and_pragmas(tmp_path: Path) -> None:
+    artifact_dir = tmp_path / "artifacts"
+    db_path = tmp_path / "logs" / "techno_search.sqlite3"
+    run_local_background_search_once(
+        artifact_dir / "background_search_ledger.json",
+        reviewed_log_path=artifact_dir / "background_reviewed_log.json",
+        needs_follow_up_log_path=artifact_dir / "background_needs_follow_up_log.json",
+        sqlite_log_path=db_path,
+        run_id="maintenance-sqlite-run",
+        code_commit="test-commit",
+        opt_in=True,
+    )
+
+    backup = sqlite_log_backup(db_path)
+    retention = sqlite_log_retention_summary(db_path)
+    pragmas = sqlite_log_pragmas(db_path)
+    vacuum = sqlite_log_vacuum(db_path)
+
+    assert backup["ok"] is True
+    assert Path(str(backup["backup_path"])).exists()
+    assert retention["ok"] is True
+    assert retention["backup_count"] >= 1
+    assert retention["backup_total_size_bytes"] >= backup["backup_size_bytes"]
+    assert pragmas["ok"] is True
+    assert pragmas["foreign_keys"] == 1
+    assert pragmas["integrity_check"] == "ok"
+    assert vacuum["ok"] is True
+    assert vacuum["after_size_bytes"] <= vacuum["before_size_bytes"]
 
 
 def _insert_minimal_run(db_path: Path, run_id: str) -> None:

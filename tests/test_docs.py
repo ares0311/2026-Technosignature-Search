@@ -101,6 +101,10 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     assert ".venv/bin/techno-search sqlite-needs-follow-up" in readme
     assert ".venv/bin/techno-search sqlite-log-export" in readme
     assert ".venv/bin/techno-search sqlite-migration-summary" in readme
+    assert ".venv/bin/techno-search sqlite-log-pragmas" in readme
+    assert ".venv/bin/techno-search sqlite-log-backup" in readme
+    assert ".venv/bin/techno-search sqlite-log-retention-summary" in readme
+    assert ".venv/bin/techno-search sqlite-log-vacuum" in readme
     assert ".venv/bin/techno-search sqlite-log-commit-guard" in readme
     assert ".venv/bin/techno-search validate-sqlite-logs" in readme
     assert ".venv/bin/techno-search benchmark-run-append" in readme
@@ -168,6 +172,10 @@ def test_cli_docs_include_draft_report_and_decision_workflows() -> None:
     assert ".venv/bin/techno-search sqlite-needs-follow-up" in doc
     assert ".venv/bin/techno-search sqlite-log-export" in doc
     assert ".venv/bin/techno-search sqlite-migration-summary" in doc
+    assert ".venv/bin/techno-search sqlite-log-pragmas" in doc
+    assert ".venv/bin/techno-search sqlite-log-backup" in doc
+    assert ".venv/bin/techno-search sqlite-log-retention-summary" in doc
+    assert ".venv/bin/techno-search sqlite-log-vacuum" in doc
     assert ".venv/bin/techno-search sqlite-log-commit-guard" in doc
     assert ".venv/bin/techno-search validate-sqlite-logs" in doc
     assert ".venv/bin/techno-search scheduler-dry-run" in doc

@@ -17,12 +17,22 @@ Default local database path:
 logs/techno_search.sqlite3
 ```
 
+Maintenance commands:
+
+```bash
+.venv/bin/techno-search sqlite-log-pragmas --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search sqlite-log-backup --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search sqlite-log-retention-summary --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search sqlite-log-vacuum --db-path logs/techno_search.sqlite3
+```
+
 ## Rotation And Retention
 
 - Keep generated databases local unless the project owner explicitly asks for an export.
 - Prefer exporting small review-safe JSON summaries with `sqlite-log-export` instead of sharing a full database.
-- Back up or archive old databases outside the repository before pruning them.
-- Prune only generated databases such as `*.sqlite`, `*.sqlite3`, `*.db`, `*-wal`, and `*-shm`; keep this README.
+- Use `sqlite-log-backup` to create timestamped local backups under ignored `logs/backups/` before vacuuming or pruning.
+- Use `sqlite-log-retention-summary` to review database age, size, and backup coverage before cleanup.
+- Prune only generated databases and backups such as `*.sqlite`, `*.sqlite3`, `*.db`, `*-wal`, and `*-shm`; keep this README.
 - Never remove a database that is the only record of a background run until its review status has been summarized elsewhere.
 
 Generated SQLite logs remain provenance and workflow records only. They are not

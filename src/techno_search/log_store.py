@@ -17,6 +17,8 @@ TOP_LEVEL_SQLITE_LOG_DISCLAIMER = (
     "submission approval."
 )
 DEFAULT_SQLITE_LOG_PATH = Path("logs/techno_search.sqlite3")
+DEFAULT_SQLITE_BACKUP_DIRNAME = "backups"
+DEFAULT_SQLITE_SIZE_WARNING_BYTES = 100 * 1024 * 1024
 REQUIRED_SQLITE_METADATA_KEYS = (
     "schema_version",
     "disclaimer",
@@ -249,6 +251,13 @@ def sqlite_log_integrity_summary(db_path: Path) -> dict[str, object]:
 
     summary = sqlite_log_summary(db_path)
     errors = sqlite_log_validation_errors(db_path)
+    resolved = Path(db_path)
+    database_size_bytes = resolved.stat().st_size if resolved.exists() else 0
+    warnings = []
+    if database_size_bytes > DEFAULT_SQLITE_SIZE_WARNING_BYTES:
+        warnings.append(
+            "SQLite log database exceeds the default local size warning threshold"
+        )
     return {
         "ok": not errors,
         "db_path": str(db_path),
@@ -271,7 +280,151 @@ def sqlite_log_integrity_summary(db_path: Path) -> dict[str, object]:
         "external_submission_approved_count": int(
             str(summary.get("external_submission_approved_count", 0))
         ),
+        "database_size_bytes": database_size_bytes,
+        "size_warning_threshold_bytes": DEFAULT_SQLITE_SIZE_WARNING_BYTES,
+        "warnings": warnings,
         "errors": list(errors),
+        "disclaimer": TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
+    }
+
+
+def sqlite_log_pragmas(db_path: Path) -> dict[str, object]:
+    """Return SQLite PRAGMA diagnostics for local operator checks."""
+
+    resolved = Path(db_path)
+    if not resolved.exists():
+        return {
+            "ok": False,
+            "db_path": str(resolved),
+            "database_exists": False,
+            "disclaimer": TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
+        }
+    with closing(sqlite3.connect(resolved)) as connection:
+        connection.execute("PRAGMA foreign_keys = ON")
+        foreign_keys = int(connection.execute("PRAGMA foreign_keys").fetchone()[0])
+        journal_mode = str(connection.execute("PRAGMA journal_mode").fetchone()[0])
+        integrity_check = str(
+            connection.execute("PRAGMA integrity_check").fetchone()[0]
+        )
+        page_count = int(connection.execute("PRAGMA page_count").fetchone()[0])
+        page_size = int(connection.execute("PRAGMA page_size").fetchone()[0])
+    return {
+        "ok": foreign_keys == 1 and integrity_check == "ok",
+        "db_path": str(resolved),
+        "database_exists": True,
+        "foreign_keys": foreign_keys,
+        "journal_mode": journal_mode,
+        "integrity_check": integrity_check,
+        "page_count": page_count,
+        "page_size": page_size,
+        "estimated_size_bytes": page_count * page_size,
+        "disclaimer": TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
+    }
+
+
+def sqlite_log_backup(
+    db_path: Path,
+    *,
+    backup_dir: Path | None = None,
+) -> dict[str, object]:
+    """Create a timestamped local backup under ignored top-level logs."""
+
+    resolved = Path(db_path)
+    destination_dir = backup_dir or resolved.parent / DEFAULT_SQLITE_BACKUP_DIRNAME
+    if not resolved.exists():
+        return {
+            "ok": False,
+            "db_path": str(resolved),
+            "backup_path": None,
+            "error": "SQLite log database does not exist",
+            "disclaimer": TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
+        }
+    destination_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
+    backup_path = destination_dir / f"{resolved.stem}-{timestamp}.sqlite3"
+    with (
+        closing(sqlite3.connect(resolved)) as source,
+        closing(sqlite3.connect(backup_path)) as destination,
+    ):
+        source.backup(destination)
+    return {
+        "ok": True,
+        "db_path": str(resolved),
+        "backup_path": str(backup_path),
+        "backup_size_bytes": backup_path.stat().st_size,
+        "backup_dir": str(destination_dir),
+        "disclaimer": TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
+    }
+
+
+def sqlite_log_vacuum(db_path: Path) -> dict[str, object]:
+    """Compact a local SQLite log database with VACUUM."""
+
+    resolved = Path(db_path)
+    if not resolved.exists():
+        return {
+            "ok": False,
+            "db_path": str(resolved),
+            "error": "SQLite log database does not exist",
+            "disclaimer": TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
+        }
+    before_size = resolved.stat().st_size
+    with closing(sqlite3.connect(resolved)) as connection:
+        connection.execute("VACUUM")
+    after_size = resolved.stat().st_size
+    return {
+        "ok": True,
+        "db_path": str(resolved),
+        "before_size_bytes": before_size,
+        "after_size_bytes": after_size,
+        "bytes_reclaimed": max(0, before_size - after_size),
+        "disclaimer": TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
+    }
+
+
+def sqlite_log_retention_summary(
+    db_path: Path,
+    *,
+    backup_dir: Path | None = None,
+) -> dict[str, object]:
+    """Report database age, size, and ignored backup coverage."""
+
+    resolved = Path(db_path)
+    destination_dir = backup_dir or resolved.parent / DEFAULT_SQLITE_BACKUP_DIRNAME
+    backup_paths = sorted(destination_dir.glob("*.sqlite3"))
+    now = datetime.now(UTC)
+    database_mtime = (
+        datetime.fromtimestamp(resolved.stat().st_mtime, UTC)
+        if resolved.exists()
+        else None
+    )
+    oldest_backup_mtime = (
+        datetime.fromtimestamp(min(path.stat().st_mtime for path in backup_paths), UTC)
+        if backup_paths
+        else None
+    )
+    return {
+        "ok": resolved.exists(),
+        "db_path": str(resolved),
+        "database_exists": resolved.exists(),
+        "database_size_bytes": resolved.stat().st_size if resolved.exists() else 0,
+        "database_age_seconds": (
+            round((now - database_mtime).total_seconds(), 6)
+            if database_mtime is not None
+            else None
+        ),
+        "backup_dir": str(destination_dir),
+        "backup_count": len(backup_paths),
+        "backup_total_size_bytes": sum(path.stat().st_size for path in backup_paths),
+        "oldest_backup_age_seconds": (
+            round((now - oldest_backup_mtime).total_seconds(), 6)
+            if oldest_backup_mtime is not None
+            else None
+        ),
+        "backup_paths": [str(path) for path in backup_paths[-5:]],
+        "retention_policy": (
+            "Generated SQLite logs and backups are local-only artifacts under logs/."
+        ),
         "disclaimer": TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
     }
 
@@ -690,7 +843,7 @@ def _is_forbidden_top_level_sqlite_log(path: Path) -> bool:
     parts = path.parts
     if len(parts) < 2 or parts[0] != "logs":
         return False
-    if len(parts) != 2:
+    if len(parts) > 2 and parts[1] != DEFAULT_SQLITE_BACKUP_DIRNAME:
         return False
     name = parts[-1]
     return (

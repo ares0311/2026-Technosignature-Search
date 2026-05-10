@@ -27,6 +27,7 @@ logs/*.sqlite3
 logs/*.db
 logs/*-wal
 logs/*-shm
+logs/backups/
 
 # Secrets and local configuration
 .env

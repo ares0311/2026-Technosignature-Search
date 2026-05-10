@@ -153,6 +153,28 @@ Focused validation passed:
 .venv/bin/python -m mypy src
 ```
 
+## SQLite Log Maintenance Commands
+
+User reiterated applying all system directives and keeping top-level SQLite logs.
+
+Status: implemented in this iteration.
+
+Added:
+
+- `techno-search sqlite-log-pragmas`
+- `techno-search sqlite-log-backup`
+- `techno-search sqlite-log-retention-summary`
+- `techno-search sqlite-log-vacuum`
+- ignored `logs/backups/` policy for generated SQLite backups
+- `validate-all` and `validation-summary` coverage for SQLite PRAGMA, backup, retention, and vacuum maintenance
+- README, CLI usage, validation guide, roadmap, project status, release checklist, automation blueprint, and logs README updates
+
+Scientific guardrail:
+
+- backups and retention summaries are local operational records only
+- maintenance commands do not authorize external submission or imply discovery
+- generated SQLite databases and backups remain ignored and must not be committed
+
 Result:
 
 - 76 focused tests passed

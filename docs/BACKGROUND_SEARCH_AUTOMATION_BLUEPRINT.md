@@ -232,6 +232,10 @@ project-search sqlite-recent-runs
 project-search sqlite-needs-follow-up
 project-search sqlite-log-export
 project-search sqlite-migration-summary
+project-search sqlite-log-pragmas
+project-search sqlite-log-backup
+project-search sqlite-log-retention-summary
+project-search sqlite-log-vacuum
 project-search sqlite-log-commit-guard
 project-search validate-sqlite-logs
 project-search scheduler-dry-run
@@ -259,6 +263,7 @@ The CLI should produce structured JSON by default or offer a JSON mode so that s
 15. Add tests for schemas, CLI outputs, log invariants, and guardrail language.
 16. Promote operational logs into a top-level SQLite database while preserving small JSON fixtures for regression tests.
 17. Add SQLite integrity summaries, migration checks, review-safe exports, and commit guards for generated databases.
+18. Add SQLite PRAGMA diagnostics, ignored local backups, retention summaries, and vacuum maintenance commands.
 
 ## Definition of Done
 
@@ -269,6 +274,7 @@ A project has implemented this blueprint when:
 - operational runs are mirrored into top-level SQLite logs
 - generated SQLite databases are not committed
 - SQLite exports preserve blockers, negative evidence, provenance, and uncertainty notes
+- SQLite backups are written to ignored local paths and retention state is inspectable
 - target selection exposes its composite factors
 - never-reviewed promising targets are prioritized
 - needs-follow-up records trigger mandatory tests
