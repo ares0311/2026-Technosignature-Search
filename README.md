@@ -553,7 +553,23 @@ To inspect what the passive/background system has already searched, run:
   --artifact-dir artifacts/background_scheduler_dry_run
 ```
 
-The ledger summary reports searched targets, candidate counts, blocking issues, conservative pathway labels, and run IDs. The reviewed-log summary captures targets that do not currently require follow-up. The needs-follow-up summary captures targets requiring mandatory local tests, human review, and possible report preparation. Follow-up test and report-readiness summaries then show whether mandatory local checks are complete, whether a conservative draft report is allowed, and which top-three review destinations are recommended. Draft follow-up report summaries preserve evidence, negative evidence, uncertainty, limitations, blockers, and next steps; the writer can persist Markdown plus a manifest under ignored `artifacts/` paths. User-decision summaries preserve explicit choices to request more tests or close as reviewed while keeping external submission disabled unless the user explicitly approves it. The top-level SQLite log commands initialize, summarize, query, export, check migration status, inspect PRAGMA health, create ignored local backups, summarize retention state, compact the database with `VACUUM`, and validate `logs/techno_search.sqlite3`. The scheduler dry-run writes temporary local artifacts without enabling live provider access. Negative searches must still be logged because they are part of the reproducibility record.
+The ledger summary reports searched targets, candidate counts, blocking issues, conservative pathway labels, and run IDs. The reviewed-log summary captures targets that do not currently require follow-up. The needs-follow-up summary captures targets requiring mandatory local tests, human review, and possible report preparation. Follow-up test and report-readiness summaries then show whether mandatory local checks are complete, whether a conservative draft report is allowed, and which top-three review destinations are recommended. Draft follow-up report summaries preserve evidence, negative evidence, uncertainty, limitations, blockers, and next steps; the writer can persist Markdown plus a manifest under ignored `artifacts/` paths. A small persisted example is committed under [`examples/background_draft_reports`](examples/background_draft_reports) for documentation review and can be inspected with `validate-draft-reports examples/background_draft_reports`. User-decision summaries preserve explicit choices to request more tests or close as reviewed while keeping external submission disabled unless the user explicitly approves it. The top-level SQLite log commands initialize, summarize, query, export, check migration status, print a non-destructive migration plan, print a review-safe weekly digest, inspect PRAGMA health, create ignored local backups, summarize retention state, compact the database with `VACUUM`, and validate `logs/techno_search.sqlite3`. The scheduler dry-run writes temporary local artifacts without enabling live provider access. Negative searches must still be logged because they are part of the reproducibility record.
+
+Operators can also clean up the ignored `artifacts/` directory between sessions:
+
+```bash
+.venv/bin/techno-search artifacts-cleanup
+.venv/bin/techno-search artifacts-cleanup --apply --acknowledge-local-apply
+```
+
+The dry-run plan never modifies committed project paths and the apply mode only deletes files under `artifacts/`. Cross-track candidate cross-references are operational metadata only; they link candidate IDs that share a target across radio, infrared, or anomaly tracks without modifying any score. Reproducibility verification re-scores persisted packets with the current scoring implementation and reports drift instead of auto-correcting historical artifacts:
+
+```bash
+.venv/bin/techno-search cross-track-summary
+.venv/bin/techno-search verify-report-reproducibility examples/reports
+.venv/bin/techno-search sqlite-log-weekly-digest
+.venv/bin/techno-search sqlite-log-migrate
+```
 
 To inspect whether logged background runs are ready for reviewed handoff, run:
 

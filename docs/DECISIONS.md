@@ -626,3 +626,49 @@ SQLite gives the project a durable, queryable, transactional log without adding 
 - External submission approval must not appear unless directly recorded by the user.
 - SQLite rows are workflow and provenance records only; they are not detections, discoveries, external validation, or submission approval.
 - SQLite integrity summaries, migration checks, review-safe exports, and commit guards are part of the operational safety boundary.
+
+---
+
+## DECISION-026: Cross-Track References Are Operational Metadata Only
+
+**Date:** 2026-05-15
+
+**Status:** Accepted
+
+### Decision
+
+Cross-track candidate cross-references record that two or more independently-scored candidate packets share the same target across radio, infrared, or anomaly tracks. They are operational metadata only and must not modify candidate posteriors, false-positive probability, derived scores, or the recommended pathway. Each contributing track preserves its own evidence and blocking issues independently.
+
+### Rationale
+
+A target appearing in multiple tracks is operationally interesting because it can guide reviewer attention, but cross-track agreement is not by itself evidence for any candidate hypothesis. Allowing cross-references to boost scores would silently couple track outputs and weaken the false-positive-first scoring discipline.
+
+### Consequences
+
+- The cross-track summary command and fixture stay strictly descriptive.
+- The fixture covers operational cross-references, conflicting evidence, single-track-only entries, and known-object cross-matches.
+- Conflicting and known-object entries are recorded so the absence of a candidate claim is auditable.
+- Tests assert that candidate scoring is byte-identical with and without loading cross-references.
+
+---
+
+## DECISION-027: Reproducibility Verification Reports Drift, Never Auto-Corrects
+
+**Date:** 2026-05-15
+
+**Status:** Accepted
+
+### Decision
+
+Persisted candidate report packets must be re-scoreable using the current scoring implementation. The reproducibility verification command compares recomputed scores, posteriors, and pathway against the persisted packet and reports drift. It must never overwrite persisted packets, manifests, or example artifacts.
+
+### Rationale
+
+Drift between persisted packets and current scoring can have many causes (intentional scoring change, schema bump, config bump, accidental regression). A tool that silently corrects historical artifacts would erase the audit trail. Operators must investigate the cause and re-publish artifacts deliberately.
+
+### Consequences
+
+- The verifier is read-only.
+- Drift reports include schema-version and config-version mismatches.
+- The verifier exits non-zero when drift is detected, and `validate-all` requires zero drift on the committed examples.
+- A future migration is required when drift is intentional; this command is not a substitute for that migration.

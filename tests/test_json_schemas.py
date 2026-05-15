@@ -23,6 +23,7 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "candidate_packet.schema.json",
         "consensus_export.schema.json",
         "consensus_labels.schema.json",
+        "cross_track_references.schema.json",
         "report_manifest.schema.json",
         "review_queue.schema.json",
         "validation_dataset_manifest.schema.json",

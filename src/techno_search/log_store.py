@@ -439,7 +439,75 @@ def sqlite_log_migration_summary(db_path: Path) -> dict[str, object]:
         "expected_schema_version": TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
         "migration_required": summary.get("schema_version")
         != TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
-        "supported_migrations": [],
+        "supported_migrations": list(SUPPORTED_SQLITE_LOG_MIGRATIONS),
+        "disclaimer": TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
+    }
+
+
+SUPPORTED_SQLITE_LOG_MIGRATIONS: tuple[dict[str, str], ...] = (
+    {
+        "from_version": TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
+        "to_version": TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
+        "kind": "noop",
+        "description": (
+            "Current schema is the latest supported version; no destructive "
+            "migration steps are defined."
+        ),
+    },
+)
+
+
+def sqlite_log_migration_plan(
+    db_path: Path,
+    *,
+    target_version: str = TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
+) -> dict[str, object]:
+    """Return a non-destructive migration plan for a SQLite operational log."""
+
+    resolved = Path(db_path)
+    summary = sqlite_log_summary(resolved)
+    current_version = summary.get("schema_version")
+    steps: list[dict[str, str]] = []
+    if current_version == target_version:
+        steps.append(
+            {
+                "kind": "noop",
+                "from_version": str(current_version),
+                "to_version": target_version,
+                "description": (
+                    "Schema already matches target; no destructive changes "
+                    "required."
+                ),
+            }
+        )
+    else:
+        steps.append(
+            {
+                "kind": "manual_review_required",
+                "from_version": str(current_version),
+                "to_version": target_version,
+                "description": (
+                    "No automatic migration is implemented for this version "
+                    "transition. Operator must review the schema before any "
+                    "destructive change."
+                ),
+            }
+        )
+    return {
+        "db_path": str(resolved),
+        "database_exists": resolved.exists(),
+        "current_schema_version": current_version,
+        "target_schema_version": target_version,
+        "migration_required": current_version != target_version,
+        "destructive_steps_count": 0,
+        "dry_run": True,
+        "steps": steps,
+        "supported_migrations": list(SUPPORTED_SQLITE_LOG_MIGRATIONS),
+        "uncertainty_and_limitations": [
+            "Migration plans are local operator aids only.",
+            "No destructive change is performed by the dry-run plan.",
+            "Operators must review the plan before applying any future migration.",
+        ],
         "disclaimer": TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
     }
 
@@ -507,6 +575,77 @@ def sqlite_log_export(db_path: Path, *, limit: int = 10) -> dict[str, object]:
             "SQLite exports are local workflow summaries only.",
             "A logged run is not a detection, discovery, or external validation.",
             "Needs-follow-up outcomes require human review and mandatory local tests.",
+        ],
+    }
+
+
+def sqlite_log_weekly_digest(
+    db_path: Path,
+    *,
+    window_days: int = 7,
+) -> dict[str, object]:
+    """Return a review-safe rolling digest from the SQLite operational log."""
+
+    summary = sqlite_log_summary(db_path)
+    if not summary.get("database_exists", False):
+        return {
+            "schema_version": TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
+            "disclaimer": TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
+            "ok": False,
+            "db_path": str(db_path),
+            "database_exists": False,
+            "window_days": window_days,
+        }
+
+    rows = _fetch_rows(
+        db_path,
+        "SELECT * FROM background_runs ORDER BY completed_at_utc DESC",
+    )
+    reviewed_rows = _fetch_rows(
+        db_path,
+        "SELECT * FROM reviewed_outcomes",
+    )
+    follow_up_rows = _fetch_rows(
+        db_path,
+        "SELECT * FROM needs_follow_up_outcomes",
+    )
+    user_decision_rows = _fetch_rows(
+        db_path,
+        "SELECT * FROM user_decisions",
+    )
+
+    track_counts = Counter(str(row["track"]) for row in rows)
+    blocking_issue_total = sum(
+        len(_json_list(row["blocking_issues_json"])) for row in rows
+    )
+    network_runs = sum(int(row["network_access_allowed"]) for row in rows)
+    external_approvals = sum(
+        int(row["external_submission_approved"]) for row in user_decision_rows
+    )
+    return {
+        "schema_version": TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
+        "disclaimer": TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
+        "db_path": str(db_path),
+        "database_exists": True,
+        "window_days": window_days,
+        "ok": (
+            bool(summary.get("ok", False))
+            and network_runs == 0
+            and external_approvals == 0
+        ),
+        "run_count": len(rows),
+        "reviewed_outcome_count": len(reviewed_rows),
+        "needs_follow_up_outcome_count": len(follow_up_rows),
+        "blocking_issue_total": blocking_issue_total,
+        "by_track": dict(sorted(track_counts.items())),
+        "network_access_allowed_count": network_runs,
+        "external_submission_approved_count": external_approvals,
+        "user_decision_count": len(user_decision_rows),
+        "uncertainty_and_limitations": [
+            "Digest is a review-safe summary; it does not expose payloads.",
+            "Counts describe local workflow state only.",
+            "External submission approvals must remain zero unless explicitly "
+            "recorded by the user.",
         ],
     }
 

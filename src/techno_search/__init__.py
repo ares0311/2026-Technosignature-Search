@@ -1,5 +1,11 @@
 """Technosignature-interest candidate search tools."""
 
+from techno_search.artifact_cleanup import (
+    ARTIFACT_CLEANUP_DISCLAIMER,
+    ARTIFACT_CLEANUP_SCHEMA_VERSION,
+    apply_artifact_cleanup,
+    plan_artifact_cleanup,
+)
 from techno_search.background_search import (
     BACKGROUND_FOLLOW_UP_TEST_DISCLAIMER,
     BACKGROUND_FOLLOW_UP_TEST_SCHEMA_VERSION,
@@ -81,6 +87,13 @@ from techno_search.calibration_metrics import (
     reliability_summary,
 )
 from techno_search.config import TrackConfig, load_scoring_config, load_track_config
+from techno_search.cross_track import (
+    CROSS_TRACK_REFERENCE_DISCLAIMER,
+    CROSS_TRACK_REFERENCE_SCHEMA_VERSION,
+    CrossTrackReference,
+    cross_track_summary,
+    load_cross_track_references,
+)
 from techno_search.injection_recovery import (
     INJECTION_RECOVERY_DISCLAIMER,
     injection_recovery_summary,
@@ -103,6 +116,12 @@ from techno_search.reporting import (
     report_manifest,
     report_manifest_json,
     write_candidate_reports,
+)
+from techno_search.reproducibility import (
+    REPRODUCIBILITY_VERIFICATION_DISCLAIMER,
+    REPRODUCIBILITY_VERIFICATION_SCHEMA_VERSION,
+    verify_packet_against_manifest,
+    verify_report_directory,
 )
 from techno_search.review_queue import (
     CONSENSUS_EXPORT_DISCLAIMER,
@@ -148,6 +167,8 @@ from techno_search.validation_datasets import (
 )
 
 __all__ = [
+    "ARTIFACT_CLEANUP_DISCLAIMER",
+    "ARTIFACT_CLEANUP_SCHEMA_VERSION",
     "BENCHMARK_METADATA_DISCLAIMER",
     "BENCHMARK_METADATA_SCHEMA_VERSION",
     "BENCHMARK_RUN_RESULT_DISCLAIMER",
@@ -168,6 +189,11 @@ __all__ = [
     "ConsensusExportItem",
     "ConsensusItem",
     "ConsensusLabel",
+    "CROSS_TRACK_REFERENCE_DISCLAIMER",
+    "CROSS_TRACK_REFERENCE_SCHEMA_VERSION",
+    "CrossTrackReference",
+    "REPRODUCIBILITY_VERIFICATION_DISCLAIMER",
+    "REPRODUCIBILITY_VERIFICATION_SCHEMA_VERSION",
     "FALSE_POSITIVE_ANALYSIS_DISCLAIMER",
     "BACKGROUND_FOLLOW_UP_TEST_DISCLAIMER",
     "BACKGROUND_FOLLOW_UP_TEST_SCHEMA_VERSION",
@@ -219,6 +245,7 @@ __all__ = [
     "ValidationReadinessRecord",
     "allowed_consensus_labels",
     "allowed_triage_labels",
+    "apply_artifact_cleanup",
     "append_benchmark_run_result",
     "append_background_needs_follow_up_entry",
     "append_background_reviewed_log_entry",
@@ -238,6 +265,7 @@ __all__ = [
     "candidate_extraction_handoff_summary",
     "calibration_track_summary",
     "classify_pathway",
+    "cross_track_summary",
     "false_positive_class_summary",
     "load_background_follow_up_tests",
     "load_background_needs_follow_up_log",
@@ -256,6 +284,7 @@ __all__ = [
     "load_review_queue_items",
     "load_scoring_config",
     "load_track_config",
+    "plan_artifact_cleanup",
     "load_validation_dataset_entries",
     "load_validation_promotion_rules",
     "load_validation_readiness_records",
@@ -267,6 +296,7 @@ __all__ = [
     "consensus_summary",
     "load_consensus_export_items",
     "load_consensus_items",
+    "load_cross_track_references",
     "report_manifest",
     "report_manifest_json",
     "require_live_data_enabled",
@@ -280,6 +310,8 @@ __all__ = [
     "validation_dataset_summary",
     "validation_promotion_summary",
     "validation_readiness_summary",
+    "verify_packet_against_manifest",
+    "verify_report_directory",
     "write_candidate_reports",
     "write_synthetic_plot_artifacts",
 ]

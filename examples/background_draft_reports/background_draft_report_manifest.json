@@ -1,0 +1,42 @@
+{
+  "disclaimer": "Background draft follow-up reports are conservative internal summaries for review-ready records; they are not discoveries, detections, external validation, or authorization to submit externally.",
+  "draft_report_count": 2,
+  "generated_at_utc": "2026-05-15T00:00:00+00:00",
+  "output_dir": "examples/background_draft_reports",
+  "reports": [
+    {
+      "blocking_issue_count": 1,
+      "draft_id": "draft-report-readiness-radio-001",
+      "draft_status": "draft_ready",
+      "external_submission_allowed": false,
+      "follow_up_id": "follow-up-background-demo-001",
+      "limitation_count": 2,
+      "markdown_path": "examples/background_draft_reports/draft-report-readiness-radio-001.md",
+      "negative_evidence_count": 3,
+      "network_access_allowed": false,
+      "readiness_id": "report-readiness-radio-001",
+      "run_id": "background-demo-001",
+      "target_id": "target-radio-clean-drift",
+      "track": "radio",
+      "user_approval_required": true
+    },
+    {
+      "blocking_issue_count": 3,
+      "draft_id": "draft-report-readiness-infrared-001",
+      "draft_status": "blocked_not_ready",
+      "external_submission_allowed": false,
+      "follow_up_id": "follow-up-background-demo-002",
+      "limitation_count": 2,
+      "markdown_path": "examples/background_draft_reports/draft-report-readiness-infrared-001.md",
+      "negative_evidence_count": 3,
+      "network_access_allowed": false,
+      "readiness_id": "report-readiness-infrared-001",
+      "run_id": "background-demo-002",
+      "target_id": "target-infrared-excess-review",
+      "track": "infrared",
+      "user_approval_required": true
+    }
+  ],
+  "schema_version": "background_draft_report_manifest_v1",
+  "source_readiness_path": "tests/fixtures/background_report_readiness.json"
+}

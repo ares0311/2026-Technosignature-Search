@@ -171,6 +171,13 @@ The project will support three tracks from day one:
 - [x] SQLite integrity, migration, recent-run, needs-follow-up, and review-safe export commands added
 - [x] Generated top-level SQLite log commit guard added
 - [x] SQLite PRAGMA diagnostics, ignored backups, retention summaries, and vacuum maintenance commands added
+- [x] SQLite log non-destructive migration plan command added
+- [x] SQLite log review-safe weekly digest command added
+- [x] Persisted draft report example artifacts committed under `examples/background_draft_reports`
+- [x] Local artifacts cleanup CLI with dry-run default and committed-path safety added
+- [x] Cross-track candidate cross-reference schema, fixture, and summary CLI added
+- [x] Persisted-report reproducibility verification helper and CLI added
+- [x] Cross-track and reproducibility wiring added to `validate-all` and `validation-summary`
 
 ---
 
@@ -195,9 +202,9 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Add persisted Markdown report examples to release documentation once the operator chooses a stable artifact location.
-2. Add optional cleanup guidance for local background `artifacts/` directories.
-3. Add future SQLite migration implementation when the schema needs to change.
+1. Begin Milestone 10 evaluation scaffolding (interpretable baseline only) once non-synthetic validation datasets become available.
+2. Add operator-facing weekly review template that pairs `sqlite-log-weekly-digest` output with the cross-track summary.
+3. Add a guarded migration step the first time the SQLite log schema needs to change, replacing the current no-op plan.
 
 ---
 

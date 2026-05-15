@@ -580,6 +580,67 @@ Use `--handoff-path` to inspect a different candidate extraction handoff JSON fi
 
 ---
 
+## Cross-Track Candidate References
+
+Summarize cross-track candidate cross-reference fixture coverage:
+
+```bash
+.venv/bin/techno-search cross-track-summary
+```
+
+Cross-track references are operational cross-reference metadata only. They identify candidate IDs that share a target across more than one track, but they never modify candidate posteriors, false-positive probability, or pathway routing. The fixture covers operational cross-references, conflicting evidence between tracks, single-track-only entries (recorded so missing cross-track support is auditable), and known-object cross-matches. Use `--fixture-path` to inspect a different cross-track reference JSON file.
+
+---
+
+## Verify Persisted Report Reproducibility
+
+Re-score persisted candidate packets and report drift vs. their manifests:
+
+```bash
+.venv/bin/techno-search verify-report-reproducibility examples/reports
+```
+
+This command is read-only. It re-scores each candidate using the current scoring implementation and compares the recomputed result against the persisted JSON packet, including pathway, posterior values, derived scores, schema version, and config version. Drift is reported, never auto-corrected. The command exits non-zero if any persisted packet drifts from the current implementation.
+
+---
+
+## SQLite Log Migration Plan
+
+Print a non-destructive migration plan for the top-level SQLite operational log:
+
+```bash
+.venv/bin/techno-search sqlite-log-migrate
+```
+
+The plan is dry-run by default and reports the current schema version, target version, and any planned steps. The `--apply` flag is intentionally blocked because no destructive migration is currently implemented; it is reserved for a future explicit migration that an operator must review.
+
+---
+
+## SQLite Log Weekly Digest
+
+Print a review-safe rolling digest of the top-level SQLite operational log:
+
+```bash
+.venv/bin/techno-search sqlite-log-weekly-digest
+```
+
+The digest reports run counts, reviewed and needs-follow-up outcome counts, blocking-issue totals, network-access counts (must remain zero by default), and external-submission approval counts (must remain zero unless directly recorded by the user). It does not expose payload contents.
+
+---
+
+## Clean Up Local Background Artifacts
+
+Plan or apply local cleanup of the ignored `artifacts/` directory:
+
+```bash
+.venv/bin/techno-search artifacts-cleanup
+.venv/bin/techno-search artifacts-cleanup --apply --acknowledge-local-apply
+```
+
+The plan is dry-run by default. Apply mode requires the explicit acknowledgement flag and only deletes files under the ignored top-level `artifacts/` directory. The command refuses to operate on `examples/`, `schemas/`, `tests/`, `docs/`, `configs/`, `src/`, `logs/`, `cache/`, or `data/`.
+
+---
+
 ## Run Local Validation Summary
 
 Run the non-network validation summaries used for quick release checks:
@@ -588,7 +649,7 @@ Run the non-network validation summaries used for quick release checks:
 .venv/bin/techno-search validate-all
 ```
 
-This includes example candidate validation, report validation, persisted draft-report validation, schema path checks, calibration fixture summary, calibration-by-track diagnostics, false-positive class diagnostics, score regression summary, background target-priority summary, background search ledger summary, background reviewed-workflow summary, reviewed outcome log summary, needs-follow-up outcome log summary, follow-up test summary, report-readiness summary, draft follow-up report summary, user decision summary, candidate extraction handoff summary, human-review queue summary, consensus label summary, consensus export summary, validation dataset manifest summary, validation readiness summary, benchmark metadata summary, and benchmark run-result summary.
+This includes example candidate validation, report validation, persisted draft-report validation, schema path checks, calibration fixture summary, calibration-by-track diagnostics, false-positive class diagnostics, score regression summary, background target-priority summary, background search ledger summary, background reviewed-workflow summary, reviewed outcome log summary, needs-follow-up outcome log summary, follow-up test summary, report-readiness summary, draft follow-up report summary, user decision summary, candidate extraction handoff summary, human-review queue summary, consensus label summary, consensus export summary, validation dataset manifest summary, validation readiness summary, benchmark metadata summary, benchmark run-result summary, cross-track candidate cross-reference summary, persisted-report reproducibility verification, SQLite log migration plan, and SQLite log weekly digest.
 It also reports `catalog_cache_validation` for Git-tracked paths so local untracked caches do not fail default validation.
 
 ---
