@@ -525,3 +525,37 @@ Gate: at least 4 watchlist entries, zero elevated-and-blocked conflicts. Watchli
 ```
 
 Assembles the weekly operator review template confirming network access is zero, external submission approval is absent, and cross-track references are current. Output is a local review artifact only.
+
+---
+
+## Confusion Matrix And Score Determinism
+
+```bash
+.venv/bin/techno-search baseline-confusion-matrix-summary
+.venv/bin/techno-search score-determinism-check
+```
+
+The confusion matrix reports per-pathway precision, recall, and F1 from the baseline evaluation harness. All metrics are synthetic diagnostics — not calibrated survey performance.
+
+The score determinism check verifies that `score_candidate` produces identical outputs across three repeated runs for all example candidates. This is a local sanity check required before any learned model is introduced. Gate: all example candidates must be deterministic.
+
+---
+
+## Candidate Lifecycle And Observation Schedule
+
+```bash
+.venv/bin/techno-search candidate-lifecycle-summary
+.venv/bin/techno-search observation-schedule-summary
+```
+
+Gates in `validate-all`: at least 3 lifecycle entries across all 3 tracks; at least 4 observation windows. These are scheduling and provenance records only.
+
+---
+
+## False-Negative Summary
+
+```bash
+.venv/bin/techno-search false-negative-summary
+```
+
+Gate in `validate-all`: `synthetic_missed_injection_rate < 1.0` (at least one injection must be recovered per track). Values are synthetic development diagnostics only.

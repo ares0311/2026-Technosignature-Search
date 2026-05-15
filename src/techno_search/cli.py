@@ -37,6 +37,7 @@ from techno_search.baseline_eval import (
     baseline_pathway_drift_summary,
     baseline_performance_history_summary,
     evaluate_baseline,
+    score_determinism_check,
 )
 from techno_search.benchmark_metadata import (
     BenchmarkRunResult,
@@ -52,9 +53,12 @@ from techno_search.calibration import (
     summarize_calibration_fixtures,
 )
 from techno_search.calibration_metrics import precision_recall_summary, reliability_summary
+from techno_search.candidate_lifecycle import (
+    candidate_lifecycle_summary,
+)
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.cross_track import cross_track_summary
-from techno_search.injection_recovery import injection_recovery_summary
+from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
 from techno_search.live_data import (
     CatalogCache,
     CatalogCachePolicy,
@@ -84,6 +88,9 @@ from techno_search.log_store import (
     sqlite_needs_follow_up,
     sqlite_recent_runs,
     validate_sqlite_log_commit_paths,
+)
+from techno_search.observation_schedule import (
+    observation_schedule_summary,
 )
 from techno_search.plotting import plot_artifact_summary
 from techno_search.reporting import (
@@ -139,6 +146,8 @@ SCHEMA_FILENAMES = {
     "weekly_review_template": "weekly_review_template.schema.json",
     "baseline_eval": "baseline_eval.schema.json",
     "baseline_performance_history": "baseline_performance_history.schema.json",
+    "candidate_lifecycle": "candidate_lifecycle.schema.json",
+    "observation_schedule": "observation_schedule.schema.json",
 }
 
 
@@ -949,6 +958,65 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(_health, indent=2, sort_keys=True), file=out)
         return 0 if _health["all_gates_pass"] else 1
 
+    if args.command == "baseline-confusion-matrix-summary":
+        confusion_result = evaluate_baseline()
+        confusion_output = {
+            "schema_version": "baseline_eval_v0",
+            "disclaimer": confusion_result["disclaimer"],
+            "total_cases": confusion_result["total_cases"],
+            "confusion_matrix": confusion_result["confusion_matrix"],
+            "per_pathway_precision": confusion_result["per_pathway_precision"],
+            "per_pathway_recall": confusion_result["per_pathway_recall"],
+            "per_pathway_f1": confusion_result["per_pathway_f1"],
+        }
+        print(json.dumps(confusion_output, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "score-determinism-check":
+        candidate_paths = getattr(args, "candidate_paths", None)
+        runs = int(getattr(args, "runs", 3))
+        if not candidate_paths:
+            _default_examples = _default_example_candidates_dir()
+            candidate_paths = sorted(_default_examples.glob("*.json"))
+        results_det = []
+        all_deterministic = True
+        for cp in candidate_paths:
+            det = score_determinism_check(Path(cp), runs=runs)
+            results_det.append(det)
+            if not det["deterministic"]:
+                all_deterministic = False
+        output_det = {
+            "all_deterministic": all_deterministic,
+            "runs_per_candidate": runs,
+            "results": results_det,
+        }
+        print(json.dumps(output_det, indent=2, sort_keys=True), file=out)
+        return 0 if all_deterministic else 1
+
+    if args.command == "candidate-lifecycle-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        lifecycle = candidate_lifecycle_summary(
+            Path(fixture_path) if fixture_path else None
+        )
+        print(json.dumps(lifecycle, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "observation-schedule-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        schedule = observation_schedule_summary(
+            Path(fixture_path) if fixture_path else None
+        )
+        print(json.dumps(schedule, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "false-negative-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        fn_summary = false_negative_summary(
+            Path(fixture_path) if fixture_path else None
+        )
+        print(json.dumps(fn_summary, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "artifacts-cleanup":
         if args.apply:
             cleanup_result = apply_artifact_cleanup(
@@ -1077,6 +1145,10 @@ def default_project_root() -> Path:
     """Return the repository root."""
 
     return Path(__file__).resolve().parents[2]
+
+
+def _default_example_candidates_dir() -> Path:
+    return default_project_root() / "examples" / "candidates"
 
 
 def regenerate_examples() -> dict[str, object]:
@@ -1228,6 +1300,14 @@ def validate_all() -> dict[str, object]:
     watchlist = target_watchlist_summary()
     watchlist_entry_count = watchlist["entry_count"]
     watchlist_conflict_count = watchlist["conflict_count"]
+    lifecycle = candidate_lifecycle_summary()
+    lifecycle_entry_count = int(lifecycle.get("entry_count", 0))
+    lifecycle_tracks_covered = list(lifecycle.get("tracks_covered", []))
+    schedule = observation_schedule_summary()
+    schedule_window_count = int(schedule.get("window_count", 0))
+    fn_sum = false_negative_summary()
+    _fn_rate = fn_sum.get("synthetic_missed_injection_rate")
+    fn_missed_rate = float(_fn_rate) if isinstance(_fn_rate, (int, float)) else 1.0
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -1405,6 +1485,13 @@ def validate_all() -> dict[str, object]:
         and baseline_total_cases >= 3
         and isinstance(baseline_drift_count, int)
         and baseline_drift_zero
+        and isinstance(lifecycle_entry_count, int)
+        and lifecycle_entry_count >= 3
+        and len(lifecycle_tracks_covered) >= 3
+        and isinstance(schedule_window_count, int)
+        and schedule_window_count >= 4
+        and isinstance(fn_missed_rate, float)
+        and fn_missed_rate < 1.0
     )
     return {
         "ok": ok,
@@ -1456,6 +1543,9 @@ def validate_all() -> dict[str, object]:
         "target_watchlist_summary": watchlist,
         "baseline_eval_summary": baseline_eval,
         "baseline_pathway_drift_summary": drift_result,
+        "candidate_lifecycle_summary": lifecycle,
+        "observation_schedule_summary": schedule,
+        "false_negative_summary": fn_sum,
     }
 
 
@@ -1895,6 +1985,26 @@ def validation_summary() -> dict[str, object]:
             dr_s["drift_count"]
             if isinstance(dr_s := validation.get("baseline_pathway_drift_summary"), dict)
             else 0
+        ),
+        "candidate_lifecycle_entry_count": (
+            lc_s["entry_count"]
+            if isinstance(lc_s := validation.get("candidate_lifecycle_summary"), dict)
+            else 0
+        ),
+        "observation_schedule_window_count": (
+            os_s["window_count"]
+            if isinstance(os_s := validation.get("observation_schedule_summary"), dict)
+            else 0
+        ),
+        "false_negative_case_count": (
+            fn_s["missed_count"]
+            if isinstance(fn_s := validation.get("false_negative_summary"), dict)
+            else 0
+        ),
+        "synthetic_missed_injection_rate": (
+            fn_s2["synthetic_missed_injection_rate"]
+            if isinstance(fn_s2 := validation.get("false_negative_summary"), dict)
+            else 0.0
         ),
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
@@ -2980,6 +3090,62 @@ def _build_parser() -> argparse.ArgumentParser:
             "Concise project health dashboard combining key gate statuses. "
             "Returns exit 1 if any gate fails."
         ),
+    )
+    subparsers.add_parser(
+        "baseline-confusion-matrix-summary",
+        help=(
+            "Print per-pathway confusion matrix and precision/recall/F1 metrics "
+            "from the baseline evaluation harness. Synthetic diagnostics only."
+        ),
+    )
+    det_parser = subparsers.add_parser(
+        "score-determinism-check",
+        help=(
+            "Verify scoring produces identical outputs across repeated runs for "
+            "example candidates. Returns exit 1 if any candidate is non-deterministic."
+        ),
+    )
+    det_parser.add_argument(
+        "candidate_paths",
+        nargs="*",
+        type=Path,
+        help="Optional candidate JSON paths to check. Defaults to examples/candidates/.",
+    )
+    det_parser.add_argument(
+        "--runs",
+        type=int,
+        default=3,
+        help="Number of repeat runs per candidate (default: 3).",
+    )
+    lifecycle_parser = subparsers.add_parser(
+        "candidate-lifecycle-summary",
+        help="Summarise candidate lifecycle stage entries. Scheduling aid only.",
+    )
+    lifecycle_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional candidate lifecycle fixture JSON path.",
+    )
+    schedule_parser = subparsers.add_parser(
+        "observation-schedule-summary",
+        help="Summarise planned/completed/cancelled observation windows. Scheduling aid only.",
+    )
+    schedule_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional observation schedule fixture JSON path.",
+    )
+    fn_parser = subparsers.add_parser(
+        "false-negative-summary",
+        help=(
+            "Summarise missed injections from the injection-recovery fixture. "
+            "Synthetic diagnostic only."
+        ),
+    )
+    fn_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional injection-recovery fixture JSON path.",
     )
     artifacts_cleanup_parser = subparsers.add_parser(
         "artifacts-cleanup",

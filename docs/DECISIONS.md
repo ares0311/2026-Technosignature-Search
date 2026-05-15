@@ -720,3 +720,25 @@ Having multiple disparate summaries (watchlist, baseline drift, cross-track) sca
 - Elevated watchlist targets appear in the recommended next-actions list.
 - Baseline pathway drift is checked before committing any scheduled observation cycle.
 - The template is a local internal review artifact only and must never be treated as a discovery claim or external submission.
+
+---
+
+## DECISION-030: Scoring Must Be Deterministic Before Any Learned Model Is Introduced
+
+**Date:** 2026-05-15
+
+**Status:** Accepted
+
+### Decision
+
+Before any trained or learned model is introduced into the pathway routing system, scoring must be verified as fully deterministic. The `score-determinism-check` CLI command must pass for all committed example candidates (identical `posterior`, `scores`, and `recommended_pathway` across three or more repeated runs) before any model-training or model-serving infrastructure is added.
+
+### Rationale
+
+Reproducibility is a prerequisite for scientific integrity. If scoring is non-deterministic, baseline evaluation results cannot be relied upon, regression snapshots become meaningless, and comparing trained model outputs against the baseline is impossible. Catching non-determinism early avoids downstream confusion between model variance and genuine signal variation.
+
+### Consequences
+
+- `score-determinism-check` is wired into `validate-all` and must return `all_deterministic: true`.
+- Any introduction of randomness (sampling, stochastic inference, data augmentation) must be explicitly gated behind a separate opt-in flag and documented in DECISIONS.md.
+- The scoring model must remain deterministic for a given input regardless of execution environment or call count.

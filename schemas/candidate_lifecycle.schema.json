@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CandidateLifecycle",
+  "description": "Local scheduling and provenance records for candidate lifecycle stage transitions. Not a detection claim or external submission.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "entries"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "candidate_lifecycle_v1"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "track",
+          "stage",
+          "stage_entered_utc",
+          "pathway"
+        ],
+        "properties": {
+          "candidate_id": { "type": "string" },
+          "track": { "type": "string" },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "initial_detection",
+              "scored",
+              "baseline_classified",
+              "human_reviewed",
+              "pathway_decided",
+              "follow_up_scheduled",
+              "archived"
+            ]
+          },
+          "stage_entered_utc": { "type": "string" },
+          "pathway": { "type": "string" },
+          "operator_notes": { "type": "string" },
+          "blocking_reasons": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

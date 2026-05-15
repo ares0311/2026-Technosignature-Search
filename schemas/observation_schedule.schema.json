@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ObservationSchedule",
+  "description": "Local scheduling aid for planned, completed, and cancelled observation windows. Not a detection claim or external submission.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "windows"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "observation_schedule_v1"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "windows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "window_id",
+          "target_id",
+          "track",
+          "scheduled_utc",
+          "duration_minutes",
+          "priority_score",
+          "status"
+        ],
+        "properties": {
+          "window_id": { "type": "string" },
+          "target_id": { "type": "string" },
+          "track": { "type": "string" },
+          "scheduled_utc": { "type": "string" },
+          "duration_minutes": { "type": "number", "minimum": 0 },
+          "priority_score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "status": {
+            "type": "string",
+            "enum": ["planned", "completed", "cancelled"]
+          },
+          "operator_notes": { "type": "string" },
+          "blocking_reasons": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

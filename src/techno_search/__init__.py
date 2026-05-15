@@ -62,6 +62,7 @@ from techno_search.baseline_eval import (
     baseline_pathway_drift_summary,
     baseline_performance_history_summary,
     evaluate_baseline,
+    score_determinism_check,
 )
 from techno_search.baseline_model import (
     ALL_BASELINE_RULES,
@@ -100,6 +101,13 @@ from techno_search.calibration_metrics import (
     precision_recall_summary,
     reliability_summary,
 )
+from techno_search.candidate_lifecycle import (
+    CANDIDATE_LIFECYCLE_DISCLAIMER,
+    CANDIDATE_LIFECYCLE_SCHEMA_VERSION,
+    CandidateLifecycleEntry,
+    candidate_lifecycle_summary,
+    load_lifecycle_entries,
+)
 from techno_search.config import TrackConfig, load_scoring_config, load_track_config
 from techno_search.cross_track import (
     CROSS_TRACK_REFERENCE_DISCLAIMER,
@@ -110,10 +118,18 @@ from techno_search.cross_track import (
 )
 from techno_search.injection_recovery import (
     INJECTION_RECOVERY_DISCLAIMER,
+    false_negative_summary,
     injection_recovery_summary,
     load_injection_recovery_cases,
 )
 from techno_search.live_data import live_data_enabled, require_live_data_enabled
+from techno_search.observation_schedule import (
+    OBSERVATION_SCHEDULE_DISCLAIMER,
+    OBSERVATION_SCHEDULE_SCHEMA_VERSION,
+    ObservationWindow,
+    load_observation_windows,
+    observation_schedule_summary,
+)
 from techno_search.pathway import classify_pathway
 from techno_search.plotting import (
     PLOT_ARTIFACT_DISCLAIMER,
@@ -205,6 +221,17 @@ __all__ = [
     "baseline_performance_history_summary",
     "evaluate_baseline",
     "predict_pathway",
+    "score_determinism_check",
+    "CANDIDATE_LIFECYCLE_DISCLAIMER",
+    "CANDIDATE_LIFECYCLE_SCHEMA_VERSION",
+    "CandidateLifecycleEntry",
+    "candidate_lifecycle_summary",
+    "load_lifecycle_entries",
+    "OBSERVATION_SCHEDULE_DISCLAIMER",
+    "OBSERVATION_SCHEDULE_SCHEMA_VERSION",
+    "ObservationWindow",
+    "load_observation_windows",
+    "observation_schedule_summary",
     "ARTIFACT_CLEANUP_DISCLAIMER",
     "ARTIFACT_CLEANUP_SCHEMA_VERSION",
     "BENCHMARK_METADATA_DISCLAIMER",
@@ -258,6 +285,7 @@ __all__ = [
     "CANDIDATE_EXTRACTION_HANDOFF_SCHEMA_VERSION",
     "CandidateExtractionHandoffRecord",
     "DEFAULT_PRIORITY_WEIGHTS",
+    "false_negative_summary",
     "INJECTION_RECOVERY_DISCLAIMER",
     "LOCAL_BACKGROUND_EXECUTION_MODE",
     "LOCAL_BACKGROUND_REVIEW_STATUS",

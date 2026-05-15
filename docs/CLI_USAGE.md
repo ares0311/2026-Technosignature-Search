@@ -927,6 +927,56 @@ Prints a concise local health dashboard combining baseline pathway accuracy, wat
 
 ---
 
+## Baseline Confusion Matrix Summary
+
+```bash
+techno-search baseline-confusion-matrix-summary
+```
+
+Prints the per-pathway confusion matrix and precision/recall/F1 metrics from the baseline evaluation harness. All metrics are computed against synthetic fixtures and are local development diagnostics only — not calibrated survey performance estimates.
+
+---
+
+## Score Determinism Check
+
+```bash
+techno-search score-determinism-check [CANDIDATE_PATHS...] [--runs N]
+```
+
+Runs `score_candidate` on each candidate N times (default 3) and verifies identical outputs across all runs. Returns exit code 1 if any candidate produces non-deterministic results. Defaults to `examples/candidates/` if no paths are supplied.
+
+---
+
+## Candidate Lifecycle Summary
+
+```bash
+techno-search candidate-lifecycle-summary [--fixture-path PATH]
+```
+
+Summarises candidate lifecycle stage entries from the committed fixture. Lifecycle stages: `initial_detection`, `scored`, `baseline_classified`, `human_reviewed`, `pathway_decided`, `follow_up_scheduled`, `archived`. These are local scheduling and provenance records only — not detection claims.
+
+---
+
+## Observation Schedule Summary
+
+```bash
+techno-search observation-schedule-summary [--fixture-path PATH]
+```
+
+Summarises planned, completed, and cancelled observation windows from the committed fixture. Reports window counts by status and track, total scheduled minutes, and top-priority targets. This is a scheduling aid only — not a detection claim or external submission authorization.
+
+---
+
+## False-Negative Summary
+
+```bash
+techno-search false-negative-summary [--fixture-path PATH]
+```
+
+Summarises missed injections (false negatives) from the synthetic injection-recovery fixture. Reports missed count, missed rate per track, and dominant miss types. A high missed-injection rate indicates low scoring sensitivity for that track. All values are synthetic development diagnostics only.
+
+---
+
 ## Scientific Guardrails
 
 CLI output is a review artifact, not a discovery claim.
