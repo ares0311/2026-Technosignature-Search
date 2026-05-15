@@ -106,7 +106,7 @@ def test_cli_sqlite_log_migrate_dry_run(tmp_path: Path) -> None:
     assert result["migration_required"] is False
 
 
-def test_cli_sqlite_log_migrate_apply_blocked(tmp_path: Path) -> None:
+def test_cli_sqlite_log_migrate_apply_succeeds_when_already_at_target(tmp_path: Path) -> None:
     db_path = tmp_path / "logs.sqlite3"
     _seed_sqlite_db(db_path)
     stdout = StringIO()
@@ -117,8 +117,9 @@ def test_cli_sqlite_log_migrate_apply_blocked(tmp_path: Path) -> None:
     )
     result = json.loads(stdout.getvalue())
 
-    assert exit_code == 1
-    assert result["apply_blocked"] is True
+    assert exit_code == 0
+    assert result["ok"] is True
+    assert result["already_at_target"] is True
 
 
 def test_cli_sqlite_log_weekly_digest(tmp_path: Path) -> None:

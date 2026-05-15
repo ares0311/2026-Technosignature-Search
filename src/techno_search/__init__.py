@@ -148,6 +148,13 @@ from techno_search.review_queue import (
 )
 from techno_search.schemas import Candidate, Pathway, ScoredCandidate, Track
 from techno_search.scoring import score_candidate
+from techno_search.target_watchlist import (
+    TARGET_WATCHLIST_DISCLAIMER,
+    TARGET_WATCHLIST_SCHEMA_VERSION,
+    WatchlistEntry,
+    load_watchlist_entries,
+    target_watchlist_summary,
+)
 from techno_search.validation_datasets import (
     VALIDATION_DATASET_DISCLAIMER,
     VALIDATION_DATASET_SCHEMA_VERSION,
@@ -164,6 +171,13 @@ from techno_search.validation_datasets import (
     validation_dataset_summary,
     validation_promotion_summary,
     validation_readiness_summary,
+)
+from techno_search.weekly_review import (
+    WEEKLY_REVIEW_DISCLAIMER,
+    WEEKLY_REVIEW_SCHEMA_VERSION,
+    WeeklyReviewTemplate,
+    build_weekly_review_template,
+    write_weekly_review_template,
 )
 
 __all__ = [
@@ -193,6 +207,16 @@ __all__ = [
     "CROSS_TRACK_REFERENCE_SCHEMA_VERSION",
     "CrossTrackReference",
     "REPRODUCIBILITY_VERIFICATION_DISCLAIMER",
+    "TARGET_WATCHLIST_DISCLAIMER",
+    "TARGET_WATCHLIST_SCHEMA_VERSION",
+    "WatchlistEntry",
+    "load_watchlist_entries",
+    "target_watchlist_summary",
+    "WEEKLY_REVIEW_DISCLAIMER",
+    "WEEKLY_REVIEW_SCHEMA_VERSION",
+    "WeeklyReviewTemplate",
+    "build_weekly_review_template",
+    "write_weekly_review_template",
     "REPRODUCIBILITY_VERIFICATION_SCHEMA_VERSION",
     "FALSE_POSITIVE_ANALYSIS_DISCLAIMER",
     "BACKGROUND_FOLLOW_UP_TEST_DISCLAIMER",

@@ -197,14 +197,19 @@ The project will support three tracks from day one:
 - [x] Add guarded VizieR live provider client
 - [x] Add guarded SIMBAD live provider client
 - [x] Add real live-data provider clients behind explicit integration gates
+- [x] Add weekly review template assembling SQLite digest + cross-track summary
+- [x] Add target watchlist scheduling aid with conflict detection
+- [x] Add guarded SQLite log migration (v1 → v2 adding `target_notes`)
+- [x] Add interpretable rule-based baseline classifier (Milestone 10 scaffold)
+- [x] Add baseline evaluation harness with pathway accuracy gate in `validate-all`
 
 ---
 
 ## Next 3 Actions
 
-1. Begin Milestone 10 evaluation scaffolding (interpretable baseline only) once non-synthetic validation datasets become available.
-2. Add operator-facing weekly review template that pairs `sqlite-log-weekly-digest` output with the cross-track summary.
-3. Add a guarded migration step the first time the SQLite log schema needs to change, replacing the current no-op plan.
+1. Extend Milestone 10 scaffold with track-specific baseline performance breakdowns and synthetic injection grid tests.
+2. Add a CI workflow file once a token with `workflow` scope is available.
+3. Begin non-synthetic validation dataset integration once real observations are available under appropriate data policy.
 
 ---
 

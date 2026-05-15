@@ -29,6 +29,8 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "validation_dataset_manifest.schema.json",
         "validation_promotion_rules.schema.json",
         "validation_readiness.schema.json",
+        "target_watchlist.schema.json",
+        "weekly_review_template.schema.json",
     }
     for path in schema_paths:
         schema = json.loads(path.read_text(encoding="utf-8"))

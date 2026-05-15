@@ -33,6 +33,7 @@ from techno_search.background_search import (
     target_priority_summary,
     write_background_draft_follow_up_reports,
 )
+from techno_search.baseline_eval import evaluate_baseline
 from techno_search.benchmark_metadata import (
     BenchmarkRunResult,
     append_benchmark_run_result,
@@ -63,6 +64,7 @@ from techno_search.live_data import (
 )
 from techno_search.log_store import (
     TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
+    apply_sqlite_log_migration,
     default_sqlite_log_path,
     init_sqlite_log_db,
     sqlite_log_backup,
@@ -92,6 +94,7 @@ from techno_search.review_queue import (
 )
 from techno_search.schemas import Candidate, Track, candidate_from_mapping
 from techno_search.scoring import score_candidate
+from techno_search.target_watchlist import target_watchlist_summary
 from techno_search.validation import (
     validate_candidate_file,
     validate_draft_report_directory,
@@ -103,6 +106,7 @@ from techno_search.validation_datasets import (
     validation_promotion_summary,
     validation_readiness_summary,
 )
+from techno_search.weekly_review import build_weekly_review_template, write_weekly_review_template
 
 SCHEMA_FILENAMES = {
     "background_draft_follow_up_reports": "background_draft_follow_up_reports.schema.json",
@@ -127,6 +131,8 @@ SCHEMA_FILENAMES = {
     "validation_dataset_manifest": "validation_dataset_manifest.schema.json",
     "validation_promotion_rules": "validation_promotion_rules.schema.json",
     "validation_readiness": "validation_readiness.schema.json",
+    "target_watchlist": "target_watchlist.schema.json",
+    "weekly_review_template": "weekly_review_template.schema.json",
 }
 
 
@@ -649,18 +655,9 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             target_version=args.target_version,
         )
         if args.apply:
-            plan = {
-                **plan,
-                "dry_run": False,
-                "apply_blocked": True,
-                "apply_blocked_reason": (
-                    "No automatic migration is implemented. Apply mode is "
-                    "blocked until a destructive migration is reviewed and "
-                    "added explicitly."
-                ),
-            }
-            print(json.dumps(plan, indent=2, sort_keys=True), file=out)
-            return 1
+            apply_result = apply_sqlite_log_migration(args.db_path)
+            print(json.dumps(apply_result, indent=2, sort_keys=True), file=out)
+            return 0 if apply_result.get("ok") else 1
         print(json.dumps(plan, indent=2, sort_keys=True), file=out)
         return 0
 
@@ -855,6 +852,67 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         catalog_result = catalog_cache_validation_summary(args.paths)
         print(json.dumps(catalog_result, indent=2, sort_keys=True), file=out)
         return 0 if catalog_result["ok"] else 1
+
+    if args.command == "baseline-eval-summary":
+        eval_result = evaluate_baseline(
+            calibration_fixture_path=getattr(args, "calibration_fixture", None),
+            example_candidates_dir=getattr(args, "example_candidates_dir", None),
+        )
+        result_without_details = {
+            k: v for k, v in eval_result.items() if k != "results"
+        }
+        print(json.dumps(result_without_details, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "target-watchlist-summary":
+        print(
+            json.dumps(
+                target_watchlist_summary(args.fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "weekly-review-template":
+        _db_path = getattr(args, "db_path", None) or default_sqlite_log_path(
+            default_project_root()
+        )
+        digest = sqlite_log_weekly_digest(_db_path, window_days=args.window_days)
+        ct_summary = cross_track_summary(
+            getattr(args, "cross_track_fixture", None)
+        )
+        template = build_weekly_review_template(
+            digest=digest,
+            ct_summary=ct_summary,
+            window_days=args.window_days,
+            operator_notes=args.operator_notes or "",
+        )
+        if args.output_dir is not None:
+            md_path, json_path = write_weekly_review_template(
+                template,
+                args.output_dir,
+            )
+            print(
+                json.dumps(
+                    {
+                        "ok": True,
+                        "markdown_path": str(md_path),
+                        "json_path": str(json_path),
+                        "network_access_confirmed_zero": template.network_access_confirmed_zero,
+                        "external_submission_confirmed_zero": (
+                            template.external_submission_confirmed_zero
+                        ),
+                    },
+                    indent=2,
+                    sort_keys=True,
+                ),
+                file=out,
+            )
+        else:
+            print(json.dumps(template.as_dict(), indent=2, sort_keys=True), file=out)
+        return 0
 
     if args.command == "artifacts-cleanup":
         if args.apply:
@@ -1125,6 +1183,12 @@ def validate_all() -> dict[str, object]:
         "external_submission_approved_count"
     ]
     user_decision_network_count = user_decisions["network_access_allowed_count"]
+    baseline_eval = evaluate_baseline()
+    baseline_pathway_accuracy = float(baseline_eval.get("pathway_accuracy", 0.0))
+    baseline_total_cases = int(baseline_eval.get("total_cases", 0))
+    watchlist = target_watchlist_summary()
+    watchlist_entry_count = watchlist["entry_count"]
+    watchlist_conflict_count = watchlist["conflict_count"]
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -1292,6 +1356,14 @@ def validate_all() -> dict[str, object]:
         and sqlite_network_count == 0
         and isinstance(sqlite_external_approved_count, int)
         and sqlite_external_approved_count == 0
+        and isinstance(watchlist_entry_count, int)
+        and watchlist_entry_count >= 4
+        and isinstance(watchlist_conflict_count, int)
+        and watchlist_conflict_count == 0
+        and isinstance(baseline_pathway_accuracy, float)
+        and baseline_pathway_accuracy >= 0.80
+        and isinstance(baseline_total_cases, int)
+        and baseline_total_cases >= 3
     )
     return {
         "ok": ok,
@@ -1340,6 +1412,8 @@ def validate_all() -> dict[str, object]:
         "top_level_sqlite_log_weekly_digest": sqlite_weekly_digest,
         "top_level_sqlite_log_validation": sqlite_log_validation,
         "top_level_sqlite_log_commit_guard": sqlite_commit_guard,
+        "target_watchlist_summary": watchlist,
+        "baseline_eval_summary": baseline_eval,
     }
 
 
@@ -1736,6 +1810,40 @@ def validation_summary() -> dict[str, object]:
         ]
         if isinstance(sqlite_logs, dict)
         else 0,
+        "baseline_pathway_accuracy": (
+            baseline_eval_s["pathway_accuracy"]
+            if isinstance(baseline_eval_s := validation.get("baseline_eval_summary"), dict)
+            else 0.0
+        ),
+        "baseline_false_positive_recall": (
+            baseline_eval_s2["false_positive_recall"]
+            if isinstance(
+                baseline_eval_s2 := validation.get("baseline_eval_summary"), dict
+            )
+            else 0.0
+        ),
+        "baseline_total_cases": (
+            baseline_eval_s3["total_cases"]
+            if isinstance(
+                baseline_eval_s3 := validation.get("baseline_eval_summary"), dict
+            )
+            else 0
+        ),
+        "target_watchlist_entry_count": (
+            wl_s["entry_count"]
+            if isinstance(wl_s := validation.get("target_watchlist_summary"), dict)
+            else 0
+        ),
+        "target_watchlist_elevated_count": (
+            wl_s2["elevated_count"]
+            if isinstance(wl_s2 := validation.get("target_watchlist_summary"), dict)
+            else 0
+        ),
+        "target_watchlist_conflict_count": (
+            wl_s3["conflict_count"]
+            if isinstance(wl_s3 := validation.get("target_watchlist_summary"), dict)
+            else 0
+        ),
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
             ".venv/bin/ruff check .",
@@ -2670,6 +2778,72 @@ def _build_parser() -> argparse.ArgumentParser:
         nargs="+",
         type=Path,
         help="Paths to validate before commit or release.",
+    )
+    baseline_eval_parser = subparsers.add_parser(
+        "baseline-eval-summary",
+        help=(
+            "Evaluate the rule-based interpretable baseline classifier against "
+            "synthetic calibration fixtures. Results are local diagnostics only — "
+            "not detections, discoveries, or external validation."
+        ),
+    )
+    baseline_eval_parser.add_argument(
+        "--calibration-fixture",
+        type=Path,
+        help="Optional calibration false-positive fixture JSON path.",
+    )
+    baseline_eval_parser.add_argument(
+        "--example-candidates-dir",
+        type=Path,
+        help="Optional example candidates directory.",
+    )
+    target_watchlist_parser = subparsers.add_parser(
+        "target-watchlist-summary",
+        help=(
+            "Summarize operator target watchlist fixture coverage. "
+            "Watchlist entries are scheduling aids only — they do not modify "
+            "candidate scores or pathway routing."
+        ),
+    )
+    target_watchlist_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional target watchlist fixture JSON path.",
+    )
+    weekly_review_parser = subparsers.add_parser(
+        "weekly-review-template",
+        help=(
+            "Generate an operator weekly review template combining the SQLite log "
+            "weekly digest and cross-track summary. Operational summary only — not a "
+            "discovery claim."
+        ),
+    )
+    weekly_review_parser.add_argument(
+        "--db-path",
+        type=Path,
+        default=default_sqlite_log_path(default_project_root()),
+        help="SQLite log database path. Defaults to logs/techno_search.sqlite3.",
+    )
+    weekly_review_parser.add_argument(
+        "--cross-track-fixture",
+        type=Path,
+        help="Optional cross-track reference fixture JSON path.",
+    )
+    weekly_review_parser.add_argument(
+        "--window-days",
+        type=int,
+        default=7,
+        help="Rolling window in days for the weekly digest (default: 7).",
+    )
+    weekly_review_parser.add_argument(
+        "--output-dir",
+        type=Path,
+        help="Optional output directory for Markdown and JSON template files.",
+    )
+    weekly_review_parser.add_argument(
+        "--operator-notes",
+        default="",
+        help="Optional free-text operator notes to include in the template.",
     )
     artifacts_cleanup_parser = subparsers.add_parser(
         "artifacts-cleanup",

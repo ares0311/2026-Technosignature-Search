@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TargetWatchlist",
+  "description": "Operator-maintained target watchlist for scheduling aid. Watchlist entries do not modify candidate scores, posteriors, or pathways. They are scheduling metadata only.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "disclaimer",
+    "entries"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "target_watchlist_v1"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "target_id",
+          "watchlist_kind",
+          "added_at_utc"
+        ],
+        "properties": {
+          "target_id": { "type": "string" },
+          "watchlist_kind": {
+            "type": "string",
+            "enum": ["elevated", "deprioritized", "blocked", "completed"]
+          },
+          "operator_notes": { "type": "string" },
+          "priority_override_score": {
+            "type": ["number", "null"],
+            "minimum": 0.0,
+            "maximum": 1.0
+          },
+          "added_at_utc": { "type": "string" },
+          "blocking_reasons": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

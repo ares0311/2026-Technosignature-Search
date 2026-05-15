@@ -10,7 +10,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION = "top_level_sqlite_logs_v1"
+TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION = "top_level_sqlite_logs_v2"
+TOP_LEVEL_SQLITE_LOG_PREVIOUS_SCHEMA_VERSION = "top_level_sqlite_logs_v1"
 TOP_LEVEL_SQLITE_LOG_DISCLAIMER = (
     "Top-level SQLite logs are local workflow and provenance records only; "
     "they are not detections, discoveries, external validation, or external "
@@ -446,6 +447,15 @@ def sqlite_log_migration_summary(db_path: Path) -> dict[str, object]:
 
 SUPPORTED_SQLITE_LOG_MIGRATIONS: tuple[dict[str, str], ...] = (
     {
+        "from_version": TOP_LEVEL_SQLITE_LOG_PREVIOUS_SCHEMA_VERSION,
+        "to_version": TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
+        "kind": "additive_column",
+        "description": (
+            "Add nullable target_notes TEXT column to background_runs. "
+            "Non-destructive: existing rows receive NULL for the new column."
+        ),
+    },
+    {
         "from_version": TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
         "to_version": TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
         "kind": "noop",
@@ -509,6 +519,66 @@ def sqlite_log_migration_plan(
             "Operators must review the plan before applying any future migration.",
         ],
         "disclaimer": TOP_LEVEL_SQLITE_LOG_DISCLAIMER,
+    }
+
+
+def apply_sqlite_log_migration(db_path: Path) -> dict[str, object]:
+    """Apply the guarded additive migration from v1 to v2 (adds target_notes column).
+
+    Idempotent — safe to call on a database already at v2.
+    Only adds the nullable column; no rows are modified or deleted.
+    """
+    resolved = Path(db_path)
+    if not resolved.exists():
+        return {
+            "ok": False,
+            "error": "database does not exist",
+            "db_path": str(resolved),
+        }
+    with closing(sqlite3.connect(resolved)) as connection:
+        rows = connection.execute(
+            "SELECT value FROM metadata WHERE key = 'schema_version'"
+        ).fetchone()
+        current_version = rows[0] if rows else None
+        if current_version == TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION:
+            return {
+                "ok": True,
+                "already_at_target": True,
+                "schema_version": TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
+                "db_path": str(resolved),
+                "migration_applied": False,
+            }
+        if current_version != TOP_LEVEL_SQLITE_LOG_PREVIOUS_SCHEMA_VERSION:
+            return {
+                "ok": False,
+                "error": (
+                    f"Cannot migrate from {current_version!r}: only "
+                    f"{TOP_LEVEL_SQLITE_LOG_PREVIOUS_SCHEMA_VERSION!r} → "
+                    f"{TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION!r} is supported."
+                ),
+                "db_path": str(resolved),
+            }
+        existing_columns = {
+            row[1]
+            for row in connection.execute(
+                "PRAGMA table_info(background_runs)"
+            ).fetchall()
+        }
+        with connection:
+            if "target_notes" not in existing_columns:
+                connection.execute(
+                    "ALTER TABLE background_runs ADD COLUMN target_notes TEXT"
+                )
+            _upsert_metadata(
+                connection,
+                {"schema_version": TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION},
+            )
+    return {
+        "ok": True,
+        "already_at_target": False,
+        "schema_version": TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
+        "db_path": str(resolved),
+        "migration_applied": True,
     }
 
 
@@ -710,7 +780,8 @@ def _create_schema(connection: sqlite3.Connection) -> None:
             requires_human_review INTEGER NOT NULL CHECK (requires_human_review IN (0, 1)),
             reviewed_workflow_status TEXT NOT NULL,
             network_access_allowed INTEGER NOT NULL DEFAULT 0
-                CHECK (network_access_allowed IN (0, 1))
+                CHECK (network_access_allowed IN (0, 1)),
+            target_notes TEXT
         );
 
         CREATE TABLE IF NOT EXISTS reviewed_outcomes (
