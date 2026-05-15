@@ -10,6 +10,63 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
+User requested fifteen iterative steps covering scoring config summary, route coverage, lifecycle transition validation, and observation efficiency.
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all fifteen steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/scoring_config.py` — `scoring_config_summary()` reading `configs/scoring_v0.json`
+- `schemas/scoring_config_summary.schema.json`
+- `techno-search scoring-config-summary` CLI with `--config-path`
+- `route_coverage_summary()` in `baseline_eval.py` — checks all Pathway enum values have calibration fixture coverage
+- `techno-search route-coverage-summary` CLI
+- `lifecycle_transition_summary()` in `candidate_lifecycle.py` — validates stage ordering per candidate
+- `techno-search lifecycle-transition-summary` CLI with `--fixture-path`
+- `observation_efficiency_summary()` in `observation_schedule.py` — completion/cancellation rates and per-track breakdown
+- `techno-search observation-efficiency-summary` CLI with `--fixture-path`
+- `scoring_config_summary` in `SCHEMA_FILENAMES` (total schemas: 29)
+- `validate-all` gates: `scoring_threshold_count >= 1`, `route_covered_count >= 2`, `lifecycle_invalid_count == 0`, `observation_completion_rate >= 0.0`
+- `validation-summary` fields: `scoring_threshold_count`, `route_covered_pathway_count`, `route_uncovered_pathway_count`, `lifecycle_invalid_transition_count`, `observation_completion_rate`, `observation_cancellation_rate`
+- DECISION-031: Scoring Config And Route Coverage Are Required Local Validation Gates
+- Tests: `test_scoring_config.py` (14), `test_lifecycle_transitions.py` (14) — 28 new tests, all passing
+- Docs: CLI_USAGE.md, VALIDATION.md, ROADMAP.md, PROJECT_STATUS.md updated
+
+Scientific guardrail:
+
+- Scoring config summary reports local threshold values only — not calibrated detection thresholds
+- Route coverage identifies fixture gaps for human review — it does not authorize claiming coverage of real observations
+- Lifecycle transition validation is a scheduling/provenance consistency check only
+- Observation efficiency summary is a scheduling aid — not a survey efficiency estimate
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/python -m ruff check .
+.venv/bin/python -m mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 430 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, PR created, merging to `main`.
+
+---
+
+## Previous Iteration
+
 User requested fifteen iterative steps covering baseline confusion matrix, score determinism checker, candidate lifecycle schema, observation schedule schema, and false-negative summary.
 
 Current branch: `claude/general-session-Bb2dZ`.

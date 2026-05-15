@@ -742,3 +742,31 @@ Reproducibility is a prerequisite for scientific integrity. If scoring is non-de
 - `score-determinism-check` is wired into `validate-all` and must return `all_deterministic: true`.
 - Any introduction of randomness (sampling, stochastic inference, data augmentation) must be explicitly gated behind a separate opt-in flag and documented in DECISIONS.md.
 - The scoring model must remain deterministic for a given input regardless of execution environment or call count.
+
+---
+
+## DECISION-031: Scoring Config And Route Coverage Are Required Local Validation Gates
+
+**Date:** 2026-05-15
+
+**Status:** Accepted
+
+### Decision
+
+Two new `validate-all` gates are introduced to support Milestone 10 interpretability and calibration work:
+
+1. **Scoring config threshold count** — at least one pathway threshold must be present in `configs/scoring_v0.json`. This ensures the scoring configuration file is not accidentally empty or corrupt.
+
+2. **Route coverage** — at least 2 Pathway enum values must have calibration fixture coverage. This confirms that both the primary positive pathway (`candidate_review_packet`) and primary negative pathway (`do_not_submit_false_positive`) are represented in the synthetic fixture set before any learned model is introduced.
+
+### Rationale
+
+A learned model trained only against fixtures covering a subset of pathways would have undefined behavior for uncovered classes. Requiring minimum route coverage makes gaps explicit before they affect calibration or evaluation.
+
+### Consequences
+
+- `scoring-config-summary` is wired into `validate-all` with a gate of `threshold_count >= 1`.
+- `route-coverage-summary` is wired into `validate-all` with a gate of `covered_pathway_count >= 2`.
+- `lifecycle-transition-summary` runs in `validate-all` and requires `invalid_transition_count == 0`.
+- `observation-efficiency-summary` runs in `validate-all` as a health check with no hard failure gate beyond `completion_rate >= 0.0`.
+- All four summaries are scheduling/provenance/diagnostic aids only. They do not authorize external submission or claim detection.

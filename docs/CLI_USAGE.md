@@ -977,6 +977,46 @@ Summarises missed injections (false negatives) from the synthetic injection-reco
 
 ---
 
+## Scoring Config Summary
+
+```bash
+techno-search scoring-config-summary [--config-path PATH]
+```
+
+Reports the current pathway threshold values from `configs/scoring_v0.json`. Includes threshold count, named threshold values, and local performance defaults. These are synthetic v0 development parameters only — not calibrated detection thresholds.
+
+---
+
+## Route Coverage Summary
+
+```bash
+techno-search route-coverage-summary
+```
+
+Checks which `Pathway` enum values have calibration fixture coverage. Reports covered and uncovered pathway names, per-pathway case counts, and a full-coverage flag. Uncovered pathways indicate areas where synthetic fixture coverage should be extended. Synthetic diagnostic only.
+
+---
+
+## Lifecycle Transition Summary
+
+```bash
+techno-search lifecycle-transition-summary [--fixture-path PATH]
+```
+
+Validates that candidate lifecycle stage transitions follow the allowed ordering (`initial_detection` → `scored` → … → `archived`). Groups entries by candidate and reports any regressions where the stage index moves backward. Invalid transitions indicate fixture ordering errors. Scheduling/provenance aid only.
+
+---
+
+## Observation Efficiency Summary
+
+```bash
+techno-search observation-efficiency-summary [--fixture-path PATH]
+```
+
+Summarises observation window completion and cancellation rates from the committed schedule fixture. Reports completion rate, cancellation rate, total scheduled and completed hours, and per-track efficiency breakdown. Scheduling aid only — not a survey efficiency estimate.
+
+---
+
 ## Scientific Guardrails
 
 CLI output is a review artifact, not a discovery claim.

@@ -37,6 +37,7 @@ from techno_search.baseline_eval import (
     baseline_pathway_drift_summary,
     baseline_performance_history_summary,
     evaluate_baseline,
+    route_coverage_summary,
     score_determinism_check,
 )
 from techno_search.benchmark_metadata import (
@@ -55,6 +56,7 @@ from techno_search.calibration import (
 from techno_search.calibration_metrics import precision_recall_summary, reliability_summary
 from techno_search.candidate_lifecycle import (
     candidate_lifecycle_summary,
+    lifecycle_transition_summary,
 )
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.cross_track import cross_track_summary
@@ -90,6 +92,7 @@ from techno_search.log_store import (
     validate_sqlite_log_commit_paths,
 )
 from techno_search.observation_schedule import (
+    observation_efficiency_summary,
     observation_schedule_summary,
 )
 from techno_search.plotting import plot_artifact_summary
@@ -105,6 +108,7 @@ from techno_search.review_queue import (
 )
 from techno_search.schemas import Candidate, Track, candidate_from_mapping
 from techno_search.scoring import score_candidate
+from techno_search.scoring_config import scoring_config_summary
 from techno_search.target_watchlist import target_watchlist_summary
 from techno_search.validation import (
     validate_candidate_file,
@@ -148,6 +152,7 @@ SCHEMA_FILENAMES = {
     "baseline_performance_history": "baseline_performance_history.schema.json",
     "candidate_lifecycle": "candidate_lifecycle.schema.json",
     "observation_schedule": "observation_schedule.schema.json",
+    "scoring_config_summary": "scoring_config_summary.schema.json",
 }
 
 
@@ -1017,6 +1022,35 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(fn_summary, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "scoring-config-summary":
+        config_path = getattr(args, "config_path", None)
+        sc_summary = scoring_config_summary(
+            Path(config_path) if config_path else None
+        )
+        print(json.dumps(sc_summary, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "route-coverage-summary":
+        rc_summary = route_coverage_summary()
+        print(json.dumps(rc_summary, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "lifecycle-transition-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        lt_summary = lifecycle_transition_summary(
+            Path(fixture_path) if fixture_path else None
+        )
+        print(json.dumps(lt_summary, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "observation-efficiency-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        oe_summary = observation_efficiency_summary(
+            Path(fixture_path) if fixture_path else None
+        )
+        print(json.dumps(oe_summary, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "artifacts-cleanup":
         if args.apply:
             cleanup_result = apply_artifact_cleanup(
@@ -1308,6 +1342,19 @@ def validate_all() -> dict[str, object]:
     fn_sum = false_negative_summary()
     _fn_rate = fn_sum.get("synthetic_missed_injection_rate")
     fn_missed_rate = float(_fn_rate) if isinstance(_fn_rate, (int, float)) else 1.0
+    scoring_cfg = scoring_config_summary()
+    scoring_threshold_count = int(scoring_cfg.get("threshold_count", 0))
+    route_coverage = route_coverage_summary()
+    route_covered_count = int(route_coverage.get("covered_pathway_count", 0))
+    lifecycle_transitions = lifecycle_transition_summary()
+    lifecycle_invalid_count = int(lifecycle_transitions.get("invalid_transition_count", 0))
+    observation_efficiency = observation_efficiency_summary()
+    observation_completion_rate_raw = observation_efficiency.get("completion_rate")
+    observation_completion_rate = (
+        float(observation_completion_rate_raw)
+        if isinstance(observation_completion_rate_raw, (int, float))
+        else 0.0
+    )
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -1492,6 +1539,14 @@ def validate_all() -> dict[str, object]:
         and schedule_window_count >= 4
         and isinstance(fn_missed_rate, float)
         and fn_missed_rate < 1.0
+        and isinstance(scoring_threshold_count, int)
+        and scoring_threshold_count >= 1
+        and isinstance(route_covered_count, int)
+        and route_covered_count >= 2
+        and isinstance(lifecycle_invalid_count, int)
+        and lifecycle_invalid_count == 0
+        and isinstance(observation_completion_rate, float)
+        and observation_completion_rate >= 0.0
     )
     return {
         "ok": ok,
@@ -1546,6 +1601,10 @@ def validate_all() -> dict[str, object]:
         "candidate_lifecycle_summary": lifecycle,
         "observation_schedule_summary": schedule,
         "false_negative_summary": fn_sum,
+        "scoring_config_summary": scoring_cfg,
+        "route_coverage_summary": route_coverage,
+        "lifecycle_transition_summary": lifecycle_transitions,
+        "observation_efficiency_summary": observation_efficiency,
     }
 
 
@@ -2004,6 +2063,36 @@ def validation_summary() -> dict[str, object]:
         "synthetic_missed_injection_rate": (
             fn_s2["synthetic_missed_injection_rate"]
             if isinstance(fn_s2 := validation.get("false_negative_summary"), dict)
+            else 0.0
+        ),
+        "scoring_threshold_count": (
+            sc_s["threshold_count"]
+            if isinstance(sc_s := validation.get("scoring_config_summary"), dict)
+            else 0
+        ),
+        "route_covered_pathway_count": (
+            rc_s["covered_pathway_count"]
+            if isinstance(rc_s := validation.get("route_coverage_summary"), dict)
+            else 0
+        ),
+        "route_uncovered_pathway_count": (
+            rc_s2["uncovered_pathway_count"]
+            if isinstance(rc_s2 := validation.get("route_coverage_summary"), dict)
+            else 0
+        ),
+        "lifecycle_invalid_transition_count": (
+            lt_s["invalid_transition_count"]
+            if isinstance(lt_s := validation.get("lifecycle_transition_summary"), dict)
+            else 0
+        ),
+        "observation_completion_rate": (
+            oe_s["completion_rate"]
+            if isinstance(oe_s := validation.get("observation_efficiency_summary"), dict)
+            else 0.0
+        ),
+        "observation_cancellation_rate": (
+            oe_s2["cancellation_rate"]
+            if isinstance(oe_s2 := validation.get("observation_efficiency_summary"), dict)
             else 0.0
         ),
         "recommended_commands": [
@@ -3146,6 +3235,46 @@ def _build_parser() -> argparse.ArgumentParser:
         "--fixture-path",
         type=Path,
         help="Optional injection-recovery fixture JSON path.",
+    )
+    sc_parser = subparsers.add_parser(
+        "scoring-config-summary",
+        help="Summarise current scoring thresholds. Synthetic v0 parameters only.",
+    )
+    sc_parser.add_argument(
+        "--config-path",
+        type=Path,
+        help="Optional scoring config JSON path.",
+    )
+    subparsers.add_parser(
+        "route-coverage-summary",
+        help=(
+            "Check that calibration fixtures cover all Pathway enum values. "
+            "Synthetic diagnostic only."
+        ),
+    )
+    lt_parser = subparsers.add_parser(
+        "lifecycle-transition-summary",
+        help=(
+            "Validate that candidate lifecycle stage transitions follow the "
+            "allowed ordering. Scheduling/provenance aid only."
+        ),
+    )
+    lt_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional lifecycle entries fixture JSON path.",
+    )
+    oe_parser = subparsers.add_parser(
+        "observation-efficiency-summary",
+        help=(
+            "Summarise observation window completion and cancellation rates. "
+            "Scheduling aid only."
+        ),
+    )
+    oe_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional observation schedule fixture JSON path.",
     )
     artifacts_cleanup_parser = subparsers.add_parser(
         "artifacts-cleanup",

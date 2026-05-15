@@ -319,6 +319,11 @@ Evaluate modern AI methods only after interpretable baselines, provenance, false
 - [x] Observation schedule schema, fixture, loader, and `observation-schedule-summary` CLI
 - [x] False-negative summary from injection-recovery fixture and `false-negative-summary` CLI
 - [x] DECISION-030: Scoring Must Be Deterministic Before Any Learned Model Is Introduced
+- [x] Scoring config summary (`scoring-config-summary`) with threshold count and v0 parameter report
+- [x] Route coverage summary (`route-coverage-summary`) checking Pathway enum fixture coverage
+- [x] Lifecycle transition validator (`lifecycle-transition-summary`) checking stage ordering
+- [x] Observation efficiency summary (`observation-efficiency-summary`) with completion/cancellation rates
+- [x] DECISION-031: Scoring Config And Route Coverage Are Required Local Validation Gates
 
 ## Candidate Methods
 

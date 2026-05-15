@@ -33,6 +33,7 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "baseline_performance_history.schema.json",
         "candidate_lifecycle.schema.json",
         "observation_schedule.schema.json",
+        "scoring_config_summary.schema.json",
         "target_watchlist.schema.json",
         "weekly_review_template.schema.json",
     }

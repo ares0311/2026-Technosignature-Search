@@ -224,7 +224,12 @@ The project will support three tracks from day one:
 - [x] Observation schedule schema, fixture, and `observation-schedule-summary` CLI
 - [x] False-negative summary from injection-recovery fixture and `false-negative-summary` CLI
 - [x] DECISION-030: Scoring Must Be Deterministic Before Any Learned Model Is Introduced
-- [x] 28 JSON schema artifacts, 28 total (added candidate_lifecycle, observation_schedule)
+- [x] Scoring config summary (`scoring-config-summary`) and `scoring_config_summary.schema.json`
+- [x] Route coverage summary (`route-coverage-summary`) checking Pathway enum fixture coverage
+- [x] Lifecycle transition validator (`lifecycle-transition-summary`) with stage ordering checks
+- [x] Observation efficiency summary (`observation-efficiency-summary`) with per-track rates
+- [x] DECISION-031: Scoring Config And Route Coverage Are Required Local Validation Gates
+- [x] 29 JSON schema artifacts (added scoring_config_summary)
 
 ---
 

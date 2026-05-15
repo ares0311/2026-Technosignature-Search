@@ -62,6 +62,7 @@ from techno_search.baseline_eval import (
     baseline_pathway_drift_summary,
     baseline_performance_history_summary,
     evaluate_baseline,
+    route_coverage_summary,
     score_determinism_check,
 )
 from techno_search.baseline_model import (
@@ -106,6 +107,7 @@ from techno_search.candidate_lifecycle import (
     CANDIDATE_LIFECYCLE_SCHEMA_VERSION,
     CandidateLifecycleEntry,
     candidate_lifecycle_summary,
+    lifecycle_transition_summary,
     load_lifecycle_entries,
 )
 from techno_search.config import TrackConfig, load_scoring_config, load_track_config
@@ -128,6 +130,7 @@ from techno_search.observation_schedule import (
     OBSERVATION_SCHEDULE_SCHEMA_VERSION,
     ObservationWindow,
     load_observation_windows,
+    observation_efficiency_summary,
     observation_schedule_summary,
 )
 from techno_search.pathway import classify_pathway
@@ -178,6 +181,11 @@ from techno_search.review_queue import (
 )
 from techno_search.schemas import Candidate, Pathway, ScoredCandidate, Track
 from techno_search.scoring import score_candidate
+from techno_search.scoring_config import (
+    SCORING_CONFIG_DISCLAIMER,
+    SCORING_CONFIG_SCHEMA_VERSION,
+    scoring_config_summary,
+)
 from techno_search.target_watchlist import (
     TARGET_WATCHLIST_DISCLAIMER,
     TARGET_WATCHLIST_SCHEMA_VERSION,
@@ -221,17 +229,23 @@ __all__ = [
     "baseline_performance_history_summary",
     "evaluate_baseline",
     "predict_pathway",
+    "route_coverage_summary",
     "score_determinism_check",
     "CANDIDATE_LIFECYCLE_DISCLAIMER",
     "CANDIDATE_LIFECYCLE_SCHEMA_VERSION",
     "CandidateLifecycleEntry",
     "candidate_lifecycle_summary",
+    "lifecycle_transition_summary",
     "load_lifecycle_entries",
     "OBSERVATION_SCHEDULE_DISCLAIMER",
     "OBSERVATION_SCHEDULE_SCHEMA_VERSION",
     "ObservationWindow",
     "load_observation_windows",
+    "observation_efficiency_summary",
     "observation_schedule_summary",
+    "SCORING_CONFIG_DISCLAIMER",
+    "SCORING_CONFIG_SCHEMA_VERSION",
+    "scoring_config_summary",
     "ARTIFACT_CLEANUP_DISCLAIMER",
     "ARTIFACT_CLEANUP_SCHEMA_VERSION",
     "BENCHMARK_METADATA_DISCLAIMER",

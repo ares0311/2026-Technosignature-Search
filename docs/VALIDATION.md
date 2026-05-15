@@ -559,3 +559,34 @@ Gates in `validate-all`: at least 3 lifecycle entries across all 3 tracks; at le
 ```
 
 Gate in `validate-all`: `synthetic_missed_injection_rate < 1.0` (at least one injection must be recovered per track). Values are synthetic development diagnostics only.
+
+---
+
+## Scoring Config And Route Coverage
+
+```bash
+.venv/bin/techno-search scoring-config-summary
+.venv/bin/techno-search route-coverage-summary
+```
+
+Gates in `validate-all`: at least 1 scoring threshold present; at least 2 pathway values have calibration fixture coverage. Scoring config summary reports current v0 thresholds only — not calibrated detection limits. Route coverage identifies which Pathway enum values still lack fixture support.
+
+---
+
+## Lifecycle Transition Validation
+
+```bash
+.venv/bin/techno-search lifecycle-transition-summary
+```
+
+Gate in `validate-all`: `invalid_transition_count == 0`. Validates that all candidate lifecycle stage progressions follow the allowed ordering (`initial_detection` → `archived`). Any backward-moving stage transition is reported as invalid. Scheduling/provenance aid only.
+
+---
+
+## Observation Efficiency
+
+```bash
+.venv/bin/techno-search observation-efficiency-summary
+```
+
+Reports completion rate, cancellation rate, and per-track efficiency from the committed schedule fixture. Gate in `validate-all`: `completion_rate >= 0.0` (always passes; the gate confirms the summary runs cleanly). Scheduling aid only — not a survey efficiency estimate or external submission authorization.

@@ -109,3 +109,55 @@ def observation_schedule_summary(
         "top_priority_target_ids": top_target_ids,
         "operator_note_count": sum(1 for w in windows if w.operator_notes),
     }
+
+
+def observation_efficiency_summary(
+    fixture_path: Path | None = None,
+) -> dict[str, Any]:
+    """Summarize observation window completion and cancellation rates."""
+
+    windows = load_observation_windows(fixture_path)
+    total = len(windows)
+    completed_count = sum(1 for w in windows if w.status == "completed")
+    cancelled_count = sum(1 for w in windows if w.status == "cancelled")
+    planned_count = sum(1 for w in windows if w.status == "planned")
+
+    completion_rate = completed_count / total if total > 0 else 0.0
+    cancellation_rate = cancelled_count / total if total > 0 else 0.0
+
+    scheduled_minutes = sum(w.duration_minutes for w in windows)
+    completed_minutes = sum(
+        w.duration_minutes for w in windows if w.status == "completed"
+    )
+
+    by_track_stats: dict[str, dict[str, int]] = {}
+    for w in windows:
+        if w.track not in by_track_stats:
+            by_track_stats[w.track] = {"total": 0, "completed": 0, "cancelled": 0}
+        by_track_stats[w.track]["total"] += 1
+        if w.status == "completed":
+            by_track_stats[w.track]["completed"] += 1
+        elif w.status == "cancelled":
+            by_track_stats[w.track]["cancelled"] += 1
+
+    by_track_completion_rate = {
+        track: (
+            stats["completed"] / stats["total"] if stats["total"] > 0 else 0.0
+        )
+        for track, stats in by_track_stats.items()
+    }
+
+    return {
+        "schema_version": OBSERVATION_SCHEDULE_SCHEMA_VERSION,
+        "disclaimer": OBSERVATION_SCHEDULE_DISCLAIMER,
+        "window_count": total,
+        "completed_count": completed_count,
+        "cancelled_count": cancelled_count,
+        "planned_count": planned_count,
+        "completion_rate": completion_rate,
+        "cancellation_rate": cancellation_rate,
+        "total_scheduled_hours": scheduled_minutes / 60.0,
+        "completed_hours": completed_minutes / 60.0,
+        "by_track_stats": dict(sorted(by_track_stats.items())),
+        "by_track_completion_rate": dict(sorted(by_track_completion_rate.items())),
+    }

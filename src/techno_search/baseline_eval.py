@@ -331,3 +331,36 @@ def baseline_pathway_drift_summary(
         "drift_cases": drift_cases,
         "zero_drift": len(drift_cases) == 0,
     }
+
+
+def route_coverage_summary(
+    calibration_fixture_path: Path | None = None,
+    example_candidates_dir: Path | None = None,
+) -> dict[str, Any]:
+    """Check that all Pathway enum values have calibration fixture coverage."""
+
+    from techno_search.schemas import Pathway
+
+    eval_result = evaluate_baseline(calibration_fixture_path, example_candidates_dir)
+    results: list[dict[str, Any]] = eval_result.get("results", [])
+
+    all_pathways = {p.value for p in Pathway}
+    covered_pathways = {r["expected_pathway"] for r in results}
+    uncovered_pathways = sorted(all_pathways - covered_pathways)
+
+    by_pathway: dict[str, int] = {}
+    for r in results:
+        pw = r["expected_pathway"]
+        by_pathway[pw] = by_pathway.get(pw, 0) + 1
+
+    return {
+        "schema_version": "route_coverage_v1",
+        "disclaimer": BASELINE_EVAL_DISCLAIMER,
+        "total_pathway_values": len(all_pathways),
+        "covered_pathway_count": len(covered_pathways),
+        "uncovered_pathway_count": len(uncovered_pathways),
+        "uncovered_pathways": uncovered_pathways,
+        "covered_pathways": sorted(covered_pathways),
+        "by_pathway_case_count": dict(sorted(by_pathway.items())),
+        "full_coverage": len(uncovered_pathways) == 0,
+    }
