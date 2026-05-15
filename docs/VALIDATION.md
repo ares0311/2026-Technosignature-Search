@@ -502,6 +502,10 @@ The rule-based baseline classifier is evaluated on every `validate-all` run:
 
 Gate: `pathway_accuracy >= 0.80` across calibration false-positive and clean example candidate fixtures. Results are synthetic development diagnostics only — not calibrated survey performance or external validation.
 
+Baseline pathway drift is also checked on every `validate-all` run via `baseline-pathway-drift-summary`. A non-zero drift count (baseline routing diverges from the scoring model on any example candidate) blocks the `validate-all` gate. Run `techno-search baseline-pathway-drift-summary` for a detailed breakdown.
+
+Performance history is tracked in `tests/fixtures/baseline_performance_history.json`. Use `techno-search baseline-performance-history-summary` to review snapshot trends across development iterations.
+
 ---
 
 ## Target Watchlist Validation

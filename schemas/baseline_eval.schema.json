@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BaselineEval",
+  "description": "Output of the rule-based baseline evaluation harness. All metrics are local synthetic diagnostics only.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "model_version",
+    "disclaimer",
+    "total_cases",
+    "pathway_accuracy",
+    "false_positive_recall",
+    "candidate_precision",
+    "by_track_accuracy",
+    "rule_fire_rates",
+    "misclassified",
+    "misclassified_count"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "baseline_eval_v0"},
+    "model_version": {"type": "string"},
+    "disclaimer": {"type": "string"},
+    "total_cases": {"type": "integer", "minimum": 0},
+    "correct_predictions": {"type": "integer", "minimum": 0},
+    "pathway_accuracy": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+    "false_positive_recall": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+    "candidate_precision": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+    "mean_rule_coverage": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+    "by_track_accuracy": {"type": "object"},
+    "rule_fire_rates": {"type": "object"},
+    "misclassified": {"type": "array"},
+    "misclassified_count": {"type": "integer", "minimum": 0},
+    "results": {"type": "array"}
+  }
+}

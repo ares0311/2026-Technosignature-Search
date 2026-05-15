@@ -887,6 +887,46 @@ Assembles a weekly review template combining the SQLite log weekly digest and cr
 
 ---
 
+## Baseline Performance History Summary
+
+```bash
+techno-search baseline-performance-history-summary [--history-path PATH]
+```
+
+Loads the committed `tests/fixtures/baseline_performance_history.json` fixture and reports snapshot count, latest pathway accuracy, model version, and schema version. Each snapshot is a dated record of baseline classifier accuracy against the synthetic calibration fixtures. All values are local synthetic diagnostics only.
+
+---
+
+## Baseline Pathway Drift Summary
+
+```bash
+techno-search baseline-pathway-drift-summary [--examples-dir DIR]
+```
+
+Runs the rule-based baseline classifier over all example candidates in `examples/candidates/` and compares each predicted pathway to the main scoring model pathway. Reports zero-drift status, drift count, and drift cases. A non-zero drift count indicates that baseline routing has diverged from the current scoring model and requires investigation before the next observation cycle.
+
+---
+
+## SQLite Log Track Summary
+
+```bash
+techno-search sqlite-log-track-summary [--db-path PATH]
+```
+
+Reports background run counts grouped by candidate track (radio, infrared, anomaly) from the local SQLite log database. Returns an empty summary if the database does not exist. The database must not be committed. This is an operational scheduling record only.
+
+---
+
+## Health Summary
+
+```bash
+techno-search health
+```
+
+Prints a concise local health dashboard combining baseline pathway accuracy, watchlist conflict count, and baseline drift count. Returns exit code 0 when all health gates pass. Intended as a quick operator status check before scheduling the next observation cycle.
+
+---
+
 ## Scientific Guardrails
 
 CLI output is a review artifact, not a discovery claim.

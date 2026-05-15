@@ -83,6 +83,13 @@ def target_watchlist_summary(fixture_path: Path | None = None) -> dict[str, Any]
     conflict_targets = sorted(elevated_ids & blocked_ids)
     total_blocking_reasons = sum(len(e.blocking_reasons) for e in entries)
 
+    elevated_sorted = sorted(
+        (e for e in entries if e.watchlist_kind == "elevated"),
+        key=lambda e: (e.priority_override_score or 0.0),
+        reverse=True,
+    )
+    prioritized_target_ids = [e.target_id for e in elevated_sorted]
+
     return {
         "schema_version": TARGET_WATCHLIST_SCHEMA_VERSION,
         "disclaimer": TARGET_WATCHLIST_DISCLAIMER,
@@ -93,6 +100,7 @@ def target_watchlist_summary(fixture_path: Path | None = None) -> dict[str, Any]
         "blocked_count": by_kind.get("blocked", 0),
         "completed_count": by_kind.get("completed", 0),
         "elevated_target_ids": sorted(elevated_entries),
+        "prioritized_target_ids": prioritized_target_ids,
         "blocked_target_ids": sorted(blocked_entries),
         "conflict_elevated_and_blocked": conflict_targets,
         "conflict_count": len(conflict_targets),

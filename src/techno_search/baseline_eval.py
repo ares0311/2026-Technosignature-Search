@@ -13,11 +13,14 @@ from pathlib import Path
 from typing import Any
 
 from techno_search.baseline_model import (
+    ALL_BASELINE_RULES,
     BASELINE_MODEL_VERSION,
     RuleBasedBaselineClassifier,
 )
 from techno_search.schemas import candidate_from_mapping
 from techno_search.scoring import score_candidate
+
+BASELINE_PERFORMANCE_HISTORY_SCHEMA_VERSION = "baseline_performance_history_v1"
 
 BASELINE_EVAL_DISCLAIMER = (
     "Baseline evaluation results are local synthetic diagnostics only. "
@@ -121,6 +124,28 @@ def evaluate_baseline(
         for track, counts in by_track.items()
     }
 
+    rule_fire_counts: dict[str, int] = {rule: 0 for rule in ALL_BASELINE_RULES}
+    for r in results:
+        for rule in r["rule_trace"]:
+            if rule in rule_fire_counts:
+                rule_fire_counts[rule] += 1
+    rule_fire_rates = {
+        rule: (count / total if total > 0 else 0.0)
+        for rule, count in rule_fire_counts.items()
+    }
+
+    misclassified = [
+        {
+            "candidate_id": r["candidate_id"],
+            "track": r["track"],
+            "expected_pathway": r["expected_pathway"],
+            "predicted_pathway": r["predicted_pathway"],
+            "rule_trace": r["rule_trace"],
+        }
+        for r in results
+        if not r["match"]
+    ]
+
     return {
         "schema_version": "baseline_eval_v0",
         "model_version": BASELINE_MODEL_VERSION,
@@ -132,5 +157,92 @@ def evaluate_baseline(
         "candidate_precision": candidate_precision,
         "mean_rule_coverage": mean_rule_coverage,
         "by_track_accuracy": track_accuracy,
+        "rule_fire_rates": rule_fire_rates,
+        "misclassified": misclassified,
+        "misclassified_count": len(misclassified),
         "results": results,
+    }
+
+
+def _default_performance_history_path() -> Path:
+    return (
+        Path(__file__).resolve().parents[2]
+        / "tests"
+        / "fixtures"
+        / "baseline_performance_history.json"
+    )
+
+
+def baseline_performance_history_summary(
+    history_path: Path | None = None,
+) -> dict[str, Any]:
+    """Summarise the append-only baseline performance history fixture."""
+    path = history_path or _default_performance_history_path()
+    if not path.exists():
+        return {
+            "schema_version": BASELINE_PERFORMANCE_HISTORY_SCHEMA_VERSION,
+            "disclaimer": BASELINE_EVAL_DISCLAIMER,
+            "snapshot_count": 0,
+            "snapshots": [],
+            "latest_accuracy": None,
+        }
+    with path.open(encoding="utf-8") as handle:
+        data = json.load(handle)
+    snapshots = data.get("snapshots", [])
+    latest = snapshots[-1] if snapshots else {}
+    return {
+        "schema_version": BASELINE_PERFORMANCE_HISTORY_SCHEMA_VERSION,
+        "disclaimer": BASELINE_EVAL_DISCLAIMER,
+        "snapshot_count": len(snapshots),
+        "snapshots": snapshots,
+        "latest_accuracy": latest.get("pathway_accuracy"),
+        "latest_model_version": latest.get("model_version"),
+        "latest_snapshot_date": latest.get("snapshot_date"),
+    }
+
+
+def baseline_pathway_drift_summary(
+    example_candidates_dir: Path | None = None,
+) -> dict[str, Any]:
+    """Compare scoring-model recommended_pathway vs baseline predicted_pathway.
+
+    Returns drift_cases for any disagreements and a drift_count.
+    Zero drift means the baseline faithfully mirrors the scoring model on all
+    committed example candidates.
+    """
+    examples_dir = example_candidates_dir or _default_example_candidates_dir()
+    classifier = RuleBasedBaselineClassifier()
+    drift_cases: list[dict[str, Any]] = []
+    checked = 0
+
+    if examples_dir.exists():
+        for candidate_path in sorted(examples_dir.glob("*.json")):
+            with candidate_path.open(encoding="utf-8") as handle:
+                candidate_dict = json.load(handle)
+            with suppress(Exception):
+                candidate = candidate_from_mapping(candidate_dict)
+                scored = score_candidate(candidate)
+                packet = scored.as_dict()
+                result = classifier.predict(packet)
+                scoring_pathway = scored.recommended_pathway.value
+                baseline_pathway = result.predicted_pathway
+                checked += 1
+                if scoring_pathway != baseline_pathway:
+                    drift_cases.append(
+                        {
+                            "candidate_id": candidate.candidate_id,
+                            "track": candidate.track.value,
+                            "scoring_model_pathway": scoring_pathway,
+                            "baseline_pathway": baseline_pathway,
+                            "rule_trace": result.rule_trace,
+                        }
+                    )
+
+    return {
+        "schema_version": "baseline_drift_v0",
+        "disclaimer": BASELINE_EVAL_DISCLAIMER,
+        "candidates_checked": checked,
+        "drift_count": len(drift_cases),
+        "drift_cases": drift_cases,
+        "zero_drift": len(drift_cases) == 0,
     }

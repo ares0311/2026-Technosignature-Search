@@ -696,3 +696,27 @@ A learned model is opaque; without a rule-based reference implementation there i
 - The `baseline-eval-summary` CLI command exposes pathway accuracy, false-positive recall, and candidate precision as local synthetic diagnostics.
 - `validate-all` enforces a minimum 80% pathway accuracy gate on every run.
 - Baseline outputs carry an explicit disclaimer that they are not detections, discoveries, confirmations, or external validation.
+
+---
+
+## DECISION-029: Weekly Review Template Is The Authoritative Operator Handoff
+
+**Date:** 2026-05-15
+
+**Status:** Accepted
+
+### Decision
+
+The `weekly-review-template` CLI command is the authoritative local handoff artifact for operator scheduling review. It must explicitly confirm that `network_access_allowed_count == 0` and `external_submission_approved_count == 0` before any operator action is taken. The template is the only location where watchlist priority ordering, baseline drift status, and cross-track reference counts are combined into a single reviewable document.
+
+### Rationale
+
+Having multiple disparate summaries (watchlist, baseline drift, cross-track) scattered across separate CLI commands creates a fragmented review workflow. A weekly review template that gathers all operational signals into one document with explicit gate confirmations reduces the risk of an operator missing a blocking signal before scheduling follow-up observations.
+
+### Consequences
+
+- `weekly-review-template` consumes the SQLite digest, cross-track summary, and target watchlist summary as inputs.
+- The template explicitly sets `network_access_confirmed_zero` and `external_submission_confirmed_zero` gate fields.
+- Elevated watchlist targets appear in the recommended next-actions list.
+- Baseline pathway drift is checked before committing any scheduled observation cycle.
+- The template is a local internal review artifact only and must never be treated as a discovery claim or external submission.

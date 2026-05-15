@@ -1,0 +1,16 @@
+{
+  "schema_version": "baseline_performance_history_v1",
+  "disclaimer": "Baseline performance history entries are local synthetic diagnostics only. They are not calibrated survey metrics, detection claims, or external validation.",
+  "snapshots": [
+    {
+      "snapshot_date": "2026-05-15",
+      "model_version": "baseline_v0",
+      "total_cases": 18,
+      "pathway_accuracy": 1.0,
+      "false_positive_recall": 1.0,
+      "candidate_precision": 0.0,
+      "mean_rule_coverage": 0.375,
+      "notes": "Initial baseline_v0 snapshot. 15 calibration false-positives + 3 example candidates. No misclassifications."
+    }
+  ]
+}
