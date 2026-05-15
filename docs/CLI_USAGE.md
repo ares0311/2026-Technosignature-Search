@@ -855,6 +855,38 @@ Persisted reports also include a manifest with:
 
 ---
 
+## Interpretable Baseline Evaluation
+
+```bash
+techno-search baseline-eval-summary
+```
+
+Evaluates the rule-based baseline classifier against synthetic calibration false-positive fixtures and clean example candidates. Returns pathway accuracy, false-positive recall, candidate precision, per-track accuracy, and mean rule coverage. All metrics are local synthetic diagnostics only.
+
+Validation gate: pathway accuracy must be >= 0.80. Enforced by `validate-all`.
+
+---
+
+## Target Watchlist Summary
+
+```bash
+techno-search target-watchlist-summary [--fixture-path PATH]
+```
+
+Summarizes the local target watchlist fixture — scheduling aid entries for elevated, deprioritized, blocked, and completed targets. Reports entry counts, elevated/blocked target IDs, and conflict detection. Watchlist entries are scheduling metadata only and do not modify candidate posteriors or pathway routing.
+
+---
+
+## Weekly Review Template
+
+```bash
+techno-search weekly-review-template [--window-days N] [--operator-notes TEXT] [--output-dir DIR] [--db-path PATH]
+```
+
+Assembles a weekly review template combining the SQLite log weekly digest and cross-track summary. Confirms network access is zero and external submission approval is absent. Outputs JSON to stdout or writes Markdown and JSON files to `--output-dir`. The template is a local operator review artifact only.
+
+---
+
 ## Scientific Guardrails
 
 CLI output is a review artifact, not a discovery claim.

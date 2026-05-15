@@ -10,15 +10,11 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
-User requested three iterative steps:
+User requested fifteen iterative steps covering Milestone 10 scaffolding, weekly review automation, target watchlist, and SQLite migration.
 
-1. Add report file writers.
-2. Start the radio prototype.
-3. Add track-specific configs.
+Current branch: `claude/general-session-Bb2dZ`.
 
-After each step, update this file and merge to `main` if needed.
-
-Current branch: `codex/background-report-decision-scheduler`.
+Overall status: all fifteen steps implemented, tested, and validated.
 
 Overall status: all three requested steps are implemented.
 
@@ -6449,3 +6445,61 @@ git commit -m "Add live client skeleton completion"
 ```
 
 Merge status: already on `main`; no merge needed.
+
+---
+
+## Milestone 10 Scaffolding, Weekly Review, Target Watchlist, And SQLite Migration
+
+User requested applying all system directives and completing the next fifteen steps.
+
+Status: implemented in this iteration.
+
+Added:
+
+- `src/techno_search/weekly_review.py` — weekly review template assembler combining SQLite digest + cross-track summary; confirms network access and external submission are zero
+- `schemas/weekly_review_template.schema.json` — JSON Schema for the weekly review template output
+- `tests/test_weekly_review.py` — 12 tests for weekly review template structure, gates, markdown sections, and CLI
+- `schemas/target_watchlist.schema.json` — JSON Schema for target watchlist scheduling aid entries
+- `tests/fixtures/target_watchlist.json` — 4 synthetic entries (elevated, deprioritized, blocked, completed)
+- `src/techno_search/target_watchlist.py` — watchlist loader, summary helper, and conflict detection
+- `tests/test_target_watchlist.py` — tests for watchlist counts, conflict detection, disclaimer, and CLI output
+- `src/techno_search/baseline_model.py` — interpretable rule-based baseline classifier mirroring scoring pathway logic
+- `src/techno_search/baseline_eval.py` — baseline evaluation harness against calibration fixtures and example candidates
+- `tests/test_baseline_model.py` — 14 tests covering all pathway routes, rule trace, disclaimer, and accuracy gate
+- `tests/test_sqlite_migration.py` — 12 tests for SQLite log v1→v2 migration (additive column, idempotent, guard, CLI)
+- SQLite log migration: `TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION = "top_level_sqlite_logs_v2"`, `apply_sqlite_log_migration()`, `SUPPORTED_SQLITE_LOG_MIGRATIONS` with v1→v2 and noop entries
+- CLI commands: `baseline-eval-summary`, `target-watchlist-summary`, `weekly-review-template`, `sqlite-log-migrate --apply`
+- `validate-all` gates: baseline pathway accuracy >= 0.80, baseline total cases >= 3, watchlist entry count >= 4, conflict count == 0
+- `validation-summary` fields: `baseline_pathway_accuracy`, `baseline_false_positive_recall`, `baseline_total_cases`, `target_watchlist_entry_count`, `target_watchlist_elevated_count`, `target_watchlist_conflict_count`
+- `docs/DECISIONS.md` DECISION-028: Interpretable Baseline Must Precede Any Learned Model
+- `docs/CLI_USAGE.md`, `docs/VALIDATION.md`, `docs/ROADMAP.md`, `docs/PROJECT_STATUS.md` updated
+- Schema count now 24 (added `target_watchlist`, `weekly_review_template`)
+
+Scientific guardrail:
+
+- Baseline outputs carry an explicit disclaimer that they are not detections, discoveries, confirmations, or external validation
+- Target watchlist entries are scheduling metadata only — they never modify candidate posteriors or pathway routing
+- Weekly review template is a local operator review artifact confirming network access and submission remain disabled
+- SQLite migration is guarded and additive only — unknown schema versions return an error, no destructive migration is allowed
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/python -m ruff check .
+.venv/bin/python -m mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 331 tests passed
+- 5 tests skipped
+- total coverage: 93%
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, PR created, merged to `main`.

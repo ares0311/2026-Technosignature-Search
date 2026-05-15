@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WeeklyReviewTemplate",
+  "description": "Operator weekly review template combining SQLite log weekly digest and cross-track summary. This is an operational scheduling summary only — not a discovery claim, not an external submission, and not a confirmation of any technosignature candidate.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "disclaimer",
+    "generated_at_utc",
+    "window_days",
+    "digest",
+    "cross_track_summary",
+    "network_access_confirmed_zero",
+    "external_submission_confirmed_zero",
+    "recommended_next_actions"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "weekly_review_v1"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "generated_at_utc": {
+      "type": "string"
+    },
+    "window_days": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "network_access_confirmed_zero": {
+      "type": "boolean"
+    },
+    "external_submission_confirmed_zero": {
+      "type": "boolean"
+    },
+    "digest": {
+      "type": "object"
+    },
+    "cross_track_summary": {
+      "type": "object"
+    },
+    "recommended_next_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "operator_notes": {
+      "type": "string"
+    },
+    "sections": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false
+}

@@ -672,3 +672,27 @@ Drift between persisted packets and current scoring can have many causes (intent
 - Drift reports include schema-version and config-version mismatches.
 - The verifier exits non-zero when drift is detected, and `validate-all` requires zero drift on the committed examples.
 - A future migration is required when drift is intentional; this command is not a substitute for that migration.
+
+---
+
+## DECISION-028: Interpretable Rule-Based Baseline Must Precede Any Learned Model
+
+**Date:** 2026-05-15
+
+**Status:** Accepted
+
+### Decision
+
+Before any trained or learned model is introduced into the pathway routing system, an interpretable rule-based baseline classifier must be implemented, tested, and evaluated. The baseline (`RuleBasedBaselineClassifier`) must reproduce the current scoring pathway logic using explicitly named boolean rules, and it must achieve at least 80% pathway accuracy across the synthetic calibration and example candidate fixtures.
+
+### Rationale
+
+A learned model is opaque; without a rule-based reference implementation there is no way to audit whether the model is routing candidates for the right reasons. The baseline also serves as a regression anchor: if a future model underperforms the baseline on calibration false-positives or clean candidates, that is a red flag requiring investigation before the model can be promoted.
+
+### Consequences
+
+- `baseline_model.py` contains the rule-based classifier with named rule constants that map 1:1 to conditions in the scoring model pathway logic.
+- `baseline_eval.py` evaluates the classifier against calibration false-positive fixtures and example clean candidates.
+- The `baseline-eval-summary` CLI command exposes pathway accuracy, false-positive recall, and candidate precision as local synthetic diagnostics.
+- `validate-all` enforces a minimum 80% pathway accuracy gate on every run.
+- Baseline outputs carry an explicit disclaimer that they are not detections, discoveries, confirmations, or external validation.

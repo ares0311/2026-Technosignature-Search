@@ -489,3 +489,35 @@ Print a review-safe rolling digest of the SQLite operational log:
 ```
 
 The digest reports run counts, reviewed and needs-follow-up counts, blocking-issue totals, network-access counts (must remain zero by default), and external-submission approval counts (must remain zero unless directly recorded by the user).
+
+---
+
+## Interpretable Baseline Validation
+
+The rule-based baseline classifier is evaluated on every `validate-all` run:
+
+```bash
+.venv/bin/techno-search baseline-eval-summary
+```
+
+Gate: `pathway_accuracy >= 0.80` across calibration false-positive and clean example candidate fixtures. Results are synthetic development diagnostics only — not calibrated survey performance or external validation.
+
+---
+
+## Target Watchlist Validation
+
+```bash
+.venv/bin/techno-search target-watchlist-summary
+```
+
+Gate: at least 4 watchlist entries, zero elevated-and-blocked conflicts. Watchlist entries are scheduling metadata only and do not modify candidate scores or pathway routing.
+
+---
+
+## Weekly Review Template
+
+```bash
+.venv/bin/techno-search weekly-review-template
+```
+
+Assembles the weekly operator review template confirming network access is zero, external submission approval is absent, and cross-track references are current. Output is a local review artifact only.

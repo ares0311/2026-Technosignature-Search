@@ -289,6 +289,19 @@ Make scores empirically meaningful.
 
 Evaluate modern AI methods only after interpretable baselines, provenance, false-positive handling, and calibration datasets exist.
 
+## Milestone 10 Scaffold (In Progress)
+
+- [x] Interpretable rule-based baseline classifier (`baseline_model.py`) mirroring scoring pathway logic
+- [x] Baseline evaluation harness against calibration false-positive and clean example candidate fixtures
+- [x] `baseline-eval-summary` CLI command with pathway accuracy, false-positive recall, candidate precision
+- [x] `validate-all` gate: pathway accuracy >= 0.80
+- [x] Target watchlist scheduling aid with elevated/deprioritized/blocked/completed kinds
+- [x] `target-watchlist-summary` CLI command with conflict detection
+- [x] Weekly review template assembling SQLite digest + cross-track summary
+- [x] `weekly-review-template` CLI command
+- [x] SQLite log migration (v1 → v2 adding `target_notes` column)
+- [x] DECISION-028: Interpretable Baseline Must Precede Any Learned Model
+
 ## Candidate Methods
 
 - CNNs for radio waterfall/image morphology, survey-image artifacts, and spatial context

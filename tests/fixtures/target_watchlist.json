@@ -1,0 +1,41 @@
+{
+  "schema_version": "target_watchlist_v1",
+  "disclaimer": "This target watchlist is a scheduling aid only. Watchlist entries do not modify candidate posteriors, false-positive probability, or pathway routing. No entry constitutes a technosignature claim or detection.",
+  "entries": [
+    {
+      "target_id": "hip-99770",
+      "watchlist_kind": "elevated",
+      "operator_notes": "Solar-type star with archival IR anomaly flagged in prior background run. Prioritize for next radio observation window.",
+      "priority_override_score": 0.85,
+      "added_at_utc": "2026-05-01T12:00:00+00:00",
+      "blocking_reasons": []
+    },
+    {
+      "target_id": "gj-504",
+      "watchlist_kind": "deprioritized",
+      "operator_notes": "Young planet host — infrared excess explained by circumplanetary disk. Reduce scheduling priority until disk model is refined.",
+      "priority_override_score": 0.15,
+      "added_at_utc": "2026-05-02T09:30:00+00:00",
+      "blocking_reasons": []
+    },
+    {
+      "target_id": "bd-10-3166",
+      "watchlist_kind": "blocked",
+      "operator_notes": "Radio scan contaminated by nearby transmitter. Blocked pending frequency coordination.",
+      "priority_override_score": null,
+      "added_at_utc": "2026-05-05T15:00:00+00:00",
+      "blocking_reasons": [
+        "Known local RFI source within beam",
+        "Pending frequency coordination with site management"
+      ]
+    },
+    {
+      "target_id": "tau-ceti",
+      "watchlist_kind": "completed",
+      "operator_notes": "Observation cycle complete. All scheduled follow-up tests finished. Archived as local-scheduling-only.",
+      "priority_override_score": null,
+      "added_at_utc": "2026-04-10T08:00:00+00:00",
+      "blocking_reasons": []
+    }
+  ]
+}
