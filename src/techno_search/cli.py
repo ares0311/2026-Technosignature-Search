@@ -12,6 +12,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TextIO
 
+from techno_search.artifact_cleanup import (
+    apply_artifact_cleanup,
+    plan_artifact_cleanup,
+)
 from techno_search.background_search import (
     BackgroundUserDecisionRecord,
     append_background_user_decision_record,
@@ -44,6 +48,7 @@ from techno_search.calibration import (
 )
 from techno_search.calibration_metrics import precision_recall_summary, reliability_summary
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
+from techno_search.cross_track import cross_track_summary
 from techno_search.injection_recovery import injection_recovery_summary
 from techno_search.live_data import (
     CatalogCache,
@@ -57,16 +62,19 @@ from techno_search.live_data import (
     validate_catalog_cache_commit_paths,
 )
 from techno_search.log_store import (
+    TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
     default_sqlite_log_path,
     init_sqlite_log_db,
     sqlite_log_backup,
     sqlite_log_export,
     sqlite_log_integrity_summary,
+    sqlite_log_migration_plan,
     sqlite_log_migration_summary,
     sqlite_log_pragmas,
     sqlite_log_retention_summary,
     sqlite_log_summary,
     sqlite_log_vacuum,
+    sqlite_log_weekly_digest,
     sqlite_needs_follow_up,
     sqlite_recent_runs,
     validate_sqlite_log_commit_paths,
@@ -76,6 +84,7 @@ from techno_search.reporting import (
     candidate_packet_json,
     write_candidate_reports,
 )
+from techno_search.reproducibility import verify_report_directory
 from techno_search.review_queue import (
     consensus_export_summary,
     consensus_summary,
@@ -112,6 +121,7 @@ SCHEMA_FILENAMES = {
     "candidate_packet": "candidate_packet.schema.json",
     "consensus_export": "consensus_export.schema.json",
     "consensus_labels": "consensus_labels.schema.json",
+    "cross_track_references": "cross_track_references.schema.json",
     "report_manifest": "report_manifest.schema.json",
     "review_queue": "review_queue.schema.json",
     "validation_dataset_manifest": "validation_dataset_manifest.schema.json",
@@ -633,6 +643,27 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "sqlite-log-migrate":
+        plan = sqlite_log_migration_plan(
+            args.db_path,
+            target_version=args.target_version,
+        )
+        if args.apply:
+            plan = {
+                **plan,
+                "dry_run": False,
+                "apply_blocked": True,
+                "apply_blocked_reason": (
+                    "No automatic migration is implemented. Apply mode is "
+                    "blocked until a destructive migration is reviewed and "
+                    "added explicitly."
+                ),
+            }
+            print(json.dumps(plan, indent=2, sort_keys=True), file=out)
+            return 1
+        print(json.dumps(plan, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "sqlite-log-pragmas":
         print(
             json.dumps(
@@ -667,6 +698,14 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         vacuum_result = sqlite_log_vacuum(args.db_path)
         print(json.dumps(vacuum_result, indent=2, sort_keys=True), file=out)
         return 0 if vacuum_result["ok"] else 1
+
+    if args.command == "sqlite-log-weekly-digest":
+        digest_result = sqlite_log_weekly_digest(
+            args.db_path,
+            window_days=args.window_days,
+        )
+        print(json.dumps(digest_result, indent=2, sort_keys=True), file=out)
+        return 0 if digest_result.get("ok", False) else 1
 
     if args.command == "sqlite-log-commit-guard":
         commit_guard_paths = args.paths or git_tracked_paths(default_project_root())
@@ -730,6 +769,22 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             file=out,
         )
         return 0
+
+    if args.command == "cross-track-summary":
+        print(
+            json.dumps(
+                cross_track_summary(args.fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "verify-report-reproducibility":
+        verify_result = verify_report_directory(args.report_dir)
+        print(json.dumps(verify_result, indent=2, sort_keys=True), file=out)
+        return 0 if verify_result.get("ok", False) else 1
 
     if args.command == "validate-all":
         all_result = validate_all()
@@ -800,6 +855,21 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         catalog_result = catalog_cache_validation_summary(args.paths)
         print(json.dumps(catalog_result, indent=2, sort_keys=True), file=out)
         return 0 if catalog_result["ok"] else 1
+
+    if args.command == "artifacts-cleanup":
+        if args.apply:
+            cleanup_result = apply_artifact_cleanup(
+                args.artifacts_dir,
+                project_root=default_project_root(),
+                acknowledge_local_apply=args.acknowledge_local_apply,
+            )
+        else:
+            cleanup_result = plan_artifact_cleanup(
+                args.artifacts_dir,
+                project_root=default_project_root(),
+            )
+        print(json.dumps(cleanup_result, indent=2, sort_keys=True), file=out)
+        return 0 if cleanup_result.get("ok", False) else 1
 
     parser.error(f"Unknown command: {args.command}")
     return 2
@@ -988,6 +1058,12 @@ def validate_all() -> dict[str, object]:
     consensus_decision_count = consensus["decision_count"]
     consensus_exports = consensus_export_summary()
     consensus_export_count = consensus_exports["export_count"]
+    cross_track = cross_track_summary()
+    cross_track_reference_count = cross_track["reference_count"]
+    cross_track_blocking_issue_total = cross_track["blocking_issue_total"]
+    reproducibility = verify_report_directory(root / "examples" / "reports")
+    reproducibility_drift_count = reproducibility["drift_count"]
+    reproducibility_verified_count = reproducibility["verified_count"]
     validation_datasets = validation_dataset_summary()
     validation_dataset_count = validation_datasets["dataset_count"]
     validation_dataset_case_count = validation_datasets["total_case_count"]
@@ -1073,6 +1149,8 @@ def validate_all() -> dict[str, object]:
     sqlite_logs = sqlite_log_summary(sqlite_validation_db)
     sqlite_integrity = sqlite_log_integrity_summary(sqlite_validation_db)
     sqlite_migration = sqlite_log_migration_summary(sqlite_validation_db)
+    sqlite_migration_plan = sqlite_log_migration_plan(sqlite_validation_db)
+    sqlite_weekly_digest = sqlite_log_weekly_digest(sqlite_validation_db)
     sqlite_export = sqlite_log_export(sqlite_validation_db, limit=3)
     sqlite_backup = sqlite_log_backup(sqlite_validation_db)
     sqlite_retention = sqlite_log_retention_summary(sqlite_validation_db)
@@ -1121,6 +1199,14 @@ def validate_all() -> dict[str, object]:
         and consensus_decision_count >= 10
         and isinstance(consensus_export_count, int)
         and consensus_export_count >= 5
+        and isinstance(cross_track_reference_count, int)
+        and cross_track_reference_count >= 4
+        and isinstance(cross_track_blocking_issue_total, int)
+        and cross_track_blocking_issue_total >= 0
+        and isinstance(reproducibility_verified_count, int)
+        and reproducibility_verified_count >= 3
+        and isinstance(reproducibility_drift_count, int)
+        and reproducibility_drift_count == 0
         and isinstance(validation_dataset_count, int)
         and validation_dataset_count >= 3
         and isinstance(validation_dataset_case_count, int)
@@ -1197,6 +1283,8 @@ def validate_all() -> dict[str, object]:
         and bool(sqlite_backup["ok"])
         and bool(sqlite_retention["ok"])
         and bool(sqlite_pragmas["ok"])
+        and bool(sqlite_weekly_digest["ok"])
+        and not bool(sqlite_migration_plan["migration_required"])
         and isinstance(sqlite_run_count, int)
         and sqlite_run_count >= 1
         and sqlite_outcome_count == sqlite_run_count
@@ -1223,6 +1311,8 @@ def validate_all() -> dict[str, object]:
         "review_queue_summary": review_queue,
         "consensus_summary": consensus,
         "consensus_export_summary": consensus_exports,
+        "cross_track_summary": cross_track,
+        "reproducibility_verification": reproducibility,
         "validation_dataset_summary": validation_datasets,
         "validation_promotion_summary": validation_promotions,
         "validation_readiness_summary": validation_readiness,
@@ -1246,6 +1336,8 @@ def validate_all() -> dict[str, object]:
         "top_level_sqlite_log_backup": sqlite_backup,
         "top_level_sqlite_log_retention_summary": sqlite_retention,
         "top_level_sqlite_log_pragmas": sqlite_pragmas,
+        "top_level_sqlite_log_migration_plan": sqlite_migration_plan,
+        "top_level_sqlite_log_weekly_digest": sqlite_weekly_digest,
         "top_level_sqlite_log_validation": sqlite_log_validation,
         "top_level_sqlite_log_commit_guard": sqlite_commit_guard,
     }
@@ -1270,6 +1362,10 @@ def validation_summary() -> dict[str, object]:
     review_queue = validation["review_queue_summary"]
     consensus = validation["consensus_summary"]
     consensus_exports = validation["consensus_export_summary"]
+    cross_track = validation["cross_track_summary"]
+    reproducibility = validation["reproducibility_verification"]
+    sqlite_migration_plan = validation["top_level_sqlite_log_migration_plan"]
+    sqlite_weekly_digest = validation["top_level_sqlite_log_weekly_digest"]
     validation_datasets = validation["validation_dataset_summary"]
     validation_promotions = validation["validation_promotion_summary"]
     validation_readiness = validation["validation_readiness_summary"]
@@ -1378,6 +1474,31 @@ def validation_summary() -> dict[str, object]:
         ]
         if isinstance(consensus_exports, dict)
         else 0,
+        "cross_track_reference_count": cross_track["reference_count"]
+        if isinstance(cross_track, dict)
+        else 0,
+        "cross_track_multi_track_reference_count": cross_track[
+            "multi_track_reference_count"
+        ]
+        if isinstance(cross_track, dict)
+        else 0,
+        "cross_track_blocking_issue_total": cross_track["blocking_issue_total"]
+        if isinstance(cross_track, dict)
+        else 0,
+        "reproducibility_verified_count": reproducibility["verified_count"]
+        if isinstance(reproducibility, dict)
+        else 0,
+        "reproducibility_drift_count": reproducibility["drift_count"]
+        if isinstance(reproducibility, dict)
+        else 0,
+        "top_level_sqlite_log_migration_plan_required": bool(
+            sqlite_migration_plan["migration_required"]
+        )
+        if isinstance(sqlite_migration_plan, dict)
+        else False,
+        "top_level_sqlite_log_weekly_digest_ok": bool(sqlite_weekly_digest["ok"])
+        if isinstance(sqlite_weekly_digest, dict)
+        else False,
         "validation_dataset_count": validation_datasets["dataset_count"]
         if isinstance(validation_datasets, dict)
         else 0,
@@ -1878,6 +1999,31 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Optional synthetic human-review consensus export fixture JSON path.",
     )
+    cross_track_parser = subparsers.add_parser(
+        "cross-track-summary",
+        help=(
+            "Summarize cross-track candidate cross-reference fixture coverage. "
+            "Cross-references are operational metadata only and never modify "
+            "candidate scores or pathways."
+        ),
+    )
+    cross_track_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional cross-track reference fixture JSON path.",
+    )
+    verify_repro_parser = subparsers.add_parser(
+        "verify-report-reproducibility",
+        help=(
+            "Re-score persisted candidate packets and report drift vs. their "
+            "manifests. Read-only; never auto-corrects historical artifacts."
+        ),
+    )
+    verify_repro_parser.add_argument(
+        "report_dir",
+        type=Path,
+        help="Directory containing per-candidate manifests and JSON packets.",
+    )
     validation_dataset_parser = subparsers.add_parser(
         "validation-dataset-summary",
         help="Summarize validation dataset manifest coverage.",
@@ -2295,6 +2441,32 @@ def _build_parser() -> argparse.ArgumentParser:
         default=default_sqlite_log_path(default_project_root()),
         help="SQLite log database path. Defaults to logs/techno_search.sqlite3.",
     )
+    sqlite_migrate_parser = subparsers.add_parser(
+        "sqlite-log-migrate",
+        help=(
+            "Print a non-destructive SQLite log migration plan. Apply mode is "
+            "blocked until a destructive migration is reviewed and added."
+        ),
+    )
+    sqlite_migrate_parser.add_argument(
+        "--db-path",
+        type=Path,
+        default=default_sqlite_log_path(default_project_root()),
+        help="SQLite log database path. Defaults to logs/techno_search.sqlite3.",
+    )
+    sqlite_migrate_parser.add_argument(
+        "--target-version",
+        default=TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
+        help="Target schema version. Defaults to the latest supported version.",
+    )
+    sqlite_migrate_parser.add_argument(
+        "--apply",
+        action="store_true",
+        help=(
+            "Apply mode is currently blocked because no destructive migration is "
+            "implemented. Reserved for future explicit migrations."
+        ),
+    )
     sqlite_pragmas_parser = subparsers.add_parser(
         "sqlite-log-pragmas",
         help="Report SQLite PRAGMA diagnostics for operator checks.",
@@ -2344,6 +2516,25 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=default_sqlite_log_path(default_project_root()),
         help="SQLite log database path. Defaults to logs/techno_search.sqlite3.",
+    )
+    sqlite_digest_parser = subparsers.add_parser(
+        "sqlite-log-weekly-digest",
+        help=(
+            "Print a review-safe rolling digest of SQLite operational logs. "
+            "Read-only and does not expose payload contents."
+        ),
+    )
+    sqlite_digest_parser.add_argument(
+        "--db-path",
+        type=Path,
+        default=default_sqlite_log_path(default_project_root()),
+        help="SQLite log database path. Defaults to logs/techno_search.sqlite3.",
+    )
+    sqlite_digest_parser.add_argument(
+        "--window-days",
+        type=int,
+        default=7,
+        help="Reporting window in days (default 7).",
     )
     sqlite_commit_guard_parser = subparsers.add_parser(
         "sqlite-log-commit-guard",
@@ -2479,6 +2670,31 @@ def _build_parser() -> argparse.ArgumentParser:
         nargs="+",
         type=Path,
         help="Paths to validate before commit or release.",
+    )
+    artifacts_cleanup_parser = subparsers.add_parser(
+        "artifacts-cleanup",
+        help=(
+            "Plan or apply local cleanup of the ignored artifacts/ directory. "
+            "Refuses to touch committed project paths."
+        ),
+    )
+    artifacts_cleanup_parser.add_argument(
+        "--artifacts-dir",
+        type=Path,
+        help="Optional artifacts directory override.",
+    )
+    artifacts_cleanup_parser.add_argument(
+        "--apply",
+        action="store_true",
+        help=(
+            "Apply the plan and delete files under artifacts/. Requires "
+            "--acknowledge-local-apply."
+        ),
+    )
+    artifacts_cleanup_parser.add_argument(
+        "--acknowledge-local-apply",
+        action="store_true",
+        help="Required acknowledgement to perform local file deletion.",
     )
     return parser
 

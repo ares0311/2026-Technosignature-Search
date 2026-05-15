@@ -432,3 +432,60 @@ Examples should be regenerated when:
 - example candidate inputs change
 
 Stable score, evidence, and pathway changes should be reviewed against `tests/fixtures/score_regressions.json`.
+
+---
+
+## Reproducibility Verification
+
+Re-score persisted candidate packets and report drift vs. their manifests:
+
+```bash
+.venv/bin/techno-search verify-report-reproducibility examples/reports
+```
+
+Reproducibility verification is read-only. It re-scores each persisted candidate packet using the current scoring implementation and reports drift in pathway, posterior values, derived scores, schema version, and config version. The command exits non-zero if drift is detected. Drift is reported, never auto-corrected; investigate intentional vs unintentional changes manually before regenerating artifacts.
+
+---
+
+## Cross-Track Cross-References
+
+Cross-track references are operational metadata only. Inspect committed coverage:
+
+```bash
+.venv/bin/techno-search cross-track-summary
+```
+
+The fixture covers operational cross-references across multiple tracks, conflicting evidence, single-track-only entries, and known-object cross-matches. Cross-references must never modify candidate posteriors, false-positive probability, or pathway routing.
+
+---
+
+## Local Artifacts Cleanup
+
+Plan or apply local cleanup of the ignored `artifacts/` directory:
+
+```bash
+.venv/bin/techno-search artifacts-cleanup
+.venv/bin/techno-search artifacts-cleanup --apply --acknowledge-local-apply
+```
+
+The dry-run plan is the default. Apply mode requires the explicit acknowledgement flag and only deletes files under `artifacts/`. Committed roots (`examples/`, `schemas/`, `tests/`, `docs/`, `configs/`, `src/`, `logs/`, `cache/`, `data/`) are always rejected.
+
+---
+
+## SQLite Log Migration And Weekly Digest
+
+Print a non-destructive SQLite log migration plan:
+
+```bash
+.venv/bin/techno-search sqlite-log-migrate
+```
+
+The plan is dry-run by default. Apply mode is intentionally blocked until a destructive migration is reviewed and added.
+
+Print a review-safe rolling digest of the SQLite operational log:
+
+```bash
+.venv/bin/techno-search sqlite-log-weekly-digest
+```
+
+The digest reports run counts, reviewed and needs-follow-up counts, blocking-issue totals, network-access counts (must remain zero by default), and external-submission approval counts (must remain zero unless directly recorded by the user).

@@ -1,0 +1,80 @@
+{
+  "schema_version": "cross_track_references_v1",
+  "description": "Synthetic cross-track candidate cross-reference fixture for development tests. Cross-references are operational metadata only and do not modify candidate scoring or pathway routing.",
+  "disclaimer": "Cross-track references are operational cross-reference metadata only. They do not modify candidate posteriors, false-positive probability, or pathway routing, and they are not detections, discoveries, or external validation.",
+  "references": [
+    {
+      "reference_id": "cross-ref-target-shared-001",
+      "target_id": "target-shared-radio-and-infrared",
+      "contributing_tracks": ["radio", "infrared"],
+      "candidate_packet_ids": [
+        "radio-clean-drift-shared-001",
+        "infrared-excess-shared-001"
+      ],
+      "recommended_pathway": "human_review_queue",
+      "blocking_issues": [
+        "Independent reviewers required for each contributing track",
+        "Cross-track timing alignment not yet verified"
+      ],
+      "negative_evidence": [
+        "Radio packet records strong RFI overlap warning",
+        "Infrared packet shows partial confusion-flag coverage"
+      ],
+      "cross_reference_kind": "operational_cross_reference",
+      "notes": "Two independently-scored candidates share the same target ID; neither score is boosted by this cross-reference."
+    },
+    {
+      "reference_id": "cross-ref-conflict-002",
+      "target_id": "target-conflicting-evidence-001",
+      "contributing_tracks": ["radio", "anomaly"],
+      "candidate_packet_ids": [
+        "radio-conflicting-002",
+        "anomaly-conflicting-002"
+      ],
+      "recommended_pathway": "do_not_submit_false_positive",
+      "blocking_issues": [
+        "Radio track flags likely RFI",
+        "Anomaly track flags likely catalog mismatch"
+      ],
+      "negative_evidence": [
+        "Both tracks report strong false-positive evidence",
+        "No surviving positive evidence after independent vetting"
+      ],
+      "cross_reference_kind": "conflicting_evidence",
+      "notes": "Both contributing tracks recommend conservative rejection; the cross-reference preserves the disagreement rather than resolving it."
+    },
+    {
+      "reference_id": "cross-ref-single-track-003",
+      "target_id": "target-single-track-only-003",
+      "contributing_tracks": ["anomaly"],
+      "candidate_packet_ids": ["anomaly-single-track-003"],
+      "recommended_pathway": "github_reproducibility_only",
+      "blocking_issues": [
+        "No radio coverage available for this target",
+        "No infrared coverage available for this target"
+      ],
+      "negative_evidence": [
+        "Single-track evidence remains weak without cross-track corroboration"
+      ],
+      "cross_reference_kind": "single_track_only",
+      "notes": "Recorded so the absence of cross-track support is auditable rather than silent."
+    },
+    {
+      "reference_id": "cross-ref-known-object-004",
+      "target_id": "target-known-object-annotation-004",
+      "contributing_tracks": ["infrared", "anomaly"],
+      "candidate_packet_ids": [
+        "infrared-known-object-004",
+        "anomaly-known-object-004"
+      ],
+      "recommended_pathway": "known_object_annotation",
+      "blocking_issues": [],
+      "negative_evidence": [
+        "SIMBAD-style match indicates a known annotated source class",
+        "Both tracks consistent with the catalog identification"
+      ],
+      "cross_reference_kind": "known_object_cross_match",
+      "notes": "Cross-reference confirms known-object annotation rather than a new candidate."
+    }
+  ]
+}

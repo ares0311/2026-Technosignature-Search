@@ -24,6 +24,57 @@ Overall status: all three requested steps are implemented.
 
 ---
 
+## Cross-Track Cross-Reference, Reproducibility Verification, And Operational Maintenance
+
+User requested applying all system directives and completing the next fifteen steps.
+
+Status: implemented in this iteration.
+
+Added:
+
+- `src/techno_search/artifact_cleanup.py` — local artifacts cleanup planner/applier with dry-run default, forbidden-root safety checks
+- `src/techno_search/cross_track.py` — cross-track candidate cross-reference loader, summary helper, and schema
+- `src/techno_search/reproducibility.py` — read-only reproducibility verifier comparing re-scored packets against persisted manifests
+- `schemas/cross_track_references.schema.json` — JSON Schema for cross-track reference entries
+- `tests/fixtures/cross_track_references.json` — 4 synthetic entries (multi-track, conflicting, single-track, known-object)
+- `examples/background_draft_reports/` — committed example draft report artifacts
+- `sqlite_log_migration_plan()` and `sqlite_log_weekly_digest()` in `log_store.py`
+- CLI commands: `artifacts-cleanup`, `cross-track-summary`, `verify-report-reproducibility`, `sqlite-log-migrate`, `sqlite-log-weekly-digest`
+- New `validate-all` gates and `validation-summary` fields for all of the above
+- Tests: `test_artifact_cleanup.py`, `test_cross_track.py`, `test_reproducibility.py`, `test_log_store_extensions.py`
+- Docs updates: `DECISIONS.md` (DECISION-026, DECISION-027), `CLI_USAGE.md`, `VALIDATION.md`, `PROJECT_STATUS.md`, `ROADMAP.md`, `README.md`
+
+Scientific guardrail:
+
+- Cross-track references are operational metadata only — they never modify posteriors or pathway routing
+- Reproducibility verification reports drift but never auto-corrects committed artifacts
+- Weekly digest confirms network_access_allowed_count and external_submission_approved_count remain zero
+- Artifacts cleanup refuses all committed project roots
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/python -m ruff check .
+.venv/bin/python -m mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 283 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, PR created, merged to `main`.
+
+---
+
 ## Persisted Background Draft Reports And Decision Append Workflow
 
 User requested applying all system directives, completing the next fifteen

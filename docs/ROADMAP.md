@@ -247,6 +247,12 @@ Add real data ingestion behind tested abstractions.
 - [x] SQLite log initialization, summary, validation, and CLI wiring
 - [x] SQLite integrity, migration, recent-run, needs-follow-up, export, and commit-guard commands
 - [x] SQLite PRAGMA diagnostics, ignored backups, retention summaries, and vacuum maintenance commands
+- [x] SQLite log non-destructive migration plan command
+- [x] SQLite log review-safe weekly digest command
+- [x] Persisted draft-report example artifacts under `examples/background_draft_reports`
+- [x] Local artifacts cleanup CLI with dry-run default and committed-path safety
+- [x] Cross-track candidate cross-reference fixture and summary command
+- [x] Persisted-report reproducibility verification command
 
 ---
 
