@@ -312,6 +312,13 @@ Evaluate modern AI methods only after interpretable baselines, provenance, false
 - [x] `health` CLI for concise operator status dashboard
 - [x] Baseline eval and performance history JSON schema artifacts
 - [x] DECISION-029: Weekly Review Template Is The Authoritative Operator Handoff
+- [x] Baseline confusion matrix (per-pathway precision/recall/F1) in `evaluate_baseline()`
+- [x] `baseline-confusion-matrix-summary` CLI
+- [x] `score-determinism-check` CLI (gate: all example candidates deterministic)
+- [x] Candidate lifecycle schema, fixture, loader, and `candidate-lifecycle-summary` CLI
+- [x] Observation schedule schema, fixture, loader, and `observation-schedule-summary` CLI
+- [x] False-negative summary from injection-recovery fixture and `false-negative-summary` CLI
+- [x] DECISION-030: Scoring Must Be Deterministic Before Any Learned Model Is Introduced
 
 ## Candidate Methods
 

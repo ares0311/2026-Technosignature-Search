@@ -91,6 +91,53 @@ def injection_recovery_summary(path: Path | str | None = None) -> dict[str, obje
     }
 
 
+def false_negative_summary(path: Path | str | None = None) -> dict[str, object]:
+    """Summarize missed injections (false negatives) from the injection-recovery fixture.
+
+    False negatives are injection cases with outcome 'missed' — signals that were
+    injected but not recovered. A high missed-injection rate suggests the scoring
+    model or baseline classifier has low sensitivity for that track or signal type.
+    All rates are synthetic development diagnostics only.
+    """
+    fixture_path = default_injection_recovery_fixture_path() if path is None else Path(path)
+    cases = load_injection_recovery_cases(fixture_path)
+
+    missed_cases = [case for case in cases if case.outcome == "missed"]
+    total_injected = [case for case in cases if not case.false_alarm]
+
+    by_track_total: Counter[str] = Counter()
+    by_track_missed: Counter[str] = Counter()
+    for case in total_injected:
+        by_track_total[case.track.value] += 1
+    for case in missed_cases:
+        by_track_missed[case.track.value] += 1
+
+    track_missed_rates: dict[str, float] = {}
+    for track, total in by_track_total.items():
+        track_missed_rates[track] = _safe_ratio(by_track_missed.get(track, 0), total)
+
+    total_injected_count = len(total_injected)
+    missed_count = len(missed_cases)
+    overall_missed_rate = _safe_ratio(missed_count, total_injected_count)
+
+    by_type_missed: dict[str, int] = {}
+    for case in missed_cases:
+        by_type_missed[case.injection_type] = by_type_missed.get(case.injection_type, 0) + 1
+
+    return {
+        "schema_version": INJECTION_RECOVERY_SCHEMA_VERSION,
+        "disclaimer": INJECTION_RECOVERY_DISCLAIMER,
+        "total_injected_cases": total_injected_count,
+        "missed_count": missed_count,
+        "false_alarm_count": len(cases) - total_injected_count,
+        "synthetic_missed_injection_rate": overall_missed_rate,
+        "by_track_missed_count": _counter_to_dict(by_track_missed),
+        "by_track_missed_rate": track_missed_rates,
+        "by_injection_type_missed": dict(sorted(by_type_missed.items())),
+        "missed_case_ids": sorted(case.case_id for case in missed_cases),
+    }
+
+
 def _case_from_mapping(data: object) -> InjectionRecoveryCase:
     if not isinstance(data, dict):
         msg = "Injection-recovery case must be an object"

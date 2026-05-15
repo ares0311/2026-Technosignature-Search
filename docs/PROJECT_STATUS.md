@@ -217,11 +217,22 @@ The project will support three tracks from day one:
 
 ---
 
+- [x] Baseline confusion matrix (per-pathway precision/recall/F1) in `evaluate_baseline()`
+- [x] `baseline-confusion-matrix-summary` CLI
+- [x] `score-determinism-check` CLI — gate: all example candidates produce deterministic outputs
+- [x] Candidate lifecycle schema, fixture, and `candidate-lifecycle-summary` CLI
+- [x] Observation schedule schema, fixture, and `observation-schedule-summary` CLI
+- [x] False-negative summary from injection-recovery fixture and `false-negative-summary` CLI
+- [x] DECISION-030: Scoring Must Be Deterministic Before Any Learned Model Is Introduced
+- [x] 28 JSON schema artifacts, 28 total (added candidate_lifecycle, observation_schedule)
+
+---
+
 ## Next 3 Actions
 
 1. Add a CI workflow file once a token with `workflow` scope is available.
 2. Begin non-synthetic validation dataset integration once real observations are available under appropriate data policy.
-3. Extend baseline evaluation with confusion-matrix visualization once plot artifact infrastructure is stable.
+3. Extend scoring model with configurable per-track sensitivity coefficients for future calibration grid work.
 
 ---
 

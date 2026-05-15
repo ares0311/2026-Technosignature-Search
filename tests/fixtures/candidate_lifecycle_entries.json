@@ -1,0 +1,96 @@
+{
+  "schema_version": "candidate_lifecycle_v1",
+  "disclaimer": "Candidate lifecycle entries are local scheduling and provenance records only. They are not detection claims, discovery announcements, or external submissions. All candidates remain unconfirmed and require external, independent validation before any claim can be made.",
+  "entries": [
+    {
+      "candidate_id": "radio-clean-candidate-001",
+      "track": "radio",
+      "stage": "scored",
+      "stage_entered_utc": "2026-05-15T00:00:00Z",
+      "pathway": "candidate_review_packet",
+      "operator_notes": "Synthetic narrowband radio candidate scored in development run.",
+      "blocking_reasons": []
+    },
+    {
+      "candidate_id": "radio-clean-candidate-001",
+      "track": "radio",
+      "stage": "baseline_classified",
+      "stage_entered_utc": "2026-05-15T00:01:00Z",
+      "pathway": "candidate_review_packet",
+      "operator_notes": "Baseline classifier confirms candidate_review_packet routing.",
+      "blocking_reasons": []
+    },
+    {
+      "candidate_id": "radio-rfi-001",
+      "track": "radio",
+      "stage": "scored",
+      "stage_entered_utc": "2026-05-15T00:02:00Z",
+      "pathway": "do_not_submit_false_positive",
+      "operator_notes": "Synthetic RFI candidate correctly routed to false positive.",
+      "blocking_reasons": []
+    },
+    {
+      "candidate_id": "radio-rfi-001",
+      "track": "radio",
+      "stage": "pathway_decided",
+      "stage_entered_utc": "2026-05-15T00:03:00Z",
+      "pathway": "do_not_submit_false_positive",
+      "operator_notes": "Pathway confirmed as do_not_submit_false_positive by operator.",
+      "blocking_reasons": ["rfi_band_overlap", "high_false_positive_probability"]
+    },
+    {
+      "candidate_id": "infrared-clean-candidate-001",
+      "track": "infrared",
+      "stage": "scored",
+      "stage_entered_utc": "2026-05-15T00:04:00Z",
+      "pathway": "candidate_review_packet",
+      "operator_notes": "Synthetic infrared excess candidate — requires follow-up photometry.",
+      "blocking_reasons": []
+    },
+    {
+      "candidate_id": "infrared-clean-candidate-001",
+      "track": "infrared",
+      "stage": "human_reviewed",
+      "stage_entered_utc": "2026-05-15T00:05:00Z",
+      "pathway": "candidate_review_packet",
+      "operator_notes": "Human review flagged for follow-up; no dust confusion detected.",
+      "blocking_reasons": []
+    },
+    {
+      "candidate_id": "infrared-clean-candidate-001",
+      "track": "infrared",
+      "stage": "follow_up_scheduled",
+      "stage_entered_utc": "2026-05-15T00:06:00Z",
+      "pathway": "candidate_review_packet",
+      "operator_notes": "Follow-up photometry observation scheduled for next window.",
+      "blocking_reasons": []
+    },
+    {
+      "candidate_id": "anomaly-clean-candidate-001",
+      "track": "anomaly",
+      "stage": "initial_detection",
+      "stage_entered_utc": "2026-05-15T00:07:00Z",
+      "pathway": "github_reproducibility_only",
+      "operator_notes": "Archival anomaly detected in local background scan.",
+      "blocking_reasons": []
+    },
+    {
+      "candidate_id": "anomaly-clean-candidate-001",
+      "track": "anomaly",
+      "stage": "scored",
+      "stage_entered_utc": "2026-05-15T00:08:00Z",
+      "pathway": "github_reproducibility_only",
+      "operator_notes": "Anomaly scored; low confidence — routed to github_reproducibility_only.",
+      "blocking_reasons": []
+    },
+    {
+      "candidate_id": "anomaly-clean-candidate-001",
+      "track": "anomaly",
+      "stage": "archived",
+      "stage_entered_utc": "2026-05-15T01:00:00Z",
+      "pathway": "github_reproducibility_only",
+      "operator_notes": "Archived after reproducibility check. No follow-up warranted.",
+      "blocking_reasons": []
+    }
+  ]
+}

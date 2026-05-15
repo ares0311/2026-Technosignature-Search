@@ -10,6 +10,68 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
+User requested fifteen iterative steps covering baseline confusion matrix, score determinism checker, candidate lifecycle schema, observation schedule schema, and false-negative summary.
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all fifteen steps implemented, tested, and validated.
+
+Added:
+
+- Baseline confusion matrix (per-pathway TP/FP/TN/FN, precision, recall, F1) in `evaluate_baseline()`
+- `baseline-confusion-matrix-summary` CLI
+- `score_determinism_check(candidate_path, runs=N)` in `baseline_eval.py`
+- `score-determinism-check` CLI — gate: all example candidates deterministic
+- `src/techno_search/candidate_lifecycle.py` — lifecycle stage tracker with 7 allowed stages
+- `schemas/candidate_lifecycle.schema.json`
+- `tests/fixtures/candidate_lifecycle_entries.json` — 10 entries across 3 tracks
+- `candidate-lifecycle-summary` CLI
+- `src/techno_search/observation_schedule.py` — observation window scheduler
+- `schemas/observation_schedule.schema.json`
+- `tests/fixtures/observation_schedule.json` — 5 windows (planned/completed/cancelled)
+- `observation-schedule-summary` CLI
+- `false_negative_summary()` in `injection_recovery.py`
+- `false-negative-summary` CLI
+- `validate-all` gates: lifecycle >= 3 entries covering 3 tracks, schedule >= 4 windows, missed rate < 1.0
+- `validation-summary` fields: `candidate_lifecycle_entry_count`, `observation_schedule_window_count`, `false_negative_case_count`, `synthetic_missed_injection_rate`
+- `candidate_lifecycle` and `observation_schedule` in `schema-paths` (total schemas: 28)
+- DECISION-030: Scoring Must Be Deterministic Before Any Learned Model Is Introduced
+- Tests: `test_baseline_confusion_matrix.py` (14), `test_candidate_lifecycle.py` (13), `test_observation_schedule.py` (13), `test_false_negative.py` (10) — 50 new tests, all passing
+- Docs: CLI_USAGE.md, VALIDATION.md, ROADMAP.md, PROJECT_STATUS.md updated
+
+Scientific guardrail:
+
+- Confusion matrix values are synthetic development diagnostics only
+- Score determinism check is a local sanity gate — determinism is required before any learned model
+- Candidate lifecycle and observation schedule entries are scheduling/provenance records only
+- False-negative summary is a synthetic sensitivity indicator, not a calibrated survey metric
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/python -m ruff check .
+.venv/bin/python -m mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 402 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, PR created, merging to `main`.
+
+---
+
+## Previous Iteration (Baseline Eval Extensions)
+
 User requested fifteen iterative steps extending the Milestone 10 baseline eval scaffold with rule fire rates, misclassification logs, performance history, drift checks, injection grids, watchlist priority ordering, weekly review watchlist gates, SQLite track summaries, health CLI, and JSON schema artifacts.
 
 Current branch: `claude/general-session-Bb2dZ`.

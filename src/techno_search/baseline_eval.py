@@ -146,6 +146,32 @@ def evaluate_baseline(
         if not r["match"]
     ]
 
+    # --- confusion matrix ---
+    all_pathways = sorted(
+        {r["expected_pathway"] for r in results}
+        | {r["predicted_pathway"] for r in results}
+    )
+    confusion: dict[str, dict[str, int]] = {
+        expected: {predicted: 0 for predicted in all_pathways}
+        for expected in all_pathways
+    }
+    for r in results:
+        confusion[r["expected_pathway"]][r["predicted_pathway"]] += 1
+
+    per_pathway_precision: dict[str, float] = {}
+    per_pathway_recall: dict[str, float] = {}
+    per_pathway_f1: dict[str, float] = {}
+    for pw in all_pathways:
+        tp = confusion[pw][pw]
+        fp = sum(confusion[other][pw] for other in all_pathways if other != pw)
+        fn = sum(confusion[pw][other] for other in all_pathways if other != pw)
+        prec = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+        rec = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        f1 = (2 * prec * rec / (prec + rec)) if (prec + rec) > 0 else 0.0
+        per_pathway_precision[pw] = prec
+        per_pathway_recall[pw] = rec
+        per_pathway_f1[pw] = f1
+
     return {
         "schema_version": "baseline_eval_v0",
         "model_version": BASELINE_MODEL_VERSION,
@@ -160,6 +186,10 @@ def evaluate_baseline(
         "rule_fire_rates": rule_fire_rates,
         "misclassified": misclassified,
         "misclassified_count": len(misclassified),
+        "confusion_matrix": confusion,
+        "per_pathway_precision": per_pathway_precision,
+        "per_pathway_recall": per_pathway_recall,
+        "per_pathway_f1": per_pathway_f1,
         "results": results,
     }
 
@@ -198,6 +228,61 @@ def baseline_performance_history_summary(
         "latest_accuracy": latest.get("pathway_accuracy"),
         "latest_model_version": latest.get("model_version"),
         "latest_snapshot_date": latest.get("snapshot_date"),
+    }
+
+
+def score_determinism_check(
+    candidate_path: Path,
+    runs: int = 3,
+) -> dict[str, Any]:
+    """Run score_candidate on the same input N times and assert identical outputs.
+
+    Returns deterministic=True when all runs produce the same posterior, scores,
+    and recommended_pathway. This is a local diagnostic only — it does not
+    validate calibration quality or real-observation performance.
+    """
+    with candidate_path.open(encoding="utf-8") as handle:
+        candidate_dict = json.load(handle)
+
+    run_results: list[dict[str, Any]] = []
+    for _ in range(runs):
+        with suppress(Exception):
+            candidate = candidate_from_mapping(candidate_dict)
+            scored = score_candidate(candidate)
+            packet = scored.as_dict()
+            run_results.append(
+                {
+                    "posterior": packet.get("posterior", {}),
+                    "scores": packet.get("scores", {}),
+                    "recommended_pathway": packet.get("recommended_pathway", ""),
+                }
+            )
+
+    if len(run_results) < runs:
+        return {
+            "schema_version": "score_determinism_v0",
+            "disclaimer": BASELINE_EVAL_DISCLAIMER,
+            "candidate_path": str(candidate_path),
+            "runs_requested": runs,
+            "runs_completed": len(run_results),
+            "deterministic": False,
+            "differing_fields": ["scoring_failed"],
+        }
+
+    differing: list[str] = []
+    ref = run_results[0]
+    for field in ("posterior", "scores", "recommended_pathway"):
+        if any(r[field] != ref[field] for r in run_results[1:]):
+            differing.append(field)
+
+    return {
+        "schema_version": "score_determinism_v0",
+        "disclaimer": BASELINE_EVAL_DISCLAIMER,
+        "candidate_path": str(candidate_path),
+        "runs_requested": runs,
+        "runs_completed": len(run_results),
+        "deterministic": len(differing) == 0,
+        "differing_fields": differing,
     }
 
 
