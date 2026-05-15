@@ -301,6 +301,17 @@ Evaluate modern AI methods only after interpretable baselines, provenance, false
 - [x] `weekly-review-template` CLI command
 - [x] SQLite log migration (v1 → v2 adding `target_notes` column)
 - [x] DECISION-028: Interpretable Baseline Must Precede Any Learned Model
+- [x] Per-track accuracy breakdown and rule fire-rate reporting in baseline eval
+- [x] Misclassification log with candidate_id, expected/predicted pathway, and rule trace
+- [x] Baseline performance history fixture and `baseline-performance-history-summary` CLI
+- [x] Synthetic injection grid tests for radio SNR×drift and infrared excess routing
+- [x] `baseline-pathway-drift-summary` CLI with zero-drift gate in `validate-all`
+- [x] Watchlist priority ordering by `priority_override_score`
+- [x] Weekly review template watchlist gate (elevated, blocked, prioritized targets)
+- [x] `sqlite-log-track-summary` CLI for per-track run counts from local SQLite database
+- [x] `health` CLI for concise operator status dashboard
+- [x] Baseline eval and performance history JSON schema artifacts
+- [x] DECISION-029: Weekly Review Template Is The Authoritative Operator Handoff
 
 ## Candidate Methods
 

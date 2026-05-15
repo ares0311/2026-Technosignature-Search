@@ -32,6 +32,9 @@ class WeeklyReviewTemplate:
     recommended_next_actions: list[str]
     operator_notes: str = ""
     sections: dict[str, Any] = field(default_factory=dict)
+    watchlist_elevated_count: int = 0
+    watchlist_blocked_count: int = 0
+    watchlist_prioritized_targets: list[str] = field(default_factory=list)
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -41,6 +44,9 @@ class WeeklyReviewTemplate:
             "window_days": self.window_days,
             "network_access_confirmed_zero": self.network_access_confirmed_zero,
             "external_submission_confirmed_zero": self.external_submission_confirmed_zero,
+            "watchlist_elevated_count": self.watchlist_elevated_count,
+            "watchlist_blocked_count": self.watchlist_blocked_count,
+            "watchlist_prioritized_targets": self.watchlist_prioritized_targets,
             "digest": self.digest,
             "cross_track_summary": self.cross_track_summary,
             "recommended_next_actions": self.recommended_next_actions,
@@ -78,6 +84,16 @@ class WeeklyReviewTemplate:
         lines.append(f"- Window start: {digest.get('window_start_utc', 'N/A')}")
         lines.append("")
 
+        lines.append("## Watchlist Status")
+        lines.append("")
+        lines.append(f"- Elevated targets: {self.watchlist_elevated_count}")
+        lines.append(f"- Blocked targets: {self.watchlist_blocked_count}")
+        if self.watchlist_prioritized_targets:
+            lines.append(
+                f"- Priority order: {', '.join(self.watchlist_prioritized_targets)}"
+            )
+        lines.append("")
+
         lines.append("## Cross-Track References")
         lines.append("")
         ct = self.cross_track_summary
@@ -108,7 +124,11 @@ class WeeklyReviewTemplate:
         return "\n".join(lines)
 
 
-def _default_next_actions(digest: dict[str, Any], ct_summary: dict[str, Any]) -> list[str]:
+def _default_next_actions(
+    digest: dict[str, Any],
+    ct_summary: dict[str, Any],
+    watchlist_elevated_count: int = 0,
+) -> list[str]:
     actions: list[str] = []
     if digest.get("needs_follow_up_count", 0) > 0:
         actions.append(
@@ -124,6 +144,11 @@ def _default_next_actions(digest: dict[str, Any], ct_summary: dict[str, Any]) ->
         actions.append(
             f"Resolve {digest['blocking_issue_total']} blocking issue(s) "
             "recorded in background run outcomes."
+        )
+    if watchlist_elevated_count > 0:
+        actions.append(
+            f"Review {watchlist_elevated_count} elevated watchlist target(s) "
+            "before the next observation cycle."
         )
     if not actions:
         actions.append(
@@ -141,12 +166,17 @@ def build_weekly_review_template(
     window_days: int = 7,
     operator_notes: str = "",
     generated_at_utc: str | None = None,
+    watchlist_summary: dict[str, Any] | None = None,
 ) -> WeeklyReviewTemplate:
     if generated_at_utc is None:
         generated_at_utc = datetime.now(UTC).isoformat()
 
     net_zero = digest.get("network_access_allowed_count", 0) == 0
     sub_zero = digest.get("external_submission_approved_count", 0) == 0
+    wl = watchlist_summary or {}
+    elevated = int(wl.get("elevated_count", 0))
+    blocked = int(wl.get("blocked_count", 0))
+    prioritized = list(wl.get("prioritized_target_ids", []))
 
     return WeeklyReviewTemplate(
         schema_version=WEEKLY_REVIEW_SCHEMA_VERSION,
@@ -157,8 +187,11 @@ def build_weekly_review_template(
         cross_track_summary=ct_summary,
         network_access_confirmed_zero=net_zero,
         external_submission_confirmed_zero=sub_zero,
-        recommended_next_actions=_default_next_actions(digest, ct_summary),
+        recommended_next_actions=_default_next_actions(digest, ct_summary, elevated),
         operator_notes=operator_notes,
+        watchlist_elevated_count=elevated,
+        watchlist_blocked_count=blocked,
+        watchlist_prioritized_targets=prioritized,
     )
 
 

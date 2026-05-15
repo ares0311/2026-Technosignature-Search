@@ -33,7 +33,11 @@ from techno_search.background_search import (
     target_priority_summary,
     write_background_draft_follow_up_reports,
 )
-from techno_search.baseline_eval import evaluate_baseline
+from techno_search.baseline_eval import (
+    baseline_pathway_drift_summary,
+    baseline_performance_history_summary,
+    evaluate_baseline,
+)
 from techno_search.benchmark_metadata import (
     BenchmarkRunResult,
     append_benchmark_run_result,
@@ -133,6 +137,8 @@ SCHEMA_FILENAMES = {
     "validation_readiness": "validation_readiness.schema.json",
     "target_watchlist": "target_watchlist.schema.json",
     "weekly_review_template": "weekly_review_template.schema.json",
+    "baseline_eval": "baseline_eval.schema.json",
+    "baseline_performance_history": "baseline_performance_history.schema.json",
 }
 
 
@@ -883,11 +889,13 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         ct_summary = cross_track_summary(
             getattr(args, "cross_track_fixture", None)
         )
+        _wl_summary = target_watchlist_summary()
         template = build_weekly_review_template(
             digest=digest,
             ct_summary=ct_summary,
             window_days=args.window_days,
             operator_notes=args.operator_notes or "",
+            watchlist_summary=_wl_summary,
         )
         if args.output_dir is not None:
             md_path, json_path = write_weekly_review_template(
@@ -913,6 +921,33 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         else:
             print(json.dumps(template.as_dict(), indent=2, sort_keys=True), file=out)
         return 0
+
+    if args.command == "baseline-performance-history-summary":
+        history = baseline_performance_history_summary(
+            getattr(args, "history_path", None)
+        )
+        print(json.dumps(history, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "baseline-pathway-drift-summary":
+        drift = baseline_pathway_drift_summary(
+            getattr(args, "example_candidates_dir", None)
+        )
+        print(json.dumps(drift, indent=2, sort_keys=True), file=out)
+        return 0 if drift["zero_drift"] else 1
+
+    if args.command == "sqlite-log-track-summary":
+        _db_path = getattr(args, "db_path", None) or default_sqlite_log_path(
+            default_project_root()
+        )
+        track_summary = _sqlite_log_track_summary(_db_path)
+        print(json.dumps(track_summary, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "health":
+        _health = _project_health_summary(out)
+        print(json.dumps(_health, indent=2, sort_keys=True), file=out)
+        return 0 if _health["all_gates_pass"] else 1
 
     if args.command == "artifacts-cleanup":
         if args.apply:
@@ -1186,6 +1221,10 @@ def validate_all() -> dict[str, object]:
     baseline_eval = evaluate_baseline()
     baseline_pathway_accuracy = float(baseline_eval.get("pathway_accuracy", 0.0))
     baseline_total_cases = int(baseline_eval.get("total_cases", 0))
+    _baseline_misclassified_count = int(baseline_eval.get("misclassified_count", 0))
+    drift_result = baseline_pathway_drift_summary()
+    baseline_drift_count = int(drift_result.get("drift_count", 0))
+    baseline_drift_zero = bool(drift_result.get("zero_drift", True))
     watchlist = target_watchlist_summary()
     watchlist_entry_count = watchlist["entry_count"]
     watchlist_conflict_count = watchlist["conflict_count"]
@@ -1364,6 +1403,8 @@ def validate_all() -> dict[str, object]:
         and baseline_pathway_accuracy >= 0.80
         and isinstance(baseline_total_cases, int)
         and baseline_total_cases >= 3
+        and isinstance(baseline_drift_count, int)
+        and baseline_drift_zero
     )
     return {
         "ok": ok,
@@ -1414,6 +1455,7 @@ def validate_all() -> dict[str, object]:
         "top_level_sqlite_log_commit_guard": sqlite_commit_guard,
         "target_watchlist_summary": watchlist,
         "baseline_eval_summary": baseline_eval,
+        "baseline_pathway_drift_summary": drift_result,
     }
 
 
@@ -1844,6 +1886,16 @@ def validation_summary() -> dict[str, object]:
             if isinstance(wl_s3 := validation.get("target_watchlist_summary"), dict)
             else 0
         ),
+        "baseline_misclassified_count": (
+            be_m["misclassified_count"]
+            if isinstance(be_m := validation.get("baseline_eval_summary"), dict)
+            else 0
+        ),
+        "baseline_drift_count": (
+            dr_s["drift_count"]
+            if isinstance(dr_s := validation.get("baseline_pathway_drift_summary"), dict)
+            else 0
+        ),
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
             ".venv/bin/ruff check .",
@@ -1955,6 +2007,57 @@ def git_tracked_paths(project_root: Path | str) -> list[Path]:
     if result.returncode != 0:
         return []
     return [root / line for line in result.stdout.splitlines() if line]
+
+
+def _sqlite_log_track_summary(db_path: Path) -> dict[str, object]:
+    """Return run/outcome counts broken down by track from the SQLite log."""
+    import sqlite3
+    from contextlib import closing
+
+    if not db_path.exists():
+        return {
+            "ok": False,
+            "error": "database does not exist",
+            "by_track": {},
+        }
+    try:
+        with closing(sqlite3.connect(db_path)) as conn:
+            rows = conn.execute(
+                "SELECT track, COUNT(*) FROM background_runs GROUP BY track"
+            ).fetchall()
+            by_track = {str(row[0]): int(row[1]) for row in rows}
+        return {"ok": True, "by_track": by_track, "track_count": len(by_track)}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc), "by_track": {}}
+
+
+def _project_health_summary(out: TextIO | None = None) -> dict[str, object]:
+    """Concise health dashboard combining key gate statuses."""
+    baseline = evaluate_baseline()
+    wl = target_watchlist_summary()
+    schema_count = len(schema_paths())
+    baseline_accuracy = float(baseline.get("pathway_accuracy", 0.0))
+    baseline_ok = baseline_accuracy >= 0.80
+    watchlist_conflicts = int(wl.get("conflict_count", 0))
+    watchlist_ok = watchlist_conflicts == 0
+    drift = baseline_pathway_drift_summary()
+    drift_ok = bool(drift.get("zero_drift", True))
+    all_gates = baseline_ok and watchlist_ok and drift_ok
+    return {
+        "all_gates_pass": all_gates,
+        "schema_count": schema_count,
+        "baseline_pathway_accuracy": baseline_accuracy,
+        "baseline_accuracy_gate_ok": baseline_ok,
+        "watchlist_conflict_count": watchlist_conflicts,
+        "watchlist_gate_ok": watchlist_ok,
+        "baseline_drift_count": drift.get("drift_count", 0),
+        "baseline_drift_gate_ok": drift_ok,
+        "recommended_action": (
+            "Run `techno-search validate-all` for detailed diagnostics."
+            if not all_gates
+            else "All health gates pass."
+        ),
+    }
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -2844,6 +2947,39 @@ def _build_parser() -> argparse.ArgumentParser:
         "--operator-notes",
         default="",
         help="Optional free-text operator notes to include in the template.",
+    )
+    perf_history_parser = subparsers.add_parser(
+        "baseline-performance-history-summary",
+        help="Summarize the append-only baseline performance history fixture.",
+    )
+    perf_history_parser.add_argument(
+        "--history-path",
+        type=Path,
+        help="Optional baseline performance history fixture JSON path.",
+    )
+    drift_parser = subparsers.add_parser(
+        "baseline-pathway-drift-summary",
+        help=(
+            "Compare scoring-model recommended_pathway vs baseline predicted_pathway "
+            "for all example candidates. Zero drift is required. "
+            "Returns exit 1 if any drift is detected."
+        ),
+    )
+    drift_parser.add_argument(
+        "--example-candidates-dir",
+        type=Path,
+        help="Optional example candidates directory override.",
+    )
+    subparsers.add_parser(
+        "sqlite-log-track-summary",
+        help="Show SQLite log run counts broken down by track.",
+    )
+    subparsers.add_parser(
+        "health",
+        help=(
+            "Concise project health dashboard combining key gate statuses. "
+            "Returns exit 1 if any gate fails."
+        ),
     )
     artifacts_cleanup_parser = subparsers.add_parser(
         "artifacts-cleanup",

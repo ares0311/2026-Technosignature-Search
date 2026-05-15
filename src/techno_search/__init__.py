@@ -56,6 +56,20 @@ from techno_search.background_search import (
     target_priority_summary,
     target_selection_score,
 )
+from techno_search.baseline_eval import (
+    BASELINE_EVAL_DISCLAIMER,
+    BASELINE_PERFORMANCE_HISTORY_SCHEMA_VERSION,
+    baseline_pathway_drift_summary,
+    baseline_performance_history_summary,
+    evaluate_baseline,
+)
+from techno_search.baseline_model import (
+    ALL_BASELINE_RULES,
+    BASELINE_MODEL_DISCLAIMER,
+    BASELINE_MODEL_VERSION,
+    RuleBasedBaselineClassifier,
+    predict_pathway,
+)
 from techno_search.benchmark_metadata import (
     BENCHMARK_METADATA_DISCLAIMER,
     BENCHMARK_METADATA_SCHEMA_VERSION,
@@ -181,6 +195,16 @@ from techno_search.weekly_review import (
 )
 
 __all__ = [
+    "ALL_BASELINE_RULES",
+    "BASELINE_EVAL_DISCLAIMER",
+    "BASELINE_MODEL_DISCLAIMER",
+    "BASELINE_MODEL_VERSION",
+    "BASELINE_PERFORMANCE_HISTORY_SCHEMA_VERSION",
+    "RuleBasedBaselineClassifier",
+    "baseline_pathway_drift_summary",
+    "baseline_performance_history_summary",
+    "evaluate_baseline",
+    "predict_pathway",
     "ARTIFACT_CLEANUP_DISCLAIMER",
     "ARTIFACT_CLEANUP_SCHEMA_VERSION",
     "BENCHMARK_METADATA_DISCLAIMER",

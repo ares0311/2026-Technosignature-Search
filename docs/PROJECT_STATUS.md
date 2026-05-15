@@ -202,14 +202,26 @@ The project will support three tracks from day one:
 - [x] Add guarded SQLite log migration (v1 → v2 adding `target_notes`)
 - [x] Add interpretable rule-based baseline classifier (Milestone 10 scaffold)
 - [x] Add baseline evaluation harness with pathway accuracy gate in `validate-all`
+- [x] Add per-track accuracy breakdown in baseline evaluation
+- [x] Add rule fire-rate reporting for all 8 named baseline rules
+- [x] Add misclassification log (candidate_id, expected, predicted, rule_trace) in baseline eval
+- [x] Add baseline performance history fixture and `baseline-performance-history-summary` CLI
+- [x] Add synthetic injection grid tests for radio SNR×drift and infrared excess routing
+- [x] Add `baseline-pathway-drift-summary` CLI with zero-drift gate in `validate-all`
+- [x] Add watchlist priority ordering by `priority_override_score`
+- [x] Add weekly review template watchlist gate (elevated count, blocked count, prioritized targets)
+- [x] Add `sqlite-log-track-summary` CLI for per-track run counts from local database
+- [x] Add `health` CLI combining baseline accuracy, watchlist conflicts, and drift status
+- [x] Add baseline eval and performance history JSON schema artifacts
+- [x] Add DECISION-029: Weekly Review Template Is The Authoritative Operator Handoff
 
 ---
 
 ## Next 3 Actions
 
-1. Extend Milestone 10 scaffold with track-specific baseline performance breakdowns and synthetic injection grid tests.
-2. Add a CI workflow file once a token with `workflow` scope is available.
-3. Begin non-synthetic validation dataset integration once real observations are available under appropriate data policy.
+1. Add a CI workflow file once a token with `workflow` scope is available.
+2. Begin non-synthetic validation dataset integration once real observations are available under appropriate data policy.
+3. Extend baseline evaluation with confusion-matrix visualization once plot artifact infrastructure is stable.
 
 ---
 

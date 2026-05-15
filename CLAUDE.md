@@ -10,13 +10,65 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
-User requested fifteen iterative steps covering Milestone 10 scaffolding, weekly review automation, target watchlist, and SQLite migration.
+User requested fifteen iterative steps extending the Milestone 10 baseline eval scaffold with rule fire rates, misclassification logs, performance history, drift checks, injection grids, watchlist priority ordering, weekly review watchlist gates, SQLite track summaries, health CLI, and JSON schema artifacts.
 
 Current branch: `claude/general-session-Bb2dZ`.
 
 Overall status: all fifteen steps implemented, tested, and validated.
 
-Overall status: all three requested steps are implemented.
+Added:
+
+- Per-track accuracy breakdown in `evaluate_baseline()` (`by_track_accuracy` field)
+- Rule fire-rate reporting for all 8 named baseline rules (`rule_fire_rates` field)
+- Misclassification log with `candidate_id`, `expected_pathway`, `predicted_pathway`, `rule_trace`
+- `ALL_BASELINE_RULES` public export from `baseline_model.py`
+- `baseline_performance_history_summary()` in `baseline_eval.py`
+- `tests/fixtures/baseline_performance_history.json` — single synthetic snapshot
+- `schemas/baseline_eval.schema.json` — required fields incl. rule_fire_rates and misclassified
+- `schemas/baseline_performance_history.schema.json`
+- `baseline_pathway_drift_summary()` — compares scoring model vs baseline on example candidates
+- `baseline-performance-history-summary` CLI with `--history-path`
+- `baseline-pathway-drift-summary` CLI with `--examples-dir`
+- `sqlite-log-track-summary` CLI with `--db-path` for per-track run counts
+- `health` CLI combining baseline accuracy, watchlist conflicts, drift status
+- Watchlist `prioritized_target_ids` ordered by `priority_override_score` (descending)
+- `WeeklyReviewTemplate` watchlist fields: `watchlist_elevated_count`, `watchlist_blocked_count`, `watchlist_prioritized_targets`
+- Weekly review "Watchlist Status" Markdown section
+- `validate-all` gate: `baseline_drift_zero` must be True
+- `validation-summary` fields: `baseline_misclassified_count`, `baseline_drift_count`
+- `baseline_eval` and `baseline_performance_history` in `schema-paths` (total schemas: 26)
+- DECISION-029: Weekly Review Template Is The Authoritative Operator Handoff
+- Tests: `tests/test_baseline_extensions.py` (24 tests, all passing)
+- Docs: CLI_USAGE.md, VALIDATION.md, ROADMAP.md, PROJECT_STATUS.md updated
+
+Scientific guardrail:
+
+- Baseline eval outputs are synthetic development diagnostics only — not detections, discoveries, or external validation
+- Drift summary never auto-corrects — it reports and blocks; human review is required
+- Performance history snapshots are local records only; no claim of improving survey performance
+- Health CLI is a scheduling aid only
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/python -m ruff check .
+.venv/bin/python -m mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 355 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+- `validate-all` ok=True, baseline_drift_zero=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, PR created, merging to `main`.
 
 ---
 

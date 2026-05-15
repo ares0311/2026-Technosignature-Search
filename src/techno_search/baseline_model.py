@@ -65,6 +65,8 @@ _ALL_RULES: tuple[str, ...] = (
     *_HUMAN_REVIEW_RULES,
 )
 
+ALL_BASELINE_RULES: tuple[str, ...] = _ALL_RULES
+
 _TOTAL_RULE_COUNT = len(_ALL_RULES)
 
 
