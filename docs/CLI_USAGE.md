@@ -1215,3 +1215,41 @@ techno-search pipeline-health-summary
 Output fields: `per_track` (with `triage_count`, `triage_blocked_count`, `lifecycle_count`, `lifecycle_blocked_count`, `pending_assignments`, `escalated_assignments`, `pending_epoch_requests`, `observation_follow_up_recommended`), `total_blocked_count`, `total_escalated_count`.
 
 Disclaimer: pipeline health summaries are operational dashboards only, not survey performance estimates.
+
+## `candidate-flags-summary`
+
+Summarize quality flags and operational alerts raised against candidates.
+
+```bash
+techno-search candidate-flags-summary
+techno-search candidate-flags-summary --fixture-path tests/fixtures/candidate_flags.json
+```
+
+Output fields: `flag_count`, `open_count`, `critical_count`, `by_track`, `by_severity`, `by_type`, `by_status`, `tracks_covered`.
+
+Disclaimer: flag records are local quality-control aids, not evidence of a technosignature.
+
+## `review-deadlines-summary`
+
+Summarize upcoming operator review deadlines with urgency levels.
+
+```bash
+techno-search review-deadlines-summary
+techno-search review-deadlines-summary --fixture-path tests/fixtures/review_deadlines.json
+```
+
+Output fields: `deadline_count`, `pending_count`, `overdue_count`, `immediate_count`, `by_track`, `by_urgency`, `by_type`, `by_status`, `by_operator`.
+
+Disclaimer: deadline records are scheduling aids only; urgency reflects scheduling priority, not candidate quality.
+
+## `pipeline-throughput-summary`
+
+Per-stage pipeline throughput counts and transition rate metrics.
+
+```bash
+techno-search pipeline-throughput-summary
+```
+
+Output fields: `total_lifecycle_entries`, `total_triage_notes`, `lifecycle_cleared_count`, `lifecycle_blocked_count`, `triage_cleared_count`, `triage_blocked_count`, `throughput_rate`, `stage_counts`, `by_track`.
+
+Disclaimer: throughput summaries are local operational metrics, not calibrated pipeline efficiency estimates.

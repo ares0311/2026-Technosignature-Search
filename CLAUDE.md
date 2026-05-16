@@ -10,6 +10,62 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
+User requested fifteen iterative steps covering candidate flags, review deadlines, and pipeline throughput.
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all fifteen steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/candidate_flags.py` — quality flags and operational alerts raised against candidates
+- `schemas/candidate_flags.schema.json`
+- `tests/fixtures/candidate_flags.json` — 5 flags across radio/infrared/anomaly with open/resolved/dismissed/acknowledged statuses
+- `tests/test_candidate_flags.py` — 23 tests
+- `src/techno_search/review_deadlines.py` — upcoming review deadlines with urgency levels
+- `schemas/review_deadlines.schema.json`
+- `tests/fixtures/review_deadlines.json` — 5 deadlines across tracks with pending/overdue/completed states
+- `tests/test_review_deadlines.py` — 25 tests
+- `src/techno_search/pipeline_throughput.py` — per-stage lifecycle counts and throughput rate
+- `tests/test_pipeline_throughput.py` — 13 tests
+- `candidate_flags` and `review_deadlines` added to `SCHEMA_FILENAMES` (total schemas: 41)
+- `techno-search candidate-flags-summary --fixture-path`, `techno-search review-deadlines-summary --fixture-path`, `techno-search pipeline-throughput-summary` CLI commands
+- `validate-all` gates: `candidate_flag_count >= 5`, `review_deadline_count >= 4`, `pipeline_throughput_rate >= 0.0`
+- `validation-summary` fields: `candidate_flag_count`, `candidate_flag_open_count`, `review_deadline_count`, `review_deadline_overdue_count`, `pipeline_throughput_rate`
+- DECISION-036: Candidate Flags, Review Deadlines, And Pipeline Throughput Are Scheduling Provenance Records
+- Docs: CLI_USAGE.md, DECISIONS.md updated
+
+Scientific guardrail:
+
+- Flag severity reflects quality-control classification, not candidate interest level
+- Deadline urgency reflects scheduling priority, not candidate quality
+- Throughput rate is a local scheduling metric, not a calibrated survey efficiency estimate
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/ruff check .
+.venv/bin/mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 696 tests passed
+- 5 tests skipped
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, PR updated.
+
+---
+
+## Previous Iteration
+
 User requested fifteen iterative steps covering candidate score history, operator assignment, and pipeline health summary.
 
 Current branch: `claude/general-session-Bb2dZ`.

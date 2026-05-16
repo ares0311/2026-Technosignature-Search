@@ -114,6 +114,16 @@ from techno_search.candidate_audit_trail import (
     audit_trail_summary,
     load_audit_trail,
 )
+from techno_search.candidate_flags import (
+    ALLOWED_FLAG_SEVERITIES,
+    ALLOWED_FLAG_STATUSES,
+    ALLOWED_FLAG_TYPES,
+    CANDIDATE_FLAGS_DISCLAIMER,
+    CANDIDATE_FLAGS_SCHEMA_VERSION,
+    CandidateFlag,
+    candidate_flags_summary,
+    load_candidate_flags,
+)
 from techno_search.candidate_lifecycle import (
     CANDIDATE_LIFECYCLE_DISCLAIMER,
     CANDIDATE_LIFECYCLE_SCHEMA_VERSION,
@@ -203,6 +213,11 @@ from techno_search.pipeline_health import (
     PIPELINE_HEALTH_TRACKS,
     pipeline_health_summary,
 )
+from techno_search.pipeline_throughput import (
+    PIPELINE_STAGES,
+    PIPELINE_THROUGHPUT_DISCLAIMER,
+    pipeline_throughput_summary,
+)
 from techno_search.plotting import (
     PLOT_ARTIFACT_DISCLAIMER,
     PlotArtifact,
@@ -224,6 +239,16 @@ from techno_search.reproducibility import (
     REPRODUCIBILITY_VERIFICATION_SCHEMA_VERSION,
     verify_packet_against_manifest,
     verify_report_directory,
+)
+from techno_search.review_deadlines import (
+    ALLOWED_DEADLINE_STATUSES,
+    ALLOWED_DEADLINE_TYPES,
+    ALLOWED_DEADLINE_URGENCIES,
+    REVIEW_DEADLINES_DISCLAIMER,
+    REVIEW_DEADLINES_SCHEMA_VERSION,
+    ReviewDeadline,
+    load_review_deadlines,
+    review_deadlines_summary,
 )
 from techno_search.review_queue import (
     CONSENSUS_EXPORT_DISCLAIMER,
@@ -529,6 +554,25 @@ __all__ = [
     "write_synthetic_plot_artifacts",
     "AGGREGATE_BLOCKERS_DISCLAIMER",
     "aggregate_blockers_summary",
+    "ALLOWED_FLAG_SEVERITIES",
+    "ALLOWED_FLAG_STATUSES",
+    "ALLOWED_FLAG_TYPES",
+    "CANDIDATE_FLAGS_DISCLAIMER",
+    "CANDIDATE_FLAGS_SCHEMA_VERSION",
+    "CandidateFlag",
+    "candidate_flags_summary",
+    "load_candidate_flags",
+    "ALLOWED_DEADLINE_STATUSES",
+    "ALLOWED_DEADLINE_TYPES",
+    "ALLOWED_DEADLINE_URGENCIES",
+    "REVIEW_DEADLINES_DISCLAIMER",
+    "REVIEW_DEADLINES_SCHEMA_VERSION",
+    "ReviewDeadline",
+    "load_review_deadlines",
+    "review_deadlines_summary",
+    "PIPELINE_STAGES",
+    "PIPELINE_THROUGHPUT_DISCLAIMER",
+    "pipeline_throughput_summary",
     "ALLOWED_SCORE_HISTORY_PATHWAYS",
     "CANDIDATE_SCORE_HISTORY_DISCLAIMER",
     "CANDIDATE_SCORE_HISTORY_SCHEMA_VERSION",

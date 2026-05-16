@@ -57,6 +57,7 @@ from techno_search.calibration import (
 )
 from techno_search.calibration_metrics import precision_recall_summary, reliability_summary
 from techno_search.candidate_audit_trail import audit_trail_summary
+from techno_search.candidate_flags import candidate_flags_summary
 from techno_search.candidate_lifecycle import (
     candidate_lifecycle_summary,
     lifecycle_transition_summary,
@@ -110,6 +111,7 @@ from techno_search.observation_schedule import (
 )
 from techno_search.operator_assignment import operator_assignment_summary
 from techno_search.pipeline_health import pipeline_health_summary
+from techno_search.pipeline_throughput import pipeline_throughput_summary
 from techno_search.plotting import plot_artifact_summary
 from techno_search.provenance import provenance_chain_validator
 from techno_search.reporting import (
@@ -117,6 +119,7 @@ from techno_search.reporting import (
     write_candidate_reports,
 )
 from techno_search.reproducibility import verify_report_directory
+from techno_search.review_deadlines import review_deadlines_summary
 from techno_search.review_queue import (
     consensus_export_summary,
     consensus_summary,
@@ -181,10 +184,12 @@ SCHEMA_FILENAMES = {
     "candidate_audit_trail": "candidate_audit_trail.schema.json",
     "multi_epoch_observations": "multi_epoch_observations.schema.json",
     "target_priority_snapshots": "target_priority_snapshots.schema.json",
+    "candidate_flags": "candidate_flags.schema.json",
     "candidate_observation_notes": "candidate_observation_notes.schema.json",
     "candidate_score_history": "candidate_score_history.schema.json",
     "epoch_plan": "epoch_plan.schema.json",
     "operator_assignment": "operator_assignment.schema.json",
+    "review_deadlines": "review_deadlines.schema.json",
 }
 
 
@@ -1303,6 +1308,41 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "candidate-flags-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                candidate_flags_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "review-deadlines-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                review_deadlines_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "pipeline-throughput-summary":
+        print(
+            json.dumps(
+                pipeline_throughput_summary(),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -1642,6 +1682,12 @@ def validate_all() -> dict[str, object]:
     op_assignment_count = int(op_assignments.get("assignment_count", 0))
     pipeline_health = pipeline_health_summary()
     pipeline_total_blocked = int(pipeline_health.get("total_blocked_count", 0))
+    candidate_flags = candidate_flags_summary()
+    candidate_flag_count = int(candidate_flags.get("flag_count", 0))
+    review_deadlines = review_deadlines_summary()
+    review_deadline_count = int(review_deadlines.get("deadline_count", 0))
+    pipeline_throughput = pipeline_throughput_summary()
+    pipeline_throughput_rate = float(pipeline_throughput.get("throughput_rate", 0.0))
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -1868,6 +1914,12 @@ def validate_all() -> dict[str, object]:
         and op_assignment_count >= 4
         and isinstance(pipeline_total_blocked, int)
         and pipeline_total_blocked >= 0
+        and isinstance(candidate_flag_count, int)
+        and candidate_flag_count >= 5
+        and isinstance(review_deadline_count, int)
+        and review_deadline_count >= 4
+        and isinstance(pipeline_throughput_rate, float)
+        and pipeline_throughput_rate >= 0.0
     )
     return {
         "ok": ok,
@@ -1944,6 +1996,9 @@ def validate_all() -> dict[str, object]:
         "score_history_summary": score_history,
         "operator_assignment_summary": op_assignments,
         "pipeline_health_summary": pipeline_health,
+        "candidate_flags_summary": candidate_flags,
+        "review_deadlines_summary": review_deadlines,
+        "pipeline_throughput_summary": pipeline_throughput,
     }
 
 
@@ -2568,6 +2623,31 @@ def validation_summary() -> dict[str, object]:
             ph_s["total_blocked_count"]
             if isinstance(ph_s := validation.get("pipeline_health_summary"), dict)
             else 0
+        ),
+        "candidate_flag_count": (
+            cf_s["flag_count"]
+            if isinstance(cf_s := validation.get("candidate_flags_summary"), dict)
+            else 0
+        ),
+        "candidate_flag_open_count": (
+            cf_o["open_count"]
+            if isinstance(cf_o := validation.get("candidate_flags_summary"), dict)
+            else 0
+        ),
+        "review_deadline_count": (
+            rd_s["deadline_count"]
+            if isinstance(rd_s := validation.get("review_deadlines_summary"), dict)
+            else 0
+        ),
+        "review_deadline_overdue_count": (
+            rd_o["overdue_count"]
+            if isinstance(rd_o := validation.get("review_deadlines_summary"), dict)
+            else 0
+        ),
+        "pipeline_throughput_rate": (
+            pt_s["throughput_rate"]
+            if isinstance(pt_s := validation.get("pipeline_throughput_summary"), dict)
+            else 0.0
         ),
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
@@ -3919,6 +3999,27 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "pipeline-health-summary",
         help="Per-track pipeline health dashboard aggregating scheduling state.",
+    )
+
+    candidate_flags_parser = subparsers.add_parser(
+        "candidate-flags-summary",
+        help="Summarize quality flags and operational alerts raised against candidates.",
+    )
+    candidate_flags_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    review_deadlines_parser = subparsers.add_parser(
+        "review-deadlines-summary",
+        help="Summarize upcoming operator review deadlines with urgency levels.",
+    )
+    review_deadlines_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "pipeline-throughput-summary",
+        help="Per-stage pipeline throughput counts and transition rate metrics.",
     )
 
     return parser

@@ -896,3 +896,19 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 **Pipeline health**: aggregates triage, lifecycle, observation, and assignment state into a per-track dashboard. It identifies candidates stalled in the pipeline; it does not rank or prioritize candidates for external submission.
 
 **Consequences**: `validate-all` gates enforce minimum fixture coverage for all three modules. Scientific guardrails remain unchanged.
+
+## DECISION-036: Candidate Flags, Review Deadlines, And Pipeline Throughput Are Scheduling Provenance Records
+
+**Date**: 2026-05-16
+
+**Context**: The pipeline now tracks quality flags raised against candidates, upcoming operator review deadlines, and per-stage throughput metrics.
+
+**Decision**: All three modules are implemented as local scheduling and provenance records only. They do not modify candidate scores, posteriors, or pathway routing. All outputs carry conservative disclaimers.
+
+**Candidate flags**: surfaces data-quality issues and operational blockers for operator review. Flag severity reflects quality-control classification, not candidate interest level.
+
+**Review deadlines**: tracks upcoming review obligations. Urgency levels reflect scheduling priority, not candidate quality. Overdue deadlines are surfaced for operator awareness.
+
+**Pipeline throughput**: aggregates per-stage lifecycle and triage counts to surface pipeline bottlenecks. Throughput rate is a local scheduling metric, not a calibrated survey efficiency estimate.
+
+**Consequences**: `validate-all` gates enforce minimum fixture coverage for all three modules. Scientific guardrails remain unchanged.

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CandidateFlags",
+  "description": "Schema for candidate quality flags and operational alerts.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "flags"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "candidate_flags_v1"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "flags": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "flag_id",
+          "candidate_id",
+          "track",
+          "flag_type",
+          "severity",
+          "raised_by",
+          "raised_utc",
+          "status"
+        ],
+        "properties": {
+          "flag_id": { "type": "string" },
+          "candidate_id": { "type": "string" },
+          "track": { "type": "string" },
+          "flag_type": { "type": "string" },
+          "severity": { "type": "string" },
+          "raised_by": { "type": "string" },
+          "raised_utc": { "type": "string" },
+          "status": { "type": "string" },
+          "resolution_notes": { "type": "string" },
+          "related_observation_id": { "type": "string" },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
