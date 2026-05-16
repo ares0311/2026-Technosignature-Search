@@ -1177,3 +1177,41 @@ techno-search aggregate-blockers-summary
 ```
 
 Collects blocking issues from triage notes, lifecycle entries, observation quality flags, and candidate extraction handoffs. Returns a consolidated count by source, track, and candidate. All entries are local operational records only.
+
+## `score-history-summary`
+
+Summarize candidate score evolution across observation epochs.
+
+```bash
+techno-search score-history-summary
+techno-search score-history-summary --fixture-path tests/fixtures/candidate_score_history.json
+```
+
+Output fields: `entry_count`, `unique_candidate_count`, `max_epoch_number`, `by_track`, `by_pathway`, `improving_candidates`, `declining_candidates`, `stable_candidates`.
+
+Disclaimer: score history entries are local scheduling provenance records, not detections or discoveries.
+
+## `operator-assignment-summary`
+
+Summarize operator assignment records for candidate review.
+
+```bash
+techno-search operator-assignment-summary
+techno-search operator-assignment-summary --fixture-path tests/fixtures/operator_assignments.json
+```
+
+Output fields: `assignment_count`, `unique_candidate_count`, `unique_operator_count`, `pending_count`, `escalated_count`, `completed_count`, `by_track`, `by_status`, `by_priority`, `by_operator`.
+
+Disclaimer: assignment records are scheduling aids only, not evidence of a technosignature.
+
+## `pipeline-health-summary`
+
+Per-track pipeline health dashboard aggregating triage, lifecycle, observation, and assignment state.
+
+```bash
+techno-search pipeline-health-summary
+```
+
+Output fields: `per_track` (with `triage_count`, `triage_blocked_count`, `lifecycle_count`, `lifecycle_blocked_count`, `pending_assignments`, `escalated_assignments`, `pending_epoch_requests`, `observation_follow_up_recommended`), `total_blocked_count`, `total_escalated_count`.
+
+Disclaimer: pipeline health summaries are operational dashboards only, not survey performance estimates.

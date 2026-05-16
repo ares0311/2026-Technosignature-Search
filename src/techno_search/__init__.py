@@ -130,6 +130,14 @@ from techno_search.candidate_observation_notes import (
     load_observation_notes,
     observation_notes_summary,
 )
+from techno_search.candidate_score_history import (
+    ALLOWED_SCORE_HISTORY_PATHWAYS,
+    CANDIDATE_SCORE_HISTORY_DISCLAIMER,
+    CANDIDATE_SCORE_HISTORY_SCHEMA_VERSION,
+    CandidateScoreHistoryEntry,
+    load_score_history,
+    score_history_summary,
+)
 from techno_search.candidate_triage import (
     ALLOWED_TRIAGE_LABELS,
     CANDIDATE_TRIAGE_DISCLAIMER,
@@ -180,7 +188,21 @@ from techno_search.observation_schedule import (
     observation_gap_analysis,
     observation_schedule_summary,
 )
+from techno_search.operator_assignment import (
+    ALLOWED_ASSIGNMENT_PRIORITIES,
+    ALLOWED_ASSIGNMENT_STATUSES,
+    OPERATOR_ASSIGNMENT_DISCLAIMER,
+    OPERATOR_ASSIGNMENT_SCHEMA_VERSION,
+    OperatorAssignment,
+    load_operator_assignments,
+    operator_assignment_summary,
+)
 from techno_search.pathway import classify_pathway
+from techno_search.pipeline_health import (
+    PIPELINE_HEALTH_DISCLAIMER,
+    PIPELINE_HEALTH_TRACKS,
+    pipeline_health_summary,
+)
 from techno_search.plotting import (
     PLOT_ARTIFACT_DISCLAIMER,
     PlotArtifact,
@@ -507,6 +529,22 @@ __all__ = [
     "write_synthetic_plot_artifacts",
     "AGGREGATE_BLOCKERS_DISCLAIMER",
     "aggregate_blockers_summary",
+    "ALLOWED_SCORE_HISTORY_PATHWAYS",
+    "CANDIDATE_SCORE_HISTORY_DISCLAIMER",
+    "CANDIDATE_SCORE_HISTORY_SCHEMA_VERSION",
+    "CandidateScoreHistoryEntry",
+    "load_score_history",
+    "score_history_summary",
+    "ALLOWED_ASSIGNMENT_PRIORITIES",
+    "ALLOWED_ASSIGNMENT_STATUSES",
+    "OPERATOR_ASSIGNMENT_DISCLAIMER",
+    "OPERATOR_ASSIGNMENT_SCHEMA_VERSION",
+    "OperatorAssignment",
+    "load_operator_assignments",
+    "operator_assignment_summary",
+    "PIPELINE_HEALTH_DISCLAIMER",
+    "PIPELINE_HEALTH_TRACKS",
+    "pipeline_health_summary",
     "ALLOWED_OBSERVATION_OUTCOMES",
     "CANDIDATE_OBSERVATION_NOTES_DISCLAIMER",
     "CANDIDATE_OBSERVATION_NOTES_SCHEMA_VERSION",

@@ -10,6 +10,63 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
+User requested fifteen iterative steps covering candidate score history, operator assignment, and pipeline health summary.
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all fifteen steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/candidate_score_history.py` — tracks score evolution across epochs per candidate
+- `schemas/candidate_score_history.schema.json`
+- `tests/fixtures/candidate_score_history.json` — 5 entries across radio/infrared/anomaly, showing improving/declining/stable trends
+- `tests/test_candidate_score_history.py` — 23 tests
+- `src/techno_search/operator_assignment.py` — operator scheduling assignments for candidate review
+- `schemas/operator_assignment.schema.json`
+- `tests/fixtures/operator_assignments.json` — 5 assignments across tracks with pending/in_progress/completed/escalated/deferred statuses
+- `tests/test_operator_assignment.py` — 25 tests
+- `src/techno_search/pipeline_health.py` — per-track health dashboard aggregating triage, lifecycle, observation, assignment state
+- `tests/test_pipeline_health.py` — 13 tests
+- `candidate_score_history` and `operator_assignment` added to `SCHEMA_FILENAMES` (total schemas: 39)
+- `techno-search score-history-summary --fixture-path`, `techno-search operator-assignment-summary --fixture-path`, `techno-search pipeline-health-summary` CLI commands
+- `validate-all` gates: `score_history_entry_count >= 5`, `op_assignment_count >= 4`, `pipeline_total_blocked >= 0`
+- `validation-summary` fields: `score_history_entry_count`, `score_history_unique_candidate_count`, `operator_assignment_count`, `operator_assignment_escalated_count`, `pipeline_health_total_blocked`
+- DECISION-035: Candidate Score History, Operator Assignment, And Pipeline Health Are Scheduling Provenance Records
+- Docs: CLI_USAGE.md, VALIDATION.md, DECISIONS.md updated
+
+Scientific guardrail:
+
+- Score history entries are provenance records only — they do not re-score or re-route candidates
+- Operator assignments are scheduling aids — escalated status does not modify pathway routing
+- Pipeline health is an operational dashboard — it identifies stalled candidates but does not rank or prioritize for external submission
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/ruff check .
+.venv/bin/mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 639 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, PR updated.
+
+---
+
+## Previous Iteration
+
 User requested fifteen iterative steps covering candidate observation notes, epoch planning, and aggregate blocker consolidation.
 
 Current branch: `claude/general-session-Bb2dZ`.

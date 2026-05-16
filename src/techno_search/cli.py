@@ -62,6 +62,7 @@ from techno_search.candidate_lifecycle import (
     lifecycle_transition_summary,
 )
 from techno_search.candidate_observation_notes import observation_notes_summary
+from techno_search.candidate_score_history import score_history_summary
 from techno_search.candidate_triage import (
     operator_coverage_summary,
     triage_label_completeness_check,
@@ -107,6 +108,8 @@ from techno_search.observation_schedule import (
     observation_gap_analysis,
     observation_schedule_summary,
 )
+from techno_search.operator_assignment import operator_assignment_summary
+from techno_search.pipeline_health import pipeline_health_summary
 from techno_search.plotting import plot_artifact_summary
 from techno_search.provenance import provenance_chain_validator
 from techno_search.reporting import (
@@ -179,7 +182,9 @@ SCHEMA_FILENAMES = {
     "multi_epoch_observations": "multi_epoch_observations.schema.json",
     "target_priority_snapshots": "target_priority_snapshots.schema.json",
     "candidate_observation_notes": "candidate_observation_notes.schema.json",
+    "candidate_score_history": "candidate_score_history.schema.json",
     "epoch_plan": "epoch_plan.schema.json",
+    "operator_assignment": "operator_assignment.schema.json",
 }
 
 
@@ -1263,6 +1268,41 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "score-history-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                score_history_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operator-assignment-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                operator_assignment_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "pipeline-health-summary":
+        print(
+            json.dumps(
+                pipeline_health_summary(),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -1596,6 +1636,12 @@ def validate_all() -> dict[str, object]:
     epoch_plan_entry_count = int(epoch_plan.get("entry_count", 0))
     aggregate_blockers = aggregate_blockers_summary()
     aggregate_blocker_count = int(aggregate_blockers.get("total_blocker_count", 0))
+    score_history = score_history_summary()
+    score_history_entry_count = int(score_history.get("entry_count", 0))
+    op_assignments = operator_assignment_summary()
+    op_assignment_count = int(op_assignments.get("assignment_count", 0))
+    pipeline_health = pipeline_health_summary()
+    pipeline_total_blocked = int(pipeline_health.get("total_blocked_count", 0))
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -1816,6 +1862,12 @@ def validate_all() -> dict[str, object]:
         and epoch_plan_entry_count >= 4
         and isinstance(aggregate_blocker_count, int)
         and aggregate_blocker_count >= 0
+        and isinstance(score_history_entry_count, int)
+        and score_history_entry_count >= 5
+        and isinstance(op_assignment_count, int)
+        and op_assignment_count >= 4
+        and isinstance(pipeline_total_blocked, int)
+        and pipeline_total_blocked >= 0
     )
     return {
         "ok": ok,
@@ -1889,6 +1941,9 @@ def validate_all() -> dict[str, object]:
         "observation_notes_summary": obs_notes,
         "epoch_plan_summary": epoch_plan,
         "aggregate_blockers_summary": aggregate_blockers,
+        "score_history_summary": score_history,
+        "operator_assignment_summary": op_assignments,
+        "pipeline_health_summary": pipeline_health,
     }
 
 
@@ -2487,6 +2542,31 @@ def validation_summary() -> dict[str, object]:
         "aggregate_blocker_unique_candidate_count": (
             ab_c["unique_candidate_count"]
             if isinstance(ab_c := validation.get("aggregate_blockers_summary"), dict)
+            else 0
+        ),
+        "score_history_entry_count": (
+            sh_s["entry_count"]
+            if isinstance(sh_s := validation.get("score_history_summary"), dict)
+            else 0
+        ),
+        "score_history_unique_candidate_count": (
+            sh_c["unique_candidate_count"]
+            if isinstance(sh_c := validation.get("score_history_summary"), dict)
+            else 0
+        ),
+        "operator_assignment_count": (
+            oa_s["assignment_count"]
+            if isinstance(oa_s := validation.get("operator_assignment_summary"), dict)
+            else 0
+        ),
+        "operator_assignment_escalated_count": (
+            oa_e["escalated_count"]
+            if isinstance(oa_e := validation.get("operator_assignment_summary"), dict)
+            else 0
+        ),
+        "pipeline_health_total_blocked": (
+            ph_s["total_blocked_count"]
+            if isinstance(ph_s := validation.get("pipeline_health_summary"), dict)
             else 0
         ),
         "recommended_commands": [
@@ -3818,6 +3898,27 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "aggregate-blockers-summary",
         help="Collect blocking issues from triage, lifecycle, and observation notes.",
+    )
+
+    score_history_parser = subparsers.add_parser(
+        "score-history-summary",
+        help="Summarize candidate score evolution across observation epochs.",
+    )
+    score_history_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    op_assignment_parser = subparsers.add_parser(
+        "operator-assignment-summary",
+        help="Summarize operator assignment records for candidate review.",
+    )
+    op_assignment_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "pipeline-health-summary",
+        help="Per-track pipeline health dashboard aggregating scheduling state.",
     )
 
     return parser

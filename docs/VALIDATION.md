@@ -640,3 +640,15 @@ Gate in `validate-all`: `entry_count >= 4`. Verifies that epoch plan entries exi
 ```
 
 Included in `validate-all` for informational purposes. Collects blocking issues from triage, lifecycle, observation notes, and handoffs. No minimum blocker count is required — the gate passes as long as the summary is computable.
+
+## Score History Validation
+
+`validate-all` requires `score_history_entry_count >= 5` to confirm synthetic score evolution fixtures cover all three tracks with multi-epoch entries.
+
+## Operator Assignment Validation
+
+`validate-all` requires `operator_assignment_count >= 4` to confirm operator scheduling records are present across tracks.
+
+## Pipeline Health Validation
+
+`validate-all` requires `pipeline_total_blocked >= 0` (always passes; the gate confirms the health summary is reachable). Use `pipeline-health-summary` for the full per-track breakdown.

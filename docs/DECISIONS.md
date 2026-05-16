@@ -880,3 +880,19 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 - Schema count increases from 35 to 37.
 - None of the new modules authorize external submission or claim a detection.
 - Aggregate blockers report mirrors existing fixture data and adds no new external information.
+
+## DECISION-035: Candidate Score History, Operator Assignment, And Pipeline Health Are Scheduling Provenance Records
+
+**Date**: 2026-05-16
+
+**Context**: The pipeline now tracks score evolution across epochs, operator assignments for candidate review, and a per-track health dashboard.
+
+**Decision**: All three modules are implemented as local scheduling and provenance records only. They do not modify candidate scores, posteriors, or pathway routing. Disclaimers on each module state they are not detections, discoveries, or external validation.
+
+**Score history**: records how a candidate's composite score changes across observation epochs for provenance and scheduling audit purposes only.
+
+**Operator assignment**: records which operators are responsible for reviewing which candidates. Escalated assignments surface for senior review but do not change pathway routing.
+
+**Pipeline health**: aggregates triage, lifecycle, observation, and assignment state into a per-track dashboard. It identifies candidates stalled in the pipeline; it does not rank or prioritize candidates for external submission.
+
+**Consequences**: `validate-all` gates enforce minimum fixture coverage for all three modules. Scientific guardrails remain unchanged.
