@@ -333,16 +333,38 @@ def baseline_pathway_drift_summary(
     }
 
 
+def _default_route_coverage_fixture_path() -> Path:
+    return (
+        Path(__file__).resolve().parents[2]
+        / "tests"
+        / "fixtures"
+        / "route_coverage_fixtures.json"
+    )
+
+
 def route_coverage_summary(
     calibration_fixture_path: Path | None = None,
     example_candidates_dir: Path | None = None,
+    route_coverage_fixture_path: Path | None = None,
 ) -> dict[str, Any]:
     """Check that all Pathway enum values have calibration fixture coverage."""
 
     from techno_search.schemas import Pathway
 
     eval_result = evaluate_baseline(calibration_fixture_path, example_candidates_dir)
-    results: list[dict[str, Any]] = eval_result.get("results", [])
+    results: list[dict[str, Any]] = list(eval_result.get("results", []))
+
+    rc_path = route_coverage_fixture_path or _default_route_coverage_fixture_path()
+    if rc_path.exists():
+        classifier = RuleBasedBaselineClassifier()
+        with rc_path.open(encoding="utf-8") as handle:
+            rc_data = json.load(handle)
+        for fixture in rc_data.get("fixtures", []):
+            candidate_dict = fixture.get("candidate", {})
+            if not candidate_dict:
+                continue
+            with suppress(Exception):
+                results.append(_score_and_predict(candidate_dict, classifier))
 
     all_pathways = {p.value for p in Pathway}
     covered_pathways = {r["expected_pathway"] for r in results}
