@@ -1026,3 +1026,23 @@ CLI output is a review artifact, not a discovery claim.
 - Do not remove the required disclaimer.
 - Do not use CLI scores as calibrated probabilities until calibration work is complete.
 - Do not submit candidates externally without human review and independent validation.
+
+---
+
+## Sensitivity Config Summary
+
+```bash
+techno-search sensitivity-config-summary [--config-path PATH]
+```
+
+Summarises per-track sensitivity weights from the scoring config (`configs/scoring_v0.json`). Reports track count, weight count, per-track weight values, and whether all weights are within the expected range. These are synthetic v0 development coefficients — not calibrated survey detection sensitivities or validated performance against real observations.
+
+---
+
+## Triage Summary
+
+```bash
+techno-search triage-summary [--fixture-path PATH]
+```
+
+Summarises operator candidate triage notes from the committed fixture. Reports note count, unique candidate and operator counts, follow-up-required count, blocking reason totals, and breakdowns by label and track. Triage notes are operator scheduling aids and provenance records only — they do not modify candidate scores, posteriors, or pathway routing. They are not detection claims, discovery announcements, or authorizations for external submission.

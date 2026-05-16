@@ -230,6 +230,11 @@ The project will support three tracks from day one:
 - [x] Observation efficiency summary (`observation-efficiency-summary`) with per-track rates
 - [x] DECISION-031: Scoring Config And Route Coverage Are Required Local Validation Gates
 - [x] 29 JSON schema artifacts (added scoring_config_summary)
+- [x] Route coverage extended to 5/6 Pathway values via dedicated route-coverage fixtures
+- [x] Per-track sensitivity config summary (`sensitivity-config-summary`) — synthetic weights audit
+- [x] Candidate triage notes schema (`candidate_triage_v1`), fixture, loader, and `triage-summary` CLI
+- [x] DECISION-032: Candidate Triage And Sensitivity Config Are Validated Scheduling Aids
+- [x] 31 JSON schema artifacts (added candidate_triage and sensitivity_config_summary)
 
 ---
 
@@ -237,7 +242,7 @@ The project will support three tracks from day one:
 
 1. Add a CI workflow file once a token with `workflow` scope is available.
 2. Begin non-synthetic validation dataset integration once real observations are available under appropriate data policy.
-3. Extend scoring model with configurable per-track sensitivity coefficients for future calibration grid work.
+3. Extend route coverage fixtures to cover remaining uncovered pathways as the classifier evolves.
 
 ---
 

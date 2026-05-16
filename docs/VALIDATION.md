@@ -590,3 +590,23 @@ Gate in `validate-all`: `invalid_transition_count == 0`. Validates that all cand
 ```
 
 Reports completion rate, cancellation rate, and per-track efficiency from the committed schedule fixture. Gate in `validate-all`: `completion_rate >= 0.0` (always passes; the gate confirms the summary runs cleanly). Scheduling aid only — not a survey efficiency estimate or external submission authorization.
+
+---
+
+## Sensitivity Config
+
+```bash
+.venv/bin/techno-search sensitivity-config-summary
+```
+
+Gate in `validate-all`: `track_count >= 3`. Confirms all three tracks (radio, infrared, anomaly) have configured sensitivity weights in `configs/scoring_v0.json`. These are synthetic v0 development coefficients only — not calibrated detection sensitivities.
+
+---
+
+## Candidate Triage Notes
+
+```bash
+.venv/bin/techno-search triage-summary
+```
+
+Gates in `validate-all`: `note_count >= 5` and `len(tracks_covered) >= 3`. Confirms operator triage notes are present for all three tracks. Triage notes are scheduling aids and provenance records only — they do not modify scores, posteriors, or pathway routing.

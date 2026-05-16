@@ -110,6 +110,14 @@ from techno_search.candidate_lifecycle import (
     lifecycle_transition_summary,
     load_lifecycle_entries,
 )
+from techno_search.candidate_triage import (
+    ALLOWED_TRIAGE_LABELS,
+    CANDIDATE_TRIAGE_DISCLAIMER,
+    CANDIDATE_TRIAGE_SCHEMA_VERSION,
+    CandidateTriageNote,
+    load_triage_notes,
+    triage_summary,
+)
 from techno_search.config import TrackConfig, load_scoring_config, load_track_config
 from techno_search.cross_track import (
     CROSS_TRACK_REFERENCE_DISCLAIMER,
@@ -186,6 +194,11 @@ from techno_search.scoring_config import (
     SCORING_CONFIG_SCHEMA_VERSION,
     scoring_config_summary,
 )
+from techno_search.sensitivity_config import (
+    SENSITIVITY_CONFIG_DISCLAIMER,
+    SENSITIVITY_CONFIG_SCHEMA_VERSION,
+    sensitivity_config_summary,
+)
 from techno_search.target_watchlist import (
     TARGET_WATCHLIST_DISCLAIMER,
     TARGET_WATCHLIST_SCHEMA_VERSION,
@@ -246,6 +259,15 @@ __all__ = [
     "SCORING_CONFIG_DISCLAIMER",
     "SCORING_CONFIG_SCHEMA_VERSION",
     "scoring_config_summary",
+    "CANDIDATE_TRIAGE_DISCLAIMER",
+    "CANDIDATE_TRIAGE_SCHEMA_VERSION",
+    "ALLOWED_TRIAGE_LABELS",
+    "CandidateTriageNote",
+    "load_triage_notes",
+    "triage_summary",
+    "SENSITIVITY_CONFIG_DISCLAIMER",
+    "SENSITIVITY_CONFIG_SCHEMA_VERSION",
+    "sensitivity_config_summary",
     "ARTIFACT_CLEANUP_DISCLAIMER",
     "ARTIFACT_CLEANUP_SCHEMA_VERSION",
     "BENCHMARK_METADATA_DISCLAIMER",

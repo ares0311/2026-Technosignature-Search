@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CandidateTriage",
+  "description": "Schema for candidate triage note fixtures.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "disclaimer",
+    "notes"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "candidate_triage_v1"
+    },
+    "disclaimer": {
+      "type": "string",
+      "minLength": 10
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "note_id",
+          "candidate_id",
+          "track",
+          "triage_label",
+          "operator_id",
+          "note_text",
+          "created_utc"
+        ],
+        "properties": {
+          "note_id": { "type": "string" },
+          "candidate_id": { "type": "string" },
+          "track": {
+            "type": "string",
+            "enum": ["radio", "infrared", "anomaly"]
+          },
+          "triage_label": {
+            "type": "string",
+            "enum": [
+              "needs_human_review",
+              "likely_false_positive",
+              "follow_up_target",
+              "known_object_annotation",
+              "insufficient_evidence",
+              "defer"
+            ]
+          },
+          "operator_id": { "type": "string" },
+          "note_text": { "type": "string" },
+          "created_utc": { "type": "string" },
+          "blocking_reasons": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "follow_up_required": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

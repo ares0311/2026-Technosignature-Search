@@ -243,11 +243,13 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "benchmark_run_results",
         "candidate_extraction_handoff",
         "candidate_packet",
+        "candidate_triage",
         "consensus_export",
         "consensus_labels",
         "cross_track_references",
         "report_manifest",
         "review_queue",
+        "sensitivity_config_summary",
         "validation_dataset_manifest",
         "validation_promotion_rules",
         "baseline_eval",
@@ -1369,7 +1371,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 29
+    assert result["schema_count"] == 31
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3

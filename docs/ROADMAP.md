@@ -324,6 +324,10 @@ Evaluate modern AI methods only after interpretable baselines, provenance, false
 - [x] Lifecycle transition validator (`lifecycle-transition-summary`) checking stage ordering
 - [x] Observation efficiency summary (`observation-efficiency-summary`) with completion/cancellation rates
 - [x] DECISION-031: Scoring Config And Route Coverage Are Required Local Validation Gates
+- [x] Route coverage extended: 5/6 Pathway values now covered by calibration fixtures
+- [x] Per-track sensitivity config summary (`sensitivity-config-summary`) with weight audit
+- [x] Candidate triage notes schema, fixture, loader, and `triage-summary` CLI
+- [x] DECISION-032: Candidate Triage And Sensitivity Config Are Validated Scheduling Aids
 
 ## Candidate Methods
 

@@ -770,3 +770,36 @@ A learned model trained only against fixtures covering a subset of pathways woul
 - `lifecycle-transition-summary` runs in `validate-all` and requires `invalid_transition_count == 0`.
 - `observation-efficiency-summary` runs in `validate-all` as a health check with no hard failure gate beyond `completion_rate >= 0.0`.
 - All four summaries are scheduling/provenance/diagnostic aids only. They do not authorize external submission or claim detection.
+
+---
+
+## DECISION-032: Candidate Triage And Sensitivity Config Are Validated Scheduling Aids
+
+**Date:** 2026-05-16
+**Status:** Accepted
+
+### Context
+
+Operators need a place to record candidate-specific notes (triage labels, blocking reasons, follow-up flags) without those notes influencing scoring, posteriors, or pathway routing. Separately, per-track sensitivity weights in the scoring config need to be explicitly audited as synthetic v0 calibration parameters, not survey detection sensitivities.
+
+### Decision
+
+1. **Candidate triage notes** are operator scheduling aids and provenance records only. A dedicated schema (`candidate_triage_v1`), fixture, loader, and summary CLI (`triage-summary`) are added. Triage notes carry an explicit disclaimer that they do not modify scores, posteriors, or pathway routing and are not detection claims or external submission authorizations.
+
+2. **Sensitivity config summary** reads per-track sensitivity weights from `configs/scoring_v0.json` and summarises them without recalibrating or applying them. A dedicated schema (`sensitivity_config_summary_v1`) and CLI (`sensitivity-config-summary`) are added. The summary disclaimer explicitly states these are synthetic v0 development coefficients and not calibrated survey detection sensitivities.
+
+3. Both are wired into `validate-all` with gates:
+   - `sensitivity_track_count >= 3` (all three tracks must have configured weights)
+   - `triage_note_count >= 5` (minimum fixture coverage)
+   - `len(triage_tracks_covered) >= 3` (all three tracks must have triage notes)
+
+### Rationale
+
+Explicitly separating operator scheduling notes from scoring prevents triage decisions from being mistaken for evidence-based pathway routing. Summarising sensitivity weights as configuration metadata (not calibrated parameters) preserves the conservative false-positive-first framing throughout the pipeline.
+
+### Consequences
+
+- `triage-summary` is a scheduling aid only; triage labels do not route candidates.
+- `sensitivity-config-summary` reports local threshold values only — not calibrated detection thresholds.
+- Schema count increases from 29 to 31.
+- Route coverage gate raised from `>= 2` to `>= 4` now that additional pathway fixtures are committed.

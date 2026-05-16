@@ -13,5 +13,22 @@
     "cpu_heavy_workers": 12,
     "light_io_workers": 16,
     "memory_budget_gb": 48
+  },
+  "track_sensitivity": {
+    "radio": {
+      "signal_weight": 1.0,
+      "false_positive_weight": 1.0,
+      "provenance_weight": 1.0
+    },
+    "infrared": {
+      "signal_weight": 1.0,
+      "false_positive_weight": 1.0,
+      "provenance_weight": 1.0
+    },
+    "anomaly": {
+      "signal_weight": 1.0,
+      "false_positive_weight": 1.0,
+      "provenance_weight": 1.0
+    }
   }
 }

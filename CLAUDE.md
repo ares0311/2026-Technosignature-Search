@@ -10,6 +10,63 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
+User requested fifteen iterative steps covering route coverage extension, per-track sensitivity config summary, and candidate triage notes.
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all fifteen steps implemented, tested, and validated.
+
+Added:
+
+- `tests/fixtures/route_coverage_fixtures.json` — 3 synthetic candidates verifying `known_object_annotation`, `github_reproducibility_only`, and `human_review_queue` pathway routing
+- Updated `route_coverage_summary()` to load dedicated route coverage fixtures in addition to calibration fixtures; route covered count raised from 2 to 5
+- `validate-all` gate raised from `route_covered_count >= 2` to `>= 4`
+- `src/techno_search/sensitivity_config.py` — `sensitivity_config_summary()` reading `track_sensitivity` from `configs/scoring_v0.json`
+- `schemas/sensitivity_config_summary.schema.json`
+- `techno-search sensitivity-config-summary` CLI with `--config-path`
+- `src/techno_search/candidate_triage.py` — `CandidateTriageNote` dataclass, `load_triage_notes()`, `triage_summary()`
+- `schemas/candidate_triage.schema.json`
+- `tests/fixtures/candidate_triage_notes.json` — 5 notes across radio/infrared/anomaly, 2 operators
+- `techno-search triage-summary` CLI with `--fixture-path`
+- `candidate_triage` and `sensitivity_config_summary` in `SCHEMA_FILENAMES` (total schemas: 31)
+- `validate-all` gates: `sensitivity_track_count >= 3`, `triage_note_count >= 5`, `len(triage_tracks_covered) >= 3`
+- `validation-summary` fields: `sensitivity_track_count`, `sensitivity_weight_count`, `triage_note_count`, `triage_tracks_covered_count`
+- DECISION-032: Candidate Triage And Sensitivity Config Are Validated Scheduling Aids
+- Tests: `test_sensitivity_config.py` (14), `test_candidate_triage.py` (16) — 30 new tests, all passing
+- Docs: CLI_USAGE.md, VALIDATION.md, ROADMAP.md, PROJECT_STATUS.md, DECISIONS.md updated
+
+Scientific guardrail:
+
+- Candidate triage notes are operator scheduling aids and provenance records only — they do not modify scores, posteriors, or pathway routing
+- Sensitivity config summary reports local synthetic v0 weights only — not calibrated survey detection sensitivities
+- Route coverage extension identifies fixture gaps for human review — not a claim of real observation coverage
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/python -m ruff check .
+.venv/bin/python -m mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 460 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, PR created, merging to `main`.
+
+---
+
+## Previous Iteration
+
 User requested fifteen iterative steps covering scoring config summary, route coverage, lifecycle transition validation, and observation efficiency.
 
 Current branch: `claude/general-session-Bb2dZ`.

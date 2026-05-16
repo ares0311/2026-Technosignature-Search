@@ -58,6 +58,7 @@ from techno_search.candidate_lifecycle import (
     candidate_lifecycle_summary,
     lifecycle_transition_summary,
 )
+from techno_search.candidate_triage import triage_summary
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.cross_track import cross_track_summary
 from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
@@ -109,6 +110,7 @@ from techno_search.review_queue import (
 from techno_search.schemas import Candidate, Track, candidate_from_mapping
 from techno_search.scoring import score_candidate
 from techno_search.scoring_config import scoring_config_summary
+from techno_search.sensitivity_config import sensitivity_config_summary
 from techno_search.target_watchlist import target_watchlist_summary
 from techno_search.validation import (
     validate_candidate_file,
@@ -151,8 +153,10 @@ SCHEMA_FILENAMES = {
     "baseline_eval": "baseline_eval.schema.json",
     "baseline_performance_history": "baseline_performance_history.schema.json",
     "candidate_lifecycle": "candidate_lifecycle.schema.json",
+    "candidate_triage": "candidate_triage.schema.json",
     "observation_schedule": "observation_schedule.schema.json",
     "scoring_config_summary": "scoring_config_summary.schema.json",
+    "sensitivity_config_summary": "sensitivity_config_summary.schema.json",
 }
 
 
@@ -1051,6 +1055,22 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(oe_summary, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "sensitivity-config-summary":
+        config_path = getattr(args, "config_path", None)
+        sens_summary = sensitivity_config_summary(
+            Path(config_path) if config_path else None
+        )
+        print(json.dumps(sens_summary, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "triage-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        tr_summary = triage_summary(
+            Path(fixture_path) if fixture_path else None
+        )
+        print(json.dumps(tr_summary, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "artifacts-cleanup":
         if args.apply:
             cleanup_result = apply_artifact_cleanup(
@@ -1355,6 +1375,11 @@ def validate_all() -> dict[str, object]:
         if isinstance(observation_completion_rate_raw, (int, float))
         else 0.0
     )
+    sensitivity_cfg = sensitivity_config_summary()
+    sensitivity_track_count = int(sensitivity_cfg.get("track_count", 0))
+    triage_notes = triage_summary()
+    triage_note_count = int(triage_notes.get("note_count", 0))
+    triage_tracks_covered = list(triage_notes.get("tracks_covered", []))
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -1542,11 +1567,16 @@ def validate_all() -> dict[str, object]:
         and isinstance(scoring_threshold_count, int)
         and scoring_threshold_count >= 1
         and isinstance(route_covered_count, int)
-        and route_covered_count >= 2
+        and route_covered_count >= 4
         and isinstance(lifecycle_invalid_count, int)
         and lifecycle_invalid_count == 0
         and isinstance(observation_completion_rate, float)
         and observation_completion_rate >= 0.0
+        and isinstance(sensitivity_track_count, int)
+        and sensitivity_track_count >= 3
+        and isinstance(triage_note_count, int)
+        and triage_note_count >= 5
+        and len(triage_tracks_covered) >= 3
     )
     return {
         "ok": ok,
@@ -1605,6 +1635,8 @@ def validate_all() -> dict[str, object]:
         "route_coverage_summary": route_coverage,
         "lifecycle_transition_summary": lifecycle_transitions,
         "observation_efficiency_summary": observation_efficiency,
+        "sensitivity_config_summary": sensitivity_cfg,
+        "triage_summary": triage_notes,
     }
 
 
@@ -2094,6 +2126,26 @@ def validation_summary() -> dict[str, object]:
             oe_s2["cancellation_rate"]
             if isinstance(oe_s2 := validation.get("observation_efficiency_summary"), dict)
             else 0.0
+        ),
+        "sensitivity_track_count": (
+            sc_t["track_count"]
+            if isinstance(sc_t := validation.get("sensitivity_config_summary"), dict)
+            else 0
+        ),
+        "sensitivity_weight_count": (
+            sc_w["weight_count"]
+            if isinstance(sc_w := validation.get("sensitivity_config_summary"), dict)
+            else 0
+        ),
+        "triage_note_count": (
+            tn_s["note_count"]
+            if isinstance(tn_s := validation.get("triage_summary"), dict)
+            else 0
+        ),
+        "triage_tracks_covered_count": (
+            len(tn_t["tracks_covered"])
+            if isinstance(tn_t := validation.get("triage_summary"), dict)
+            else 0
         ),
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
@@ -3275,6 +3327,30 @@ def _build_parser() -> argparse.ArgumentParser:
         "--fixture-path",
         type=Path,
         help="Optional observation schedule fixture JSON path.",
+    )
+    sens_parser = subparsers.add_parser(
+        "sensitivity-config-summary",
+        help=(
+            "Summarise per-track sensitivity weights from the scoring config. "
+            "Synthetic v0 parameters only — not calibrated detection sensitivities."
+        ),
+    )
+    sens_parser.add_argument(
+        "--config-path",
+        type=Path,
+        help="Optional scoring config JSON path.",
+    )
+    triage_parser = subparsers.add_parser(
+        "triage-summary",
+        help=(
+            "Summarise operator candidate triage notes. "
+            "Triage notes are scheduling aids and provenance records only."
+        ),
+    )
+    triage_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional candidate triage notes fixture JSON path.",
     )
     artifacts_cleanup_parser = subparsers.add_parser(
         "artifacts-cleanup",
