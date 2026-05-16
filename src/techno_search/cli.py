@@ -12,6 +12,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TextIO
 
+from techno_search.aggregate_blockers import aggregate_blockers_summary
 from techno_search.artifact_cleanup import (
     apply_artifact_cleanup,
     plan_artifact_cleanup,
@@ -60,6 +61,7 @@ from techno_search.candidate_lifecycle import (
     candidate_lifecycle_summary,
     lifecycle_transition_summary,
 )
+from techno_search.candidate_observation_notes import observation_notes_summary
 from techno_search.candidate_triage import (
     operator_coverage_summary,
     triage_label_completeness_check,
@@ -67,6 +69,7 @@ from techno_search.candidate_triage import (
 )
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.cross_track import cross_track_summary
+from techno_search.epoch_plan import epoch_plan_summary
 from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
 from techno_search.live_data import (
     CatalogCache,
@@ -175,6 +178,8 @@ SCHEMA_FILENAMES = {
     "candidate_audit_trail": "candidate_audit_trail.schema.json",
     "multi_epoch_observations": "multi_epoch_observations.schema.json",
     "target_priority_snapshots": "target_priority_snapshots.schema.json",
+    "candidate_observation_notes": "candidate_observation_notes.schema.json",
+    "epoch_plan": "epoch_plan.schema.json",
 }
 
 
@@ -1223,6 +1228,41 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(pc_result, indent=2, sort_keys=True), file=out)
         return 0 if pc_result["ok"] else 1
 
+    if args.command == "observation-notes-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                observation_notes_summary(Path(fixture_path) if fixture_path else None),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "epoch-plan-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                epoch_plan_summary(Path(fixture_path) if fixture_path else None),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "aggregate-blockers-summary":
+        print(
+            json.dumps(
+                aggregate_blockers_summary(),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -1550,6 +1590,12 @@ def validate_all() -> dict[str, object]:
 
     schema_drift = detect_schema_drift()
     schema_drift_count = int(schema_drift.get("drift_count", 0))
+    obs_notes = observation_notes_summary()
+    obs_notes_count = int(obs_notes.get("note_count", 0))
+    epoch_plan = epoch_plan_summary()
+    epoch_plan_entry_count = int(epoch_plan.get("entry_count", 0))
+    aggregate_blockers = aggregate_blockers_summary()
+    aggregate_blocker_count = int(aggregate_blockers.get("total_blocker_count", 0))
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -1764,6 +1810,12 @@ def validate_all() -> dict[str, object]:
         and provenance_chain_ok
         and isinstance(schema_drift_count, int)
         and schema_drift_count == 0
+        and isinstance(obs_notes_count, int)
+        and obs_notes_count >= 5
+        and isinstance(epoch_plan_entry_count, int)
+        and epoch_plan_entry_count >= 4
+        and isinstance(aggregate_blocker_count, int)
+        and aggregate_blocker_count >= 0
     )
     return {
         "ok": ok,
@@ -1834,6 +1886,9 @@ def validate_all() -> dict[str, object]:
         "provenance_chain_validation": provenance_chain,
         "observation_gap_analysis": obs_gap,
         "schema_drift_summary": schema_drift,
+        "observation_notes_summary": obs_notes,
+        "epoch_plan_summary": epoch_plan,
+        "aggregate_blockers_summary": aggregate_blockers,
     }
 
 
@@ -2402,6 +2457,36 @@ def validation_summary() -> dict[str, object]:
         "schema_drift_count": (
             sd_s["drift_count"]
             if isinstance(sd_s := validation.get("schema_drift_summary"), dict)
+            else 0
+        ),
+        "observation_notes_count": (
+            on_s["note_count"]
+            if isinstance(on_s := validation.get("observation_notes_summary"), dict)
+            else 0
+        ),
+        "observation_notes_follow_up_count": (
+            on_f["follow_up_recommended_count"]
+            if isinstance(on_f := validation.get("observation_notes_summary"), dict)
+            else 0
+        ),
+        "epoch_plan_entry_count": (
+            ep_s["entry_count"]
+            if isinstance(ep_s := validation.get("epoch_plan_summary"), dict)
+            else 0
+        ),
+        "epoch_plan_pending_count": (
+            ep_p["pending_count"]
+            if isinstance(ep_p := validation.get("epoch_plan_summary"), dict)
+            else 0
+        ),
+        "aggregate_blocker_count": (
+            ab_s["total_blocker_count"]
+            if isinstance(ab_s := validation.get("aggregate_blockers_summary"), dict)
+            else 0
+        ),
+        "aggregate_blocker_unique_candidate_count": (
+            ab_c["unique_candidate_count"]
+            if isinstance(ab_c := validation.get("aggregate_blockers_summary"), dict)
             else 0
         ),
         "recommended_commands": [
@@ -3712,6 +3797,27 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "provenance-chain-validate",
         help="Validate provenance chain fields in committed report manifests.",
+    )
+
+    obs_notes_parser = subparsers.add_parser(
+        "observation-notes-summary",
+        help="Summarize post-observation operator notes by track and outcome.",
+    )
+    obs_notes_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    epoch_plan_parser = subparsers.add_parser(
+        "epoch-plan-summary",
+        help="Summarize epoch plan entries for targets needing additional observations.",
+    )
+    epoch_plan_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "aggregate-blockers-summary",
+        help="Collect blocking issues from triage, lifecycle, and observation notes.",
     )
 
     return parser

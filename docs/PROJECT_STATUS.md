@@ -238,6 +238,14 @@ The project will support three tracks from day one:
 
 ---
 
+## Recently Completed (this iteration)
+
+- [x] Candidate observation notes schema (`candidate_observation_notes_v1`), fixture (5 notes), loader, and `observation-notes-summary` CLI
+- [x] Epoch plan schema (`epoch_plan_v1`), fixture (5 entries), loader, and `epoch-plan-summary` CLI
+- [x] Aggregate blockers summary (`aggregate-blockers-summary`) consolidating triage, lifecycle, observation, and handoff issues
+- [x] 37 JSON schema artifacts (added candidate_observation_notes and epoch_plan)
+- [x] 582 tests passing, 92% coverage, validate-all ok=True
+
 ## Next 3 Actions
 
 1. Add a CI workflow file once a token with `workflow` scope is available.

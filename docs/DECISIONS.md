@@ -851,3 +851,32 @@ As the pipeline matures, operators need structured records for signals of intere
 - Schema count increases from 31 to 35.
 - None of the new modules authorize external submission or claim a detection.
 - Triage annotation tags are documentation-only fields; they do not route candidates.
+
+---
+
+## DECISION-034: Observation Notes, Epoch Plan, And Aggregate Blockers Are Scheduling Provenance Records
+
+**Date:** 2026-05-16
+
+**Context:**
+
+Candidates accumulate post-observation annotations, follow-up scheduling entries, and cross-module blocking issues that need consolidated visibility for operator review.
+
+**Decision:**
+
+1. **Candidate observation notes** (`candidate_observation_notes_v1`) record post-observation operator annotations with outcome classification and quality flags. Notes are scheduling and provenance records only — they do not modify candidate posteriors or pathway routing.
+
+2. **Epoch plan** (`epoch_plan_v1`) tracks which targets need additional observation epochs, why, and their scheduling priority. Entries are local scheduling aids — they do not constitute telescope-time commitments or confirmation of signals.
+
+3. **Aggregate blockers summary** consolidates blocking issues from triage notes, lifecycle entries, observation quality flags, and candidate extraction handoffs. This is an operational dashboard only — no minimum blocker count is gated in `validate-all`.
+
+4. New `validate-all` gates:
+   - `obs_notes_count >= 5`
+   - `epoch_plan_entry_count >= 4`
+   - `aggregate_blocker_count >= 0`
+
+### Consequences
+
+- Schema count increases from 35 to 37.
+- None of the new modules authorize external submission or claim a detection.
+- Aggregate blockers report mirrors existing fixture data and adds no new external information.

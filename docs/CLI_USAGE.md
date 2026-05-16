@@ -1147,3 +1147,33 @@ techno-search provenance-chain-validate
 ```
 
 Validates that all committed report manifests carry required provenance chain fields (`schema_version`, `config_version`, `generated_at_utc`, `provenance_summary`). A passing check does not constitute external validation.
+
+---
+
+## Observation Notes Summary
+
+```bash
+techno-search observation-notes-summary [--fixture-path PATH]
+```
+
+Summarizes post-observation operator annotations by track, outcome, and quality flags. Notes are scheduling provenance records only and do not modify candidate posteriors.
+
+---
+
+## Epoch Plan Summary
+
+```bash
+techno-search epoch-plan-summary [--fixture-path PATH]
+```
+
+Summarizes epoch plan entries for targets requiring additional observation epochs. Returns counts by track, status, and priority. Entries are scheduling aids only and do not constitute telescope-time commitments.
+
+---
+
+## Aggregate Blockers Summary
+
+```bash
+techno-search aggregate-blockers-summary
+```
+
+Collects blocking issues from triage notes, lifecycle entries, observation quality flags, and candidate extraction handoffs. Returns a consolidated count by source, track, and candidate. All entries are local operational records only.

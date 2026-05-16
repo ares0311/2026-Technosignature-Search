@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CandidateObservationNotes",
+  "description": "Post-observation operator annotations for candidate scheduling and provenance.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "notes"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "candidate_observation_notes_v1"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "note_id",
+          "candidate_id",
+          "track",
+          "observation_id",
+          "operator_id",
+          "outcome",
+          "note_text",
+          "created_utc"
+        ],
+        "properties": {
+          "note_id": { "type": "string" },
+          "candidate_id": { "type": "string" },
+          "track": { "type": "string", "enum": ["radio", "infrared", "anomaly"] },
+          "observation_id": { "type": "string" },
+          "operator_id": { "type": "string" },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "clean",
+              "rfi_contaminated",
+              "low_snr",
+              "non_detection",
+              "data_quality_issue",
+              "needs_reobservation",
+              "archived"
+            ]
+          },
+          "note_text": { "type": "string" },
+          "created_utc": { "type": "string" },
+          "quality_flags": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "follow_up_recommended": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

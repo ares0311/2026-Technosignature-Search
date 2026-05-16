@@ -10,6 +10,63 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
+User requested fifteen iterative steps covering candidate observation notes, epoch planning, and aggregate blocker consolidation.
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all fifteen steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/candidate_observation_notes.py` — `CandidateObservationNote` dataclass, `load_observation_notes()`, `observation_notes_summary()`
+- `schemas/candidate_observation_notes.schema.json`
+- `tests/fixtures/candidate_observation_notes.json` — 5 notes across radio/infrared/anomaly, 2 operators, mixed outcomes
+- `techno-search observation-notes-summary` CLI with `--fixture-path`
+- `src/techno_search/epoch_plan.py` — `EpochPlanEntry` dataclass, `load_epoch_plan()`, `epoch_plan_summary()`
+- `schemas/epoch_plan.schema.json`
+- `tests/fixtures/epoch_plan.json` — 5 entries across radio/infrared/anomaly, mixed statuses and priorities
+- `techno-search epoch-plan-summary` CLI with `--fixture-path`
+- `src/techno_search/aggregate_blockers.py` — `aggregate_blockers_summary()` consolidating triage, lifecycle, observation, and handoff blocking issues
+- `techno-search aggregate-blockers-summary` CLI
+- `candidate_observation_notes` and `epoch_plan` in `SCHEMA_FILENAMES` (total schemas: 37)
+- `validate-all` gates: `obs_notes_count >= 5`, `epoch_plan_entry_count >= 4`, `aggregate_blocker_count >= 0`
+- `validation-summary` fields: `observation_notes_count`, `observation_notes_follow_up_count`, `epoch_plan_entry_count`, `epoch_plan_pending_count`, `aggregate_blocker_count`, `aggregate_blocker_unique_candidate_count`
+- DECISION-034: Observation Notes, Epoch Plan, And Aggregate Blockers Are Scheduling Provenance Records
+- Tests: `test_candidate_observation_notes.py` (21), `test_epoch_plan.py` (21), `test_aggregate_blockers.py` (15) — 57 new tests, all passing
+- Docs: CLI_USAGE.md, VALIDATION.md, ROADMAP.md, PROJECT_STATUS.md, DECISIONS.md updated
+
+Scientific guardrail:
+
+- Observation notes are post-observation operator annotations for scheduling and provenance only — they do not modify candidate posteriors
+- Epoch plan entries are local scheduling aids — they do not constitute telescope-time commitments or signal confirmation
+- Aggregate blocker summary is an operational dashboard only — it mirrors existing fixture data and authorizes no external action
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/python -m ruff check .
+.venv/bin/python -m mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 582 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, PR updated.
+
+---
+
+## Previous Iteration
+
 User requested fifteen iterative steps covering route coverage extension, per-track sensitivity config summary, and candidate triage notes.
 
 Current branch: `claude/general-session-Bb2dZ`.

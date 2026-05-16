@@ -610,3 +610,33 @@ Gate in `validate-all`: `track_count >= 3`. Confirms all three tracks (radio, in
 ```
 
 Gates in `validate-all`: `note_count >= 5` and `len(tracks_covered) >= 3`. Confirms operator triage notes are present for all three tracks. Triage notes are scheduling aids and provenance records only — they do not modify scores, posteriors, or pathway routing.
+
+---
+
+## Observation Notes Validation
+
+```bash
+.venv/bin/techno-search observation-notes-summary
+```
+
+Gate in `validate-all`: `note_count >= 5`. Verifies post-observation operator annotations exist across all three tracks. Notes are scheduling provenance records and do not affect candidate scoring.
+
+---
+
+## Epoch Plan Validation
+
+```bash
+.venv/bin/techno-search epoch-plan-summary
+```
+
+Gate in `validate-all`: `entry_count >= 4`. Verifies that epoch plan entries exist for targets needing follow-up observations. Entries are scheduling aids only.
+
+---
+
+## Aggregate Blockers Validation
+
+```bash
+.venv/bin/techno-search aggregate-blockers-summary
+```
+
+Included in `validate-all` for informational purposes. Collects blocking issues from triage, lifecycle, observation notes, and handoffs. No minimum blocker count is required — the gate passes as long as the summary is computable.

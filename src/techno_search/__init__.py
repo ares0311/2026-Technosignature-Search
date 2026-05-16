@@ -1,5 +1,9 @@
 """Technosignature-interest candidate search tools."""
 
+from techno_search.aggregate_blockers import (
+    AGGREGATE_BLOCKERS_DISCLAIMER,
+    aggregate_blockers_summary,
+)
 from techno_search.artifact_cleanup import (
     ARTIFACT_CLEANUP_DISCLAIMER,
     ARTIFACT_CLEANUP_SCHEMA_VERSION,
@@ -118,6 +122,14 @@ from techno_search.candidate_lifecycle import (
     lifecycle_transition_summary,
     load_lifecycle_entries,
 )
+from techno_search.candidate_observation_notes import (
+    ALLOWED_OBSERVATION_OUTCOMES,
+    CANDIDATE_OBSERVATION_NOTES_DISCLAIMER,
+    CANDIDATE_OBSERVATION_NOTES_SCHEMA_VERSION,
+    CandidateObservationNote,
+    load_observation_notes,
+    observation_notes_summary,
+)
 from techno_search.candidate_triage import (
     ALLOWED_TRIAGE_LABELS,
     CANDIDATE_TRIAGE_DISCLAIMER,
@@ -135,6 +147,15 @@ from techno_search.cross_track import (
     CrossTrackReference,
     cross_track_summary,
     load_cross_track_references,
+)
+from techno_search.epoch_plan import (
+    ALLOWED_EPOCH_PLAN_STATUSES,
+    ALLOWED_EPOCH_PRIORITIES,
+    EPOCH_PLAN_DISCLAIMER,
+    EPOCH_PLAN_SCHEMA_VERSION,
+    EpochPlanEntry,
+    epoch_plan_summary,
+    load_epoch_plan,
 )
 from techno_search.injection_recovery import (
     INJECTION_RECOVERY_DISCLAIMER,
@@ -484,4 +505,19 @@ __all__ = [
     "verify_report_directory",
     "write_candidate_reports",
     "write_synthetic_plot_artifacts",
+    "AGGREGATE_BLOCKERS_DISCLAIMER",
+    "aggregate_blockers_summary",
+    "ALLOWED_OBSERVATION_OUTCOMES",
+    "CANDIDATE_OBSERVATION_NOTES_DISCLAIMER",
+    "CANDIDATE_OBSERVATION_NOTES_SCHEMA_VERSION",
+    "CandidateObservationNote",
+    "load_observation_notes",
+    "observation_notes_summary",
+    "ALLOWED_EPOCH_PLAN_STATUSES",
+    "ALLOWED_EPOCH_PRIORITIES",
+    "EPOCH_PLAN_DISCLAIMER",
+    "EPOCH_PLAN_SCHEMA_VERSION",
+    "EpochPlanEntry",
+    "epoch_plan_summary",
+    "load_epoch_plan",
 ]
