@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Multi-Epoch Observations",
+  "description": "Scheduling provenance records for multi-epoch follow-up. Not confirmation evidence.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "records"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "disclaimer": { "type": "string" },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "target_id", "track", "epoch_count",
+          "first_epoch_utc", "latest_epoch_utc",
+          "status_per_epoch", "consistent_detection"
+        ],
+        "properties": {
+          "target_id": { "type": "string" },
+          "track": { "type": "string" },
+          "epoch_count": { "type": "integer", "minimum": 1 },
+          "first_epoch_utc": { "type": "string" },
+          "latest_epoch_utc": { "type": "string" },
+          "status_per_epoch": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "consistent_detection": { "type": "boolean" },
+          "operator_notes": { "type": "string" }
+        }
+      }
+    }
+  }
+}

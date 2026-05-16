@@ -803,3 +803,51 @@ Explicitly separating operator scheduling notes from scoring prevents triage dec
 - `sensitivity-config-summary` reports local threshold values only — not calibrated detection thresholds.
 - Schema count increases from 29 to 31.
 - Route coverage gate raised from `>= 2` to `>= 4` now that additional pathway fixtures are committed.
+
+---
+
+## DECISION-033: Signal Registry, Audit Trail, Multi-Epoch Summaries, Schema Drift Detection, And Provenance Chain Validation Are Scheduling Provenance Aids
+
+**Date:** 2026-05-16
+**Status:** Accepted
+
+### Context
+
+As the pipeline matures, operators need structured records for signals of interest (registry), actions taken on candidates (audit trail), multi-epoch follow-up status (multi-epoch summary), snapshot-based priority comparisons (target recalibration), operator coverage (which operators have triaged which tracks), and structural consistency checks across JSON schema artifacts (schema drift). The provenance chain in report manifests also needs a formal validation step.
+
+### Decision
+
+1. **Signal registry** (`signal_registry_v1`) is a scheduling-aid registry of candidate signals of interest. Entries carry priority tiers (`tier_1`/`tier_2`/`tier_3`) and rationale fields. The registry is not a detection claim and does not modify candidate posteriors.
+
+2. **Candidate audit trail** (`candidate_audit_trail_v1`) is an append-only log of operator actions on candidates. Action types are bounded (`triage_note_added`, `stage_transition`, `observation_scheduled`, `observation_completed`, `observation_cancelled`, `archived`, `human_reviewed`). Irreversibility is tracked per entry. Audit entries are not detection claims.
+
+3. **Multi-epoch observation summary** (`multi_epoch_observations_v1`) records per-target epoch counts, detection status per epoch, and consistent-detection flags. Consistent detection across epochs does not constitute confirmation without external validation.
+
+4. **Target recalibration summary** compares two most-recent target priority snapshots and reports rank changes. Priority rank changes do not modify candidate scores or posteriors and are not detection evidence.
+
+5. **Operator coverage summary** and **triage label completeness check** report which operators have triaged which tracks and which triage labels have fixture coverage. These are scheduling provenance diagnostics only.
+
+6. **Classifier rule coverage summary** reports which baseline classifier rules fire across evaluation cases, with a coverage fraction gate.
+
+7. **Provenance chain validator** checks that all committed report manifests carry required provenance fields (`schema_version`, `config_version`, `generated_at_utc`, `provenance_summary`). A passing check does not constitute external validation.
+
+8. **Schema drift detection** iterates all committed `schemas/*.schema.json` files and checks structural consistency (required `$schema` key, `type: object`, non-empty `required`). Drift count must be zero for `validate-all` to pass.
+
+9. **Observation gap analysis** identifies targets with no completed observation windows as a scheduling provenance diagnostic.
+
+10. All new modules wire into `validate-all` with gates:
+    - `signal_registry_active_count >= 4`
+    - `audit_action_count >= 6`
+    - `multi_epoch_target_count >= 3`
+    - `recalibration_snapshot_count >= 2`
+    - `operator_coverage_count >= 2`
+    - `label_coverage_fraction >= 0.5`
+    - `classifier_rule_coverage_fraction >= 0.5`
+    - `provenance_chain_ok == True`
+    - `schema_drift_count == 0`
+
+### Consequences
+
+- Schema count increases from 31 to 35.
+- None of the new modules authorize external submission or claim a detection.
+- Triage annotation tags are documentation-only fields; they do not route candidates.

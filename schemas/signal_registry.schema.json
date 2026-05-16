@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Signal Registry",
+  "description": "Scheduling-aid registry of candidate signals of interest. Not a detection claim.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "signals"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "disclaimer": { "type": "string" },
+    "signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "signal_id", "candidate_id", "track", "priority_tier",
+          "rationale", "added_utc", "is_active"
+        ],
+        "properties": {
+          "signal_id": { "type": "string" },
+          "candidate_id": { "type": "string" },
+          "track": { "type": "string" },
+          "priority_tier": { "type": "string", "enum": ["tier_1", "tier_2", "tier_3"] },
+          "rationale": { "type": "string" },
+          "added_utc": { "type": "string" },
+          "is_active": { "type": "boolean" },
+          "source_catalog": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

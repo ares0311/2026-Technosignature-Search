@@ -12,6 +12,8 @@ from techno_search.candidate_triage import (
     CANDIDATE_TRIAGE_SCHEMA_VERSION,
     CandidateTriageNote,
     load_triage_notes,
+    operator_coverage_summary,
+    triage_label_completeness_check,
     triage_summary,
 )
 from techno_search.cli import main
@@ -130,6 +132,78 @@ def test_cli_triage_summary_outputs_json() -> None:
     assert "by_label" in result
     assert "by_track" in result
     assert "disclaimer" in result
+
+
+def test_annotation_tags_loaded() -> None:
+    notes = load_triage_notes()
+    tags_found = [n for n in notes if n.annotation_tags]
+    assert len(tags_found) >= 3
+
+
+def test_annotation_tags_are_lists() -> None:
+    notes = load_triage_notes()
+    for note in notes:
+        assert isinstance(note.annotation_tags, list)
+
+
+def test_operator_coverage_summary_operator_count() -> None:
+    summary = operator_coverage_summary()
+    assert isinstance(summary["operator_count"], int)
+    assert summary["operator_count"] >= 2
+
+
+def test_operator_coverage_summary_per_operator_fields() -> None:
+    summary = operator_coverage_summary()
+    for _op, stats in summary["per_operator"].items():
+        assert "note_count" in stats
+        assert "label_distribution" in stats
+        assert "tracks_covered" in stats
+        assert "follow_up_required_count" in stats
+
+
+def test_operator_coverage_summary_tracks_covered() -> None:
+    summary = operator_coverage_summary()
+    all_tracks: set[str] = set()
+    for stats in summary["per_operator"].values():
+        all_tracks.update(stats["tracks_covered"])
+    assert len(all_tracks) >= 2
+
+
+def test_triage_label_completeness_all_labels_covered() -> None:
+    completeness = triage_label_completeness_check()
+    assert "covered_labels" in completeness
+    assert "uncovered_labels" in completeness
+    assert "coverage_fraction" in completeness
+    assert "all_labels_covered" in completeness
+
+
+def test_triage_label_completeness_fraction_range() -> None:
+    completeness = triage_label_completeness_check()
+    fraction = completeness["coverage_fraction"]
+    assert isinstance(fraction, float)
+    assert 0.0 <= fraction <= 1.0
+
+
+def test_triage_label_completeness_fraction_is_at_least_half() -> None:
+    completeness = triage_label_completeness_check()
+    assert completeness["coverage_fraction"] >= 0.5
+
+
+def test_cli_operator_coverage_summary() -> None:
+    stdout = StringIO()
+    exit_code = main(["operator-coverage-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+    assert exit_code == 0
+    assert isinstance(result["operator_count"], int)
+    assert result["operator_count"] >= 2
+
+
+def test_cli_triage_label_completeness() -> None:
+    stdout = StringIO()
+    exit_code = main(["triage-label-completeness"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+    assert exit_code == 0
+    assert "coverage_fraction" in result
 
 
 def test_cli_triage_summary_with_custom_fixture(tmp_path: Path) -> None:

@@ -61,6 +61,7 @@ from techno_search.baseline_eval import (
     BASELINE_PERFORMANCE_HISTORY_SCHEMA_VERSION,
     baseline_pathway_drift_summary,
     baseline_performance_history_summary,
+    classifier_rule_coverage_summary,
     evaluate_baseline,
     route_coverage_summary,
     score_determinism_check,
@@ -102,6 +103,13 @@ from techno_search.calibration_metrics import (
     precision_recall_summary,
     reliability_summary,
 )
+from techno_search.candidate_audit_trail import (
+    CANDIDATE_AUDIT_TRAIL_DISCLAIMER,
+    CANDIDATE_AUDIT_TRAIL_SCHEMA_VERSION,
+    CandidateAuditAction,
+    audit_trail_summary,
+    load_audit_trail,
+)
 from techno_search.candidate_lifecycle import (
     CANDIDATE_LIFECYCLE_DISCLAIMER,
     CANDIDATE_LIFECYCLE_SCHEMA_VERSION,
@@ -116,6 +124,8 @@ from techno_search.candidate_triage import (
     CANDIDATE_TRIAGE_SCHEMA_VERSION,
     CandidateTriageNote,
     load_triage_notes,
+    operator_coverage_summary,
+    triage_label_completeness_check,
     triage_summary,
 )
 from techno_search.config import TrackConfig, load_scoring_config, load_track_config
@@ -133,12 +143,20 @@ from techno_search.injection_recovery import (
     load_injection_recovery_cases,
 )
 from techno_search.live_data import live_data_enabled, require_live_data_enabled
+from techno_search.multi_epoch_summary import (
+    MULTI_EPOCH_DISCLAIMER,
+    MULTI_EPOCH_SCHEMA_VERSION,
+    MultiEpochRecord,
+    load_multi_epoch_records,
+    multi_epoch_summary,
+)
 from techno_search.observation_schedule import (
     OBSERVATION_SCHEDULE_DISCLAIMER,
     OBSERVATION_SCHEDULE_SCHEMA_VERSION,
     ObservationWindow,
     load_observation_windows,
     observation_efficiency_summary,
+    observation_gap_analysis,
     observation_schedule_summary,
 )
 from techno_search.pathway import classify_pathway
@@ -199,6 +217,21 @@ from techno_search.sensitivity_config import (
     SENSITIVITY_CONFIG_SCHEMA_VERSION,
     sensitivity_config_summary,
 )
+from techno_search.signal_registry import (
+    SIGNAL_REGISTRY_DISCLAIMER,
+    SIGNAL_REGISTRY_SCHEMA_VERSION,
+    SignalOfInterest,
+    load_signal_registry,
+    signal_registry_summary,
+    signal_registry_track_summary,
+)
+from techno_search.target_recalibration_summary import (
+    TARGET_RECALIBRATION_DISCLAIMER,
+    TARGET_RECALIBRATION_SCHEMA_VERSION,
+    TargetPrioritySnapshot,
+    load_priority_snapshots,
+    target_recalibration_summary,
+)
 from techno_search.target_watchlist import (
     TARGET_WATCHLIST_DISCLAIMER,
     TARGET_WATCHLIST_SCHEMA_VERSION,
@@ -242,6 +275,7 @@ __all__ = [
     "baseline_performance_history_summary",
     "evaluate_baseline",
     "predict_pathway",
+    "classifier_rule_coverage_summary",
     "route_coverage_summary",
     "score_determinism_check",
     "CANDIDATE_LIFECYCLE_DISCLAIMER",
@@ -255,16 +289,40 @@ __all__ = [
     "ObservationWindow",
     "load_observation_windows",
     "observation_efficiency_summary",
+    "observation_gap_analysis",
     "observation_schedule_summary",
     "SCORING_CONFIG_DISCLAIMER",
     "SCORING_CONFIG_SCHEMA_VERSION",
     "scoring_config_summary",
+    "CANDIDATE_AUDIT_TRAIL_DISCLAIMER",
+    "CANDIDATE_AUDIT_TRAIL_SCHEMA_VERSION",
+    "CandidateAuditAction",
+    "audit_trail_summary",
+    "load_audit_trail",
     "CANDIDATE_TRIAGE_DISCLAIMER",
     "CANDIDATE_TRIAGE_SCHEMA_VERSION",
     "ALLOWED_TRIAGE_LABELS",
     "CandidateTriageNote",
     "load_triage_notes",
+    "operator_coverage_summary",
+    "triage_label_completeness_check",
     "triage_summary",
+    "MULTI_EPOCH_DISCLAIMER",
+    "MULTI_EPOCH_SCHEMA_VERSION",
+    "MultiEpochRecord",
+    "load_multi_epoch_records",
+    "multi_epoch_summary",
+    "SIGNAL_REGISTRY_DISCLAIMER",
+    "SIGNAL_REGISTRY_SCHEMA_VERSION",
+    "SignalOfInterest",
+    "load_signal_registry",
+    "signal_registry_summary",
+    "signal_registry_track_summary",
+    "TARGET_RECALIBRATION_DISCLAIMER",
+    "TARGET_RECALIBRATION_SCHEMA_VERSION",
+    "TargetPrioritySnapshot",
+    "load_priority_snapshots",
+    "target_recalibration_summary",
     "SENSITIVITY_CONFIG_DISCLAIMER",
     "SENSITIVITY_CONFIG_SCHEMA_VERSION",
     "sensitivity_config_summary",

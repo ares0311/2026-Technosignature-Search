@@ -137,6 +137,74 @@ def git_commit() -> str | None:
     return commit or None
 
 
+PROVENANCE_CHAIN_DISCLAIMER = (
+    "Provenance chain validation is a local structural consistency check only. "
+    "It verifies that report manifests carry required provenance fields. "
+    "A passing check does not constitute external validation or a discovery claim."
+)
+
+
+def provenance_chain_validator(
+    manifest_paths: list[Path] | None = None,
+    report_dir: Path | None = None,
+) -> dict[str, Any]:
+    """Validate that all report manifests carry required provenance chain fields.
+
+    Checks each manifest for: schema_version, config_version, generated_at_utc,
+    and a provenance_summary block. Returns ok=True when all manifests pass.
+    """
+
+    required_fields = {"schema_version", "config_version", "generated_at_utc"}
+    required_provenance_fields = {"generated_at_utc"}
+
+    paths: list[Path] = []
+    if manifest_paths is not None:
+        paths = list(manifest_paths)
+    elif report_dir is not None:
+        paths = sorted(Path(report_dir).glob("*.manifest.json"))
+    else:
+        default_report_dir = Path(__file__).resolve().parents[2] / "examples" / "reports"
+        paths = sorted(default_report_dir.glob("*.manifest.json"))
+
+    missing_field_cases: list[dict[str, Any]] = []
+    missing_provenance_cases: list[dict[str, Any]] = []
+
+    for path in paths:
+        try:
+            with path.open(encoding="utf-8") as handle:
+                manifest = json.load(handle)
+        except (OSError, ValueError):
+            missing_field_cases.append({"path": str(path), "reason": "unreadable"})
+            continue
+
+        missing = [f for f in required_fields if f not in manifest]
+        if missing:
+            missing_field_cases.append({"path": str(path), "missing_fields": missing})
+
+        provenance = manifest.get("provenance_summary")
+        if not isinstance(provenance, dict):
+            missing_provenance_cases.append(
+                {"path": str(path), "reason": "provenance_summary missing or not a dict"}
+            )
+        else:
+            missing_prov = [f for f in required_provenance_fields if f not in provenance]
+            if missing_prov:
+                missing_provenance_cases.append(
+                    {"path": str(path), "missing_provenance_fields": missing_prov}
+                )
+
+    ok = len(missing_field_cases) == 0 and len(missing_provenance_cases) == 0
+    return {
+        "disclaimer": PROVENANCE_CHAIN_DISCLAIMER,
+        "manifest_count": len(paths),
+        "ok": ok,
+        "missing_field_case_count": len(missing_field_cases),
+        "missing_provenance_case_count": len(missing_provenance_cases),
+        "missing_field_cases": missing_field_cases,
+        "missing_provenance_cases": missing_provenance_cases,
+    }
+
+
 def _optional_str(value: object) -> str | None:
     if value is None:
         return None

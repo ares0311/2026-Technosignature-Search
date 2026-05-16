@@ -1046,3 +1046,104 @@ techno-search triage-summary [--fixture-path PATH]
 ```
 
 Summarises operator candidate triage notes from the committed fixture. Reports note count, unique candidate and operator counts, follow-up-required count, blocking reason totals, and breakdowns by label and track. Triage notes are operator scheduling aids and provenance records only — they do not modify candidate scores, posteriors, or pathway routing. They are not detection claims, discovery announcements, or authorizations for external submission.
+
+---
+
+## Signal Registry Summary
+
+```bash
+techno-search signal-registry-summary [--fixture-path PATH]
+techno-search signal-registry-track-summary [--fixture-path PATH]
+```
+
+Summarises the signal-of-interest registry. Reports signal count, active count, and breakdowns by track and priority tier. The per-track summary adds tier_1/tier_2/tier_3 breakdowns per track. Registry entries are scheduling aids only — they are not detection claims.
+
+---
+
+## Audit Trail Summary
+
+```bash
+techno-search audit-trail-summary [--fixture-path PATH]
+```
+
+Summarises the candidate audit trail fixture. Reports action count, unique operator count, irreversible action count, and breakdowns by action type and candidate. Audit entries are append-only local provenance records — not detection claims or external submission authorizations.
+
+---
+
+## Multi-Epoch Summary
+
+```bash
+techno-search multi-epoch-summary [--fixture-path PATH]
+```
+
+Summarises multi-epoch follow-up observation records. Reports target count, multi-epoch target count, consistent and inconsistent detection counts, mean epoch count, and a per-track breakdown. Consistent detection across epochs does not imply a technosignature without independent external validation.
+
+---
+
+## Target Recalibration Summary
+
+```bash
+techno-search target-recalibration-summary [--fixture-path PATH]
+```
+
+Compares the two most recent target priority snapshots and reports rank changes. Returns new and previous top target IDs, rank change count, and mean absolute rank change. Priority rank changes do not modify candidate scores or posteriors and are not detection evidence.
+
+---
+
+## Observation Gap Analysis
+
+```bash
+techno-search observation-gap-analysis [--fixture-path PATH]
+```
+
+Identifies scheduling gaps between planned and completed observation windows per target. Returns targets with no completed windows and per-target gap counts. This is a scheduling provenance aid only — gaps do not imply missed detections.
+
+---
+
+## Classifier Rule Coverage
+
+```bash
+techno-search classifier-rule-coverage
+```
+
+Reports which baseline classifier rules fire across evaluation cases. Returns fired/never-fired rule lists and a coverage fraction. This is a local development diagnostic only.
+
+---
+
+## Operator Coverage Summary
+
+```bash
+techno-search operator-coverage-summary [--fixture-path PATH]
+```
+
+Summarises operator coverage across triage notes. Reports operator count and per-operator note count, label distribution, tracks covered, and follow-up required count.
+
+---
+
+## Triage Label Completeness
+
+```bash
+techno-search triage-label-completeness [--fixture-path PATH]
+```
+
+Checks which triage labels have fixture coverage. Returns covered labels, uncovered labels, and a coverage fraction.
+
+---
+
+## Schema Drift Check
+
+```bash
+techno-search schema-drift-check
+```
+
+Detects structural drift in committed JSON schema files. Checks for required `$schema` key, `type: object`, and non-empty `required` field. Returns drift count and details. `validate-all` requires `drift_count == 0`.
+
+---
+
+## Provenance Chain Validate
+
+```bash
+techno-search provenance-chain-validate
+```
+
+Validates that all committed report manifests carry required provenance chain fields (`schema_version`, `config_version`, `generated_at_utc`, `provenance_summary`). A passing check does not constitute external validation.

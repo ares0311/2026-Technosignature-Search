@@ -38,6 +38,10 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "sensitivity_config_summary.schema.json",
         "target_watchlist.schema.json",
         "weekly_review_template.schema.json",
+        "signal_registry.schema.json",
+        "candidate_audit_trail.schema.json",
+        "multi_epoch_observations.schema.json",
+        "target_priority_snapshots.schema.json",
     }
     for path in schema_paths:
         schema = json.loads(path.read_text(encoding="utf-8"))

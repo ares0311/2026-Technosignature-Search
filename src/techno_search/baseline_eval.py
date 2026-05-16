@@ -333,6 +333,45 @@ def baseline_pathway_drift_summary(
     }
 
 
+def classifier_rule_coverage_summary(
+    calibration_fixture_path: Path | None = None,
+    example_candidates_dir: Path | None = None,
+) -> dict[str, Any]:
+    """Report which baseline classifier rules fire across all evaluation cases.
+
+    Returns per-rule fire counts and a coverage fraction (fraction of rules that
+    fire at least once). This is a local diagnostic only — not a claim about
+    real-observation coverage or detection performance.
+    """
+
+    eval_result = evaluate_baseline(calibration_fixture_path, example_candidates_dir)
+    rule_fire_rates: dict[str, float] = eval_result.get("rule_fire_rates", {})
+    total_cases = int(eval_result.get("total_cases", 0))
+
+    rules_fired_at_least_once = sorted(
+        rule for rule, rate in rule_fire_rates.items() if rate > 0.0
+    )
+    rules_never_fired = sorted(
+        rule for rule, rate in rule_fire_rates.items() if rate == 0.0
+    )
+    total_rules = len(ALL_BASELINE_RULES)
+    fired_count = len(rules_fired_at_least_once)
+    coverage_fraction = fired_count / total_rules if total_rules > 0 else 0.0
+
+    return {
+        "schema_version": "classifier_rule_coverage_v0",
+        "disclaimer": BASELINE_EVAL_DISCLAIMER,
+        "total_rules": total_rules,
+        "rules_fired_count": fired_count,
+        "rules_never_fired_count": len(rules_never_fired),
+        "coverage_fraction": round(coverage_fraction, 4),
+        "evaluation_case_count": total_cases,
+        "rules_fired_at_least_once": rules_fired_at_least_once,
+        "rules_never_fired": rules_never_fired,
+        "rule_fire_rates": dict(sorted(rule_fire_rates.items())),
+    }
+
+
 def _default_route_coverage_fixture_path() -> Path:
     return (
         Path(__file__).resolve().parents[2]

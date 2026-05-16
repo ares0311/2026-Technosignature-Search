@@ -260,6 +260,10 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "target_watchlist",
         "validation_readiness",
         "weekly_review_template",
+        "signal_registry",
+        "candidate_audit_trail",
+        "multi_epoch_observations",
+        "target_priority_snapshots",
     }
     assert result["background_search_ledger"].endswith(
         "schemas/background_search_ledger.schema.json"
@@ -1371,7 +1375,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 31
+    assert result["schema_count"] == 35
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3

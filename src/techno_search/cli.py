@@ -36,6 +36,7 @@ from techno_search.background_search import (
 from techno_search.baseline_eval import (
     baseline_pathway_drift_summary,
     baseline_performance_history_summary,
+    classifier_rule_coverage_summary,
     evaluate_baseline,
     route_coverage_summary,
     score_determinism_check,
@@ -54,11 +55,16 @@ from techno_search.calibration import (
     summarize_calibration_fixtures,
 )
 from techno_search.calibration_metrics import precision_recall_summary, reliability_summary
+from techno_search.candidate_audit_trail import audit_trail_summary
 from techno_search.candidate_lifecycle import (
     candidate_lifecycle_summary,
     lifecycle_transition_summary,
 )
-from techno_search.candidate_triage import triage_summary
+from techno_search.candidate_triage import (
+    operator_coverage_summary,
+    triage_label_completeness_check,
+    triage_summary,
+)
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.cross_track import cross_track_summary
 from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
@@ -92,11 +98,14 @@ from techno_search.log_store import (
     sqlite_recent_runs,
     validate_sqlite_log_commit_paths,
 )
+from techno_search.multi_epoch_summary import multi_epoch_summary
 from techno_search.observation_schedule import (
     observation_efficiency_summary,
+    observation_gap_analysis,
     observation_schedule_summary,
 )
 from techno_search.plotting import plot_artifact_summary
+from techno_search.provenance import provenance_chain_validator
 from techno_search.reporting import (
     candidate_packet_json,
     write_candidate_reports,
@@ -111,6 +120,11 @@ from techno_search.schemas import Candidate, Track, candidate_from_mapping
 from techno_search.scoring import score_candidate
 from techno_search.scoring_config import scoring_config_summary
 from techno_search.sensitivity_config import sensitivity_config_summary
+from techno_search.signal_registry import (
+    signal_registry_summary,
+    signal_registry_track_summary,
+)
+from techno_search.target_recalibration_summary import target_recalibration_summary
 from techno_search.target_watchlist import target_watchlist_summary
 from techno_search.validation import (
     validate_candidate_file,
@@ -157,6 +171,10 @@ SCHEMA_FILENAMES = {
     "observation_schedule": "observation_schedule.schema.json",
     "scoring_config_summary": "scoring_config_summary.schema.json",
     "sensitivity_config_summary": "sensitivity_config_summary.schema.json",
+    "signal_registry": "signal_registry.schema.json",
+    "candidate_audit_trail": "candidate_audit_trail.schema.json",
+    "multi_epoch_observations": "multi_epoch_observations.schema.json",
+    "target_priority_snapshots": "target_priority_snapshots.schema.json",
 }
 
 
@@ -1086,6 +1104,125 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(cleanup_result, indent=2, sort_keys=True), file=out)
         return 0 if cleanup_result.get("ok", False) else 1
 
+    if args.command == "signal-registry-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                signal_registry_summary(Path(fixture_path) if fixture_path else None),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "signal-registry-track-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                signal_registry_track_summary(Path(fixture_path) if fixture_path else None),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "schema-drift-check":
+        from techno_search.schema_drift import detect_schema_drift
+
+        print(
+            json.dumps(detect_schema_drift(), indent=2, sort_keys=True),
+            file=out,
+        )
+        return 0
+
+    if args.command == "audit-trail-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                audit_trail_summary(Path(fixture_path) if fixture_path else None),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "observation-gap-analysis":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                observation_gap_analysis(Path(fixture_path) if fixture_path else None),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "multi-epoch-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                multi_epoch_summary(Path(fixture_path) if fixture_path else None),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "classifier-rule-coverage":
+        print(
+            json.dumps(classifier_rule_coverage_summary(), indent=2, sort_keys=True),
+            file=out,
+        )
+        return 0
+
+    if args.command == "target-recalibration-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                target_recalibration_summary(Path(fixture_path) if fixture_path else None),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operator-coverage-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                operator_coverage_summary(Path(fixture_path) if fixture_path else None),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "triage-label-completeness":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                triage_label_completeness_check(Path(fixture_path) if fixture_path else None),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "provenance-chain-validate":
+        pc_result = provenance_chain_validator(
+            report_dir=default_project_root() / "examples" / "reports",
+        )
+        print(json.dumps(pc_result, indent=2, sort_keys=True), file=out)
+        return 0 if pc_result["ok"] else 1
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -1380,6 +1517,39 @@ def validate_all() -> dict[str, object]:
     triage_notes = triage_summary()
     triage_note_count = int(triage_notes.get("note_count", 0))
     triage_tracks_covered = list(triage_notes.get("tracks_covered", []))
+    signal_registry = signal_registry_summary()
+    signal_registry_active_count = int(signal_registry.get("active_count", 0))
+    audit_trail = audit_trail_summary()
+    audit_action_count = int(audit_trail.get("action_count", 0))
+    multi_epoch = multi_epoch_summary()
+    multi_epoch_target_count = int(multi_epoch.get("multi_epoch_target_count", 0))
+    recalibration = target_recalibration_summary()
+    recalibration_snapshot_count = int(recalibration.get("snapshot_count", 0))
+    operator_coverage = operator_coverage_summary()
+    operator_coverage_count = int(operator_coverage.get("operator_count", 0))
+    label_completeness = triage_label_completeness_check()
+    label_coverage_fraction_raw = label_completeness.get("coverage_fraction")
+    label_coverage_fraction = (
+        float(label_coverage_fraction_raw)
+        if isinstance(label_coverage_fraction_raw, (int, float))
+        else 0.0
+    )
+    rule_coverage = classifier_rule_coverage_summary()
+    rule_coverage_fraction_raw = rule_coverage.get("coverage_fraction")
+    classifier_rule_coverage_fraction = (
+        float(rule_coverage_fraction_raw)
+        if isinstance(rule_coverage_fraction_raw, (int, float))
+        else 0.0
+    )
+    provenance_chain = provenance_chain_validator(
+        report_dir=root / "examples" / "reports"
+    )
+    provenance_chain_ok = bool(provenance_chain.get("ok", False))
+    obs_gap = observation_gap_analysis()
+    from techno_search.schema_drift import detect_schema_drift
+
+    schema_drift = detect_schema_drift()
+    schema_drift_count = int(schema_drift.get("drift_count", 0))
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -1577,6 +1747,23 @@ def validate_all() -> dict[str, object]:
         and isinstance(triage_note_count, int)
         and triage_note_count >= 5
         and len(triage_tracks_covered) >= 3
+        and isinstance(signal_registry_active_count, int)
+        and signal_registry_active_count >= 4
+        and isinstance(audit_action_count, int)
+        and audit_action_count >= 6
+        and isinstance(multi_epoch_target_count, int)
+        and multi_epoch_target_count >= 3
+        and isinstance(recalibration_snapshot_count, int)
+        and recalibration_snapshot_count >= 2
+        and isinstance(operator_coverage_count, int)
+        and operator_coverage_count >= 2
+        and isinstance(label_coverage_fraction, float)
+        and label_coverage_fraction >= 0.5
+        and isinstance(classifier_rule_coverage_fraction, float)
+        and classifier_rule_coverage_fraction >= 0.5
+        and provenance_chain_ok
+        and isinstance(schema_drift_count, int)
+        and schema_drift_count == 0
     )
     return {
         "ok": ok,
@@ -1637,6 +1824,16 @@ def validate_all() -> dict[str, object]:
         "observation_efficiency_summary": observation_efficiency,
         "sensitivity_config_summary": sensitivity_cfg,
         "triage_summary": triage_notes,
+        "signal_registry_summary": signal_registry,
+        "audit_trail_summary": audit_trail,
+        "multi_epoch_summary": multi_epoch,
+        "target_recalibration_summary": recalibration,
+        "operator_coverage_summary": operator_coverage,
+        "triage_label_completeness": label_completeness,
+        "classifier_rule_coverage_summary": rule_coverage,
+        "provenance_chain_validation": provenance_chain,
+        "observation_gap_analysis": obs_gap,
+        "schema_drift_summary": schema_drift,
     }
 
 
@@ -2145,6 +2342,66 @@ def validation_summary() -> dict[str, object]:
         "triage_tracks_covered_count": (
             len(tn_t["tracks_covered"])
             if isinstance(tn_t := validation.get("triage_summary"), dict)
+            else 0
+        ),
+        "signal_registry_signal_count": (
+            sr_s["signal_count"]
+            if isinstance(sr_s := validation.get("signal_registry_summary"), dict)
+            else 0
+        ),
+        "signal_registry_active_count": (
+            sr_a["active_count"]
+            if isinstance(sr_a := validation.get("signal_registry_summary"), dict)
+            else 0
+        ),
+        "audit_trail_action_count": (
+            at_s["action_count"]
+            if isinstance(at_s := validation.get("audit_trail_summary"), dict)
+            else 0
+        ),
+        "audit_trail_unique_operator_count": (
+            at_o["unique_operator_count"]
+            if isinstance(at_o := validation.get("audit_trail_summary"), dict)
+            else 0
+        ),
+        "multi_epoch_target_count": (
+            me_s["multi_epoch_target_count"]
+            if isinstance(me_s := validation.get("multi_epoch_summary"), dict)
+            else 0
+        ),
+        "multi_epoch_consistent_detection_count": (
+            me_c["consistent_detection_count"]
+            if isinstance(me_c := validation.get("multi_epoch_summary"), dict)
+            else 0
+        ),
+        "target_recalibration_snapshot_count": (
+            tr_s["snapshot_count"]
+            if isinstance(tr_s := validation.get("target_recalibration_summary"), dict)
+            else 0
+        ),
+        "operator_coverage_count": (
+            oc_s["operator_count"]
+            if isinstance(oc_s := validation.get("operator_coverage_summary"), dict)
+            else 0
+        ),
+        "triage_label_coverage_fraction": (
+            lc_s2["coverage_fraction"]
+            if isinstance(lc_s2 := validation.get("triage_label_completeness"), dict)
+            else 0.0
+        ),
+        "classifier_rule_coverage_fraction": (
+            rc_s2["coverage_fraction"]
+            if isinstance(rc_s2 := validation.get("classifier_rule_coverage_summary"), dict)
+            else 0.0
+        ),
+        "provenance_chain_validation_ok": (
+            bool(pc_s["ok"])
+            if isinstance(pc_s := validation.get("provenance_chain_validation"), dict)
+            else False
+        ),
+        "schema_drift_count": (
+            sd_s["drift_count"]
+            if isinstance(sd_s := validation.get("schema_drift_summary"), dict)
             else 0
         ),
         "recommended_commands": [
@@ -3377,6 +3634,86 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Required acknowledgement to perform local file deletion.",
     )
+
+    signal_registry_parser = subparsers.add_parser(
+        "signal-registry-summary",
+        help="Summarize the signal-of-interest registry fixture.",
+    )
+    signal_registry_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    signal_track_parser = subparsers.add_parser(
+        "signal-registry-track-summary",
+        help="Per-track breakdown of the signal registry.",
+    )
+    signal_track_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "schema-drift-check",
+        help="Detect structural drift in committed JSON schema files.",
+    )
+
+    audit_trail_parser = subparsers.add_parser(
+        "audit-trail-summary",
+        help="Summarize the candidate audit trail fixture.",
+    )
+    audit_trail_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    obs_gap_parser = subparsers.add_parser(
+        "observation-gap-analysis",
+        help="Identify scheduling gaps between planned and completed observation windows.",
+    )
+    obs_gap_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    multi_epoch_parser = subparsers.add_parser(
+        "multi-epoch-summary",
+        help="Summarize multi-epoch observation records.",
+    )
+    multi_epoch_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "classifier-rule-coverage",
+        help="Report which baseline classifier rules fire across evaluation cases.",
+    )
+
+    recalibration_parser = subparsers.add_parser(
+        "target-recalibration-summary",
+        help="Compare two most recent target priority snapshots for rank changes.",
+    )
+    recalibration_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    operator_cov_parser = subparsers.add_parser(
+        "operator-coverage-summary",
+        help="Summarize operator coverage across triage notes.",
+    )
+    operator_cov_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    label_completeness_parser = subparsers.add_parser(
+        "triage-label-completeness",
+        help="Check which triage labels have fixture coverage.",
+    )
+    label_completeness_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "provenance-chain-validate",
+        help="Validate provenance chain fields in committed report manifests.",
+    )
+
     return parser
 
 

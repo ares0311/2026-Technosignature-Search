@@ -1,0 +1,78 @@
+{
+  "schema_version": "candidate_audit_trail_v1",
+  "disclaimer": "Audit trail entries are append-only local provenance records. They document operator actions taken on candidates for scheduling and reproducibility purposes only. They do not constitute external validation, detection claims, or discovery announcements.",
+  "actions": [
+    {
+      "action_id": "audit-001",
+      "candidate_id": "synth-radio-2026-001",
+      "action_type": "triage_note_added",
+      "operator_id": "operator-a",
+      "timestamp_utc": "2026-05-01T10:00:00Z",
+      "detail": "Added triage note: needs_human_review. RFI check pending.",
+      "is_reversible": true
+    },
+    {
+      "action_id": "audit-002",
+      "candidate_id": "synth-radio-2026-001",
+      "action_type": "stage_transition",
+      "operator_id": "operator-a",
+      "timestamp_utc": "2026-05-01T10:05:00Z",
+      "detail": "Stage: initial_detection -> scored",
+      "is_reversible": false
+    },
+    {
+      "action_id": "audit-003",
+      "candidate_id": "synth-radio-2026-001",
+      "action_type": "observation_scheduled",
+      "operator_id": "operator-b",
+      "timestamp_utc": "2026-05-02T08:00:00Z",
+      "detail": "Observation window obs-radio-002 scheduled for 2026-05-10T04:00:00Z",
+      "is_reversible": true
+    },
+    {
+      "action_id": "audit-004",
+      "candidate_id": "synth-ir-2026-001",
+      "action_type": "triage_note_added",
+      "operator_id": "operator-b",
+      "timestamp_utc": "2026-05-03T09:15:00Z",
+      "detail": "Added triage note: follow_up_target. Strong IR excess candidate.",
+      "is_reversible": true
+    },
+    {
+      "action_id": "audit-005",
+      "candidate_id": "synth-ir-2026-001",
+      "action_type": "observation_scheduled",
+      "operator_id": "operator-b",
+      "timestamp_utc": "2026-05-03T09:20:00Z",
+      "detail": "Photometric follow-up window scheduled at multiple epochs.",
+      "is_reversible": true
+    },
+    {
+      "action_id": "audit-006",
+      "candidate_id": "synth-ir-2026-001",
+      "action_type": "observation_completed",
+      "operator_id": "operator-b",
+      "timestamp_utc": "2026-05-08T12:00:00Z",
+      "detail": "Epoch 1 photometry completed. IR excess confirmed at same flux level.",
+      "is_reversible": false
+    },
+    {
+      "action_id": "audit-007",
+      "candidate_id": "synth-anomaly-2026-001",
+      "action_type": "human_reviewed",
+      "operator_id": "operator-a",
+      "timestamp_utc": "2026-05-04T14:00:00Z",
+      "detail": "Human review completed. Confirmed known variable star (Mira type). No technosignature-interest.",
+      "is_reversible": false
+    },
+    {
+      "action_id": "audit-008",
+      "candidate_id": "synth-anomaly-2026-001",
+      "action_type": "archived",
+      "operator_id": "operator-a",
+      "timestamp_utc": "2026-05-04T14:15:00Z",
+      "detail": "Archived as catalogued variable star. No further scheduling required.",
+      "is_reversible": false
+    }
+  ]
+}

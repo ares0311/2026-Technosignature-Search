@@ -11,7 +11,8 @@
       "note_text": "Narrowband signal with borderline drift rate. RFI check pending. Requires expert review before pathway decision.",
       "created_utc": "2026-05-01T10:00:00Z",
       "blocking_reasons": ["rfi_check_pending", "insufficient_cadence_data"],
-      "follow_up_required": true
+      "follow_up_required": true,
+      "annotation_tags": ["rfi_candidate", "follow_up_rfi_check_needed"]
     },
     {
       "note_id": "triage-002",
@@ -22,7 +23,8 @@
       "note_text": "Frequency matches known satellite transponder band. Off-target presence confirmed. Classifying as RFI.",
       "created_utc": "2026-05-02T11:30:00Z",
       "blocking_reasons": ["satellite_band_match"],
-      "follow_up_required": false
+      "follow_up_required": false,
+      "annotation_tags": ["satellite_rfi", "off_target_confirmed"]
     },
     {
       "note_id": "triage-003",
@@ -33,7 +35,8 @@
       "note_text": "Strong IR excess, stellar solution quality good, no AGN or dust indicator. Recommend photometric follow-up at multiple epochs.",
       "created_utc": "2026-05-03T09:15:00Z",
       "blocking_reasons": [],
-      "follow_up_required": true
+      "follow_up_required": true,
+      "annotation_tags": ["follow_up_photometry_needed", "multi_epoch_recommended"]
     },
     {
       "note_id": "triage-004",
@@ -44,7 +47,8 @@
       "note_text": "Cross-match confirms this is a catalogued variable star (Mira type). Archival disappearance is consistent with variability cycle. No technosignature-interest.",
       "created_utc": "2026-05-04T14:00:00Z",
       "blocking_reasons": ["catalogued_variable_star"],
-      "follow_up_required": false
+      "follow_up_required": false,
+      "annotation_tags": []
     },
     {
       "note_id": "triage-005",
@@ -55,7 +59,8 @@
       "note_text": "Poor photometric quality in WISE band. SED fit residual is marginal. Defer pending additional photometry. No pathway decision yet.",
       "created_utc": "2026-05-05T16:45:00Z",
       "blocking_reasons": ["poor_photometric_quality", "pending_additional_photometry"],
-      "follow_up_required": false
+      "follow_up_required": false,
+      "annotation_tags": ["poor_photometry", "defer_pending_data"]
     }
   ]
 }

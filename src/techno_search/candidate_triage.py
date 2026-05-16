@@ -48,6 +48,8 @@ class CandidateTriageNote:
     created_utc: str
     blocking_reasons: list[str] = field(default_factory=list)
     follow_up_required: bool = False
+    # annotation_tags are documentation-only metadata; must not be used to claim detection
+    annotation_tags: list[str] = field(default_factory=list)
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -60,6 +62,7 @@ class CandidateTriageNote:
             "created_utc": self.created_utc,
             "blocking_reasons": list(self.blocking_reasons),
             "follow_up_required": self.follow_up_required,
+            "annotation_tags": list(self.annotation_tags),
         }
 
 
@@ -82,6 +85,7 @@ def load_triage_notes(
                 created_utc=str(raw["created_utc"]),
                 blocking_reasons=list(raw.get("blocking_reasons", [])),
                 follow_up_required=bool(raw.get("follow_up_required", False)),
+                annotation_tags=list(raw.get("annotation_tags", [])),
             )
         )
     return notes
@@ -121,4 +125,69 @@ def triage_summary(
         "by_track": dict(sorted(by_track.items())),
         "labels_covered": sorted(by_label.keys()),
         "tracks_covered": sorted(by_track.keys()),
+    }
+
+
+def operator_coverage_summary(
+    fixture_path: Path | None = None,
+) -> dict[str, Any]:
+    """Return per-operator triage note coverage summary."""
+
+    notes = load_triage_notes(fixture_path)
+
+    per_operator: dict[str, Any] = {}
+    for note in notes:
+        op = note.operator_id
+        if op not in per_operator:
+            per_operator[op] = {
+                "note_count": 0,
+                "label_distribution": {},
+                "tracks_covered": set(),
+                "follow_up_required_count": 0,
+            }
+        per_operator[op]["note_count"] += 1
+        label = note.triage_label
+        per_operator[op]["label_distribution"][label] = (
+            per_operator[op]["label_distribution"].get(label, 0) + 1
+        )
+        per_operator[op]["tracks_covered"].add(note.track)
+        if note.follow_up_required:
+            per_operator[op]["follow_up_required_count"] += 1
+
+    serializable: dict[str, Any] = {}
+    for op, stats in per_operator.items():
+        serializable[op] = {
+            "note_count": stats["note_count"],
+            "label_distribution": dict(sorted(stats["label_distribution"].items())),
+            "tracks_covered": sorted(stats["tracks_covered"]),
+            "follow_up_required_count": stats["follow_up_required_count"],
+        }
+
+    return {
+        "schema_version": CANDIDATE_TRIAGE_SCHEMA_VERSION,
+        "disclaimer": CANDIDATE_TRIAGE_DISCLAIMER,
+        "operator_count": len(per_operator),
+        "per_operator": serializable,
+    }
+
+
+def triage_label_completeness_check(
+    fixture_path: Path | None = None,
+) -> dict[str, Any]:
+    """Check which triage labels from ALLOWED_TRIAGE_LABELS are used in the fixture."""
+
+    notes = load_triage_notes(fixture_path)
+    used = {n.triage_label for n in notes}
+    covered = sorted(used & ALLOWED_TRIAGE_LABELS)
+    uncovered = sorted(ALLOWED_TRIAGE_LABELS - used)
+    total = len(ALLOWED_TRIAGE_LABELS)
+    coverage_fraction = round(len(covered) / total, 6) if total > 0 else 0.0
+
+    return {
+        "schema_version": CANDIDATE_TRIAGE_SCHEMA_VERSION,
+        "disclaimer": CANDIDATE_TRIAGE_DISCLAIMER,
+        "covered_labels": covered,
+        "uncovered_labels": uncovered,
+        "coverage_fraction": coverage_fraction,
+        "all_labels_covered": len(uncovered) == 0,
     }
