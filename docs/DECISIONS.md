@@ -948,3 +948,21 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 **Quality control summary**: aggregate dashboard combining flags, triage clearance, deadline compliance, retention state, resolution counts, and escalation state into a single `overall_qc_health` indicator (`ok`, `degraded`, `blocked`). Health status is an operational indicator only.
 
 **Consequences**: `validate-all` gates enforce minimum fixture coverage (`resolution_record_count >= 5`, `escalation_entry_count >= 5`, `qc_health in ("ok", "degraded", "blocked")`). No new fixture gates are needed for quality_control_summary since it aggregates existing fixtures. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-039: Observation Campaign, Data Quality Log, And Pipeline Audit Are Scheduling Provenance Records
+
+**Date**: 2026-05-17
+
+**Context**: The pipeline needs structured records for multi-session observation campaigns, per-observation data quality assessments, and an aggregate audit view of the candidate audit trail.
+
+**Decision**: Implement three new scheduling provenance modules:
+
+**Observation campaign**: records multi-session campaigns with status (`planned`, `active`, `completed`, `cancelled`, `on_hold`), session count, epochs covered, and target candidate IDs. `completed` means all planned sessions were executed — it does not mean science is concluded or any signal confirmed.
+
+**Data quality log**: records per-observation quality grades (`excellent`, `good`, `marginal`, `poor`, `unusable`) and issue types (`rfi`, `weather`, `equipment`, `calibration_failure`, `data_loss`). Grades reflect observational conditions, not candidate scientific merit.
+
+**Pipeline audit summary**: aggregate view of the candidate audit trail, counting total actions, unique candidates audited, unique operators, and breakdown by action type and track. `overall_audit_coverage` (`adequate`/`sparse`) is a local provenance indicator only.
+
+**Consequences**: `validate-all` gates enforce `observation_campaign_count >= 5`, `data_quality_entry_count >= 5`, and `pipeline_audit_action_count >= 0`. Scientific guardrails remain unchanged.

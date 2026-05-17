@@ -1328,3 +1328,41 @@ techno-search quality-control-summary
 Output fields: `total_open_flags`, `critical_flag_count`, `triage_clearance_rate`, `overdue_deadline_count`, `deadline_compliance_rate`, `active_candidate_count`, `blocked_candidate_count`, `resolved_count`, `open_escalation_count`, `critical_escalation_count`, `overall_qc_health`.
 
 `overall_qc_health` values: `ok`, `degraded`, `blocked`. None of these values constitute evidence of a technosignature.
+
+## `observation-campaign-summary`
+
+Summarize observation campaigns with session counts, epoch coverage, and track breakdown.
+
+```bash
+techno-search observation-campaign-summary
+techno-search observation-campaign-summary --fixture-path tests/fixtures/observation_campaign.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `campaign_count`, `active_count`, `completed_count`, `total_sessions`, `total_epochs_covered`, `unique_target_candidates`, `by_track`, `by_status`, `tracks_covered`.
+
+Campaign records are local scheduling aids. `completed` means all planned sessions were executed — not that science is concluded or any signal confirmed.
+
+## `data-quality-log-summary`
+
+Summarize data quality log entries with grade and issue-type breakdown.
+
+```bash
+techno-search data-quality-log-summary
+techno-search data-quality-log-summary --fixture-path tests/fixtures/data_quality_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `usable_count`, `poor_count`, `weather_affected_count`, `equipment_affected_count`, `rfi_affected_count`, `by_track`, `by_grade`, `tracks_covered`.
+
+Quality grades reflect observational conditions, not candidate scientific merit.
+
+## `pipeline-audit-summary`
+
+Aggregate pipeline audit summary from the candidate audit trail.
+
+```bash
+techno-search pipeline-audit-summary
+```
+
+Output fields: `disclaimer`, `total_audit_actions`, `unique_candidates_audited`, `unique_operators`, `action_type_breakdown`, `track_breakdown`, `most_recent_action_utc`, `overall_audit_coverage`.
+
+`overall_audit_coverage` values: `adequate` (≥5 actions), `sparse`. This is a local provenance record only — not a claim about survey completeness.

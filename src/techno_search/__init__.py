@@ -182,6 +182,15 @@ from techno_search.cross_track import (
     cross_track_summary,
     load_cross_track_references,
 )
+from techno_search.data_quality_log import (
+    ALLOWED_QUALITY_GRADES,
+    ALLOWED_QUALITY_ISSUE_TYPES,
+    DATA_QUALITY_LOG_DISCLAIMER,
+    DATA_QUALITY_LOG_SCHEMA_VERSION,
+    DataQualityEntry,
+    data_quality_log_summary,
+    load_data_quality_entries,
+)
 from techno_search.epoch_plan import (
     ALLOWED_EPOCH_PLAN_STATUSES,
     ALLOWED_EPOCH_PRIORITIES,
@@ -214,6 +223,14 @@ from techno_search.multi_epoch_summary import (
     load_multi_epoch_records,
     multi_epoch_summary,
 )
+from techno_search.observation_campaign import (
+    ALLOWED_CAMPAIGN_STATUSES,
+    OBSERVATION_CAMPAIGN_DISCLAIMER,
+    OBSERVATION_CAMPAIGN_SCHEMA_VERSION,
+    ObservationCampaign,
+    load_observation_campaigns,
+    observation_campaign_summary,
+)
 from techno_search.observation_schedule import (
     OBSERVATION_SCHEDULE_DISCLAIMER,
     OBSERVATION_SCHEDULE_SCHEMA_VERSION,
@@ -237,6 +254,10 @@ from techno_search.operator_performance import (
     operator_performance_summary,
 )
 from techno_search.pathway import classify_pathway
+from techno_search.pipeline_audit_summary import (
+    PIPELINE_AUDIT_DISCLAIMER,
+    pipeline_audit_summary,
+)
 from techno_search.pipeline_health import (
     PIPELINE_HEALTH_DISCLAIMER,
     PIPELINE_HEALTH_TRACKS,
@@ -650,6 +671,21 @@ __all__ = [
     "OperatorAssignment",
     "load_operator_assignments",
     "operator_assignment_summary",
+    "ALLOWED_QUALITY_GRADES",
+    "ALLOWED_QUALITY_ISSUE_TYPES",
+    "DATA_QUALITY_LOG_DISCLAIMER",
+    "DATA_QUALITY_LOG_SCHEMA_VERSION",
+    "DataQualityEntry",
+    "data_quality_log_summary",
+    "load_data_quality_entries",
+    "ALLOWED_CAMPAIGN_STATUSES",
+    "OBSERVATION_CAMPAIGN_DISCLAIMER",
+    "OBSERVATION_CAMPAIGN_SCHEMA_VERSION",
+    "ObservationCampaign",
+    "load_observation_campaigns",
+    "observation_campaign_summary",
+    "PIPELINE_AUDIT_DISCLAIMER",
+    "pipeline_audit_summary",
     "PIPELINE_HEALTH_DISCLAIMER",
     "PIPELINE_HEALTH_TRACKS",
     "pipeline_health_summary",

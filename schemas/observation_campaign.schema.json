@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ObservationCampaign",
+  "description": "Local scheduling records for multi-session observation campaigns. Status is a workflow state, not a scientific conclusion.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "campaigns"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "disclaimer": { "type": "string" },
+    "campaigns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "campaign_id",
+          "name",
+          "track",
+          "status",
+          "target_candidate_ids",
+          "session_count",
+          "epochs_covered",
+          "start_utc",
+          "end_utc",
+          "operator_lead"
+        ],
+        "properties": {
+          "campaign_id": { "type": "string" },
+          "name": { "type": "string" },
+          "track": { "type": "string", "enum": ["radio", "infrared", "anomaly"] },
+          "status": {
+            "type": "string",
+            "enum": ["planned", "active", "completed", "cancelled", "on_hold"]
+          },
+          "target_candidate_ids": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "session_count": { "type": "integer", "minimum": 0 },
+          "epochs_covered": { "type": "integer", "minimum": 0 },
+          "start_utc": { "type": "string" },
+          "end_utc": { "type": "string" },
+          "operator_lead": { "type": "string" },
+          "notes": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -73,6 +73,7 @@ from techno_search.candidate_triage import (
 )
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.cross_track import cross_track_summary
+from techno_search.data_quality_log import data_quality_log_summary
 from techno_search.epoch_plan import epoch_plan_summary
 from techno_search.escalation_log import escalation_log_summary
 from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
@@ -107,6 +108,7 @@ from techno_search.log_store import (
     validate_sqlite_log_commit_paths,
 )
 from techno_search.multi_epoch_summary import multi_epoch_summary
+from techno_search.observation_campaign import observation_campaign_summary
 from techno_search.observation_schedule import (
     observation_efficiency_summary,
     observation_gap_analysis,
@@ -114,6 +116,7 @@ from techno_search.observation_schedule import (
 )
 from techno_search.operator_assignment import operator_assignment_summary
 from techno_search.operator_performance import operator_performance_summary
+from techno_search.pipeline_audit_summary import pipeline_audit_summary
 from techno_search.pipeline_health import pipeline_health_summary
 from techno_search.pipeline_throughput import pipeline_throughput_summary
 from techno_search.plotting import plot_artifact_summary
@@ -197,7 +200,9 @@ SCHEMA_FILENAMES = {
     "operator_assignment": "operator_assignment.schema.json",
     "candidate_resolution": "candidate_resolution.schema.json",
     "candidate_retention": "candidate_retention.schema.json",
+    "data_quality_log": "data_quality_log.schema.json",
     "escalation_log": "escalation_log.schema.json",
+    "observation_campaign": "observation_campaign.schema.json",
     "review_deadlines": "review_deadlines.schema.json",
 }
 
@@ -1421,6 +1426,41 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "observation-campaign-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                observation_campaign_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "data-quality-log-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                data_quality_log_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "pipeline-audit-summary":
+        print(
+            json.dumps(
+                pipeline_audit_summary(),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -1778,6 +1818,12 @@ def validate_all() -> dict[str, object]:
     escalation_entry_count = int(escalations.get("entry_count", 0))
     qc_summary = quality_control_summary()
     qc_health = str(qc_summary.get("overall_qc_health", "ok"))
+    obs_campaigns = observation_campaign_summary()
+    obs_campaign_count = int(obs_campaigns.get("campaign_count", 0))
+    dq_log = data_quality_log_summary()
+    dq_entry_count = int(dq_log.get("entry_count", 0))
+    pipeline_audit = pipeline_audit_summary()
+    pipeline_audit_action_count = int(pipeline_audit.get("total_audit_actions", 0))
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -2021,6 +2067,12 @@ def validate_all() -> dict[str, object]:
         and isinstance(escalation_entry_count, int)
         and escalation_entry_count >= 5
         and qc_health in ("ok", "degraded", "blocked")
+        and isinstance(obs_campaign_count, int)
+        and obs_campaign_count >= 5
+        and isinstance(dq_entry_count, int)
+        and dq_entry_count >= 5
+        and isinstance(pipeline_audit_action_count, int)
+        and pipeline_audit_action_count >= 0
     )
     return {
         "ok": ok,
@@ -2106,6 +2158,9 @@ def validate_all() -> dict[str, object]:
         "candidate_resolution_summary": candidate_resolution,
         "escalation_log_summary": escalations,
         "quality_control_summary": qc_summary,
+        "observation_campaign_summary": obs_campaigns,
+        "data_quality_log_summary": dq_log,
+        "pipeline_audit_summary": pipeline_audit,
     }
 
 
@@ -2805,6 +2860,31 @@ def validation_summary() -> dict[str, object]:
             qc_s["overall_qc_health"]
             if isinstance(qc_s := validation.get("quality_control_summary"), dict)
             else "ok"
+        ),
+        "observation_campaign_count": (
+            oc_s["campaign_count"]
+            if isinstance(oc_s := validation.get("observation_campaign_summary"), dict)
+            else 0
+        ),
+        "observation_campaign_active_count": (
+            oc_s2["active_count"]
+            if isinstance(oc_s2 := validation.get("observation_campaign_summary"), dict)
+            else 0
+        ),
+        "data_quality_entry_count": (
+            dq_s["entry_count"]
+            if isinstance(dq_s := validation.get("data_quality_log_summary"), dict)
+            else 0
+        ),
+        "data_quality_poor_count": (
+            dq_s2["poor_count"]
+            if isinstance(dq_s2 := validation.get("data_quality_log_summary"), dict)
+            else 0
+        ),
+        "pipeline_audit_action_count": (
+            pa_s["total_audit_actions"]
+            if isinstance(pa_s := validation.get("pipeline_audit_summary"), dict)
+            else 0
         ),
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
@@ -4216,6 +4296,27 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "quality-control-summary",
         help="Aggregate QC dashboard across flags, triage, deadlines, and escalations.",
+    )
+
+    observation_campaign_parser = subparsers.add_parser(
+        "observation-campaign-summary",
+        help="Summarize observation campaigns with session counts and track coverage.",
+    )
+    observation_campaign_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    data_quality_log_parser = subparsers.add_parser(
+        "data-quality-log-summary",
+        help="Summarize data quality log entries with grade and issue-type breakdown.",
+    )
+    data_quality_log_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "pipeline-audit-summary",
+        help="Aggregate pipeline audit summary from the candidate audit trail.",
     )
 
     return parser

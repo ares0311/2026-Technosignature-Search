@@ -1,0 +1,66 @@
+{
+  "schema_version": "data_quality_log_v1",
+  "disclaimer": "Data quality log entries are local scheduling and provenance records only. Quality grades reflect observational conditions, not candidate scientific merit.",
+  "entries": [
+    {
+      "entry_id": "dq-001",
+      "observation_id": "obs-radio-2026-0312",
+      "track": "radio",
+      "quality_grade": "good",
+      "issue_types": ["rfi"],
+      "rfi_level": "low",
+      "weather_flag": false,
+      "equipment_flag": false,
+      "operator_id": "operator-alpha",
+      "assessed_utc": "2026-03-12T06:30:00Z"
+    },
+    {
+      "entry_id": "dq-002",
+      "observation_id": "obs-radio-2026-0401",
+      "track": "radio",
+      "quality_grade": "excellent",
+      "issue_types": ["none"],
+      "rfi_level": "none",
+      "weather_flag": false,
+      "equipment_flag": false,
+      "operator_id": "operator-beta",
+      "assessed_utc": "2026-04-01T08:00:00Z"
+    },
+    {
+      "entry_id": "dq-003",
+      "observation_id": "obs-infrared-2026-0320",
+      "track": "infrared",
+      "quality_grade": "marginal",
+      "issue_types": ["weather", "calibration_failure"],
+      "rfi_level": "none",
+      "weather_flag": true,
+      "equipment_flag": false,
+      "operator_id": "operator-alpha",
+      "assessed_utc": "2026-03-20T14:15:00Z"
+    },
+    {
+      "entry_id": "dq-004",
+      "observation_id": "obs-infrared-2026-0410",
+      "track": "infrared",
+      "quality_grade": "poor",
+      "issue_types": ["equipment", "data_loss"],
+      "rfi_level": "none",
+      "weather_flag": false,
+      "equipment_flag": true,
+      "operator_id": "operator-beta",
+      "assessed_utc": "2026-04-10T10:00:00Z"
+    },
+    {
+      "entry_id": "dq-005",
+      "observation_id": "obs-anomaly-2026-0405",
+      "track": "anomaly",
+      "quality_grade": "good",
+      "issue_types": ["none"],
+      "rfi_level": "none",
+      "weather_flag": false,
+      "equipment_flag": false,
+      "operator_id": "operator-alpha",
+      "assessed_utc": "2026-04-05T09:45:00Z"
+    }
+  ]
+}
