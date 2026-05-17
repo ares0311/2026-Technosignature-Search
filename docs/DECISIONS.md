@@ -912,3 +912,21 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 **Pipeline throughput**: aggregates per-stage lifecycle and triage counts to surface pipeline bottlenecks. Throughput rate is a local scheduling metric, not a calibrated survey efficiency estimate.
 
 **Consequences**: `validate-all` gates enforce minimum fixture coverage for all three modules. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-037: Candidate Retention, Operator Performance, And Track Comparison Are Scheduling Provenance Records
+
+**Date**: 2026-05-17
+
+**Context**: The pipeline now tracks candidate dwell times in the pipeline, operator workload metrics, and a cross-track operational dashboard.
+
+**Decision**: Implement three new scheduling provenance modules:
+
+**Candidate retention**: tracks how long candidates remain in the pipeline and their current workflow status. Active/archived/blocked breakdowns are scheduling aids only. Days in pipeline is not correlated with candidate quality.
+
+**Operator performance**: aggregates per-operator assignment outcomes (completed, escalated, deferred, pending, in_progress) from existing operator assignment fixtures. Completion and escalation rates are workflow health indicators, not quality judgments.
+
+**Track comparison**: cross-track operational dashboard combining triage notes, lifecycle stages, candidate flags, review deadlines, epoch plan requests, and observation notes. Total open flags and overdue deadlines are scheduling alerts, not candidate interest signals.
+
+**Consequences**: `validate-all` gates enforce minimum fixture coverage (`candidate_retention_record_count >= 5`, `operator_perf_count >= 2`, `track_comparison_open_flags >= 0`). Scientific guardrails remain unchanged.

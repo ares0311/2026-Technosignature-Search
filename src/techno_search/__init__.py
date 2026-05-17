@@ -140,6 +140,14 @@ from techno_search.candidate_observation_notes import (
     load_observation_notes,
     observation_notes_summary,
 )
+from techno_search.candidate_retention import (
+    ALLOWED_RETENTION_STATUSES,
+    CANDIDATE_RETENTION_DISCLAIMER,
+    CANDIDATE_RETENTION_SCHEMA_VERSION,
+    CandidateRetentionRecord,
+    candidate_retention_summary,
+    load_retention_records,
+)
 from techno_search.candidate_score_history import (
     ALLOWED_SCORE_HISTORY_PATHWAYS,
     CANDIDATE_SCORE_HISTORY_DISCLAIMER,
@@ -206,6 +214,10 @@ from techno_search.operator_assignment import (
     OperatorAssignment,
     load_operator_assignments,
     operator_assignment_summary,
+)
+from techno_search.operator_performance import (
+    OPERATOR_PERFORMANCE_DISCLAIMER,
+    operator_performance_summary,
 )
 from techno_search.pathway import classify_pathway
 from techno_search.pipeline_health import (
@@ -306,6 +318,11 @@ from techno_search.target_watchlist import (
     WatchlistEntry,
     load_watchlist_entries,
     target_watchlist_summary,
+)
+from techno_search.track_comparison import (
+    COMPARISON_TRACKS,
+    TRACK_COMPARISON_DISCLAIMER,
+    track_comparison_summary,
 )
 from techno_search.validation_datasets import (
     VALIDATION_DATASET_DISCLAIMER,
@@ -573,6 +590,17 @@ __all__ = [
     "PIPELINE_STAGES",
     "PIPELINE_THROUGHPUT_DISCLAIMER",
     "pipeline_throughput_summary",
+    "ALLOWED_RETENTION_STATUSES",
+    "CANDIDATE_RETENTION_DISCLAIMER",
+    "CANDIDATE_RETENTION_SCHEMA_VERSION",
+    "CandidateRetentionRecord",
+    "candidate_retention_summary",
+    "load_retention_records",
+    "OPERATOR_PERFORMANCE_DISCLAIMER",
+    "operator_performance_summary",
+    "COMPARISON_TRACKS",
+    "TRACK_COMPARISON_DISCLAIMER",
+    "track_comparison_summary",
     "ALLOWED_SCORE_HISTORY_PATHWAYS",
     "CANDIDATE_SCORE_HISTORY_DISCLAIMER",
     "CANDIDATE_SCORE_HISTORY_SCHEMA_VERSION",

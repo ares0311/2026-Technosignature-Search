@@ -1253,3 +1253,40 @@ techno-search pipeline-throughput-summary
 Output fields: `total_lifecycle_entries`, `total_triage_notes`, `lifecycle_cleared_count`, `lifecycle_blocked_count`, `triage_cleared_count`, `triage_blocked_count`, `throughput_rate`, `stage_counts`, `by_track`.
 
 Disclaimer: throughput summaries are local operational metrics, not calibrated pipeline efficiency estimates.
+
+## `candidate-retention-summary`
+
+Summarize candidate retention records including pipeline dwell times and status breakdown.
+
+```bash
+techno-search candidate-retention-summary
+techno-search candidate-retention-summary --fixture-path tests/fixtures/candidate_retention.json
+```
+
+Output fields: `record_count`, `unique_candidate_count`, `active_count`, `archived_count`, `blocked_count`, `average_days_in_pipeline`, `max_days_in_pipeline`, `by_track`, `by_status`, `tracks_covered`.
+
+Disclaimer: retention records are local scheduling and provenance aids only; dwell times are not evidence of candidate quality.
+
+## `operator-performance-summary`
+
+Aggregate operator performance metrics from assignment records.
+
+```bash
+techno-search operator-performance-summary
+```
+
+Output fields: `operator_count`, `total_assignments`, `total_completed`, `total_escalated`, `overall_completion_rate`, `per_operator`.
+
+Disclaimer: operator performance summaries are local scheduling and workflow metrics only; they do not reflect or predict candidate quality.
+
+## `track-comparison-summary`
+
+Cross-track operational comparison dashboard aggregating scheduling state, flags, deadlines, and observation notes.
+
+```bash
+techno-search track-comparison-summary
+```
+
+Output fields: `per_track` (with `triage_count`, `triage_blocked`, `lifecycle_count`, `lifecycle_blocked`, `open_flags`, `critical_flags`, `pending_deadlines`, `overdue_deadlines`, `pending_epoch_requests`, `observation_follow_up`), `total_open_flags`, `total_overdue_deadlines`.
+
+Disclaimer: track comparison summaries are local operational dashboards only; they do not rank tracks, candidates, or prioritize external follow-up.

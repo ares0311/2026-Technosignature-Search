@@ -63,6 +63,7 @@ from techno_search.candidate_lifecycle import (
     lifecycle_transition_summary,
 )
 from techno_search.candidate_observation_notes import observation_notes_summary
+from techno_search.candidate_retention import candidate_retention_summary
 from techno_search.candidate_score_history import score_history_summary
 from techno_search.candidate_triage import (
     operator_coverage_summary,
@@ -110,6 +111,7 @@ from techno_search.observation_schedule import (
     observation_schedule_summary,
 )
 from techno_search.operator_assignment import operator_assignment_summary
+from techno_search.operator_performance import operator_performance_summary
 from techno_search.pipeline_health import pipeline_health_summary
 from techno_search.pipeline_throughput import pipeline_throughput_summary
 from techno_search.plotting import plot_artifact_summary
@@ -135,6 +137,7 @@ from techno_search.signal_registry import (
 )
 from techno_search.target_recalibration_summary import target_recalibration_summary
 from techno_search.target_watchlist import target_watchlist_summary
+from techno_search.track_comparison import track_comparison_summary
 from techno_search.validation import (
     validate_candidate_file,
     validate_draft_report_directory,
@@ -189,6 +192,7 @@ SCHEMA_FILENAMES = {
     "candidate_score_history": "candidate_score_history.schema.json",
     "epoch_plan": "epoch_plan.schema.json",
     "operator_assignment": "operator_assignment.schema.json",
+    "candidate_retention": "candidate_retention.schema.json",
     "review_deadlines": "review_deadlines.schema.json",
 }
 
@@ -1343,6 +1347,40 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "candidate-retention-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                candidate_retention_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operator-performance-summary":
+        print(
+            json.dumps(
+                operator_performance_summary(),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "track-comparison-summary":
+        print(
+            json.dumps(
+                track_comparison_summary(),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -1688,6 +1726,12 @@ def validate_all() -> dict[str, object]:
     review_deadline_count = int(review_deadlines.get("deadline_count", 0))
     pipeline_throughput = pipeline_throughput_summary()
     pipeline_throughput_rate = float(pipeline_throughput.get("throughput_rate", 0.0))
+    candidate_retention = candidate_retention_summary()
+    candidate_retention_record_count = int(candidate_retention.get("record_count", 0))
+    operator_perf = operator_performance_summary()
+    operator_perf_count = int(operator_perf.get("operator_count", 0))
+    track_comparison = track_comparison_summary()
+    track_comparison_open_flags = int(track_comparison.get("total_open_flags", 0))
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -1920,6 +1964,12 @@ def validate_all() -> dict[str, object]:
         and review_deadline_count >= 4
         and isinstance(pipeline_throughput_rate, float)
         and pipeline_throughput_rate >= 0.0
+        and isinstance(candidate_retention_record_count, int)
+        and candidate_retention_record_count >= 5
+        and isinstance(operator_perf_count, int)
+        and operator_perf_count >= 2
+        and isinstance(track_comparison_open_flags, int)
+        and track_comparison_open_flags >= 0
     )
     return {
         "ok": ok,
@@ -1999,6 +2049,9 @@ def validate_all() -> dict[str, object]:
         "candidate_flags_summary": candidate_flags,
         "review_deadlines_summary": review_deadlines,
         "pipeline_throughput_summary": pipeline_throughput,
+        "candidate_retention_summary": candidate_retention,
+        "operator_performance_summary": operator_perf,
+        "track_comparison_summary": track_comparison,
     }
 
 
@@ -2648,6 +2701,31 @@ def validation_summary() -> dict[str, object]:
             pt_s["throughput_rate"]
             if isinstance(pt_s := validation.get("pipeline_throughput_summary"), dict)
             else 0.0
+        ),
+        "retention_record_count": (
+            cr_s["record_count"]
+            if isinstance(cr_s := validation.get("candidate_retention_summary"), dict)
+            else 0
+        ),
+        "retention_active_count": (
+            cr_s2["active_count"]
+            if isinstance(cr_s2 := validation.get("candidate_retention_summary"), dict)
+            else 0
+        ),
+        "operator_performance_operator_count": (
+            op_s["operator_count"]
+            if isinstance(op_s := validation.get("operator_performance_summary"), dict)
+            else 0
+        ),
+        "operator_performance_completion_rate": (
+            op_s2["overall_completion_rate"]
+            if isinstance(op_s2 := validation.get("operator_performance_summary"), dict)
+            else 0.0
+        ),
+        "track_comparison_open_flags": (
+            tc_s["total_open_flags"]
+            if isinstance(tc_s := validation.get("track_comparison_summary"), dict)
+            else 0
         ),
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
@@ -4020,6 +4098,24 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "pipeline-throughput-summary",
         help="Per-stage pipeline throughput counts and transition rate metrics.",
+    )
+
+    candidate_retention_parser = subparsers.add_parser(
+        "candidate-retention-summary",
+        help="Summarize candidate retention records and pipeline dwell times.",
+    )
+    candidate_retention_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "operator-performance-summary",
+        help="Aggregate operator performance metrics from assignment records.",
+    )
+
+    subparsers.add_parser(
+        "track-comparison-summary",
+        help="Cross-track comparison dashboard for scheduling state and flags.",
     )
 
     return parser

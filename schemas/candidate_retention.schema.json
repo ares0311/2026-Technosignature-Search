@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CandidateRetention",
+  "description": "Schema for candidate retention records tracking pipeline duration and current status.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "records"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "candidate_retention_v1"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "record_id",
+          "candidate_id",
+          "track",
+          "entered_pipeline_utc",
+          "current_status",
+          "days_in_pipeline",
+          "last_activity_utc"
+        ],
+        "properties": {
+          "record_id": { "type": "string" },
+          "candidate_id": { "type": "string" },
+          "track": { "type": "string" },
+          "entered_pipeline_utc": { "type": "string" },
+          "current_status": { "type": "string" },
+          "days_in_pipeline": { "type": "integer", "minimum": 0 },
+          "last_activity_utc": { "type": "string" },
+          "retention_reason": { "type": "string" },
+          "blocking_count": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  }
+}
