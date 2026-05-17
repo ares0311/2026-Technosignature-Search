@@ -57,6 +57,8 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "observation_campaign.schema.json",
         "candidate_priority_queue.schema.json",
         "session_log.schema.json",
+        "candidate_feature_vector.schema.json",
+        "ml_model_registry.schema.json",
     }
     for path in schema_paths:
         schema = json.loads(path.read_text(encoding="utf-8"))

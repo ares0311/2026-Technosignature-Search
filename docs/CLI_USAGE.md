@@ -1442,3 +1442,41 @@ techno-search pipeline-capacity-summary
 Output fields: `disclaimer`, `open_assignment_count`, `open_request_count`, `unresolved_annotation_count`, `queue_depth`, `total_scheduling_load`, `capacity_status`.
 
 Capacity statuses: `nominal`, `strained`, `overloaded`. Pipeline capacity is an operational scheduling metric only — it does not reflect survey sensitivity or candidate quality.
+
+## `feature-vector-summary`
+
+Summarize ML-ready feature vectors extracted from scored candidates across tracks and normalization kinds.
+
+```bash
+techno-search feature-vector-summary
+techno-search feature-vector-summary --fixture-path tests/fixtures/candidate_feature_vectors.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `vector_count`, `by_track`, `by_normalization_kind`, `tracks_covered`, `unique_extractor_versions`, `avg_feature_count`.
+
+Normalization kinds: `none`, `min_max`, `z_score`. Feature vectors are ML preprocessing artifacts only — they do not re-score candidates or modify pathway routing.
+
+## `model-registry-summary`
+
+Summarize ML model registry entries including above-baseline status, validation state, and model kind breakdown.
+
+```bash
+techno-search model-registry-summary
+techno-search model-registry-summary --fixture-path tests/fixtures/ml_model_registry.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `registry_count`, `above_baseline_count`, `below_baseline_count`, `validated_count`, `experimental_count`, `by_kind`, `by_status`.
+
+Model kinds: `cnn_radio`, `transformer_radio`, `hybrid_rule_learned`, `self_supervised`, `foundation_embedding`, `baseline_rule_based`. A model below baseline must not be used operationally.
+
+## `ml-diagnostics-summary`
+
+Summarize ML pipeline status by comparing the interpretable baseline accuracy against all registered learned models.
+
+```bash
+techno-search ml-diagnostics-summary
+```
+
+Output fields: `disclaimer`, `baseline_accuracy`, `registered_model_count`, `above_baseline_count`, `below_baseline_count`, `validated_model_count`, `pipeline_ml_status`.
+
+Pipeline statuses: `no_models`, `all_above_baseline`, `some_below_baseline`. ML diagnostics are operational scheduling summaries only — they do not constitute detection claims or external validation.

@@ -58,6 +58,7 @@ from techno_search.calibration import (
 from techno_search.calibration_metrics import precision_recall_summary, reliability_summary
 from techno_search.candidate_annotation import candidate_annotation_summary
 from techno_search.candidate_audit_trail import audit_trail_summary
+from techno_search.candidate_feature_vector import feature_vector_summary
 from techno_search.candidate_flags import candidate_flags_summary
 from techno_search.candidate_lifecycle import (
     candidate_lifecycle_summary,
@@ -110,6 +111,8 @@ from techno_search.log_store import (
     sqlite_recent_runs,
     validate_sqlite_log_commit_paths,
 )
+from techno_search.ml_model_registry import model_registry_summary
+from techno_search.ml_pipeline_diagnostics import ml_pipeline_diagnostics_summary
 from techno_search.multi_epoch_summary import multi_epoch_summary
 from techno_search.observation_campaign import observation_campaign_summary
 from techno_search.observation_schedule import (
@@ -205,7 +208,9 @@ SCHEMA_FILENAMES = {
     "epoch_plan": "epoch_plan.schema.json",
     "operator_assignment": "operator_assignment.schema.json",
     "candidate_annotation": "candidate_annotation.schema.json",
+    "candidate_feature_vector": "candidate_feature_vector.schema.json",
     "candidate_priority_queue": "candidate_priority_queue.schema.json",
+    "ml_model_registry": "ml_model_registry.schema.json",
     "candidate_resolution": "candidate_resolution.schema.json",
     "candidate_retention": "candidate_retention.schema.json",
     "data_quality_log": "data_quality_log.schema.json",
@@ -1541,6 +1546,41 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "feature-vector-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                feature_vector_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "model-registry-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                model_registry_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "ml-diagnostics-summary":
+        print(
+            json.dumps(
+                ml_pipeline_diagnostics_summary(),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -1920,6 +1960,12 @@ def validate_all() -> dict[str, object]:
     pipeline_capacity_status = str(
         pipeline_capacity_data.get("capacity_status", "nominal")
     )
+    feature_vector_data = feature_vector_summary()
+    feature_vector_count = int(feature_vector_data.get("vector_count", 0))
+    ml_registry_data = model_registry_summary()
+    ml_registry_count = int(ml_registry_data.get("registry_count", 0))
+    ml_diagnostics_data = ml_pipeline_diagnostics_summary()
+    ml_pipeline_status = str(ml_diagnostics_data.get("pipeline_ml_status", "no_models"))
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -2180,6 +2226,11 @@ def validate_all() -> dict[str, object]:
         and isinstance(priority_queue_depth, int)
         and priority_queue_depth >= 5
         and pipeline_capacity_status in {"nominal", "strained", "overloaded"}
+        and isinstance(feature_vector_count, int)
+        and feature_vector_count >= 5
+        and isinstance(ml_registry_count, int)
+        and ml_registry_count >= 0
+        and ml_pipeline_status in {"no_models", "all_above_baseline", "some_below_baseline"}
     )
     return {
         "ok": ok,
@@ -2274,6 +2325,9 @@ def validate_all() -> dict[str, object]:
         "session_log_summary": session_log_data,
         "priority_queue_summary": priority_queue_data,
         "pipeline_capacity_summary": pipeline_capacity_data,
+        "feature_vector_summary": feature_vector_data,
+        "ml_model_registry_summary": ml_registry_data,
+        "ml_pipeline_diagnostics_summary": ml_diagnostics_data,
     }
 
 
@@ -3042,6 +3096,26 @@ def validation_summary() -> dict[str, object]:
         "pipeline_capacity_status": (
             pc_s["capacity_status"]
             if isinstance(pc_s := validation.get("pipeline_capacity_summary"), dict)
+            else "unknown"
+        ),
+        "feature_vector_count": (
+            fv_s["vector_count"]
+            if isinstance(fv_s := validation.get("feature_vector_summary"), dict)
+            else 0
+        ),
+        "ml_registry_entry_count": (
+            mr_s["registry_count"]
+            if isinstance(mr_s := validation.get("ml_model_registry_summary"), dict)
+            else 0
+        ),
+        "ml_above_baseline_count": (
+            mr_s2["above_baseline_count"]
+            if isinstance(mr_s2 := validation.get("ml_model_registry_summary"), dict)
+            else 0
+        ),
+        "ml_pipeline_status": (
+            md_s["pipeline_ml_status"]
+            if isinstance(md_s := validation.get("ml_pipeline_diagnostics_summary"), dict)
             else "unknown"
         ),
         "recommended_commands": [
@@ -4517,6 +4591,27 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "pipeline-capacity-summary",
         help="Summarize current pipeline scheduling capacity and load.",
+    )
+
+    feature_vector_parser = subparsers.add_parser(
+        "feature-vector-summary",
+        help="Summarize ML-ready feature vectors extracted from candidates.",
+    )
+    feature_vector_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    model_registry_parser = subparsers.add_parser(
+        "model-registry-summary",
+        help="Summarize ML model registry entries and above-baseline status.",
+    )
+    model_registry_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "ml-diagnostics-summary",
+        help="Summarize ML pipeline status comparing baseline vs registered models.",
     )
 
     return parser

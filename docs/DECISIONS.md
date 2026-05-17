@@ -1002,3 +1002,21 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 **Pipeline capacity**: aggregate dashboard combining open assignment count, open follow-up request count, unresolved annotation count, and queue depth into a total scheduling load with capacity status (`nominal`, `strained`, `overloaded`). Capacity status is an operational scheduling metric only — it does not reflect survey sensitivity or candidate quality.
 
 **Consequences**: `validate-all` gates enforce `session_log_count >= 5`, `priority_queue_depth >= 5`, and `pipeline_capacity_status in valid set`. SCHEMA_FILENAMES grows 48→50. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-042: Feature Vector Layer And Model Registry Are Required Before Any Learned Model Is Trained
+
+**Date**: 2026-05-17
+
+**Context**: Milestone 10 established that interpretable baselines and score determinism must precede any learned model. Milestone 11 formalizes the next prerequisite: a stable, versioned feature extraction layer.
+
+**Decision**: Implement three new ML infrastructure modules:
+
+**Candidate feature vector**: extracts a flat, versioned feature vector from scored candidates with explicit normalization kind (`none`, `min_max`, `z_score`) and extractor version. Feature vectors are ML preprocessing artifacts only — they do not re-score candidates or modify pathway routing.
+
+**ML model registry**: tracks model versions, kinds (`cnn_radio`, `transformer_radio`, `hybrid_rule_learned`, `self_supervised`, `foundation_embedding`, `baseline_rule_based`), statuses (`experimental`, `validated`, `deprecated`, `pending_review`), and whether each model exceeds baseline accuracy. A model with `is_above_baseline=false` must not be used operationally.
+
+**ML pipeline diagnostics**: aggregate dashboard comparing the interpretable baseline accuracy against all registered models. `pipeline_ml_status` surfaces whether any below-baseline models exist (`some_below_baseline`), enabling `validate-all` to catch regressions.
+
+**Consequences**: `validate-all` gates enforce `feature_vector_count >= 5` and `pipeline_ml_status in valid set`. SCHEMA_FILENAMES grows 50→52. Scientific guardrails remain unchanged.

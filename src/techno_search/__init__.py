@@ -122,6 +122,14 @@ from techno_search.candidate_audit_trail import (
     audit_trail_summary,
     load_audit_trail,
 )
+from techno_search.candidate_feature_vector import (
+    ALLOWED_NORMALIZATION_KINDS,
+    CANDIDATE_FEATURE_VECTOR_DISCLAIMER,
+    CANDIDATE_FEATURE_VECTOR_SCHEMA_VERSION,
+    CandidateFeatureVector,
+    feature_vector_summary,
+    load_feature_vectors,
+)
 from techno_search.candidate_flags import (
     ALLOWED_FLAG_SEVERITIES,
     ALLOWED_FLAG_STATUSES,
@@ -241,6 +249,19 @@ from techno_search.injection_recovery import (
     load_injection_recovery_cases,
 )
 from techno_search.live_data import live_data_enabled, require_live_data_enabled
+from techno_search.ml_model_registry import (
+    ALLOWED_MODEL_KINDS,
+    ALLOWED_MODEL_STATUSES,
+    ML_MODEL_REGISTRY_DISCLAIMER,
+    ML_MODEL_REGISTRY_SCHEMA_VERSION,
+    MLModelRegistryEntry,
+    load_model_registry_entries,
+    model_registry_summary,
+)
+from techno_search.ml_pipeline_diagnostics import (
+    ML_PIPELINE_DIAGNOSTICS_DISCLAIMER,
+    ml_pipeline_diagnostics_summary,
+)
 from techno_search.multi_epoch_summary import (
     MULTI_EPOCH_DISCLAIMER,
     MULTI_EPOCH_SCHEMA_VERSION,
@@ -468,6 +489,21 @@ __all__ = [
     "CandidateAnnotation",
     "candidate_annotation_summary",
     "load_candidate_annotations",
+    "ALLOWED_NORMALIZATION_KINDS",
+    "CANDIDATE_FEATURE_VECTOR_DISCLAIMER",
+    "CANDIDATE_FEATURE_VECTOR_SCHEMA_VERSION",
+    "CandidateFeatureVector",
+    "feature_vector_summary",
+    "load_feature_vectors",
+    "ALLOWED_MODEL_KINDS",
+    "ALLOWED_MODEL_STATUSES",
+    "ML_MODEL_REGISTRY_DISCLAIMER",
+    "ML_MODEL_REGISTRY_SCHEMA_VERSION",
+    "MLModelRegistryEntry",
+    "load_model_registry_entries",
+    "model_registry_summary",
+    "ML_PIPELINE_DIAGNOSTICS_DISCLAIMER",
+    "ml_pipeline_diagnostics_summary",
     "ALLOWED_QUEUE_REASONS",
     "CANDIDATE_PRIORITY_QUEUE_DISCLAIMER",
     "CANDIDATE_PRIORITY_QUEUE_SCHEMA_VERSION",

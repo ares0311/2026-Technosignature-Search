@@ -1,0 +1,45 @@
+{
+  "schema_version": "ml_model_registry_v1",
+  "disclaimer": "Model registry entries are development provenance records only. No registered model constitutes a detection, discovery, or external validation. A model must exceed baseline pathway accuracy before operational use.",
+  "ml_model_registry": [
+    {
+      "model_id": "mdl-001",
+      "model_kind": "baseline_rule_based",
+      "version": "baseline_v1",
+      "status": "validated",
+      "training_data_version": "calibration_false_positives_v1",
+      "feature_schema_version": "candidate_feature_vector_v1",
+      "baseline_accuracy": 0.867,
+      "model_accuracy": 0.867,
+      "is_above_baseline": true,
+      "registered_utc": "2026-05-01T09:00:00Z",
+      "notes": "Interpretable rule-based baseline. Scheduling provenance record only — not a detection or discovery claim."
+    },
+    {
+      "model_id": "mdl-002",
+      "model_kind": "hybrid_rule_learned",
+      "version": "hybrid_v0_experimental",
+      "status": "experimental",
+      "training_data_version": "calibration_false_positives_v1",
+      "feature_schema_version": "candidate_feature_vector_v1",
+      "baseline_accuracy": 0.867,
+      "model_accuracy": 0.883,
+      "is_above_baseline": true,
+      "registered_utc": "2026-05-10T14:00:00Z",
+      "notes": "Experimental hybrid combining rule scores with learned feature weights. Not yet validated. Development provenance record only — not a detection or discovery claim."
+    },
+    {
+      "model_id": "mdl-003",
+      "model_kind": "cnn_radio",
+      "version": "cnn_radio_v0_draft",
+      "status": "pending_review",
+      "training_data_version": "calibration_false_positives_v1",
+      "feature_schema_version": "candidate_feature_vector_v1",
+      "baseline_accuracy": 0.867,
+      "model_accuracy": 0.733,
+      "is_above_baseline": false,
+      "registered_utc": "2026-05-15T11:00:00Z",
+      "notes": "Draft CNN scaffold for radio waterfall morphology. Currently below baseline — must not be used operationally. Development provenance record only — not a detection or discovery claim."
+    }
+  ]
+}
