@@ -966,3 +966,21 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 **Pipeline audit summary**: aggregate view of the candidate audit trail, counting total actions, unique candidates audited, unique operators, and breakdown by action type and track. `overall_audit_coverage` (`adequate`/`sparse`) is a local provenance indicator only.
 
 **Consequences**: `validate-all` gates enforce `observation_campaign_count >= 5`, `data_quality_entry_count >= 5`, and `pipeline_audit_action_count >= 0`. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-040: Follow-Up Requests, Pipeline Bottleneck, And Candidate Annotations Are Scheduling Provenance Records
+
+**Date**: 2026-05-17
+
+**Context**: The pipeline needs a formal mechanism for raising follow-up requests on candidates, an operational view of where candidates are stalling, and a lightweight annotation system for operator notes.
+
+**Decision**: Implement three new scheduling provenance modules:
+
+**Follow-up request**: records formal follow-up requests with priority (`low`, `normal`, `high`, `urgent`) and status (`open`, `assigned`, `in_progress`, `completed`, `cancelled`, `deferred`). `urgent` priority reflects a scheduling deadline pressure — it does not indicate increased confidence in any technosignature interpretation.
+
+**Pipeline bottleneck**: aggregate dashboard identifying stalled lifecycle stages, overdue reviews, unassigned candidates, critical flag blockers, and open escalations. `top_bottleneck_stage` is the stage with the most stalled candidates — it is an operational indicator only, not a scientific ranking.
+
+**Candidate annotation**: operator notes, tags, warnings, highlights, questions, and follow-up markers attached to candidates. Annotations do not modify scores, posteriors, or pathway routing. A `warning` annotation reflects a scheduling concern, not a scientific assessment.
+
+**Consequences**: `validate-all` gates enforce `follow_up_request_count >= 5`, `pipeline_bottleneck_stalled >= 0`, and `candidate_annotation_count >= 5`. SCHEMA_FILENAMES grows 46→48. Scientific guardrails remain unchanged.

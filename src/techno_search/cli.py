@@ -56,6 +56,7 @@ from techno_search.calibration import (
     summarize_calibration_fixtures,
 )
 from techno_search.calibration_metrics import precision_recall_summary, reliability_summary
+from techno_search.candidate_annotation import candidate_annotation_summary
 from techno_search.candidate_audit_trail import audit_trail_summary
 from techno_search.candidate_flags import candidate_flags_summary
 from techno_search.candidate_lifecycle import (
@@ -76,6 +77,7 @@ from techno_search.cross_track import cross_track_summary
 from techno_search.data_quality_log import data_quality_log_summary
 from techno_search.epoch_plan import epoch_plan_summary
 from techno_search.escalation_log import escalation_log_summary
+from techno_search.follow_up_request import follow_up_request_summary
 from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
 from techno_search.live_data import (
     CatalogCache,
@@ -117,6 +119,7 @@ from techno_search.observation_schedule import (
 from techno_search.operator_assignment import operator_assignment_summary
 from techno_search.operator_performance import operator_performance_summary
 from techno_search.pipeline_audit_summary import pipeline_audit_summary
+from techno_search.pipeline_bottleneck import pipeline_bottleneck_summary
 from techno_search.pipeline_health import pipeline_health_summary
 from techno_search.pipeline_throughput import pipeline_throughput_summary
 from techno_search.plotting import plot_artifact_summary
@@ -198,9 +201,11 @@ SCHEMA_FILENAMES = {
     "candidate_score_history": "candidate_score_history.schema.json",
     "epoch_plan": "epoch_plan.schema.json",
     "operator_assignment": "operator_assignment.schema.json",
+    "candidate_annotation": "candidate_annotation.schema.json",
     "candidate_resolution": "candidate_resolution.schema.json",
     "candidate_retention": "candidate_retention.schema.json",
     "data_quality_log": "data_quality_log.schema.json",
+    "follow_up_request": "follow_up_request.schema.json",
     "escalation_log": "escalation_log.schema.json",
     "observation_campaign": "observation_campaign.schema.json",
     "review_deadlines": "review_deadlines.schema.json",
@@ -1461,6 +1466,41 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "follow-up-request-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                follow_up_request_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "pipeline-bottleneck-summary":
+        print(
+            json.dumps(
+                pipeline_bottleneck_summary(),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "candidate-annotation-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                candidate_annotation_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -1824,6 +1864,14 @@ def validate_all() -> dict[str, object]:
     dq_entry_count = int(dq_log.get("entry_count", 0))
     pipeline_audit = pipeline_audit_summary()
     pipeline_audit_action_count = int(pipeline_audit.get("total_audit_actions", 0))
+    follow_up_reqs = follow_up_request_summary()
+    follow_up_request_count = int(follow_up_reqs.get("request_count", 0))
+    pipeline_bottleneck = pipeline_bottleneck_summary()
+    pipeline_bottleneck_stalled = int(
+        pipeline_bottleneck.get("total_stalled_candidates", 0)
+    )
+    candidate_annotations = candidate_annotation_summary()
+    candidate_annotation_count = int(candidate_annotations.get("annotation_count", 0))
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -2073,6 +2121,12 @@ def validate_all() -> dict[str, object]:
         and dq_entry_count >= 5
         and isinstance(pipeline_audit_action_count, int)
         and pipeline_audit_action_count >= 0
+        and isinstance(follow_up_request_count, int)
+        and follow_up_request_count >= 5
+        and isinstance(pipeline_bottleneck_stalled, int)
+        and pipeline_bottleneck_stalled >= 0
+        and isinstance(candidate_annotation_count, int)
+        and candidate_annotation_count >= 5
     )
     return {
         "ok": ok,
@@ -2161,6 +2215,9 @@ def validate_all() -> dict[str, object]:
         "observation_campaign_summary": obs_campaigns,
         "data_quality_log_summary": dq_log,
         "pipeline_audit_summary": pipeline_audit,
+        "follow_up_request_summary": follow_up_reqs,
+        "pipeline_bottleneck_summary": pipeline_bottleneck,
+        "candidate_annotation_summary": candidate_annotations,
     }
 
 
@@ -2884,6 +2941,31 @@ def validation_summary() -> dict[str, object]:
         "pipeline_audit_action_count": (
             pa_s["total_audit_actions"]
             if isinstance(pa_s := validation.get("pipeline_audit_summary"), dict)
+            else 0
+        ),
+        "follow_up_request_count": (
+            fur_s["request_count"]
+            if isinstance(fur_s := validation.get("follow_up_request_summary"), dict)
+            else 0
+        ),
+        "follow_up_request_open_count": (
+            fur_s2["open_count"]
+            if isinstance(fur_s2 := validation.get("follow_up_request_summary"), dict)
+            else 0
+        ),
+        "pipeline_bottleneck_stalled_count": (
+            pb_s["total_stalled_candidates"]
+            if isinstance(pb_s := validation.get("pipeline_bottleneck_summary"), dict)
+            else 0
+        ),
+        "candidate_annotation_count": (
+            ann_s["annotation_count"]
+            if isinstance(ann_s := validation.get("candidate_annotation_summary"), dict)
+            else 0
+        ),
+        "candidate_annotation_unresolved_count": (
+            ann_s2["unresolved_count"]
+            if isinstance(ann_s2 := validation.get("candidate_annotation_summary"), dict)
             else 0
         ),
         "recommended_commands": [
@@ -4317,6 +4399,27 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "pipeline-audit-summary",
         help="Aggregate pipeline audit summary from the candidate audit trail.",
+    )
+
+    follow_up_request_parser = subparsers.add_parser(
+        "follow-up-request-summary",
+        help="Summarize follow-up requests with priority and status breakdown.",
+    )
+    follow_up_request_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "pipeline-bottleneck-summary",
+        help="Identify where candidates are stalling in the pipeline.",
+    )
+
+    candidate_annotation_parser = subparsers.add_parser(
+        "candidate-annotation-summary",
+        help="Summarize operator annotations and tags on candidates.",
+    )
+    candidate_annotation_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
     )
 
     return parser

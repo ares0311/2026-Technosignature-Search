@@ -1366,3 +1366,41 @@ techno-search pipeline-audit-summary
 Output fields: `disclaimer`, `total_audit_actions`, `unique_candidates_audited`, `unique_operators`, `action_type_breakdown`, `track_breakdown`, `most_recent_action_utc`, `overall_audit_coverage`.
 
 `overall_audit_coverage` values: `adequate` (≥5 actions), `sparse`. This is a local provenance record only — not a claim about survey completeness.
+
+## `follow-up-request-summary`
+
+Summarize formal follow-up requests raised on candidates with priority and status breakdown.
+
+```bash
+techno-search follow-up-request-summary
+techno-search follow-up-request-summary --fixture-path tests/fixtures/follow_up_requests.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `request_count`, `open_count`, `urgent_count`, `overdue_count`, `average_days_open`, `by_track`, `by_priority`, `by_status`, `tracks_covered`, `unique_requestors`.
+
+`urgent` priority reflects a scheduling deadline constraint, not increased scientific confidence in a candidate.
+
+## `pipeline-bottleneck-summary`
+
+Identify where candidates are stalling in the pipeline by aggregating lifecycle stages, deadlines, escalations, and assignment gaps.
+
+```bash
+techno-search pipeline-bottleneck-summary
+```
+
+Output fields: `disclaimer`, `total_stalled_candidates`, `bottleneck_stages`, `top_bottleneck_stage`, `overdue_review_count`, `unassigned_candidate_count`, `critical_blocker_count`, `open_escalation_count`, `per_track_stall_counts`.
+
+This is an operational scheduling dashboard only — stalled counts do not reflect candidate scientific priority.
+
+## `candidate-annotation-summary`
+
+Summarize operator annotations and tags attached to candidates for scheduling provenance.
+
+```bash
+techno-search candidate-annotation-summary
+techno-search candidate-annotation-summary --fixture-path tests/fixtures/candidate_annotations.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `annotation_count`, `unresolved_count`, `by_track`, `by_type`, `tracks_covered`, `unique_operators`.
+
+Annotation types: `note`, `tag`, `warning`, `highlight`, `question`, `followup`. A `warning` annotation reflects an operator scheduling concern, not a scientific assessment.
