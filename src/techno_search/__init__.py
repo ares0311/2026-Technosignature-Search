@@ -148,6 +148,14 @@ from techno_search.candidate_observation_notes import (
     load_observation_notes,
     observation_notes_summary,
 )
+from techno_search.candidate_priority_queue import (
+    ALLOWED_QUEUE_REASONS,
+    CANDIDATE_PRIORITY_QUEUE_DISCLAIMER,
+    CANDIDATE_PRIORITY_QUEUE_SCHEMA_VERSION,
+    CandidatePriorityQueueEntry,
+    load_priority_queue_entries,
+    priority_queue_summary,
+)
 from techno_search.candidate_resolution import (
     ALLOWED_RESOLUTION_STATUSES,
     CANDIDATE_RESOLUTION_DISCLAIMER,
@@ -279,6 +287,10 @@ from techno_search.pipeline_bottleneck import (
     PIPELINE_BOTTLENECK_DISCLAIMER,
     pipeline_bottleneck_summary,
 )
+from techno_search.pipeline_capacity import (
+    PIPELINE_CAPACITY_DISCLAIMER,
+    pipeline_capacity_summary,
+)
 from techno_search.pipeline_health import (
     PIPELINE_HEALTH_DISCLAIMER,
     PIPELINE_HEALTH_TRACKS,
@@ -359,6 +371,14 @@ from techno_search.sensitivity_config import (
     SENSITIVITY_CONFIG_DISCLAIMER,
     SENSITIVITY_CONFIG_SCHEMA_VERSION,
     sensitivity_config_summary,
+)
+from techno_search.session_log import (
+    ALLOWED_SESSION_OUTCOMES,
+    SESSION_LOG_DISCLAIMER,
+    SESSION_LOG_SCHEMA_VERSION,
+    SessionLogEntry,
+    load_session_log_entries,
+    session_log_summary,
 )
 from techno_search.signal_registry import (
     SIGNAL_REGISTRY_DISCLAIMER,
@@ -448,6 +468,12 @@ __all__ = [
     "CandidateAnnotation",
     "candidate_annotation_summary",
     "load_candidate_annotations",
+    "ALLOWED_QUEUE_REASONS",
+    "CANDIDATE_PRIORITY_QUEUE_DISCLAIMER",
+    "CANDIDATE_PRIORITY_QUEUE_SCHEMA_VERSION",
+    "CandidatePriorityQueueEntry",
+    "load_priority_queue_entries",
+    "priority_queue_summary",
     "CANDIDATE_AUDIT_TRAIL_DISCLAIMER",
     "CANDIDATE_AUDIT_TRAIL_SCHEMA_VERSION",
     "CandidateAuditAction",
@@ -718,6 +744,8 @@ __all__ = [
     "ObservationCampaign",
     "load_observation_campaigns",
     "observation_campaign_summary",
+    "PIPELINE_CAPACITY_DISCLAIMER",
+    "pipeline_capacity_summary",
     "PIPELINE_BOTTLENECK_DISCLAIMER",
     "pipeline_bottleneck_summary",
     "PIPELINE_AUDIT_DISCLAIMER",
@@ -738,4 +766,10 @@ __all__ = [
     "EpochPlanEntry",
     "epoch_plan_summary",
     "load_epoch_plan",
+    "ALLOWED_SESSION_OUTCOMES",
+    "SESSION_LOG_DISCLAIMER",
+    "SESSION_LOG_SCHEMA_VERSION",
+    "SessionLogEntry",
+    "load_session_log_entries",
+    "session_log_summary",
 ]

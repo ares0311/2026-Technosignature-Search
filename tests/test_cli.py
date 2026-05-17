@@ -277,6 +277,8 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "escalation_log",
         "follow_up_request",
         "observation_campaign",
+        "candidate_priority_queue",
+        "session_log",
     }
     assert result["background_search_ledger"].endswith(
         "schemas/background_search_ledger.schema.json"
@@ -1388,7 +1390,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 48
+    assert result["schema_count"] == 50
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -1478,6 +1480,10 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert result["top_level_sqlite_log_network_access_allowed_count"] == 0
     assert result["top_level_sqlite_log_external_submission_approved_count"] == 0
+    assert result["session_log_count"] == 5
+    assert result["session_log_completed_count"] == 3
+    assert result["priority_queue_depth"] == 5
+    assert result["pipeline_capacity_status"] in {"nominal", "strained", "overloaded"}
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 

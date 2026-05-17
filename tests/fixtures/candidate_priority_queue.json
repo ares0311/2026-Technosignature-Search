@@ -1,0 +1,56 @@
+{
+  "schema_version": "candidate_priority_queue_v1",
+  "disclaimer": "Candidate priority queue entries are local scheduling aids only. Queue position reflects operational scheduling order, not candidate scientific merit.",
+  "queue_entries": [
+    {
+      "queue_id": "q-001",
+      "candidate_id": "cand-radio-0042",
+      "track": "radio",
+      "queue_reason": "flag_escalation",
+      "queue_position": 1,
+      "added_utc": "2026-03-10T09:00:00Z",
+      "operator_assigned": "operator-beta",
+      "days_in_queue": 7
+    },
+    {
+      "queue_id": "q-002",
+      "candidate_id": "cand-radio-0051",
+      "track": "radio",
+      "queue_reason": "score_threshold",
+      "queue_position": 2,
+      "added_utc": "2026-03-20T11:00:00Z",
+      "operator_assigned": "",
+      "days_in_queue": 22
+    },
+    {
+      "queue_id": "q-003",
+      "candidate_id": "cand-infrared-0018",
+      "track": "infrared",
+      "queue_reason": "deadline_pressure",
+      "queue_position": 3,
+      "added_utc": "2026-04-01T14:00:00Z",
+      "operator_assigned": "operator-gamma",
+      "days_in_queue": 9
+    },
+    {
+      "queue_id": "q-004",
+      "candidate_id": "cand-infrared-0027",
+      "track": "infrared",
+      "queue_reason": "routine_review",
+      "queue_position": 4,
+      "added_utc": "2026-03-15T08:00:00Z",
+      "operator_assigned": "operator-alpha",
+      "days_in_queue": 3
+    },
+    {
+      "queue_id": "q-005",
+      "candidate_id": "cand-anomaly-0009",
+      "track": "anomaly",
+      "queue_reason": "operator_request",
+      "queue_position": 5,
+      "added_utc": "2026-03-25T16:00:00Z",
+      "operator_assigned": "operator-gamma",
+      "days_in_queue": 18
+    }
+  ]
+}

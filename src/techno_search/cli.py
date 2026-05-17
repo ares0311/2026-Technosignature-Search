@@ -64,6 +64,7 @@ from techno_search.candidate_lifecycle import (
     lifecycle_transition_summary,
 )
 from techno_search.candidate_observation_notes import observation_notes_summary
+from techno_search.candidate_priority_queue import priority_queue_summary
 from techno_search.candidate_resolution import candidate_resolution_summary
 from techno_search.candidate_retention import candidate_retention_summary
 from techno_search.candidate_score_history import score_history_summary
@@ -120,6 +121,7 @@ from techno_search.operator_assignment import operator_assignment_summary
 from techno_search.operator_performance import operator_performance_summary
 from techno_search.pipeline_audit_summary import pipeline_audit_summary
 from techno_search.pipeline_bottleneck import pipeline_bottleneck_summary
+from techno_search.pipeline_capacity import pipeline_capacity_summary
 from techno_search.pipeline_health import pipeline_health_summary
 from techno_search.pipeline_throughput import pipeline_throughput_summary
 from techno_search.plotting import plot_artifact_summary
@@ -140,6 +142,7 @@ from techno_search.schemas import Candidate, Track, candidate_from_mapping
 from techno_search.scoring import score_candidate
 from techno_search.scoring_config import scoring_config_summary
 from techno_search.sensitivity_config import sensitivity_config_summary
+from techno_search.session_log import session_log_summary
 from techno_search.signal_registry import (
     signal_registry_summary,
     signal_registry_track_summary,
@@ -202,10 +205,12 @@ SCHEMA_FILENAMES = {
     "epoch_plan": "epoch_plan.schema.json",
     "operator_assignment": "operator_assignment.schema.json",
     "candidate_annotation": "candidate_annotation.schema.json",
+    "candidate_priority_queue": "candidate_priority_queue.schema.json",
     "candidate_resolution": "candidate_resolution.schema.json",
     "candidate_retention": "candidate_retention.schema.json",
     "data_quality_log": "data_quality_log.schema.json",
     "follow_up_request": "follow_up_request.schema.json",
+    "session_log": "session_log.schema.json",
     "escalation_log": "escalation_log.schema.json",
     "observation_campaign": "observation_campaign.schema.json",
     "review_deadlines": "review_deadlines.schema.json",
@@ -1501,6 +1506,41 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "session-log-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                session_log_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "priority-queue-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                priority_queue_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "pipeline-capacity-summary":
+        print(
+            json.dumps(
+                pipeline_capacity_summary(),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -1872,6 +1912,14 @@ def validate_all() -> dict[str, object]:
     )
     candidate_annotations = candidate_annotation_summary()
     candidate_annotation_count = int(candidate_annotations.get("annotation_count", 0))
+    session_log_data = session_log_summary()
+    session_log_count = int(session_log_data.get("session_count", 0))
+    priority_queue_data = priority_queue_summary()
+    priority_queue_depth = int(priority_queue_data.get("queue_depth", 0))
+    pipeline_capacity_data = pipeline_capacity_summary()
+    pipeline_capacity_status = str(
+        pipeline_capacity_data.get("capacity_status", "nominal")
+    )
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -2127,6 +2175,11 @@ def validate_all() -> dict[str, object]:
         and pipeline_bottleneck_stalled >= 0
         and isinstance(candidate_annotation_count, int)
         and candidate_annotation_count >= 5
+        and isinstance(session_log_count, int)
+        and session_log_count >= 5
+        and isinstance(priority_queue_depth, int)
+        and priority_queue_depth >= 5
+        and pipeline_capacity_status in {"nominal", "strained", "overloaded"}
     )
     return {
         "ok": ok,
@@ -2218,6 +2271,9 @@ def validate_all() -> dict[str, object]:
         "follow_up_request_summary": follow_up_reqs,
         "pipeline_bottleneck_summary": pipeline_bottleneck,
         "candidate_annotation_summary": candidate_annotations,
+        "session_log_summary": session_log_data,
+        "priority_queue_summary": priority_queue_data,
+        "pipeline_capacity_summary": pipeline_capacity_data,
     }
 
 
@@ -2967,6 +3023,26 @@ def validation_summary() -> dict[str, object]:
             ann_s2["unresolved_count"]
             if isinstance(ann_s2 := validation.get("candidate_annotation_summary"), dict)
             else 0
+        ),
+        "session_log_count": (
+            sl_s["session_count"]
+            if isinstance(sl_s := validation.get("session_log_summary"), dict)
+            else 0
+        ),
+        "session_log_completed_count": (
+            sl_s2["completed_count"]
+            if isinstance(sl_s2 := validation.get("session_log_summary"), dict)
+            else 0
+        ),
+        "priority_queue_depth": (
+            pq_s["queue_depth"]
+            if isinstance(pq_s := validation.get("priority_queue_summary"), dict)
+            else 0
+        ),
+        "pipeline_capacity_status": (
+            pc_s["capacity_status"]
+            if isinstance(pc_s := validation.get("pipeline_capacity_summary"), dict)
+            else "unknown"
         ),
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
@@ -4420,6 +4496,27 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     candidate_annotation_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    session_log_parser = subparsers.add_parser(
+        "session-log-summary",
+        help="Summarize observation session log entries.",
+    )
+    session_log_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    priority_queue_parser = subparsers.add_parser(
+        "priority-queue-summary",
+        help="Summarize candidate priority queue entries.",
+    )
+    priority_queue_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "pipeline-capacity-summary",
+        help="Summarize current pipeline scheduling capacity and load.",
     )
 
     return parser

@@ -984,3 +984,21 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 **Candidate annotation**: operator notes, tags, warnings, highlights, questions, and follow-up markers attached to candidates. Annotations do not modify scores, posteriors, or pathway routing. A `warning` annotation reflects a scheduling concern, not a scientific assessment.
 
 **Consequences**: `validate-all` gates enforce `follow_up_request_count >= 5`, `pipeline_bottleneck_stalled >= 0`, and `candidate_annotation_count >= 5`. SCHEMA_FILENAMES grows 46→48. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-041: Session Log, Candidate Priority Queue, And Pipeline Capacity Are Scheduling Provenance Records
+
+**Date**: 2026-05-17
+
+**Context**: The pipeline needs provenance records for observation sessions, a priority-ordered candidate queue, and an aggregate view of scheduling load across the system.
+
+**Decision**: Implement three new scheduling provenance modules:
+
+**Session log**: records observation sessions with outcome (`completed`, `partial`, `aborted`, `rescheduled`, `failed`), duration, operator, and candidates observed. Session logs are provenance records only — they do not re-score or re-route candidates.
+
+**Candidate priority queue**: tracks candidates queued for review with position, queue reason (`score_threshold`, `flag_escalation`, `deadline_pressure`, `operator_request`, `routine_review`), and days in queue. Priority queue entries are scheduling aids — they do not modify candidate posteriors or pathway routing.
+
+**Pipeline capacity**: aggregate dashboard combining open assignment count, open follow-up request count, unresolved annotation count, and queue depth into a total scheduling load with capacity status (`nominal`, `strained`, `overloaded`). Capacity status is an operational scheduling metric only — it does not reflect survey sensitivity or candidate quality.
+
+**Consequences**: `validate-all` gates enforce `session_log_count >= 5`, `priority_queue_depth >= 5`, and `pipeline_capacity_status in valid set`. SCHEMA_FILENAMES grows 48→50. Scientific guardrails remain unchanged.

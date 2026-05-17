@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SessionLog",
+  "description": "Schema for observation session log fixture files (session_log_v1).",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "sessions"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "disclaimer": { "type": "string" },
+    "sessions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "session_id", "campaign_id", "track",
+          "operator_id", "session_utc", "outcome"
+        ],
+        "properties": {
+          "session_id": { "type": "string" },
+          "campaign_id": { "type": "string" },
+          "track": { "type": "string", "enum": ["radio", "infrared", "anomaly"] },
+          "operator_id": { "type": "string" },
+          "session_utc": { "type": "string", "format": "date-time" },
+          "duration_minutes": { "type": "integer", "minimum": 0 },
+          "outcome": {
+            "type": "string",
+            "enum": ["completed", "partial", "aborted", "rescheduled", "failed"]
+          },
+          "notes": { "type": "string" },
+          "candidates_observed": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

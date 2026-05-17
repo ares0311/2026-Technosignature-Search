@@ -1404,3 +1404,41 @@ techno-search candidate-annotation-summary --fixture-path tests/fixtures/candida
 Output fields: `schema_version`, `disclaimer`, `annotation_count`, `unresolved_count`, `by_track`, `by_type`, `tracks_covered`, `unique_operators`.
 
 Annotation types: `note`, `tag`, `warning`, `highlight`, `question`, `followup`. A `warning` annotation reflects an operator scheduling concern, not a scientific assessment.
+
+## `session-log-summary`
+
+Summarize observation session log entries across tracks, operators, and outcomes.
+
+```bash
+techno-search session-log-summary
+techno-search session-log-summary --fixture-path tests/fixtures/session_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `session_count`, `completed_count`, `aborted_count`, `total_duration_minutes`, `average_duration_minutes`, `unique_candidates_observed`, `by_track`, `by_outcome`, `tracks_covered`, `unique_operators`.
+
+Session outcomes: `completed`, `partial`, `aborted`, `rescheduled`, `failed`. Session logs are provenance records only — they do not re-score or re-route candidates.
+
+## `priority-queue-summary`
+
+Summarize candidate priority queue depth and scheduling load by track and reason.
+
+```bash
+techno-search priority-queue-summary
+techno-search priority-queue-summary --fixture-path tests/fixtures/candidate_priority_queue.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `queue_depth`, `average_days_in_queue`, `max_days_in_queue`, `by_track`, `by_reason`, `tracks_covered`.
+
+Queue reasons: `score_threshold`, `flag_escalation`, `deadline_pressure`, `operator_request`, `routine_review`. Priority queue entries are scheduling aids — they do not modify candidate posteriors.
+
+## `pipeline-capacity-summary`
+
+Summarize current pipeline scheduling load and capacity status across assignments, requests, annotations, and queue depth.
+
+```bash
+techno-search pipeline-capacity-summary
+```
+
+Output fields: `disclaimer`, `open_assignment_count`, `open_request_count`, `unresolved_annotation_count`, `queue_depth`, `total_scheduling_load`, `capacity_status`.
+
+Capacity statuses: `nominal`, `strained`, `overloaded`. Pipeline capacity is an operational scheduling metric only — it does not reflect survey sensitivity or candidate quality.
