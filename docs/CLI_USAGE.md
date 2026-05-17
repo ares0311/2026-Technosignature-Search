@@ -1290,3 +1290,41 @@ techno-search track-comparison-summary
 Output fields: `per_track` (with `triage_count`, `triage_blocked`, `lifecycle_count`, `lifecycle_blocked`, `open_flags`, `critical_flags`, `pending_deadlines`, `overdue_deadlines`, `pending_epoch_requests`, `observation_follow_up`), `total_open_flags`, `total_overdue_deadlines`.
 
 Disclaimer: track comparison summaries are local operational dashboards only; they do not rank tracks, candidates, or prioritize external follow-up.
+
+## `candidate-resolution-summary`
+
+Summarize final disposition records for candidates after internal review.
+
+```bash
+techno-search candidate-resolution-summary
+techno-search candidate-resolution-summary --fixture-path tests/fixtures/candidate_resolution.json
+```
+
+Output fields: `record_count`, `unique_candidate_count`, `unresolved_count`, `resolved_fp_count`, `average_days_to_resolution`, `max_days_to_resolution`, `by_track`, `by_status`, `tracks_covered`, `unique_operator_count`.
+
+Disclaimer: resolution records are local scheduling closure records only; `resolved_fp` reflects internal workflow assessment, not external scientific validation.
+
+## `escalation-log-summary`
+
+Summarize workflow escalation events with priority and status breakdown.
+
+```bash
+techno-search escalation-log-summary
+techno-search escalation-log-summary --fixture-path tests/fixtures/escalation_log.json
+```
+
+Output fields: `entry_count`, `open_count`, `critical_count`, `average_days_open`, `max_days_open`, `by_track`, `by_priority`, `by_status`, `tracks_covered`, `unique_operator_count`.
+
+Disclaimer: escalation priority reflects internal operational urgency only; it does not reflect candidate scientific interest or discovery probability.
+
+## `quality-control-summary`
+
+Aggregate QC dashboard consolidating flags, triage, deadlines, retention, resolution, and escalations.
+
+```bash
+techno-search quality-control-summary
+```
+
+Output fields: `total_open_flags`, `critical_flag_count`, `triage_clearance_rate`, `overdue_deadline_count`, `deadline_compliance_rate`, `active_candidate_count`, `blocked_candidate_count`, `resolved_count`, `open_escalation_count`, `critical_escalation_count`, `overall_qc_health`.
+
+`overall_qc_health` values: `ok`, `degraded`, `blocked`. None of these values constitute evidence of a technosignature.

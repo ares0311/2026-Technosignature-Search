@@ -930,3 +930,21 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 **Track comparison**: cross-track operational dashboard combining triage notes, lifecycle stages, candidate flags, review deadlines, epoch plan requests, and observation notes. Total open flags and overdue deadlines are scheduling alerts, not candidate interest signals.
 
 **Consequences**: `validate-all` gates enforce minimum fixture coverage (`candidate_retention_record_count >= 5`, `operator_perf_count >= 2`, `track_comparison_open_flags >= 0`). Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-038: Candidate Resolution, Escalation Log, And Quality Control Are Scheduling Provenance Records
+
+**Date**: 2026-05-17
+
+**Context**: The pipeline needs closure records for candidates that have completed internal review, a structured log for workflow escalations, and an aggregate QC dashboard that surfaces operational health.
+
+**Decision**: Implement three new scheduling provenance modules:
+
+**Candidate resolution**: records the final internal disposition of each candidate (`resolved_fp`, `unresolved`, `awaiting_confirmation`, `deferred`, `inconclusive`, `follow_up_scheduled`). Resolution status is a local scheduling closure record — `resolved_fp` means the candidate was internally assessed as a likely false positive, not that it has been scientifically ruled out.
+
+**Escalation log**: records formal workflow escalation events with priority (`low`, `normal`, `high`, `critical`) and status (`open`, `in_review`, `resolved`, `dismissed`). Priority reflects internal operational urgency, not candidate scientific interest.
+
+**Quality control summary**: aggregate dashboard combining flags, triage clearance, deadline compliance, retention state, resolution counts, and escalation state into a single `overall_qc_health` indicator (`ok`, `degraded`, `blocked`). Health status is an operational indicator only.
+
+**Consequences**: `validate-all` gates enforce minimum fixture coverage (`resolution_record_count >= 5`, `escalation_entry_count >= 5`, `qc_health in ("ok", "degraded", "blocked")`). No new fixture gates are needed for quality_control_summary since it aggregates existing fixtures. Scientific guardrails remain unchanged.

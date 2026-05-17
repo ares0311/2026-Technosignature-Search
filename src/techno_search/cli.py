@@ -63,6 +63,7 @@ from techno_search.candidate_lifecycle import (
     lifecycle_transition_summary,
 )
 from techno_search.candidate_observation_notes import observation_notes_summary
+from techno_search.candidate_resolution import candidate_resolution_summary
 from techno_search.candidate_retention import candidate_retention_summary
 from techno_search.candidate_score_history import score_history_summary
 from techno_search.candidate_triage import (
@@ -73,6 +74,7 @@ from techno_search.candidate_triage import (
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.cross_track import cross_track_summary
 from techno_search.epoch_plan import epoch_plan_summary
+from techno_search.escalation_log import escalation_log_summary
 from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
 from techno_search.live_data import (
     CatalogCache,
@@ -116,6 +118,7 @@ from techno_search.pipeline_health import pipeline_health_summary
 from techno_search.pipeline_throughput import pipeline_throughput_summary
 from techno_search.plotting import plot_artifact_summary
 from techno_search.provenance import provenance_chain_validator
+from techno_search.quality_control_summary import quality_control_summary
 from techno_search.reporting import (
     candidate_packet_json,
     write_candidate_reports,
@@ -192,7 +195,9 @@ SCHEMA_FILENAMES = {
     "candidate_score_history": "candidate_score_history.schema.json",
     "epoch_plan": "epoch_plan.schema.json",
     "operator_assignment": "operator_assignment.schema.json",
+    "candidate_resolution": "candidate_resolution.schema.json",
     "candidate_retention": "candidate_retention.schema.json",
+    "escalation_log": "escalation_log.schema.json",
     "review_deadlines": "review_deadlines.schema.json",
 }
 
@@ -1381,6 +1386,41 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "candidate-resolution-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                candidate_resolution_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "escalation-log-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                escalation_log_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "quality-control-summary":
+        print(
+            json.dumps(
+                quality_control_summary(),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -1732,6 +1772,12 @@ def validate_all() -> dict[str, object]:
     operator_perf_count = int(operator_perf.get("operator_count", 0))
     track_comparison = track_comparison_summary()
     track_comparison_open_flags = int(track_comparison.get("total_open_flags", 0))
+    candidate_resolution = candidate_resolution_summary()
+    candidate_resolution_record_count = int(candidate_resolution.get("record_count", 0))
+    escalations = escalation_log_summary()
+    escalation_entry_count = int(escalations.get("entry_count", 0))
+    qc_summary = quality_control_summary()
+    qc_health = str(qc_summary.get("overall_qc_health", "ok"))
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -1970,6 +2016,11 @@ def validate_all() -> dict[str, object]:
         and operator_perf_count >= 2
         and isinstance(track_comparison_open_flags, int)
         and track_comparison_open_flags >= 0
+        and isinstance(candidate_resolution_record_count, int)
+        and candidate_resolution_record_count >= 5
+        and isinstance(escalation_entry_count, int)
+        and escalation_entry_count >= 5
+        and qc_health in ("ok", "degraded", "blocked")
     )
     return {
         "ok": ok,
@@ -2052,6 +2103,9 @@ def validate_all() -> dict[str, object]:
         "candidate_retention_summary": candidate_retention,
         "operator_performance_summary": operator_perf,
         "track_comparison_summary": track_comparison,
+        "candidate_resolution_summary": candidate_resolution,
+        "escalation_log_summary": escalations,
+        "quality_control_summary": qc_summary,
     }
 
 
@@ -2726,6 +2780,31 @@ def validation_summary() -> dict[str, object]:
             tc_s["total_open_flags"]
             if isinstance(tc_s := validation.get("track_comparison_summary"), dict)
             else 0
+        ),
+        "resolution_record_count": (
+            rs_s["record_count"]
+            if isinstance(rs_s := validation.get("candidate_resolution_summary"), dict)
+            else 0
+        ),
+        "resolution_unresolved_count": (
+            rs_s2["unresolved_count"]
+            if isinstance(rs_s2 := validation.get("candidate_resolution_summary"), dict)
+            else 0
+        ),
+        "escalation_entry_count": (
+            es_s["entry_count"]
+            if isinstance(es_s := validation.get("escalation_log_summary"), dict)
+            else 0
+        ),
+        "escalation_open_count": (
+            es_s2["open_count"]
+            if isinstance(es_s2 := validation.get("escalation_log_summary"), dict)
+            else 0
+        ),
+        "qc_overall_health": (
+            qc_s["overall_qc_health"]
+            if isinstance(qc_s := validation.get("quality_control_summary"), dict)
+            else "ok"
         ),
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
@@ -4116,6 +4195,27 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "track-comparison-summary",
         help="Cross-track comparison dashboard for scheduling state and flags.",
+    )
+
+    candidate_resolution_parser = subparsers.add_parser(
+        "candidate-resolution-summary",
+        help="Summarize final disposition records for candidates after review.",
+    )
+    candidate_resolution_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    escalation_log_parser = subparsers.add_parser(
+        "escalation-log-summary",
+        help="Summarize workflow escalation events with priority and status breakdown.",
+    )
+    escalation_log_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "quality-control-summary",
+        help="Aggregate QC dashboard across flags, triage, deadlines, and escalations.",
     )
 
     return parser

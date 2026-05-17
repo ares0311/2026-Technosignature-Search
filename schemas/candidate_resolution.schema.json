@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CandidateResolution",
+  "description": "Local scheduling closure records for candidate final disposition. Not external validation.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "records"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "disclaimer": { "type": "string" },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "record_id",
+          "candidate_id",
+          "track",
+          "resolution_status",
+          "resolved_by",
+          "resolution_utc",
+          "days_to_resolution"
+        ],
+        "properties": {
+          "record_id": { "type": "string" },
+          "candidate_id": { "type": "string" },
+          "track": { "type": "string", "enum": ["radio", "infrared", "anomaly"] },
+          "resolution_status": {
+            "type": "string",
+            "enum": [
+              "resolved_fp",
+              "unresolved",
+              "awaiting_confirmation",
+              "deferred",
+              "inconclusive",
+              "follow_up_scheduled"
+            ]
+          },
+          "resolved_by": { "type": "string" },
+          "resolution_utc": { "type": "string" },
+          "days_to_resolution": { "type": "integer", "minimum": 0 },
+          "blocking_reason": { "type": "string" }
+        }
+      }
+    }
+  }
+}

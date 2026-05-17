@@ -140,6 +140,14 @@ from techno_search.candidate_observation_notes import (
     load_observation_notes,
     observation_notes_summary,
 )
+from techno_search.candidate_resolution import (
+    ALLOWED_RESOLUTION_STATUSES,
+    CANDIDATE_RESOLUTION_DISCLAIMER,
+    CANDIDATE_RESOLUTION_SCHEMA_VERSION,
+    CandidateResolutionRecord,
+    candidate_resolution_summary,
+    load_resolution_records,
+)
 from techno_search.candidate_retention import (
     ALLOWED_RETENTION_STATUSES,
     CANDIDATE_RETENTION_DISCLAIMER,
@@ -182,6 +190,15 @@ from techno_search.epoch_plan import (
     EpochPlanEntry,
     epoch_plan_summary,
     load_epoch_plan,
+)
+from techno_search.escalation_log import (
+    ALLOWED_ESCALATION_PRIORITIES,
+    ALLOWED_ESCALATION_STATUSES,
+    ESCALATION_LOG_DISCLAIMER,
+    ESCALATION_LOG_SCHEMA_VERSION,
+    EscalationEntry,
+    escalation_log_summary,
+    load_escalation_entries,
 )
 from techno_search.injection_recovery import (
     INJECTION_RECOVERY_DISCLAIMER,
@@ -235,6 +252,10 @@ from techno_search.plotting import (
     PlotArtifact,
     plot_artifact_summary,
     write_synthetic_plot_artifacts,
+)
+from techno_search.quality_control_summary import (
+    QUALITY_CONTROL_DISCLAIMER,
+    quality_control_summary,
 )
 from techno_search.reporting import (
     REQUIRED_DISCLAIMER,
@@ -590,17 +611,32 @@ __all__ = [
     "PIPELINE_STAGES",
     "PIPELINE_THROUGHPUT_DISCLAIMER",
     "pipeline_throughput_summary",
+    "ALLOWED_RESOLUTION_STATUSES",
+    "CANDIDATE_RESOLUTION_DISCLAIMER",
+    "CANDIDATE_RESOLUTION_SCHEMA_VERSION",
+    "CandidateResolutionRecord",
+    "candidate_resolution_summary",
+    "load_resolution_records",
     "ALLOWED_RETENTION_STATUSES",
     "CANDIDATE_RETENTION_DISCLAIMER",
     "CANDIDATE_RETENTION_SCHEMA_VERSION",
     "CandidateRetentionRecord",
     "candidate_retention_summary",
     "load_retention_records",
+    "ALLOWED_ESCALATION_PRIORITIES",
+    "ALLOWED_ESCALATION_STATUSES",
+    "ESCALATION_LOG_DISCLAIMER",
+    "ESCALATION_LOG_SCHEMA_VERSION",
+    "EscalationEntry",
+    "escalation_log_summary",
+    "load_escalation_entries",
     "OPERATOR_PERFORMANCE_DISCLAIMER",
     "operator_performance_summary",
     "COMPARISON_TRACKS",
     "TRACK_COMPARISON_DISCLAIMER",
     "track_comparison_summary",
+    "QUALITY_CONTROL_DISCLAIMER",
+    "quality_control_summary",
     "ALLOWED_SCORE_HISTORY_PATHWAYS",
     "CANDIDATE_SCORE_HISTORY_DISCLAIMER",
     "CANDIDATE_SCORE_HISTORY_SCHEMA_VERSION",
