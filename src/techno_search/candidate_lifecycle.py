@@ -109,3 +109,73 @@ def candidate_lifecycle_summary(
         "tracks_covered": tracks_covered,
         "operator_note_count": sum(1 for e in entries if e.operator_notes),
     }
+
+
+STAGE_ORDER = [
+    "initial_detection",
+    "scored",
+    "baseline_classified",
+    "human_reviewed",
+    "pathway_decided",
+    "follow_up_scheduled",
+    "archived",
+]
+
+_STAGE_INDEX = {stage: idx for idx, stage in enumerate(STAGE_ORDER)}
+
+
+def lifecycle_transition_summary(
+    fixture_path: Path | None = None,
+) -> dict[str, Any]:
+    """Validate lifecycle stage transitions follow the allowed ordering.
+
+    Groups entries by candidate_id and checks that stage_entered_utc ordering
+    is consistent with the expected stage progression. Reports any regressions
+    (stage index moving backward) as invalid transitions.
+    """
+
+    entries = load_lifecycle_entries(fixture_path)
+
+    by_candidate: dict[str, list[CandidateLifecycleEntry]] = {}
+    for entry in entries:
+        by_candidate.setdefault(entry.candidate_id, []).append(entry)
+
+    invalid_transitions: list[dict[str, Any]] = []
+    candidates_with_multiple_entries = 0
+
+    for cid, cand_entries in by_candidate.items():
+        if len(cand_entries) < 2:
+            continue
+        candidates_with_multiple_entries += 1
+        sorted_entries = sorted(cand_entries, key=lambda e: e.stage_entered_utc)
+        for i in range(1, len(sorted_entries)):
+            prev = sorted_entries[i - 1]
+            curr = sorted_entries[i]
+            prev_idx = _STAGE_INDEX.get(prev.stage, -1)
+            curr_idx = _STAGE_INDEX.get(curr.stage, -1)
+            if curr_idx < prev_idx:
+                invalid_transitions.append(
+                    {
+                        "candidate_id": cid,
+                        "from_stage": prev.stage,
+                        "to_stage": curr.stage,
+                        "from_utc": prev.stage_entered_utc,
+                        "to_utc": curr.stage_entered_utc,
+                    }
+                )
+
+    candidates_with_invalid_transitions = len(
+        {t["candidate_id"] for t in invalid_transitions}
+    )
+
+    return {
+        "schema_version": CANDIDATE_LIFECYCLE_SCHEMA_VERSION,
+        "disclaimer": CANDIDATE_LIFECYCLE_DISCLAIMER,
+        "total_entry_count": len(entries),
+        "unique_candidate_count": len(by_candidate),
+        "candidates_with_multiple_entries": candidates_with_multiple_entries,
+        "invalid_transition_count": len(invalid_transitions),
+        "candidates_with_invalid_transitions": candidates_with_invalid_transitions,
+        "invalid_transitions": invalid_transitions,
+        "all_transitions_valid": len(invalid_transitions) == 0,
+    }

@@ -977,6 +977,46 @@ Summarises missed injections (false negatives) from the synthetic injection-reco
 
 ---
 
+## Scoring Config Summary
+
+```bash
+techno-search scoring-config-summary [--config-path PATH]
+```
+
+Reports the current pathway threshold values from `configs/scoring_v0.json`. Includes threshold count, named threshold values, and local performance defaults. These are synthetic v0 development parameters only — not calibrated detection thresholds.
+
+---
+
+## Route Coverage Summary
+
+```bash
+techno-search route-coverage-summary
+```
+
+Checks which `Pathway` enum values have calibration fixture coverage. Reports covered and uncovered pathway names, per-pathway case counts, and a full-coverage flag. Uncovered pathways indicate areas where synthetic fixture coverage should be extended. Synthetic diagnostic only.
+
+---
+
+## Lifecycle Transition Summary
+
+```bash
+techno-search lifecycle-transition-summary [--fixture-path PATH]
+```
+
+Validates that candidate lifecycle stage transitions follow the allowed ordering (`initial_detection` → `scored` → … → `archived`). Groups entries by candidate and reports any regressions where the stage index moves backward. Invalid transitions indicate fixture ordering errors. Scheduling/provenance aid only.
+
+---
+
+## Observation Efficiency Summary
+
+```bash
+techno-search observation-efficiency-summary [--fixture-path PATH]
+```
+
+Summarises observation window completion and cancellation rates from the committed schedule fixture. Reports completion rate, cancellation rate, total scheduled and completed hours, and per-track efficiency breakdown. Scheduling aid only — not a survey efficiency estimate.
+
+---
+
 ## Scientific Guardrails
 
 CLI output is a review artifact, not a discovery claim.
@@ -986,3 +1026,267 @@ CLI output is a review artifact, not a discovery claim.
 - Do not remove the required disclaimer.
 - Do not use CLI scores as calibrated probabilities until calibration work is complete.
 - Do not submit candidates externally without human review and independent validation.
+
+---
+
+## Sensitivity Config Summary
+
+```bash
+techno-search sensitivity-config-summary [--config-path PATH]
+```
+
+Summarises per-track sensitivity weights from the scoring config (`configs/scoring_v0.json`). Reports track count, weight count, per-track weight values, and whether all weights are within the expected range. These are synthetic v0 development coefficients — not calibrated survey detection sensitivities or validated performance against real observations.
+
+---
+
+## Triage Summary
+
+```bash
+techno-search triage-summary [--fixture-path PATH]
+```
+
+Summarises operator candidate triage notes from the committed fixture. Reports note count, unique candidate and operator counts, follow-up-required count, blocking reason totals, and breakdowns by label and track. Triage notes are operator scheduling aids and provenance records only — they do not modify candidate scores, posteriors, or pathway routing. They are not detection claims, discovery announcements, or authorizations for external submission.
+
+---
+
+## Signal Registry Summary
+
+```bash
+techno-search signal-registry-summary [--fixture-path PATH]
+techno-search signal-registry-track-summary [--fixture-path PATH]
+```
+
+Summarises the signal-of-interest registry. Reports signal count, active count, and breakdowns by track and priority tier. The per-track summary adds tier_1/tier_2/tier_3 breakdowns per track. Registry entries are scheduling aids only — they are not detection claims.
+
+---
+
+## Audit Trail Summary
+
+```bash
+techno-search audit-trail-summary [--fixture-path PATH]
+```
+
+Summarises the candidate audit trail fixture. Reports action count, unique operator count, irreversible action count, and breakdowns by action type and candidate. Audit entries are append-only local provenance records — not detection claims or external submission authorizations.
+
+---
+
+## Multi-Epoch Summary
+
+```bash
+techno-search multi-epoch-summary [--fixture-path PATH]
+```
+
+Summarises multi-epoch follow-up observation records. Reports target count, multi-epoch target count, consistent and inconsistent detection counts, mean epoch count, and a per-track breakdown. Consistent detection across epochs does not imply a technosignature without independent external validation.
+
+---
+
+## Target Recalibration Summary
+
+```bash
+techno-search target-recalibration-summary [--fixture-path PATH]
+```
+
+Compares the two most recent target priority snapshots and reports rank changes. Returns new and previous top target IDs, rank change count, and mean absolute rank change. Priority rank changes do not modify candidate scores or posteriors and are not detection evidence.
+
+---
+
+## Observation Gap Analysis
+
+```bash
+techno-search observation-gap-analysis [--fixture-path PATH]
+```
+
+Identifies scheduling gaps between planned and completed observation windows per target. Returns targets with no completed windows and per-target gap counts. This is a scheduling provenance aid only — gaps do not imply missed detections.
+
+---
+
+## Classifier Rule Coverage
+
+```bash
+techno-search classifier-rule-coverage
+```
+
+Reports which baseline classifier rules fire across evaluation cases. Returns fired/never-fired rule lists and a coverage fraction. This is a local development diagnostic only.
+
+---
+
+## Operator Coverage Summary
+
+```bash
+techno-search operator-coverage-summary [--fixture-path PATH]
+```
+
+Summarises operator coverage across triage notes. Reports operator count and per-operator note count, label distribution, tracks covered, and follow-up required count.
+
+---
+
+## Triage Label Completeness
+
+```bash
+techno-search triage-label-completeness [--fixture-path PATH]
+```
+
+Checks which triage labels have fixture coverage. Returns covered labels, uncovered labels, and a coverage fraction.
+
+---
+
+## Schema Drift Check
+
+```bash
+techno-search schema-drift-check
+```
+
+Detects structural drift in committed JSON schema files. Checks for required `$schema` key, `type: object`, and non-empty `required` field. Returns drift count and details. `validate-all` requires `drift_count == 0`.
+
+---
+
+## Provenance Chain Validate
+
+```bash
+techno-search provenance-chain-validate
+```
+
+Validates that all committed report manifests carry required provenance chain fields (`schema_version`, `config_version`, `generated_at_utc`, `provenance_summary`). A passing check does not constitute external validation.
+
+---
+
+## Observation Notes Summary
+
+```bash
+techno-search observation-notes-summary [--fixture-path PATH]
+```
+
+Summarizes post-observation operator annotations by track, outcome, and quality flags. Notes are scheduling provenance records only and do not modify candidate posteriors.
+
+---
+
+## Epoch Plan Summary
+
+```bash
+techno-search epoch-plan-summary [--fixture-path PATH]
+```
+
+Summarizes epoch plan entries for targets requiring additional observation epochs. Returns counts by track, status, and priority. Entries are scheduling aids only and do not constitute telescope-time commitments.
+
+---
+
+## Aggregate Blockers Summary
+
+```bash
+techno-search aggregate-blockers-summary
+```
+
+Collects blocking issues from triage notes, lifecycle entries, observation quality flags, and candidate extraction handoffs. Returns a consolidated count by source, track, and candidate. All entries are local operational records only.
+
+## `score-history-summary`
+
+Summarize candidate score evolution across observation epochs.
+
+```bash
+techno-search score-history-summary
+techno-search score-history-summary --fixture-path tests/fixtures/candidate_score_history.json
+```
+
+Output fields: `entry_count`, `unique_candidate_count`, `max_epoch_number`, `by_track`, `by_pathway`, `improving_candidates`, `declining_candidates`, `stable_candidates`.
+
+Disclaimer: score history entries are local scheduling provenance records, not detections or discoveries.
+
+## `operator-assignment-summary`
+
+Summarize operator assignment records for candidate review.
+
+```bash
+techno-search operator-assignment-summary
+techno-search operator-assignment-summary --fixture-path tests/fixtures/operator_assignments.json
+```
+
+Output fields: `assignment_count`, `unique_candidate_count`, `unique_operator_count`, `pending_count`, `escalated_count`, `completed_count`, `by_track`, `by_status`, `by_priority`, `by_operator`.
+
+Disclaimer: assignment records are scheduling aids only, not evidence of a technosignature.
+
+## `pipeline-health-summary`
+
+Per-track pipeline health dashboard aggregating triage, lifecycle, observation, and assignment state.
+
+```bash
+techno-search pipeline-health-summary
+```
+
+Output fields: `per_track` (with `triage_count`, `triage_blocked_count`, `lifecycle_count`, `lifecycle_blocked_count`, `pending_assignments`, `escalated_assignments`, `pending_epoch_requests`, `observation_follow_up_recommended`), `total_blocked_count`, `total_escalated_count`.
+
+Disclaimer: pipeline health summaries are operational dashboards only, not survey performance estimates.
+
+## `candidate-flags-summary`
+
+Summarize quality flags and operational alerts raised against candidates.
+
+```bash
+techno-search candidate-flags-summary
+techno-search candidate-flags-summary --fixture-path tests/fixtures/candidate_flags.json
+```
+
+Output fields: `flag_count`, `open_count`, `critical_count`, `by_track`, `by_severity`, `by_type`, `by_status`, `tracks_covered`.
+
+Disclaimer: flag records are local quality-control aids, not evidence of a technosignature.
+
+## `review-deadlines-summary`
+
+Summarize upcoming operator review deadlines with urgency levels.
+
+```bash
+techno-search review-deadlines-summary
+techno-search review-deadlines-summary --fixture-path tests/fixtures/review_deadlines.json
+```
+
+Output fields: `deadline_count`, `pending_count`, `overdue_count`, `immediate_count`, `by_track`, `by_urgency`, `by_type`, `by_status`, `by_operator`.
+
+Disclaimer: deadline records are scheduling aids only; urgency reflects scheduling priority, not candidate quality.
+
+## `pipeline-throughput-summary`
+
+Per-stage pipeline throughput counts and transition rate metrics.
+
+```bash
+techno-search pipeline-throughput-summary
+```
+
+Output fields: `total_lifecycle_entries`, `total_triage_notes`, `lifecycle_cleared_count`, `lifecycle_blocked_count`, `triage_cleared_count`, `triage_blocked_count`, `throughput_rate`, `stage_counts`, `by_track`.
+
+Disclaimer: throughput summaries are local operational metrics, not calibrated pipeline efficiency estimates.
+
+## `candidate-retention-summary`
+
+Summarize candidate retention records including pipeline dwell times and status breakdown.
+
+```bash
+techno-search candidate-retention-summary
+techno-search candidate-retention-summary --fixture-path tests/fixtures/candidate_retention.json
+```
+
+Output fields: `record_count`, `unique_candidate_count`, `active_count`, `archived_count`, `blocked_count`, `average_days_in_pipeline`, `max_days_in_pipeline`, `by_track`, `by_status`, `tracks_covered`.
+
+Disclaimer: retention records are local scheduling and provenance aids only; dwell times are not evidence of candidate quality.
+
+## `operator-performance-summary`
+
+Aggregate operator performance metrics from assignment records.
+
+```bash
+techno-search operator-performance-summary
+```
+
+Output fields: `operator_count`, `total_assignments`, `total_completed`, `total_escalated`, `overall_completion_rate`, `per_operator`.
+
+Disclaimer: operator performance summaries are local scheduling and workflow metrics only; they do not reflect or predict candidate quality.
+
+## `track-comparison-summary`
+
+Cross-track operational comparison dashboard aggregating scheduling state, flags, deadlines, and observation notes.
+
+```bash
+techno-search track-comparison-summary
+```
+
+Output fields: `per_track` (with `triage_count`, `triage_blocked`, `lifecycle_count`, `lifecycle_blocked`, `open_flags`, `critical_flags`, `pending_deadlines`, `overdue_deadlines`, `pending_epoch_requests`, `observation_follow_up`), `total_open_flags`, `total_overdue_deadlines`.
+
+Disclaimer: track comparison summaries are local operational dashboards only; they do not rank tracks, candidates, or prioritize external follow-up.

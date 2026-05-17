@@ -1,0 +1,91 @@
+{
+  "schema_version": "route_coverage_fixtures_v1",
+  "disclaimer": "Route coverage fixtures are synthetic candidates designed to exercise specific pathway branches. They are not real observations, detections, or evidence of technosignatures. All candidates are hypothetical.",
+  "description": "Synthetic fixtures covering pathway enum values not represented in calibration_false_positives.json.",
+  "fixtures": [
+    {
+      "name": "radio_known_object_annotation",
+      "expected_pathway": "known_object_annotation",
+      "rationale": "High known_object_score (1.0) drives KNOWN_OBJECT posterior above 0.80 threshold.",
+      "candidate": {
+        "candidate_id": "route-cov-known-001",
+        "track": "radio",
+        "features": {
+          "snr": 0.5,
+          "bandwidth_hz": 2.0,
+          "drift_rate_hz_per_sec": 0.1,
+          "on_target_presence_score": 0.8,
+          "off_target_presence_score": 0.1,
+          "rfi_band_overlap_score": 0.05,
+          "frequency_persistence_score": 0.8,
+          "nearby_target_recurrence_score": 0.1,
+          "instrumental_artifact_score": 0.05,
+          "metadata_completeness_score": 0.9,
+          "data_quality_score": 0.9,
+          "provenance_completeness_score": 0.9,
+          "known_object_score": 1.0
+        },
+        "provenance": {
+          "source_dataset": "synthetic-route-coverage",
+          "false_positive_class": "known_object"
+        }
+      }
+    },
+    {
+      "name": "radio_github_reproducibility_only",
+      "expected_pathway": "github_reproducibility_only",
+      "rationale": "Low data quality and poor metadata produce signal_reality_confidence < 0.40 while fp_probability < 0.80, routing to github_reproducibility_only.",
+      "candidate": {
+        "candidate_id": "route-cov-gh-001",
+        "track": "radio",
+        "features": {
+          "snr": 0.25,
+          "bandwidth_hz": 200.0,
+          "drift_rate_hz_per_sec": 0.0,
+          "on_target_presence_score": 0.35,
+          "off_target_presence_score": 0.30,
+          "rfi_band_overlap_score": 0.02,
+          "frequency_persistence_score": 0.20,
+          "nearby_target_recurrence_score": 0.05,
+          "instrumental_artifact_score": 0.05,
+          "metadata_completeness_score": 0.20,
+          "data_quality_score": 0.15,
+          "provenance_completeness_score": 0.40,
+          "known_object_score": 0.0
+        },
+        "provenance": {
+          "source_dataset": "synthetic-route-coverage",
+          "false_positive_class": "poor_data_quality"
+        }
+      }
+    },
+    {
+      "name": "anomaly_human_review_queue",
+      "expected_pathway": "human_review_queue",
+      "rationale": "Strong magnitude change and crossmatch confidence produce high tech-interest but poor provenance completeness lowers review_readiness below 0.70, preventing candidate_review_packet routing.",
+      "candidate": {
+        "candidate_id": "route-cov-hrq-001",
+        "track": "anomaly",
+        "features": {
+          "magnitude_change_score": 0.75,
+          "modern_nondetection_score": 0.80,
+          "crossmatch_confidence_score": 0.70,
+          "proper_motion_sanity_score": 0.95,
+          "survey_depth_mismatch_score": 0.05,
+          "catalog_artifact_score": 0.05,
+          "image_artifact_score": 0.05,
+          "moving_object_score": 0.05,
+          "variability_score": 0.10,
+          "catalog_mismatch_score": 0.05,
+          "data_quality_score": 0.55,
+          "provenance_completeness_score": 0.20,
+          "known_object_score": 0.0
+        },
+        "provenance": {
+          "source_dataset": "synthetic-route-coverage",
+          "false_positive_class": "insufficient_provenance"
+        }
+      }
+    }
+  ]
+}

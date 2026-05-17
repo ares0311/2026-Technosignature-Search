@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CandidateScoreHistory",
+  "description": "Schema for candidate score history entries tracking score evolution across observation epochs.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "entries"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "candidate_score_history_v1"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "entry_id",
+          "candidate_id",
+          "track",
+          "epoch_number",
+          "composite_score",
+          "pathway",
+          "blocking_count",
+          "operator_id",
+          "created_utc"
+        ],
+        "properties": {
+          "entry_id": { "type": "string" },
+          "candidate_id": { "type": "string" },
+          "track": { "type": "string" },
+          "epoch_number": { "type": "integer", "minimum": 1 },
+          "composite_score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "pathway": { "type": "string" },
+          "blocking_count": { "type": "integer", "minimum": 0 },
+          "operator_id": { "type": "string" },
+          "created_utc": { "type": "string" },
+          "score_delta": { "type": "number" },
+          "notes": { "type": "string" },
+          "feature_highlights": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

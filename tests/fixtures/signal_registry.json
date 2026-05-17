@@ -1,0 +1,66 @@
+{
+  "schema_version": "signal_registry_v1",
+  "disclaimer": "Signal registry entries are scheduling-aid records of candidate signals worth tracking. They are not detection claims, discovery announcements, or authorizations for external submission. Registry priority tiers are operator scheduling metadata only.",
+  "signals": [
+    {
+      "signal_id": "sig-radio-2026-001",
+      "candidate_id": "synth-radio-2026-001",
+      "track": "radio",
+      "priority_tier": "tier_1",
+      "rationale": "Narrowband drift-rate candidate surviving ON/OFF test. Requires RFI follow-up. High priority for scheduling.",
+      "added_utc": "2026-05-01T10:30:00Z",
+      "is_active": true,
+      "source_catalog": null
+    },
+    {
+      "signal_id": "sig-radio-2026-002",
+      "candidate_id": "synth-radio-2026-003",
+      "track": "radio",
+      "priority_tier": "tier_2",
+      "rationale": "Moderate SNR narrowband signal. Off-target check inconclusive. Scheduled for repeat observation.",
+      "added_utc": "2026-05-02T09:00:00Z",
+      "is_active": true,
+      "source_catalog": null
+    },
+    {
+      "signal_id": "sig-radio-2026-003",
+      "candidate_id": "synth-radio-2026-004",
+      "track": "radio",
+      "priority_tier": "tier_3",
+      "rationale": "Low-SNR candidate from archival scan. Likely RFI but retained for completeness.",
+      "added_utc": "2026-05-03T14:00:00Z",
+      "is_active": false,
+      "source_catalog": "archival_bl_scan_v1"
+    },
+    {
+      "signal_id": "sig-ir-2026-001",
+      "candidate_id": "synth-ir-2026-001",
+      "track": "infrared",
+      "priority_tier": "tier_1",
+      "rationale": "Strong IR excess with clean stellar solution. No AGN or dust contaminants identified. Multi-epoch follow-up recommended.",
+      "added_utc": "2026-05-03T09:30:00Z",
+      "is_active": true,
+      "source_catalog": "wise_allsky_v2"
+    },
+    {
+      "signal_id": "sig-ir-2026-002",
+      "candidate_id": "synth-ir-2026-003",
+      "track": "infrared",
+      "priority_tier": "tier_2",
+      "rationale": "Moderate IR excess. Photometric quality marginal. Defer until additional WISE epoch available.",
+      "added_utc": "2026-05-04T11:00:00Z",
+      "is_active": true,
+      "source_catalog": "wise_allsky_v2"
+    },
+    {
+      "signal_id": "sig-anomaly-2026-001",
+      "candidate_id": "synth-anomaly-2026-002",
+      "track": "anomaly",
+      "priority_tier": "tier_2",
+      "rationale": "Archival disappearance not explained by variability cycle. Cross-match with known objects incomplete. Retained for human review.",
+      "added_utc": "2026-05-05T08:00:00Z",
+      "is_active": true,
+      "source_catalog": null
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SensitivityConfigSummary",
+  "description": "Schema for per-track scoring sensitivity configuration summary output.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "disclaimer",
+    "config_path",
+    "track_count",
+    "tracks_present",
+    "per_track_weights"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "sensitivity_config_summary_v1"
+    },
+    "disclaimer": {
+      "type": "string",
+      "minLength": 10
+    },
+    "config_path": {
+      "type": "string"
+    },
+    "track_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "tracks_present": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "missing_tracks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "weight_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "per_track_weights": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "number"
+        }
+      }
+    },
+    "all_weights_in_range": {
+      "type": "boolean"
+    }
+  }
+}

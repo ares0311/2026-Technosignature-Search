@@ -1,0 +1,71 @@
+{
+  "schema_version": "candidate_flags_v1",
+  "disclaimer": "Candidate flag records are local scheduling and quality-control aids only. They surface data-quality issues, RFI indicators, and operational blockers for operator review. They do not constitute evidence of a technosignature, detection, or discovery, and do not modify candidate pathway routing.",
+  "flags": [
+    {
+      "flag_id": "flag-001",
+      "candidate_id": "cand-radio-001",
+      "track": "radio",
+      "flag_type": "rfi_suspected",
+      "severity": "high",
+      "raised_by": "op-alpha",
+      "raised_utc": "2026-03-01T12:00:00Z",
+      "status": "open",
+      "resolution_notes": "",
+      "related_observation_id": "obs-radio-2026-001",
+      "tags": ["narrowband", "on_off_check_needed"]
+    },
+    {
+      "flag_id": "flag-002",
+      "candidate_id": "cand-radio-002",
+      "track": "radio",
+      "flag_type": "satellite_interference",
+      "severity": "medium",
+      "raised_by": "op-beta",
+      "raised_utc": "2026-03-03T09:30:00Z",
+      "status": "acknowledged",
+      "resolution_notes": "Satellite pass timing confirmed; awaiting second epoch.",
+      "related_observation_id": "obs-radio-2026-002",
+      "tags": ["satellite", "timing_check"]
+    },
+    {
+      "flag_id": "flag-003",
+      "candidate_id": "cand-infrared-001",
+      "track": "infrared",
+      "flag_type": "photometry_artifact",
+      "severity": "critical",
+      "raised_by": "op-alpha",
+      "raised_utc": "2026-03-05T14:00:00Z",
+      "status": "resolved",
+      "resolution_notes": "Artifact confirmed from bleed-through in adjacent detector column; candidate reclassified.",
+      "related_observation_id": "obs-ir-2026-001",
+      "tags": ["detector_artifact", "reclassified"]
+    },
+    {
+      "flag_id": "flag-004",
+      "candidate_id": "cand-infrared-002",
+      "track": "infrared",
+      "flag_type": "data_quality_low",
+      "severity": "medium",
+      "raised_by": "op-beta",
+      "raised_utc": "2026-03-07T10:00:00Z",
+      "status": "open",
+      "resolution_notes": "",
+      "related_observation_id": "obs-ir-2026-002",
+      "tags": ["low_snr", "reobservation_needed"]
+    },
+    {
+      "flag_id": "flag-005",
+      "candidate_id": "cand-anomaly-001",
+      "track": "anomaly",
+      "flag_type": "catalog_mismatch",
+      "severity": "low",
+      "raised_by": "op-alpha",
+      "raised_utc": "2026-03-10T08:00:00Z",
+      "status": "dismissed",
+      "resolution_notes": "Proper motion explains catalog offset; not an anomaly.",
+      "related_observation_id": "",
+      "tags": ["proper_motion", "catalog_offset"]
+    }
+  ]
+}

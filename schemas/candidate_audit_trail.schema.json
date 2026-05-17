@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Candidate Audit Trail",
+  "description": "Append-only provenance records of operator actions on candidates. Not detection claims.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "actions"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "disclaimer": { "type": "string" },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "action_id", "candidate_id", "action_type",
+          "operator_id", "timestamp_utc", "detail", "is_reversible"
+        ],
+        "properties": {
+          "action_id": { "type": "string" },
+          "candidate_id": { "type": "string" },
+          "action_type": { "type": "string" },
+          "operator_id": { "type": "string" },
+          "timestamp_utc": { "type": "string" },
+          "detail": { "type": "string" },
+          "is_reversible": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

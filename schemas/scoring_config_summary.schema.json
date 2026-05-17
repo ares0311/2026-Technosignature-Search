@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ScoringConfigSummary",
+  "description": "Schema for scoring configuration summary output.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "disclaimer",
+    "config_path",
+    "threshold_count",
+    "pathway_thresholds"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "scoring_config_summary_v1"
+    },
+    "disclaimer": {
+      "type": "string",
+      "minLength": 10
+    },
+    "config_path": {
+      "type": "string"
+    },
+    "config_description": {
+      "type": "string"
+    },
+    "threshold_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "pathway_thresholds": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "local_performance_defaults": {
+      "type": "object"
+    },
+    "cpu_heavy_workers": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "light_io_workers": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "memory_budget_gb": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

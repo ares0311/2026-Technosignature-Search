@@ -224,15 +224,33 @@ The project will support three tracks from day one:
 - [x] Observation schedule schema, fixture, and `observation-schedule-summary` CLI
 - [x] False-negative summary from injection-recovery fixture and `false-negative-summary` CLI
 - [x] DECISION-030: Scoring Must Be Deterministic Before Any Learned Model Is Introduced
-- [x] 28 JSON schema artifacts, 28 total (added candidate_lifecycle, observation_schedule)
+- [x] Scoring config summary (`scoring-config-summary`) and `scoring_config_summary.schema.json`
+- [x] Route coverage summary (`route-coverage-summary`) checking Pathway enum fixture coverage
+- [x] Lifecycle transition validator (`lifecycle-transition-summary`) with stage ordering checks
+- [x] Observation efficiency summary (`observation-efficiency-summary`) with per-track rates
+- [x] DECISION-031: Scoring Config And Route Coverage Are Required Local Validation Gates
+- [x] 29 JSON schema artifacts (added scoring_config_summary)
+- [x] Route coverage extended to 5/6 Pathway values via dedicated route-coverage fixtures
+- [x] Per-track sensitivity config summary (`sensitivity-config-summary`) — synthetic weights audit
+- [x] Candidate triage notes schema (`candidate_triage_v1`), fixture, loader, and `triage-summary` CLI
+- [x] DECISION-032: Candidate Triage And Sensitivity Config Are Validated Scheduling Aids
+- [x] 31 JSON schema artifacts (added candidate_triage and sensitivity_config_summary)
 
 ---
+
+## Recently Completed (this iteration)
+
+- [x] Candidate observation notes schema (`candidate_observation_notes_v1`), fixture (5 notes), loader, and `observation-notes-summary` CLI
+- [x] Epoch plan schema (`epoch_plan_v1`), fixture (5 entries), loader, and `epoch-plan-summary` CLI
+- [x] Aggregate blockers summary (`aggregate-blockers-summary`) consolidating triage, lifecycle, observation, and handoff issues
+- [x] 37 JSON schema artifacts (added candidate_observation_notes and epoch_plan)
+- [x] 582 tests passing, 92% coverage, validate-all ok=True
 
 ## Next 3 Actions
 
 1. Add a CI workflow file once a token with `workflow` scope is available.
 2. Begin non-synthetic validation dataset integration once real observations are available under appropriate data policy.
-3. Extend scoring model with configurable per-track sensitivity coefficients for future calibration grid work.
+3. Extend route coverage fixtures to cover remaining uncovered pathways as the classifier evolves.
 
 ---
 

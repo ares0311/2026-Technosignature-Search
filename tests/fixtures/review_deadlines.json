@@ -1,0 +1,61 @@
+{
+  "schema_version": "review_deadlines_v1",
+  "disclaimer": "Review deadline records are local scheduling aids only. They track upcoming operator review obligations and do not constitute evidence of a technosignature, detection, or discovery. Urgency levels reflect scheduling priority, not candidate quality.",
+  "deadlines": [
+    {
+      "deadline_id": "dl-001",
+      "candidate_id": "cand-radio-001",
+      "track": "radio",
+      "operator_id": "op-alpha",
+      "deadline_type": "initial_review",
+      "urgency": "high",
+      "due_utc": "2026-03-15T00:00:00Z",
+      "status": "in_progress",
+      "notes": "Narrowband candidate with open RFI flag; priority review."
+    },
+    {
+      "deadline_id": "dl-002",
+      "candidate_id": "cand-radio-002",
+      "track": "radio",
+      "operator_id": "op-beta",
+      "deadline_type": "epoch_data_ready",
+      "urgency": "medium",
+      "due_utc": "2026-03-22T00:00:00Z",
+      "status": "pending",
+      "notes": "Second epoch expected; review when data arrives."
+    },
+    {
+      "deadline_id": "dl-003",
+      "candidate_id": "cand-infrared-002",
+      "track": "infrared",
+      "operator_id": "op-alpha",
+      "deadline_type": "escalation_review",
+      "urgency": "immediate",
+      "due_utc": "2026-03-12T00:00:00Z",
+      "status": "overdue",
+      "notes": "Escalated SED anomaly; senior review overdue."
+    },
+    {
+      "deadline_id": "dl-004",
+      "candidate_id": "cand-infrared-003",
+      "track": "infrared",
+      "operator_id": "op-beta",
+      "deadline_type": "follow_up_review",
+      "urgency": "low",
+      "due_utc": "2026-04-01T00:00:00Z",
+      "status": "pending",
+      "notes": "Awaiting dust-model comparison before review."
+    },
+    {
+      "deadline_id": "dl-005",
+      "candidate_id": "cand-anomaly-001",
+      "track": "anomaly",
+      "operator_id": "op-alpha",
+      "deadline_type": "operator_handoff",
+      "urgency": "medium",
+      "due_utc": "2026-03-28T00:00:00Z",
+      "status": "completed",
+      "notes": "Handoff completed; candidate archived as false positive."
+    }
+  ]
+}

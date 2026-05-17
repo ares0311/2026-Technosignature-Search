@@ -1,0 +1,42 @@
+{
+  "schema_version": "target_priority_snapshots_v1",
+  "disclaimer": "Target priority recalibration summaries are scheduling aids only. Priority rank changes do not modify candidate scores or posteriors and are not detection evidence. A change in priority ordering does not constitute a discovery claim or authorization for external submission.",
+  "snapshots": [
+    {
+      "snapshot_id": "snapshot-2026-05-01",
+      "snapshot_utc": "2026-05-01T00:00:00Z",
+      "ordered_target_ids": [
+        "synth-ir-2026-001",
+        "synth-radio-2026-001",
+        "synth-anomaly-2026-002",
+        "synth-radio-2026-003",
+        "synth-ir-2026-002"
+      ],
+      "priority_scores": {
+        "synth-ir-2026-001": 0.85,
+        "synth-radio-2026-001": 0.72,
+        "synth-anomaly-2026-002": 0.61,
+        "synth-radio-2026-003": 0.50,
+        "synth-ir-2026-002": 0.38
+      }
+    },
+    {
+      "snapshot_id": "snapshot-2026-05-15",
+      "snapshot_utc": "2026-05-15T00:00:00Z",
+      "ordered_target_ids": [
+        "synth-radio-2026-001",
+        "synth-ir-2026-001",
+        "synth-radio-2026-003",
+        "synth-anomaly-2026-002",
+        "synth-ir-2026-002"
+      ],
+      "priority_scores": {
+        "synth-radio-2026-001": 0.88,
+        "synth-ir-2026-001": 0.80,
+        "synth-radio-2026-003": 0.65,
+        "synth-anomaly-2026-002": 0.55,
+        "synth-ir-2026-002": 0.32
+      }
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "schema_version": "epoch_plan_v1",
+  "disclaimer": "Epoch plan entries are local scheduling aids only. They do not constitute detection claims or commitments to telescope time.",
+  "entries": [
+    {
+      "entry_id": "ep-001",
+      "target_id": "synth-radio-2026-001",
+      "track": "radio",
+      "current_epoch_count": 1,
+      "requested_additional_epochs": 2,
+      "rationale": "Initial narrowband detection warrants confirmation in two additional epochs at different sidereal times.",
+      "status": "scheduled",
+      "priority": "high",
+      "created_utc": "2026-03-15T08:00:00Z",
+      "blocking_reasons": [],
+      "operator_id": "op-alpha"
+    },
+    {
+      "entry_id": "ep-002",
+      "target_id": "synth-radio-2026-002",
+      "track": "radio",
+      "current_epoch_count": 2,
+      "requested_additional_epochs": 1,
+      "rationale": "Follow-up after RFI-contaminated session. Requesting one clean epoch at lower RFI window.",
+      "status": "pending",
+      "priority": "medium",
+      "created_utc": "2026-03-16T09:30:00Z",
+      "blocking_reasons": ["rfi_environment_unsuitable"],
+      "operator_id": "op-alpha"
+    },
+    {
+      "entry_id": "ep-003",
+      "target_id": "synth-ir-2026-001",
+      "track": "infrared",
+      "current_epoch_count": 1,
+      "requested_additional_epochs": 3,
+      "rationale": "IR excess detected at low SNR. Three additional epochs with longer integration needed to confirm or rule out variability.",
+      "status": "pending",
+      "priority": "medium",
+      "created_utc": "2026-03-17T11:00:00Z",
+      "blocking_reasons": [],
+      "operator_id": "op-beta"
+    },
+    {
+      "entry_id": "ep-004",
+      "target_id": "synth-anomaly-2026-001",
+      "track": "anomaly",
+      "current_epoch_count": 0,
+      "requested_additional_epochs": 2,
+      "rationale": "Archival anomaly with no modern counterpart. Two modern epochs required before archiving as non-detection.",
+      "status": "scheduled",
+      "priority": "low",
+      "created_utc": "2026-03-18T14:00:00Z",
+      "blocking_reasons": [],
+      "operator_id": "op-beta"
+    },
+    {
+      "entry_id": "ep-005",
+      "target_id": "synth-ir-2026-003",
+      "track": "infrared",
+      "current_epoch_count": 3,
+      "requested_additional_epochs": 0,
+      "rationale": "Sufficient epochs collected. Candidate resolved as likely dust contamination.",
+      "status": "completed",
+      "priority": "low",
+      "created_utc": "2026-02-10T10:00:00Z",
+      "blocking_reasons": [],
+      "operator_id": "op-beta"
+    }
+  ]
+}

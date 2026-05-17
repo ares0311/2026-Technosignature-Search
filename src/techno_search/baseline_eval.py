@@ -331,3 +331,97 @@ def baseline_pathway_drift_summary(
         "drift_cases": drift_cases,
         "zero_drift": len(drift_cases) == 0,
     }
+
+
+def classifier_rule_coverage_summary(
+    calibration_fixture_path: Path | None = None,
+    example_candidates_dir: Path | None = None,
+) -> dict[str, Any]:
+    """Report which baseline classifier rules fire across all evaluation cases.
+
+    Returns per-rule fire counts and a coverage fraction (fraction of rules that
+    fire at least once). This is a local diagnostic only — not a claim about
+    real-observation coverage or detection performance.
+    """
+
+    eval_result = evaluate_baseline(calibration_fixture_path, example_candidates_dir)
+    rule_fire_rates: dict[str, float] = eval_result.get("rule_fire_rates", {})
+    total_cases = int(eval_result.get("total_cases", 0))
+
+    rules_fired_at_least_once = sorted(
+        rule for rule, rate in rule_fire_rates.items() if rate > 0.0
+    )
+    rules_never_fired = sorted(
+        rule for rule, rate in rule_fire_rates.items() if rate == 0.0
+    )
+    total_rules = len(ALL_BASELINE_RULES)
+    fired_count = len(rules_fired_at_least_once)
+    coverage_fraction = fired_count / total_rules if total_rules > 0 else 0.0
+
+    return {
+        "schema_version": "classifier_rule_coverage_v0",
+        "disclaimer": BASELINE_EVAL_DISCLAIMER,
+        "total_rules": total_rules,
+        "rules_fired_count": fired_count,
+        "rules_never_fired_count": len(rules_never_fired),
+        "coverage_fraction": round(coverage_fraction, 4),
+        "evaluation_case_count": total_cases,
+        "rules_fired_at_least_once": rules_fired_at_least_once,
+        "rules_never_fired": rules_never_fired,
+        "rule_fire_rates": dict(sorted(rule_fire_rates.items())),
+    }
+
+
+def _default_route_coverage_fixture_path() -> Path:
+    return (
+        Path(__file__).resolve().parents[2]
+        / "tests"
+        / "fixtures"
+        / "route_coverage_fixtures.json"
+    )
+
+
+def route_coverage_summary(
+    calibration_fixture_path: Path | None = None,
+    example_candidates_dir: Path | None = None,
+    route_coverage_fixture_path: Path | None = None,
+) -> dict[str, Any]:
+    """Check that all Pathway enum values have calibration fixture coverage."""
+
+    from techno_search.schemas import Pathway
+
+    eval_result = evaluate_baseline(calibration_fixture_path, example_candidates_dir)
+    results: list[dict[str, Any]] = list(eval_result.get("results", []))
+
+    rc_path = route_coverage_fixture_path or _default_route_coverage_fixture_path()
+    if rc_path.exists():
+        classifier = RuleBasedBaselineClassifier()
+        with rc_path.open(encoding="utf-8") as handle:
+            rc_data = json.load(handle)
+        for fixture in rc_data.get("fixtures", []):
+            candidate_dict = fixture.get("candidate", {})
+            if not candidate_dict:
+                continue
+            with suppress(Exception):
+                results.append(_score_and_predict(candidate_dict, classifier))
+
+    all_pathways = {p.value for p in Pathway}
+    covered_pathways = {r["expected_pathway"] for r in results}
+    uncovered_pathways = sorted(all_pathways - covered_pathways)
+
+    by_pathway: dict[str, int] = {}
+    for r in results:
+        pw = r["expected_pathway"]
+        by_pathway[pw] = by_pathway.get(pw, 0) + 1
+
+    return {
+        "schema_version": "route_coverage_v1",
+        "disclaimer": BASELINE_EVAL_DISCLAIMER,
+        "total_pathway_values": len(all_pathways),
+        "covered_pathway_count": len(covered_pathways),
+        "uncovered_pathway_count": len(uncovered_pathways),
+        "uncovered_pathways": uncovered_pathways,
+        "covered_pathways": sorted(covered_pathways),
+        "by_pathway_case_count": dict(sorted(by_pathway.items())),
+        "full_coverage": len(uncovered_pathways) == 0,
+    }

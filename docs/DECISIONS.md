@@ -742,3 +742,191 @@ Reproducibility is a prerequisite for scientific integrity. If scoring is non-de
 - `score-determinism-check` is wired into `validate-all` and must return `all_deterministic: true`.
 - Any introduction of randomness (sampling, stochastic inference, data augmentation) must be explicitly gated behind a separate opt-in flag and documented in DECISIONS.md.
 - The scoring model must remain deterministic for a given input regardless of execution environment or call count.
+
+---
+
+## DECISION-031: Scoring Config And Route Coverage Are Required Local Validation Gates
+
+**Date:** 2026-05-15
+
+**Status:** Accepted
+
+### Decision
+
+Two new `validate-all` gates are introduced to support Milestone 10 interpretability and calibration work:
+
+1. **Scoring config threshold count** — at least one pathway threshold must be present in `configs/scoring_v0.json`. This ensures the scoring configuration file is not accidentally empty or corrupt.
+
+2. **Route coverage** — at least 2 Pathway enum values must have calibration fixture coverage. This confirms that both the primary positive pathway (`candidate_review_packet`) and primary negative pathway (`do_not_submit_false_positive`) are represented in the synthetic fixture set before any learned model is introduced.
+
+### Rationale
+
+A learned model trained only against fixtures covering a subset of pathways would have undefined behavior for uncovered classes. Requiring minimum route coverage makes gaps explicit before they affect calibration or evaluation.
+
+### Consequences
+
+- `scoring-config-summary` is wired into `validate-all` with a gate of `threshold_count >= 1`.
+- `route-coverage-summary` is wired into `validate-all` with a gate of `covered_pathway_count >= 2`.
+- `lifecycle-transition-summary` runs in `validate-all` and requires `invalid_transition_count == 0`.
+- `observation-efficiency-summary` runs in `validate-all` as a health check with no hard failure gate beyond `completion_rate >= 0.0`.
+- All four summaries are scheduling/provenance/diagnostic aids only. They do not authorize external submission or claim detection.
+
+---
+
+## DECISION-032: Candidate Triage And Sensitivity Config Are Validated Scheduling Aids
+
+**Date:** 2026-05-16
+**Status:** Accepted
+
+### Context
+
+Operators need a place to record candidate-specific notes (triage labels, blocking reasons, follow-up flags) without those notes influencing scoring, posteriors, or pathway routing. Separately, per-track sensitivity weights in the scoring config need to be explicitly audited as synthetic v0 calibration parameters, not survey detection sensitivities.
+
+### Decision
+
+1. **Candidate triage notes** are operator scheduling aids and provenance records only. A dedicated schema (`candidate_triage_v1`), fixture, loader, and summary CLI (`triage-summary`) are added. Triage notes carry an explicit disclaimer that they do not modify scores, posteriors, or pathway routing and are not detection claims or external submission authorizations.
+
+2. **Sensitivity config summary** reads per-track sensitivity weights from `configs/scoring_v0.json` and summarises them without recalibrating or applying them. A dedicated schema (`sensitivity_config_summary_v1`) and CLI (`sensitivity-config-summary`) are added. The summary disclaimer explicitly states these are synthetic v0 development coefficients and not calibrated survey detection sensitivities.
+
+3. Both are wired into `validate-all` with gates:
+   - `sensitivity_track_count >= 3` (all three tracks must have configured weights)
+   - `triage_note_count >= 5` (minimum fixture coverage)
+   - `len(triage_tracks_covered) >= 3` (all three tracks must have triage notes)
+
+### Rationale
+
+Explicitly separating operator scheduling notes from scoring prevents triage decisions from being mistaken for evidence-based pathway routing. Summarising sensitivity weights as configuration metadata (not calibrated parameters) preserves the conservative false-positive-first framing throughout the pipeline.
+
+### Consequences
+
+- `triage-summary` is a scheduling aid only; triage labels do not route candidates.
+- `sensitivity-config-summary` reports local threshold values only — not calibrated detection thresholds.
+- Schema count increases from 29 to 31.
+- Route coverage gate raised from `>= 2` to `>= 4` now that additional pathway fixtures are committed.
+
+---
+
+## DECISION-033: Signal Registry, Audit Trail, Multi-Epoch Summaries, Schema Drift Detection, And Provenance Chain Validation Are Scheduling Provenance Aids
+
+**Date:** 2026-05-16
+**Status:** Accepted
+
+### Context
+
+As the pipeline matures, operators need structured records for signals of interest (registry), actions taken on candidates (audit trail), multi-epoch follow-up status (multi-epoch summary), snapshot-based priority comparisons (target recalibration), operator coverage (which operators have triaged which tracks), and structural consistency checks across JSON schema artifacts (schema drift). The provenance chain in report manifests also needs a formal validation step.
+
+### Decision
+
+1. **Signal registry** (`signal_registry_v1`) is a scheduling-aid registry of candidate signals of interest. Entries carry priority tiers (`tier_1`/`tier_2`/`tier_3`) and rationale fields. The registry is not a detection claim and does not modify candidate posteriors.
+
+2. **Candidate audit trail** (`candidate_audit_trail_v1`) is an append-only log of operator actions on candidates. Action types are bounded (`triage_note_added`, `stage_transition`, `observation_scheduled`, `observation_completed`, `observation_cancelled`, `archived`, `human_reviewed`). Irreversibility is tracked per entry. Audit entries are not detection claims.
+
+3. **Multi-epoch observation summary** (`multi_epoch_observations_v1`) records per-target epoch counts, detection status per epoch, and consistent-detection flags. Consistent detection across epochs does not constitute confirmation without external validation.
+
+4. **Target recalibration summary** compares two most-recent target priority snapshots and reports rank changes. Priority rank changes do not modify candidate scores or posteriors and are not detection evidence.
+
+5. **Operator coverage summary** and **triage label completeness check** report which operators have triaged which tracks and which triage labels have fixture coverage. These are scheduling provenance diagnostics only.
+
+6. **Classifier rule coverage summary** reports which baseline classifier rules fire across evaluation cases, with a coverage fraction gate.
+
+7. **Provenance chain validator** checks that all committed report manifests carry required provenance fields (`schema_version`, `config_version`, `generated_at_utc`, `provenance_summary`). A passing check does not constitute external validation.
+
+8. **Schema drift detection** iterates all committed `schemas/*.schema.json` files and checks structural consistency (required `$schema` key, `type: object`, non-empty `required`). Drift count must be zero for `validate-all` to pass.
+
+9. **Observation gap analysis** identifies targets with no completed observation windows as a scheduling provenance diagnostic.
+
+10. All new modules wire into `validate-all` with gates:
+    - `signal_registry_active_count >= 4`
+    - `audit_action_count >= 6`
+    - `multi_epoch_target_count >= 3`
+    - `recalibration_snapshot_count >= 2`
+    - `operator_coverage_count >= 2`
+    - `label_coverage_fraction >= 0.5`
+    - `classifier_rule_coverage_fraction >= 0.5`
+    - `provenance_chain_ok == True`
+    - `schema_drift_count == 0`
+
+### Consequences
+
+- Schema count increases from 31 to 35.
+- None of the new modules authorize external submission or claim a detection.
+- Triage annotation tags are documentation-only fields; they do not route candidates.
+
+---
+
+## DECISION-034: Observation Notes, Epoch Plan, And Aggregate Blockers Are Scheduling Provenance Records
+
+**Date:** 2026-05-16
+
+**Context:**
+
+Candidates accumulate post-observation annotations, follow-up scheduling entries, and cross-module blocking issues that need consolidated visibility for operator review.
+
+**Decision:**
+
+1. **Candidate observation notes** (`candidate_observation_notes_v1`) record post-observation operator annotations with outcome classification and quality flags. Notes are scheduling and provenance records only — they do not modify candidate posteriors or pathway routing.
+
+2. **Epoch plan** (`epoch_plan_v1`) tracks which targets need additional observation epochs, why, and their scheduling priority. Entries are local scheduling aids — they do not constitute telescope-time commitments or confirmation of signals.
+
+3. **Aggregate blockers summary** consolidates blocking issues from triage notes, lifecycle entries, observation quality flags, and candidate extraction handoffs. This is an operational dashboard only — no minimum blocker count is gated in `validate-all`.
+
+4. New `validate-all` gates:
+   - `obs_notes_count >= 5`
+   - `epoch_plan_entry_count >= 4`
+   - `aggregate_blocker_count >= 0`
+
+### Consequences
+
+- Schema count increases from 35 to 37.
+- None of the new modules authorize external submission or claim a detection.
+- Aggregate blockers report mirrors existing fixture data and adds no new external information.
+
+## DECISION-035: Candidate Score History, Operator Assignment, And Pipeline Health Are Scheduling Provenance Records
+
+**Date**: 2026-05-16
+
+**Context**: The pipeline now tracks score evolution across epochs, operator assignments for candidate review, and a per-track health dashboard.
+
+**Decision**: All three modules are implemented as local scheduling and provenance records only. They do not modify candidate scores, posteriors, or pathway routing. Disclaimers on each module state they are not detections, discoveries, or external validation.
+
+**Score history**: records how a candidate's composite score changes across observation epochs for provenance and scheduling audit purposes only.
+
+**Operator assignment**: records which operators are responsible for reviewing which candidates. Escalated assignments surface for senior review but do not change pathway routing.
+
+**Pipeline health**: aggregates triage, lifecycle, observation, and assignment state into a per-track dashboard. It identifies candidates stalled in the pipeline; it does not rank or prioritize candidates for external submission.
+
+**Consequences**: `validate-all` gates enforce minimum fixture coverage for all three modules. Scientific guardrails remain unchanged.
+
+## DECISION-036: Candidate Flags, Review Deadlines, And Pipeline Throughput Are Scheduling Provenance Records
+
+**Date**: 2026-05-16
+
+**Context**: The pipeline now tracks quality flags raised against candidates, upcoming operator review deadlines, and per-stage throughput metrics.
+
+**Decision**: All three modules are implemented as local scheduling and provenance records only. They do not modify candidate scores, posteriors, or pathway routing. All outputs carry conservative disclaimers.
+
+**Candidate flags**: surfaces data-quality issues and operational blockers for operator review. Flag severity reflects quality-control classification, not candidate interest level.
+
+**Review deadlines**: tracks upcoming review obligations. Urgency levels reflect scheduling priority, not candidate quality. Overdue deadlines are surfaced for operator awareness.
+
+**Pipeline throughput**: aggregates per-stage lifecycle and triage counts to surface pipeline bottlenecks. Throughput rate is a local scheduling metric, not a calibrated survey efficiency estimate.
+
+**Consequences**: `validate-all` gates enforce minimum fixture coverage for all three modules. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-037: Candidate Retention, Operator Performance, And Track Comparison Are Scheduling Provenance Records
+
+**Date**: 2026-05-17
+
+**Context**: The pipeline now tracks candidate dwell times in the pipeline, operator workload metrics, and a cross-track operational dashboard.
+
+**Decision**: Implement three new scheduling provenance modules:
+
+**Candidate retention**: tracks how long candidates remain in the pipeline and their current workflow status. Active/archived/blocked breakdowns are scheduling aids only. Days in pipeline is not correlated with candidate quality.
+
+**Operator performance**: aggregates per-operator assignment outcomes (completed, escalated, deferred, pending, in_progress) from existing operator assignment fixtures. Completion and escalation rates are workflow health indicators, not quality judgments.
+
+**Track comparison**: cross-track operational dashboard combining triage notes, lifecycle stages, candidate flags, review deadlines, epoch plan requests, and observation notes. Total open flags and overdue deadlines are scheduling alerts, not candidate interest signals.
+
+**Consequences**: `validate-all` gates enforce minimum fixture coverage (`candidate_retention_record_count >= 5`, `operator_perf_count >= 2`, `track_comparison_open_flags >= 0`). Scientific guardrails remain unchanged.

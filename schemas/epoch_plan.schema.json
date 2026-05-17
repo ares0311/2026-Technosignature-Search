@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EpochPlan",
+  "description": "Scheduling aid for targets requiring additional observation epochs.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "entries"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "epoch_plan_v1"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "entry_id",
+          "target_id",
+          "track",
+          "current_epoch_count",
+          "requested_additional_epochs",
+          "rationale",
+          "status",
+          "priority",
+          "created_utc"
+        ],
+        "properties": {
+          "entry_id": { "type": "string" },
+          "target_id": { "type": "string" },
+          "track": { "type": "string", "enum": ["radio", "infrared", "anomaly"] },
+          "current_epoch_count": { "type": "integer", "minimum": 0 },
+          "requested_additional_epochs": { "type": "integer", "minimum": 0 },
+          "rationale": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "scheduled", "in_progress", "completed", "deferred", "cancelled"]
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["high", "medium", "low"]
+          },
+          "created_utc": { "type": "string" },
+          "blocking_reasons": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "operator_id": { "type": "string" }
+        }
+      }
+    }
+  }
+}

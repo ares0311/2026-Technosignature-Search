@@ -243,20 +243,34 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "benchmark_run_results",
         "candidate_extraction_handoff",
         "candidate_packet",
+        "candidate_triage",
         "consensus_export",
         "consensus_labels",
         "cross_track_references",
         "report_manifest",
         "review_queue",
+        "sensitivity_config_summary",
         "validation_dataset_manifest",
         "validation_promotion_rules",
         "baseline_eval",
         "baseline_performance_history",
         "candidate_lifecycle",
         "observation_schedule",
+        "scoring_config_summary",
         "target_watchlist",
         "validation_readiness",
         "weekly_review_template",
+        "signal_registry",
+        "candidate_audit_trail",
+        "multi_epoch_observations",
+        "target_priority_snapshots",
+        "candidate_flags",
+        "candidate_observation_notes",
+        "candidate_score_history",
+        "epoch_plan",
+        "operator_assignment",
+        "review_deadlines",
+        "candidate_retention",
     }
     assert result["background_search_ledger"].endswith(
         "schemas/background_search_ledger.schema.json"
@@ -1368,7 +1382,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 28
+    assert result["schema_count"] == 42
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3

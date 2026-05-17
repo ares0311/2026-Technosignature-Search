@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Target Priority Snapshots",
+  "description": "Scheduling-aid snapshots of target priority ordering. Not detection evidence.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "snapshots"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "disclaimer": { "type": "string" },
+    "snapshots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["snapshot_id", "snapshot_utc", "ordered_target_ids", "priority_scores"],
+        "properties": {
+          "snapshot_id": { "type": "string" },
+          "snapshot_utc": { "type": "string" },
+          "ordered_target_ids": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "priority_scores": {
+            "type": "object",
+            "additionalProperties": { "type": "number" }
+          }
+        }
+      }
+    }
+  }
+}

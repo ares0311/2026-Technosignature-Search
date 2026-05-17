@@ -559,3 +559,96 @@ Gates in `validate-all`: at least 3 lifecycle entries across all 3 tracks; at le
 ```
 
 Gate in `validate-all`: `synthetic_missed_injection_rate < 1.0` (at least one injection must be recovered per track). Values are synthetic development diagnostics only.
+
+---
+
+## Scoring Config And Route Coverage
+
+```bash
+.venv/bin/techno-search scoring-config-summary
+.venv/bin/techno-search route-coverage-summary
+```
+
+Gates in `validate-all`: at least 1 scoring threshold present; at least 2 pathway values have calibration fixture coverage. Scoring config summary reports current v0 thresholds only — not calibrated detection limits. Route coverage identifies which Pathway enum values still lack fixture support.
+
+---
+
+## Lifecycle Transition Validation
+
+```bash
+.venv/bin/techno-search lifecycle-transition-summary
+```
+
+Gate in `validate-all`: `invalid_transition_count == 0`. Validates that all candidate lifecycle stage progressions follow the allowed ordering (`initial_detection` → `archived`). Any backward-moving stage transition is reported as invalid. Scheduling/provenance aid only.
+
+---
+
+## Observation Efficiency
+
+```bash
+.venv/bin/techno-search observation-efficiency-summary
+```
+
+Reports completion rate, cancellation rate, and per-track efficiency from the committed schedule fixture. Gate in `validate-all`: `completion_rate >= 0.0` (always passes; the gate confirms the summary runs cleanly). Scheduling aid only — not a survey efficiency estimate or external submission authorization.
+
+---
+
+## Sensitivity Config
+
+```bash
+.venv/bin/techno-search sensitivity-config-summary
+```
+
+Gate in `validate-all`: `track_count >= 3`. Confirms all three tracks (radio, infrared, anomaly) have configured sensitivity weights in `configs/scoring_v0.json`. These are synthetic v0 development coefficients only — not calibrated detection sensitivities.
+
+---
+
+## Candidate Triage Notes
+
+```bash
+.venv/bin/techno-search triage-summary
+```
+
+Gates in `validate-all`: `note_count >= 5` and `len(tracks_covered) >= 3`. Confirms operator triage notes are present for all three tracks. Triage notes are scheduling aids and provenance records only — they do not modify scores, posteriors, or pathway routing.
+
+---
+
+## Observation Notes Validation
+
+```bash
+.venv/bin/techno-search observation-notes-summary
+```
+
+Gate in `validate-all`: `note_count >= 5`. Verifies post-observation operator annotations exist across all three tracks. Notes are scheduling provenance records and do not affect candidate scoring.
+
+---
+
+## Epoch Plan Validation
+
+```bash
+.venv/bin/techno-search epoch-plan-summary
+```
+
+Gate in `validate-all`: `entry_count >= 4`. Verifies that epoch plan entries exist for targets needing follow-up observations. Entries are scheduling aids only.
+
+---
+
+## Aggregate Blockers Validation
+
+```bash
+.venv/bin/techno-search aggregate-blockers-summary
+```
+
+Included in `validate-all` for informational purposes. Collects blocking issues from triage, lifecycle, observation notes, and handoffs. No minimum blocker count is required — the gate passes as long as the summary is computable.
+
+## Score History Validation
+
+`validate-all` requires `score_history_entry_count >= 5` to confirm synthetic score evolution fixtures cover all three tracks with multi-epoch entries.
+
+## Operator Assignment Validation
+
+`validate-all` requires `operator_assignment_count >= 4` to confirm operator scheduling records are present across tracks.
+
+## Pipeline Health Validation
+
+`validate-all` requires `pipeline_total_blocked >= 0` (always passes; the gate confirms the health summary is reachable). Use `pipeline-health-summary` for the full per-track breakdown.

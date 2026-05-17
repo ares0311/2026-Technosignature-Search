@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OperatorAssignment",
+  "description": "Schema for operator assignment records tracking which operators review which candidates.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "assignments"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "operator_assignment_v1"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "assignments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "assignment_id",
+          "candidate_id",
+          "track",
+          "operator_id",
+          "assignment_status",
+          "priority",
+          "assigned_utc",
+          "due_utc"
+        ],
+        "properties": {
+          "assignment_id": { "type": "string" },
+          "candidate_id": { "type": "string" },
+          "track": { "type": "string" },
+          "operator_id": { "type": "string" },
+          "assignment_status": { "type": "string" },
+          "priority": { "type": "string" },
+          "assigned_utc": { "type": "string" },
+          "due_utc": { "type": "string" },
+          "completed_utc": { "type": "string" },
+          "notes": { "type": "string" },
+          "escalation_reason": { "type": "string" },
+          "review_tags": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,5 +1,9 @@
 """Technosignature-interest candidate search tools."""
 
+from techno_search.aggregate_blockers import (
+    AGGREGATE_BLOCKERS_DISCLAIMER,
+    aggregate_blockers_summary,
+)
 from techno_search.artifact_cleanup import (
     ARTIFACT_CLEANUP_DISCLAIMER,
     ARTIFACT_CLEANUP_SCHEMA_VERSION,
@@ -61,7 +65,9 @@ from techno_search.baseline_eval import (
     BASELINE_PERFORMANCE_HISTORY_SCHEMA_VERSION,
     baseline_pathway_drift_summary,
     baseline_performance_history_summary,
+    classifier_rule_coverage_summary,
     evaluate_baseline,
+    route_coverage_summary,
     score_determinism_check,
 )
 from techno_search.baseline_model import (
@@ -101,12 +107,64 @@ from techno_search.calibration_metrics import (
     precision_recall_summary,
     reliability_summary,
 )
+from techno_search.candidate_audit_trail import (
+    CANDIDATE_AUDIT_TRAIL_DISCLAIMER,
+    CANDIDATE_AUDIT_TRAIL_SCHEMA_VERSION,
+    CandidateAuditAction,
+    audit_trail_summary,
+    load_audit_trail,
+)
+from techno_search.candidate_flags import (
+    ALLOWED_FLAG_SEVERITIES,
+    ALLOWED_FLAG_STATUSES,
+    ALLOWED_FLAG_TYPES,
+    CANDIDATE_FLAGS_DISCLAIMER,
+    CANDIDATE_FLAGS_SCHEMA_VERSION,
+    CandidateFlag,
+    candidate_flags_summary,
+    load_candidate_flags,
+)
 from techno_search.candidate_lifecycle import (
     CANDIDATE_LIFECYCLE_DISCLAIMER,
     CANDIDATE_LIFECYCLE_SCHEMA_VERSION,
     CandidateLifecycleEntry,
     candidate_lifecycle_summary,
+    lifecycle_transition_summary,
     load_lifecycle_entries,
+)
+from techno_search.candidate_observation_notes import (
+    ALLOWED_OBSERVATION_OUTCOMES,
+    CANDIDATE_OBSERVATION_NOTES_DISCLAIMER,
+    CANDIDATE_OBSERVATION_NOTES_SCHEMA_VERSION,
+    CandidateObservationNote,
+    load_observation_notes,
+    observation_notes_summary,
+)
+from techno_search.candidate_retention import (
+    ALLOWED_RETENTION_STATUSES,
+    CANDIDATE_RETENTION_DISCLAIMER,
+    CANDIDATE_RETENTION_SCHEMA_VERSION,
+    CandidateRetentionRecord,
+    candidate_retention_summary,
+    load_retention_records,
+)
+from techno_search.candidate_score_history import (
+    ALLOWED_SCORE_HISTORY_PATHWAYS,
+    CANDIDATE_SCORE_HISTORY_DISCLAIMER,
+    CANDIDATE_SCORE_HISTORY_SCHEMA_VERSION,
+    CandidateScoreHistoryEntry,
+    load_score_history,
+    score_history_summary,
+)
+from techno_search.candidate_triage import (
+    ALLOWED_TRIAGE_LABELS,
+    CANDIDATE_TRIAGE_DISCLAIMER,
+    CANDIDATE_TRIAGE_SCHEMA_VERSION,
+    CandidateTriageNote,
+    load_triage_notes,
+    operator_coverage_summary,
+    triage_label_completeness_check,
+    triage_summary,
 )
 from techno_search.config import TrackConfig, load_scoring_config, load_track_config
 from techno_search.cross_track import (
@@ -116,6 +174,15 @@ from techno_search.cross_track import (
     cross_track_summary,
     load_cross_track_references,
 )
+from techno_search.epoch_plan import (
+    ALLOWED_EPOCH_PLAN_STATUSES,
+    ALLOWED_EPOCH_PRIORITIES,
+    EPOCH_PLAN_DISCLAIMER,
+    EPOCH_PLAN_SCHEMA_VERSION,
+    EpochPlanEntry,
+    epoch_plan_summary,
+    load_epoch_plan,
+)
 from techno_search.injection_recovery import (
     INJECTION_RECOVERY_DISCLAIMER,
     false_negative_summary,
@@ -123,14 +190,46 @@ from techno_search.injection_recovery import (
     load_injection_recovery_cases,
 )
 from techno_search.live_data import live_data_enabled, require_live_data_enabled
+from techno_search.multi_epoch_summary import (
+    MULTI_EPOCH_DISCLAIMER,
+    MULTI_EPOCH_SCHEMA_VERSION,
+    MultiEpochRecord,
+    load_multi_epoch_records,
+    multi_epoch_summary,
+)
 from techno_search.observation_schedule import (
     OBSERVATION_SCHEDULE_DISCLAIMER,
     OBSERVATION_SCHEDULE_SCHEMA_VERSION,
     ObservationWindow,
     load_observation_windows,
+    observation_efficiency_summary,
+    observation_gap_analysis,
     observation_schedule_summary,
 )
+from techno_search.operator_assignment import (
+    ALLOWED_ASSIGNMENT_PRIORITIES,
+    ALLOWED_ASSIGNMENT_STATUSES,
+    OPERATOR_ASSIGNMENT_DISCLAIMER,
+    OPERATOR_ASSIGNMENT_SCHEMA_VERSION,
+    OperatorAssignment,
+    load_operator_assignments,
+    operator_assignment_summary,
+)
+from techno_search.operator_performance import (
+    OPERATOR_PERFORMANCE_DISCLAIMER,
+    operator_performance_summary,
+)
 from techno_search.pathway import classify_pathway
+from techno_search.pipeline_health import (
+    PIPELINE_HEALTH_DISCLAIMER,
+    PIPELINE_HEALTH_TRACKS,
+    pipeline_health_summary,
+)
+from techno_search.pipeline_throughput import (
+    PIPELINE_STAGES,
+    PIPELINE_THROUGHPUT_DISCLAIMER,
+    pipeline_throughput_summary,
+)
 from techno_search.plotting import (
     PLOT_ARTIFACT_DISCLAIMER,
     PlotArtifact,
@@ -152,6 +251,16 @@ from techno_search.reproducibility import (
     REPRODUCIBILITY_VERIFICATION_SCHEMA_VERSION,
     verify_packet_against_manifest,
     verify_report_directory,
+)
+from techno_search.review_deadlines import (
+    ALLOWED_DEADLINE_STATUSES,
+    ALLOWED_DEADLINE_TYPES,
+    ALLOWED_DEADLINE_URGENCIES,
+    REVIEW_DEADLINES_DISCLAIMER,
+    REVIEW_DEADLINES_SCHEMA_VERSION,
+    ReviewDeadline,
+    load_review_deadlines,
+    review_deadlines_summary,
 )
 from techno_search.review_queue import (
     CONSENSUS_EXPORT_DISCLAIMER,
@@ -178,12 +287,42 @@ from techno_search.review_queue import (
 )
 from techno_search.schemas import Candidate, Pathway, ScoredCandidate, Track
 from techno_search.scoring import score_candidate
+from techno_search.scoring_config import (
+    SCORING_CONFIG_DISCLAIMER,
+    SCORING_CONFIG_SCHEMA_VERSION,
+    scoring_config_summary,
+)
+from techno_search.sensitivity_config import (
+    SENSITIVITY_CONFIG_DISCLAIMER,
+    SENSITIVITY_CONFIG_SCHEMA_VERSION,
+    sensitivity_config_summary,
+)
+from techno_search.signal_registry import (
+    SIGNAL_REGISTRY_DISCLAIMER,
+    SIGNAL_REGISTRY_SCHEMA_VERSION,
+    SignalOfInterest,
+    load_signal_registry,
+    signal_registry_summary,
+    signal_registry_track_summary,
+)
+from techno_search.target_recalibration_summary import (
+    TARGET_RECALIBRATION_DISCLAIMER,
+    TARGET_RECALIBRATION_SCHEMA_VERSION,
+    TargetPrioritySnapshot,
+    load_priority_snapshots,
+    target_recalibration_summary,
+)
 from techno_search.target_watchlist import (
     TARGET_WATCHLIST_DISCLAIMER,
     TARGET_WATCHLIST_SCHEMA_VERSION,
     WatchlistEntry,
     load_watchlist_entries,
     target_watchlist_summary,
+)
+from techno_search.track_comparison import (
+    COMPARISON_TRACKS,
+    TRACK_COMPARISON_DISCLAIMER,
+    track_comparison_summary,
 )
 from techno_search.validation_datasets import (
     VALIDATION_DATASET_DISCLAIMER,
@@ -221,17 +360,57 @@ __all__ = [
     "baseline_performance_history_summary",
     "evaluate_baseline",
     "predict_pathway",
+    "classifier_rule_coverage_summary",
+    "route_coverage_summary",
     "score_determinism_check",
     "CANDIDATE_LIFECYCLE_DISCLAIMER",
     "CANDIDATE_LIFECYCLE_SCHEMA_VERSION",
     "CandidateLifecycleEntry",
     "candidate_lifecycle_summary",
+    "lifecycle_transition_summary",
     "load_lifecycle_entries",
     "OBSERVATION_SCHEDULE_DISCLAIMER",
     "OBSERVATION_SCHEDULE_SCHEMA_VERSION",
     "ObservationWindow",
     "load_observation_windows",
+    "observation_efficiency_summary",
+    "observation_gap_analysis",
     "observation_schedule_summary",
+    "SCORING_CONFIG_DISCLAIMER",
+    "SCORING_CONFIG_SCHEMA_VERSION",
+    "scoring_config_summary",
+    "CANDIDATE_AUDIT_TRAIL_DISCLAIMER",
+    "CANDIDATE_AUDIT_TRAIL_SCHEMA_VERSION",
+    "CandidateAuditAction",
+    "audit_trail_summary",
+    "load_audit_trail",
+    "CANDIDATE_TRIAGE_DISCLAIMER",
+    "CANDIDATE_TRIAGE_SCHEMA_VERSION",
+    "ALLOWED_TRIAGE_LABELS",
+    "CandidateTriageNote",
+    "load_triage_notes",
+    "operator_coverage_summary",
+    "triage_label_completeness_check",
+    "triage_summary",
+    "MULTI_EPOCH_DISCLAIMER",
+    "MULTI_EPOCH_SCHEMA_VERSION",
+    "MultiEpochRecord",
+    "load_multi_epoch_records",
+    "multi_epoch_summary",
+    "SIGNAL_REGISTRY_DISCLAIMER",
+    "SIGNAL_REGISTRY_SCHEMA_VERSION",
+    "SignalOfInterest",
+    "load_signal_registry",
+    "signal_registry_summary",
+    "signal_registry_track_summary",
+    "TARGET_RECALIBRATION_DISCLAIMER",
+    "TARGET_RECALIBRATION_SCHEMA_VERSION",
+    "TargetPrioritySnapshot",
+    "load_priority_snapshots",
+    "target_recalibration_summary",
+    "SENSITIVITY_CONFIG_DISCLAIMER",
+    "SENSITIVITY_CONFIG_SCHEMA_VERSION",
+    "sensitivity_config_summary",
     "ARTIFACT_CLEANUP_DISCLAIMER",
     "ARTIFACT_CLEANUP_SCHEMA_VERSION",
     "BENCHMARK_METADATA_DISCLAIMER",
@@ -390,4 +569,65 @@ __all__ = [
     "verify_report_directory",
     "write_candidate_reports",
     "write_synthetic_plot_artifacts",
+    "AGGREGATE_BLOCKERS_DISCLAIMER",
+    "aggregate_blockers_summary",
+    "ALLOWED_FLAG_SEVERITIES",
+    "ALLOWED_FLAG_STATUSES",
+    "ALLOWED_FLAG_TYPES",
+    "CANDIDATE_FLAGS_DISCLAIMER",
+    "CANDIDATE_FLAGS_SCHEMA_VERSION",
+    "CandidateFlag",
+    "candidate_flags_summary",
+    "load_candidate_flags",
+    "ALLOWED_DEADLINE_STATUSES",
+    "ALLOWED_DEADLINE_TYPES",
+    "ALLOWED_DEADLINE_URGENCIES",
+    "REVIEW_DEADLINES_DISCLAIMER",
+    "REVIEW_DEADLINES_SCHEMA_VERSION",
+    "ReviewDeadline",
+    "load_review_deadlines",
+    "review_deadlines_summary",
+    "PIPELINE_STAGES",
+    "PIPELINE_THROUGHPUT_DISCLAIMER",
+    "pipeline_throughput_summary",
+    "ALLOWED_RETENTION_STATUSES",
+    "CANDIDATE_RETENTION_DISCLAIMER",
+    "CANDIDATE_RETENTION_SCHEMA_VERSION",
+    "CandidateRetentionRecord",
+    "candidate_retention_summary",
+    "load_retention_records",
+    "OPERATOR_PERFORMANCE_DISCLAIMER",
+    "operator_performance_summary",
+    "COMPARISON_TRACKS",
+    "TRACK_COMPARISON_DISCLAIMER",
+    "track_comparison_summary",
+    "ALLOWED_SCORE_HISTORY_PATHWAYS",
+    "CANDIDATE_SCORE_HISTORY_DISCLAIMER",
+    "CANDIDATE_SCORE_HISTORY_SCHEMA_VERSION",
+    "CandidateScoreHistoryEntry",
+    "load_score_history",
+    "score_history_summary",
+    "ALLOWED_ASSIGNMENT_PRIORITIES",
+    "ALLOWED_ASSIGNMENT_STATUSES",
+    "OPERATOR_ASSIGNMENT_DISCLAIMER",
+    "OPERATOR_ASSIGNMENT_SCHEMA_VERSION",
+    "OperatorAssignment",
+    "load_operator_assignments",
+    "operator_assignment_summary",
+    "PIPELINE_HEALTH_DISCLAIMER",
+    "PIPELINE_HEALTH_TRACKS",
+    "pipeline_health_summary",
+    "ALLOWED_OBSERVATION_OUTCOMES",
+    "CANDIDATE_OBSERVATION_NOTES_DISCLAIMER",
+    "CANDIDATE_OBSERVATION_NOTES_SCHEMA_VERSION",
+    "CandidateObservationNote",
+    "load_observation_notes",
+    "observation_notes_summary",
+    "ALLOWED_EPOCH_PLAN_STATUSES",
+    "ALLOWED_EPOCH_PRIORITIES",
+    "EPOCH_PLAN_DISCLAIMER",
+    "EPOCH_PLAN_SCHEMA_VERSION",
+    "EpochPlanEntry",
+    "epoch_plan_summary",
+    "load_epoch_plan",
 ]

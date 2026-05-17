@@ -10,6 +10,290 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
+User requested fifteen iterative steps covering candidate flags, review deadlines, and pipeline throughput.
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all fifteen steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/candidate_flags.py` — quality flags and operational alerts raised against candidates
+- `schemas/candidate_flags.schema.json`
+- `tests/fixtures/candidate_flags.json` — 5 flags across radio/infrared/anomaly with open/resolved/dismissed/acknowledged statuses
+- `tests/test_candidate_flags.py` — 23 tests
+- `src/techno_search/review_deadlines.py` — upcoming review deadlines with urgency levels
+- `schemas/review_deadlines.schema.json`
+- `tests/fixtures/review_deadlines.json` — 5 deadlines across tracks with pending/overdue/completed states
+- `tests/test_review_deadlines.py` — 25 tests
+- `src/techno_search/pipeline_throughput.py` — per-stage lifecycle counts and throughput rate
+- `tests/test_pipeline_throughput.py` — 13 tests
+- `candidate_flags` and `review_deadlines` added to `SCHEMA_FILENAMES` (total schemas: 41)
+- `techno-search candidate-flags-summary --fixture-path`, `techno-search review-deadlines-summary --fixture-path`, `techno-search pipeline-throughput-summary` CLI commands
+- `validate-all` gates: `candidate_flag_count >= 5`, `review_deadline_count >= 4`, `pipeline_throughput_rate >= 0.0`
+- `validation-summary` fields: `candidate_flag_count`, `candidate_flag_open_count`, `review_deadline_count`, `review_deadline_overdue_count`, `pipeline_throughput_rate`
+- DECISION-036: Candidate Flags, Review Deadlines, And Pipeline Throughput Are Scheduling Provenance Records
+- Docs: CLI_USAGE.md, DECISIONS.md updated
+
+Scientific guardrail:
+
+- Flag severity reflects quality-control classification, not candidate interest level
+- Deadline urgency reflects scheduling priority, not candidate quality
+- Throughput rate is a local scheduling metric, not a calibrated survey efficiency estimate
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/ruff check .
+.venv/bin/mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 696 tests passed
+- 5 tests skipped
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, PR updated.
+
+---
+
+## Previous Iteration
+
+User requested fifteen iterative steps covering candidate score history, operator assignment, and pipeline health summary.
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all fifteen steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/candidate_score_history.py` — tracks score evolution across epochs per candidate
+- `schemas/candidate_score_history.schema.json`
+- `tests/fixtures/candidate_score_history.json` — 5 entries across radio/infrared/anomaly, showing improving/declining/stable trends
+- `tests/test_candidate_score_history.py` — 23 tests
+- `src/techno_search/operator_assignment.py` — operator scheduling assignments for candidate review
+- `schemas/operator_assignment.schema.json`
+- `tests/fixtures/operator_assignments.json` — 5 assignments across tracks with pending/in_progress/completed/escalated/deferred statuses
+- `tests/test_operator_assignment.py` — 25 tests
+- `src/techno_search/pipeline_health.py` — per-track health dashboard aggregating triage, lifecycle, observation, assignment state
+- `tests/test_pipeline_health.py` — 13 tests
+- `candidate_score_history` and `operator_assignment` added to `SCHEMA_FILENAMES` (total schemas: 39)
+- `techno-search score-history-summary --fixture-path`, `techno-search operator-assignment-summary --fixture-path`, `techno-search pipeline-health-summary` CLI commands
+- `validate-all` gates: `score_history_entry_count >= 5`, `op_assignment_count >= 4`, `pipeline_total_blocked >= 0`
+- `validation-summary` fields: `score_history_entry_count`, `score_history_unique_candidate_count`, `operator_assignment_count`, `operator_assignment_escalated_count`, `pipeline_health_total_blocked`
+- DECISION-035: Candidate Score History, Operator Assignment, And Pipeline Health Are Scheduling Provenance Records
+- Docs: CLI_USAGE.md, VALIDATION.md, DECISIONS.md updated
+
+Scientific guardrail:
+
+- Score history entries are provenance records only — they do not re-score or re-route candidates
+- Operator assignments are scheduling aids — escalated status does not modify pathway routing
+- Pipeline health is an operational dashboard — it identifies stalled candidates but does not rank or prioritize for external submission
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/ruff check .
+.venv/bin/mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 639 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, PR updated.
+
+---
+
+## Previous Iteration
+
+User requested fifteen iterative steps covering candidate observation notes, epoch planning, and aggregate blocker consolidation.
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all fifteen steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/candidate_observation_notes.py` — `CandidateObservationNote` dataclass, `load_observation_notes()`, `observation_notes_summary()`
+- `schemas/candidate_observation_notes.schema.json`
+- `tests/fixtures/candidate_observation_notes.json` — 5 notes across radio/infrared/anomaly, 2 operators, mixed outcomes
+- `techno-search observation-notes-summary` CLI with `--fixture-path`
+- `src/techno_search/epoch_plan.py` — `EpochPlanEntry` dataclass, `load_epoch_plan()`, `epoch_plan_summary()`
+- `schemas/epoch_plan.schema.json`
+- `tests/fixtures/epoch_plan.json` — 5 entries across radio/infrared/anomaly, mixed statuses and priorities
+- `techno-search epoch-plan-summary` CLI with `--fixture-path`
+- `src/techno_search/aggregate_blockers.py` — `aggregate_blockers_summary()` consolidating triage, lifecycle, observation, and handoff blocking issues
+- `techno-search aggregate-blockers-summary` CLI
+- `candidate_observation_notes` and `epoch_plan` in `SCHEMA_FILENAMES` (total schemas: 37)
+- `validate-all` gates: `obs_notes_count >= 5`, `epoch_plan_entry_count >= 4`, `aggregate_blocker_count >= 0`
+- `validation-summary` fields: `observation_notes_count`, `observation_notes_follow_up_count`, `epoch_plan_entry_count`, `epoch_plan_pending_count`, `aggregate_blocker_count`, `aggregate_blocker_unique_candidate_count`
+- DECISION-034: Observation Notes, Epoch Plan, And Aggregate Blockers Are Scheduling Provenance Records
+- Tests: `test_candidate_observation_notes.py` (21), `test_epoch_plan.py` (21), `test_aggregate_blockers.py` (15) — 57 new tests, all passing
+- Docs: CLI_USAGE.md, VALIDATION.md, ROADMAP.md, PROJECT_STATUS.md, DECISIONS.md updated
+
+Scientific guardrail:
+
+- Observation notes are post-observation operator annotations for scheduling and provenance only — they do not modify candidate posteriors
+- Epoch plan entries are local scheduling aids — they do not constitute telescope-time commitments or signal confirmation
+- Aggregate blocker summary is an operational dashboard only — it mirrors existing fixture data and authorizes no external action
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/python -m ruff check .
+.venv/bin/python -m mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 582 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, PR updated.
+
+---
+
+## Previous Iteration
+
+User requested fifteen iterative steps covering route coverage extension, per-track sensitivity config summary, and candidate triage notes.
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all fifteen steps implemented, tested, and validated.
+
+Added:
+
+- `tests/fixtures/route_coverage_fixtures.json` — 3 synthetic candidates verifying `known_object_annotation`, `github_reproducibility_only`, and `human_review_queue` pathway routing
+- Updated `route_coverage_summary()` to load dedicated route coverage fixtures in addition to calibration fixtures; route covered count raised from 2 to 5
+- `validate-all` gate raised from `route_covered_count >= 2` to `>= 4`
+- `src/techno_search/sensitivity_config.py` — `sensitivity_config_summary()` reading `track_sensitivity` from `configs/scoring_v0.json`
+- `schemas/sensitivity_config_summary.schema.json`
+- `techno-search sensitivity-config-summary` CLI with `--config-path`
+- `src/techno_search/candidate_triage.py` — `CandidateTriageNote` dataclass, `load_triage_notes()`, `triage_summary()`
+- `schemas/candidate_triage.schema.json`
+- `tests/fixtures/candidate_triage_notes.json` — 5 notes across radio/infrared/anomaly, 2 operators
+- `techno-search triage-summary` CLI with `--fixture-path`
+- `candidate_triage` and `sensitivity_config_summary` in `SCHEMA_FILENAMES` (total schemas: 31)
+- `validate-all` gates: `sensitivity_track_count >= 3`, `triage_note_count >= 5`, `len(triage_tracks_covered) >= 3`
+- `validation-summary` fields: `sensitivity_track_count`, `sensitivity_weight_count`, `triage_note_count`, `triage_tracks_covered_count`
+- DECISION-032: Candidate Triage And Sensitivity Config Are Validated Scheduling Aids
+- Tests: `test_sensitivity_config.py` (14), `test_candidate_triage.py` (16) — 30 new tests, all passing
+- Docs: CLI_USAGE.md, VALIDATION.md, ROADMAP.md, PROJECT_STATUS.md, DECISIONS.md updated
+
+Scientific guardrail:
+
+- Candidate triage notes are operator scheduling aids and provenance records only — they do not modify scores, posteriors, or pathway routing
+- Sensitivity config summary reports local synthetic v0 weights only — not calibrated survey detection sensitivities
+- Route coverage extension identifies fixture gaps for human review — not a claim of real observation coverage
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/python -m ruff check .
+.venv/bin/python -m mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 460 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, PR created, merging to `main`.
+
+---
+
+## Previous Iteration
+
+User requested fifteen iterative steps covering scoring config summary, route coverage, lifecycle transition validation, and observation efficiency.
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all fifteen steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/scoring_config.py` — `scoring_config_summary()` reading `configs/scoring_v0.json`
+- `schemas/scoring_config_summary.schema.json`
+- `techno-search scoring-config-summary` CLI with `--config-path`
+- `route_coverage_summary()` in `baseline_eval.py` — checks all Pathway enum values have calibration fixture coverage
+- `techno-search route-coverage-summary` CLI
+- `lifecycle_transition_summary()` in `candidate_lifecycle.py` — validates stage ordering per candidate
+- `techno-search lifecycle-transition-summary` CLI with `--fixture-path`
+- `observation_efficiency_summary()` in `observation_schedule.py` — completion/cancellation rates and per-track breakdown
+- `techno-search observation-efficiency-summary` CLI with `--fixture-path`
+- `scoring_config_summary` in `SCHEMA_FILENAMES` (total schemas: 29)
+- `validate-all` gates: `scoring_threshold_count >= 1`, `route_covered_count >= 2`, `lifecycle_invalid_count == 0`, `observation_completion_rate >= 0.0`
+- `validation-summary` fields: `scoring_threshold_count`, `route_covered_pathway_count`, `route_uncovered_pathway_count`, `lifecycle_invalid_transition_count`, `observation_completion_rate`, `observation_cancellation_rate`
+- DECISION-031: Scoring Config And Route Coverage Are Required Local Validation Gates
+- Tests: `test_scoring_config.py` (14), `test_lifecycle_transitions.py` (14) — 28 new tests, all passing
+- Docs: CLI_USAGE.md, VALIDATION.md, ROADMAP.md, PROJECT_STATUS.md updated
+
+Scientific guardrail:
+
+- Scoring config summary reports local threshold values only — not calibrated detection thresholds
+- Route coverage identifies fixture gaps for human review — it does not authorize claiming coverage of real observations
+- Lifecycle transition validation is a scheduling/provenance consistency check only
+- Observation efficiency summary is a scheduling aid — not a survey efficiency estimate
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/python -m ruff check .
+.venv/bin/python -m mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 430 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, PR created, merging to `main`.
+
+---
+
+## Previous Iteration
+
 User requested fifteen iterative steps covering baseline confusion matrix, score determinism checker, candidate lifecycle schema, observation schedule schema, and false-negative summary.
 
 Current branch: `claude/general-session-Bb2dZ`.

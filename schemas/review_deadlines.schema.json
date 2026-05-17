@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ReviewDeadlines",
+  "description": "Schema for operator review deadline records with urgency levels.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "deadlines"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "review_deadlines_v1"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "deadlines": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "deadline_id",
+          "candidate_id",
+          "track",
+          "operator_id",
+          "deadline_type",
+          "urgency",
+          "due_utc",
+          "status"
+        ],
+        "properties": {
+          "deadline_id": { "type": "string" },
+          "candidate_id": { "type": "string" },
+          "track": { "type": "string" },
+          "operator_id": { "type": "string" },
+          "deadline_type": { "type": "string" },
+          "urgency": { "type": "string" },
+          "due_utc": { "type": "string" },
+          "status": { "type": "string" },
+          "notes": { "type": "string" }
+        }
+      }
+    }
+  }
+}

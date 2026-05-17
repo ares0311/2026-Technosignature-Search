@@ -1,0 +1,66 @@
+{
+  "schema_version": "candidate_observation_notes_v1",
+  "disclaimer": "Candidate observation notes are post-observation operator annotations recorded for scheduling and provenance purposes only.",
+  "notes": [
+    {
+      "note_id": "obs-note-001",
+      "candidate_id": "synth-radio-2026-001",
+      "track": "radio",
+      "observation_id": "obs-radio-001",
+      "operator_id": "op-alpha",
+      "outcome": "clean",
+      "note_text": "Narrowband signal confirmed in both ON/OFF beams. No known RFI match. Scheduling follow-up.",
+      "created_utc": "2026-03-10T09:00:00Z",
+      "quality_flags": [],
+      "follow_up_recommended": true
+    },
+    {
+      "note_id": "obs-note-002",
+      "candidate_id": "synth-radio-2026-002",
+      "track": "radio",
+      "observation_id": "obs-radio-002",
+      "operator_id": "op-alpha",
+      "outcome": "rfi_contaminated",
+      "note_text": "Strong RFI pattern present across multiple beam positions. Likely instrumental artifact.",
+      "created_utc": "2026-03-11T10:30:00Z",
+      "quality_flags": ["rfi_band_overlap", "multi_beam_contamination"],
+      "follow_up_recommended": false
+    },
+    {
+      "note_id": "obs-note-003",
+      "candidate_id": "synth-ir-2026-001",
+      "track": "infrared",
+      "observation_id": "obs-ir-001",
+      "operator_id": "op-beta",
+      "outcome": "low_snr",
+      "note_text": "IR excess marginally detected but SNR below threshold. Data quality acceptable. Reobservation warranted.",
+      "created_utc": "2026-03-12T14:00:00Z",
+      "quality_flags": ["low_snr"],
+      "follow_up_recommended": true
+    },
+    {
+      "note_id": "obs-note-004",
+      "candidate_id": "synth-ir-2026-002",
+      "track": "infrared",
+      "observation_id": "obs-ir-002",
+      "operator_id": "op-beta",
+      "outcome": "data_quality_issue",
+      "note_text": "Photometry corrupted by a nearby bright source. Flagging for reobservation with adjusted pointing.",
+      "created_utc": "2026-03-13T11:15:00Z",
+      "quality_flags": ["photometry_contamination", "bright_neighbor"],
+      "follow_up_recommended": false
+    },
+    {
+      "note_id": "obs-note-005",
+      "candidate_id": "synth-anomaly-2026-001",
+      "track": "anomaly",
+      "observation_id": "obs-anomaly-001",
+      "operator_id": "op-alpha",
+      "outcome": "non_detection",
+      "note_text": "No counterpart detected at modern epoch. Archival source remains unexplained. Provisionally archiving pending catalog cross-check.",
+      "created_utc": "2026-03-14T16:45:00Z",
+      "quality_flags": ["catalog_mismatch"],
+      "follow_up_recommended": true
+    }
+  ]
+}

@@ -109,3 +109,118 @@ def observation_schedule_summary(
         "top_priority_target_ids": top_target_ids,
         "operator_note_count": sum(1 for w in windows if w.operator_notes),
     }
+
+
+def observation_gap_analysis(
+    fixture_path: Path | None = None,
+) -> dict[str, Any]:
+    """Identify scheduling gaps between planned and completed observation windows.
+
+    Returns per-target gap counts and a list of targets with no completed windows.
+    This is a scheduling provenance aid only — gaps do not imply missed detections.
+    """
+
+    windows = load_observation_windows(fixture_path)
+
+    by_target_planned: dict[str, int] = {}
+    by_target_completed: dict[str, int] = {}
+    by_target_cancelled: dict[str, int] = {}
+
+    for w in windows:
+        tid = w.target_id
+        by_target_planned[tid] = by_target_planned.get(tid, 0) + (
+            1 if w.status == "planned" else 0
+        )
+        by_target_completed[tid] = by_target_completed.get(tid, 0) + (
+            1 if w.status == "completed" else 0
+        )
+        by_target_cancelled[tid] = by_target_cancelled.get(tid, 0) + (
+            1 if w.status == "cancelled" else 0
+        )
+
+    all_target_ids = sorted(
+        {w.target_id for w in windows}
+    )
+    targets_with_no_completed = sorted(
+        tid for tid in all_target_ids if by_target_completed.get(tid, 0) == 0
+    )
+    targets_with_cancellations = sorted(
+        tid for tid in all_target_ids if by_target_cancelled.get(tid, 0) > 0
+    )
+
+    per_target_gap = {
+        tid: {
+            "planned": by_target_planned.get(tid, 0),
+            "completed": by_target_completed.get(tid, 0),
+            "cancelled": by_target_cancelled.get(tid, 0),
+            "gap": by_target_planned.get(tid, 0) - by_target_completed.get(tid, 0),
+        }
+        for tid in all_target_ids
+    }
+
+    total_gaps = sum(
+        max(0, v["gap"]) for v in per_target_gap.values()
+    )
+
+    return {
+        "schema_version": OBSERVATION_SCHEDULE_SCHEMA_VERSION,
+        "disclaimer": OBSERVATION_SCHEDULE_DISCLAIMER,
+        "target_count": len(all_target_ids),
+        "targets_with_no_completed_window_count": len(targets_with_no_completed),
+        "targets_with_no_completed_windows": targets_with_no_completed,
+        "targets_with_cancellations": targets_with_cancellations,
+        "total_scheduling_gaps": total_gaps,
+        "per_target_gap": dict(sorted(per_target_gap.items())),
+    }
+
+
+def observation_efficiency_summary(
+    fixture_path: Path | None = None,
+) -> dict[str, Any]:
+    """Summarize observation window completion and cancellation rates."""
+
+    windows = load_observation_windows(fixture_path)
+    total = len(windows)
+    completed_count = sum(1 for w in windows if w.status == "completed")
+    cancelled_count = sum(1 for w in windows if w.status == "cancelled")
+    planned_count = sum(1 for w in windows if w.status == "planned")
+
+    completion_rate = completed_count / total if total > 0 else 0.0
+    cancellation_rate = cancelled_count / total if total > 0 else 0.0
+
+    scheduled_minutes = sum(w.duration_minutes for w in windows)
+    completed_minutes = sum(
+        w.duration_minutes for w in windows if w.status == "completed"
+    )
+
+    by_track_stats: dict[str, dict[str, int]] = {}
+    for w in windows:
+        if w.track not in by_track_stats:
+            by_track_stats[w.track] = {"total": 0, "completed": 0, "cancelled": 0}
+        by_track_stats[w.track]["total"] += 1
+        if w.status == "completed":
+            by_track_stats[w.track]["completed"] += 1
+        elif w.status == "cancelled":
+            by_track_stats[w.track]["cancelled"] += 1
+
+    by_track_completion_rate = {
+        track: (
+            stats["completed"] / stats["total"] if stats["total"] > 0 else 0.0
+        )
+        for track, stats in by_track_stats.items()
+    }
+
+    return {
+        "schema_version": OBSERVATION_SCHEDULE_SCHEMA_VERSION,
+        "disclaimer": OBSERVATION_SCHEDULE_DISCLAIMER,
+        "window_count": total,
+        "completed_count": completed_count,
+        "cancelled_count": cancelled_count,
+        "planned_count": planned_count,
+        "completion_rate": completion_rate,
+        "cancellation_rate": cancellation_rate,
+        "total_scheduled_hours": scheduled_minutes / 60.0,
+        "completed_hours": completed_minutes / 60.0,
+        "by_track_stats": dict(sorted(by_track_stats.items())),
+        "by_track_completion_rate": dict(sorted(by_track_completion_rate.items())),
+    }

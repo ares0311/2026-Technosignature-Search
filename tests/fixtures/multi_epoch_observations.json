@@ -1,0 +1,56 @@
+{
+  "schema_version": "multi_epoch_observations_v1",
+  "disclaimer": "Multi-epoch summaries are scheduling provenance records only. Inconsistent detections across epochs are expected and do not constitute confirmation. Consistent detection across epochs does not imply a technosignature without independent external validation.",
+  "records": [
+    {
+      "target_id": "synth-radio-2026-001",
+      "track": "radio",
+      "epoch_count": 3,
+      "first_epoch_utc": "2026-04-01T02:00:00Z",
+      "latest_epoch_utc": "2026-05-10T04:00:00Z",
+      "status_per_epoch": ["detected", "not_detected", "detected"],
+      "consistent_detection": false,
+      "operator_notes": "Signal present in epoch 1 and 3 but absent in epoch 2. Possible intermittent RFI or scheduling gap."
+    },
+    {
+      "target_id": "synth-ir-2026-001",
+      "track": "infrared",
+      "epoch_count": 4,
+      "first_epoch_utc": "2026-01-15T00:00:00Z",
+      "latest_epoch_utc": "2026-05-08T12:00:00Z",
+      "status_per_epoch": ["detected", "detected", "detected", "detected"],
+      "consistent_detection": true,
+      "operator_notes": "IR excess stable across all four photometric epochs. Source not resolved as known contaminant."
+    },
+    {
+      "target_id": "synth-ir-2026-002",
+      "track": "infrared",
+      "epoch_count": 2,
+      "first_epoch_utc": "2026-02-20T00:00:00Z",
+      "latest_epoch_utc": "2026-04-20T00:00:00Z",
+      "status_per_epoch": ["detected", "not_detected"],
+      "consistent_detection": false,
+      "operator_notes": "IR excess in WISE epoch 1 not confirmed in WISE epoch 2. Possible bad pixel or photometry issue."
+    },
+    {
+      "target_id": "synth-anomaly-2026-002",
+      "track": "anomaly",
+      "epoch_count": 3,
+      "first_epoch_utc": "2026-03-01T00:00:00Z",
+      "latest_epoch_utc": "2026-05-01T00:00:00Z",
+      "status_per_epoch": ["absent", "absent", "absent"],
+      "consistent_detection": false,
+      "operator_notes": "Archival source absent in all three modern epochs. Consistent with archival disappearance scenario."
+    },
+    {
+      "target_id": "synth-radio-2026-003",
+      "track": "radio",
+      "epoch_count": 2,
+      "first_epoch_utc": "2026-04-10T03:00:00Z",
+      "latest_epoch_utc": "2026-05-15T03:00:00Z",
+      "status_per_epoch": ["detected", "detected"],
+      "consistent_detection": true,
+      "operator_notes": "Narrowband signal reproduced in second epoch. RFI cross-check still pending."
+    }
+  ]
+}

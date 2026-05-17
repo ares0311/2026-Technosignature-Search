@@ -12,6 +12,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TextIO
 
+from techno_search.aggregate_blockers import aggregate_blockers_summary
 from techno_search.artifact_cleanup import (
     apply_artifact_cleanup,
     plan_artifact_cleanup,
@@ -36,7 +37,9 @@ from techno_search.background_search import (
 from techno_search.baseline_eval import (
     baseline_pathway_drift_summary,
     baseline_performance_history_summary,
+    classifier_rule_coverage_summary,
     evaluate_baseline,
+    route_coverage_summary,
     score_determinism_check,
 )
 from techno_search.benchmark_metadata import (
@@ -53,11 +56,23 @@ from techno_search.calibration import (
     summarize_calibration_fixtures,
 )
 from techno_search.calibration_metrics import precision_recall_summary, reliability_summary
+from techno_search.candidate_audit_trail import audit_trail_summary
+from techno_search.candidate_flags import candidate_flags_summary
 from techno_search.candidate_lifecycle import (
     candidate_lifecycle_summary,
+    lifecycle_transition_summary,
+)
+from techno_search.candidate_observation_notes import observation_notes_summary
+from techno_search.candidate_retention import candidate_retention_summary
+from techno_search.candidate_score_history import score_history_summary
+from techno_search.candidate_triage import (
+    operator_coverage_summary,
+    triage_label_completeness_check,
+    triage_summary,
 )
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.cross_track import cross_track_summary
+from techno_search.epoch_plan import epoch_plan_summary
 from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
 from techno_search.live_data import (
     CatalogCache,
@@ -89,15 +104,24 @@ from techno_search.log_store import (
     sqlite_recent_runs,
     validate_sqlite_log_commit_paths,
 )
+from techno_search.multi_epoch_summary import multi_epoch_summary
 from techno_search.observation_schedule import (
+    observation_efficiency_summary,
+    observation_gap_analysis,
     observation_schedule_summary,
 )
+from techno_search.operator_assignment import operator_assignment_summary
+from techno_search.operator_performance import operator_performance_summary
+from techno_search.pipeline_health import pipeline_health_summary
+from techno_search.pipeline_throughput import pipeline_throughput_summary
 from techno_search.plotting import plot_artifact_summary
+from techno_search.provenance import provenance_chain_validator
 from techno_search.reporting import (
     candidate_packet_json,
     write_candidate_reports,
 )
 from techno_search.reproducibility import verify_report_directory
+from techno_search.review_deadlines import review_deadlines_summary
 from techno_search.review_queue import (
     consensus_export_summary,
     consensus_summary,
@@ -105,7 +129,15 @@ from techno_search.review_queue import (
 )
 from techno_search.schemas import Candidate, Track, candidate_from_mapping
 from techno_search.scoring import score_candidate
+from techno_search.scoring_config import scoring_config_summary
+from techno_search.sensitivity_config import sensitivity_config_summary
+from techno_search.signal_registry import (
+    signal_registry_summary,
+    signal_registry_track_summary,
+)
+from techno_search.target_recalibration_summary import target_recalibration_summary
 from techno_search.target_watchlist import target_watchlist_summary
+from techno_search.track_comparison import track_comparison_summary
 from techno_search.validation import (
     validate_candidate_file,
     validate_draft_report_directory,
@@ -147,7 +179,21 @@ SCHEMA_FILENAMES = {
     "baseline_eval": "baseline_eval.schema.json",
     "baseline_performance_history": "baseline_performance_history.schema.json",
     "candidate_lifecycle": "candidate_lifecycle.schema.json",
+    "candidate_triage": "candidate_triage.schema.json",
     "observation_schedule": "observation_schedule.schema.json",
+    "scoring_config_summary": "scoring_config_summary.schema.json",
+    "sensitivity_config_summary": "sensitivity_config_summary.schema.json",
+    "signal_registry": "signal_registry.schema.json",
+    "candidate_audit_trail": "candidate_audit_trail.schema.json",
+    "multi_epoch_observations": "multi_epoch_observations.schema.json",
+    "target_priority_snapshots": "target_priority_snapshots.schema.json",
+    "candidate_flags": "candidate_flags.schema.json",
+    "candidate_observation_notes": "candidate_observation_notes.schema.json",
+    "candidate_score_history": "candidate_score_history.schema.json",
+    "epoch_plan": "epoch_plan.schema.json",
+    "operator_assignment": "operator_assignment.schema.json",
+    "candidate_retention": "candidate_retention.schema.json",
+    "review_deadlines": "review_deadlines.schema.json",
 }
 
 
@@ -1017,6 +1063,51 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(fn_summary, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "scoring-config-summary":
+        config_path = getattr(args, "config_path", None)
+        sc_summary = scoring_config_summary(
+            Path(config_path) if config_path else None
+        )
+        print(json.dumps(sc_summary, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "route-coverage-summary":
+        rc_summary = route_coverage_summary()
+        print(json.dumps(rc_summary, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "lifecycle-transition-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        lt_summary = lifecycle_transition_summary(
+            Path(fixture_path) if fixture_path else None
+        )
+        print(json.dumps(lt_summary, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "observation-efficiency-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        oe_summary = observation_efficiency_summary(
+            Path(fixture_path) if fixture_path else None
+        )
+        print(json.dumps(oe_summary, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "sensitivity-config-summary":
+        config_path = getattr(args, "config_path", None)
+        sens_summary = sensitivity_config_summary(
+            Path(config_path) if config_path else None
+        )
+        print(json.dumps(sens_summary, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "triage-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        tr_summary = triage_summary(
+            Path(fixture_path) if fixture_path else None
+        )
+        print(json.dumps(tr_summary, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "artifacts-cleanup":
         if args.apply:
             cleanup_result = apply_artifact_cleanup(
@@ -1031,6 +1122,264 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             )
         print(json.dumps(cleanup_result, indent=2, sort_keys=True), file=out)
         return 0 if cleanup_result.get("ok", False) else 1
+
+    if args.command == "signal-registry-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                signal_registry_summary(Path(fixture_path) if fixture_path else None),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "signal-registry-track-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                signal_registry_track_summary(Path(fixture_path) if fixture_path else None),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "schema-drift-check":
+        from techno_search.schema_drift import detect_schema_drift
+
+        print(
+            json.dumps(detect_schema_drift(), indent=2, sort_keys=True),
+            file=out,
+        )
+        return 0
+
+    if args.command == "audit-trail-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                audit_trail_summary(Path(fixture_path) if fixture_path else None),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "observation-gap-analysis":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                observation_gap_analysis(Path(fixture_path) if fixture_path else None),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "multi-epoch-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                multi_epoch_summary(Path(fixture_path) if fixture_path else None),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "classifier-rule-coverage":
+        print(
+            json.dumps(classifier_rule_coverage_summary(), indent=2, sort_keys=True),
+            file=out,
+        )
+        return 0
+
+    if args.command == "target-recalibration-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                target_recalibration_summary(Path(fixture_path) if fixture_path else None),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operator-coverage-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                operator_coverage_summary(Path(fixture_path) if fixture_path else None),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "triage-label-completeness":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                triage_label_completeness_check(Path(fixture_path) if fixture_path else None),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "provenance-chain-validate":
+        pc_result = provenance_chain_validator(
+            report_dir=default_project_root() / "examples" / "reports",
+        )
+        print(json.dumps(pc_result, indent=2, sort_keys=True), file=out)
+        return 0 if pc_result["ok"] else 1
+
+    if args.command == "observation-notes-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                observation_notes_summary(Path(fixture_path) if fixture_path else None),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "epoch-plan-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                epoch_plan_summary(Path(fixture_path) if fixture_path else None),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "aggregate-blockers-summary":
+        print(
+            json.dumps(
+                aggregate_blockers_summary(),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "score-history-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                score_history_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operator-assignment-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                operator_assignment_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "pipeline-health-summary":
+        print(
+            json.dumps(
+                pipeline_health_summary(),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "candidate-flags-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                candidate_flags_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "review-deadlines-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                review_deadlines_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "pipeline-throughput-summary":
+        print(
+            json.dumps(
+                pipeline_throughput_summary(),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "candidate-retention-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                candidate_retention_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operator-performance-summary":
+        print(
+            json.dumps(
+                operator_performance_summary(),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "track-comparison-summary":
+        print(
+            json.dumps(
+                track_comparison_summary(),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
 
     parser.error(f"Unknown command: {args.command}")
     return 2
@@ -1308,6 +1657,81 @@ def validate_all() -> dict[str, object]:
     fn_sum = false_negative_summary()
     _fn_rate = fn_sum.get("synthetic_missed_injection_rate")
     fn_missed_rate = float(_fn_rate) if isinstance(_fn_rate, (int, float)) else 1.0
+    scoring_cfg = scoring_config_summary()
+    scoring_threshold_count = int(scoring_cfg.get("threshold_count", 0))
+    route_coverage = route_coverage_summary()
+    route_covered_count = int(route_coverage.get("covered_pathway_count", 0))
+    lifecycle_transitions = lifecycle_transition_summary()
+    lifecycle_invalid_count = int(lifecycle_transitions.get("invalid_transition_count", 0))
+    observation_efficiency = observation_efficiency_summary()
+    observation_completion_rate_raw = observation_efficiency.get("completion_rate")
+    observation_completion_rate = (
+        float(observation_completion_rate_raw)
+        if isinstance(observation_completion_rate_raw, (int, float))
+        else 0.0
+    )
+    sensitivity_cfg = sensitivity_config_summary()
+    sensitivity_track_count = int(sensitivity_cfg.get("track_count", 0))
+    triage_notes = triage_summary()
+    triage_note_count = int(triage_notes.get("note_count", 0))
+    triage_tracks_covered = list(triage_notes.get("tracks_covered", []))
+    signal_registry = signal_registry_summary()
+    signal_registry_active_count = int(signal_registry.get("active_count", 0))
+    audit_trail = audit_trail_summary()
+    audit_action_count = int(audit_trail.get("action_count", 0))
+    multi_epoch = multi_epoch_summary()
+    multi_epoch_target_count = int(multi_epoch.get("multi_epoch_target_count", 0))
+    recalibration = target_recalibration_summary()
+    recalibration_snapshot_count = int(recalibration.get("snapshot_count", 0))
+    operator_coverage = operator_coverage_summary()
+    operator_coverage_count = int(operator_coverage.get("operator_count", 0))
+    label_completeness = triage_label_completeness_check()
+    label_coverage_fraction_raw = label_completeness.get("coverage_fraction")
+    label_coverage_fraction = (
+        float(label_coverage_fraction_raw)
+        if isinstance(label_coverage_fraction_raw, (int, float))
+        else 0.0
+    )
+    rule_coverage = classifier_rule_coverage_summary()
+    rule_coverage_fraction_raw = rule_coverage.get("coverage_fraction")
+    classifier_rule_coverage_fraction = (
+        float(rule_coverage_fraction_raw)
+        if isinstance(rule_coverage_fraction_raw, (int, float))
+        else 0.0
+    )
+    provenance_chain = provenance_chain_validator(
+        report_dir=root / "examples" / "reports"
+    )
+    provenance_chain_ok = bool(provenance_chain.get("ok", False))
+    obs_gap = observation_gap_analysis()
+    from techno_search.schema_drift import detect_schema_drift
+
+    schema_drift = detect_schema_drift()
+    schema_drift_count = int(schema_drift.get("drift_count", 0))
+    obs_notes = observation_notes_summary()
+    obs_notes_count = int(obs_notes.get("note_count", 0))
+    epoch_plan = epoch_plan_summary()
+    epoch_plan_entry_count = int(epoch_plan.get("entry_count", 0))
+    aggregate_blockers = aggregate_blockers_summary()
+    aggregate_blocker_count = int(aggregate_blockers.get("total_blocker_count", 0))
+    score_history = score_history_summary()
+    score_history_entry_count = int(score_history.get("entry_count", 0))
+    op_assignments = operator_assignment_summary()
+    op_assignment_count = int(op_assignments.get("assignment_count", 0))
+    pipeline_health = pipeline_health_summary()
+    pipeline_total_blocked = int(pipeline_health.get("total_blocked_count", 0))
+    candidate_flags = candidate_flags_summary()
+    candidate_flag_count = int(candidate_flags.get("flag_count", 0))
+    review_deadlines = review_deadlines_summary()
+    review_deadline_count = int(review_deadlines.get("deadline_count", 0))
+    pipeline_throughput = pipeline_throughput_summary()
+    pipeline_throughput_rate = float(pipeline_throughput.get("throughput_rate", 0.0))
+    candidate_retention = candidate_retention_summary()
+    candidate_retention_record_count = int(candidate_retention.get("record_count", 0))
+    operator_perf = operator_performance_summary()
+    operator_perf_count = int(operator_perf.get("operator_count", 0))
+    track_comparison = track_comparison_summary()
+    track_comparison_open_flags = int(track_comparison.get("total_open_flags", 0))
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -1492,6 +1916,60 @@ def validate_all() -> dict[str, object]:
         and schedule_window_count >= 4
         and isinstance(fn_missed_rate, float)
         and fn_missed_rate < 1.0
+        and isinstance(scoring_threshold_count, int)
+        and scoring_threshold_count >= 1
+        and isinstance(route_covered_count, int)
+        and route_covered_count >= 4
+        and isinstance(lifecycle_invalid_count, int)
+        and lifecycle_invalid_count == 0
+        and isinstance(observation_completion_rate, float)
+        and observation_completion_rate >= 0.0
+        and isinstance(sensitivity_track_count, int)
+        and sensitivity_track_count >= 3
+        and isinstance(triage_note_count, int)
+        and triage_note_count >= 5
+        and len(triage_tracks_covered) >= 3
+        and isinstance(signal_registry_active_count, int)
+        and signal_registry_active_count >= 4
+        and isinstance(audit_action_count, int)
+        and audit_action_count >= 6
+        and isinstance(multi_epoch_target_count, int)
+        and multi_epoch_target_count >= 3
+        and isinstance(recalibration_snapshot_count, int)
+        and recalibration_snapshot_count >= 2
+        and isinstance(operator_coverage_count, int)
+        and operator_coverage_count >= 2
+        and isinstance(label_coverage_fraction, float)
+        and label_coverage_fraction >= 0.5
+        and isinstance(classifier_rule_coverage_fraction, float)
+        and classifier_rule_coverage_fraction >= 0.5
+        and provenance_chain_ok
+        and isinstance(schema_drift_count, int)
+        and schema_drift_count == 0
+        and isinstance(obs_notes_count, int)
+        and obs_notes_count >= 5
+        and isinstance(epoch_plan_entry_count, int)
+        and epoch_plan_entry_count >= 4
+        and isinstance(aggregate_blocker_count, int)
+        and aggregate_blocker_count >= 0
+        and isinstance(score_history_entry_count, int)
+        and score_history_entry_count >= 5
+        and isinstance(op_assignment_count, int)
+        and op_assignment_count >= 4
+        and isinstance(pipeline_total_blocked, int)
+        and pipeline_total_blocked >= 0
+        and isinstance(candidate_flag_count, int)
+        and candidate_flag_count >= 5
+        and isinstance(review_deadline_count, int)
+        and review_deadline_count >= 4
+        and isinstance(pipeline_throughput_rate, float)
+        and pipeline_throughput_rate >= 0.0
+        and isinstance(candidate_retention_record_count, int)
+        and candidate_retention_record_count >= 5
+        and isinstance(operator_perf_count, int)
+        and operator_perf_count >= 2
+        and isinstance(track_comparison_open_flags, int)
+        and track_comparison_open_flags >= 0
     )
     return {
         "ok": ok,
@@ -1546,6 +2024,34 @@ def validate_all() -> dict[str, object]:
         "candidate_lifecycle_summary": lifecycle,
         "observation_schedule_summary": schedule,
         "false_negative_summary": fn_sum,
+        "scoring_config_summary": scoring_cfg,
+        "route_coverage_summary": route_coverage,
+        "lifecycle_transition_summary": lifecycle_transitions,
+        "observation_efficiency_summary": observation_efficiency,
+        "sensitivity_config_summary": sensitivity_cfg,
+        "triage_summary": triage_notes,
+        "signal_registry_summary": signal_registry,
+        "audit_trail_summary": audit_trail,
+        "multi_epoch_summary": multi_epoch,
+        "target_recalibration_summary": recalibration,
+        "operator_coverage_summary": operator_coverage,
+        "triage_label_completeness": label_completeness,
+        "classifier_rule_coverage_summary": rule_coverage,
+        "provenance_chain_validation": provenance_chain,
+        "observation_gap_analysis": obs_gap,
+        "schema_drift_summary": schema_drift,
+        "observation_notes_summary": obs_notes,
+        "epoch_plan_summary": epoch_plan,
+        "aggregate_blockers_summary": aggregate_blockers,
+        "score_history_summary": score_history,
+        "operator_assignment_summary": op_assignments,
+        "pipeline_health_summary": pipeline_health,
+        "candidate_flags_summary": candidate_flags,
+        "review_deadlines_summary": review_deadlines,
+        "pipeline_throughput_summary": pipeline_throughput,
+        "candidate_retention_summary": candidate_retention,
+        "operator_performance_summary": operator_perf,
+        "track_comparison_summary": track_comparison,
     }
 
 
@@ -2005,6 +2511,221 @@ def validation_summary() -> dict[str, object]:
             fn_s2["synthetic_missed_injection_rate"]
             if isinstance(fn_s2 := validation.get("false_negative_summary"), dict)
             else 0.0
+        ),
+        "scoring_threshold_count": (
+            sc_s["threshold_count"]
+            if isinstance(sc_s := validation.get("scoring_config_summary"), dict)
+            else 0
+        ),
+        "route_covered_pathway_count": (
+            rc_s["covered_pathway_count"]
+            if isinstance(rc_s := validation.get("route_coverage_summary"), dict)
+            else 0
+        ),
+        "route_uncovered_pathway_count": (
+            rc_s2["uncovered_pathway_count"]
+            if isinstance(rc_s2 := validation.get("route_coverage_summary"), dict)
+            else 0
+        ),
+        "lifecycle_invalid_transition_count": (
+            lt_s["invalid_transition_count"]
+            if isinstance(lt_s := validation.get("lifecycle_transition_summary"), dict)
+            else 0
+        ),
+        "observation_completion_rate": (
+            oe_s["completion_rate"]
+            if isinstance(oe_s := validation.get("observation_efficiency_summary"), dict)
+            else 0.0
+        ),
+        "observation_cancellation_rate": (
+            oe_s2["cancellation_rate"]
+            if isinstance(oe_s2 := validation.get("observation_efficiency_summary"), dict)
+            else 0.0
+        ),
+        "sensitivity_track_count": (
+            sc_t["track_count"]
+            if isinstance(sc_t := validation.get("sensitivity_config_summary"), dict)
+            else 0
+        ),
+        "sensitivity_weight_count": (
+            sc_w["weight_count"]
+            if isinstance(sc_w := validation.get("sensitivity_config_summary"), dict)
+            else 0
+        ),
+        "triage_note_count": (
+            tn_s["note_count"]
+            if isinstance(tn_s := validation.get("triage_summary"), dict)
+            else 0
+        ),
+        "triage_tracks_covered_count": (
+            len(tn_t["tracks_covered"])
+            if isinstance(tn_t := validation.get("triage_summary"), dict)
+            else 0
+        ),
+        "signal_registry_signal_count": (
+            sr_s["signal_count"]
+            if isinstance(sr_s := validation.get("signal_registry_summary"), dict)
+            else 0
+        ),
+        "signal_registry_active_count": (
+            sr_a["active_count"]
+            if isinstance(sr_a := validation.get("signal_registry_summary"), dict)
+            else 0
+        ),
+        "audit_trail_action_count": (
+            at_s["action_count"]
+            if isinstance(at_s := validation.get("audit_trail_summary"), dict)
+            else 0
+        ),
+        "audit_trail_unique_operator_count": (
+            at_o["unique_operator_count"]
+            if isinstance(at_o := validation.get("audit_trail_summary"), dict)
+            else 0
+        ),
+        "multi_epoch_target_count": (
+            me_s["multi_epoch_target_count"]
+            if isinstance(me_s := validation.get("multi_epoch_summary"), dict)
+            else 0
+        ),
+        "multi_epoch_consistent_detection_count": (
+            me_c["consistent_detection_count"]
+            if isinstance(me_c := validation.get("multi_epoch_summary"), dict)
+            else 0
+        ),
+        "target_recalibration_snapshot_count": (
+            tr_s["snapshot_count"]
+            if isinstance(tr_s := validation.get("target_recalibration_summary"), dict)
+            else 0
+        ),
+        "operator_coverage_count": (
+            oc_s["operator_count"]
+            if isinstance(oc_s := validation.get("operator_coverage_summary"), dict)
+            else 0
+        ),
+        "triage_label_coverage_fraction": (
+            lc_s2["coverage_fraction"]
+            if isinstance(lc_s2 := validation.get("triage_label_completeness"), dict)
+            else 0.0
+        ),
+        "classifier_rule_coverage_fraction": (
+            rc_s2["coverage_fraction"]
+            if isinstance(rc_s2 := validation.get("classifier_rule_coverage_summary"), dict)
+            else 0.0
+        ),
+        "provenance_chain_validation_ok": (
+            bool(pc_s["ok"])
+            if isinstance(pc_s := validation.get("provenance_chain_validation"), dict)
+            else False
+        ),
+        "schema_drift_count": (
+            sd_s["drift_count"]
+            if isinstance(sd_s := validation.get("schema_drift_summary"), dict)
+            else 0
+        ),
+        "observation_notes_count": (
+            on_s["note_count"]
+            if isinstance(on_s := validation.get("observation_notes_summary"), dict)
+            else 0
+        ),
+        "observation_notes_follow_up_count": (
+            on_f["follow_up_recommended_count"]
+            if isinstance(on_f := validation.get("observation_notes_summary"), dict)
+            else 0
+        ),
+        "epoch_plan_entry_count": (
+            ep_s["entry_count"]
+            if isinstance(ep_s := validation.get("epoch_plan_summary"), dict)
+            else 0
+        ),
+        "epoch_plan_pending_count": (
+            ep_p["pending_count"]
+            if isinstance(ep_p := validation.get("epoch_plan_summary"), dict)
+            else 0
+        ),
+        "aggregate_blocker_count": (
+            ab_s["total_blocker_count"]
+            if isinstance(ab_s := validation.get("aggregate_blockers_summary"), dict)
+            else 0
+        ),
+        "aggregate_blocker_unique_candidate_count": (
+            ab_c["unique_candidate_count"]
+            if isinstance(ab_c := validation.get("aggregate_blockers_summary"), dict)
+            else 0
+        ),
+        "score_history_entry_count": (
+            sh_s["entry_count"]
+            if isinstance(sh_s := validation.get("score_history_summary"), dict)
+            else 0
+        ),
+        "score_history_unique_candidate_count": (
+            sh_c["unique_candidate_count"]
+            if isinstance(sh_c := validation.get("score_history_summary"), dict)
+            else 0
+        ),
+        "operator_assignment_count": (
+            oa_s["assignment_count"]
+            if isinstance(oa_s := validation.get("operator_assignment_summary"), dict)
+            else 0
+        ),
+        "operator_assignment_escalated_count": (
+            oa_e["escalated_count"]
+            if isinstance(oa_e := validation.get("operator_assignment_summary"), dict)
+            else 0
+        ),
+        "pipeline_health_total_blocked": (
+            ph_s["total_blocked_count"]
+            if isinstance(ph_s := validation.get("pipeline_health_summary"), dict)
+            else 0
+        ),
+        "candidate_flag_count": (
+            cf_s["flag_count"]
+            if isinstance(cf_s := validation.get("candidate_flags_summary"), dict)
+            else 0
+        ),
+        "candidate_flag_open_count": (
+            cf_o["open_count"]
+            if isinstance(cf_o := validation.get("candidate_flags_summary"), dict)
+            else 0
+        ),
+        "review_deadline_count": (
+            rd_s["deadline_count"]
+            if isinstance(rd_s := validation.get("review_deadlines_summary"), dict)
+            else 0
+        ),
+        "review_deadline_overdue_count": (
+            rd_o["overdue_count"]
+            if isinstance(rd_o := validation.get("review_deadlines_summary"), dict)
+            else 0
+        ),
+        "pipeline_throughput_rate": (
+            pt_s["throughput_rate"]
+            if isinstance(pt_s := validation.get("pipeline_throughput_summary"), dict)
+            else 0.0
+        ),
+        "retention_record_count": (
+            cr_s["record_count"]
+            if isinstance(cr_s := validation.get("candidate_retention_summary"), dict)
+            else 0
+        ),
+        "retention_active_count": (
+            cr_s2["active_count"]
+            if isinstance(cr_s2 := validation.get("candidate_retention_summary"), dict)
+            else 0
+        ),
+        "operator_performance_operator_count": (
+            op_s["operator_count"]
+            if isinstance(op_s := validation.get("operator_performance_summary"), dict)
+            else 0
+        ),
+        "operator_performance_completion_rate": (
+            op_s2["overall_completion_rate"]
+            if isinstance(op_s2 := validation.get("operator_performance_summary"), dict)
+            else 0.0
+        ),
+        "track_comparison_open_flags": (
+            tc_s["total_open_flags"]
+            if isinstance(tc_s := validation.get("track_comparison_summary"), dict)
+            else 0
         ),
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
@@ -3147,6 +3868,70 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Optional injection-recovery fixture JSON path.",
     )
+    sc_parser = subparsers.add_parser(
+        "scoring-config-summary",
+        help="Summarise current scoring thresholds. Synthetic v0 parameters only.",
+    )
+    sc_parser.add_argument(
+        "--config-path",
+        type=Path,
+        help="Optional scoring config JSON path.",
+    )
+    subparsers.add_parser(
+        "route-coverage-summary",
+        help=(
+            "Check that calibration fixtures cover all Pathway enum values. "
+            "Synthetic diagnostic only."
+        ),
+    )
+    lt_parser = subparsers.add_parser(
+        "lifecycle-transition-summary",
+        help=(
+            "Validate that candidate lifecycle stage transitions follow the "
+            "allowed ordering. Scheduling/provenance aid only."
+        ),
+    )
+    lt_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional lifecycle entries fixture JSON path.",
+    )
+    oe_parser = subparsers.add_parser(
+        "observation-efficiency-summary",
+        help=(
+            "Summarise observation window completion and cancellation rates. "
+            "Scheduling aid only."
+        ),
+    )
+    oe_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional observation schedule fixture JSON path.",
+    )
+    sens_parser = subparsers.add_parser(
+        "sensitivity-config-summary",
+        help=(
+            "Summarise per-track sensitivity weights from the scoring config. "
+            "Synthetic v0 parameters only — not calibrated detection sensitivities."
+        ),
+    )
+    sens_parser.add_argument(
+        "--config-path",
+        type=Path,
+        help="Optional scoring config JSON path.",
+    )
+    triage_parser = subparsers.add_parser(
+        "triage-summary",
+        help=(
+            "Summarise operator candidate triage notes. "
+            "Triage notes are scheduling aids and provenance records only."
+        ),
+    )
+    triage_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional candidate triage notes fixture JSON path.",
+    )
     artifacts_cleanup_parser = subparsers.add_parser(
         "artifacts-cleanup",
         help=(
@@ -3172,6 +3957,167 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Required acknowledgement to perform local file deletion.",
     )
+
+    signal_registry_parser = subparsers.add_parser(
+        "signal-registry-summary",
+        help="Summarize the signal-of-interest registry fixture.",
+    )
+    signal_registry_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    signal_track_parser = subparsers.add_parser(
+        "signal-registry-track-summary",
+        help="Per-track breakdown of the signal registry.",
+    )
+    signal_track_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "schema-drift-check",
+        help="Detect structural drift in committed JSON schema files.",
+    )
+
+    audit_trail_parser = subparsers.add_parser(
+        "audit-trail-summary",
+        help="Summarize the candidate audit trail fixture.",
+    )
+    audit_trail_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    obs_gap_parser = subparsers.add_parser(
+        "observation-gap-analysis",
+        help="Identify scheduling gaps between planned and completed observation windows.",
+    )
+    obs_gap_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    multi_epoch_parser = subparsers.add_parser(
+        "multi-epoch-summary",
+        help="Summarize multi-epoch observation records.",
+    )
+    multi_epoch_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "classifier-rule-coverage",
+        help="Report which baseline classifier rules fire across evaluation cases.",
+    )
+
+    recalibration_parser = subparsers.add_parser(
+        "target-recalibration-summary",
+        help="Compare two most recent target priority snapshots for rank changes.",
+    )
+    recalibration_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    operator_cov_parser = subparsers.add_parser(
+        "operator-coverage-summary",
+        help="Summarize operator coverage across triage notes.",
+    )
+    operator_cov_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    label_completeness_parser = subparsers.add_parser(
+        "triage-label-completeness",
+        help="Check which triage labels have fixture coverage.",
+    )
+    label_completeness_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "provenance-chain-validate",
+        help="Validate provenance chain fields in committed report manifests.",
+    )
+
+    obs_notes_parser = subparsers.add_parser(
+        "observation-notes-summary",
+        help="Summarize post-observation operator notes by track and outcome.",
+    )
+    obs_notes_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    epoch_plan_parser = subparsers.add_parser(
+        "epoch-plan-summary",
+        help="Summarize epoch plan entries for targets needing additional observations.",
+    )
+    epoch_plan_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "aggregate-blockers-summary",
+        help="Collect blocking issues from triage, lifecycle, and observation notes.",
+    )
+
+    score_history_parser = subparsers.add_parser(
+        "score-history-summary",
+        help="Summarize candidate score evolution across observation epochs.",
+    )
+    score_history_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    op_assignment_parser = subparsers.add_parser(
+        "operator-assignment-summary",
+        help="Summarize operator assignment records for candidate review.",
+    )
+    op_assignment_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "pipeline-health-summary",
+        help="Per-track pipeline health dashboard aggregating scheduling state.",
+    )
+
+    candidate_flags_parser = subparsers.add_parser(
+        "candidate-flags-summary",
+        help="Summarize quality flags and operational alerts raised against candidates.",
+    )
+    candidate_flags_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    review_deadlines_parser = subparsers.add_parser(
+        "review-deadlines-summary",
+        help="Summarize upcoming operator review deadlines with urgency levels.",
+    )
+    review_deadlines_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "pipeline-throughput-summary",
+        help="Per-stage pipeline throughput counts and transition rate metrics.",
+    )
+
+    candidate_retention_parser = subparsers.add_parser(
+        "candidate-retention-summary",
+        help="Summarize candidate retention records and pipeline dwell times.",
+    )
+    candidate_retention_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "operator-performance-summary",
+        help="Aggregate operator performance metrics from assignment records.",
+    )
+
+    subparsers.add_parser(
+        "track-comparison-summary",
+        help="Cross-track comparison dashboard for scheduling state and flags.",
+    )
+
     return parser
 
 

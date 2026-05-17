@@ -1,0 +1,76 @@
+{
+  "schema_version": "candidate_score_history_v1",
+  "disclaimer": "Candidate score history entries are local scheduling and provenance records only. Score changes across epochs reflect updates to synthetic feature estimates and local pipeline parameters. They do not constitute detections, discoveries, external validation, or calibrated survey sensitivity estimates.",
+  "entries": [
+    {
+      "entry_id": "sh-001",
+      "candidate_id": "cand-radio-001",
+      "track": "radio",
+      "epoch_number": 1,
+      "composite_score": 0.42,
+      "pathway": "human_review_queue",
+      "blocking_count": 2,
+      "operator_id": "op-alpha",
+      "created_utc": "2026-03-01T10:00:00Z",
+      "score_delta": 0.0,
+      "notes": "Initial epoch; RFI contamination suspected.",
+      "feature_highlights": ["on_off_delta_high", "rfi_band_overlap"]
+    },
+    {
+      "entry_id": "sh-002",
+      "candidate_id": "cand-radio-001",
+      "track": "radio",
+      "epoch_number": 2,
+      "composite_score": 0.61,
+      "pathway": "human_review_queue",
+      "blocking_count": 1,
+      "operator_id": "op-alpha",
+      "created_utc": "2026-03-15T10:00:00Z",
+      "score_delta": 0.19,
+      "notes": "RFI band check improved; residual uncertainty remains.",
+      "feature_highlights": ["on_off_delta_high", "frequency_persistence"]
+    },
+    {
+      "entry_id": "sh-003",
+      "candidate_id": "cand-infrared-001",
+      "track": "infrared",
+      "epoch_number": 1,
+      "composite_score": 0.55,
+      "pathway": "human_review_queue",
+      "blocking_count": 1,
+      "operator_id": "op-beta",
+      "created_utc": "2026-03-02T11:00:00Z",
+      "score_delta": 0.0,
+      "notes": "Initial epoch; dust confusion not fully resolved.",
+      "feature_highlights": ["ir_excess_present", "dust_confusion_flag"]
+    },
+    {
+      "entry_id": "sh-004",
+      "candidate_id": "cand-infrared-001",
+      "track": "infrared",
+      "epoch_number": 2,
+      "composite_score": 0.38,
+      "pathway": "do_not_submit_false_positive",
+      "blocking_count": 3,
+      "operator_id": "op-beta",
+      "created_utc": "2026-03-20T11:00:00Z",
+      "score_delta": -0.17,
+      "notes": "Dust contamination confirmed; reclassified as false positive.",
+      "feature_highlights": ["dust_confusion_flag", "agn_indicator", "photometry_quality_low"]
+    },
+    {
+      "entry_id": "sh-005",
+      "candidate_id": "cand-anomaly-001",
+      "track": "anomaly",
+      "epoch_number": 1,
+      "composite_score": 0.72,
+      "pathway": "candidate_review_packet",
+      "blocking_count": 0,
+      "operator_id": "op-alpha",
+      "created_utc": "2026-03-05T09:00:00Z",
+      "score_delta": 0.0,
+      "notes": "High score; archival disappearance confirmed across two catalogs.",
+      "feature_highlights": ["magnitude_change_large", "modern_non_detection", "multi_catalog_consistent"]
+    }
+  ]
+}
