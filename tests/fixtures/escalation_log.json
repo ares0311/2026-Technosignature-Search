@@ -1,0 +1,66 @@
+{
+  "schema_version": "escalation_log_v1",
+  "disclaimer": "Escalation log entries are local scheduling and workflow provenance records only. Escalation priority reflects internal operational urgency, not candidate scientific interest or discovery probability.",
+  "entries": [
+    {
+      "entry_id": "esc-001",
+      "candidate_id": "cand-radio-011",
+      "track": "radio",
+      "priority": "high",
+      "status": "open",
+      "escalated_by": "operator-alpha",
+      "assigned_to": "operator-beta",
+      "escalation_reason": "candidate blocked for over 20 days with no triage update",
+      "escalated_utc": "2026-04-18T09:00:00Z",
+      "days_open": 12
+    },
+    {
+      "entry_id": "esc-002",
+      "candidate_id": "cand-infrared-004",
+      "track": "infrared",
+      "priority": "normal",
+      "status": "in_review",
+      "escalated_by": "operator-beta",
+      "assigned_to": "operator-alpha",
+      "escalation_reason": "awaiting_confirmation status exceeded 30-day deadline",
+      "escalated_utc": "2026-04-26T11:30:00Z",
+      "days_open": 9
+    },
+    {
+      "entry_id": "esc-003",
+      "candidate_id": "cand-anomaly-003",
+      "track": "anomaly",
+      "priority": "critical",
+      "status": "open",
+      "escalated_by": "operator-alpha",
+      "assigned_to": "operator-beta",
+      "escalation_reason": "inconclusive result after 45 days requires senior review",
+      "escalated_utc": "2026-05-06T08:00:00Z",
+      "days_open": 4
+    },
+    {
+      "entry_id": "esc-004",
+      "candidate_id": "cand-radio-007",
+      "track": "radio",
+      "priority": "low",
+      "status": "resolved",
+      "escalated_by": "operator-beta",
+      "assigned_to": "operator-alpha",
+      "escalation_reason": "verify resolved_fp classification before archiving",
+      "escalated_utc": "2026-04-10T14:00:00Z",
+      "days_open": 2
+    },
+    {
+      "entry_id": "esc-005",
+      "candidate_id": "cand-infrared-009",
+      "track": "infrared",
+      "priority": "normal",
+      "status": "dismissed",
+      "escalated_by": "operator-alpha",
+      "assigned_to": "operator-alpha",
+      "escalation_reason": "flag raised in error — candidate already resolved as fp",
+      "escalated_utc": "2026-05-02T10:00:00Z",
+      "days_open": 0
+    }
+  ]
+}

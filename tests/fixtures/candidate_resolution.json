@@ -1,0 +1,56 @@
+{
+  "schema_version": "candidate_resolution_v1",
+  "disclaimer": "Candidate resolution records are local scheduling closure records only. Resolution status reflects internal workflow disposition, not external validation or confirmation of any technosignature.",
+  "records": [
+    {
+      "record_id": "res-001",
+      "candidate_id": "cand-radio-007",
+      "track": "radio",
+      "resolution_status": "resolved_fp",
+      "resolved_by": "operator-alpha",
+      "resolution_utc": "2026-04-12T10:15:00Z",
+      "days_to_resolution": 14,
+      "blocking_reason": ""
+    },
+    {
+      "record_id": "res-002",
+      "candidate_id": "cand-radio-011",
+      "track": "radio",
+      "resolution_status": "unresolved",
+      "resolved_by": "operator-beta",
+      "resolution_utc": "2026-04-20T08:30:00Z",
+      "days_to_resolution": 22,
+      "blocking_reason": "insufficient follow-up observation coverage"
+    },
+    {
+      "record_id": "res-003",
+      "candidate_id": "cand-infrared-004",
+      "track": "infrared",
+      "resolution_status": "awaiting_confirmation",
+      "resolved_by": "operator-alpha",
+      "resolution_utc": "2026-04-25T14:00:00Z",
+      "days_to_resolution": 31,
+      "blocking_reason": "pending second-epoch infrared observation"
+    },
+    {
+      "record_id": "res-004",
+      "candidate_id": "cand-infrared-009",
+      "track": "infrared",
+      "resolution_status": "resolved_fp",
+      "resolved_by": "operator-beta",
+      "resolution_utc": "2026-05-01T09:45:00Z",
+      "days_to_resolution": 8,
+      "blocking_reason": ""
+    },
+    {
+      "record_id": "res-005",
+      "candidate_id": "cand-anomaly-003",
+      "track": "anomaly",
+      "resolution_status": "inconclusive",
+      "resolved_by": "operator-alpha",
+      "resolution_utc": "2026-05-05T16:20:00Z",
+      "days_to_resolution": 45,
+      "blocking_reason": "archival data quality insufficient for definitive assessment"
+    }
+  ]
+}

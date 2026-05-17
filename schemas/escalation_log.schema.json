@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EscalationLog",
+  "description": "Local workflow escalation records. Priority reflects operational urgency, not candidate quality.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "entries"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "disclaimer": { "type": "string" },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "entry_id",
+          "candidate_id",
+          "track",
+          "priority",
+          "status",
+          "escalated_by",
+          "assigned_to",
+          "escalation_reason",
+          "escalated_utc",
+          "days_open"
+        ],
+        "properties": {
+          "entry_id": { "type": "string" },
+          "candidate_id": { "type": "string" },
+          "track": { "type": "string", "enum": ["radio", "infrared", "anomaly"] },
+          "priority": {
+            "type": "string",
+            "enum": ["low", "normal", "high", "critical"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["open", "in_review", "resolved", "dismissed"]
+          },
+          "escalated_by": { "type": "string" },
+          "assigned_to": { "type": "string" },
+          "escalation_reason": { "type": "string" },
+          "escalated_utc": { "type": "string" },
+          "days_open": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  }
+}
