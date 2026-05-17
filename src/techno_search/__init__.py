@@ -107,6 +107,14 @@ from techno_search.calibration_metrics import (
     precision_recall_summary,
     reliability_summary,
 )
+from techno_search.candidate_annotation import (
+    ALLOWED_ANNOTATION_TYPES,
+    CANDIDATE_ANNOTATION_DISCLAIMER,
+    CANDIDATE_ANNOTATION_SCHEMA_VERSION,
+    CandidateAnnotation,
+    candidate_annotation_summary,
+    load_candidate_annotations,
+)
 from techno_search.candidate_audit_trail import (
     CANDIDATE_AUDIT_TRAIL_DISCLAIMER,
     CANDIDATE_AUDIT_TRAIL_SCHEMA_VERSION,
@@ -209,6 +217,15 @@ from techno_search.escalation_log import (
     escalation_log_summary,
     load_escalation_entries,
 )
+from techno_search.follow_up_request import (
+    ALLOWED_REQUEST_PRIORITIES,
+    ALLOWED_REQUEST_STATUSES,
+    FOLLOW_UP_REQUEST_DISCLAIMER,
+    FOLLOW_UP_REQUEST_SCHEMA_VERSION,
+    FollowUpRequest,
+    follow_up_request_summary,
+    load_follow_up_requests,
+)
 from techno_search.injection_recovery import (
     INJECTION_RECOVERY_DISCLAIMER,
     false_negative_summary,
@@ -257,6 +274,10 @@ from techno_search.pathway import classify_pathway
 from techno_search.pipeline_audit_summary import (
     PIPELINE_AUDIT_DISCLAIMER,
     pipeline_audit_summary,
+)
+from techno_search.pipeline_bottleneck import (
+    PIPELINE_BOTTLENECK_DISCLAIMER,
+    pipeline_bottleneck_summary,
 )
 from techno_search.pipeline_health import (
     PIPELINE_HEALTH_DISCLAIMER,
@@ -421,6 +442,12 @@ __all__ = [
     "SCORING_CONFIG_DISCLAIMER",
     "SCORING_CONFIG_SCHEMA_VERSION",
     "scoring_config_summary",
+    "ALLOWED_ANNOTATION_TYPES",
+    "CANDIDATE_ANNOTATION_DISCLAIMER",
+    "CANDIDATE_ANNOTATION_SCHEMA_VERSION",
+    "CandidateAnnotation",
+    "candidate_annotation_summary",
+    "load_candidate_annotations",
     "CANDIDATE_AUDIT_TRAIL_DISCLAIMER",
     "CANDIDATE_AUDIT_TRAIL_SCHEMA_VERSION",
     "CandidateAuditAction",
@@ -651,6 +678,13 @@ __all__ = [
     "EscalationEntry",
     "escalation_log_summary",
     "load_escalation_entries",
+    "ALLOWED_REQUEST_PRIORITIES",
+    "ALLOWED_REQUEST_STATUSES",
+    "FOLLOW_UP_REQUEST_DISCLAIMER",
+    "FOLLOW_UP_REQUEST_SCHEMA_VERSION",
+    "FollowUpRequest",
+    "follow_up_request_summary",
+    "load_follow_up_requests",
     "OPERATOR_PERFORMANCE_DISCLAIMER",
     "operator_performance_summary",
     "COMPARISON_TRACKS",
@@ -684,6 +718,8 @@ __all__ = [
     "ObservationCampaign",
     "load_observation_campaigns",
     "observation_campaign_summary",
+    "PIPELINE_BOTTLENECK_DISCLAIMER",
+    "pipeline_bottleneck_summary",
     "PIPELINE_AUDIT_DISCLAIMER",
     "pipeline_audit_summary",
     "PIPELINE_HEALTH_DISCLAIMER",

@@ -1,0 +1,56 @@
+{
+  "schema_version": "candidate_annotation_v1",
+  "disclaimer": "Candidate annotations are operator notes and tags for scheduling provenance only. Annotations do not modify candidate scores, posteriors, or pathway routing.",
+  "annotations": [
+    {
+      "annotation_id": "ann-001",
+      "candidate_id": "cand-radio-0042",
+      "track": "radio",
+      "annotation_type": "warning",
+      "content": "Frequency band overlaps known satellite downlink window. RFI cross-check required before follow-up scheduling.",
+      "operator_id": "operator-alpha",
+      "created_utc": "2026-03-12T10:00:00Z",
+      "is_resolved": false
+    },
+    {
+      "annotation_id": "ann-002",
+      "candidate_id": "cand-radio-0051",
+      "track": "radio",
+      "annotation_type": "note",
+      "content": "Signal recurrence confirmed in 3 of 5 epochs. Scheduling second ON/OFF verification pass.",
+      "operator_id": "operator-beta",
+      "created_utc": "2026-03-22T14:30:00Z",
+      "is_resolved": false
+    },
+    {
+      "annotation_id": "ann-003",
+      "candidate_id": "cand-infrared-0018",
+      "track": "infrared",
+      "annotation_type": "highlight",
+      "content": "IR excess detected in both W3 and W4 bands. AGB-like contamination not yet ruled out.",
+      "operator_id": "operator-alpha",
+      "created_utc": "2026-04-01T09:15:00Z",
+      "is_resolved": false
+    },
+    {
+      "annotation_id": "ann-004",
+      "candidate_id": "cand-infrared-0027",
+      "track": "infrared",
+      "annotation_type": "tag",
+      "content": "dust-contamination-assessed",
+      "operator_id": "operator-beta",
+      "created_utc": "2026-02-28T16:00:00Z",
+      "is_resolved": true
+    },
+    {
+      "annotation_id": "ann-005",
+      "candidate_id": "cand-anomaly-0009",
+      "track": "anomaly",
+      "annotation_type": "question",
+      "content": "Archival magnitude change of 2.1 mag — is the historical plate calibration reliable for this field?",
+      "operator_id": "operator-gamma",
+      "created_utc": "2026-03-28T11:45:00Z",
+      "is_resolved": false
+    }
+  ]
+}

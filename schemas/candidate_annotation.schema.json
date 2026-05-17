@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CandidateAnnotation",
+  "description": "Schema for candidate annotation fixture files (candidate_annotation_v1).",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "annotations"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "disclaimer": { "type": "string" },
+    "annotations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "annotation_id", "candidate_id", "track",
+          "annotation_type", "operator_id", "created_utc"
+        ],
+        "properties": {
+          "annotation_id": { "type": "string" },
+          "candidate_id": { "type": "string" },
+          "track": { "type": "string", "enum": ["radio", "infrared", "anomaly"] },
+          "annotation_type": {
+            "type": "string",
+            "enum": ["note", "tag", "warning", "highlight", "question", "followup"]
+          },
+          "content": { "type": "string" },
+          "operator_id": { "type": "string" },
+          "created_utc": { "type": "string", "format": "date-time" },
+          "is_resolved": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

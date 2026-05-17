@@ -1,0 +1,71 @@
+{
+  "schema_version": "follow_up_request_v1",
+  "disclaimer": "Follow-up request records are local scheduling coordination aids only. Request priority reflects operational timeline pressure, not candidate scientific interest level.",
+  "requests": [
+    {
+      "request_id": "fur-001",
+      "candidate_id": "cand-radio-0042",
+      "track": "radio",
+      "priority": "urgent",
+      "status": "in_progress",
+      "requested_by": "operator-alpha",
+      "assigned_to": "operator-beta",
+      "request_reason": "Narrowband signal recurrence check needed before epoch window closes.",
+      "requested_utc": "2026-03-10T09:00:00Z",
+      "due_utc": "2026-03-17T09:00:00Z",
+      "days_open": 7
+    },
+    {
+      "request_id": "fur-002",
+      "candidate_id": "cand-radio-0051",
+      "track": "radio",
+      "priority": "normal",
+      "status": "open",
+      "requested_by": "operator-beta",
+      "assigned_to": "",
+      "request_reason": "RFI cross-check against adjacent frequency bands.",
+      "requested_utc": "2026-03-20T11:30:00Z",
+      "due_utc": "2026-04-03T11:30:00Z",
+      "days_open": 22
+    },
+    {
+      "request_id": "fur-003",
+      "candidate_id": "cand-infrared-0018",
+      "track": "infrared",
+      "priority": "high",
+      "status": "assigned",
+      "requested_by": "operator-alpha",
+      "assigned_to": "operator-gamma",
+      "request_reason": "IR excess confirmed in two bands — archival photometry cross-match needed.",
+      "requested_utc": "2026-04-01T14:00:00Z",
+      "due_utc": "2026-04-15T14:00:00Z",
+      "days_open": 9
+    },
+    {
+      "request_id": "fur-004",
+      "candidate_id": "cand-infrared-0027",
+      "track": "infrared",
+      "priority": "low",
+      "status": "completed",
+      "requested_by": "operator-beta",
+      "assigned_to": "operator-alpha",
+      "request_reason": "Dust contamination assessment for SED residual candidate.",
+      "requested_utc": "2026-02-15T08:00:00Z",
+      "due_utc": "2026-03-01T08:00:00Z",
+      "days_open": 0
+    },
+    {
+      "request_id": "fur-005",
+      "candidate_id": "cand-anomaly-0009",
+      "track": "anomaly",
+      "priority": "normal",
+      "status": "deferred",
+      "requested_by": "operator-gamma",
+      "assigned_to": "",
+      "request_reason": "Archival disappearance candidate requires additional epoch before assessment.",
+      "requested_utc": "2026-03-25T16:00:00Z",
+      "due_utc": "2026-04-25T16:00:00Z",
+      "days_open": 18
+    }
+  ]
+}
