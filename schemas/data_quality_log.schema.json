@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DataQualityLog",
+  "description": "Per-observation data quality assessments. Grades reflect observational conditions, not candidate scientific merit.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "entries"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "disclaimer": { "type": "string" },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "entry_id",
+          "observation_id",
+          "track",
+          "quality_grade",
+          "issue_types",
+          "rfi_level",
+          "weather_flag",
+          "equipment_flag",
+          "operator_id",
+          "assessed_utc"
+        ],
+        "properties": {
+          "entry_id": { "type": "string" },
+          "observation_id": { "type": "string" },
+          "track": { "type": "string", "enum": ["radio", "infrared", "anomaly"] },
+          "quality_grade": {
+            "type": "string",
+            "enum": ["excellent", "good", "marginal", "poor", "unusable"]
+          },
+          "issue_types": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["rfi", "weather", "equipment", "calibration_failure", "data_loss", "none"]
+            }
+          },
+          "rfi_level": { "type": "string" },
+          "weather_flag": { "type": "boolean" },
+          "equipment_flag": { "type": "boolean" },
+          "operator_id": { "type": "string" },
+          "assessed_utc": { "type": "string" }
+        }
+      }
+    }
+  }
+}

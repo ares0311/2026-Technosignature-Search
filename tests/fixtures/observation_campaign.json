@@ -1,0 +1,71 @@
+{
+  "schema_version": "observation_campaign_v1",
+  "disclaimer": "Observation campaign records are local scheduling and provenance aids only. Campaign status reflects operational workflow state, not scientific conclusions.",
+  "campaigns": [
+    {
+      "campaign_id": "camp-001",
+      "name": "Radio Follow-Up Alpha",
+      "track": "radio",
+      "status": "completed",
+      "target_candidate_ids": ["cand-radio-007", "cand-radio-011"],
+      "session_count": 4,
+      "epochs_covered": 2,
+      "start_utc": "2026-03-01T00:00:00Z",
+      "end_utc": "2026-03-22T00:00:00Z",
+      "operator_lead": "operator-alpha",
+      "notes": "completed all planned sessions; one session affected by RFI"
+    },
+    {
+      "campaign_id": "camp-002",
+      "name": "Radio Deep Survey Beta",
+      "track": "radio",
+      "status": "active",
+      "target_candidate_ids": ["cand-radio-015"],
+      "session_count": 2,
+      "epochs_covered": 1,
+      "start_utc": "2026-04-10T00:00:00Z",
+      "end_utc": "2026-05-30T00:00:00Z",
+      "operator_lead": "operator-beta",
+      "notes": "ongoing; two more sessions planned"
+    },
+    {
+      "campaign_id": "camp-003",
+      "name": "Infrared Multi-Epoch Survey",
+      "track": "infrared",
+      "status": "completed",
+      "target_candidate_ids": ["cand-infrared-004", "cand-infrared-009"],
+      "session_count": 6,
+      "epochs_covered": 3,
+      "start_utc": "2026-02-15T00:00:00Z",
+      "end_utc": "2026-04-20T00:00:00Z",
+      "operator_lead": "operator-alpha",
+      "notes": "three-epoch coverage achieved; second epoch had weather delay"
+    },
+    {
+      "campaign_id": "camp-004",
+      "name": "Infrared Confirmation Campaign",
+      "track": "infrared",
+      "status": "planned",
+      "target_candidate_ids": ["cand-infrared-012"],
+      "session_count": 0,
+      "epochs_covered": 0,
+      "start_utc": "2026-06-01T00:00:00Z",
+      "end_utc": "2026-07-15T00:00:00Z",
+      "operator_lead": "operator-beta",
+      "notes": "pending scheduling confirmation"
+    },
+    {
+      "campaign_id": "camp-005",
+      "name": "Anomaly Archival Cross-Check",
+      "track": "anomaly",
+      "status": "on_hold",
+      "target_candidate_ids": ["cand-anomaly-003"],
+      "session_count": 1,
+      "epochs_covered": 1,
+      "start_utc": "2026-04-05T00:00:00Z",
+      "end_utc": "2026-05-05T00:00:00Z",
+      "operator_lead": "operator-alpha",
+      "notes": "on hold pending escalation resolution"
+    }
+  ]
+}
