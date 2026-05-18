@@ -61,6 +61,9 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "ml_model_registry.schema.json",
         "feature_importance.schema.json",
         "feature_normalization.schema.json",
+        "model_architecture.schema.json",
+        "model_evaluation.schema.json",
+        "model_performance_history.schema.json",
     }
     for path in schema_paths:
         schema = json.loads(path.read_text(encoding="utf-8"))

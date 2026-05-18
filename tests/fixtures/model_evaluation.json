@@ -1,0 +1,57 @@
+{
+  "schema_version": "model_evaluation_v1",
+  "evaluations": [
+    {
+      "eval_id": "eval-001",
+      "model_id": "mdl-001",
+      "track": "radio",
+      "accuracy": 0.867,
+      "precision": 0.881,
+      "recall": 0.854,
+      "f1": 0.867,
+      "baseline_accuracy": 0.833,
+      "beats_baseline": true,
+      "eval_utc": "2026-05-18T00:00:00Z",
+      "notes": "Baseline rule-based model evaluated on synthetic radio calibration fixtures."
+    },
+    {
+      "eval_id": "eval-002",
+      "model_id": "mdl-002",
+      "track": "radio",
+      "accuracy": 0.883,
+      "precision": 0.897,
+      "recall": 0.869,
+      "f1": 0.883,
+      "baseline_accuracy": 0.833,
+      "beats_baseline": true,
+      "eval_utc": "2026-05-18T00:01:00Z",
+      "notes": "Hybrid rule-learned model evaluated on synthetic radio calibration fixtures."
+    },
+    {
+      "eval_id": "eval-003",
+      "model_id": "mdl-003",
+      "track": "infrared",
+      "accuracy": 0.733,
+      "precision": 0.751,
+      "recall": 0.715,
+      "f1": 0.732,
+      "baseline_accuracy": 0.833,
+      "beats_baseline": false,
+      "eval_utc": "2026-05-18T00:02:00Z",
+      "notes": "CNN radio scaffold evaluated on infrared fixtures — does NOT beat baseline. Development fixture only."
+    },
+    {
+      "eval_id": "eval-004",
+      "model_id": "mdl-001",
+      "track": "anomaly",
+      "accuracy": 0.850,
+      "precision": 0.862,
+      "recall": 0.838,
+      "f1": 0.850,
+      "baseline_accuracy": 0.833,
+      "beats_baseline": true,
+      "eval_utc": "2026-05-18T00:03:00Z",
+      "notes": "Baseline rule-based model evaluated on synthetic anomaly calibration fixtures."
+    }
+  ]
+}

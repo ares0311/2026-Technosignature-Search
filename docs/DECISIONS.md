@@ -1038,3 +1038,21 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 **ML training data**: assembles calibration fixtures and injection-recovery cases into a structured training scaffold with recommended 80/20 train/test split. Training data summaries are provenance records for model development only — they do not constitute detections, discoveries, or external validation.
 
 **Consequences**: `validate-all` gates enforce `normalization_bounds_count >= 3`, `feature_importance_entry_count >= 6`, and `ml_training_case_count >= 0`. SCHEMA_FILENAMES grows 52→54. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-044: ML Model Architecture Scaffolds, Evaluation Harness, And Performance History Are Required Before Any Model Deployment
+
+**Date**: 2026-05-18
+
+**Context**: DECISION-043 established feature normalization, importance, and training data as ML infrastructure prerequisites. The next requirement before any learned model can be considered for deployment is: (1) explicit architecture scaffold definitions for all five model kinds, (2) a structured evaluation harness comparing each model to the interpretable baseline, and (3) a performance history log tracking accuracy and loss across training epochs with trend classification.
+
+**Decision**: Implement three new ML development modules:
+
+**Model architecture**: scaffold definitions (no weights, no training) for all five intended architecture kinds — CNN radio, transformer radio, hybrid rule-learned, self-supervised, and foundation embedding. Every entry carries explicit `weights_available: false` and `status: stub` fields. Architecture definitions are ML planning artifacts only — they do not constitute trained models or detection pipelines.
+
+**Model evaluation**: structured evaluation results comparing each registered model's accuracy, precision, recall, and F1 against the baseline accuracy per track. A model that does not beat the baseline has `beats_baseline: false` and must not be deployed. Evaluation results are synthetic development diagnostics — not detections or external validation.
+
+**Model performance history**: per-epoch training snapshots with trend classification (`improving`, `declining`, `stable`). A `declining` trend must surface in `validate-all` visibility. Snapshots are local scheduling records — not calibrated survey efficiency estimates.
+
+**Consequences**: `validate-all` gates enforce `arch_count >= 5`, `eval_count >= 4`, `perf_snapshot_count >= 5`. SCHEMA_FILENAMES grows 54→57. Milestone 12 is complete. Scientific guardrails remain unchanged.

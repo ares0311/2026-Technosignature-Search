@@ -373,15 +373,37 @@ Introduce pluggable learned models with mandatory version tracking, provenance, 
 - [x] ML pipeline diagnostics module comparing baseline vs registered learned model metrics (`ml_pipeline_diagnostics.py`)
 - [x] `ml-diagnostics-summary` CLI command with above-baseline gate
 - [x] `validate-all` gate: no registered model below baseline pathway accuracy
-- [ ] CNN scaffold for radio waterfall morphology (architecture definition, no weights yet)
-- [ ] Transformer scaffold for sequential multi-epoch radio features (architecture definition, no weights yet)
-- [ ] Hybrid model interface combining baseline rule scores with learned feature embeddings
-- [ ] Self-supervised representation learning scaffold for unlabeled candidate clusters
-- [ ] Foundation-model embedding adapter for retrieval and human-review triage support
+- [x] CNN scaffold for radio waterfall morphology (architecture definition, no weights yet)
+- [x] Transformer scaffold for sequential multi-epoch radio features (architecture definition, no weights yet)
+- [x] Hybrid model interface combining baseline rule scores with learned feature embeddings
+- [x] Self-supervised representation learning scaffold for unlabeled candidate clusters
+- [x] Foundation-model embedding adapter for retrieval and human-review triage support
 - [x] Training data scaffold assembled from calibration fixtures and injection-recovery cases
-- [ ] Model evaluation harness comparing learned model accuracy, precision, and recall to baseline
-- [ ] Model performance history appended to the existing benchmark run-result workflow
+- [x] Model evaluation harness comparing learned model accuracy, precision, and recall to baseline
+- [x] Model performance history appended to the existing benchmark run-result workflow
 - [x] DECISION-043: Feature Normalization, Feature Importance, And ML Training Data Are Required ML Infrastructure
+- [x] DECISION-044: ML Model Architecture Scaffolds, Evaluation Harness, And Performance History Are Required Before Any Model Deployment
+
+---
+
+# Milestone 13 — Candidate Methods Production Readiness
+
+## Goal
+
+Harden the candidate scoring, routing, and reporting pipeline for a first curated non-synthetic validation dataset, introduce model-serving scaffolds, and complete the operator handoff documentation required before any external submission is considered.
+
+## Tasks
+
+- [ ] Model serving scaffold: versioned inference interface wrapping a registered model or baseline
+- [ ] Model inference provenance: record which model version scored each candidate packet
+- [ ] Candidate re-scoring workflow: re-score candidates when a new validated model is registered
+- [ ] Scoring audit log: append-only record of each score event per candidate per model version
+- [ ] Curated validation dataset intake checklist schema
+- [ ] First curated non-synthetic dataset intake fixture (placeholder, conservative)
+- [ ] `validate-all` gate: at least one curated dataset entry present
+- [ ] Updated operator handoff template including model version and inference provenance fields
+- [ ] Candidate methods summary CLI: aggregate view of scoring, routing, and model provenance
+- [ ] DECISION-045: Candidate Methods Production Readiness Prerequisites
 
 ---
 

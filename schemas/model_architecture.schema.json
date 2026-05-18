@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ModelArchitecture",
+  "description": "Scaffold definitions for ML model architectures. No weights included.",
+  "type": "object",
+  "required": ["schema_version", "architectures"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "architectures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "arch_id", "kind", "label", "track", "status",
+          "weights_available", "input_feature_schema_version",
+          "layer_descriptor", "created_utc", "notes"
+        ],
+        "properties": {
+          "arch_id": { "type": "string" },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "cnn_radio", "transformer_radio", "hybrid_rule_learned",
+              "self_supervised", "foundation_embedding"
+            ]
+          },
+          "label": { "type": "string" },
+          "track": { "type": "string", "enum": ["radio", "infrared", "anomaly", "multi"] },
+          "status": { "type": "string", "enum": ["stub", "prototype", "experimental"] },
+          "weights_available": { "type": "boolean" },
+          "input_feature_schema_version": { "type": "string" },
+          "layer_descriptor": { "type": "string" },
+          "created_utc": { "type": "string" },
+          "notes": { "type": "string" }
+        }
+      }
+    }
+  }
+}

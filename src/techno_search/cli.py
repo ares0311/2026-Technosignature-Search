@@ -116,6 +116,9 @@ from techno_search.log_store import (
 from techno_search.ml_model_registry import model_registry_summary
 from techno_search.ml_pipeline_diagnostics import ml_pipeline_diagnostics_summary
 from techno_search.ml_training_data import ml_training_data_summary
+from techno_search.model_architecture import model_architecture_summary
+from techno_search.model_evaluation import model_evaluation_summary
+from techno_search.model_performance_history import model_performance_history_summary
 from techno_search.multi_epoch_summary import multi_epoch_summary
 from techno_search.observation_campaign import observation_campaign_summary
 from techno_search.observation_schedule import (
@@ -216,6 +219,9 @@ SCHEMA_FILENAMES = {
     "feature_importance": "feature_importance.schema.json",
     "feature_normalization": "feature_normalization.schema.json",
     "ml_model_registry": "ml_model_registry.schema.json",
+    "model_architecture": "model_architecture.schema.json",
+    "model_evaluation": "model_evaluation.schema.json",
+    "model_performance_history": "model_performance_history.schema.json",
     "candidate_resolution": "candidate_resolution.schema.json",
     "candidate_retention": "candidate_retention.schema.json",
     "data_quality_log": "data_quality_log.schema.json",
@@ -1621,6 +1627,42 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "model-architecture-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                model_architecture_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "model-evaluation-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                model_evaluation_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "model-performance-history-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                model_performance_history_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -2012,6 +2054,12 @@ def validate_all() -> dict[str, object]:
     feat_imp_count = int(feat_imp_data.get("entry_count", 0))
     ml_training_data = ml_training_data_summary()
     ml_training_case_count = int(ml_training_data.get("total_case_count", 0))
+    arch_data = model_architecture_summary()
+    arch_count = int(arch_data.get("architecture_count", 0))
+    eval_data = model_evaluation_summary()
+    eval_count = int(eval_data.get("evaluation_count", 0))
+    perf_history_data = model_performance_history_summary()
+    perf_snapshot_count = int(perf_history_data.get("snapshot_count", 0))
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -2283,6 +2331,12 @@ def validate_all() -> dict[str, object]:
         and feat_imp_count >= 6
         and isinstance(ml_training_case_count, int)
         and ml_training_case_count >= 0
+        and isinstance(arch_count, int)
+        and arch_count >= 5
+        and isinstance(eval_count, int)
+        and eval_count >= 4
+        and isinstance(perf_snapshot_count, int)
+        and perf_snapshot_count >= 5
     )
     return {
         "ok": ok,
@@ -2383,6 +2437,9 @@ def validate_all() -> dict[str, object]:
         "feature_normalization_summary": feat_norm_data,
         "feature_importance_summary": feat_imp_data,
         "ml_training_data_summary": ml_training_data,
+        "model_architecture_summary": arch_data,
+        "model_evaluation_summary": eval_data,
+        "model_performance_history_summary": perf_history_data,
     }
 
 
@@ -3191,6 +3248,26 @@ def validation_summary() -> dict[str, object]:
         "ml_recommended_train_count": (
             mt_s2["recommended_train_count"]
             if isinstance(mt_s2 := validation.get("ml_training_data_summary"), dict)
+            else 0
+        ),
+        "model_architecture_count": (
+            ma_s["architecture_count"]
+            if isinstance(ma_s := validation.get("model_architecture_summary"), dict)
+            else 0
+        ),
+        "model_evaluation_count": (
+            me_s["evaluation_count"]
+            if isinstance(me_s := validation.get("model_evaluation_summary"), dict)
+            else 0
+        ),
+        "model_evaluation_above_baseline_count": (
+            me_s2["above_baseline_count"]
+            if isinstance(me_s2 := validation.get("model_evaluation_summary"), dict)
+            else 0
+        ),
+        "model_performance_snapshot_count": (
+            ph_s["snapshot_count"]
+            if isinstance(ph_s := validation.get("model_performance_history_summary"), dict)
             else 0
         ),
         "recommended_commands": [
@@ -4708,6 +4785,30 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "ml-training-data-summary",
         help="Summarize ML training data assembled from calibration and injection-recovery cases.",
+    )
+
+    model_architecture_parser = subparsers.add_parser(
+        "model-architecture-summary",
+        help="Summarize ML model architecture scaffold definitions.",
+    )
+    model_architecture_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    model_evaluation_parser = subparsers.add_parser(
+        "model-evaluation-summary",
+        help="Summarize ML model evaluation results against the interpretable baseline.",
+    )
+    model_evaluation_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    model_performance_parser = subparsers.add_parser(
+        "model-performance-history-summary",
+        help="Summarize ML model training performance snapshots by model and trend.",
+    )
+    model_performance_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
     )
 
     return parser

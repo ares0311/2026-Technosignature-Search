@@ -1,0 +1,65 @@
+{
+  "schema_version": "model_architecture_v1",
+  "architectures": [
+    {
+      "arch_id": "arch-001",
+      "kind": "cnn_radio",
+      "label": "CNN Radio Waterfall",
+      "track": "radio",
+      "status": "stub",
+      "weights_available": false,
+      "input_feature_schema_version": "candidate_feature_vector_v1",
+      "layer_descriptor": "Conv1D(32)->ReLU->MaxPool->Conv1D(64)->ReLU->GlobalAvgPool->Dense(3)",
+      "created_utc": "2026-05-18T00:00:00Z",
+      "notes": "Stub only. Intended for radio waterfall morphology classification. No weights trained."
+    },
+    {
+      "arch_id": "arch-002",
+      "kind": "transformer_radio",
+      "label": "Transformer Multi-Epoch Radio",
+      "track": "radio",
+      "status": "stub",
+      "weights_available": false,
+      "input_feature_schema_version": "candidate_feature_vector_v1",
+      "layer_descriptor": "PosEncoding->MultiHeadAttn(4,64)->FFN(256)->LayerNorm->Dense(3)",
+      "created_utc": "2026-05-18T00:00:00Z",
+      "notes": "Stub only. Intended for sequential multi-epoch radio features. No weights trained."
+    },
+    {
+      "arch_id": "arch-003",
+      "kind": "hybrid_rule_learned",
+      "label": "Hybrid Rule-Learned Combiner",
+      "track": "multi",
+      "status": "stub",
+      "weights_available": false,
+      "input_feature_schema_version": "candidate_feature_vector_v1",
+      "layer_descriptor": "BaselineScore->Concat(LearnedEmbedding(64))->Dense(32)->Dense(3)",
+      "created_utc": "2026-05-18T00:00:00Z",
+      "notes": "Stub only. Combines interpretable baseline rule scores with learned feature embeddings. No weights trained."
+    },
+    {
+      "arch_id": "arch-004",
+      "kind": "self_supervised",
+      "label": "Self-Supervised Candidate Cluster",
+      "track": "multi",
+      "status": "stub",
+      "weights_available": false,
+      "input_feature_schema_version": "candidate_feature_vector_v1",
+      "layer_descriptor": "Encoder(128)->ProjectionHead(64)->ContrastiveLoss",
+      "created_utc": "2026-05-18T00:00:00Z",
+      "notes": "Stub only. Intended for unlabeled candidate cluster representation learning. No weights trained."
+    },
+    {
+      "arch_id": "arch-005",
+      "kind": "foundation_embedding",
+      "label": "Foundation Embedding Adapter",
+      "track": "multi",
+      "status": "stub",
+      "weights_available": false,
+      "input_feature_schema_version": "candidate_feature_vector_v1",
+      "layer_descriptor": "FoundationEncoder->LinearProbe(64)->Cosine-Retrieval",
+      "created_utc": "2026-05-18T00:00:00Z",
+      "notes": "Stub only. Intended for retrieval and human-review triage support. No foundation weights committed."
+    }
+  ]
+}

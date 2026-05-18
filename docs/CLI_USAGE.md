@@ -1512,3 +1512,36 @@ techno-search ml-training-data-summary
 ```
 
 Output fields: `disclaimer`, `total_case_count`, `calibration_case_count`, `injection_recovery_case_count`, `by_track`, `by_source`, `recommended_train_count`, `recommended_test_count`, `pathway_breakdown`. Training data summaries are provenance records only — they are not detections, discoveries, or external validation.
+
+## `model-architecture-summary`
+
+Summarize ML model architecture scaffold definitions — stubs only, no weights trained.
+
+```bash
+techno-search model-architecture-summary
+techno-search model-architecture-summary --fixture-path tests/fixtures/model_architecture.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `architecture_count`, `weights_available_count`, `by_kind`, `by_status`, `by_track`, `kinds_defined`. All architectures carry explicit no-weights and not-validated disclaimers.
+
+## `model-evaluation-summary`
+
+Summarize ML model evaluation results against the interpretable baseline.
+
+```bash
+techno-search model-evaluation-summary
+techno-search model-evaluation-summary --fixture-path tests/fixtures/model_evaluation.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `evaluation_count`, `above_baseline_count`, `below_baseline_count`, `by_track`, `best_model_id`, `best_accuracy`, `worst_model_id`, `worst_accuracy`. Evaluation results are synthetic development diagnostics — not detections or external validation.
+
+## `model-performance-history-summary`
+
+Summarize ML model training performance snapshots by model, track, and trend.
+
+```bash
+techno-search model-performance-history-summary
+techno-search model-performance-history-summary --fixture-path tests/fixtures/model_performance_history.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `snapshot_count`, `unique_model_count`, `by_model`, `by_track`, `by_trend`, `most_recent_snapshot_by_model`. Performance snapshots are local scheduling records only — not calibrated survey efficiency estimates.
