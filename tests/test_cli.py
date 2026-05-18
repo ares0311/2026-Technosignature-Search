@@ -289,6 +289,8 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "model_serving",
         "scoring_audit_log",
         "curated_dataset_intake",
+        "candidate_rescore",
+        "operator_handoff_template",
     }
     assert result["background_search_ledger"].endswith(
         "schemas/background_search_ledger.schema.json"
@@ -1400,7 +1402,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 60
+    assert result["schema_count"] == 62
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -1513,6 +1515,10 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["scoring_audit_entry_count"] == 5
     assert result["curated_intake_record_count"] == 4
     assert result["curated_intake_approved_count"] == 1
+    assert result["candidate_rescore_event_count"] == 4
+    assert result["candidate_rescore_pathway_change_count"] == 1
+    assert result["operator_handoff_template_count"] == 4
+    assert result["operator_handoff_approved_count"] == 1
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 

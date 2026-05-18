@@ -1074,3 +1074,21 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 **Curated dataset intake**: conservative planning checklist for future non-synthetic validation datasets. Every non-synthetic intake record requires provenance documentation, a false-positive baseline, and external approval before any real data is ingested. The one `approved` entry in the fixture is the synthetic calibration dataset already present. All real-data intake records start as `planning` or `blocked`.
 
 **Consequences**: `validate-all` gates enforce `serving_record_count >= 1`, `audit_entry_count >= 1`, `intake_record_count >= 1`. SCHEMA_FILENAMES grows 57→60. Milestone 13 is advanced. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-046: Candidate Re-Scoring, Operator Handoff Templates, And Candidate Methods Summary Complete Milestone 13
+
+**Date**: 2026-05-18
+
+**Context**: DECISION-045 established model serving, scoring audit log, and curated dataset intake as production prerequisites. Three Milestone 13 tasks remained: a candidate re-scoring workflow, an updated operator handoff template with model provenance fields, and a candidate methods summary CLI.
+
+**Decision**: Implement three remaining Milestone 13 modules:
+
+**Candidate re-scoring**: append-only record of re-score events triggered by new model registration, model version changes, operator requests, or drift detection. Each event records prior and new scores, pathways, model IDs, and serving IDs. Pathway changes are surfaced but require human review and operator approval — re-scoring does not automatically reroute committed candidate packets.
+
+**Operator handoff templates**: local scheduling artifacts capturing the model version, inference backend, and serving ID that produced each candidate's score, alongside the operator's handoff status (draft, pending_review, approved, rejected, expired). An approved handoff authorizes internal review packet preparation only — not external submission.
+
+**Candidate methods summary**: aggregate operational dashboard combining model serving, scoring audit log, curated dataset intake, candidate re-scoring, and operator handoff state. The dashboard is a scheduling aid only — it does not authorize external submission or modify candidate posteriors.
+
+**Consequences**: `validate-all` gates enforce `rescore_event_count >= 1`, `handoff_template_count >= 1`, `handoff_approved_count >= 1`. SCHEMA_FILENAMES grows 60→62. Milestone 13 is complete. Scientific guardrails remain unchanged.

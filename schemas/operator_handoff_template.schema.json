@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OperatorHandoffTemplates",
+  "description": "Local scheduling artifacts for operator review of scored candidates with model provenance.",
+  "type": "object",
+  "required": ["schema_version", "handoff_templates"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "handoff_templates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "handoff_id", "candidate_id", "model_id", "model_version",
+          "inference_backend", "serving_id", "score", "pathway",
+          "handoff_status", "operator_id", "created_utc"
+        ],
+        "properties": {
+          "handoff_id":        { "type": "string" },
+          "candidate_id":      { "type": "string" },
+          "model_id":          { "type": "string" },
+          "model_version":     { "type": "string" },
+          "inference_backend": { "type": "string" },
+          "serving_id":        { "type": "string" },
+          "score":             { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "pathway":           { "type": "string" },
+          "handoff_status": {
+            "type": "string",
+            "enum": ["draft", "pending_review", "approved", "rejected", "expired"]
+          },
+          "operator_id":  { "type": "string" },
+          "created_utc":  { "type": "string" },
+          "notes":        { "type": "string" }
+        }
+      }
+    }
+  }
+}

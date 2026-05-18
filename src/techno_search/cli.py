@@ -64,8 +64,10 @@ from techno_search.candidate_lifecycle import (
     candidate_lifecycle_summary,
     lifecycle_transition_summary,
 )
+from techno_search.candidate_methods_summary import candidate_methods_summary
 from techno_search.candidate_observation_notes import observation_notes_summary
 from techno_search.candidate_priority_queue import priority_queue_summary
+from techno_search.candidate_rescore import candidate_rescore_summary
 from techno_search.candidate_resolution import candidate_resolution_summary
 from techno_search.candidate_retention import candidate_retention_summary
 from techno_search.candidate_score_history import score_history_summary
@@ -129,6 +131,7 @@ from techno_search.observation_schedule import (
     observation_schedule_summary,
 )
 from techno_search.operator_assignment import operator_assignment_summary
+from techno_search.operator_handoff_template import operator_handoff_summary
 from techno_search.operator_performance import operator_performance_summary
 from techno_search.pipeline_audit_summary import pipeline_audit_summary
 from techno_search.pipeline_bottleneck import pipeline_bottleneck_summary
@@ -227,7 +230,9 @@ SCHEMA_FILENAMES = {
     "model_performance_history": "model_performance_history.schema.json",
     "model_serving": "model_serving.schema.json",
     "scoring_audit_log": "scoring_audit_log.schema.json",
+    "candidate_rescore": "candidate_rescore.schema.json",
     "curated_dataset_intake": "curated_dataset_intake.schema.json",
+    "operator_handoff_template": "operator_handoff_template.schema.json",
     "candidate_resolution": "candidate_resolution.schema.json",
     "candidate_retention": "candidate_retention.schema.json",
     "data_quality_log": "data_quality_log.schema.json",
@@ -1705,6 +1710,41 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "candidate-rescore-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                candidate_rescore_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operator-handoff-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                operator_handoff_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "candidate-methods-summary":
+        print(
+            json.dumps(
+                candidate_methods_summary(),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -2108,6 +2148,11 @@ def validate_all() -> dict[str, object]:
     audit_entry_count = int(audit_log_data.get("entry_count", 0))
     intake_data = curated_dataset_intake_summary()
     intake_record_count = int(intake_data.get("record_count", 0))
+    rescore_data = candidate_rescore_summary()
+    rescore_event_count = int(rescore_data.get("event_count", 0))
+    handoff_data = operator_handoff_summary()
+    handoff_template_count = int(handoff_data.get("template_count", 0))
+    handoff_approved_count = int(handoff_data.get("approved_count", 0))
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -2391,6 +2436,12 @@ def validate_all() -> dict[str, object]:
         and audit_entry_count >= 1
         and isinstance(intake_record_count, int)
         and intake_record_count >= 1
+        and isinstance(rescore_event_count, int)
+        and rescore_event_count >= 1
+        and isinstance(handoff_template_count, int)
+        and handoff_template_count >= 1
+        and isinstance(handoff_approved_count, int)
+        and handoff_approved_count >= 1
     )
     return {
         "ok": ok,
@@ -2497,6 +2548,8 @@ def validate_all() -> dict[str, object]:
         "model_serving_summary": serving_data,
         "scoring_audit_log_summary": audit_log_data,
         "curated_dataset_intake_summary": intake_data,
+        "candidate_rescore_summary": rescore_data,
+        "operator_handoff_summary": handoff_data,
     }
 
 
@@ -3350,6 +3403,26 @@ def validation_summary() -> dict[str, object]:
         "curated_intake_approved_count": (
             ci_s2["approved_count"]
             if isinstance(ci_s2 := validation.get("curated_dataset_intake_summary"), dict)
+            else 0
+        ),
+        "candidate_rescore_event_count": (
+            rs_s["event_count"]
+            if isinstance(rs_s := validation.get("candidate_rescore_summary"), dict)
+            else 0
+        ),
+        "candidate_rescore_pathway_change_count": (
+            rs_s2["pathway_change_count"]
+            if isinstance(rs_s2 := validation.get("candidate_rescore_summary"), dict)
+            else 0
+        ),
+        "operator_handoff_template_count": (
+            oh_s["template_count"]
+            if isinstance(oh_s := validation.get("operator_handoff_summary"), dict)
+            else 0
+        ),
+        "operator_handoff_approved_count": (
+            oh_s2["approved_count"]
+            if isinstance(oh_s2 := validation.get("operator_handoff_summary"), dict)
             else 0
         ),
         "recommended_commands": [
@@ -4915,6 +4988,27 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     curated_intake_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    candidate_rescore_parser = subparsers.add_parser(
+        "candidate-rescore-summary",
+        help="Summarize candidate re-scoring events with pathway change tracking.",
+    )
+    candidate_rescore_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    operator_handoff_parser = subparsers.add_parser(
+        "operator-handoff-summary",
+        help="Summarize operator handoff templates with model version and inference provenance.",
+    )
+    operator_handoff_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "candidate-methods-summary",
+        help="Aggregate candidate methods dashboard combining serving, audit, and handoff state.",
     )
 
     return parser

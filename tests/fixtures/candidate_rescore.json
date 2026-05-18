@@ -1,0 +1,61 @@
+{
+  "schema_version": "candidate_rescore_v1",
+  "rescore_events": [
+    {
+      "rescore_id": "rs-001",
+      "candidate_id": "radio-clean-candidate",
+      "prior_model_id": "mdl-001",
+      "new_model_id": "mdl-002",
+      "prior_score": 0.82,
+      "new_score": 0.88,
+      "prior_pathway": "candidate_review_packet",
+      "new_pathway": "candidate_review_packet",
+      "trigger": "new_model_registered",
+      "serving_id": "srv-002",
+      "event_utc": "2026-01-15T10:00:00Z",
+      "notes": "Rescore after mdl-002 registered; score improved, pathway unchanged."
+    },
+    {
+      "rescore_id": "rs-002",
+      "candidate_id": "infrared-clean-candidate",
+      "prior_model_id": "mdl-001",
+      "new_model_id": "mdl-002",
+      "prior_score": 0.75,
+      "new_score": 0.71,
+      "prior_pathway": "human_review_queue",
+      "new_pathway": "do_not_submit_false_positive",
+      "trigger": "new_model_registered",
+      "serving_id": "srv-002",
+      "event_utc": "2026-01-15T10:05:00Z",
+      "notes": "Pathway changed to do_not_submit_false_positive — requires operator review before any action."
+    },
+    {
+      "rescore_id": "rs-003",
+      "candidate_id": "anomaly-clean-candidate",
+      "prior_model_id": "mdl-001",
+      "new_model_id": "mdl-002",
+      "prior_score": 0.69,
+      "new_score": 0.72,
+      "prior_pathway": "github_reproducibility_only",
+      "new_pathway": "github_reproducibility_only",
+      "trigger": "operator_request",
+      "serving_id": "srv-002",
+      "event_utc": "2026-01-16T08:30:00Z",
+      "notes": "Operator-requested rescore; minor improvement, pathway unchanged."
+    },
+    {
+      "rescore_id": "rs-004",
+      "candidate_id": "radio-clean-candidate",
+      "prior_model_id": "mdl-002",
+      "new_model_id": "mdl-003",
+      "prior_score": 0.88,
+      "new_score": 0.85,
+      "prior_pathway": "candidate_review_packet",
+      "new_pathway": "candidate_review_packet",
+      "trigger": "drift_detected",
+      "serving_id": "srv-003",
+      "event_utc": "2026-02-01T14:00:00Z",
+      "notes": "Drift-triggered rescore; score slightly lower, pathway unchanged. Human review required."
+    }
+  ]
+}

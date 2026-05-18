@@ -148,6 +148,10 @@ from techno_search.candidate_lifecycle import (
     lifecycle_transition_summary,
     load_lifecycle_entries,
 )
+from techno_search.candidate_methods_summary import (
+    CANDIDATE_METHODS_DISCLAIMER,
+    candidate_methods_summary,
+)
 from techno_search.candidate_observation_notes import (
     ALLOWED_OBSERVATION_OUTCOMES,
     CANDIDATE_OBSERVATION_NOTES_DISCLAIMER,
@@ -163,6 +167,14 @@ from techno_search.candidate_priority_queue import (
     CandidatePriorityQueueEntry,
     load_priority_queue_entries,
     priority_queue_summary,
+)
+from techno_search.candidate_rescore import (
+    ALLOWED_RESCORE_TRIGGERS,
+    CANDIDATE_RESCORE_DISCLAIMER,
+    CANDIDATE_RESCORE_SCHEMA_VERSION,
+    RescoreEvent,
+    candidate_rescore_summary,
+    load_rescore_events,
 )
 from techno_search.candidate_resolution import (
     ALLOWED_RESOLUTION_STATUSES,
@@ -354,6 +366,14 @@ from techno_search.operator_assignment import (
     OperatorAssignment,
     load_operator_assignments,
     operator_assignment_summary,
+)
+from techno_search.operator_handoff_template import (
+    ALLOWED_HANDOFF_STATUSES,
+    OPERATOR_HANDOFF_DISCLAIMER,
+    OPERATOR_HANDOFF_SCHEMA_VERSION,
+    OperatorHandoffTemplate,
+    load_handoff_templates,
+    operator_handoff_summary,
 )
 from techno_search.operator_performance import (
     OPERATOR_PERFORMANCE_DISCLAIMER,
@@ -574,6 +594,20 @@ __all__ = [
     "ml_pipeline_diagnostics_summary",
     "ML_TRAINING_DATA_DISCLAIMER",
     "ml_training_data_summary",
+    "CANDIDATE_METHODS_DISCLAIMER",
+    "candidate_methods_summary",
+    "ALLOWED_RESCORE_TRIGGERS",
+    "CANDIDATE_RESCORE_DISCLAIMER",
+    "CANDIDATE_RESCORE_SCHEMA_VERSION",
+    "RescoreEvent",
+    "candidate_rescore_summary",
+    "load_rescore_events",
+    "ALLOWED_HANDOFF_STATUSES",
+    "OPERATOR_HANDOFF_DISCLAIMER",
+    "OPERATOR_HANDOFF_SCHEMA_VERSION",
+    "OperatorHandoffTemplate",
+    "load_handoff_templates",
+    "operator_handoff_summary",
     "ALLOWED_DATA_KINDS",
     "ALLOWED_INTAKE_STATUSES",
     "CURATED_DATASET_INTAKE_DISCLAIMER",
