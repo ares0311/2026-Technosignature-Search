@@ -1,0 +1,54 @@
+{
+  "schema_version": "feature_normalization_v1",
+  "disclaimer": "Normalization bounds are ML preprocessing metadata only. They are not technosignature detections, discoveries, or external validation.",
+  "feature_normalization_bounds": [
+    {
+      "bounds_id": "norm-001",
+      "track": "radio",
+      "extractor_version": "feature_extractor_v0",
+      "feature_names": [
+        "recurrence_score", "rfi_band_overlap", "on_off_ratio",
+        "frequency_persistence", "drift_rate_proxy", "snr_proxy"
+      ],
+      "min_values": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      "max_values": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+      "mean_values": [0.52, 0.31, 0.61, 0.48, 0.44, 0.59],
+      "std_values": [0.21, 0.18, 0.24, 0.19, 0.22, 0.20],
+      "normalization_kind": "min_max",
+      "computed_utc": "2026-05-01T08:00:00Z",
+      "sample_count": 42
+    },
+    {
+      "bounds_id": "norm-002",
+      "track": "infrared",
+      "extractor_version": "feature_extractor_v0",
+      "feature_names": [
+        "ir_excess_score", "sed_residual", "agn_probability",
+        "confusion_flag_score", "photometry_quality", "dust_contamination"
+      ],
+      "min_values": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      "max_values": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+      "mean_values": [0.48, 0.39, 0.27, 0.33, 0.65, 0.22],
+      "std_values": [0.23, 0.20, 0.19, 0.17, 0.21, 0.15],
+      "normalization_kind": "min_max",
+      "computed_utc": "2026-05-02T08:00:00Z",
+      "sample_count": 38
+    },
+    {
+      "bounds_id": "norm-003",
+      "track": "anomaly",
+      "extractor_version": "feature_extractor_v0",
+      "feature_names": [
+        "crossmatch_confidence", "magnitude_change", "artifact_probability",
+        "proper_motion_score", "survey_depth_ratio", "variability_score"
+      ],
+      "min_values": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      "max_values": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+      "mean_values": [0.61, 0.45, 0.18, 0.29, 0.72, 0.34],
+      "std_values": [0.19, 0.22, 0.14, 0.16, 0.18, 0.21],
+      "normalization_kind": "min_max",
+      "computed_utc": "2026-05-03T08:00:00Z",
+      "sample_count": 29
+    }
+  ]
+}

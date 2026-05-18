@@ -1404,3 +1404,111 @@ techno-search candidate-annotation-summary --fixture-path tests/fixtures/candida
 Output fields: `schema_version`, `disclaimer`, `annotation_count`, `unresolved_count`, `by_track`, `by_type`, `tracks_covered`, `unique_operators`.
 
 Annotation types: `note`, `tag`, `warning`, `highlight`, `question`, `followup`. A `warning` annotation reflects an operator scheduling concern, not a scientific assessment.
+
+## `session-log-summary`
+
+Summarize observation session log entries across tracks, operators, and outcomes.
+
+```bash
+techno-search session-log-summary
+techno-search session-log-summary --fixture-path tests/fixtures/session_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `session_count`, `completed_count`, `aborted_count`, `total_duration_minutes`, `average_duration_minutes`, `unique_candidates_observed`, `by_track`, `by_outcome`, `tracks_covered`, `unique_operators`.
+
+Session outcomes: `completed`, `partial`, `aborted`, `rescheduled`, `failed`. Session logs are provenance records only — they do not re-score or re-route candidates.
+
+## `priority-queue-summary`
+
+Summarize candidate priority queue depth and scheduling load by track and reason.
+
+```bash
+techno-search priority-queue-summary
+techno-search priority-queue-summary --fixture-path tests/fixtures/candidate_priority_queue.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `queue_depth`, `average_days_in_queue`, `max_days_in_queue`, `by_track`, `by_reason`, `tracks_covered`.
+
+Queue reasons: `score_threshold`, `flag_escalation`, `deadline_pressure`, `operator_request`, `routine_review`. Priority queue entries are scheduling aids — they do not modify candidate posteriors.
+
+## `pipeline-capacity-summary`
+
+Summarize current pipeline scheduling load and capacity status across assignments, requests, annotations, and queue depth.
+
+```bash
+techno-search pipeline-capacity-summary
+```
+
+Output fields: `disclaimer`, `open_assignment_count`, `open_request_count`, `unresolved_annotation_count`, `queue_depth`, `total_scheduling_load`, `capacity_status`.
+
+Capacity statuses: `nominal`, `strained`, `overloaded`. Pipeline capacity is an operational scheduling metric only — it does not reflect survey sensitivity or candidate quality.
+
+## `feature-vector-summary`
+
+Summarize ML-ready feature vectors extracted from scored candidates across tracks and normalization kinds.
+
+```bash
+techno-search feature-vector-summary
+techno-search feature-vector-summary --fixture-path tests/fixtures/candidate_feature_vectors.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `vector_count`, `by_track`, `by_normalization_kind`, `tracks_covered`, `unique_extractor_versions`, `avg_feature_count`.
+
+Normalization kinds: `none`, `min_max`, `z_score`. Feature vectors are ML preprocessing artifacts only — they do not re-score candidates or modify pathway routing.
+
+## `model-registry-summary`
+
+Summarize ML model registry entries including above-baseline status, validation state, and model kind breakdown.
+
+```bash
+techno-search model-registry-summary
+techno-search model-registry-summary --fixture-path tests/fixtures/ml_model_registry.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `registry_count`, `above_baseline_count`, `below_baseline_count`, `validated_count`, `experimental_count`, `by_kind`, `by_status`.
+
+Model kinds: `cnn_radio`, `transformer_radio`, `hybrid_rule_learned`, `self_supervised`, `foundation_embedding`, `baseline_rule_based`. A model below baseline must not be used operationally.
+
+## `ml-diagnostics-summary`
+
+Summarize ML pipeline status by comparing the interpretable baseline accuracy against all registered learned models.
+
+```bash
+techno-search ml-diagnostics-summary
+```
+
+Output fields: `disclaimer`, `baseline_accuracy`, `registered_model_count`, `above_baseline_count`, `below_baseline_count`, `validated_model_count`, `pipeline_ml_status`.
+
+Pipeline statuses: `no_models`, `all_above_baseline`, `some_below_baseline`. ML diagnostics are operational scheduling summaries only — they do not constitute detection claims or external validation.
+
+## `feature-normalization-summary`
+
+Summarize per-track feature normalization bounds including drift detection across extractor versions.
+
+```bash
+techno-search feature-normalization-summary
+techno-search feature-normalization-summary --fixture-path tests/fixtures/feature_normalization.json
+```
+
+Output fields: `disclaimer`, `bounds_count`, `by_track`, `by_normalization_kind`, `extractor_versions`, `drift_detected`. Normalization bounds are ML preprocessing metadata only — they are not technosignature detections or external validation.
+
+## `feature-importance-summary`
+
+Summarize feature importance scores derived from baseline rule fire rates across all three tracks.
+
+```bash
+techno-search feature-importance-summary
+techno-search feature-importance-summary --fixture-path tests/fixtures/feature_importance.json
+```
+
+Output fields: `disclaimer`, `entry_count`, `by_track`, `top_feature_by_track`, `tracks_covered`, `unique_rule_names`. Feature importance scores are synthetic scheduling diagnostics only — they are not calibrated signal detection metrics.
+
+## `ml-training-data-summary`
+
+Summarize ML training data assembled from calibration fixtures and injection-recovery cases.
+
+```bash
+techno-search ml-training-data-summary
+```
+
+Output fields: `disclaimer`, `total_case_count`, `calibration_case_count`, `injection_recovery_case_count`, `by_track`, `by_source`, `recommended_train_count`, `recommended_test_count`, `pathway_breakdown`. Training data summaries are provenance records only — they are not detections, discoveries, or external validation.

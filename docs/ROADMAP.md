@@ -329,20 +329,59 @@ Evaluate modern AI methods only after interpretable baselines, provenance, false
 - [x] Candidate triage notes schema, fixture, loader, and `triage-summary` CLI
 - [x] DECISION-032: Candidate Triage And Sensitivity Config Are Validated Scheduling Aids
 
-## Candidate Methods
-
-- CNNs for radio waterfall/image morphology, survey-image artifacts, and spatial context
-- Transformers for sequential radio features, multi-epoch catalog histories, and multimodal candidate packets
-- Self-supervised or contrastive learning for representation learning on large unlabeled astronomical datasets
-- Foundation-model-style embeddings where they improve retrieval, clustering, or human review triage
-- Hybrid models that combine learned features with explicit physical, instrumental, and catalog-quality features
-
 ## Guardrails
 
 - Learned models must not replace provenance, negative evidence, blocking issues, or pathway logic.
 - Black-box scores must be calibrated against synthetic injections, known contaminants, known artifacts, and human-reviewed labels.
 - AI outputs should be treated as decision-support signals, not discovery claims.
 - Model versions, training data, features, prompts where applicable, and evaluation metrics must be recorded.
+
+---
+
+# Milestone 11 — ML Feature Engineering
+
+## Goal
+
+Build a stable, versioned feature extraction layer that transforms scored candidates into ML-ready numeric representations before any learned model is introduced.
+
+## Tasks
+
+- [x] Flat feature vector extraction from scored candidates (`candidate_feature_vector.py`)
+- [x] Feature vector schema and JSON schema artifact
+- [x] Synthetic feature vector fixtures covering radio, infrared, and anomaly tracks
+- [x] `feature-vector-summary` CLI command
+- [x] `validate-all` gate: feature vector count >= 5, covering all three tracks
+- [x] Feature normalization and scaling scaffold (min-max per track, stored with vector)
+- [x] Track-specific feature set definitions derived from existing scoring config weights
+- [x] Feature importance mapping from baseline rule fire rates to feature names
+- [x] Feature drift detection: flag vectors where normalization bounds shift across extractor versions
+- [x] DECISION-042: Feature Vector Layer Must Be Stable Before Any Learned Model Is Trained
+
+---
+
+# Milestone 12 — ML Model Registry And Development
+
+## Goal
+
+Introduce pluggable learned models with mandatory version tracking, provenance, and comparison against the interpretable baseline — so no learned model is used unless it demonstrably improves on the baseline.
+
+## Tasks
+
+- [x] ML model registry schema and JSON schema artifact (`ml_model_registry.py`)
+- [x] Synthetic model registry fixtures covering experimental, validated, and deprecated entries
+- [x] `model-registry-summary` CLI command
+- [x] ML pipeline diagnostics module comparing baseline vs registered learned model metrics (`ml_pipeline_diagnostics.py`)
+- [x] `ml-diagnostics-summary` CLI command with above-baseline gate
+- [x] `validate-all` gate: no registered model below baseline pathway accuracy
+- [ ] CNN scaffold for radio waterfall morphology (architecture definition, no weights yet)
+- [ ] Transformer scaffold for sequential multi-epoch radio features (architecture definition, no weights yet)
+- [ ] Hybrid model interface combining baseline rule scores with learned feature embeddings
+- [ ] Self-supervised representation learning scaffold for unlabeled candidate clusters
+- [ ] Foundation-model embedding adapter for retrieval and human-review triage support
+- [x] Training data scaffold assembled from calibration fixtures and injection-recovery cases
+- [ ] Model evaluation harness comparing learned model accuracy, precision, and recall to baseline
+- [ ] Model performance history appended to the existing benchmark run-result workflow
+- [x] DECISION-043: Feature Normalization, Feature Importance, And ML Training Data Are Required ML Infrastructure
 
 ---
 

@@ -1,0 +1,76 @@
+{
+  "schema_version": "candidate_feature_vector_v1",
+  "disclaimer": "Feature vectors are ML preprocessing artifacts for scheduling and model development only. They are not technosignature detections, discoveries, or external validation.",
+  "candidate_feature_vectors": [
+    {
+      "vector_id": "fv-001",
+      "candidate_id": "cand-radio-001",
+      "track": "radio",
+      "extractor_version": "feature_extractor_v0",
+      "feature_names": [
+        "recurrence_score", "rfi_band_overlap", "on_off_ratio",
+        "frequency_persistence", "drift_rate_proxy", "snr_proxy"
+      ],
+      "feature_values": [0.82, 0.05, 0.91, 0.78, 0.61, 0.87],
+      "normalization_kind": "min_max",
+      "extraction_utc": "2026-05-01T10:00:00Z",
+      "is_normalized": true
+    },
+    {
+      "vector_id": "fv-002",
+      "candidate_id": "cand-radio-002",
+      "track": "radio",
+      "extractor_version": "feature_extractor_v0",
+      "feature_names": [
+        "recurrence_score", "rfi_band_overlap", "on_off_ratio",
+        "frequency_persistence", "drift_rate_proxy", "snr_proxy"
+      ],
+      "feature_values": [1.9, 0.8, 2.1, 1.4, 0.9, 1.1],
+      "normalization_kind": "none",
+      "extraction_utc": "2026-05-02T10:00:00Z",
+      "is_normalized": false
+    },
+    {
+      "vector_id": "fv-003",
+      "candidate_id": "cand-ir-001",
+      "track": "infrared",
+      "extractor_version": "feature_extractor_v0",
+      "feature_names": [
+        "ir_excess_score", "sed_residual", "agn_probability",
+        "confusion_flag_score", "photometry_quality", "dust_contamination"
+      ],
+      "feature_values": [0.76, 0.55, 0.08, 0.12, 0.91, 0.04],
+      "normalization_kind": "min_max",
+      "extraction_utc": "2026-05-03T10:00:00Z",
+      "is_normalized": true
+    },
+    {
+      "vector_id": "fv-004",
+      "candidate_id": "cand-ir-002",
+      "track": "infrared",
+      "extractor_version": "feature_extractor_v0",
+      "feature_names": [
+        "ir_excess_score", "sed_residual", "agn_probability",
+        "confusion_flag_score", "photometry_quality", "dust_contamination"
+      ],
+      "feature_values": [0.44, 0.31, 0.55, 0.68, 0.42, 0.61],
+      "normalization_kind": "z_score",
+      "extraction_utc": "2026-05-04T10:00:00Z",
+      "is_normalized": true
+    },
+    {
+      "vector_id": "fv-005",
+      "candidate_id": "cand-anomaly-001",
+      "track": "anomaly",
+      "extractor_version": "feature_extractor_v0",
+      "feature_names": [
+        "crossmatch_confidence", "magnitude_change", "artifact_probability",
+        "proper_motion_score", "survey_depth_ratio", "variability_score"
+      ],
+      "feature_values": [0.88, 0.72, 0.06, 0.14, 0.93, 0.19],
+      "normalization_kind": "min_max",
+      "extraction_utc": "2026-05-05T10:00:00Z",
+      "is_normalized": true
+    }
+  ]
+}

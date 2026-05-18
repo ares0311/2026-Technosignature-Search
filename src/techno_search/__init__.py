@@ -122,6 +122,14 @@ from techno_search.candidate_audit_trail import (
     audit_trail_summary,
     load_audit_trail,
 )
+from techno_search.candidate_feature_vector import (
+    ALLOWED_NORMALIZATION_KINDS,
+    CANDIDATE_FEATURE_VECTOR_DISCLAIMER,
+    CANDIDATE_FEATURE_VECTOR_SCHEMA_VERSION,
+    CandidateFeatureVector,
+    feature_vector_summary,
+    load_feature_vectors,
+)
 from techno_search.candidate_flags import (
     ALLOWED_FLAG_SEVERITIES,
     ALLOWED_FLAG_STATUSES,
@@ -147,6 +155,14 @@ from techno_search.candidate_observation_notes import (
     CandidateObservationNote,
     load_observation_notes,
     observation_notes_summary,
+)
+from techno_search.candidate_priority_queue import (
+    ALLOWED_QUEUE_REASONS,
+    CANDIDATE_PRIORITY_QUEUE_DISCLAIMER,
+    CANDIDATE_PRIORITY_QUEUE_SCHEMA_VERSION,
+    CandidatePriorityQueueEntry,
+    load_priority_queue_entries,
+    priority_queue_summary,
 )
 from techno_search.candidate_resolution import (
     ALLOWED_RESOLUTION_STATUSES,
@@ -217,6 +233,20 @@ from techno_search.escalation_log import (
     escalation_log_summary,
     load_escalation_entries,
 )
+from techno_search.feature_importance import (
+    FEATURE_IMPORTANCE_DISCLAIMER,
+    FEATURE_IMPORTANCE_SCHEMA_VERSION,
+    FeatureImportanceEntry,
+    feature_importance_summary,
+    load_feature_importance_entries,
+)
+from techno_search.feature_normalization import (
+    FEATURE_NORMALIZATION_DISCLAIMER,
+    FEATURE_NORMALIZATION_SCHEMA_VERSION,
+    FeatureNormalizationBounds,
+    feature_normalization_summary,
+    load_normalization_bounds,
+)
 from techno_search.follow_up_request import (
     ALLOWED_REQUEST_PRIORITIES,
     ALLOWED_REQUEST_STATUSES,
@@ -233,6 +263,23 @@ from techno_search.injection_recovery import (
     load_injection_recovery_cases,
 )
 from techno_search.live_data import live_data_enabled, require_live_data_enabled
+from techno_search.ml_model_registry import (
+    ALLOWED_MODEL_KINDS,
+    ALLOWED_MODEL_STATUSES,
+    ML_MODEL_REGISTRY_DISCLAIMER,
+    ML_MODEL_REGISTRY_SCHEMA_VERSION,
+    MLModelRegistryEntry,
+    load_model_registry_entries,
+    model_registry_summary,
+)
+from techno_search.ml_pipeline_diagnostics import (
+    ML_PIPELINE_DIAGNOSTICS_DISCLAIMER,
+    ml_pipeline_diagnostics_summary,
+)
+from techno_search.ml_training_data import (
+    ML_TRAINING_DATA_DISCLAIMER,
+    ml_training_data_summary,
+)
 from techno_search.multi_epoch_summary import (
     MULTI_EPOCH_DISCLAIMER,
     MULTI_EPOCH_SCHEMA_VERSION,
@@ -278,6 +325,10 @@ from techno_search.pipeline_audit_summary import (
 from techno_search.pipeline_bottleneck import (
     PIPELINE_BOTTLENECK_DISCLAIMER,
     pipeline_bottleneck_summary,
+)
+from techno_search.pipeline_capacity import (
+    PIPELINE_CAPACITY_DISCLAIMER,
+    pipeline_capacity_summary,
 )
 from techno_search.pipeline_health import (
     PIPELINE_HEALTH_DISCLAIMER,
@@ -359,6 +410,14 @@ from techno_search.sensitivity_config import (
     SENSITIVITY_CONFIG_DISCLAIMER,
     SENSITIVITY_CONFIG_SCHEMA_VERSION,
     sensitivity_config_summary,
+)
+from techno_search.session_log import (
+    ALLOWED_SESSION_OUTCOMES,
+    SESSION_LOG_DISCLAIMER,
+    SESSION_LOG_SCHEMA_VERSION,
+    SessionLogEntry,
+    load_session_log_entries,
+    session_log_summary,
 )
 from techno_search.signal_registry import (
     SIGNAL_REGISTRY_DISCLAIMER,
@@ -448,6 +507,39 @@ __all__ = [
     "CandidateAnnotation",
     "candidate_annotation_summary",
     "load_candidate_annotations",
+    "ALLOWED_NORMALIZATION_KINDS",
+    "CANDIDATE_FEATURE_VECTOR_DISCLAIMER",
+    "CANDIDATE_FEATURE_VECTOR_SCHEMA_VERSION",
+    "CandidateFeatureVector",
+    "feature_vector_summary",
+    "load_feature_vectors",
+    "ALLOWED_MODEL_KINDS",
+    "ALLOWED_MODEL_STATUSES",
+    "ML_MODEL_REGISTRY_DISCLAIMER",
+    "ML_MODEL_REGISTRY_SCHEMA_VERSION",
+    "MLModelRegistryEntry",
+    "load_model_registry_entries",
+    "model_registry_summary",
+    "ML_PIPELINE_DIAGNOSTICS_DISCLAIMER",
+    "ml_pipeline_diagnostics_summary",
+    "ML_TRAINING_DATA_DISCLAIMER",
+    "ml_training_data_summary",
+    "FEATURE_IMPORTANCE_DISCLAIMER",
+    "FEATURE_IMPORTANCE_SCHEMA_VERSION",
+    "FeatureImportanceEntry",
+    "feature_importance_summary",
+    "load_feature_importance_entries",
+    "FEATURE_NORMALIZATION_DISCLAIMER",
+    "FEATURE_NORMALIZATION_SCHEMA_VERSION",
+    "FeatureNormalizationBounds",
+    "feature_normalization_summary",
+    "load_normalization_bounds",
+    "ALLOWED_QUEUE_REASONS",
+    "CANDIDATE_PRIORITY_QUEUE_DISCLAIMER",
+    "CANDIDATE_PRIORITY_QUEUE_SCHEMA_VERSION",
+    "CandidatePriorityQueueEntry",
+    "load_priority_queue_entries",
+    "priority_queue_summary",
     "CANDIDATE_AUDIT_TRAIL_DISCLAIMER",
     "CANDIDATE_AUDIT_TRAIL_SCHEMA_VERSION",
     "CandidateAuditAction",
@@ -718,6 +810,8 @@ __all__ = [
     "ObservationCampaign",
     "load_observation_campaigns",
     "observation_campaign_summary",
+    "PIPELINE_CAPACITY_DISCLAIMER",
+    "pipeline_capacity_summary",
     "PIPELINE_BOTTLENECK_DISCLAIMER",
     "pipeline_bottleneck_summary",
     "PIPELINE_AUDIT_DISCLAIMER",
@@ -738,4 +832,10 @@ __all__ = [
     "EpochPlanEntry",
     "epoch_plan_summary",
     "load_epoch_plan",
+    "ALLOWED_SESSION_OUTCOMES",
+    "SESSION_LOG_DISCLAIMER",
+    "SESSION_LOG_SCHEMA_VERSION",
+    "SessionLogEntry",
+    "load_session_log_entries",
+    "session_log_summary",
 ]

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CandidatePriorityQueue",
+  "description": "Schema for candidate priority queue fixture files (candidate_priority_queue_v1).",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "queue_entries"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "disclaimer": { "type": "string" },
+    "queue_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "queue_id", "candidate_id", "track",
+          "queue_reason", "queue_position", "added_utc"
+        ],
+        "properties": {
+          "queue_id": { "type": "string" },
+          "candidate_id": { "type": "string" },
+          "track": { "type": "string", "enum": ["radio", "infrared", "anomaly"] },
+          "queue_reason": {
+            "type": "string",
+            "enum": [
+              "score_threshold", "flag_escalation", "deadline_pressure",
+              "operator_request", "routine_review"
+            ]
+          },
+          "queue_position": { "type": "integer", "minimum": 1 },
+          "added_utc": { "type": "string", "format": "date-time" },
+          "operator_assigned": { "type": "string" },
+          "days_in_queue": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  }
+}

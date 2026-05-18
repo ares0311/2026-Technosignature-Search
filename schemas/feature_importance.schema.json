@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Feature Importance Entries",
+  "description": "Feature importance scores derived from synthetic baseline rule fire rates. Scheduling and development diagnostics only — not calibrated detection metrics.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "feature_importance_entries"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "disclaimer": { "type": "string" },
+    "feature_importance_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "importance_id", "track", "feature_name", "baseline_rule_name",
+          "rule_fire_rate", "importance_score", "rank"
+        ],
+        "properties": {
+          "importance_id": { "type": "string" },
+          "track": { "type": "string", "enum": ["radio", "infrared", "anomaly"] },
+          "feature_name": { "type": "string" },
+          "baseline_rule_name": { "type": "string" },
+          "rule_fire_rate": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "importance_score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "rank": { "type": "integer", "minimum": 1 }
+        }
+      }
+    }
+  }
+}

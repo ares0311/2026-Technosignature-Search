@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ML Model Registry",
+  "description": "Version tracking and evaluation provenance for registered learned models. Development records only — not detections, discoveries, or external validation.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "ml_model_registry"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "disclaimer": { "type": "string" },
+    "ml_model_registry": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "model_id", "model_kind", "version", "status",
+          "training_data_version", "feature_schema_version",
+          "baseline_accuracy", "model_accuracy", "is_above_baseline",
+          "registered_utc", "notes"
+        ],
+        "properties": {
+          "model_id": { "type": "string" },
+          "model_kind": {
+            "type": "string",
+            "enum": [
+              "cnn_radio", "transformer_radio", "hybrid_rule_learned",
+              "self_supervised", "foundation_embedding", "baseline_rule_based"
+            ]
+          },
+          "version": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["experimental", "validated", "deprecated", "pending_review"]
+          },
+          "training_data_version": { "type": "string" },
+          "feature_schema_version": { "type": "string" },
+          "baseline_accuracy": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "model_accuracy": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "is_above_baseline": { "type": "boolean" },
+          "registered_utc": { "type": "string" },
+          "notes": { "type": "string" }
+        }
+      }
+    }
+  }
+}

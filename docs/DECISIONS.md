@@ -984,3 +984,57 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 **Candidate annotation**: operator notes, tags, warnings, highlights, questions, and follow-up markers attached to candidates. Annotations do not modify scores, posteriors, or pathway routing. A `warning` annotation reflects a scheduling concern, not a scientific assessment.
 
 **Consequences**: `validate-all` gates enforce `follow_up_request_count >= 5`, `pipeline_bottleneck_stalled >= 0`, and `candidate_annotation_count >= 5`. SCHEMA_FILENAMES grows 46→48. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-041: Session Log, Candidate Priority Queue, And Pipeline Capacity Are Scheduling Provenance Records
+
+**Date**: 2026-05-17
+
+**Context**: The pipeline needs provenance records for observation sessions, a priority-ordered candidate queue, and an aggregate view of scheduling load across the system.
+
+**Decision**: Implement three new scheduling provenance modules:
+
+**Session log**: records observation sessions with outcome (`completed`, `partial`, `aborted`, `rescheduled`, `failed`), duration, operator, and candidates observed. Session logs are provenance records only — they do not re-score or re-route candidates.
+
+**Candidate priority queue**: tracks candidates queued for review with position, queue reason (`score_threshold`, `flag_escalation`, `deadline_pressure`, `operator_request`, `routine_review`), and days in queue. Priority queue entries are scheduling aids — they do not modify candidate posteriors or pathway routing.
+
+**Pipeline capacity**: aggregate dashboard combining open assignment count, open follow-up request count, unresolved annotation count, and queue depth into a total scheduling load with capacity status (`nominal`, `strained`, `overloaded`). Capacity status is an operational scheduling metric only — it does not reflect survey sensitivity or candidate quality.
+
+**Consequences**: `validate-all` gates enforce `session_log_count >= 5`, `priority_queue_depth >= 5`, and `pipeline_capacity_status in valid set`. SCHEMA_FILENAMES grows 48→50. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-042: Feature Vector Layer And Model Registry Are Required Before Any Learned Model Is Trained
+
+**Date**: 2026-05-17
+
+**Context**: Milestone 10 established that interpretable baselines and score determinism must precede any learned model. Milestone 11 formalizes the next prerequisite: a stable, versioned feature extraction layer.
+
+**Decision**: Implement three new ML infrastructure modules:
+
+**Candidate feature vector**: extracts a flat, versioned feature vector from scored candidates with explicit normalization kind (`none`, `min_max`, `z_score`) and extractor version. Feature vectors are ML preprocessing artifacts only — they do not re-score candidates or modify pathway routing.
+
+**ML model registry**: tracks model versions, kinds (`cnn_radio`, `transformer_radio`, `hybrid_rule_learned`, `self_supervised`, `foundation_embedding`, `baseline_rule_based`), statuses (`experimental`, `validated`, `deprecated`, `pending_review`), and whether each model exceeds baseline accuracy. A model with `is_above_baseline=false` must not be used operationally.
+
+**ML pipeline diagnostics**: aggregate dashboard comparing the interpretable baseline accuracy against all registered models. `pipeline_ml_status` surfaces whether any below-baseline models exist (`some_below_baseline`), enabling `validate-all` to catch regressions.
+
+**Consequences**: `validate-all` gates enforce `feature_vector_count >= 5` and `pipeline_ml_status in valid set`. SCHEMA_FILENAMES grows 50→52. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-043: Feature Normalization, Feature Importance, And ML Training Data Are Required ML Infrastructure
+
+**Date**: 2026-05-18
+
+**Context**: DECISION-042 established the feature vector layer and model registry. The next prerequisite for safe learned-model development is: (1) stable normalization bounds across extractor versions with drift detection, (2) interpretable feature importance scores derived from baseline rule fire rates, and (3) a structured ML training data scaffold assembling calibration fixtures and injection-recovery cases.
+
+**Decision**: Implement three new ML infrastructure modules:
+
+**Feature normalization**: per-track normalization bounds (`min_max`, `z_score`, `none`) with per-feature min/max/mean/std values and drift detection when extractor versions diverge. Normalization bounds are ML preprocessing metadata only — they are not technosignature detections or calibrated survey metrics.
+
+**Feature importance**: feature importance scores derived from synthetic baseline rule fire rates, ranked per track. Surfacing which features fire most reliably in the baseline informs safe feature selection for learned models. Scores are synthetic scheduling diagnostics only — not calibrated signal detection metrics.
+
+**ML training data**: assembles calibration fixtures and injection-recovery cases into a structured training scaffold with recommended 80/20 train/test split. Training data summaries are provenance records for model development only — they do not constitute detections, discoveries, or external validation.
+
+**Consequences**: `validate-all` gates enforce `normalization_bounds_count >= 3`, `feature_importance_entry_count >= 6`, and `ml_training_case_count >= 0`. SCHEMA_FILENAMES grows 52→54. Scientific guardrails remain unchanged.

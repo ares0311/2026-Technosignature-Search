@@ -1,0 +1,60 @@
+{
+  "schema_version": "feature_importance_v1",
+  "disclaimer": "Feature importance scores are derived from synthetic baseline rule fire rates only. They are scheduling and development diagnostics — not calibrated signal detection metrics or discovery claims.",
+  "feature_importance_entries": [
+    {
+      "importance_id": "fi-001",
+      "track": "radio",
+      "feature_name": "recurrence_score",
+      "baseline_rule_name": "rfi_band_clear",
+      "rule_fire_rate": 0.83,
+      "importance_score": 1.0,
+      "rank": 1
+    },
+    {
+      "importance_id": "fi-002",
+      "track": "radio",
+      "feature_name": "on_off_ratio",
+      "baseline_rule_name": "on_off_present",
+      "rule_fire_rate": 0.71,
+      "importance_score": 0.856,
+      "rank": 2
+    },
+    {
+      "importance_id": "fi-003",
+      "track": "infrared",
+      "feature_name": "ir_excess_score",
+      "baseline_rule_name": "ir_excess_present",
+      "rule_fire_rate": 0.79,
+      "importance_score": 1.0,
+      "rank": 1
+    },
+    {
+      "importance_id": "fi-004",
+      "track": "infrared",
+      "feature_name": "sed_residual",
+      "baseline_rule_name": "agn_flag_absent",
+      "rule_fire_rate": 0.64,
+      "importance_score": 0.810,
+      "rank": 2
+    },
+    {
+      "importance_id": "fi-005",
+      "track": "anomaly",
+      "feature_name": "crossmatch_confidence",
+      "baseline_rule_name": "crossmatch_confident",
+      "rule_fire_rate": 0.88,
+      "importance_score": 1.0,
+      "rank": 1
+    },
+    {
+      "importance_id": "fi-006",
+      "track": "anomaly",
+      "feature_name": "magnitude_change",
+      "baseline_rule_name": "magnitude_change_significant",
+      "rule_fire_rate": 0.72,
+      "importance_score": 0.818,
+      "rank": 2
+    }
+  ]
+}

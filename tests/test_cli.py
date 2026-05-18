@@ -277,6 +277,12 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "escalation_log",
         "follow_up_request",
         "observation_campaign",
+        "candidate_priority_queue",
+        "session_log",
+        "candidate_feature_vector",
+        "ml_model_registry",
+        "feature_importance",
+        "feature_normalization",
     }
     assert result["background_search_ledger"].endswith(
         "schemas/background_search_ledger.schema.json"
@@ -1388,7 +1394,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 48
+    assert result["schema_count"] == 54
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -1478,6 +1484,20 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert result["top_level_sqlite_log_network_access_allowed_count"] == 0
     assert result["top_level_sqlite_log_external_submission_approved_count"] == 0
+    assert result["session_log_count"] == 5
+    assert result["session_log_completed_count"] == 3
+    assert result["priority_queue_depth"] == 5
+    assert result["pipeline_capacity_status"] in {"nominal", "strained", "overloaded"}
+    assert result["feature_vector_count"] == 5
+    assert result["ml_registry_entry_count"] == 3
+    assert result["ml_above_baseline_count"] == 2
+    assert result["ml_pipeline_status"] in {
+        "no_models", "all_above_baseline", "some_below_baseline"
+    }
+    assert result["normalization_bounds_count"] == 3
+    assert result["feature_importance_entry_count"] == 6
+    assert result["ml_training_case_count"] >= 0
+    assert result["ml_recommended_train_count"] >= 0
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 

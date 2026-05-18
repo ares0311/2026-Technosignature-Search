@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Candidate Feature Vectors",
+  "description": "ML preprocessing feature vectors extracted from scored candidates. Scheduling and development provenance only — not detections or discoveries.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "candidate_feature_vectors"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "disclaimer": { "type": "string" },
+    "candidate_feature_vectors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "vector_id", "candidate_id", "track", "extractor_version",
+          "feature_names", "feature_values", "normalization_kind",
+          "extraction_utc", "is_normalized"
+        ],
+        "properties": {
+          "vector_id": { "type": "string" },
+          "candidate_id": { "type": "string" },
+          "track": { "type": "string", "enum": ["radio", "infrared", "anomaly"] },
+          "extractor_version": { "type": "string" },
+          "feature_names": { "type": "array", "items": { "type": "string" } },
+          "feature_values": { "type": "array", "items": { "type": "number" } },
+          "normalization_kind": { "type": "string", "enum": ["none", "min_max", "z_score"] },
+          "extraction_utc": { "type": "string" },
+          "is_normalized": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}
