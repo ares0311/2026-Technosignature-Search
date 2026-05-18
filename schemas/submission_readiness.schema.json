@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SubmissionReadinessRecords",
+  "description": "Local provenance checklists gating any external candidate submission consideration.",
+  "type": "object",
+  "required": ["schema_version", "submission_readiness_records"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "submission_readiness_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "readiness_id", "candidate_id", "pathway", "readiness_status",
+          "present_provenance_fields", "missing_provenance_fields",
+          "blocking_issues", "assessed_utc"
+        ],
+        "properties": {
+          "readiness_id":   { "type": "string" },
+          "candidate_id":   { "type": "string" },
+          "pathway":        { "type": "string" },
+          "readiness_status": {
+            "type": "string",
+            "enum": ["ready", "blocked", "pending_review", "not_applicable"]
+          },
+          "present_provenance_fields": {
+            "type": "array", "items": { "type": "string" }
+          },
+          "missing_provenance_fields": {
+            "type": "array", "items": { "type": "string" }
+          },
+          "blocking_issues": {
+            "type": "array", "items": { "type": "string" }
+          },
+          "operator_handoff_id": { "type": "string" },
+          "assessed_utc":        { "type": "string" },
+          "notes":               { "type": "string" }
+        }
+      }
+    }
+  }
+}

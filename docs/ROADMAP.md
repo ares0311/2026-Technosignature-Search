@@ -443,14 +443,14 @@ Connect the candidate scoring, model serving, audit logging, and operator handof
 
 ## Tasks
 
-- [ ] Unified pipeline configuration module tying scoring config, model serving, and track configs
-- [ ] Pipeline configuration schema and JSON schema artifact
-- [ ] `pipeline-config-summary` CLI command
-- [ ] End-to-end pipeline smoke test: candidate → scoring → serving → audit → handoff
-- [ ] Submission readiness checker: gate ensuring all required provenance fields are present before any external handoff is considered
-- [ ] `submission-readiness-summary` CLI command
-- [ ] Pipeline integration tests covering multi-step candidate flow
-- [ ] DECISION-047: Pipeline Integration And Submission Readiness Checks Gate External Handoff
+- [x] Unified pipeline configuration module tying scoring config, model serving, and track configs
+- [x] Pipeline configuration schema and JSON schema artifact
+- [x] `pipeline-config-summary` CLI command
+- [x] End-to-end pipeline smoke test: candidate → scoring → serving → audit → handoff
+- [x] Submission readiness checker: gate ensuring all required provenance fields are present before any external handoff is considered
+- [x] `submission-readiness-summary` CLI command
+- [x] Pipeline integration tests covering multi-step candidate flow
+- [x] DECISION-047: Pipeline Config, Submission Readiness, And Pipeline Integration Complete Milestone 14
 
 ## Done When
 

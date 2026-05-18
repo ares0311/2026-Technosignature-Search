@@ -1,0 +1,53 @@
+{
+  "schema_version": "pipeline_config_v1",
+  "pipeline_configs": [
+    {
+      "config_id": "pcfg-001",
+      "label": "baseline-rule-all-tracks-v0",
+      "scoring_config_version": "scoring_v0",
+      "serving_id": "srv-001",
+      "model_id": "mdl-001",
+      "inference_backend": "baseline_rule",
+      "active_tracks": ["radio", "infrared", "anomaly"],
+      "pipeline_status": "active",
+      "created_utc": "2026-01-01T00:00:00Z",
+      "notes": "Active baseline-rule pipeline covering all three tracks."
+    },
+    {
+      "config_id": "pcfg-002",
+      "label": "hybrid-rule-radio-staging-v0",
+      "scoring_config_version": "scoring_v0",
+      "serving_id": "srv-002",
+      "model_id": "mdl-002",
+      "inference_backend": "pytorch_stub",
+      "active_tracks": ["radio"],
+      "pipeline_status": "staging",
+      "created_utc": "2026-01-10T00:00:00Z",
+      "notes": "Staging pipeline for hybrid rule+learned model on radio track only."
+    },
+    {
+      "config_id": "pcfg-003",
+      "label": "cnn-radio-stub-v0",
+      "scoring_config_version": "scoring_v0",
+      "serving_id": "srv-003",
+      "model_id": "mdl-003",
+      "inference_backend": "onnx_stub",
+      "active_tracks": ["radio"],
+      "pipeline_status": "stub",
+      "created_utc": "2026-01-15T00:00:00Z",
+      "notes": "Stub pipeline for CNN radio model — no weights available."
+    },
+    {
+      "config_id": "pcfg-004",
+      "label": "legacy-baseline-deprecated",
+      "scoring_config_version": "scoring_v0",
+      "serving_id": "srv-004",
+      "model_id": "mdl-legacy",
+      "inference_backend": "none",
+      "active_tracks": [],
+      "pipeline_status": "deprecated",
+      "created_utc": "2025-12-01T00:00:00Z",
+      "notes": "Deprecated pipeline record — retained for provenance only."
+    }
+  ]
+}

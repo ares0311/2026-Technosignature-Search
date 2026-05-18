@@ -10,6 +10,62 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
+User requested fifteen iterative steps completing Milestone 13 (candidate re-scoring, operator handoff templates, candidate methods summary) and adding Milestone 14 stub.
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all fifteen steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/candidate_rescore.py` — append-only re-score events with pathway change tracking and trigger classification
+- `schemas/candidate_rescore.schema.json`
+- `tests/fixtures/candidate_rescore.json` — 4 events (2 new_model_registered, 1 operator_request, 1 drift_detected; 1 pathway change)
+- `tests/test_candidate_rescore.py` — 20 tests
+- `src/techno_search/operator_handoff_template.py` — local scheduling artifacts with model_id, model_version, inference_backend, serving_id provenance
+- `schemas/operator_handoff_template.schema.json`
+- `tests/fixtures/operator_handoff_templates.json` — 4 templates (1 approved, 1 pending_review, 1 draft, 1 rejected)
+- `tests/test_operator_handoff_template.py` — 20 tests
+- `src/techno_search/candidate_methods_summary.py` — aggregate operational dashboard (lazy imports)
+- `candidate_rescore` and `operator_handoff_template` added to `SCHEMA_FILENAMES` (total schemas: 62)
+- `techno-search candidate-rescore-summary`, `techno-search operator-handoff-summary`, `techno-search candidate-methods-summary` CLI commands
+- `validate-all` gates: `rescore_event_count >= 1`, `handoff_template_count >= 1`, `handoff_approved_count >= 1`
+- `validation-summary` fields: `candidate_rescore_event_count`, `candidate_rescore_pathway_change_count`, `operator_handoff_template_count`, `operator_handoff_approved_count`
+- DECISION-046: Candidate Re-Scoring, Operator Handoff Templates, And Candidate Methods Summary Complete Milestone 13
+- Docs: CLI_USAGE.md, DECISIONS.md, ROADMAP.md updated; Milestone 13 fully checked off; Milestone 14 stub added
+
+Scientific guardrail:
+
+- Re-score events are append-only provenance records — pathway changes require human review before any action
+- Operator handoff templates are local scheduling artifacts only — approved status does not authorize external submission
+- Candidate methods summary is an operational dashboard only — does not modify posteriors or authorize external contact
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/ruff check .
+.venv/bin/mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 1236 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed (83 source files)
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, merged to `main` via PR #11.
+
+---
+
+## Previous Iteration
+
 User requested fifteen iterative steps covering model serving, scoring audit log, and curated dataset intake (Milestone 13 completion).
 
 Current branch: `claude/general-session-Bb2dZ`.
