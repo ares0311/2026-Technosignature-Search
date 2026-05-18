@@ -76,6 +76,7 @@ from techno_search.candidate_triage import (
 )
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.cross_track import cross_track_summary
+from techno_search.curated_dataset_intake import curated_dataset_intake_summary
 from techno_search.data_quality_log import data_quality_log_summary
 from techno_search.epoch_plan import epoch_plan_summary
 from techno_search.escalation_log import escalation_log_summary
@@ -119,6 +120,7 @@ from techno_search.ml_training_data import ml_training_data_summary
 from techno_search.model_architecture import model_architecture_summary
 from techno_search.model_evaluation import model_evaluation_summary
 from techno_search.model_performance_history import model_performance_history_summary
+from techno_search.model_serving import model_serving_summary
 from techno_search.multi_epoch_summary import multi_epoch_summary
 from techno_search.observation_campaign import observation_campaign_summary
 from techno_search.observation_schedule import (
@@ -149,6 +151,7 @@ from techno_search.review_queue import (
 )
 from techno_search.schemas import Candidate, Track, candidate_from_mapping
 from techno_search.scoring import score_candidate
+from techno_search.scoring_audit_log import scoring_audit_log_summary
 from techno_search.scoring_config import scoring_config_summary
 from techno_search.sensitivity_config import sensitivity_config_summary
 from techno_search.session_log import session_log_summary
@@ -222,6 +225,9 @@ SCHEMA_FILENAMES = {
     "model_architecture": "model_architecture.schema.json",
     "model_evaluation": "model_evaluation.schema.json",
     "model_performance_history": "model_performance_history.schema.json",
+    "model_serving": "model_serving.schema.json",
+    "scoring_audit_log": "scoring_audit_log.schema.json",
+    "curated_dataset_intake": "curated_dataset_intake.schema.json",
     "candidate_resolution": "candidate_resolution.schema.json",
     "candidate_retention": "candidate_retention.schema.json",
     "data_quality_log": "data_quality_log.schema.json",
@@ -1663,6 +1669,42 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "model-serving-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                model_serving_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "scoring-audit-log-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                scoring_audit_log_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "curated-dataset-intake-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                curated_dataset_intake_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -2060,6 +2102,12 @@ def validate_all() -> dict[str, object]:
     eval_count = int(eval_data.get("evaluation_count", 0))
     perf_history_data = model_performance_history_summary()
     perf_snapshot_count = int(perf_history_data.get("snapshot_count", 0))
+    serving_data = model_serving_summary()
+    serving_record_count = int(serving_data.get("record_count", 0))
+    audit_log_data = scoring_audit_log_summary()
+    audit_entry_count = int(audit_log_data.get("entry_count", 0))
+    intake_data = curated_dataset_intake_summary()
+    intake_record_count = int(intake_data.get("record_count", 0))
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -2337,6 +2385,12 @@ def validate_all() -> dict[str, object]:
         and eval_count >= 4
         and isinstance(perf_snapshot_count, int)
         and perf_snapshot_count >= 5
+        and isinstance(serving_record_count, int)
+        and serving_record_count >= 1
+        and isinstance(audit_entry_count, int)
+        and audit_entry_count >= 1
+        and isinstance(intake_record_count, int)
+        and intake_record_count >= 1
     )
     return {
         "ok": ok,
@@ -2440,6 +2494,9 @@ def validate_all() -> dict[str, object]:
         "model_architecture_summary": arch_data,
         "model_evaluation_summary": eval_data,
         "model_performance_history_summary": perf_history_data,
+        "model_serving_summary": serving_data,
+        "scoring_audit_log_summary": audit_log_data,
+        "curated_dataset_intake_summary": intake_data,
     }
 
 
@@ -3268,6 +3325,31 @@ def validation_summary() -> dict[str, object]:
         "model_performance_snapshot_count": (
             ph_s["snapshot_count"]
             if isinstance(ph_s := validation.get("model_performance_history_summary"), dict)
+            else 0
+        ),
+        "model_serving_record_count": (
+            sv_s["record_count"]
+            if isinstance(sv_s := validation.get("model_serving_summary"), dict)
+            else 0
+        ),
+        "model_serving_active_count": (
+            sv_s2["active_count"]
+            if isinstance(sv_s2 := validation.get("model_serving_summary"), dict)
+            else 0
+        ),
+        "scoring_audit_entry_count": (
+            al_s["entry_count"]
+            if isinstance(al_s := validation.get("scoring_audit_log_summary"), dict)
+            else 0
+        ),
+        "curated_intake_record_count": (
+            ci_s["record_count"]
+            if isinstance(ci_s := validation.get("curated_dataset_intake_summary"), dict)
+            else 0
+        ),
+        "curated_intake_approved_count": (
+            ci_s2["approved_count"]
+            if isinstance(ci_s2 := validation.get("curated_dataset_intake_summary"), dict)
             else 0
         ),
         "recommended_commands": [
@@ -4808,6 +4890,30 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize ML model training performance snapshots by model and trend.",
     )
     model_performance_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    model_serving_parser = subparsers.add_parser(
+        "model-serving-summary",
+        help="Summarize model serving scaffold records with inference provenance.",
+    )
+    model_serving_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    scoring_audit_parser = subparsers.add_parser(
+        "scoring-audit-log-summary",
+        help="Summarize scoring audit log entries per candidate per model version.",
+    )
+    scoring_audit_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    curated_intake_parser = subparsers.add_parser(
+        "curated-dataset-intake-summary",
+        help="Summarize curated dataset intake checklist records.",
+    )
+    curated_intake_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

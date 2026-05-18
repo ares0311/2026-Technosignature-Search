@@ -394,16 +394,16 @@ Harden the candidate scoring, routing, and reporting pipeline for a first curate
 
 ## Tasks
 
-- [ ] Model serving scaffold: versioned inference interface wrapping a registered model or baseline
-- [ ] Model inference provenance: record which model version scored each candidate packet
+- [x] Model serving scaffold: versioned inference interface wrapping a registered model or baseline
+- [x] Model inference provenance: record which model version scored each candidate packet
 - [ ] Candidate re-scoring workflow: re-score candidates when a new validated model is registered
-- [ ] Scoring audit log: append-only record of each score event per candidate per model version
-- [ ] Curated validation dataset intake checklist schema
-- [ ] First curated non-synthetic dataset intake fixture (placeholder, conservative)
-- [ ] `validate-all` gate: at least one curated dataset entry present
+- [x] Scoring audit log: append-only record of each score event per candidate per model version
+- [x] Curated validation dataset intake checklist schema
+- [x] First curated non-synthetic dataset intake fixture (placeholder, conservative)
+- [x] `validate-all` gate: at least one curated dataset entry present
 - [ ] Updated operator handoff template including model version and inference provenance fields
 - [ ] Candidate methods summary CLI: aggregate view of scoring, routing, and model provenance
-- [ ] DECISION-045: Candidate Methods Production Readiness Prerequisites
+- [x] DECISION-045: Model Serving, Scoring Audit Log, And Curated Dataset Intake Are Required Candidate Methods Production Prerequisites
 
 ---
 

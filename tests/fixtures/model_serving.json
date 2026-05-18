@@ -1,0 +1,49 @@
+{
+  "schema_version": "model_serving_v1",
+  "serving_records": [
+    {
+      "serving_id": "srv-001",
+      "model_id": "mdl-001",
+      "model_version": "baseline_rule_v0",
+      "inference_backend": "baseline_rule",
+      "serving_status": "active",
+      "beats_baseline": true,
+      "inference_provenance_tag": "baseline_rule_v0:scoring_v0",
+      "registered_utc": "2026-05-18T00:00:00Z",
+      "notes": "Interpretable baseline rule-based model. Active for all tracks."
+    },
+    {
+      "serving_id": "srv-002",
+      "model_id": "mdl-002",
+      "model_version": "hybrid_rule_learned_v0",
+      "inference_backend": "pytorch_stub",
+      "serving_status": "standby",
+      "beats_baseline": true,
+      "inference_provenance_tag": "hybrid_rule_learned_v0:feature_extractor_v0",
+      "registered_utc": "2026-05-18T00:01:00Z",
+      "notes": "Hybrid model on standby. Beats baseline on radio track. No weights loaded — stub only."
+    },
+    {
+      "serving_id": "srv-003",
+      "model_id": "mdl-003",
+      "model_version": "cnn_radio_v0",
+      "inference_backend": "onnx_stub",
+      "serving_status": "stub",
+      "beats_baseline": false,
+      "inference_provenance_tag": "cnn_radio_v0:feature_extractor_v0",
+      "registered_utc": "2026-05-18T00:02:00Z",
+      "notes": "CNN scaffold stub. Does NOT beat baseline. Must not be used operationally."
+    },
+    {
+      "serving_id": "srv-004",
+      "model_id": "mdl-legacy",
+      "model_version": "baseline_rule_v0_legacy",
+      "inference_backend": "none",
+      "serving_status": "retired",
+      "beats_baseline": false,
+      "inference_provenance_tag": "baseline_rule_v0_legacy:scoring_v0_legacy",
+      "registered_utc": "2026-01-01T00:00:00Z",
+      "notes": "Retired legacy baseline. Kept for provenance audit trail only."
+    }
+  ]
+}

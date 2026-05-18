@@ -1056,3 +1056,21 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 **Model performance history**: per-epoch training snapshots with trend classification (`improving`, `declining`, `stable`). A `declining` trend must surface in `validate-all` visibility. Snapshots are local scheduling records — not calibrated survey efficiency estimates.
 
 **Consequences**: `validate-all` gates enforce `arch_count >= 5`, `eval_count >= 4`, `perf_snapshot_count >= 5`. SCHEMA_FILENAMES grows 54→57. Milestone 12 is complete. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-045: Model Serving, Scoring Audit Log, And Curated Dataset Intake Are Required Candidate Methods Production Prerequisites
+
+**Date**: 2026-05-18
+
+**Context**: DECISION-044 completed the ML model architecture and evaluation harness. Before any candidate methods pipeline can be considered for production readiness, three additional scaffolds are required: a versioned model serving interface with inference provenance, an append-only scoring audit log, and a curated dataset intake checklist.
+
+**Decision**: Implement three new production-prerequisite modules:
+
+**Model serving**: versioned inference interface records identifying which model and backend produced each candidate score. All current records carry `serving_status: stub` for learned models — only the interpretable baseline has `serving_status: active`. No live weights are loaded. Serving records are scheduling provenance artifacts only.
+
+**Scoring audit log**: append-only record of every score event (initial score, rescore, baseline comparison, model version change) per candidate per model version. Audit entries preserve the full provenance chain required for reproducibility. Entries are local scheduling records — not detections or external validation.
+
+**Curated dataset intake**: conservative planning checklist for future non-synthetic validation datasets. Every non-synthetic intake record requires provenance documentation, a false-positive baseline, and external approval before any real data is ingested. The one `approved` entry in the fixture is the synthetic calibration dataset already present. All real-data intake records start as `planning` or `blocked`.
+
+**Consequences**: `validate-all` gates enforce `serving_record_count >= 1`, `audit_entry_count >= 1`, `intake_record_count >= 1`. SCHEMA_FILENAMES grows 57→60. Milestone 13 is advanced. Scientific guardrails remain unchanged.

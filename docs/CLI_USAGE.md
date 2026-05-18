@@ -1545,3 +1545,36 @@ techno-search model-performance-history-summary --fixture-path tests/fixtures/mo
 ```
 
 Output fields: `disclaimer`, `schema_version`, `snapshot_count`, `unique_model_count`, `by_model`, `by_track`, `by_trend`, `most_recent_snapshot_by_model`. Performance snapshots are local scheduling records only — not calibrated survey efficiency estimates.
+
+## `model-serving-summary`
+
+Summarize model serving scaffold records with inference provenance tags.
+
+```bash
+techno-search model-serving-summary
+techno-search model-serving-summary --fixture-path tests/fixtures/model_serving.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`, `active_count`, `stub_count`, `by_status`, `by_backend`, `active_model_ids`. No live inference is performed — all records are provenance scaffolds only.
+
+## `scoring-audit-log-summary`
+
+Summarize scoring audit log entries per candidate per model version.
+
+```bash
+techno-search scoring-audit-log-summary
+techno-search scoring-audit-log-summary --fixture-path tests/fixtures/scoring_audit_log.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `entry_count`, `unique_candidate_count`, `rescore_count`, `by_event_kind`, `by_model_id`. Audit entries are append-only provenance records — not detections or external validation.
+
+## `curated-dataset-intake-summary`
+
+Summarize curated dataset intake checklist records including blocking issues.
+
+```bash
+techno-search curated-dataset-intake-summary
+techno-search curated-dataset-intake-summary --fixture-path tests/fixtures/curated_dataset_intake.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`, `approved_count`, `blocked_count`, `total_blocking_issue_count`, `by_status`, `by_track`, `by_kind`. Intake records are planning placeholders only — no real observation data is ingested.

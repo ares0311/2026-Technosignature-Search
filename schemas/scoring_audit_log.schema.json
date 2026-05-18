@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ScoringAuditLog",
+  "description": "Append-only scoring audit log entries per candidate per model version.",
+  "type": "object",
+  "required": ["schema_version", "audit_entries"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "audit_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "audit_id", "candidate_id", "model_id", "model_version",
+          "event_kind", "score", "pathway", "serving_id", "event_utc", "notes"
+        ],
+        "properties": {
+          "audit_id": { "type": "string" },
+          "candidate_id": { "type": "string" },
+          "model_id": { "type": "string" },
+          "model_version": { "type": "string" },
+          "event_kind": {
+            "type": "string",
+            "enum": ["initial_score", "rescore", "baseline_comparison", "model_version_change"]
+          },
+          "score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "pathway": { "type": "string" },
+          "serving_id": { "type": "string" },
+          "event_utc": { "type": "string" },
+          "notes": { "type": "string" }
+        }
+      }
+    }
+  }
+}

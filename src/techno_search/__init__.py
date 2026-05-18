@@ -206,6 +206,15 @@ from techno_search.cross_track import (
     cross_track_summary,
     load_cross_track_references,
 )
+from techno_search.curated_dataset_intake import (
+    ALLOWED_DATA_KINDS,
+    ALLOWED_INTAKE_STATUSES,
+    CURATED_DATASET_INTAKE_DISCLAIMER,
+    CURATED_DATASET_INTAKE_SCHEMA_VERSION,
+    CuratedDatasetIntakeRecord,
+    curated_dataset_intake_summary,
+    load_intake_records,
+)
 from techno_search.data_quality_log import (
     ALLOWED_QUALITY_GRADES,
     ALLOWED_QUALITY_ISSUE_TYPES,
@@ -303,6 +312,15 @@ from techno_search.model_performance_history import (
     ModelPerformanceSnapshot,
     load_model_performance_snapshots,
     model_performance_history_summary,
+)
+from techno_search.model_serving import (
+    ALLOWED_INFERENCE_BACKENDS,
+    ALLOWED_SERVING_STATUSES,
+    MODEL_SERVING_DISCLAIMER,
+    MODEL_SERVING_SCHEMA_VERSION,
+    ModelServingRecord,
+    load_serving_records,
+    model_serving_summary,
 )
 from techno_search.multi_epoch_summary import (
     MULTI_EPOCH_DISCLAIMER,
@@ -425,6 +443,14 @@ from techno_search.review_queue import (
 )
 from techno_search.schemas import Candidate, Pathway, ScoredCandidate, Track
 from techno_search.scoring import score_candidate
+from techno_search.scoring_audit_log import (
+    ALLOWED_AUDIT_EVENT_KINDS,
+    SCORING_AUDIT_LOG_DISCLAIMER,
+    SCORING_AUDIT_LOG_SCHEMA_VERSION,
+    ScoringAuditEntry,
+    load_scoring_audit_entries,
+    scoring_audit_log_summary,
+)
 from techno_search.scoring_config import (
     SCORING_CONFIG_DISCLAIMER,
     SCORING_CONFIG_SCHEMA_VERSION,
@@ -548,6 +574,13 @@ __all__ = [
     "ml_pipeline_diagnostics_summary",
     "ML_TRAINING_DATA_DISCLAIMER",
     "ml_training_data_summary",
+    "ALLOWED_DATA_KINDS",
+    "ALLOWED_INTAKE_STATUSES",
+    "CURATED_DATASET_INTAKE_DISCLAIMER",
+    "CURATED_DATASET_INTAKE_SCHEMA_VERSION",
+    "CuratedDatasetIntakeRecord",
+    "curated_dataset_intake_summary",
+    "load_intake_records",
     "ALLOWED_ARCHITECTURE_KINDS",
     "ALLOWED_ARCHITECTURE_STATUSES",
     "MODEL_ARCHITECTURE_DISCLAIMER",
@@ -566,6 +599,19 @@ __all__ = [
     "ModelPerformanceSnapshot",
     "load_model_performance_snapshots",
     "model_performance_history_summary",
+    "ALLOWED_INFERENCE_BACKENDS",
+    "ALLOWED_SERVING_STATUSES",
+    "MODEL_SERVING_DISCLAIMER",
+    "MODEL_SERVING_SCHEMA_VERSION",
+    "ModelServingRecord",
+    "load_serving_records",
+    "model_serving_summary",
+    "ALLOWED_AUDIT_EVENT_KINDS",
+    "SCORING_AUDIT_LOG_DISCLAIMER",
+    "SCORING_AUDIT_LOG_SCHEMA_VERSION",
+    "ScoringAuditEntry",
+    "load_scoring_audit_entries",
+    "scoring_audit_log_summary",
     "FEATURE_IMPORTANCE_DISCLAIMER",
     "FEATURE_IMPORTANCE_SCHEMA_VERSION",
     "FeatureImportanceEntry",

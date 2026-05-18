@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CuratedDatasetIntake",
+  "description": "Planning placeholders for future curated non-synthetic dataset intake. No real data ingested.",
+  "type": "object",
+  "required": ["schema_version", "intake_records"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "intake_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "intake_id", "dataset_label", "data_kind", "track", "intake_status",
+          "has_provenance_documentation", "has_false_positive_baseline",
+          "requires_external_approval", "blocking_issues", "created_utc", "notes"
+        ],
+        "properties": {
+          "intake_id": { "type": "string" },
+          "dataset_label": { "type": "string" },
+          "data_kind": {
+            "type": "string",
+            "enum": ["radio_survey", "infrared_survey", "archival_catalog", "multi_wavelength", "synthetic"]
+          },
+          "track": { "type": "string", "enum": ["radio", "infrared", "anomaly", "multi"] },
+          "intake_status": {
+            "type": "string",
+            "enum": ["planning", "pending_review", "approved", "blocked", "deferred"]
+          },
+          "has_provenance_documentation": { "type": "boolean" },
+          "has_false_positive_baseline": { "type": "boolean" },
+          "requires_external_approval": { "type": "boolean" },
+          "blocking_issues": { "type": "array", "items": { "type": "string" } },
+          "created_utc": { "type": "string" },
+          "notes": { "type": "string" }
+        }
+      }
+    }
+  }
+}

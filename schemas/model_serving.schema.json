@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ModelServing",
+  "description": "Model serving scaffold records with inference provenance. No live inference performed.",
+  "type": "object",
+  "required": ["schema_version", "serving_records"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "serving_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "serving_id", "model_id", "model_version", "inference_backend",
+          "serving_status", "beats_baseline", "inference_provenance_tag",
+          "registered_utc", "notes"
+        ],
+        "properties": {
+          "serving_id": { "type": "string" },
+          "model_id": { "type": "string" },
+          "model_version": { "type": "string" },
+          "inference_backend": {
+            "type": "string",
+            "enum": ["baseline_rule", "onnx_stub", "pytorch_stub", "none"]
+          },
+          "serving_status": {
+            "type": "string",
+            "enum": ["active", "standby", "retired", "stub"]
+          },
+          "beats_baseline": { "type": "boolean" },
+          "inference_provenance_tag": { "type": "string" },
+          "registered_utc": { "type": "string" },
+          "notes": { "type": "string" }
+        }
+      }
+    }
+  }
+}

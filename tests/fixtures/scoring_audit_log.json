@@ -1,0 +1,65 @@
+{
+  "schema_version": "scoring_audit_log_v1",
+  "audit_entries": [
+    {
+      "audit_id": "aud-001",
+      "candidate_id": "radio-clean-candidate",
+      "model_id": "mdl-001",
+      "model_version": "baseline_rule_v0",
+      "event_kind": "initial_score",
+      "score": 0.82,
+      "pathway": "human_review_queue",
+      "serving_id": "srv-001",
+      "event_utc": "2026-05-18T00:00:00Z",
+      "notes": "Initial baseline score on synthetic radio candidate."
+    },
+    {
+      "audit_id": "aud-002",
+      "candidate_id": "infrared-clean-candidate",
+      "model_id": "mdl-001",
+      "model_version": "baseline_rule_v0",
+      "event_kind": "initial_score",
+      "score": 0.75,
+      "pathway": "human_review_queue",
+      "serving_id": "srv-001",
+      "event_utc": "2026-05-18T00:01:00Z",
+      "notes": "Initial baseline score on synthetic infrared candidate."
+    },
+    {
+      "audit_id": "aud-003",
+      "candidate_id": "radio-clean-candidate",
+      "model_id": "mdl-002",
+      "model_version": "hybrid_rule_learned_v0",
+      "event_kind": "rescore",
+      "score": 0.88,
+      "pathway": "human_review_queue",
+      "serving_id": "srv-002",
+      "event_utc": "2026-05-18T00:10:00Z",
+      "notes": "Rescore after hybrid model registered. Score improved relative to baseline."
+    },
+    {
+      "audit_id": "aud-004",
+      "candidate_id": "anomaly-clean-candidate",
+      "model_id": "mdl-001",
+      "model_version": "baseline_rule_v0",
+      "event_kind": "initial_score",
+      "score": 0.69,
+      "pathway": "github_reproducibility_only",
+      "serving_id": "srv-001",
+      "event_utc": "2026-05-18T00:02:00Z",
+      "notes": "Initial baseline score on synthetic anomaly candidate — routed to reproducibility only."
+    },
+    {
+      "audit_id": "aud-005",
+      "candidate_id": "radio-clean-candidate",
+      "model_id": "mdl-001",
+      "model_version": "baseline_rule_v0",
+      "event_kind": "baseline_comparison",
+      "score": 0.82,
+      "pathway": "human_review_queue",
+      "serving_id": "srv-001",
+      "event_utc": "2026-05-18T00:11:00Z",
+      "notes": "Baseline comparison audit after hybrid rescore — baseline score unchanged."
+    }
+  ]
+}
