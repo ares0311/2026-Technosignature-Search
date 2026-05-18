@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Feature Normalization Bounds",
+  "description": "Per-track normalization bounds for ML feature preprocessing. Metadata only — not detections or discoveries.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "feature_normalization_bounds"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "disclaimer": { "type": "string" },
+    "feature_normalization_bounds": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "bounds_id", "track", "extractor_version", "feature_names",
+          "min_values", "max_values", "mean_values", "std_values",
+          "normalization_kind", "computed_utc", "sample_count"
+        ],
+        "properties": {
+          "bounds_id": { "type": "string" },
+          "track": { "type": "string", "enum": ["radio", "infrared", "anomaly"] },
+          "extractor_version": { "type": "string" },
+          "feature_names": { "type": "array", "items": { "type": "string" } },
+          "min_values": { "type": "array", "items": { "type": "number" } },
+          "max_values": { "type": "array", "items": { "type": "number" } },
+          "mean_values": { "type": "array", "items": { "type": "number" } },
+          "std_values": { "type": "array", "items": { "type": "number" } },
+          "normalization_kind": { "type": "string", "enum": ["none", "min_max", "z_score"] },
+          "computed_utc": { "type": "string" },
+          "sample_count": { "type": "integer", "minimum": 1 }
+        }
+      }
+    }
+  }
+}

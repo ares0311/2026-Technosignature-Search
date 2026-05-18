@@ -346,16 +346,16 @@ Build a stable, versioned feature extraction layer that transforms scored candid
 
 ## Tasks
 
-- [ ] Flat feature vector extraction from scored candidates (`candidate_feature_vector.py`)
-- [ ] Feature vector schema and JSON schema artifact
-- [ ] Synthetic feature vector fixtures covering radio, infrared, and anomaly tracks
-- [ ] `feature-vector-summary` CLI command
-- [ ] `validate-all` gate: feature vector count >= 5, covering all three tracks
-- [ ] Feature normalization and scaling scaffold (min-max per track, stored with vector)
-- [ ] Track-specific feature set definitions derived from existing scoring config weights
-- [ ] Feature importance mapping from baseline rule fire rates to feature names
-- [ ] Feature drift detection: flag vectors where normalization bounds shift across extractor versions
-- [ ] DECISION-042: Feature Vector Layer Must Be Stable Before Any Learned Model Is Trained
+- [x] Flat feature vector extraction from scored candidates (`candidate_feature_vector.py`)
+- [x] Feature vector schema and JSON schema artifact
+- [x] Synthetic feature vector fixtures covering radio, infrared, and anomaly tracks
+- [x] `feature-vector-summary` CLI command
+- [x] `validate-all` gate: feature vector count >= 5, covering all three tracks
+- [x] Feature normalization and scaling scaffold (min-max per track, stored with vector)
+- [x] Track-specific feature set definitions derived from existing scoring config weights
+- [x] Feature importance mapping from baseline rule fire rates to feature names
+- [x] Feature drift detection: flag vectors where normalization bounds shift across extractor versions
+- [x] DECISION-042: Feature Vector Layer Must Be Stable Before Any Learned Model Is Trained
 
 ---
 
@@ -367,21 +367,21 @@ Introduce pluggable learned models with mandatory version tracking, provenance, 
 
 ## Tasks
 
-- [ ] ML model registry schema and JSON schema artifact (`ml_model_registry.py`)
-- [ ] Synthetic model registry fixtures covering experimental, validated, and deprecated entries
-- [ ] `model-registry-summary` CLI command
-- [ ] ML pipeline diagnostics module comparing baseline vs registered learned model metrics (`ml_pipeline_diagnostics.py`)
-- [ ] `ml-diagnostics-summary` CLI command with above-baseline gate
-- [ ] `validate-all` gate: no registered model below baseline pathway accuracy
+- [x] ML model registry schema and JSON schema artifact (`ml_model_registry.py`)
+- [x] Synthetic model registry fixtures covering experimental, validated, and deprecated entries
+- [x] `model-registry-summary` CLI command
+- [x] ML pipeline diagnostics module comparing baseline vs registered learned model metrics (`ml_pipeline_diagnostics.py`)
+- [x] `ml-diagnostics-summary` CLI command with above-baseline gate
+- [x] `validate-all` gate: no registered model below baseline pathway accuracy
 - [ ] CNN scaffold for radio waterfall morphology (architecture definition, no weights yet)
 - [ ] Transformer scaffold for sequential multi-epoch radio features (architecture definition, no weights yet)
 - [ ] Hybrid model interface combining baseline rule scores with learned feature embeddings
 - [ ] Self-supervised representation learning scaffold for unlabeled candidate clusters
 - [ ] Foundation-model embedding adapter for retrieval and human-review triage support
-- [ ] Training data scaffold assembled from calibration fixtures and injection-recovery cases
+- [x] Training data scaffold assembled from calibration fixtures and injection-recovery cases
 - [ ] Model evaluation harness comparing learned model accuracy, precision, and recall to baseline
 - [ ] Model performance history appended to the existing benchmark run-result workflow
-- [ ] DECISION-043: No Learned Model Ships Without Beating The Interpretable Baseline On Calibration Fixtures
+- [x] DECISION-043: Feature Normalization, Feature Importance, And ML Training Data Are Required ML Infrastructure
 
 ---
 

@@ -1480,3 +1480,35 @@ techno-search ml-diagnostics-summary
 Output fields: `disclaimer`, `baseline_accuracy`, `registered_model_count`, `above_baseline_count`, `below_baseline_count`, `validated_model_count`, `pipeline_ml_status`.
 
 Pipeline statuses: `no_models`, `all_above_baseline`, `some_below_baseline`. ML diagnostics are operational scheduling summaries only — they do not constitute detection claims or external validation.
+
+## `feature-normalization-summary`
+
+Summarize per-track feature normalization bounds including drift detection across extractor versions.
+
+```bash
+techno-search feature-normalization-summary
+techno-search feature-normalization-summary --fixture-path tests/fixtures/feature_normalization.json
+```
+
+Output fields: `disclaimer`, `bounds_count`, `by_track`, `by_normalization_kind`, `extractor_versions`, `drift_detected`. Normalization bounds are ML preprocessing metadata only — they are not technosignature detections or external validation.
+
+## `feature-importance-summary`
+
+Summarize feature importance scores derived from baseline rule fire rates across all three tracks.
+
+```bash
+techno-search feature-importance-summary
+techno-search feature-importance-summary --fixture-path tests/fixtures/feature_importance.json
+```
+
+Output fields: `disclaimer`, `entry_count`, `by_track`, `top_feature_by_track`, `tracks_covered`, `unique_rule_names`. Feature importance scores are synthetic scheduling diagnostics only — they are not calibrated signal detection metrics.
+
+## `ml-training-data-summary`
+
+Summarize ML training data assembled from calibration fixtures and injection-recovery cases.
+
+```bash
+techno-search ml-training-data-summary
+```
+
+Output fields: `disclaimer`, `total_case_count`, `calibration_case_count`, `injection_recovery_case_count`, `by_track`, `by_source`, `recommended_train_count`, `recommended_test_count`, `pathway_breakdown`. Training data summaries are provenance records only — they are not detections, discoveries, or external validation.

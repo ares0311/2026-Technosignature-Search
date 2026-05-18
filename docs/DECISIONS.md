@@ -1020,3 +1020,21 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 **ML pipeline diagnostics**: aggregate dashboard comparing the interpretable baseline accuracy against all registered models. `pipeline_ml_status` surfaces whether any below-baseline models exist (`some_below_baseline`), enabling `validate-all` to catch regressions.
 
 **Consequences**: `validate-all` gates enforce `feature_vector_count >= 5` and `pipeline_ml_status in valid set`. SCHEMA_FILENAMES grows 50→52. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-043: Feature Normalization, Feature Importance, And ML Training Data Are Required ML Infrastructure
+
+**Date**: 2026-05-18
+
+**Context**: DECISION-042 established the feature vector layer and model registry. The next prerequisite for safe learned-model development is: (1) stable normalization bounds across extractor versions with drift detection, (2) interpretable feature importance scores derived from baseline rule fire rates, and (3) a structured ML training data scaffold assembling calibration fixtures and injection-recovery cases.
+
+**Decision**: Implement three new ML infrastructure modules:
+
+**Feature normalization**: per-track normalization bounds (`min_max`, `z_score`, `none`) with per-feature min/max/mean/std values and drift detection when extractor versions diverge. Normalization bounds are ML preprocessing metadata only — they are not technosignature detections or calibrated survey metrics.
+
+**Feature importance**: feature importance scores derived from synthetic baseline rule fire rates, ranked per track. Surfacing which features fire most reliably in the baseline informs safe feature selection for learned models. Scores are synthetic scheduling diagnostics only — not calibrated signal detection metrics.
+
+**ML training data**: assembles calibration fixtures and injection-recovery cases into a structured training scaffold with recommended 80/20 train/test split. Training data summaries are provenance records for model development only — they do not constitute detections, discoveries, or external validation.
+
+**Consequences**: `validate-all` gates enforce `normalization_bounds_count >= 3`, `feature_importance_entry_count >= 6`, and `ml_training_case_count >= 0`. SCHEMA_FILENAMES grows 52→54. Scientific guardrails remain unchanged.

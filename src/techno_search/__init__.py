@@ -233,6 +233,20 @@ from techno_search.escalation_log import (
     escalation_log_summary,
     load_escalation_entries,
 )
+from techno_search.feature_importance import (
+    FEATURE_IMPORTANCE_DISCLAIMER,
+    FEATURE_IMPORTANCE_SCHEMA_VERSION,
+    FeatureImportanceEntry,
+    feature_importance_summary,
+    load_feature_importance_entries,
+)
+from techno_search.feature_normalization import (
+    FEATURE_NORMALIZATION_DISCLAIMER,
+    FEATURE_NORMALIZATION_SCHEMA_VERSION,
+    FeatureNormalizationBounds,
+    feature_normalization_summary,
+    load_normalization_bounds,
+)
 from techno_search.follow_up_request import (
     ALLOWED_REQUEST_PRIORITIES,
     ALLOWED_REQUEST_STATUSES,
@@ -261,6 +275,10 @@ from techno_search.ml_model_registry import (
 from techno_search.ml_pipeline_diagnostics import (
     ML_PIPELINE_DIAGNOSTICS_DISCLAIMER,
     ml_pipeline_diagnostics_summary,
+)
+from techno_search.ml_training_data import (
+    ML_TRAINING_DATA_DISCLAIMER,
+    ml_training_data_summary,
 )
 from techno_search.multi_epoch_summary import (
     MULTI_EPOCH_DISCLAIMER,
@@ -504,6 +522,18 @@ __all__ = [
     "model_registry_summary",
     "ML_PIPELINE_DIAGNOSTICS_DISCLAIMER",
     "ml_pipeline_diagnostics_summary",
+    "ML_TRAINING_DATA_DISCLAIMER",
+    "ml_training_data_summary",
+    "FEATURE_IMPORTANCE_DISCLAIMER",
+    "FEATURE_IMPORTANCE_SCHEMA_VERSION",
+    "FeatureImportanceEntry",
+    "feature_importance_summary",
+    "load_feature_importance_entries",
+    "FEATURE_NORMALIZATION_DISCLAIMER",
+    "FEATURE_NORMALIZATION_SCHEMA_VERSION",
+    "FeatureNormalizationBounds",
+    "feature_normalization_summary",
+    "load_normalization_bounds",
     "ALLOWED_QUEUE_REASONS",
     "CANDIDATE_PRIORITY_QUEUE_DISCLAIMER",
     "CANDIDATE_PRIORITY_QUEUE_SCHEMA_VERSION",

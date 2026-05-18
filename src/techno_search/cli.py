@@ -79,6 +79,8 @@ from techno_search.cross_track import cross_track_summary
 from techno_search.data_quality_log import data_quality_log_summary
 from techno_search.epoch_plan import epoch_plan_summary
 from techno_search.escalation_log import escalation_log_summary
+from techno_search.feature_importance import feature_importance_summary
+from techno_search.feature_normalization import feature_normalization_summary
 from techno_search.follow_up_request import follow_up_request_summary
 from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
 from techno_search.live_data import (
@@ -113,6 +115,7 @@ from techno_search.log_store import (
 )
 from techno_search.ml_model_registry import model_registry_summary
 from techno_search.ml_pipeline_diagnostics import ml_pipeline_diagnostics_summary
+from techno_search.ml_training_data import ml_training_data_summary
 from techno_search.multi_epoch_summary import multi_epoch_summary
 from techno_search.observation_campaign import observation_campaign_summary
 from techno_search.observation_schedule import (
@@ -210,6 +213,8 @@ SCHEMA_FILENAMES = {
     "candidate_annotation": "candidate_annotation.schema.json",
     "candidate_feature_vector": "candidate_feature_vector.schema.json",
     "candidate_priority_queue": "candidate_priority_queue.schema.json",
+    "feature_importance": "feature_importance.schema.json",
+    "feature_normalization": "feature_normalization.schema.json",
     "ml_model_registry": "ml_model_registry.schema.json",
     "candidate_resolution": "candidate_resolution.schema.json",
     "candidate_retention": "candidate_retention.schema.json",
@@ -1581,6 +1586,41 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "feature-normalization-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                feature_normalization_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "feature-importance-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                feature_importance_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "ml-training-data-summary":
+        print(
+            json.dumps(
+                ml_training_data_summary(),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -1966,6 +2006,12 @@ def validate_all() -> dict[str, object]:
     ml_registry_count = int(ml_registry_data.get("registry_count", 0))
     ml_diagnostics_data = ml_pipeline_diagnostics_summary()
     ml_pipeline_status = str(ml_diagnostics_data.get("pipeline_ml_status", "no_models"))
+    feat_norm_data = feature_normalization_summary()
+    feat_norm_count = int(feat_norm_data.get("bounds_count", 0))
+    feat_imp_data = feature_importance_summary()
+    feat_imp_count = int(feat_imp_data.get("entry_count", 0))
+    ml_training_data = ml_training_data_summary()
+    ml_training_case_count = int(ml_training_data.get("total_case_count", 0))
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -2231,6 +2277,12 @@ def validate_all() -> dict[str, object]:
         and isinstance(ml_registry_count, int)
         and ml_registry_count >= 0
         and ml_pipeline_status in {"no_models", "all_above_baseline", "some_below_baseline"}
+        and isinstance(feat_norm_count, int)
+        and feat_norm_count >= 3
+        and isinstance(feat_imp_count, int)
+        and feat_imp_count >= 6
+        and isinstance(ml_training_case_count, int)
+        and ml_training_case_count >= 0
     )
     return {
         "ok": ok,
@@ -2328,6 +2380,9 @@ def validate_all() -> dict[str, object]:
         "feature_vector_summary": feature_vector_data,
         "ml_model_registry_summary": ml_registry_data,
         "ml_pipeline_diagnostics_summary": ml_diagnostics_data,
+        "feature_normalization_summary": feat_norm_data,
+        "feature_importance_summary": feat_imp_data,
+        "ml_training_data_summary": ml_training_data,
     }
 
 
@@ -3117,6 +3172,26 @@ def validation_summary() -> dict[str, object]:
             md_s["pipeline_ml_status"]
             if isinstance(md_s := validation.get("ml_pipeline_diagnostics_summary"), dict)
             else "unknown"
+        ),
+        "normalization_bounds_count": (
+            fn_s["bounds_count"]
+            if isinstance(fn_s := validation.get("feature_normalization_summary"), dict)
+            else 0
+        ),
+        "feature_importance_entry_count": (
+            fi_s["entry_count"]
+            if isinstance(fi_s := validation.get("feature_importance_summary"), dict)
+            else 0
+        ),
+        "ml_training_case_count": (
+            mt_s["total_case_count"]
+            if isinstance(mt_s := validation.get("ml_training_data_summary"), dict)
+            else 0
+        ),
+        "ml_recommended_train_count": (
+            mt_s2["recommended_train_count"]
+            if isinstance(mt_s2 := validation.get("ml_training_data_summary"), dict)
+            else 0
         ),
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
@@ -4612,6 +4687,27 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "ml-diagnostics-summary",
         help="Summarize ML pipeline status comparing baseline vs registered models.",
+    )
+
+    feature_normalization_parser = subparsers.add_parser(
+        "feature-normalization-summary",
+        help="Summarize per-track feature normalization bounds with drift detection.",
+    )
+    feature_normalization_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    feature_importance_parser = subparsers.add_parser(
+        "feature-importance-summary",
+        help="Summarize feature importance scores from baseline rule fire rates.",
+    )
+    feature_importance_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "ml-training-data-summary",
+        help="Summarize ML training data assembled from calibration and injection-recovery cases.",
     )
 
     return parser
