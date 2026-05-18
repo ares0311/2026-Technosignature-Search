@@ -1,0 +1,64 @@
+{
+  "pipeline_telemetry_entries": [
+    {
+      "entry_id": "tel-001",
+      "candidate_id": "radio-clean-candidate",
+      "stage": "scoring",
+      "latency_ms": 12.4,
+      "success": true,
+      "error_message": null,
+      "recorded_utc": "2026-05-18T10:00:00Z",
+      "notes": "Baseline rule scoring completed successfully. Latency is a local scheduling diagnostic."
+    },
+    {
+      "entry_id": "tel-002",
+      "candidate_id": "radio-clean-candidate",
+      "stage": "model_serving",
+      "latency_ms": 8.1,
+      "success": true,
+      "error_message": null,
+      "recorded_utc": "2026-05-18T10:00:01Z",
+      "notes": "Model serving record lookup completed. No inference was performed."
+    },
+    {
+      "entry_id": "tel-003",
+      "candidate_id": "radio-clean-candidate",
+      "stage": "audit_log",
+      "latency_ms": 3.2,
+      "success": true,
+      "error_message": null,
+      "recorded_utc": "2026-05-18T10:00:02Z",
+      "notes": "Scoring audit entry appended successfully."
+    },
+    {
+      "entry_id": "tel-004",
+      "candidate_id": "radio-clean-candidate",
+      "stage": "rescore",
+      "latency_ms": 15.7,
+      "success": true,
+      "error_message": null,
+      "recorded_utc": "2026-05-18T10:00:03Z",
+      "notes": "Re-score event recorded. No pathway change; operator review not triggered."
+    },
+    {
+      "entry_id": "tel-005",
+      "candidate_id": "radio-clean-candidate",
+      "stage": "handoff",
+      "latency_ms": 5.6,
+      "success": true,
+      "error_message": null,
+      "recorded_utc": "2026-05-18T10:00:04Z",
+      "notes": "Operator handoff template created. Approved status does not authorize external submission."
+    },
+    {
+      "entry_id": "tel-006",
+      "candidate_id": "radio-clean-candidate",
+      "stage": "submission_check",
+      "latency_ms": 2.9,
+      "success": true,
+      "error_message": null,
+      "recorded_utc": "2026-05-18T10:00:05Z",
+      "notes": "Submission readiness check completed. Ready status is a provenance record only."
+    }
+  ]
+}

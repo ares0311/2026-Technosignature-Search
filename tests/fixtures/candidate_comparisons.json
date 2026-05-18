@@ -1,0 +1,68 @@
+{
+  "candidate_comparisons": [
+    {
+      "comparison_id": "cmp-001",
+      "candidate_ids": ["radio-clean-candidate", "infrared-clean-candidate"],
+      "comparison_status": "ranked",
+      "scores": {
+        "radio-clean-candidate": 0.88,
+        "infrared-clean-candidate": 0.71
+      },
+      "pathways": {
+        "radio-clean-candidate": "candidate_review_packet",
+        "infrared-clean-candidate": "human_review_queue"
+      },
+      "top_candidate_id": "radio-clean-candidate",
+      "comparison_utc": "2026-05-18T10:00:00Z",
+      "notes": "Radio candidate scores higher; both require operator review before any external action."
+    },
+    {
+      "comparison_id": "cmp-002",
+      "candidate_ids": ["radio-clean-candidate", "anomaly-clean-candidate"],
+      "comparison_status": "ranked",
+      "scores": {
+        "radio-clean-candidate": 0.85,
+        "anomaly-clean-candidate": 0.90
+      },
+      "pathways": {
+        "radio-clean-candidate": "candidate_review_packet",
+        "anomaly-clean-candidate": "candidate_review_packet"
+      },
+      "top_candidate_id": "anomaly-clean-candidate",
+      "comparison_utc": "2026-05-18T10:05:00Z",
+      "notes": "Anomaly candidate scores marginally higher. Both pathways require human review. Scheduling aid only."
+    },
+    {
+      "comparison_id": "cmp-003",
+      "candidate_ids": [
+        "radio-clean-candidate",
+        "infrared-clean-candidate",
+        "anomaly-clean-candidate"
+      ],
+      "comparison_status": "tied",
+      "scores": {
+        "radio-clean-candidate": 0.82,
+        "infrared-clean-candidate": 0.82,
+        "anomaly-clean-candidate": 0.82
+      },
+      "pathways": {
+        "radio-clean-candidate": "candidate_review_packet",
+        "infrared-clean-candidate": "candidate_review_packet",
+        "anomaly-clean-candidate": "candidate_review_packet"
+      },
+      "top_candidate_id": "",
+      "comparison_utc": "2026-05-18T10:10:00Z",
+      "notes": "Three-way tie; operator review required to break tie. Does not modify scores or authorize submission."
+    },
+    {
+      "comparison_id": "cmp-004",
+      "candidate_ids": ["unknown-candidate-xyz"],
+      "comparison_status": "insufficient_data",
+      "scores": {},
+      "pathways": {},
+      "top_candidate_id": "",
+      "comparison_utc": "2026-05-18T10:15:00Z",
+      "notes": "No scoring data available for comparison. Insufficient data status is a provenance record only."
+    }
+  ]
+}

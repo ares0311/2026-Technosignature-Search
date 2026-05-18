@@ -58,6 +58,7 @@ from techno_search.calibration import (
 from techno_search.calibration_metrics import precision_recall_summary, reliability_summary
 from techno_search.candidate_annotation import candidate_annotation_summary
 from techno_search.candidate_audit_trail import audit_trail_summary
+from techno_search.candidate_comparison import candidate_comparison_summary
 from techno_search.candidate_feature_vector import feature_vector_summary
 from techno_search.candidate_flags import candidate_flags_summary
 from techno_search.candidate_lifecycle import (
@@ -139,9 +140,11 @@ from techno_search.pipeline_capacity import pipeline_capacity_summary
 from techno_search.pipeline_config import pipeline_config_summary
 from techno_search.pipeline_health import pipeline_health_summary
 from techno_search.pipeline_integration import pipeline_integration_summary
+from techno_search.pipeline_telemetry import pipeline_telemetry_summary
 from techno_search.pipeline_throughput import pipeline_throughput_summary
 from techno_search.plotting import plot_artifact_summary
 from techno_search.provenance import provenance_chain_validator
+from techno_search.provenance_audit import provenance_audit_summary
 from techno_search.quality_control_summary import quality_control_summary
 from techno_search.reporting import (
     candidate_packet_json,
@@ -236,6 +239,9 @@ SCHEMA_FILENAMES = {
     "candidate_rescore": "candidate_rescore.schema.json",
     "pipeline_config": "pipeline_config.schema.json",
     "submission_readiness": "submission_readiness.schema.json",
+    "candidate_comparison": "candidate_comparison.schema.json",
+    "pipeline_telemetry": "pipeline_telemetry.schema.json",
+    "provenance_audit": "provenance_audit.schema.json",
     "curated_dataset_intake": "curated_dataset_intake.schema.json",
     "operator_handoff_template": "operator_handoff_template.schema.json",
     "candidate_resolution": "candidate_resolution.schema.json",
@@ -1785,6 +1791,42 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "candidate-comparison-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                candidate_comparison_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "pipeline-telemetry-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                pipeline_telemetry_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "provenance-audit-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                provenance_audit_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -2193,6 +2235,12 @@ def validate_all() -> dict[str, object]:
     handoff_data = operator_handoff_summary()
     handoff_template_count = int(handoff_data.get("template_count", 0))
     handoff_approved_count = int(handoff_data.get("approved_count", 0))
+    comparison_data = candidate_comparison_summary()
+    comparison_count = int(comparison_data.get("record_count", 0))
+    telemetry_data = pipeline_telemetry_summary()
+    telemetry_entry_count = int(telemetry_data.get("entry_count", 0))
+    audit_data = provenance_audit_summary()
+    provenance_audit_entry_count = int(audit_data.get("entry_count", 0))
     pipeline_cfg_data = pipeline_config_summary()
     pipeline_config_count = int(pipeline_cfg_data.get("config_count", 0))
     pipeline_active_count = int(pipeline_cfg_data.get("active_count", 0))
@@ -2493,6 +2541,12 @@ def validate_all() -> dict[str, object]:
         and pipeline_active_count >= 1
         and isinstance(submission_record_count, int)
         and submission_record_count >= 1
+        and isinstance(comparison_count, int)
+        and comparison_count >= 1
+        and isinstance(telemetry_entry_count, int)
+        and telemetry_entry_count >= 1
+        and isinstance(provenance_audit_entry_count, int)
+        and provenance_audit_entry_count >= 1
     )
     return {
         "ok": ok,
@@ -2603,6 +2657,9 @@ def validate_all() -> dict[str, object]:
         "operator_handoff_summary": handoff_data,
         "pipeline_config_summary": pipeline_cfg_data,
         "submission_readiness_summary": submission_data,
+        "candidate_comparison_summary": comparison_data,
+        "pipeline_telemetry_summary": telemetry_data,
+        "provenance_audit_summary": audit_data,
     }
 
 
@@ -3496,6 +3553,26 @@ def validation_summary() -> dict[str, object]:
         "submission_readiness_ready_count": (
             sr_s2["ready_count"]
             if isinstance(sr_s2 := validation.get("submission_readiness_summary"), dict)
+            else 0
+        ),
+        "comparison_record_count": (
+            cmp_s["record_count"]
+            if isinstance(cmp_s := validation.get("candidate_comparison_summary"), dict)
+            else 0
+        ),
+        "telemetry_entry_count": (
+            tel_s["entry_count"]
+            if isinstance(tel_s := validation.get("pipeline_telemetry_summary"), dict)
+            else 0
+        ),
+        "provenance_audit_entry_count": (
+            pa_s["entry_count"]
+            if isinstance(pa_s := validation.get("provenance_audit_summary"), dict)
+            else 0
+        ),
+        "provenance_audit_consistent_count": (
+            pa_s2["consistent_count"]
+            if isinstance(pa_s2 := validation.get("provenance_audit_summary"), dict)
             else 0
         ),
         "recommended_commands": [
@@ -5103,6 +5180,30 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "pipeline-integration-summary",
         help="Run end-to-end pipeline smoke tests across known fixture candidates.",
+    )
+
+    candidate_comparison_parser = subparsers.add_parser(
+        "candidate-comparison-summary",
+        help="Summarize multi-candidate comparison records (scheduling aid only).",
+    )
+    candidate_comparison_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    pipeline_telemetry_parser = subparsers.add_parser(
+        "pipeline-telemetry-summary",
+        help="Summarize per-stage pipeline telemetry latency and throughput records.",
+    )
+    pipeline_telemetry_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    provenance_audit_parser = subparsers.add_parser(
+        "provenance-audit-summary",
+        help="Summarize cross-module provenance audit consistency verdicts.",
+    )
+    provenance_audit_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
     )
 
     return parser

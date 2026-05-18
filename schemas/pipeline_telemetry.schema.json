@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PipelineTelemetry",
+  "description": "Operational provenance records for per-stage pipeline latency and throughput. Not survey performance metrics.",
+  "type": "object",
+  "required": ["pipeline_telemetry_entries"],
+  "properties": {
+    "pipeline_telemetry_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "entry_id",
+          "candidate_id",
+          "stage",
+          "latency_ms",
+          "success",
+          "recorded_utc"
+        ],
+        "properties": {
+          "entry_id": {"type": "string"},
+          "candidate_id": {"type": "string"},
+          "stage": {
+            "type": "string",
+            "enum": [
+              "scoring",
+              "model_serving",
+              "audit_log",
+              "rescore",
+              "handoff",
+              "submission_check"
+            ]
+          },
+          "latency_ms": {"type": "number", "minimum": 0},
+          "success": {"type": "boolean"},
+          "error_message": {"type": ["string", "null"]},
+          "recorded_utc": {"type": "string"},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

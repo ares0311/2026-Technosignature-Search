@@ -1642,3 +1642,36 @@ techno-search pipeline-integration-summary
 ```
 
 Output fields: `disclaimer`, `candidates_tested`, `consistent_count`, `inconsistent_count`, `results`. Integration smoke tests are local scheduling provenance checks only — they do not authorize external submission or claim detections.
+
+## `candidate-comparison-summary`
+
+Summarize multi-candidate comparison records ranking candidates by score (scheduling aid only).
+
+```bash
+techno-search candidate-comparison-summary
+techno-search candidate-comparison-summary --fixture-path tests/fixtures/candidate_comparisons.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`, `ranked_count`, `tied_count`, `inconclusive_count`, `insufficient_data_count`, `by_status`, `top_candidate_ids`. Ranked status does not modify scores, posteriors, or pathway routing.
+
+## `pipeline-telemetry-summary`
+
+Summarize per-stage pipeline telemetry entries recording latency and success status.
+
+```bash
+techno-search pipeline-telemetry-summary
+techno-search pipeline-telemetry-summary --fixture-path tests/fixtures/pipeline_telemetry.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `entry_count`, `success_count`, `failure_count`, `by_stage`, `stages_covered`, `mean_latency_ms`, `max_latency_ms`. Telemetry records are operational provenance — not survey performance metrics or detection sensitivity estimates.
+
+## `provenance-audit-summary`
+
+Summarize cross-module provenance audit consistency verdicts per candidate.
+
+```bash
+techno-search provenance-audit-summary
+techno-search provenance-audit-summary --fixture-path tests/fixtures/provenance_audit.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `entry_count`, `consistent_count`, `inconsistent_count`, `partial_count`, `not_applicable_count`, `by_verdict`, `total_inconsistency_count`, `modules_covered`. Consistent verdict does not authorize external submission or confirm a detection.

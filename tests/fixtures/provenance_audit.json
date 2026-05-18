@@ -1,0 +1,58 @@
+{
+  "provenance_audit_entries": [
+    {
+      "audit_id": "aud-001",
+      "candidate_id": "radio-clean-candidate",
+      "verdict": "consistent",
+      "checked_modules": [
+        "pipeline_config",
+        "model_serving",
+        "scoring_audit_log",
+        "candidate_rescore",
+        "operator_handoff_template"
+      ],
+      "inconsistencies": [],
+      "audit_utc": "2026-05-18T10:00:00Z",
+      "notes": "All 5 modules agree on model_id=mdl-002 and serving_id=srv-002 for radio-clean-candidate. Consistent verdict does not authorize submission."
+    },
+    {
+      "audit_id": "aud-002",
+      "candidate_id": "infrared-clean-candidate",
+      "verdict": "partial",
+      "checked_modules": [
+        "pipeline_config",
+        "model_serving",
+        "scoring_audit_log"
+      ],
+      "inconsistencies": [],
+      "audit_utc": "2026-05-18T10:05:00Z",
+      "notes": "Only 3 of 5 modules checked; rescore and handoff records not yet present. Partial verdict is a scheduling provenance record."
+    },
+    {
+      "audit_id": "aud-003",
+      "candidate_id": "anomaly-clean-candidate",
+      "verdict": "inconsistent",
+      "checked_modules": [
+        "pipeline_config",
+        "model_serving",
+        "scoring_audit_log",
+        "candidate_rescore",
+        "operator_handoff_template"
+      ],
+      "inconsistencies": [
+        "model_id mismatch: pipeline_config reports mdl-001 but scoring_audit_log reports mdl-002"
+      ],
+      "audit_utc": "2026-05-18T10:10:00Z",
+      "notes": "Model ID inconsistency detected. Requires operator review before any scheduling action. Does not authorize external submission."
+    },
+    {
+      "audit_id": "aud-004",
+      "candidate_id": "unknown-candidate-xyz",
+      "verdict": "not_applicable",
+      "checked_modules": [],
+      "inconsistencies": [],
+      "audit_utc": "2026-05-18T10:15:00Z",
+      "notes": "No scoring record found for this candidate. Not applicable verdict is a provenance placeholder only."
+    }
+  ]
+}

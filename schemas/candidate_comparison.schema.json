@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CandidateComparison",
+  "description": "Local scheduling aid comparing candidate scores and pathways. Ranked status does not modify scores or authorize submission.",
+  "type": "object",
+  "required": ["candidate_comparisons"],
+  "properties": {
+    "candidate_comparisons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "comparison_id",
+          "candidate_ids",
+          "comparison_status",
+          "scores",
+          "pathways",
+          "top_candidate_id",
+          "comparison_utc"
+        ],
+        "properties": {
+          "comparison_id": {"type": "string"},
+          "candidate_ids": {
+            "type": "array",
+            "items": {"type": "string"},
+            "minItems": 1
+          },
+          "comparison_status": {
+            "type": "string",
+            "enum": ["ranked", "tied", "inconclusive", "insufficient_data"]
+          },
+          "scores": {
+            "type": "object",
+            "additionalProperties": {"type": "number", "minimum": 0, "maximum": 1}
+          },
+          "pathways": {
+            "type": "object",
+            "additionalProperties": {"type": "string"}
+          },
+          "top_candidate_id": {"type": "string"},
+          "comparison_utc": {"type": "string"},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}
