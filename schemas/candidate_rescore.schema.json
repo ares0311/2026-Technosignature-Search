@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CandidateRescoreEvents",
+  "description": "Append-only provenance records for candidate re-scoring events.",
+  "type": "object",
+  "required": ["schema_version", "rescore_events"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "rescore_events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "rescore_id", "candidate_id", "prior_model_id", "new_model_id",
+          "prior_score", "new_score", "prior_pathway", "new_pathway",
+          "trigger", "serving_id", "event_utc"
+        ],
+        "properties": {
+          "rescore_id":       { "type": "string" },
+          "candidate_id":     { "type": "string" },
+          "prior_model_id":   { "type": "string" },
+          "new_model_id":     { "type": "string" },
+          "prior_score":      { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "new_score":        { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "prior_pathway":    { "type": "string" },
+          "new_pathway":      { "type": "string" },
+          "trigger": {
+            "type": "string",
+            "enum": ["new_model_registered", "model_version_change", "operator_request", "drift_detected"]
+          },
+          "serving_id":  { "type": "string" },
+          "event_utc":   { "type": "string" },
+          "notes":       { "type": "string" }
+        }
+      }
+    }
+  }
+}

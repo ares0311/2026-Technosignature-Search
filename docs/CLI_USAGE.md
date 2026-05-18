@@ -1578,3 +1578,35 @@ techno-search curated-dataset-intake-summary --fixture-path tests/fixtures/curat
 ```
 
 Output fields: `disclaimer`, `schema_version`, `record_count`, `approved_count`, `blocked_count`, `total_blocking_issue_count`, `by_status`, `by_track`, `by_kind`. Intake records are planning placeholders only — no real observation data is ingested.
+
+## `candidate-rescore-summary`
+
+Summarize candidate re-scoring events with pathway change tracking.
+
+```bash
+techno-search candidate-rescore-summary
+techno-search candidate-rescore-summary --fixture-path tests/fixtures/candidate_rescore.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `event_count`, `unique_candidate_count`, `pathway_change_count`, `by_trigger`, `max_score_delta`. Re-score events are append-only provenance records — pathway changes require operator review before any action.
+
+## `operator-handoff-summary`
+
+Summarize operator handoff templates with model version and inference provenance fields.
+
+```bash
+techno-search operator-handoff-summary
+techno-search operator-handoff-summary --fixture-path tests/fixtures/operator_handoff_templates.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `template_count`, `approved_count`, `pending_count`, `rejected_count`, `draft_count`, `by_status`, `by_pathway`, `by_model_id`. Approved handoffs are local scheduling artifacts only — no external submission is authorized.
+
+## `candidate-methods-summary`
+
+Aggregate candidate methods dashboard combining serving, audit log, re-score, and handoff state.
+
+```bash
+techno-search candidate-methods-summary
+```
+
+Output fields: `disclaimer`, `pipeline_status`, `active_serving_model_id`, `scoring_events_total`, `rescore_event_count`, `rescore_pathway_change_count`, `approved_handoffs`, `pending_handoffs`, `approved_intake_datasets`, `total_intake_records`. Operational dashboard only — does not authorize external submission.

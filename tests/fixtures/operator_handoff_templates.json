@@ -1,0 +1,61 @@
+{
+  "schema_version": "operator_handoff_template_v1",
+  "handoff_templates": [
+    {
+      "handoff_id": "hnd-001",
+      "candidate_id": "radio-clean-candidate",
+      "model_id": "mdl-002",
+      "model_version": "hybrid_rule_learned_v0",
+      "inference_backend": "pytorch_stub",
+      "serving_id": "srv-002",
+      "score": 0.88,
+      "pathway": "candidate_review_packet",
+      "handoff_status": "approved",
+      "operator_id": "op-alpha",
+      "created_utc": "2026-01-20T09:00:00Z",
+      "notes": "Approved for internal candidate review packet. No external submission authorized."
+    },
+    {
+      "handoff_id": "hnd-002",
+      "candidate_id": "infrared-clean-candidate",
+      "model_id": "mdl-001",
+      "model_version": "baseline_rule_v0",
+      "inference_backend": "baseline_rule",
+      "serving_id": "srv-001",
+      "score": 0.75,
+      "pathway": "human_review_queue",
+      "handoff_status": "pending_review",
+      "operator_id": "op-beta",
+      "created_utc": "2026-01-21T11:30:00Z",
+      "notes": "Awaiting second operator review before approval decision."
+    },
+    {
+      "handoff_id": "hnd-003",
+      "candidate_id": "anomaly-clean-candidate",
+      "model_id": "mdl-001",
+      "model_version": "baseline_rule_v0",
+      "inference_backend": "baseline_rule",
+      "serving_id": "srv-001",
+      "score": 0.69,
+      "pathway": "github_reproducibility_only",
+      "handoff_status": "draft",
+      "operator_id": "op-alpha",
+      "created_utc": "2026-01-22T14:00:00Z",
+      "notes": "Draft only — score below threshold for candidate review packet."
+    },
+    {
+      "handoff_id": "hnd-004",
+      "candidate_id": "radio-clean-candidate",
+      "model_id": "mdl-003",
+      "model_version": "cnn_radio_v0",
+      "inference_backend": "onnx_stub",
+      "serving_id": "srv-003",
+      "score": 0.45,
+      "pathway": "do_not_submit_false_positive",
+      "handoff_status": "rejected",
+      "operator_id": "op-beta",
+      "created_utc": "2026-02-01T16:00:00Z",
+      "notes": "Rejected — mdl-003 scored below baseline; awaiting model improvement before re-evaluation."
+    }
+  ]
+}

@@ -396,14 +396,15 @@ Harden the candidate scoring, routing, and reporting pipeline for a first curate
 
 - [x] Model serving scaffold: versioned inference interface wrapping a registered model or baseline
 - [x] Model inference provenance: record which model version scored each candidate packet
-- [ ] Candidate re-scoring workflow: re-score candidates when a new validated model is registered
+- [x] Candidate re-scoring workflow: re-score candidates when a new validated model is registered
 - [x] Scoring audit log: append-only record of each score event per candidate per model version
 - [x] Curated validation dataset intake checklist schema
 - [x] First curated non-synthetic dataset intake fixture (placeholder, conservative)
 - [x] `validate-all` gate: at least one curated dataset entry present
-- [ ] Updated operator handoff template including model version and inference provenance fields
-- [ ] Candidate methods summary CLI: aggregate view of scoring, routing, and model provenance
+- [x] Updated operator handoff template including model version and inference provenance fields
+- [x] Candidate methods summary CLI: aggregate view of scoring, routing, and model provenance
 - [x] DECISION-045: Model Serving, Scoring Audit Log, And Curated Dataset Intake Are Required Candidate Methods Production Prerequisites
+- [x] DECISION-046: Candidate Re-Scoring, Operator Handoff Templates, And Candidate Methods Summary Complete Milestone 13
 
 ---
 
@@ -431,3 +432,28 @@ ELSE:
 # Development Principle
 
 Build the candidate evaluation engine first. Add large data ingestion only after the scoring, testing, and reporting interfaces are stable.
+
+---
+
+# Milestone 14 — Pipeline Integration & End-to-End Validation
+
+## Goal
+
+Connect the candidate scoring, model serving, audit logging, and operator handoff pipeline into a validated end-to-end flow. Introduce pipeline configuration management, integration smoke tests, and external submission readiness checks.
+
+## Tasks
+
+- [ ] Unified pipeline configuration module tying scoring config, model serving, and track configs
+- [ ] Pipeline configuration schema and JSON schema artifact
+- [ ] `pipeline-config-summary` CLI command
+- [ ] End-to-end pipeline smoke test: candidate → scoring → serving → audit → handoff
+- [ ] Submission readiness checker: gate ensuring all required provenance fields are present before any external handoff is considered
+- [ ] `submission-readiness-summary` CLI command
+- [ ] Pipeline integration tests covering multi-step candidate flow
+- [ ] DECISION-047: Pipeline Integration And Submission Readiness Checks Gate External Handoff
+
+## Done When
+
+- A single candidate can flow through scoring, model serving, audit logging, and operator handoff with full provenance recorded
+- Submission readiness check blocks any pathway missing required provenance
+- All integration tests pass without network access
