@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProvenanceAudit",
+  "description": "Cross-module provenance consistency checks. Consistent verdict does not authorize submission.",
+  "type": "object",
+  "required": ["provenance_audit_entries"],
+  "properties": {
+    "provenance_audit_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "audit_id",
+          "candidate_id",
+          "verdict",
+          "checked_modules",
+          "inconsistencies",
+          "audit_utc"
+        ],
+        "properties": {
+          "audit_id": {"type": "string"},
+          "candidate_id": {"type": "string"},
+          "verdict": {
+            "type": "string",
+            "enum": ["consistent", "inconsistent", "partial", "not_applicable"]
+          },
+          "checked_modules": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "inconsistencies": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "audit_utc": {"type": "string"},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

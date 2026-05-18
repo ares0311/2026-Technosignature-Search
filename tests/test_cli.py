@@ -293,6 +293,9 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "operator_handoff_template",
         "pipeline_config",
         "submission_readiness",
+        "candidate_comparison",
+        "pipeline_telemetry",
+        "provenance_audit",
     }
     assert result["background_search_ledger"].endswith(
         "schemas/background_search_ledger.schema.json"
@@ -1404,7 +1407,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 64
+    assert result["schema_count"] == 67
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -1525,6 +1528,10 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["pipeline_active_count"] == 1
     assert result["submission_readiness_record_count"] == 4
     assert result["submission_readiness_ready_count"] == 1
+    assert result["comparison_record_count"] == 4
+    assert result["telemetry_entry_count"] == 6
+    assert result["provenance_audit_entry_count"] == 4
+    assert result["provenance_audit_consistent_count"] == 1
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 

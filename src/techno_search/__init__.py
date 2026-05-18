@@ -122,6 +122,14 @@ from techno_search.candidate_audit_trail import (
     audit_trail_summary,
     load_audit_trail,
 )
+from techno_search.candidate_comparison import (
+    ALLOWED_COMPARISON_STATUSES,
+    CANDIDATE_COMPARISON_DISCLAIMER,
+    CANDIDATE_COMPARISON_SCHEMA_VERSION,
+    CandidateComparisonRecord,
+    candidate_comparison_summary,
+    load_comparison_records,
+)
 from techno_search.candidate_feature_vector import (
     ALLOWED_NORMALIZATION_KINDS,
     CANDIDATE_FEATURE_VECTOR_DISCLAIMER,
@@ -410,6 +418,14 @@ from techno_search.pipeline_integration import (
     pipeline_integration_summary,
     run_pipeline_smoke_test,
 )
+from techno_search.pipeline_telemetry import (
+    ALLOWED_TELEMETRY_STAGES,
+    PIPELINE_TELEMETRY_DISCLAIMER,
+    PIPELINE_TELEMETRY_SCHEMA_VERSION,
+    PipelineTelemetryEntry,
+    load_telemetry_entries,
+    pipeline_telemetry_summary,
+)
 from techno_search.pipeline_throughput import (
     PIPELINE_STAGES,
     PIPELINE_THROUGHPUT_DISCLAIMER,
@@ -420,6 +436,14 @@ from techno_search.plotting import (
     PlotArtifact,
     plot_artifact_summary,
     write_synthetic_plot_artifacts,
+)
+from techno_search.provenance_audit import (
+    ALLOWED_AUDIT_VERDICTS,
+    PROVENANCE_AUDIT_DISCLAIMER,
+    PROVENANCE_AUDIT_SCHEMA_VERSION,
+    ProvenanceAuditEntry,
+    load_provenance_audit_entries,
+    provenance_audit_summary,
 )
 from techno_search.quality_control_summary import (
     QUALITY_CONTROL_DISCLAIMER,
@@ -998,4 +1022,22 @@ __all__ = [
     "SubmissionReadinessRecord",
     "load_submission_readiness_records",
     "submission_readiness_summary",
+    "ALLOWED_COMPARISON_STATUSES",
+    "CANDIDATE_COMPARISON_DISCLAIMER",
+    "CANDIDATE_COMPARISON_SCHEMA_VERSION",
+    "CandidateComparisonRecord",
+    "candidate_comparison_summary",
+    "load_comparison_records",
+    "ALLOWED_TELEMETRY_STAGES",
+    "PIPELINE_TELEMETRY_DISCLAIMER",
+    "PIPELINE_TELEMETRY_SCHEMA_VERSION",
+    "PipelineTelemetryEntry",
+    "load_telemetry_entries",
+    "pipeline_telemetry_summary",
+    "ALLOWED_AUDIT_VERDICTS",
+    "PROVENANCE_AUDIT_DISCLAIMER",
+    "PROVENANCE_AUDIT_SCHEMA_VERSION",
+    "ProvenanceAuditEntry",
+    "load_provenance_audit_entries",
+    "provenance_audit_summary",
 ]

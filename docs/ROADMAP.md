@@ -457,3 +457,33 @@ Connect the candidate scoring, model serving, audit logging, and operator handof
 - A single candidate can flow through scoring, model serving, audit logging, and operator handoff with full provenance recorded
 - Submission readiness check blocks any pathway missing required provenance
 - All integration tests pass without network access
+
+---
+
+# Milestone 15 — Candidate Comparison, Pipeline Telemetry, And Provenance Audit
+
+## Goal
+
+Close the pipeline loop with three complementary operational modules: multi-candidate comparison for scheduling queue prioritisation, per-stage telemetry for operational provenance, and end-to-end provenance audit for cross-module consistency validation.
+
+## Tasks
+
+- [x] Candidate comparison module: local scheduling aid ranking candidates by score
+- [x] `candidate_comparison.schema.json` and fixture
+- [x] `candidate-comparison-summary` CLI command
+- [x] Pipeline telemetry module: per-stage latency and success provenance records
+- [x] `pipeline_telemetry.schema.json` and fixture
+- [x] `pipeline-telemetry-summary` CLI command
+- [x] Provenance audit module: cross-module consistency verdicts per candidate
+- [x] `provenance_audit.schema.json` and fixture
+- [x] `provenance-audit-summary` CLI command
+- [x] `validate-all` gates: comparison_count >= 1, telemetry_entry_count >= 1, provenance_audit_entry_count >= 1
+- [x] `validation-summary` fields: comparison_record_count, telemetry_entry_count, provenance_audit_entry_count, provenance_audit_consistent_count
+- [x] DECISION-048: Candidate Comparison, Pipeline Telemetry, And Provenance Audit Complete Milestone 15
+
+## Done When
+
+- Multi-candidate comparisons are recorded as scheduling aids without modifying scores
+- All pipeline stages have telemetry coverage in fixtures
+- Provenance audit verdicts cover consistent, inconsistent, partial, and not_applicable cases
+- All integration tests pass without network access

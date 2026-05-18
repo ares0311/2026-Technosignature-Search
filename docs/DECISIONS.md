@@ -1110,3 +1110,21 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 **Pipeline integration**: smoke test harness verifying that pipeline config, model serving, scoring audit log, candidate re-scoring, and operator handoff modules are mutually consistent for a given candidate. Integration tests are append-only provenance consistency checks — they do not re-score candidates, modify pathways, or authorize external contact.
 
 **Consequences**: `validate-all` gates enforce `pipeline_config_count >= 1`, `pipeline_active_count >= 1`, `submission_record_count >= 1`. SCHEMA_FILENAMES grows 62→64. Milestone 14 is complete. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-048: Candidate Comparison, Pipeline Telemetry, And Provenance Audit Complete Milestone 15
+
+**Date**: 2026-05-18
+
+**Context**: Milestone 15 closes the pipeline loop by introducing three complementary modules: multi-candidate comparison for scheduling queue prioritisation, per-stage pipeline telemetry for operational provenance, and end-to-end provenance audit for cross-module consistency validation.
+
+**Decision**: Implement three Milestone 15 modules:
+
+**Candidate comparison**: local scheduling aid comparing candidate scores and pathway assignments across two or more candidates. Ranked status indicates relative scoring order only — it does not modify scores, posteriors, or pathway routing, and does not authorize external submission.
+
+**Pipeline telemetry**: per-stage latency and success records for operational provenance. Each entry captures the stage name, latency in milliseconds, success status, and optional error message. Telemetry data is a local scheduling diagnostic only — not a survey performance metric or detection sensitivity estimate.
+
+**Provenance audit**: cross-module consistency check verifying that pipeline config, model serving, scoring audit log, candidate rescore, and operator handoff records agree on provenance fields for a given candidate. Consistent verdict means all checked modules agree — it does not authorize external submission, confirm a detection, or constitute external validation.
+
+**Consequences**: `validate-all` gates enforce `comparison_count >= 1`, `telemetry_entry_count >= 1`, `provenance_audit_entry_count >= 1`. SCHEMA_FILENAMES grows 64→67. Milestone 15 is complete. Scientific guardrails remain unchanged.
