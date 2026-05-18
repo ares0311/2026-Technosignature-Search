@@ -1092,3 +1092,21 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 **Candidate methods summary**: aggregate operational dashboard combining model serving, scoring audit log, curated dataset intake, candidate re-scoring, and operator handoff state. The dashboard is a scheduling aid only — it does not authorize external submission or modify candidate posteriors.
 
 **Consequences**: `validate-all` gates enforce `rescore_event_count >= 1`, `handoff_template_count >= 1`, `handoff_approved_count >= 1`. SCHEMA_FILENAMES grows 60→62. Milestone 13 is complete. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-047: Pipeline Config, Submission Readiness, And Pipeline Integration Complete Milestone 14
+
+**Date**: 2026-05-18
+
+**Context**: Milestone 14 requires end-to-end pipeline validation: pipeline configuration records linking scoring config versions to serving IDs and model IDs, submission readiness provenance checklists confirming all required fields are present before any operator review, and integration smoke tests that verify the pipeline modules are mutually consistent.
+
+**Decision**: Implement three Milestone 14 modules:
+
+**Pipeline configuration**: local scheduling metadata records tracking which scoring config version, serving ID, model ID, inference backend, and active tracks correspond to each pipeline deployment state (active, staging, deprecated, stub). Only one config may be active at a time; the active config drives `validate-all` provenance consistency checks.
+
+**Submission readiness**: provenance checklists confirming that all required fields (candidate_id, scoring_config_version, model_id, model_version, serving_id, pathway, has_negative_evidence, has_blocking_issues_documented, operator_handoff_id) are present before any submission review is initiated. Ready status means provenance is complete — it does not authorize external submission.
+
+**Pipeline integration**: smoke test harness verifying that pipeline config, model serving, scoring audit log, candidate re-scoring, and operator handoff modules are mutually consistent for a given candidate. Integration tests are append-only provenance consistency checks — they do not re-score candidates, modify pathways, or authorize external contact.
+
+**Consequences**: `validate-all` gates enforce `pipeline_config_count >= 1`, `pipeline_active_count >= 1`, `submission_record_count >= 1`. SCHEMA_FILENAMES grows 62→64. Milestone 14 is complete. Scientific guardrails remain unchanged.

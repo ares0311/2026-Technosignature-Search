@@ -1,0 +1,76 @@
+{
+  "schema_version": "submission_readiness_v1",
+  "submission_readiness_records": [
+    {
+      "readiness_id": "sr-001",
+      "candidate_id": "radio-clean-candidate",
+      "pathway": "candidate_review_packet",
+      "readiness_status": "ready",
+      "present_provenance_fields": [
+        "candidate_id", "scoring_config_version", "model_id",
+        "model_version", "serving_id", "pathway",
+        "has_negative_evidence", "has_blocking_issues_documented",
+        "operator_handoff_id"
+      ],
+      "missing_provenance_fields": [],
+      "blocking_issues": [],
+      "operator_handoff_id": "hnd-001",
+      "assessed_utc": "2026-01-25T10:00:00Z",
+      "notes": "All required provenance fields present. Ready for internal review packet only."
+    },
+    {
+      "readiness_id": "sr-002",
+      "candidate_id": "infrared-clean-candidate",
+      "pathway": "human_review_queue",
+      "readiness_status": "blocked",
+      "present_provenance_fields": [
+        "candidate_id", "scoring_config_version", "model_id",
+        "model_version", "serving_id", "pathway",
+        "has_negative_evidence"
+      ],
+      "missing_provenance_fields": [
+        "has_blocking_issues_documented",
+        "operator_handoff_id"
+      ],
+      "blocking_issues": [
+        "Operator handoff template not yet approved.",
+        "Blocking issues documentation incomplete."
+      ],
+      "operator_handoff_id": "",
+      "assessed_utc": "2026-01-25T10:05:00Z",
+      "notes": "Blocked — handoff not approved and blocking issues undocumented."
+    },
+    {
+      "readiness_id": "sr-003",
+      "candidate_id": "anomaly-clean-candidate",
+      "pathway": "github_reproducibility_only",
+      "readiness_status": "not_applicable",
+      "present_provenance_fields": [
+        "candidate_id", "scoring_config_version", "model_id",
+        "model_version", "serving_id", "pathway",
+        "has_negative_evidence", "has_blocking_issues_documented"
+      ],
+      "missing_provenance_fields": ["operator_handoff_id"],
+      "blocking_issues": [],
+      "operator_handoff_id": "",
+      "assessed_utc": "2026-01-25T10:10:00Z",
+      "notes": "Pathway is github_reproducibility_only — submission readiness not applicable."
+    },
+    {
+      "readiness_id": "sr-004",
+      "candidate_id": "radio-clean-candidate",
+      "pathway": "do_not_submit_false_positive",
+      "readiness_status": "not_applicable",
+      "present_provenance_fields": [
+        "candidate_id", "scoring_config_version", "model_id",
+        "model_version", "serving_id", "pathway",
+        "has_negative_evidence", "has_blocking_issues_documented"
+      ],
+      "missing_provenance_fields": ["operator_handoff_id"],
+      "blocking_issues": [],
+      "operator_handoff_id": "hnd-004",
+      "assessed_utc": "2026-02-01T16:30:00Z",
+      "notes": "False positive pathway — submission readiness not applicable."
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PipelineConfigs",
+  "description": "Local scheduling metadata describing active pipeline configuration records.",
+  "type": "object",
+  "required": ["schema_version", "pipeline_configs"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "pipeline_configs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "config_id", "label", "scoring_config_version", "serving_id",
+          "model_id", "inference_backend", "active_tracks",
+          "pipeline_status", "created_utc"
+        ],
+        "properties": {
+          "config_id":              { "type": "string" },
+          "label":                  { "type": "string" },
+          "scoring_config_version": { "type": "string" },
+          "serving_id":             { "type": "string" },
+          "model_id":               { "type": "string" },
+          "inference_backend":      { "type": "string" },
+          "active_tracks": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "pipeline_status": {
+            "type": "string",
+            "enum": ["active", "staging", "deprecated", "stub"]
+          },
+          "created_utc": { "type": "string" },
+          "notes":       { "type": "string" }
+        }
+      }
+    }
+  }
+}

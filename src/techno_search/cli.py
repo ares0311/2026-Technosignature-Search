@@ -136,7 +136,9 @@ from techno_search.operator_performance import operator_performance_summary
 from techno_search.pipeline_audit_summary import pipeline_audit_summary
 from techno_search.pipeline_bottleneck import pipeline_bottleneck_summary
 from techno_search.pipeline_capacity import pipeline_capacity_summary
+from techno_search.pipeline_config import pipeline_config_summary
 from techno_search.pipeline_health import pipeline_health_summary
+from techno_search.pipeline_integration import pipeline_integration_summary
 from techno_search.pipeline_throughput import pipeline_throughput_summary
 from techno_search.plotting import plot_artifact_summary
 from techno_search.provenance import provenance_chain_validator
@@ -162,6 +164,7 @@ from techno_search.signal_registry import (
     signal_registry_summary,
     signal_registry_track_summary,
 )
+from techno_search.submission_readiness import submission_readiness_summary
 from techno_search.target_recalibration_summary import target_recalibration_summary
 from techno_search.target_watchlist import target_watchlist_summary
 from techno_search.track_comparison import track_comparison_summary
@@ -231,6 +234,8 @@ SCHEMA_FILENAMES = {
     "model_serving": "model_serving.schema.json",
     "scoring_audit_log": "scoring_audit_log.schema.json",
     "candidate_rescore": "candidate_rescore.schema.json",
+    "pipeline_config": "pipeline_config.schema.json",
+    "submission_readiness": "submission_readiness.schema.json",
     "curated_dataset_intake": "curated_dataset_intake.schema.json",
     "operator_handoff_template": "operator_handoff_template.schema.json",
     "candidate_resolution": "candidate_resolution.schema.json",
@@ -1745,6 +1750,41 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "pipeline-config-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                pipeline_config_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "submission-readiness-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        print(
+            json.dumps(
+                submission_readiness_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "pipeline-integration-summary":
+        print(
+            json.dumps(
+                pipeline_integration_summary(),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -2153,6 +2193,11 @@ def validate_all() -> dict[str, object]:
     handoff_data = operator_handoff_summary()
     handoff_template_count = int(handoff_data.get("template_count", 0))
     handoff_approved_count = int(handoff_data.get("approved_count", 0))
+    pipeline_cfg_data = pipeline_config_summary()
+    pipeline_config_count = int(pipeline_cfg_data.get("config_count", 0))
+    pipeline_active_count = int(pipeline_cfg_data.get("active_count", 0))
+    submission_data = submission_readiness_summary()
+    submission_record_count = int(submission_data.get("record_count", 0))
     candidate_handoffs = candidate_extraction_handoff_summary()
     candidate_handoff_record_count = candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
@@ -2442,6 +2487,12 @@ def validate_all() -> dict[str, object]:
         and handoff_template_count >= 1
         and isinstance(handoff_approved_count, int)
         and handoff_approved_count >= 1
+        and isinstance(pipeline_config_count, int)
+        and pipeline_config_count >= 1
+        and isinstance(pipeline_active_count, int)
+        and pipeline_active_count >= 1
+        and isinstance(submission_record_count, int)
+        and submission_record_count >= 1
     )
     return {
         "ok": ok,
@@ -2550,6 +2601,8 @@ def validate_all() -> dict[str, object]:
         "curated_dataset_intake_summary": intake_data,
         "candidate_rescore_summary": rescore_data,
         "operator_handoff_summary": handoff_data,
+        "pipeline_config_summary": pipeline_cfg_data,
+        "submission_readiness_summary": submission_data,
     }
 
 
@@ -3423,6 +3476,26 @@ def validation_summary() -> dict[str, object]:
         "operator_handoff_approved_count": (
             oh_s2["approved_count"]
             if isinstance(oh_s2 := validation.get("operator_handoff_summary"), dict)
+            else 0
+        ),
+        "pipeline_config_count": (
+            pc_s["config_count"]
+            if isinstance(pc_s := validation.get("pipeline_config_summary"), dict)
+            else 0
+        ),
+        "pipeline_active_count": (
+            pc_s2["active_count"]
+            if isinstance(pc_s2 := validation.get("pipeline_config_summary"), dict)
+            else 0
+        ),
+        "submission_readiness_record_count": (
+            sr_s["record_count"]
+            if isinstance(sr_s := validation.get("submission_readiness_summary"), dict)
+            else 0
+        ),
+        "submission_readiness_ready_count": (
+            sr_s2["ready_count"]
+            if isinstance(sr_s2 := validation.get("submission_readiness_summary"), dict)
             else 0
         ),
         "recommended_commands": [
@@ -5009,6 +5082,27 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "candidate-methods-summary",
         help="Aggregate candidate methods dashboard combining serving, audit, and handoff state.",
+    )
+
+    pipeline_config_parser = subparsers.add_parser(
+        "pipeline-config-summary",
+        help="Summarize active pipeline configuration records with serving provenance.",
+    )
+    pipeline_config_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    submission_readiness_parser = subparsers.add_parser(
+        "submission-readiness-summary",
+        help="Summarize submission readiness provenance checklists per candidate.",
+    )
+    submission_readiness_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    subparsers.add_parser(
+        "pipeline-integration-summary",
+        help="Run end-to-end pipeline smoke tests across known fixture candidates.",
     )
 
     return parser

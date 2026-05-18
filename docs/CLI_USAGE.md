@@ -1610,3 +1610,35 @@ techno-search candidate-methods-summary
 ```
 
 Output fields: `disclaimer`, `pipeline_status`, `active_serving_model_id`, `scoring_events_total`, `rescore_event_count`, `rescore_pathway_change_count`, `approved_handoffs`, `pending_handoffs`, `approved_intake_datasets`, `total_intake_records`. Operational dashboard only — does not authorize external submission.
+
+## `pipeline-config-summary`
+
+Summarize active pipeline configuration records with scoring config and serving provenance.
+
+```bash
+techno-search pipeline-config-summary
+techno-search pipeline-config-summary --fixture-path tests/fixtures/pipeline_configs.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `config_count`, `active_count`, `active_config_id`, `active_model_id`, `by_status`, `by_backend`. Pipeline configs are local scheduling metadata only — does not authorize external submission.
+
+## `submission-readiness-summary`
+
+Summarize submission readiness records with provenance field completeness and blocking issues.
+
+```bash
+techno-search submission-readiness-summary
+techno-search submission-readiness-summary --fixture-path tests/fixtures/submission_readiness.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`, `ready_count`, `blocked_count`, `by_status`, `total_blocking_issue_count`, `required_provenance_fields`. Submission readiness records are provenance checklists only — ready status does not authorize external submission.
+
+## `pipeline-integration-summary`
+
+Run smoke tests verifying pipeline integration across config, serving, audit, and handoff modules.
+
+```bash
+techno-search pipeline-integration-summary
+```
+
+Output fields: `disclaimer`, `candidates_tested`, `consistent_count`, `inconsistent_count`, `results`. Integration smoke tests are local scheduling provenance checks only — they do not authorize external submission or claim detections.
