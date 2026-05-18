@@ -10,6 +10,65 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
+User requested fifteen iterative steps covering model serving, scoring audit log, and curated dataset intake (Milestone 13 completion).
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all fifteen steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/model_serving.py` — model serving records tracking active/standby/retired/stub inference backends
+- `schemas/model_serving.schema.json`
+- `tests/fixtures/model_serving.json` — 4 records (1 active baseline_rule, 1 standby pytorch_stub, 1 onnx_stub stub, 1 retired)
+- `tests/test_model_serving.py` — 20 tests
+- `src/techno_search/scoring_audit_log.py` — append-only provenance records for candidate scoring events
+- `schemas/scoring_audit_log.schema.json`
+- `tests/fixtures/scoring_audit_log.json` — 5 entries (initial_score, rescore, baseline_comparison across 3 candidates)
+- `tests/test_scoring_audit_log.py` — 20 tests
+- `src/techno_search/curated_dataset_intake.py` — planning placeholders for future real dataset ingestion
+- `schemas/curated_dataset_intake.schema.json`
+- `tests/fixtures/curated_dataset_intake.json` — 4 records (BL GBT radio planning, WISE infrared planning, SIMBAD blocked, synthetic approved)
+- `tests/test_curated_dataset_intake.py` — 20 tests
+- `model_serving`, `scoring_audit_log`, `curated_dataset_intake` added to `SCHEMA_FILENAMES` (total schemas: 60)
+- `techno-search model-serving-summary`, `techno-search scoring-audit-log-summary`, `techno-search curated-dataset-intake-summary` CLI commands
+- `validate-all` gates: `serving_record_count >= 1`, `audit_entry_count >= 1`, `intake_record_count >= 1`
+- `validation-summary` fields: `model_serving_record_count`, `model_serving_active_count`, `scoring_audit_entry_count`, `curated_intake_record_count`, `curated_intake_approved_count`
+- DECISION-045: Model Serving, Scoring Audit Log, And Curated Dataset Intake Are Scheduling Provenance Records
+- Docs: CLI_USAGE.md, DECISIONS.md, ROADMAP.md updated
+
+Scientific guardrail:
+
+- Model serving records are scheduling provenance artifacts only — no live model weights are loaded
+- Scoring audit entries are append-only reproducibility records — they do not re-route candidates
+- Curated dataset intake records are planning placeholders — no real observation data has been ingested
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/ruff check .
+.venv/bin/mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 1194 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed (80 source files)
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, merging to `main`.
+
+---
+
+## Previous Iteration
+
 User requested fifteen iterative steps covering candidate flags, review deadlines, and pipeline throughput.
 
 Current branch: `claude/general-session-Bb2dZ`.

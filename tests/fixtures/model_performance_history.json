@@ -1,0 +1,55 @@
+{
+  "schema_version": "model_performance_history_v1",
+  "snapshots": [
+    {
+      "snapshot_id": "snap-001",
+      "model_id": "mdl-001",
+      "track": "radio",
+      "epoch": 1,
+      "accuracy": 0.820,
+      "loss": 0.412,
+      "trend": "improving",
+      "snapshot_utc": "2026-05-18T00:00:00Z"
+    },
+    {
+      "snapshot_id": "snap-002",
+      "model_id": "mdl-001",
+      "track": "radio",
+      "epoch": 5,
+      "accuracy": 0.867,
+      "loss": 0.301,
+      "trend": "improving",
+      "snapshot_utc": "2026-05-18T00:05:00Z"
+    },
+    {
+      "snapshot_id": "snap-003",
+      "model_id": "mdl-002",
+      "track": "radio",
+      "epoch": 1,
+      "accuracy": 0.841,
+      "loss": 0.389,
+      "trend": "stable",
+      "snapshot_utc": "2026-05-18T00:10:00Z"
+    },
+    {
+      "snapshot_id": "snap-004",
+      "model_id": "mdl-002",
+      "track": "radio",
+      "epoch": 5,
+      "accuracy": 0.883,
+      "loss": 0.287,
+      "trend": "improving",
+      "snapshot_utc": "2026-05-18T00:15:00Z"
+    },
+    {
+      "snapshot_id": "snap-005",
+      "model_id": "mdl-003",
+      "track": "infrared",
+      "epoch": 3,
+      "accuracy": 0.733,
+      "loss": 0.612,
+      "trend": "declining",
+      "snapshot_utc": "2026-05-18T00:20:00Z"
+    }
+  ]
+}

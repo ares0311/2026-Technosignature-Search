@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ModelPerformanceHistory",
+  "description": "Local model training performance snapshots. Not survey metrics or detections.",
+  "type": "object",
+  "required": ["schema_version", "snapshots"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "snapshots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "snapshot_id", "model_id", "track", "epoch",
+          "accuracy", "loss", "trend", "snapshot_utc"
+        ],
+        "properties": {
+          "snapshot_id": { "type": "string" },
+          "model_id": { "type": "string" },
+          "track": { "type": "string", "enum": ["radio", "infrared", "anomaly", "multi"] },
+          "epoch": { "type": "integer", "minimum": 0 },
+          "accuracy": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "loss": { "type": "number", "minimum": 0.0 },
+          "trend": { "type": "string", "enum": ["improving", "declining", "stable"] },
+          "snapshot_utc": { "type": "string" }
+        }
+      }
+    }
+  }
+}

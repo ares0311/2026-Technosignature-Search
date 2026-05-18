@@ -283,6 +283,12 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "ml_model_registry",
         "feature_importance",
         "feature_normalization",
+        "model_architecture",
+        "model_evaluation",
+        "model_performance_history",
+        "model_serving",
+        "scoring_audit_log",
+        "curated_dataset_intake",
     }
     assert result["background_search_ledger"].endswith(
         "schemas/background_search_ledger.schema.json"
@@ -1394,7 +1400,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 54
+    assert result["schema_count"] == 60
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -1498,6 +1504,15 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["feature_importance_entry_count"] == 6
     assert result["ml_training_case_count"] >= 0
     assert result["ml_recommended_train_count"] >= 0
+    assert result["model_architecture_count"] == 5
+    assert result["model_evaluation_count"] == 4
+    assert result["model_evaluation_above_baseline_count"] == 3
+    assert result["model_performance_snapshot_count"] == 5
+    assert result["model_serving_record_count"] == 4
+    assert result["model_serving_active_count"] == 1
+    assert result["scoring_audit_entry_count"] == 5
+    assert result["curated_intake_record_count"] == 4
+    assert result["curated_intake_approved_count"] == 1
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 

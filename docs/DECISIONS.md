@@ -1038,3 +1038,39 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 **ML training data**: assembles calibration fixtures and injection-recovery cases into a structured training scaffold with recommended 80/20 train/test split. Training data summaries are provenance records for model development only — they do not constitute detections, discoveries, or external validation.
 
 **Consequences**: `validate-all` gates enforce `normalization_bounds_count >= 3`, `feature_importance_entry_count >= 6`, and `ml_training_case_count >= 0`. SCHEMA_FILENAMES grows 52→54. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-044: ML Model Architecture Scaffolds, Evaluation Harness, And Performance History Are Required Before Any Model Deployment
+
+**Date**: 2026-05-18
+
+**Context**: DECISION-043 established feature normalization, importance, and training data as ML infrastructure prerequisites. The next requirement before any learned model can be considered for deployment is: (1) explicit architecture scaffold definitions for all five model kinds, (2) a structured evaluation harness comparing each model to the interpretable baseline, and (3) a performance history log tracking accuracy and loss across training epochs with trend classification.
+
+**Decision**: Implement three new ML development modules:
+
+**Model architecture**: scaffold definitions (no weights, no training) for all five intended architecture kinds — CNN radio, transformer radio, hybrid rule-learned, self-supervised, and foundation embedding. Every entry carries explicit `weights_available: false` and `status: stub` fields. Architecture definitions are ML planning artifacts only — they do not constitute trained models or detection pipelines.
+
+**Model evaluation**: structured evaluation results comparing each registered model's accuracy, precision, recall, and F1 against the baseline accuracy per track. A model that does not beat the baseline has `beats_baseline: false` and must not be deployed. Evaluation results are synthetic development diagnostics — not detections or external validation.
+
+**Model performance history**: per-epoch training snapshots with trend classification (`improving`, `declining`, `stable`). A `declining` trend must surface in `validate-all` visibility. Snapshots are local scheduling records — not calibrated survey efficiency estimates.
+
+**Consequences**: `validate-all` gates enforce `arch_count >= 5`, `eval_count >= 4`, `perf_snapshot_count >= 5`. SCHEMA_FILENAMES grows 54→57. Milestone 12 is complete. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-045: Model Serving, Scoring Audit Log, And Curated Dataset Intake Are Required Candidate Methods Production Prerequisites
+
+**Date**: 2026-05-18
+
+**Context**: DECISION-044 completed the ML model architecture and evaluation harness. Before any candidate methods pipeline can be considered for production readiness, three additional scaffolds are required: a versioned model serving interface with inference provenance, an append-only scoring audit log, and a curated dataset intake checklist.
+
+**Decision**: Implement three new production-prerequisite modules:
+
+**Model serving**: versioned inference interface records identifying which model and backend produced each candidate score. All current records carry `serving_status: stub` for learned models — only the interpretable baseline has `serving_status: active`. No live weights are loaded. Serving records are scheduling provenance artifacts only.
+
+**Scoring audit log**: append-only record of every score event (initial score, rescore, baseline comparison, model version change) per candidate per model version. Audit entries preserve the full provenance chain required for reproducibility. Entries are local scheduling records — not detections or external validation.
+
+**Curated dataset intake**: conservative planning checklist for future non-synthetic validation datasets. Every non-synthetic intake record requires provenance documentation, a false-positive baseline, and external approval before any real data is ingested. The one `approved` entry in the fixture is the synthetic calibration dataset already present. All real-data intake records start as `planning` or `blocked`.
+
+**Consequences**: `validate-all` gates enforce `serving_record_count >= 1`, `audit_entry_count >= 1`, `intake_record_count >= 1`. SCHEMA_FILENAMES grows 57→60. Milestone 13 is advanced. Scientific guardrails remain unchanged.

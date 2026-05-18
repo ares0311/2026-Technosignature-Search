@@ -1,0 +1,69 @@
+{
+  "schema_version": "curated_dataset_intake_v1",
+  "intake_records": [
+    {
+      "intake_id": "intake-001",
+      "dataset_label": "Breakthrough Listen GBT L-band Survey Subset (Synthetic Placeholder)",
+      "data_kind": "radio_survey",
+      "track": "radio",
+      "intake_status": "planning",
+      "has_provenance_documentation": false,
+      "has_false_positive_baseline": false,
+      "requires_external_approval": true,
+      "blocking_issues": [
+        "Provenance documentation not yet drafted",
+        "False-positive baseline not yet defined",
+        "External approval required before any real data ingestion"
+      ],
+      "created_utc": "2026-05-18T00:00:00Z",
+      "notes": "Placeholder only. No real BL data ingested. Requires full review gate before intake."
+    },
+    {
+      "intake_id": "intake-002",
+      "dataset_label": "WISE AllSky Infrared Excess Subset (Synthetic Placeholder)",
+      "data_kind": "infrared_survey",
+      "track": "infrared",
+      "intake_status": "planning",
+      "has_provenance_documentation": false,
+      "has_false_positive_baseline": false,
+      "requires_external_approval": true,
+      "blocking_issues": [
+        "Provenance documentation not yet drafted",
+        "WISE catalog access not yet configured",
+        "External approval required before any real data ingestion"
+      ],
+      "created_utc": "2026-05-18T00:01:00Z",
+      "notes": "Placeholder only. No real WISE data ingested. Requires full review gate before intake."
+    },
+    {
+      "intake_id": "intake-003",
+      "dataset_label": "SIMBAD Archival Disappearance Subset (Synthetic Placeholder)",
+      "data_kind": "archival_catalog",
+      "track": "anomaly",
+      "intake_status": "blocked",
+      "has_provenance_documentation": false,
+      "has_false_positive_baseline": true,
+      "requires_external_approval": true,
+      "blocking_issues": [
+        "Provenance documentation not yet drafted",
+        "SIMBAD live access not yet enabled",
+        "External approval required before any real data ingestion"
+      ],
+      "created_utc": "2026-05-18T00:02:00Z",
+      "notes": "Blocked pending provenance doc and live access approval. Conservative intake gate enforced."
+    },
+    {
+      "intake_id": "intake-004",
+      "dataset_label": "Synthetic Calibration Dataset v1 (Already Present)",
+      "data_kind": "synthetic",
+      "track": "multi",
+      "intake_status": "approved",
+      "has_provenance_documentation": true,
+      "has_false_positive_baseline": true,
+      "requires_external_approval": false,
+      "blocking_issues": [],
+      "created_utc": "2026-01-01T00:00:00Z",
+      "notes": "Approved synthetic calibration fixture set. Provenance fully documented in tests/fixtures/calibration_false_positives.json."
+    }
+  ]
+}
