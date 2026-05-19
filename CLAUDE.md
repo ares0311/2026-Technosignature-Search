@@ -10,6 +10,65 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
+User requested fifteen iterative steps completing Milestone 16 (candidate alert log, pipeline replay log, scoring threshold audit).
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all fifteen steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/candidate_alert_log.py` — severity-classified operational alerts (info/warning/critical) for threshold crossings, pathway changes, provenance inconsistencies, and escalations; alerts are provenance records only
+- `schemas/candidate_alert_log.schema.json`
+- `tests/fixtures/candidate_alert_log.json` — 5 entries (2 resolved, 3 open; info×2, warning×2, critical×1)
+- `tests/test_candidate_alert_log.py` — 21 tests
+- `src/techno_search/pipeline_replay_log.py` — append-only reproducibility replay records for provenance verification; replays do not modify committed candidate packets
+- `schemas/pipeline_replay_log.schema.json`
+- `tests/fixtures/pipeline_replay_log.json` — 4 entries (2 score_matched, 1 score_diverged, 1 config_mismatch)
+- `tests/test_pipeline_replay_log.py` — 20 tests
+- `src/techno_search/scoring_threshold_audit.py` — local provenance consistency checks verifying pipeline config thresholds match active scoring config version
+- `schemas/scoring_threshold_audit.schema.json`
+- `tests/fixtures/scoring_threshold_audit.json` — 5 entries (3 pass, 1 warning, 1 not_checked)
+- `tests/test_scoring_threshold_audit.py` — 21 tests
+- `candidate_alert_log`, `pipeline_replay_log`, `scoring_threshold_audit` added to `SCHEMA_FILENAMES` (total schemas: 70)
+- `techno-search candidate-alert-summary`, `techno-search pipeline-replay-summary`, `techno-search scoring-threshold-audit-summary` CLI commands
+- `validate-all` gates: `alert_entry_count >= 1`, `replay_entry_count >= 1`, `threshold_pass_count >= 1`
+- `validation-summary` fields: `candidate_alert_entry_count`, `candidate_alert_open_count`, `pipeline_replay_entry_count`, `pipeline_replay_matched_count`, `scoring_threshold_pass_count`, `scoring_threshold_fail_count`
+- DECISION-049: Candidate Alert Log, Pipeline Replay Log, And Scoring Threshold Audit Complete Milestone 16
+- Docs: CLI_USAGE.md, DECISIONS.md, ROADMAP.md updated; Milestone 16 fully checked off
+
+Scientific guardrail:
+
+- Alert entries are operational provenance records — an alert does not constitute a detection claim, modify scores or pathway routing, or authorize external submission
+- Replay entries are append-only reproducibility records — replays do not modify committed candidate packets or authorize external submission
+- Threshold audit pass means config consistency only — not that thresholds are scientifically calibrated; audit pass does not authorize external submission
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/ruff check .
+.venv/bin/mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 1423 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed (92 source files)
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, merged to `main` via PR #14.
+
+---
+
+## Previous Iteration
+
 User requested fifteen iterative steps completing Milestone 15 (candidate comparison, pipeline telemetry, provenance audit).
 
 Current branch: `claude/general-session-Bb2dZ`.
