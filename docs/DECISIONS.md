@@ -1128,3 +1128,23 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 **Provenance audit**: cross-module consistency check verifying that pipeline config, model serving, scoring audit log, candidate rescore, and operator handoff records agree on provenance fields for a given candidate. Consistent verdict means all checked modules agree — it does not authorize external submission, confirm a detection, or constitute external validation.
 
 **Consequences**: `validate-all` gates enforce `comparison_count >= 1`, `telemetry_entry_count >= 1`, `provenance_audit_entry_count >= 1`. SCHEMA_FILENAMES grows 64→67. Milestone 15 is complete. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-049: Candidate Alert Log, Pipeline Replay Log, And Scoring Threshold Audit Complete Milestone 16
+
+**Date**: 2026-05-19
+
+**Status**: accepted
+
+**Context**: Milestone 16 adds operational alerting, reproducibility replay logging, and threshold consistency auditing as the final layer of scheduling provenance infrastructure.
+
+**Decision**: Add three modules, all local provenance records only.
+
+**Candidate alert log**: operational alert records for threshold crossings, pathway changes, flag raises, rescore triggers, provenance inconsistencies, approaching deadlines, and escalated operator assignments. Alerts are severity-classified (info/warning/critical) and carry resolved/open state. An alert indicates an event requiring operator awareness — it does not constitute a detection claim, modify scores or pathway routing, or authorize external submission.
+
+**Pipeline replay log**: append-only reproducibility records re-running scoring on a candidate with a specified pipeline config for provenance verification. Outcomes are score_matched, score_diverged, config_mismatch, or replay_error. Replay entries do not modify committed candidate packets, authorize external submission, or constitute a detection claim.
+
+**Scoring threshold audit**: local provenance consistency checks verifying that scoring thresholds recorded in the pipeline config match the active scoring config version. Verdicts are pass/fail/warning/not_checked. An audit pass does not mean thresholds are scientifically calibrated — it does not authorize external submission or constitute a detection claim.
+
+**Consequences**: `validate-all` gates enforce `alert_entry_count >= 1`, `replay_entry_count >= 1`, `threshold_pass_count >= 1`. SCHEMA_FILENAMES grows 67→70. Milestone 16 is complete. Scientific guardrails remain unchanged.

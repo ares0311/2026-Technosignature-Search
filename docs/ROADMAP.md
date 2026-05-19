@@ -487,3 +487,35 @@ Close the pipeline loop with three complementary operational modules: multi-cand
 - All pipeline stages have telemetry coverage in fixtures
 - Provenance audit verdicts cover consistent, inconsistent, partial, and not_applicable cases
 - All integration tests pass without network access
+
+---
+
+# Milestone 16 — Candidate Alert Log, Pipeline Replay Log, And Scoring Threshold Audit
+
+**Status**: complete
+
+## Tasks
+
+- [x] `src/techno_search/candidate_alert_log.py` — operational alert records for threshold crossings, pathway changes, and escalations
+- [x] `schemas/candidate_alert_log.schema.json`
+- [x] `tests/fixtures/candidate_alert_log.json` — 5 entries (2 resolved, 3 open; info×2, warning×2, critical×1)
+- [x] `tests/test_candidate_alert_log.py` — 21 tests
+- [x] `src/techno_search/pipeline_replay_log.py` — append-only reproducibility replay records
+- [x] `schemas/pipeline_replay_log.schema.json`
+- [x] `tests/fixtures/pipeline_replay_log.json` — 4 entries (2 score_matched, 1 score_diverged, 1 config_mismatch)
+- [x] `tests/test_pipeline_replay_log.py` — 20 tests
+- [x] `src/techno_search/scoring_threshold_audit.py` — threshold consistency provenance checks
+- [x] `schemas/scoring_threshold_audit.schema.json`
+- [x] `tests/fixtures/scoring_threshold_audit.json` — 5 entries (3 pass, 1 warning, 1 not_checked)
+- [x] `tests/test_scoring_threshold_audit.py` — 21 tests
+- [x] CLI: `candidate-alert-summary`, `pipeline-replay-summary`, `scoring-threshold-audit-summary`
+- [x] `validate-all` gates: alert_entry_count >= 1, replay_entry_count >= 1, threshold_pass_count >= 1
+- [x] `validation-summary` fields: candidate_alert_entry_count, candidate_alert_open_count, pipeline_replay_entry_count, pipeline_replay_matched_count, scoring_threshold_pass_count, scoring_threshold_fail_count
+- [x] DECISION-049: Candidate Alert Log, Pipeline Replay Log, And Scoring Threshold Audit Complete Milestone 16
+
+## Done When
+
+- Alert log covers all severity levels with resolved and open entries
+- Replay log covers matched, diverged, and mismatch outcomes
+- Threshold audit covers pass, warning, and not_checked verdicts across all three tracks
+- All integration tests pass without network access

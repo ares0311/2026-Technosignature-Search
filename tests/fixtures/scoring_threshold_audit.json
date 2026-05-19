@@ -1,0 +1,64 @@
+{
+  "scoring_threshold_audit_entries": [
+    {
+      "audit_id": "thr-001",
+      "config_id": "pcfg-001",
+      "scoring_config_version": "scoring_v0",
+      "track": "radio",
+      "threshold_name": "candidate_review_packet_min_score",
+      "expected_value": 0.75,
+      "observed_value": 0.75,
+      "verdict": "pass",
+      "audit_utc": "2026-05-18T10:00:00Z",
+      "notes": "Radio threshold matches active scoring config. Audit pass is a provenance record only."
+    },
+    {
+      "audit_id": "thr-002",
+      "config_id": "pcfg-001",
+      "scoring_config_version": "scoring_v0",
+      "track": "infrared",
+      "threshold_name": "candidate_review_packet_min_score",
+      "expected_value": 0.75,
+      "observed_value": 0.75,
+      "verdict": "pass",
+      "audit_utc": "2026-05-18T10:01:00Z",
+      "notes": "Infrared threshold matches active scoring config."
+    },
+    {
+      "audit_id": "thr-003",
+      "config_id": "pcfg-001",
+      "scoring_config_version": "scoring_v0",
+      "track": "anomaly",
+      "threshold_name": "candidate_review_packet_min_score",
+      "expected_value": 0.75,
+      "observed_value": 0.75,
+      "verdict": "pass",
+      "audit_utc": "2026-05-18T10:02:00Z",
+      "notes": "Anomaly threshold matches active scoring config."
+    },
+    {
+      "audit_id": "thr-004",
+      "config_id": "pcfg-002",
+      "scoring_config_version": "scoring_v0",
+      "track": "radio",
+      "threshold_name": "human_review_queue_min_score",
+      "expected_value": 0.55,
+      "observed_value": 0.60,
+      "verdict": "warning",
+      "audit_utc": "2026-05-18T10:03:00Z",
+      "notes": "Staging config pcfg-002 threshold differs from expected. Warning is a provenance record; does not block scheduling."
+    },
+    {
+      "audit_id": "thr-005",
+      "config_id": "pcfg-003",
+      "scoring_config_version": "scoring_v0",
+      "track": "radio",
+      "threshold_name": "candidate_review_packet_min_score",
+      "expected_value": 0.75,
+      "observed_value": 0.0,
+      "verdict": "not_checked",
+      "audit_utc": "2026-05-18T10:04:00Z",
+      "notes": "Stub config pcfg-003 has no active threshold. Not checked status is a provenance placeholder."
+    }
+  ]
+}

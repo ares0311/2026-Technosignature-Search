@@ -10,7 +10,7 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
-User requested fifteen iterative steps completing Milestone 14 (pipeline config, submission readiness, pipeline integration).
+User requested fifteen iterative steps completing Milestone 15 (candidate comparison, pipeline telemetry, provenance audit).
 
 Current branch: `claude/general-session-Bb2dZ`.
 
@@ -18,22 +18,24 @@ Overall status: all fifteen steps implemented, tested, and validated.
 
 Added:
 
-- `src/techno_search/pipeline_config.py` — local scheduling metadata linking scoring config version, serving ID, model ID, inference backend, and active tracks per pipeline state
-- `schemas/pipeline_config.schema.json`
-- `tests/fixtures/pipeline_configs.json` — 4 configs (1 active baseline_rule, 1 staging pytorch_stub, 1 stub onnx_stub, 1 deprecated)
-- `tests/test_pipeline_config.py` — 20 tests
-- `src/techno_search/submission_readiness.py` — provenance checklists with 9 required fields; ready status does not authorize submission
-- `schemas/submission_readiness.schema.json`
-- `tests/fixtures/submission_readiness.json` — 4 records (1 ready, 1 blocked, 2 not_applicable)
-- `tests/test_submission_readiness.py` — 21 tests
-- `src/techno_search/pipeline_integration.py` — smoke tests verifying mutual consistency of config, serving, audit, rescore, and handoff modules
-- `tests/test_pipeline_integration.py` — 15 tests
-- `pipeline_config` and `submission_readiness` added to `SCHEMA_FILENAMES` (total schemas: 64)
-- `techno-search pipeline-config-summary`, `techno-search submission-readiness-summary`, `techno-search pipeline-integration-summary` CLI commands
-- `validate-all` gates: `pipeline_config_count >= 1`, `pipeline_active_count >= 1`, `submission_record_count >= 1`
-- `validation-summary` fields: `pipeline_config_count`, `pipeline_active_count`, `submission_readiness_record_count`, `submission_readiness_ready_count`
-- DECISION-047: Pipeline Config, Submission Readiness, And Pipeline Integration Complete Milestone 14
-- Docs: CLI_USAGE.md, DECISIONS.md, ROADMAP.md updated; Milestone 14 fully checked off
+- `src/techno_search/candidate_comparison.py` — local scheduling aid comparing candidate scores and pathway assignments across 2+ candidates; ranked status does not modify scores or pathways
+- `schemas/candidate_comparison.schema.json`
+- `tests/fixtures/candidate_comparisons.json` — 4 records (2 ranked, 1 tied, 1 insufficient_data)
+- `tests/test_candidate_comparison.py` — 20 tests
+- `src/techno_search/pipeline_telemetry.py` — per-stage latency and success provenance records covering all 6 pipeline stages
+- `schemas/pipeline_telemetry.schema.json`
+- `tests/fixtures/pipeline_telemetry.json` — 6 entries (all 6 stages for radio-clean-candidate)
+- `tests/test_pipeline_telemetry.py` — 20 tests
+- `src/techno_search/provenance_audit.py` — cross-module consistency verdicts (consistent/inconsistent/partial/not_applicable)
+- `schemas/provenance_audit.schema.json`
+- `tests/fixtures/provenance_audit.json` — 4 entries (1 consistent, 1 partial, 1 inconsistent, 1 not_applicable)
+- `tests/test_provenance_audit.py` — 15 tests
+- `candidate_comparison`, `pipeline_telemetry`, `provenance_audit` added to `SCHEMA_FILENAMES` (total schemas: 67)
+- `techno-search candidate-comparison-summary`, `techno-search pipeline-telemetry-summary`, `techno-search provenance-audit-summary` CLI commands
+- `validate-all` gates: `comparison_count >= 1`, `telemetry_entry_count >= 1`, `provenance_audit_entry_count >= 1`
+- `validation-summary` fields: `comparison_record_count`, `telemetry_entry_count`, `provenance_audit_entry_count`, `provenance_audit_consistent_count`
+- DECISION-048: Candidate Comparison, Pipeline Telemetry, And Provenance Audit Complete Milestone 15
+- Docs: CLI_USAGE.md, DECISIONS.md, ROADMAP.md updated; Milestone 15 fully checked off
 - `techno-search candidate-rescore-summary`, `techno-search operator-handoff-summary`, `techno-search candidate-methods-summary` CLI commands
 - `validate-all` gates: `rescore_event_count >= 1`, `handoff_template_count >= 1`, `handoff_approved_count >= 1`
 - `validation-summary` fields: `candidate_rescore_event_count`, `candidate_rescore_pathway_change_count`, `operator_handoff_template_count`, `operator_handoff_approved_count`
@@ -58,15 +60,15 @@ git diff --check
 
 Result:
 
-- 1292 tests passed
+- 1356 tests passed
 - 5 tests skipped
 - total coverage: 92%
 - Ruff passed
-- mypy passed (86 source files)
+- mypy passed (89 source files)
 - diff whitespace check passed
 - `validate-all` ok=True
 
-Merge status: committed on `claude/general-session-Bb2dZ`, pushed, merged to `main` via PR #12.
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, merged to `main` via PR #13.
 
 ---
 

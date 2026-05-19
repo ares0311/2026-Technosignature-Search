@@ -56,6 +56,7 @@ from techno_search.calibration import (
     summarize_calibration_fixtures,
 )
 from techno_search.calibration_metrics import precision_recall_summary, reliability_summary
+from techno_search.candidate_alert_log import candidate_alert_summary
 from techno_search.candidate_annotation import candidate_annotation_summary
 from techno_search.candidate_audit_trail import audit_trail_summary
 from techno_search.candidate_comparison import candidate_comparison_summary
@@ -140,6 +141,7 @@ from techno_search.pipeline_capacity import pipeline_capacity_summary
 from techno_search.pipeline_config import pipeline_config_summary
 from techno_search.pipeline_health import pipeline_health_summary
 from techno_search.pipeline_integration import pipeline_integration_summary
+from techno_search.pipeline_replay_log import pipeline_replay_summary
 from techno_search.pipeline_telemetry import pipeline_telemetry_summary
 from techno_search.pipeline_throughput import pipeline_throughput_summary
 from techno_search.plotting import plot_artifact_summary
@@ -161,6 +163,7 @@ from techno_search.schemas import Candidate, Track, candidate_from_mapping
 from techno_search.scoring import score_candidate
 from techno_search.scoring_audit_log import scoring_audit_log_summary
 from techno_search.scoring_config import scoring_config_summary
+from techno_search.scoring_threshold_audit import scoring_threshold_audit_summary
 from techno_search.sensitivity_config import sensitivity_config_summary
 from techno_search.session_log import session_log_summary
 from techno_search.signal_registry import (
@@ -242,6 +245,9 @@ SCHEMA_FILENAMES = {
     "candidate_comparison": "candidate_comparison.schema.json",
     "pipeline_telemetry": "pipeline_telemetry.schema.json",
     "provenance_audit": "provenance_audit.schema.json",
+    "candidate_alert_log": "candidate_alert_log.schema.json",
+    "pipeline_replay_log": "pipeline_replay_log.schema.json",
+    "scoring_threshold_audit": "scoring_threshold_audit.schema.json",
     "curated_dataset_intake": "curated_dataset_intake.schema.json",
     "operator_handoff_template": "operator_handoff_template.schema.json",
     "candidate_resolution": "candidate_resolution.schema.json",
@@ -1791,6 +1797,42 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "candidate-alert-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                candidate_alert_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "pipeline-replay-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                pipeline_replay_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "scoring-threshold-audit-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                scoring_threshold_audit_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     if args.command == "candidate-comparison-summary":
         fixture_path = getattr(args, "fixture_path", None)
         print(
@@ -2235,6 +2277,12 @@ def validate_all() -> dict[str, object]:
     handoff_data = operator_handoff_summary()
     handoff_template_count = int(handoff_data.get("template_count", 0))
     handoff_approved_count = int(handoff_data.get("approved_count", 0))
+    alert_data = candidate_alert_summary()
+    alert_entry_count = int(alert_data.get("entry_count", 0))
+    replay_data = pipeline_replay_summary()
+    replay_entry_count = int(replay_data.get("entry_count", 0))
+    threshold_audit_data = scoring_threshold_audit_summary()
+    threshold_pass_count = int(threshold_audit_data.get("pass_count", 0))
     comparison_data = candidate_comparison_summary()
     comparison_count = int(comparison_data.get("record_count", 0))
     telemetry_data = pipeline_telemetry_summary()
@@ -2547,6 +2595,12 @@ def validate_all() -> dict[str, object]:
         and telemetry_entry_count >= 1
         and isinstance(provenance_audit_entry_count, int)
         and provenance_audit_entry_count >= 1
+        and isinstance(alert_entry_count, int)
+        and alert_entry_count >= 1
+        and isinstance(replay_entry_count, int)
+        and replay_entry_count >= 1
+        and isinstance(threshold_pass_count, int)
+        and threshold_pass_count >= 1
     )
     return {
         "ok": ok,
@@ -2660,6 +2714,9 @@ def validate_all() -> dict[str, object]:
         "candidate_comparison_summary": comparison_data,
         "pipeline_telemetry_summary": telemetry_data,
         "provenance_audit_summary": audit_data,
+        "candidate_alert_summary": alert_data,
+        "pipeline_replay_summary": replay_data,
+        "scoring_threshold_audit_summary": threshold_audit_data,
     }
 
 
@@ -3573,6 +3630,36 @@ def validation_summary() -> dict[str, object]:
         "provenance_audit_consistent_count": (
             pa_s2["consistent_count"]
             if isinstance(pa_s2 := validation.get("provenance_audit_summary"), dict)
+            else 0
+        ),
+        "candidate_alert_entry_count": (
+            al2_s["entry_count"]
+            if isinstance(al2_s := validation.get("candidate_alert_summary"), dict)
+            else 0
+        ),
+        "candidate_alert_open_count": (
+            al2_s2["open_count"]
+            if isinstance(al2_s2 := validation.get("candidate_alert_summary"), dict)
+            else 0
+        ),
+        "pipeline_replay_entry_count": (
+            rpl_s["entry_count"]
+            if isinstance(rpl_s := validation.get("pipeline_replay_summary"), dict)
+            else 0
+        ),
+        "pipeline_replay_matched_count": (
+            rpl_s2["matched_count"]
+            if isinstance(rpl_s2 := validation.get("pipeline_replay_summary"), dict)
+            else 0
+        ),
+        "scoring_threshold_pass_count": (
+            thr_s["pass_count"]
+            if isinstance(thr_s := validation.get("scoring_threshold_audit_summary"), dict)
+            else 0
+        ),
+        "scoring_threshold_fail_count": (
+            thr_s2["fail_count"]
+            if isinstance(thr_s2 := validation.get("scoring_threshold_audit_summary"), dict)
             else 0
         ),
         "recommended_commands": [
@@ -5180,6 +5267,30 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "pipeline-integration-summary",
         help="Run end-to-end pipeline smoke tests across known fixture candidates.",
+    )
+
+    candidate_alert_parser = subparsers.add_parser(
+        "candidate-alert-summary",
+        help="Summarize candidate alert log entries for threshold crossings and status changes.",
+    )
+    candidate_alert_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    pipeline_replay_parser = subparsers.add_parser(
+        "pipeline-replay-summary",
+        help="Summarize pipeline replay log entries for reproducibility verification.",
+    )
+    pipeline_replay_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    scoring_threshold_audit_parser = subparsers.add_parser(
+        "scoring-threshold-audit-summary",
+        help="Summarize scoring threshold audit verdicts against pipeline config.",
+    )
+    scoring_threshold_audit_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
     )
 
     candidate_comparison_parser = subparsers.add_parser(
