@@ -120,7 +120,10 @@ def test_route_coverage_summary_pathway_counts() -> None:
     result = route_coverage_summary()
     assert result["total_pathway_values"] == len(list(Pathway))
     assert isinstance(result["covered_pathway_count"], int)
-    assert result["covered_pathway_count"] >= 1
+    assert result["covered_pathway_count"] == len(list(Pathway))
+    assert result["uncovered_pathway_count"] == 0
+    assert result["uncovered_pathways"] == []
+    assert result["full_coverage"] is True
 
 
 def test_route_coverage_summary_covered_pathways_are_valid() -> None:
@@ -129,6 +132,7 @@ def test_route_coverage_summary_covered_pathways_are_valid() -> None:
 
     result = route_coverage_summary()
     valid_pathways = {p.value for p in Pathway}
+    assert "external_followup_candidate" in result["covered_pathways"]
     for pw in result["covered_pathways"]:
         assert pw in valid_pathways, f"Unknown pathway in coverage: {pw}"
 

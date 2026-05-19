@@ -2149,6 +2149,7 @@ def validate_all() -> dict[str, object]:
     scoring_threshold_count = int(scoring_cfg.get("threshold_count", 0))
     route_coverage = route_coverage_summary()
     route_covered_count = int(route_coverage.get("covered_pathway_count", 0))
+    route_uncovered_count = int(route_coverage.get("uncovered_pathway_count", 0))
     lifecycle_transitions = lifecycle_transition_summary()
     lifecycle_invalid_count = int(lifecycle_transitions.get("invalid_transition_count", 0))
     observation_efficiency = observation_efficiency_summary()
@@ -2481,7 +2482,9 @@ def validate_all() -> dict[str, object]:
         and isinstance(scoring_threshold_count, int)
         and scoring_threshold_count >= 1
         and isinstance(route_covered_count, int)
-        and route_covered_count >= 4
+        and route_covered_count >= 6
+        and isinstance(route_uncovered_count, int)
+        and route_uncovered_count == 0
         and isinstance(lifecycle_invalid_count, int)
         and lifecycle_invalid_count == 0
         and isinstance(observation_completion_rate, float)

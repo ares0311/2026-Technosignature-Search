@@ -995,6 +995,10 @@ techno-search route-coverage-summary
 
 Checks which `Pathway` enum values have calibration fixture coverage. Reports covered and uncovered pathway names, per-pathway case counts, and a full-coverage flag. Uncovered pathways indicate areas where synthetic fixture coverage should be extended. Synthetic diagnostic only.
 
+Current route-coverage fixtures exercise every `Pathway` enum value, including
+`external_followup_candidate` as a synthetic enum-coverage case only. That
+coverage does not authorize external submission or imply external validation.
+
 ---
 
 ## Lifecycle Transition Summary

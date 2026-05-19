@@ -86,6 +86,32 @@
           "false_positive_class": "insufficient_provenance"
         }
       }
+    },
+    {
+      "name": "infrared_external_followup_candidate_enum_coverage",
+      "expected_pathway": "external_followup_candidate",
+      "rationale": "Synthetic enum coverage for the external_followup_candidate route. This is not an approval to submit externally; external follow-up still requires explicit user approval and external validation.",
+      "candidate": {
+        "candidate_id": "route-cov-external-followup-001",
+        "track": "infrared",
+        "features": {
+          "ir_excess_score": 0.95,
+          "sed_fit_residual_score": 0.90,
+          "stellar_solution_quality": 0.92,
+          "galaxy_agn_indicator_score": 0.02,
+          "dust_indicator_score": 0.03,
+          "confusion_score": 0.04,
+          "photometric_quality_score": 0.92,
+          "catalog_artifact_score": 0.01,
+          "known_object_score": 0.0
+        },
+        "provenance": {
+          "source_dataset": "synthetic-route-coverage",
+          "false_positive_class": "none_synthetic_enum_coverage",
+          "external_submission_allowed": false,
+          "user_approval_required": true
+        }
+      }
     }
   ]
 }

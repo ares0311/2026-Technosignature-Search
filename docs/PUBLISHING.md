@@ -87,3 +87,5 @@ Confirm:
 - generated example reports use synthetic data only
 - candidate reports preserve conservative language
 - `CLAUDE.md`, `AGENTS.md`, and project docs are consistent
+- `.github/workflows/*.yml` is not added unless the publishing token has GitHub `workflow` scope
+- CI examples remain under `docs/templates/` until workflow-scope publishing is available

@@ -449,7 +449,8 @@ Run local validation summaries:
 .venv/bin/techno-search validation-summary
 ```
 
-👉 See [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md)
+👉 See [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md) and the non-networked CI
+template guidance in [`docs/CI.md`](docs/CI.md).
 
 ---
 
@@ -827,6 +828,11 @@ Release-grade local validation:
 git diff --check
 ```
 
+The GitHub Actions template lives at `docs/templates/ci.yml` until the
+publishing token has GitHub `workflow` scope. It mirrors the local validation
+gate, keeps `TECHNO_SEARCH_ENABLE_LIVE_DATA=0`, and also runs
+`techno-search validate-all` plus `techno-search health`.
+
 Scientific quality gates:
 
 - Default tests must be deterministic and non-networked.
@@ -851,6 +857,7 @@ Scientific quality gates:
 | Benchmark drift | Append-only local benchmark run results and repeated-run comparison | `benchmark-run-append`, `benchmark-run-compare` |
 | Unreviewed background automation | Reviewed workflow summary for scheduling-only and negative-result ledger entries | `background-reviewed-workflow-summary` |
 | Premature candidate extraction | Local handoff contract before target selection becomes candidate packet generation | `candidate-extraction-handoff-summary` |
+| CI drift or accidental live access | Template stays non-networked under `docs/templates/` until workflow-scope publishing is available | `docs/CI.md`, `docs/templates/ci.yml` |
 
 👉 See [`docs/VALIDATION.md`](docs/VALIDATION.md)
 

@@ -178,6 +178,10 @@ The project will support three tracks from day one:
 - [x] Cross-track candidate cross-reference schema, fixture, and summary CLI added
 - [x] Persisted-report reproducibility verification helper and CLI added
 - [x] Cross-track and reproducibility wiring added to `validate-all` and `validation-summary`
+- [x] Non-networked CI template hardened under `docs/templates/ci.yml`
+- [x] CI guidance added under `docs/CI.md`
+- [x] Route coverage extended to all 6/6 `Pathway` enum values
+- [x] `validate-all` route-coverage gate now requires zero uncovered pathways
 
 ---
 
@@ -230,7 +234,7 @@ The project will support three tracks from day one:
 - [x] Observation efficiency summary (`observation-efficiency-summary`) with per-track rates
 - [x] DECISION-031: Scoring Config And Route Coverage Are Required Local Validation Gates
 - [x] 29 JSON schema artifacts (added scoring_config_summary)
-- [x] Route coverage extended to 5/6 Pathway values via dedicated route-coverage fixtures
+- [x] Route coverage extended to 6/6 Pathway values via dedicated route-coverage fixtures
 - [x] Per-track sensitivity config summary (`sensitivity-config-summary`) — synthetic weights audit
 - [x] Candidate triage notes schema (`candidate_triage_v1`), fixture, loader, and `triage-summary` CLI
 - [x] DECISION-032: Candidate Triage And Sensitivity Config Are Validated Scheduling Aids
@@ -240,17 +244,17 @@ The project will support three tracks from day one:
 
 ## Recently Completed (this iteration)
 
-- [x] Candidate observation notes schema (`candidate_observation_notes_v1`), fixture (5 notes), loader, and `observation-notes-summary` CLI
-- [x] Epoch plan schema (`epoch_plan_v1`), fixture (5 entries), loader, and `epoch-plan-summary` CLI
-- [x] Aggregate blockers summary (`aggregate-blockers-summary`) consolidating triage, lifecycle, observation, and handoff issues
-- [x] 37 JSON schema artifacts (added candidate_observation_notes and epoch_plan)
-- [x] 582 tests passing, 92% coverage, validate-all ok=True
+- [x] CI template now runs pytest, Ruff, mypy, whitespace check, `validate-all`, and `health` with live data disabled
+- [x] CI workflow-scope caveat documented in `docs/CI.md` and release checklist
+- [x] Synthetic route coverage now includes `external_followup_candidate` without authorizing external submission
+- [x] Route coverage summary reports 6/6 Pathway values covered and zero uncovered pathways
+- [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions
 
-1. Add a CI workflow file once a token with `workflow` scope is available.
+1. Copy `docs/templates/ci.yml` to `.github/workflows/ci.yml` only after confirming the publishing token has GitHub `workflow` scope.
 2. Begin non-synthetic validation dataset integration once real observations are available under appropriate data policy.
-3. Extend route coverage fixtures to cover remaining uncovered pathways as the classifier evolves.
+3. Add curated validation intake examples only when provenance, licensing, labeling, and external-review requirements are satisfied.
 
 ---
 

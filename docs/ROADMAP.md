@@ -519,3 +519,27 @@ Close the pipeline loop with three complementary operational modules: multi-cand
 - Replay log covers matched, diverged, and mismatch outcomes
 - Threshold audit covers pass, warning, and not_checked verdicts across all three tracks
 - All integration tests pass without network access
+
+---
+
+# Project Operations Readiness
+
+## Goal
+
+Keep validation, route coverage, and CI scaffolding aligned with the scientific
+guardrails before any non-synthetic validation data or external workflow is
+introduced.
+
+## Tasks
+
+- [x] Non-networked GitHub Actions template kept under `docs/templates/ci.yml`
+- [x] CI promotion caveat documented until publishing has GitHub `workflow` scope
+- [x] Route coverage fixtures cover all 6/6 `Pathway` enum values
+- [x] `validate-all` requires zero uncovered route-coverage pathways
+
+## Guardrails
+
+- CI must not enable live provider access by default.
+- `external_followup_candidate` route coverage is synthetic enum coverage only.
+- Real observation intake remains blocked until data policy, provenance,
+  licensing, labeling, and external-review requirements are satisfied.

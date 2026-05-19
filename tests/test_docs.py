@@ -22,6 +22,7 @@ def test_readme_references_existing_project_docs() -> None:
         "docs/SCORING_MODEL.md",
         "docs/CLI_USAGE.md",
         "docs/VALIDATION.md",
+        "docs/CI.md",
         "docs/SUBMISSION_PATHWAYS.md",
         "docs/LOCAL_SYSTEM_PROFILE.md",
     )
@@ -157,6 +158,23 @@ def test_background_scheduler_templates_use_ignored_artifact_paths() -> None:
         assert "--sqlite-log-path" in template
         assert "--acknowledge-local-run" in template
         assert "TECHNO_SEARCH_ENABLE_LIVE_DATA" not in template
+
+
+def test_ci_template_stays_non_networked_and_outside_workflows() -> None:
+    ci_doc = Path("docs/CI.md").read_text(encoding="utf-8")
+    template = Path("docs/templates/ci.yml").read_text(encoding="utf-8")
+
+    assert Path("docs/templates/ci.yml").exists()
+    assert not Path(".github/workflows/ci.yml").exists()
+    assert "workflow` scope" in ci_doc
+    assert "TECHNO_SEARCH_ENABLE_LIVE_DATA=0" in ci_doc
+    assert 'TECHNO_SEARCH_ENABLE_LIVE_DATA: "0"' in template
+    assert 'python -m pytest -m "not integration_live"' in template
+    assert "python -m ruff check ." in template
+    assert "python -m mypy src" in template
+    assert "git diff --check" in template
+    assert "techno-search validate-all" in template
+    assert "techno-search health" in template
 
 
 def test_cli_docs_include_draft_report_and_decision_workflows() -> None:

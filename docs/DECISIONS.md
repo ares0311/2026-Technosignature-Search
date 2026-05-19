@@ -1148,3 +1148,31 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 **Scoring threshold audit**: local provenance consistency checks verifying that scoring thresholds recorded in the pipeline config match the active scoring config version. Verdicts are pass/fail/warning/not_checked. An audit pass does not mean thresholds are scientifically calibrated — it does not authorize external submission or constitute a detection claim.
 
 **Consequences**: `validate-all` gates enforce `alert_entry_count >= 1`, `replay_entry_count >= 1`, `threshold_pass_count >= 1`. SCHEMA_FILENAMES grows 67→70. Milestone 16 is complete. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-050: CI Template And Full Route Coverage Are Operational Readiness Gates
+
+**Date**: 2026-05-19
+
+**Status**: accepted
+
+**Context**: The project needs a reproducible CI contract, but the current
+publishing path must not add `.github/workflows/*.yml` until a token with
+GitHub `workflow` scope is available. Route coverage also had one uncovered
+`Pathway` enum value, `external_followup_candidate`.
+
+**Decision**: Keep the GitHub Actions workflow as a non-networked template under
+`docs/templates/ci.yml` and document the workflow-scope promotion caveat in
+`docs/CI.md`. The template mirrors local validation and keeps
+`TECHNO_SEARCH_ENABLE_LIVE_DATA=0`.
+
+Extend route-coverage fixtures so every `Pathway` enum value is represented.
+The `external_followup_candidate` fixture is synthetic enum coverage only. It
+does not authorize external submission, does not claim external validation, and
+does not modify scoring or pathway logic.
+
+**Consequences**: `validate-all` now gates on full route coverage with zero
+uncovered pathways. CI promotion remains a manual publishing step until
+workflow-scope permissions are available. Scientific guardrails remain
+unchanged.

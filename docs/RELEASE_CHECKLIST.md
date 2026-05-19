@@ -46,6 +46,8 @@ Before release, verify:
 - generated `logs/*.sqlite3` databases are not committed
 - SQLite review-safe exports preserve blockers, negative evidence, provenance, and uncertainty notes
 - SQLite PRAGMA, backup, retention, and vacuum maintenance commands pass on local logs
+- route coverage reports full synthetic coverage for all `Pathway` enum values
+- CI template remains non-networked and under `docs/templates/` until workflow-scope publishing is available
 
 Useful commands:
 
@@ -63,7 +65,9 @@ Useful commands:
 .venv/bin/techno-search sqlite-log-retention-summary --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-vacuum --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search validate-sqlite-logs --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search route-coverage-summary
 .venv/bin/techno-search validate-all
+.venv/bin/techno-search health
 ```
 
 The `validate-all` output must include `catalog_cache_validation.ok: true`.
@@ -113,3 +117,7 @@ Current template:
 ```text
 docs/templates/ci.yml
 ```
+
+The template must keep `TECHNO_SEARCH_ENABLE_LIVE_DATA=0` and must not require
+API credentials, real observations, generated SQLite databases, or external
+submission approval.
