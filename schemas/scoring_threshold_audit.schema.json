@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ScoringThresholdAudit",
+  "description": "Provenance consistency checks verifying scoring thresholds match pipeline config. Audit pass does not authorize submission.",
+  "type": "object",
+  "required": ["scoring_threshold_audit_entries"],
+  "properties": {
+    "scoring_threshold_audit_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "audit_id",
+          "config_id",
+          "scoring_config_version",
+          "track",
+          "threshold_name",
+          "expected_value",
+          "observed_value",
+          "verdict",
+          "audit_utc"
+        ],
+        "properties": {
+          "audit_id": {"type": "string"},
+          "config_id": {"type": "string"},
+          "scoring_config_version": {"type": "string"},
+          "track": {"type": "string"},
+          "threshold_name": {"type": "string"},
+          "expected_value": {"type": "number"},
+          "observed_value": {"type": "number"},
+          "verdict": {
+            "type": "string",
+            "enum": ["pass", "fail", "warning", "not_checked"]
+          },
+          "audit_utc": {"type": "string"},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

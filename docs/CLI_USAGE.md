@@ -1675,3 +1675,36 @@ techno-search provenance-audit-summary --fixture-path tests/fixtures/provenance_
 ```
 
 Output fields: `disclaimer`, `schema_version`, `entry_count`, `consistent_count`, `inconsistent_count`, `partial_count`, `not_applicable_count`, `by_verdict`, `total_inconsistency_count`, `modules_covered`. Consistent verdict does not authorize external submission or confirm a detection.
+
+## `candidate-alert-summary`
+
+Summarize candidate alert log entries recording threshold crossings and status changes requiring operator awareness.
+
+```bash
+techno-search candidate-alert-summary
+techno-search candidate-alert-summary --fixture-path tests/fixtures/candidate_alert_log.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `entry_count`, `open_count`, `resolved_count`, `critical_open_count`, `by_severity`, `by_kind`. Alert entries are operational provenance records — an alert does not constitute a detection claim or authorize external submission.
+
+## `pipeline-replay-summary`
+
+Summarize pipeline replay log entries recording deterministic re-scoring runs for provenance verification.
+
+```bash
+techno-search pipeline-replay-summary
+techno-search pipeline-replay-summary --fixture-path tests/fixtures/pipeline_replay_log.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `entry_count`, `matched_count`, `diverged_count`, `by_outcome`, `mean_abs_score_delta`, `max_abs_score_delta`. Replay entries are append-only reproducibility records — replays do not modify committed candidate packets or authorize external submission.
+
+## `scoring-threshold-audit-summary`
+
+Summarize scoring threshold audit entries verifying pipeline config thresholds match the active scoring config version.
+
+```bash
+techno-search scoring-threshold-audit-summary
+techno-search scoring-threshold-audit-summary --fixture-path tests/fixtures/scoring_threshold_audit.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `entry_count`, `pass_count`, `fail_count`, `warning_count`, `not_checked_count`, `by_verdict`, `by_track`, `tracks_covered`, `all_passed`. Audit pass does not authorize external submission or constitute a detection claim.

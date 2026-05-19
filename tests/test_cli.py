@@ -296,6 +296,9 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "candidate_comparison",
         "pipeline_telemetry",
         "provenance_audit",
+        "candidate_alert_log",
+        "pipeline_replay_log",
+        "scoring_threshold_audit",
     }
     assert result["background_search_ledger"].endswith(
         "schemas/background_search_ledger.schema.json"
@@ -1407,7 +1410,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 67
+    assert result["schema_count"] == 70
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -1532,6 +1535,12 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["telemetry_entry_count"] == 6
     assert result["provenance_audit_entry_count"] == 4
     assert result["provenance_audit_consistent_count"] == 1
+    assert result["candidate_alert_entry_count"] == 5
+    assert result["candidate_alert_open_count"] == 3
+    assert result["pipeline_replay_entry_count"] == 4
+    assert result["pipeline_replay_matched_count"] == 2
+    assert result["scoring_threshold_pass_count"] == 3
+    assert result["scoring_threshold_fail_count"] == 0
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 

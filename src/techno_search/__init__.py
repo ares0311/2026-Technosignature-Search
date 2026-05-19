@@ -107,6 +107,15 @@ from techno_search.calibration_metrics import (
     precision_recall_summary,
     reliability_summary,
 )
+from techno_search.candidate_alert_log import (
+    ALLOWED_ALERT_KINDS,
+    ALLOWED_ALERT_SEVERITIES,
+    CANDIDATE_ALERT_DISCLAIMER,
+    CANDIDATE_ALERT_SCHEMA_VERSION,
+    CandidateAlertEntry,
+    candidate_alert_summary,
+    load_alert_entries,
+)
 from techno_search.candidate_annotation import (
     ALLOWED_ANNOTATION_TYPES,
     CANDIDATE_ANNOTATION_DISCLAIMER,
@@ -418,6 +427,14 @@ from techno_search.pipeline_integration import (
     pipeline_integration_summary,
     run_pipeline_smoke_test,
 )
+from techno_search.pipeline_replay_log import (
+    ALLOWED_REPLAY_OUTCOMES,
+    PIPELINE_REPLAY_DISCLAIMER,
+    PIPELINE_REPLAY_SCHEMA_VERSION,
+    PipelineReplayEntry,
+    load_replay_entries,
+    pipeline_replay_summary,
+)
 from techno_search.pipeline_telemetry import (
     ALLOWED_TELEMETRY_STAGES,
     PIPELINE_TELEMETRY_DISCLAIMER,
@@ -512,6 +529,14 @@ from techno_search.scoring_config import (
     SCORING_CONFIG_DISCLAIMER,
     SCORING_CONFIG_SCHEMA_VERSION,
     scoring_config_summary,
+)
+from techno_search.scoring_threshold_audit import (
+    ALLOWED_THRESHOLD_AUDIT_VERDICTS,
+    SCORING_THRESHOLD_AUDIT_DISCLAIMER,
+    SCORING_THRESHOLD_AUDIT_SCHEMA_VERSION,
+    ScoringThresholdAuditEntry,
+    load_threshold_audit_entries,
+    scoring_threshold_audit_summary,
 )
 from techno_search.sensitivity_config import (
     SENSITIVITY_CONFIG_DISCLAIMER,
@@ -1040,4 +1065,23 @@ __all__ = [
     "ProvenanceAuditEntry",
     "load_provenance_audit_entries",
     "provenance_audit_summary",
+    "ALLOWED_ALERT_KINDS",
+    "ALLOWED_ALERT_SEVERITIES",
+    "CANDIDATE_ALERT_SCHEMA_VERSION",
+    "CANDIDATE_ALERT_DISCLAIMER",
+    "CandidateAlertEntry",
+    "candidate_alert_summary",
+    "load_alert_entries",
+    "ALLOWED_REPLAY_OUTCOMES",
+    "PIPELINE_REPLAY_DISCLAIMER",
+    "PIPELINE_REPLAY_SCHEMA_VERSION",
+    "PipelineReplayEntry",
+    "load_replay_entries",
+    "pipeline_replay_summary",
+    "ALLOWED_THRESHOLD_AUDIT_VERDICTS",
+    "SCORING_THRESHOLD_AUDIT_DISCLAIMER",
+    "SCORING_THRESHOLD_AUDIT_SCHEMA_VERSION",
+    "ScoringThresholdAuditEntry",
+    "load_threshold_audit_entries",
+    "scoring_threshold_audit_summary",
 ]
