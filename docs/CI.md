@@ -21,11 +21,15 @@ python -m mypy src
 git diff --check
 techno-search validate-all
 techno-search health
+techno-search operations-readiness-summary
 ```
 
 The workflow sets `TECHNO_SEARCH_ENABLE_LIVE_DATA=0`. CI must remain
 non-networked by default and must not contact live providers, ingest real
-observations, approve external submission, or claim detections.
+observations, approve external submission, or claim detections. The operations
+readiness summary is informational in CI; a `blocked_for_real_data`
+recommendation is expected while real-data policy, provenance, licensing,
+labeling, and external-review prerequisites remain incomplete.
 
 ## Promotion Checklist
 

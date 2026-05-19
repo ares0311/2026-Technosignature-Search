@@ -182,6 +182,10 @@ The project will support three tracks from day one:
 - [x] CI guidance added under `docs/CI.md`
 - [x] Route coverage extended to all 6/6 `Pathway` enum values
 - [x] `validate-all` route-coverage gate now requires zero uncovered pathways
+- [x] Operations-readiness summary and review-safe digest added for local-only
+      operator handoff
+- [x] Operations-readiness visibility added to `validation-summary` and CI
+      template without enabling live data
 
 ---
 
@@ -248,12 +252,14 @@ The project will support three tracks from day one:
 - [x] CI workflow-scope caveat documented in `docs/CI.md` and release checklist
 - [x] Synthetic route coverage now includes `external_followup_candidate` without authorizing external submission
 - [x] Route coverage summary reports 6/6 Pathway values covered and zero uncovered pathways
+- [x] Operations readiness now reports local-only states: `local_only_ready`, `operator_review_required`, and `blocked_for_real_data`
+- [x] Review-safe operations digest added without large payloads, live-provider results, or unsupported claims
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions
 
-1. Copy `docs/templates/ci.yml` to `.github/workflows/ci.yml` only after confirming the publishing token has GitHub `workflow` scope.
-2. Begin non-synthetic validation dataset integration once real observations are available under appropriate data policy.
+1. Keep resolving operations-readiness blockers before any real observation intake.
+2. Copy `docs/templates/ci.yml` to `.github/workflows/ci.yml` only after confirming the publishing token has GitHub `workflow` scope.
 3. Add curated validation intake examples only when provenance, licensing, labeling, and external-review requirements are satisfied.
 
 ---

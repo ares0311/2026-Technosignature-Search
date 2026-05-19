@@ -447,6 +447,7 @@ Run local validation summaries:
 ```bash
 .venv/bin/techno-search validate-all
 .venv/bin/techno-search validation-summary
+.venv/bin/techno-search operations-readiness-summary
 ```
 
 👉 See [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md) and the non-networked CI
@@ -626,6 +627,7 @@ Recommended recalibration checks:
 .venv/bin/techno-search benchmark-run-summary
 .venv/bin/techno-search benchmark-run-compare \
   --results-path artifacts/benchmark_run_results.json
+.venv/bin/techno-search operations-readiness-digest
 .venv/bin/techno-search validate-all
 ```
 
@@ -857,6 +859,7 @@ Scientific quality gates:
 | Benchmark drift | Append-only local benchmark run results and repeated-run comparison | `benchmark-run-append`, `benchmark-run-compare` |
 | Unreviewed background automation | Reviewed workflow summary for scheduling-only and negative-result ledger entries | `background-reviewed-workflow-summary` |
 | Premature candidate extraction | Local handoff contract before target selection becomes candidate packet generation | `candidate-extraction-handoff-summary` |
+| Real-data workflow before operations readiness | Local readiness dashboard surfaces QC, alert, review, route, provenance, and SQLite blockers | `operations-readiness-summary` |
 | CI drift or accidental live access | Template stays non-networked under `docs/templates/` until workflow-scope publishing is available | `docs/CI.md`, `docs/templates/ci.yml` |
 
 👉 See [`docs/VALIDATION.md`](docs/VALIDATION.md)

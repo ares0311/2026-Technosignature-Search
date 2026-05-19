@@ -536,6 +536,12 @@ introduced.
 - [x] CI promotion caveat documented until publishing has GitHub `workflow` scope
 - [x] Route coverage fixtures cover all 6/6 `Pathway` enum values
 - [x] `validate-all` requires zero uncovered route-coverage pathways
+- [x] Operations-readiness summary aggregates QC, alerts, review deadlines,
+      route coverage, pipeline capacity, submission provenance, and SQLite log
+      safety fields
+- [x] Review-safe operations-readiness Markdown digest added for local operator
+      handoff
+- [x] CI template reports operations readiness without enabling live data
 
 ## Guardrails
 
@@ -543,3 +549,5 @@ introduced.
 - `external_followup_candidate` route coverage is synthetic enum coverage only.
 - Real observation intake remains blocked until data policy, provenance,
   licensing, labeling, and external-review requirements are satisfied.
+- `blocked_for_real_data` is an operations recommendation only. It is not a
+  scientific classification and does not modify candidate scores or pathways.

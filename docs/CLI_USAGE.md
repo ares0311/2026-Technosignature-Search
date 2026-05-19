@@ -1712,3 +1712,25 @@ techno-search scoring-threshold-audit-summary --fixture-path tests/fixtures/scor
 ```
 
 Output fields: `disclaimer`, `schema_version`, `entry_count`, `pass_count`, `fail_count`, `warning_count`, `not_checked_count`, `by_verdict`, `by_track`, `tracks_covered`, `all_passed`. Audit pass does not authorize external submission or constitute a detection claim.
+
+## `operations-readiness-summary`
+
+Aggregate local-only operations readiness state across QC health, candidate alerts, review deadlines, pipeline capacity, route coverage, curated intake blockers, submission provenance blockers, and top-level SQLite log safety fields.
+
+```bash
+techno-search operations-readiness-summary
+techno-search operations-readiness-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `recommendation`, `local_validation_ready`, `real_data_blocker_count`, `operator_attention_count`, `outstanding_blockers`, `readiness_gates`, and SQLite snapshot counts. Recommendations are scheduling states only: `local_only_ready`, `operator_review_required`, or `blocked_for_real_data`. They do not authorize live-provider access, real observation intake, external submission, or any detection claim.
+
+## `operations-readiness-digest`
+
+Print a review-safe Markdown digest for operator handoff.
+
+```bash
+techno-search operations-readiness-digest
+techno-search operations-readiness-digest --output-path artifacts/operations_readiness.md
+```
+
+The digest intentionally omits large data payloads, API keys, live-provider results, and unsupported claims. It is a local operations handoff, not a scientific result.

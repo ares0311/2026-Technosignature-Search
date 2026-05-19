@@ -76,6 +76,7 @@ Before publishing, run:
 .venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
 .venv/bin/python -m ruff check .
 .venv/bin/python -m mypy src
+.venv/bin/techno-search operations-readiness-summary
 git diff --check
 git status --short --branch
 ```
@@ -86,6 +87,7 @@ Confirm:
 - no credentials or API tokens are included
 - generated example reports use synthetic data only
 - candidate reports preserve conservative language
+- operations readiness does not report live-provider access or external submission approval
 - `CLAUDE.md`, `AGENTS.md`, and project docs are consistent
 - `.github/workflows/*.yml` is not added unless the publishing token has GitHub `workflow` scope
 - CI examples remain under `docs/templates/` until workflow-scope publishing is available

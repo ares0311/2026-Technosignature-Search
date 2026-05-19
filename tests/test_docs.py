@@ -175,6 +175,8 @@ def test_ci_template_stays_non_networked_and_outside_workflows() -> None:
     assert "git diff --check" in template
     assert "techno-search validate-all" in template
     assert "techno-search health" in template
+    assert "techno-search operations-readiness-summary" in template
+    assert "techno-search operations-readiness-summary" in ci_doc
 
 
 def test_cli_docs_include_draft_report_and_decision_workflows() -> None:
@@ -197,6 +199,8 @@ def test_cli_docs_include_draft_report_and_decision_workflows() -> None:
     assert ".venv/bin/techno-search sqlite-log-commit-guard" in doc
     assert ".venv/bin/techno-search validate-sqlite-logs" in doc
     assert ".venv/bin/techno-search scheduler-dry-run" in doc
+    assert "techno-search operations-readiness-summary" in doc
+    assert "techno-search operations-readiness-digest" in doc
     assert "--sqlite-log-path" in doc
     assert "--confirm-external-submission-approval" in doc
     assert "request_more_tests` and `close_as_reviewed` never imply" in doc

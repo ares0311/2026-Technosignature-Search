@@ -585,7 +585,7 @@ Gate in `validate-all`: `synthetic_missed_injection_rate < 1.0` (at least one in
 .venv/bin/techno-search route-coverage-summary
 ```
 
-Gates in `validate-all`: at least 1 scoring threshold present; at least 2 pathway values have calibration fixture coverage. Scoring config summary reports current v0 thresholds only — not calibrated detection limits. Route coverage identifies which Pathway enum values still lack fixture support.
+Gates in `validate-all`: at least 1 scoring threshold present, all six `Pathway` enum values covered, and zero uncovered pathways. Scoring config summary reports current v0 thresholds only — not calibrated detection limits. Route coverage is synthetic enum coverage; `external_followup_candidate` coverage does not authorize external submission.
 
 ---
 
@@ -668,3 +668,25 @@ Included in `validate-all` for informational purposes. Collects blocking issues 
 ## Pipeline Health Validation
 
 `validate-all` requires `pipeline_total_blocked >= 0` (always passes; the gate confirms the health summary is reachable). Use `pipeline-health-summary` for the full per-track breakdown.
+
+## Operations Readiness Visibility
+
+```bash
+.venv/bin/techno-search operations-readiness-summary
+.venv/bin/techno-search operations-readiness-digest
+```
+
+`validate-all` includes the operations-readiness summary as visibility rather
+than as a new hard failure gate. The summary combines QC health, open alerts,
+overdue review deadlines, route coverage, validation-readiness blockers,
+curated-intake blockers, submission provenance blockers, pipeline capacity, and
+top-level SQLite log safety fields.
+
+Recommendations are conservative local states:
+
+- `local_only_ready`: local readiness inputs are clear; this still does not authorize real data intake or external submission.
+- `operator_review_required`: local validation is structurally clear, but operators have open work to review.
+- `blocked_for_real_data`: real observation intake or external workflow remains blocked by local provenance, review, SQLite, or safety issues.
+
+The digest is review-safe and must not include large data payloads, API keys,
+live-provider results, or claims of confirmed technosignatures.

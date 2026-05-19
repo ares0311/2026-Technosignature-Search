@@ -1176,3 +1176,33 @@ does not modify scoring or pathway logic.
 uncovered pathways. CI promotion remains a manual publishing step until
 workflow-scope permissions are available. Scientific guardrails remain
 unchanged.
+
+---
+
+## DECISION-051: Operations Readiness Is A Local-Only Pre-Real-Data Gate
+
+**Date**: 2026-05-19
+
+**Status**: accepted
+
+**Context**: Health gates can pass while the repository still has operational
+work outstanding: QC blockers, open alerts, overdue review deadlines, pipeline
+capacity strain, curated-intake blockers, submission-provenance gaps, and
+SQLite log safety checks. These signals need one review-safe operator surface
+before any real observation intake, live-provider workflow, or external
+submission is considered.
+
+**Decision**: Add an operations-readiness summary and Markdown digest as
+local-only dashboards. The summary aggregates QC health, candidate alerts,
+review deadlines, pipeline health, route coverage, validation readiness,
+curated dataset intake, submission readiness, user decision records, and
+top-level SQLite log state. It reports one conservative recommendation:
+`local_only_ready`, `operator_review_required`, or `blocked_for_real_data`.
+
+`blocked_for_real_data` is an operations state only. It does not classify a
+candidate scientifically, does not modify candidate scores or pathways, does
+not authorize live-provider access, and does not authorize external submission.
+
+**Consequences**: `validation-summary` exposes operations-readiness fields and
+the CI template reports the summary with live data disabled. The summary is
+visibility for operators, not a claim of discovery or external validation.

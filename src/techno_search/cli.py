@@ -132,6 +132,10 @@ from techno_search.observation_schedule import (
     observation_gap_analysis,
     observation_schedule_summary,
 )
+from techno_search.operations_readiness import (
+    operations_readiness_digest,
+    operations_readiness_summary,
+)
 from techno_search.operator_assignment import operator_assignment_summary
 from techno_search.operator_handoff_template import operator_handoff_summary
 from techno_search.operator_performance import operator_performance_summary
@@ -258,6 +262,7 @@ SCHEMA_FILENAMES = {
     "escalation_log": "escalation_log.schema.json",
     "observation_campaign": "observation_campaign.schema.json",
     "review_deadlines": "review_deadlines.schema.json",
+    "operations_readiness_summary": "operations_readiness_summary.schema.json",
 }
 
 
@@ -1067,6 +1072,35 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         _health = _project_health_summary(out)
         print(json.dumps(_health, indent=2, sort_keys=True), file=out)
         return 0 if _health["all_gates_pass"] else 1
+
+    if args.command == "operations-readiness-summary":
+        db_path = getattr(args, "sqlite_log_path", None)
+        print(
+            json.dumps(
+                operations_readiness_summary(sqlite_log_path=db_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operations-readiness-digest":
+        db_path = getattr(args, "sqlite_log_path", None)
+        ops_summary = operations_readiness_summary(sqlite_log_path=db_path)
+        digest = operations_readiness_digest(ops_summary)
+        if args.output_path is not None:
+            args.output_path.parent.mkdir(parents=True, exist_ok=True)
+            args.output_path.write_text(digest["markdown"], encoding="utf-8")
+            output = {
+                "ok": True,
+                "path": str(args.output_path),
+                "recommendation": digest["recommendation"],
+            }
+            print(json.dumps(output, indent=2, sort_keys=True), file=out)
+        else:
+            print(digest["markdown"], file=out)
+        return 0
 
     if args.command == "baseline-confusion-matrix-summary":
         confusion_result = evaluate_baseline()
@@ -2336,6 +2370,22 @@ def validate_all() -> dict[str, object]:
     sqlite_outcome_count = sqlite_logs["outcome_count"]
     sqlite_network_count = sqlite_logs["network_access_allowed_count"]
     sqlite_external_approved_count = sqlite_logs["external_submission_approved_count"]
+    operations_readiness = operations_readiness_summary(
+        quality_control=qc_summary,
+        pipeline_capacity=pipeline_capacity_data,
+        candidate_alerts=alert_data,
+        review_deadlines=review_deadlines,
+        pipeline_health=pipeline_health,
+        route_coverage=route_coverage,
+        validation_readiness=validation_readiness,
+        curated_intake=intake_data,
+        submission_readiness=submission_data,
+        user_decisions=user_decisions,
+        sqlite_logs=sqlite_logs,
+        sqlite_integrity=sqlite_integrity,
+        sqlite_weekly_digest=sqlite_weekly_digest,
+        sqlite_log_path=sqlite_validation_db,
+    )
 
     ok = (
         all(result["ok"] for result in candidate_results.values())
@@ -2720,6 +2770,7 @@ def validate_all() -> dict[str, object]:
         "candidate_alert_summary": alert_data,
         "pipeline_replay_summary": replay_data,
         "scoring_threshold_audit_summary": threshold_audit_data,
+        "operations_readiness_summary": operations_readiness,
     }
 
 
@@ -2770,6 +2821,7 @@ def validation_summary() -> dict[str, object]:
     sqlite_retention = validation["top_level_sqlite_log_retention_summary"]
     sqlite_pragmas = validation["top_level_sqlite_log_pragmas"]
     sqlite_log_validation = validation["top_level_sqlite_log_validation"]
+    operations_readiness = validation["operations_readiness_summary"]
     return {
         "ok": validation["ok"],
         "generated_at_utc": datetime.now(UTC).isoformat(),
@@ -3115,6 +3167,46 @@ def validation_summary() -> dict[str, object]:
             "external_submission_approved_count"
         ]
         if isinstance(sqlite_logs, dict)
+        else 0,
+        "operations_readiness_recommendation": operations_readiness[
+            "recommendation"
+        ]
+        if isinstance(operations_readiness, dict)
+        else "unknown",
+        "operations_readiness_local_validation_ready": bool(
+            operations_readiness["local_validation_ready"]
+        )
+        if isinstance(operations_readiness, dict)
+        else False,
+        "operations_readiness_real_data_blocker_count": operations_readiness[
+            "real_data_blocker_count"
+        ]
+        if isinstance(operations_readiness, dict)
+        else 0,
+        "operations_readiness_operator_attention_count": operations_readiness[
+            "operator_attention_count"
+        ]
+        if isinstance(operations_readiness, dict)
+        else 0,
+        "operations_readiness_open_alert_count": operations_readiness[
+            "open_alert_count"
+        ]
+        if isinstance(operations_readiness, dict)
+        else 0,
+        "operations_readiness_overdue_review_deadline_count": operations_readiness[
+            "overdue_review_deadline_count"
+        ]
+        if isinstance(operations_readiness, dict)
+        else 0,
+        "operations_readiness_external_submission_approved_count": (
+            operations_readiness["external_submission_approved_count"]
+        )
+        if isinstance(operations_readiness, dict)
+        else 0,
+        "operations_readiness_network_access_allowed_count": operations_readiness[
+            "network_access_allowed_count"
+        ]
+        if isinstance(operations_readiness, dict)
         else 0,
         "baseline_pathway_accuracy": (
             baseline_eval_s["pathway_accuracy"]
@@ -4749,6 +4841,35 @@ def _build_parser() -> argparse.ArgumentParser:
             "Concise project health dashboard combining key gate statuses. "
             "Returns exit 1 if any gate fails."
         ),
+    )
+    ops_ready_parser = subparsers.add_parser(
+        "operations-readiness-summary",
+        help=(
+            "Aggregate local-only readiness blockers across QC, alerts, review "
+            "deadlines, route coverage, and top-level SQLite log state."
+        ),
+    )
+    ops_ready_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help="Optional SQLite log database path for readiness snapshot fields.",
+    )
+    ops_digest_parser = subparsers.add_parser(
+        "operations-readiness-digest",
+        help=(
+            "Print a review-safe Markdown operations digest. Local dashboard only; "
+            "does not authorize live data or external submission."
+        ),
+    )
+    ops_digest_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help="Optional SQLite log database path for readiness snapshot fields.",
+    )
+    ops_digest_parser.add_argument(
+        "--output-path",
+        type=Path,
+        help="Optional Markdown output path for the digest.",
     )
     subparsers.add_parser(
         "baseline-confusion-matrix-summary",

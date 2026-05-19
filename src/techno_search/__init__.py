@@ -375,6 +375,13 @@ from techno_search.observation_schedule import (
     observation_gap_analysis,
     observation_schedule_summary,
 )
+from techno_search.operations_readiness import (
+    ALLOWED_OPERATIONS_READINESS_RECOMMENDATIONS,
+    OPERATIONS_READINESS_DISCLAIMER,
+    OPERATIONS_READINESS_SCHEMA_VERSION,
+    operations_readiness_digest,
+    operations_readiness_summary,
+)
 from techno_search.operator_assignment import (
     ALLOWED_ASSIGNMENT_PRIORITIES,
     ALLOWED_ASSIGNMENT_STATUSES,
@@ -981,6 +988,11 @@ __all__ = [
     "load_follow_up_requests",
     "OPERATOR_PERFORMANCE_DISCLAIMER",
     "operator_performance_summary",
+    "ALLOWED_OPERATIONS_READINESS_RECOMMENDATIONS",
+    "OPERATIONS_READINESS_DISCLAIMER",
+    "OPERATIONS_READINESS_SCHEMA_VERSION",
+    "operations_readiness_digest",
+    "operations_readiness_summary",
     "COMPARISON_TRACKS",
     "TRACK_COMPARISON_DISCLAIMER",
     "track_comparison_summary",

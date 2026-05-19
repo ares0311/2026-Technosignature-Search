@@ -56,3 +56,6 @@ jobs:
 
       - name: Run local health dashboard
         run: techno-search health
+
+      - name: Report operations readiness
+        run: techno-search operations-readiness-summary
