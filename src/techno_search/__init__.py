@@ -375,6 +375,16 @@ from techno_search.observation_schedule import (
     observation_gap_analysis,
     observation_schedule_summary,
 )
+from techno_search.operations_action_plan import (
+    ALLOWED_ACTION_CATEGORIES,
+    ALLOWED_ACTION_PRIORITIES,
+    ALLOWED_ACTION_STATUSES,
+    OPERATIONS_ACTION_PLAN_DISCLAIMER,
+    OPERATIONS_ACTION_PLAN_SCHEMA_VERSION,
+    OperationsAction,
+    build_operations_actions,
+    operations_action_plan_summary,
+)
 from techno_search.operations_readiness import (
     ALLOWED_OPERATIONS_READINESS_RECOMMENDATIONS,
     OPERATIONS_READINESS_DISCLAIMER,
@@ -988,6 +998,14 @@ __all__ = [
     "load_follow_up_requests",
     "OPERATOR_PERFORMANCE_DISCLAIMER",
     "operator_performance_summary",
+    "ALLOWED_ACTION_CATEGORIES",
+    "ALLOWED_ACTION_PRIORITIES",
+    "ALLOWED_ACTION_STATUSES",
+    "OPERATIONS_ACTION_PLAN_DISCLAIMER",
+    "OPERATIONS_ACTION_PLAN_SCHEMA_VERSION",
+    "OperationsAction",
+    "build_operations_actions",
+    "operations_action_plan_summary",
     "ALLOWED_OPERATIONS_READINESS_RECOMMENDATIONS",
     "OPERATIONS_READINESS_DISCLAIMER",
     "OPERATIONS_READINESS_SCHEMA_VERSION",

@@ -132,6 +132,7 @@ from techno_search.observation_schedule import (
     observation_gap_analysis,
     observation_schedule_summary,
 )
+from techno_search.operations_action_plan import operations_action_plan_summary
 from techno_search.operations_readiness import (
     operations_readiness_digest,
     operations_readiness_summary,
@@ -263,6 +264,7 @@ SCHEMA_FILENAMES = {
     "observation_campaign": "observation_campaign.schema.json",
     "review_deadlines": "review_deadlines.schema.json",
     "operations_readiness_summary": "operations_readiness_summary.schema.json",
+    "operations_action_plan": "operations_action_plan.schema.json",
 }
 
 
@@ -1078,6 +1080,19 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(
             json.dumps(
                 operations_readiness_summary(sqlite_log_path=db_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operations-action-plan-summary":
+        db_path = getattr(args, "sqlite_log_path", None)
+        ops_summary = operations_readiness_summary(sqlite_log_path=db_path)
+        print(
+            json.dumps(
+                operations_action_plan_summary(ops_summary),
                 indent=2,
                 sort_keys=True,
             ),
@@ -2386,6 +2401,7 @@ def validate_all() -> dict[str, object]:
         sqlite_weekly_digest=sqlite_weekly_digest,
         sqlite_log_path=sqlite_validation_db,
     )
+    operations_action_plan = operations_action_plan_summary(operations_readiness)
 
     ok = (
         all(result["ok"] for result in candidate_results.values())
@@ -2771,6 +2787,7 @@ def validate_all() -> dict[str, object]:
         "pipeline_replay_summary": replay_data,
         "scoring_threshold_audit_summary": threshold_audit_data,
         "operations_readiness_summary": operations_readiness,
+        "operations_action_plan_summary": operations_action_plan,
     }
 
 
@@ -2822,6 +2839,7 @@ def validation_summary() -> dict[str, object]:
     sqlite_pragmas = validation["top_level_sqlite_log_pragmas"]
     sqlite_log_validation = validation["top_level_sqlite_log_validation"]
     operations_readiness = validation["operations_readiness_summary"]
+    operations_action_plan = validation["operations_action_plan_summary"]
     return {
         "ok": validation["ok"],
         "generated_at_utc": datetime.now(UTC).isoformat(),
@@ -3207,6 +3225,26 @@ def validation_summary() -> dict[str, object]:
             "network_access_allowed_count"
         ]
         if isinstance(operations_readiness, dict)
+        else 0,
+        "operations_action_plan_action_count": operations_action_plan[
+            "action_count"
+        ]
+        if isinstance(operations_action_plan, dict)
+        else 0,
+        "operations_action_plan_critical_action_count": operations_action_plan[
+            "critical_action_count"
+        ]
+        if isinstance(operations_action_plan, dict)
+        else 0,
+        "operations_action_plan_real_data_blocking_action_count": (
+            operations_action_plan["real_data_blocking_action_count"]
+        )
+        if isinstance(operations_action_plan, dict)
+        else 0,
+        "operations_action_plan_operator_review_action_count": (
+            operations_action_plan["operator_review_action_count"]
+        )
+        if isinstance(operations_action_plan, dict)
         else 0,
         "baseline_pathway_accuracy": (
             baseline_eval_s["pathway_accuracy"]
@@ -4850,6 +4888,18 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     ops_ready_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help="Optional SQLite log database path for readiness snapshot fields.",
+    )
+    ops_action_parser = subparsers.add_parser(
+        "operations-action-plan-summary",
+        help=(
+            "Translate operations-readiness blockers into prioritized local "
+            "operator actions. Scheduling aid only."
+        ),
+    )
+    ops_action_parser.add_argument(
         "--sqlite-log-path",
         type=Path,
         help="Optional SQLite log database path for readiness snapshot fields.",

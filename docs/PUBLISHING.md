@@ -77,6 +77,7 @@ Before publishing, run:
 .venv/bin/python -m ruff check .
 .venv/bin/python -m mypy src
 .venv/bin/techno-search operations-readiness-summary
+.venv/bin/techno-search operations-action-plan-summary
 git diff --check
 git status --short --branch
 ```
@@ -88,6 +89,7 @@ Confirm:
 - generated example reports use synthetic data only
 - candidate reports preserve conservative language
 - operations readiness does not report live-provider access or external submission approval
+- operations action plan does not imply blockers are cleared
 - `CLAUDE.md`, `AGENTS.md`, and project docs are consistent
 - `.github/workflows/*.yml` is not added unless the publishing token has GitHub `workflow` scope
 - CI examples remain under `docs/templates/` until workflow-scope publishing is available

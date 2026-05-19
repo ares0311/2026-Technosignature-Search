@@ -1724,6 +1724,17 @@ techno-search operations-readiness-summary --sqlite-log-path logs/techno_search.
 
 Output fields: `disclaimer`, `schema_version`, `recommendation`, `local_validation_ready`, `real_data_blocker_count`, `operator_attention_count`, `outstanding_blockers`, `readiness_gates`, and SQLite snapshot counts. Recommendations are scheduling states only: `local_only_ready`, `operator_review_required`, or `blocked_for_real_data`. They do not authorize live-provider access, real observation intake, external submission, or any detection claim.
 
+## `operations-action-plan-summary`
+
+Translate operations-readiness blockers into prioritized local operator actions.
+
+```bash
+techno-search operations-action-plan-summary
+techno-search operations-action-plan-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `action_count`, `critical_action_count`, `real_data_blocking_action_count`, `operator_review_action_count`, `by_category`, `by_priority`, `by_status`, `next_action`, and `actions`. The action plan is a scheduling aid only. It does not clear blockers automatically, modify scores or pathways, authorize live data, or authorize external submission.
+
 ## `operations-readiness-digest`
 
 Print a review-safe Markdown digest for operator handoff.

@@ -673,6 +673,7 @@ Included in `validate-all` for informational purposes. Collects blocking issues 
 
 ```bash
 .venv/bin/techno-search operations-readiness-summary
+.venv/bin/techno-search operations-action-plan-summary
 .venv/bin/techno-search operations-readiness-digest
 ```
 
@@ -690,3 +691,9 @@ Recommendations are conservative local states:
 
 The digest is review-safe and must not include large data payloads, API keys,
 live-provider results, or claims of confirmed technosignatures.
+
+The action-plan summary converts readiness blockers into prioritized local
+operator tasks with categories such as `quality_control`, `alerts`,
+`validation_readiness`, `curated_intake`, `submission_provenance`, and
+`sqlite_logs`. These tasks help resolve blockers; they do not clear blockers
+automatically or authorize any external workflow.

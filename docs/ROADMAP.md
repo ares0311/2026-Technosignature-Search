@@ -542,6 +542,10 @@ introduced.
 - [x] Review-safe operations-readiness Markdown digest added for local operator
       handoff
 - [x] CI template reports operations readiness without enabling live data
+- [x] Operations action-plan summary translates readiness blockers into
+      prioritized local operator tasks
+- [x] CI template reports operations action-plan visibility without clearing
+      blockers or authorizing external workflow
 
 ## Guardrails
 
@@ -551,3 +555,5 @@ introduced.
   licensing, labeling, and external-review requirements are satisfied.
 - `blocked_for_real_data` is an operations recommendation only. It is not a
   scientific classification and does not modify candidate scores or pathways.
+- Operations action plans are task lists only; they do not clear blockers
+  automatically and do not authorize live data access.

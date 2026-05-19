@@ -48,6 +48,7 @@ Before release, verify:
 - SQLite PRAGMA, backup, retention, and vacuum maintenance commands pass on local logs
 - route coverage reports full synthetic coverage for all `Pathway` enum values
 - operations readiness reports outstanding local blockers before real data or external workflow
+- operations action plan reports prioritized local tasks for outstanding blockers
 - CI template remains non-networked and under `docs/templates/` until workflow-scope publishing is available
 
 Useful commands:
@@ -68,6 +69,7 @@ Useful commands:
 .venv/bin/techno-search validate-sqlite-logs --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search route-coverage-summary
 .venv/bin/techno-search operations-readiness-summary
+.venv/bin/techno-search operations-action-plan-summary
 .venv/bin/techno-search operations-readiness-digest
 .venv/bin/techno-search validate-all
 .venv/bin/techno-search health

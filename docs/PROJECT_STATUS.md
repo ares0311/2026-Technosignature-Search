@@ -186,6 +186,10 @@ The project will support three tracks from day one:
       operator handoff
 - [x] Operations-readiness visibility added to `validation-summary` and CI
       template without enabling live data
+- [x] Operations action-plan summary added to prioritize local blocker
+      resolution tasks
+- [x] Operations action-plan visibility added to `validation-summary` and CI
+      template without clearing blockers automatically
 
 ---
 
@@ -254,6 +258,7 @@ The project will support three tracks from day one:
 - [x] Route coverage summary reports 6/6 Pathway values covered and zero uncovered pathways
 - [x] Operations readiness now reports local-only states: `local_only_ready`, `operator_review_required`, and `blocked_for_real_data`
 - [x] Review-safe operations digest added without large payloads, live-provider results, or unsupported claims
+- [x] Operations action plan now converts readiness blockers into prioritized local operator tasks
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions

@@ -1206,3 +1206,34 @@ not authorize live-provider access, and does not authorize external submission.
 **Consequences**: `validation-summary` exposes operations-readiness fields and
 the CI template reports the summary with live data disabled. The summary is
 visibility for operators, not a claim of discovery or external validation.
+
+---
+
+## DECISION-052: Operations Action Plans Translate Readiness Blockers Into Local Operator Tasks
+
+**Date**: 2026-05-19
+
+**Status**: accepted
+
+**Context**: DECISION-051 added operations-readiness visibility, but visibility
+alone does not tell operators what to do next. Readiness blockers need a
+review-safe local task list that preserves uncertainty and does not imply that
+blockers have been cleared.
+
+**Decision**: Add an operations action-plan summary that converts
+operations-readiness blockers into prioritized local actions. Actions are
+categorized by source, including quality control, alerts, review deadlines,
+pipeline health, validation readiness, curated intake, submission provenance,
+route coverage, SQLite logs, network access, and external submission records.
+Each action records priority, status, required local action, evidence field,
+and blocker count.
+
+Action-plan status is operational only. An action plan does not modify scores,
+pathways, candidate packets, SQLite logs, or review records. It does not clear
+blockers automatically, authorize live-provider access, authorize external
+submission, or constitute external validation.
+
+**Consequences**: `validation-summary` exposes action-plan counts and the CI
+template reports the action plan with live data disabled. Operations blockers
+now have a deterministic local task surface before any real-data workflow is
+considered.
