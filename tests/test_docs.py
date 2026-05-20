@@ -190,6 +190,7 @@ def test_cli_docs_include_draft_report_and_decision_workflows() -> None:
     assert ".venv/bin/techno-search validate-draft-reports" in doc
     assert ".venv/bin/techno-search user-decision-record" in doc
     assert ".venv/bin/techno-search init-logs" in doc
+    assert ".venv/bin/techno-search sqlite-log-bootstrap-summary" in doc
     assert ".venv/bin/techno-search sqlite-log-summary" in doc
     assert ".venv/bin/techno-search sqlite-log-integrity-summary" in doc
     assert ".venv/bin/techno-search sqlite-recent-runs" in doc

@@ -88,9 +88,16 @@ def test_statuses_allowed() -> None:
     )
 
 
-def test_cli_operations_action_resolution_summary_outputs_json() -> None:
+def test_cli_operations_action_resolution_summary_outputs_json(tmp_path) -> None:
     completed = subprocess.run(
-        [sys.executable, "-m", "techno_search.cli", "operations-action-resolution-summary"],
+        [
+            sys.executable,
+            "-m",
+            "techno_search.cli",
+            "operations-action-resolution-summary",
+            "--sqlite-log-path",
+            str(tmp_path / "missing.sqlite3"),
+        ],
         check=False,
         capture_output=True,
         text=True,

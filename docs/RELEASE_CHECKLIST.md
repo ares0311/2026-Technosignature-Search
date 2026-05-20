@@ -61,11 +61,13 @@ Useful commands:
 .venv/bin/techno-search catalog-cache-policy
 .venv/bin/techno-search catalog-cache-validate docs/CATALOG_CACHE_POLICY.md
 .venv/bin/techno-search sqlite-log-commit-guard
+.venv/bin/techno-search sqlite-log-bootstrap-summary --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-integrity-summary --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-pragmas --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-backup --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-retention-summary --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-vacuum --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search sqlite-log-commit-guard
 .venv/bin/techno-search validate-sqlite-logs --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search route-coverage-summary
 .venv/bin/techno-search operations-readiness-summary

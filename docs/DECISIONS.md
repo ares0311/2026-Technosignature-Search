@@ -1267,3 +1267,28 @@ and requires live-data and external-submission authorization counts to remain
 zero. It also requires every current action-plan ID to have a resolution record.
 `validation-summary` exposes action-resolution counts and coverage fields, and
 the CI template reports the summary with live data disabled.
+
+---
+
+## DECISION-054: SQLite Bootstrap Summary Restores Local Log Visibility Only
+
+**Date**: 2026-05-19
+
+**Status**: accepted
+
+**Context**: Operations readiness can be blocked by missing top-level SQLite
+visibility even when the project health gates pass. Operators need one local
+command that initializes the ignored SQLite database and reports the integrity
+and weekly-digest gates used by readiness checks.
+
+**Decision**: Add `sqlite-log-bootstrap-summary` as a local-only bootstrap and
+smoke summary. The command initializes the supplied SQLite path, checks
+integrity, checks the review-safe weekly digest, and runs operations readiness
+against the same database. It reports that `ops-action-009` and
+`ops-action-010` are validated for that database path, but it does not mutate
+action-resolution fixtures.
+
+**Consequences**: SQLite readiness gates can be validated with a single command
+while generated databases remain ignored under `logs/`. The command does not
+enable live data, authorize external submission, clear non-SQLite blockers, or
+constitute external validation.

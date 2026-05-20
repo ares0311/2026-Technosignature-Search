@@ -741,6 +741,62 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "sqlite-log-bootstrap-summary":
+        init_result = init_sqlite_log_db(
+            args.db_path,
+            code_commit=args.code_commit,
+            config_version=args.config_version,
+        )
+        integrity = sqlite_log_integrity_summary(args.db_path)
+        weekly_digest = sqlite_log_weekly_digest(
+            args.db_path,
+            window_days=args.window_days,
+        )
+        readiness = operations_readiness_summary(sqlite_log_path=args.db_path)
+        sqlite_snapshot = readiness["sqlite_log_snapshot"]
+        bootstrap_result = {
+            "ok": (
+                bool(init_result["ok"])
+                and bool(integrity["ok"])
+                and bool(weekly_digest["ok"])
+                and bool(sqlite_snapshot["integrity_ok"])
+                and bool(sqlite_snapshot["weekly_digest_ok"])
+                and int(sqlite_snapshot["network_access_allowed_count"]) == 0
+                and int(sqlite_snapshot["external_submission_approved_count"]) == 0
+            ),
+            "db_path": str(args.db_path),
+            "schema_version": init_result["schema_version"],
+            "disclaimer": init_result["disclaimer"],
+            "sqlite_log_initialized": bool(init_result["database_exists"]),
+            "sqlite_integrity_ok": bool(integrity["ok"]),
+            "sqlite_weekly_digest_ok": bool(weekly_digest["ok"]),
+            "readiness_sqlite_integrity_ok": bool(sqlite_snapshot["integrity_ok"]),
+            "readiness_sqlite_weekly_digest_ok": bool(
+                sqlite_snapshot["weekly_digest_ok"]
+            ),
+            "readiness_recommendation": readiness["recommendation"],
+            "readiness_real_data_blocker_count": readiness["real_data_blocker_count"],
+            "network_access_allowed_count": int(
+                sqlite_snapshot["network_access_allowed_count"]
+            ),
+            "external_submission_approved_count": int(
+                sqlite_snapshot["external_submission_approved_count"]
+            ),
+            "validated_action_ids": ["ops-action-009", "ops-action-010"],
+            "does_not_mutate_action_resolution_fixture": True,
+            "uncertainty_and_limitations": [
+                "Bootstrap checks restore SQLite visibility for the supplied local database only.",
+                "Validated SQLite visibility does not clear non-SQLite operations blockers.",
+                "Generated SQLite databases and backups must remain ignored local artifacts.",
+            ],
+            "init_summary": init_result,
+            "integrity_summary": integrity,
+            "weekly_digest": weekly_digest,
+            "operations_readiness_summary": readiness,
+        }
+        print(json.dumps(bootstrap_result, indent=2, sort_keys=True), file=out)
+        return 0 if bootstrap_result["ok"] else 1
+
     if args.command == "sqlite-log-export":
         print(
             json.dumps(
@@ -3239,6 +3295,21 @@ def validation_summary() -> dict[str, object]:
         ]
         if isinstance(sqlite_logs, dict)
         else 0,
+        "operations_readiness_sqlite_log_present": bool(
+            operations_readiness["sqlite_log_snapshot"]["present"]
+        )
+        if isinstance(operations_readiness, dict)
+        else False,
+        "operations_readiness_sqlite_integrity_ok": bool(
+            operations_readiness["sqlite_log_snapshot"]["integrity_ok"]
+        )
+        if isinstance(operations_readiness, dict)
+        else False,
+        "operations_readiness_sqlite_weekly_digest_ok": bool(
+            operations_readiness["sqlite_log_snapshot"]["weekly_digest_ok"]
+        )
+        if isinstance(operations_readiness, dict)
+        else False,
         "operations_readiness_recommendation": operations_readiness[
             "recommendation"
         ]
@@ -4630,6 +4701,35 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=default_sqlite_log_path(default_project_root()),
         help="SQLite log database path. Defaults to logs/techno_search.sqlite3.",
+    )
+    sqlite_bootstrap_parser = subparsers.add_parser(
+        "sqlite-log-bootstrap-summary",
+        help=(
+            "Initialize local SQLite logs and report integrity, weekly digest, "
+            "and operations-readiness SQLite gate visibility."
+        ),
+    )
+    sqlite_bootstrap_parser.add_argument(
+        "--db-path",
+        type=Path,
+        default=default_sqlite_log_path(default_project_root()),
+        help="SQLite log database path. Defaults to logs/techno_search.sqlite3.",
+    )
+    sqlite_bootstrap_parser.add_argument(
+        "--code-commit",
+        default="not-recorded",
+        help="Optional code commit or workspace identifier to store in metadata.",
+    )
+    sqlite_bootstrap_parser.add_argument(
+        "--config-version",
+        default="not-recorded",
+        help="Optional config version to store in metadata.",
+    )
+    sqlite_bootstrap_parser.add_argument(
+        "--window-days",
+        type=int,
+        default=7,
+        help="Weekly digest reporting window in days (default 7).",
     )
     sqlite_export_parser = subparsers.add_parser(
         "sqlite-log-export",

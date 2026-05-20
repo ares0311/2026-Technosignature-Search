@@ -252,6 +252,8 @@ Review reviewed and needs-follow-up outcome logs:
 .venv/bin/techno-search user-decision-summary
 .venv/bin/techno-search init-logs \
   --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search sqlite-log-bootstrap-summary \
+  --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-summary \
   --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-integrity-summary \
@@ -683,6 +685,12 @@ than as a new hard failure gate. The summary combines QC health, open alerts,
 overdue review deadlines, route coverage, validation-readiness blockers,
 curated-intake blockers, submission provenance blockers, pipeline capacity, and
 top-level SQLite log safety fields.
+
+Use `sqlite-log-bootstrap-summary --db-path logs/techno_search.sqlite3` to
+initialize a local ignored SQLite database and check the integrity and weekly
+digest gates used by operations readiness. This restores SQLite visibility for
+the supplied local database only; it does not clear QC, alert, validation,
+curated-intake, or submission-provenance blockers.
 
 `validate-all` also checks local operations action-resolution records are
 present and that both live-data and external-submission authorization counts

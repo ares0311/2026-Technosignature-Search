@@ -392,6 +392,8 @@ Initialize, summarize, and validate the top-level SQLite logs:
 ```bash
 .venv/bin/techno-search init-logs \
   --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search sqlite-log-bootstrap-summary \
+  --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-summary \
   --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-integrity-summary \
@@ -417,7 +419,7 @@ Initialize, summarize, and validate the top-level SQLite logs:
   --db-path logs/techno_search.sqlite3
 ```
 
-The SQLite log records background runs, exactly one reviewed or needs-follow-up outcome per run, draft-report references, user-decision slots, and validation events. Integrity checks are intended for scheduler health monitoring. Recent-run and needs-follow-up views are small operator summaries. `sqlite-log-export` emits a review-safe JSON summary rather than the full database. `sqlite-log-pragmas` reports foreign-key, journal, and integrity diagnostics; `sqlite-log-backup` writes timestamped ignored backups under `logs/backups/`; `sqlite-log-retention-summary` reports database and backup age/size; and `sqlite-log-vacuum` compacts a local database after backup/review. `sqlite-log-commit-guard` rejects generated top-level databases such as `logs/*.sqlite3`, `logs/*.db`, `logs/*-wal`, `logs/*-shm`, and generated `logs/backups/` databases from commit paths. These are workflow/provenance records only; they are not detections, discoveries, external validation, or authorization to submit externally.
+The SQLite log records background runs, exactly one reviewed or needs-follow-up outcome per run, draft-report references, user-decision slots, and validation events. Integrity checks are intended for scheduler health monitoring. `sqlite-log-bootstrap-summary` initializes the local database and reports integrity, weekly digest, and operations-readiness SQLite gate visibility in one review-safe response; it also reports that `ops-action-009` and `ops-action-010` are validated for the supplied database path without mutating action-resolution fixtures. Recent-run and needs-follow-up views are small operator summaries. `sqlite-log-export` emits a review-safe JSON summary rather than the full database. `sqlite-log-pragmas` reports foreign-key, journal, and integrity diagnostics; `sqlite-log-backup` writes timestamped ignored backups under `logs/backups/`; `sqlite-log-retention-summary` reports database and backup age/size; and `sqlite-log-vacuum` compacts a local database after backup/review. `sqlite-log-commit-guard` rejects generated top-level databases such as `logs/*.sqlite3`, `logs/*.db`, `logs/*-wal`, `logs/*-shm`, and generated `logs/backups/` databases from commit paths. These are workflow/provenance records only; they are not detections, discoveries, external validation, or authorization to submit externally.
 
 Smoke-test scheduler wiring against a temporary artifact directory:
 

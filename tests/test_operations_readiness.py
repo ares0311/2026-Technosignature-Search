@@ -6,6 +6,7 @@ import json
 import subprocess
 import sys
 
+from techno_search.log_store import init_sqlite_log_db
 from techno_search.operations_readiness import (
     ALLOWED_OPERATIONS_READINESS_RECOMMENDATIONS,
     OPERATIONS_READINESS_DISCLAIMER,
@@ -117,6 +118,32 @@ def test_validation_blockers_block_real_data() -> None:
     )
     assert result["recommendation"] == "blocked_for_real_data"
     assert result["real_data_blocker_count"] == 2
+
+
+def test_sqlite_log_path_restores_sqlite_readiness_gates(tmp_path) -> None:
+    db_path = tmp_path / "logs" / "techno_search.sqlite3"
+    init_sqlite_log_db(
+        db_path,
+        code_commit="ops-readiness-test",
+        config_version="background_priority_v0",
+    )
+
+    result = operations_readiness_summary(sqlite_log_path=db_path)
+    sqlite_snapshot = result["sqlite_log_snapshot"]
+
+    assert sqlite_snapshot["present"] is True
+    assert sqlite_snapshot["integrity_ok"] is True
+    assert sqlite_snapshot["weekly_digest_ok"] is True
+    assert sqlite_snapshot["network_access_allowed_count"] == 0
+    assert sqlite_snapshot["external_submission_approved_count"] == 0
+    assert result["readiness_gates"]["sqlite_integrity_ok"] is True
+    assert result["readiness_gates"]["sqlite_weekly_digest_ok"] is True
+    assert "SQLite log integrity is not confirmed" not in result[
+        "outstanding_blockers"
+    ]
+    assert "SQLite weekly digest is not confirmed" not in result[
+        "outstanding_blockers"
+    ]
 
 
 def test_digest_contains_review_safe_markdown() -> None:

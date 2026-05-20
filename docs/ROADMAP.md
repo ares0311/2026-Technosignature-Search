@@ -550,6 +550,8 @@ introduced.
       action-plan items
 - [x] Operations action-resolution coverage verifies every current action-plan
       ID has a local provenance record
+- [x] SQLite bootstrap summary restores top-level SQLite visibility for a
+      supplied local ignored database path
 - [x] CI template reports action-resolution visibility without clearing
       blockers or authorizing live data or external submission
 
@@ -567,3 +569,5 @@ introduced.
   clear blockers or authorize external submission.
 - Action-resolution coverage is an audit check only; full coverage does not
   mean the underlying blockers are cleared.
+- SQLite bootstrap visibility is local to the supplied database path and does
+  not clear non-SQLite operations blockers.

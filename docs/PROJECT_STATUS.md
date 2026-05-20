@@ -196,6 +196,8 @@ The project will support three tracks from day one:
       CI without authorizing live data or external submission
 - [x] Operations action-resolution coverage now checks every current action-plan
       ID has a local provenance record
+- [x] SQLite bootstrap summary added to restore top-level log visibility for a
+      supplied local ignored database path
 
 ---
 
@@ -267,6 +269,7 @@ The project will support three tracks from day one:
 - [x] Operations action plan now converts readiness blockers into prioritized local operator tasks
 - [x] Operations action resolution now records operator status while preserving residual blockers and zero authorization counts
 - [x] Operations action-resolution coverage now reports full action-plan ID coverage without clearing blockers
+- [x] SQLite bootstrap summary now reports integrity and weekly-digest readiness gates without mutating resolution fixtures
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions

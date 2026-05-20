@@ -1115,6 +1115,33 @@ def test_cli_top_level_sqlite_log_commands_validate_background_run(
     assert integrity["ok"] is True
 
     stdout = StringIO()
+    bootstrap_exit_code = main(
+        [
+            "sqlite-log-bootstrap-summary",
+            "--db-path",
+            str(db_path),
+            "--code-commit",
+            "cli-test",
+            "--config-version",
+            "background_priority_v0",
+        ],
+        stdout=stdout,
+    )
+    bootstrap = json.loads(stdout.getvalue())
+    assert bootstrap_exit_code == 0
+    assert bootstrap["ok"] is True
+    assert bootstrap["sqlite_log_initialized"] is True
+    assert bootstrap["sqlite_integrity_ok"] is True
+    assert bootstrap["sqlite_weekly_digest_ok"] is True
+    assert bootstrap["readiness_sqlite_integrity_ok"] is True
+    assert bootstrap["readiness_sqlite_weekly_digest_ok"] is True
+    assert bootstrap["network_access_allowed_count"] == 0
+    assert bootstrap["external_submission_approved_count"] == 0
+    assert bootstrap["validated_action_ids"] == ["ops-action-009", "ops-action-010"]
+    assert bootstrap["does_not_mutate_action_resolution_fixture"] is True
+    assert bootstrap["readiness_recommendation"] == "blocked_for_real_data"
+
+    stdout = StringIO()
     recent_exit_code = main(
         ["sqlite-recent-runs", "--db-path", str(db_path), "--limit", "1"],
         stdout=stdout,
@@ -1503,6 +1530,9 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert result["top_level_sqlite_log_network_access_allowed_count"] == 0
     assert result["top_level_sqlite_log_external_submission_approved_count"] == 0
+    assert result["operations_readiness_sqlite_log_present"] is True
+    assert result["operations_readiness_sqlite_integrity_ok"] is True
+    assert result["operations_readiness_sqlite_weekly_digest_ok"] is True
     assert result["operations_action_resolution_record_count"] == 10
     assert result["operations_action_resolution_expected_action_count"] == 8
     assert result["operations_action_resolution_covered_action_count"] == 8
