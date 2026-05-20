@@ -194,6 +194,8 @@ The project will support three tracks from day one:
       across open, acknowledged, deferred, and resolved actions
 - [x] Operations action-resolution visibility added to `validation-summary` and
       CI without authorizing live data or external submission
+- [x] Operations action-resolution coverage now checks every current action-plan
+      ID has a local provenance record
 
 ---
 
@@ -264,6 +266,7 @@ The project will support three tracks from day one:
 - [x] Review-safe operations digest added without large payloads, live-provider results, or unsupported claims
 - [x] Operations action plan now converts readiness blockers into prioritized local operator tasks
 - [x] Operations action resolution now records operator status while preserving residual blockers and zero authorization counts
+- [x] Operations action-resolution coverage now reports full action-plan ID coverage without clearing blockers
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions

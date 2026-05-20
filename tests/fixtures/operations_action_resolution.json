@@ -79,6 +79,58 @@
       "live_data_authorized": false,
       "external_submission_authorized": false,
       "notes": "Resolution does not assert a candidate outcome or external review."
+    },
+    {
+      "resolution_id": "ops-resolution-007",
+      "action_id": "ops-action-002",
+      "category": "capacity",
+      "resolution_status": "acknowledged",
+      "operator_id": "operator-delta",
+      "resolution_utc": "2026-05-19T13:30:00Z",
+      "evidence_note": "Pipeline-capacity action acknowledged for local queue triage; capacity remains an operations blocker until reviewed evidence changes.",
+      "residual_blocker_count": 1,
+      "live_data_authorized": false,
+      "external_submission_authorized": false,
+      "notes": "Acknowledgement does not authorize new operational load."
+    },
+    {
+      "resolution_id": "ops-resolution-008",
+      "action_id": "ops-action-005",
+      "category": "pipeline_health",
+      "resolution_status": "open",
+      "operator_id": "operator-delta",
+      "resolution_utc": "2026-05-19T13:35:00Z",
+      "evidence_note": "Pipeline-health blocked items remain open for per-track review and local documentation.",
+      "residual_blocker_count": 5,
+      "live_data_authorized": false,
+      "external_submission_authorized": false,
+      "notes": "Open status preserves blocked pipeline state for operator review."
+    },
+    {
+      "resolution_id": "ops-resolution-009",
+      "action_id": "ops-action-009",
+      "category": "sqlite_logs",
+      "resolution_status": "acknowledged",
+      "operator_id": "operator-epsilon",
+      "resolution_utc": "2026-05-19T13:40:00Z",
+      "evidence_note": "SQLite integrity visibility action acknowledged; generated top-level logs remain local and ignored.",
+      "residual_blocker_count": 1,
+      "live_data_authorized": false,
+      "external_submission_authorized": false,
+      "notes": "SQLite acknowledgement is workflow provenance only."
+    },
+    {
+      "resolution_id": "ops-resolution-010",
+      "action_id": "ops-action-010",
+      "category": "sqlite_logs",
+      "resolution_status": "open",
+      "operator_id": "operator-epsilon",
+      "resolution_utc": "2026-05-19T13:45:00Z",
+      "evidence_note": "SQLite weekly digest visibility action remains open until the review-safe digest is confirmed.",
+      "residual_blocker_count": 1,
+      "live_data_authorized": false,
+      "external_submission_authorized": false,
+      "notes": "Open status keeps top-level SQLite digest visibility unresolved."
     }
   ]
 }

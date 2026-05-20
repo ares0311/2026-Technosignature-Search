@@ -548,6 +548,8 @@ introduced.
       blockers or authorizing external workflow
 - [x] Operations action-resolution summary records local operator status for
       action-plan items
+- [x] Operations action-resolution coverage verifies every current action-plan
+      ID has a local provenance record
 - [x] CI template reports action-resolution visibility without clearing
       blockers or authorizing live data or external submission
 
@@ -563,3 +565,5 @@ introduced.
   automatically and do not authorize live data access.
 - Operations action-resolution records are workflow provenance only; they do not
   clear blockers or authorize external submission.
+- Action-resolution coverage is an audit check only; full coverage does not
+  mean the underlying blockers are cleared.

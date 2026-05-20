@@ -688,6 +688,9 @@ top-level SQLite log safety fields.
 present and that both live-data and external-submission authorization counts
 remain zero. These records document operator status only; they do not clear
 blockers, change candidate scores, or reduce scientific uncertainty.
+Coverage is also checked: every current operations action-plan ID must have a
+resolution record, and missing resolution IDs are reported without clearing or
+downgrading the underlying blocker.
 
 Recommendations are conservative local states:
 

@@ -1255,7 +1255,8 @@ scientific validation, live-data approval, or external-submission approval.
 record stores an action id, category, operator id, status, evidence note,
 residual blocker count, and explicit live-data and external-submission
 authorization booleans. The summary command reports status counts, category
-coverage, operator coverage, residual blockers, and authorization counts.
+coverage, operator coverage, residual blockers, authorization counts, and
+coverage against the current operations action-plan IDs.
 
 Resolution records are workflow provenance only. They do not clear readiness
 blockers, change candidate scores or pathways, authorize live-provider access,
@@ -1263,5 +1264,6 @@ authorize external submission, or constitute external validation.
 
 **Consequences**: `validate-all` requires at least one action-resolution record
 and requires live-data and external-submission authorization counts to remain
-zero. `validation-summary` exposes action-resolution counts, and the CI template
-reports the summary with live data disabled.
+zero. It also requires every current action-plan ID to have a resolution record.
+`validation-summary` exposes action-resolution counts and coverage fields, and
+the CI template reports the summary with live data disabled.

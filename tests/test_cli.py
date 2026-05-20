@@ -1503,6 +1503,23 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert result["top_level_sqlite_log_network_access_allowed_count"] == 0
     assert result["top_level_sqlite_log_external_submission_approved_count"] == 0
+    assert result["operations_action_resolution_record_count"] == 10
+    assert result["operations_action_resolution_expected_action_count"] == 8
+    assert result["operations_action_resolution_covered_action_count"] == 8
+    assert result["operations_action_resolution_missing_action_count"] == 0
+    assert result["operations_action_resolution_stale_resolution_count"] == 2
+    assert result["operations_action_resolution_coverage_fraction"] == 1.0
+    assert result["operations_action_resolution_coverage_complete"] is True
+    assert result["operations_action_resolution_missing_action_ids"] == []
+    assert result["operations_action_resolution_stale_resolution_action_ids"] == [
+        "ops-action-009",
+        "ops-action-010",
+    ]
+    assert result["operations_action_resolution_live_data_authorized_count"] == 0
+    assert (
+        result["operations_action_resolution_external_submission_authorized_count"]
+        == 0
+    )
     assert result["session_log_count"] == 5
     assert result["session_log_completed_count"] == 3
     assert result["priority_queue_depth"] == 5

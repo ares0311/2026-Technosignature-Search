@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -91,10 +92,21 @@ def load_operations_action_resolution_records(
 
 def operations_action_resolution_summary(
     fixture_path: Path | None = None,
+    expected_action_ids: Iterable[str] | None = None,
 ) -> dict[str, Any]:
     """Summarize local action-resolution status without clearing blockers."""
 
     records = load_operations_action_resolution_records(fixture_path)
+    expected_ids = sorted({str(action_id) for action_id in expected_action_ids or []})
+    resolved_ids = sorted({record.action_id for record in records})
+    missing_ids = sorted(set(expected_ids) - set(resolved_ids))
+    stale_ids = sorted(set(resolved_ids) - set(expected_ids)) if expected_ids else []
+    expected_count = len(expected_ids)
+    coverage_fraction = (
+        round((expected_count - len(missing_ids)) / expected_count, 6)
+        if expected_count
+        else 1.0
+    )
     by_status: dict[str, int] = {}
     by_category: dict[str, int] = {}
     by_operator: dict[str, int] = {}
@@ -133,6 +145,16 @@ def operations_action_resolution_summary(
         "all_external_authorization_disabled": (
             live_authorized_count == 0 and external_authorized_count == 0
         ),
+        "expected_action_count": expected_count,
+        "covered_action_count": len(set(expected_ids) & set(resolved_ids))
+        if expected_ids
+        else len(resolved_ids),
+        "missing_action_count": len(missing_ids),
+        "stale_resolution_count": len(stale_ids),
+        "coverage_fraction": coverage_fraction,
+        "coverage_complete": not missing_ids,
+        "missing_action_ids": missing_ids,
+        "stale_resolution_action_ids": stale_ids,
         "by_status": dict(sorted(by_status.items())),
         "by_category": dict(sorted(by_category.items())),
         "by_operator": dict(sorted(by_operator.items())),

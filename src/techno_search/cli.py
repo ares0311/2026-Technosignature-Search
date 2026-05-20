@@ -1106,9 +1106,20 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
 
     if args.command == "operations-action-resolution-summary":
         fixture_path = getattr(args, "fixture_path", None)
+        db_path = getattr(args, "sqlite_log_path", None)
+        ops_summary = operations_readiness_summary(sqlite_log_path=db_path)
+        ops_action_plan = operations_action_plan_summary(ops_summary)
+        expected_action_ids = [
+            str(action["action_id"])
+            for action in ops_action_plan["actions"]
+            if isinstance(action, dict)
+        ]
         print(
             json.dumps(
-                operations_action_resolution_summary(fixture_path),
+                operations_action_resolution_summary(
+                    fixture_path,
+                    expected_action_ids=expected_action_ids,
+                ),
                 indent=2,
                 sort_keys=True,
             ),
@@ -2418,7 +2429,14 @@ def validate_all() -> dict[str, object]:
         sqlite_log_path=sqlite_validation_db,
     )
     operations_action_plan = operations_action_plan_summary(operations_readiness)
-    operations_action_resolution = operations_action_resolution_summary()
+    operations_action_ids = [
+        str(action["action_id"])
+        for action in operations_action_plan["actions"]
+        if isinstance(action, dict)
+    ]
+    operations_action_resolution = operations_action_resolution_summary(
+        expected_action_ids=operations_action_ids,
+    )
     action_resolution_record_count = int(
         operations_action_resolution["record_count"]
     )
@@ -2427,6 +2445,9 @@ def validate_all() -> dict[str, object]:
     )
     action_resolution_external_authorized_count = int(
         operations_action_resolution["external_submission_authorized_count"]
+    )
+    action_resolution_coverage_complete = bool(
+        operations_action_resolution["coverage_complete"]
     )
 
     ok = (
@@ -2699,6 +2720,7 @@ def validate_all() -> dict[str, object]:
         and action_resolution_record_count >= 1
         and action_resolution_live_authorized_count == 0
         and action_resolution_external_authorized_count == 0
+        and action_resolution_coverage_complete
     )
     return {
         "ok": ok,
@@ -3322,6 +3344,46 @@ def validation_summary() -> dict[str, object]:
         )
         if isinstance(operations_action_resolution, dict)
         else False,
+        "operations_action_resolution_expected_action_count": (
+            operations_action_resolution["expected_action_count"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_covered_action_count": (
+            operations_action_resolution["covered_action_count"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_missing_action_count": (
+            operations_action_resolution["missing_action_count"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_stale_resolution_count": (
+            operations_action_resolution["stale_resolution_count"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_coverage_fraction": (
+            operations_action_resolution["coverage_fraction"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else 0.0,
+        "operations_action_resolution_coverage_complete": bool(
+            operations_action_resolution["coverage_complete"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else False,
+        "operations_action_resolution_missing_action_ids": (
+            operations_action_resolution["missing_action_ids"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else [],
+        "operations_action_resolution_stale_resolution_action_ids": (
+            operations_action_resolution["stale_resolution_action_ids"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else [],
         "baseline_pathway_accuracy": (
             baseline_eval_s["pathway_accuracy"]
             if isinstance(baseline_eval_s := validation.get("baseline_eval_summary"), dict)
@@ -4991,6 +5053,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "--fixture-path",
         type=Path,
         help="Optional local action-resolution fixture path.",
+    )
+    ops_resolution_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help="Optional SQLite log database path for action-plan coverage fields.",
     )
     ops_digest_parser = subparsers.add_parser(
         "operations-readiness-digest",

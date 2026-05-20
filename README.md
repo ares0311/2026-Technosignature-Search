@@ -863,7 +863,7 @@ Scientific quality gates:
 | Premature candidate extraction | Local handoff contract before target selection becomes candidate packet generation | `candidate-extraction-handoff-summary` |
 | Real-data workflow before operations readiness | Local readiness dashboard surfaces QC, alert, review, route, provenance, and SQLite blockers | `operations-readiness-summary` |
 | Readiness blockers lack owner actions | Local action plan turns blockers into prioritized operator tasks | `operations-action-plan-summary` |
-| Action-plan items lack resolution provenance | Local resolution records track open, acknowledged, deferred, and resolved operator status without clearing blockers | `operations-action-resolution-summary` |
+| Action-plan items lack resolution provenance | Local resolution records cover every current action-plan ID while tracking open, acknowledged, deferred, and resolved operator status without clearing blockers | `operations-action-resolution-summary` |
 | CI drift or accidental live access | Template stays non-networked under `docs/templates/` until workflow-scope publishing is available | `docs/CI.md`, `docs/templates/ci.yml` |
 
 👉 See [`docs/VALIDATION.md`](docs/VALIDATION.md)

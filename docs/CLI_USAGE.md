@@ -1742,9 +1742,10 @@ Summarize local action-plan resolution records for operator provenance.
 ```bash
 techno-search operations-action-resolution-summary
 techno-search operations-action-resolution-summary --fixture-path tests/fixtures/operations_action_resolution.json
+techno-search operations-action-resolution-summary --sqlite-log-path logs/techno_search.sqlite3
 ```
 
-Output fields: `disclaimer`, `schema_version`, `record_count`, status counts, `residual_blocker_total`, authorization counts, `by_status`, `by_category`, `by_operator`, `action_ids`, and `categories_covered`. Resolution records are workflow provenance only. They do not clear blockers, authorize live data, authorize external submission, or imply external validation.
+Output fields: `disclaimer`, `schema_version`, `record_count`, status counts, `residual_blocker_total`, authorization counts, `expected_action_count`, `covered_action_count`, `missing_action_count`, `coverage_fraction`, `coverage_complete`, `missing_action_ids`, `stale_resolution_action_ids`, `by_status`, `by_category`, `by_operator`, `action_ids`, and `categories_covered`. Resolution records are workflow provenance only. They do not clear blockers, authorize live data, authorize external submission, or imply external validation.
 
 ## `operations-readiness-digest`
 

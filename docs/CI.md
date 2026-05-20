@@ -35,7 +35,8 @@ labeling, and external-review prerequisites remain incomplete. The action-plan
 summary translates those blockers into local review tasks without clearing them
 or authorizing external workflow. The action-resolution summary reports local
 operator status records without clearing blockers or authorizing live data,
-network access, or external submission.
+network access, or external submission. Its coverage fields must show every
+current action-plan ID has a corresponding local resolution record.
 
 ## Promotion Checklist
 
