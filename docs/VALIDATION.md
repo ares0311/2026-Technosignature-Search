@@ -678,6 +678,7 @@ Included in `validate-all` for informational purposes. Collects blocking issues 
 .venv/bin/techno-search operations-action-plan-summary
 .venv/bin/techno-search operations-action-resolution-summary
 .venv/bin/techno-search operations-blocker-detail-summary
+.venv/bin/techno-search operations-blocker-review-summary
 .venv/bin/techno-search operations-readiness-digest
 ```
 
@@ -722,3 +723,11 @@ deadlines, blocked pipeline health inputs, validation-readiness records,
 curated-intake records, and submission-provenance gaps. It is traceability for
 operator review only. It does not mutate fixtures, clear blockers, enable live
 data, authorize external submission, or change candidate scores.
+
+The blocker-review summary records local operator review status for those
+blocker-detail evidence bundles. It reports coverage against current action
+IDs, reviewed and unreviewed evidence counts, residual blockers, and
+authorization counts. Review records are provenance only: even full evidence
+review coverage does not clear blockers, authorize live data, authorize
+external submission, mutate SQLite logs, or change candidate scores or
+pathways.

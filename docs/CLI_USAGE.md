@@ -1769,6 +1769,25 @@ and submission-provenance gaps. The summary is a local traceability aid only:
 it does not mutate fixtures, clear blockers, authorize live data, authorize
 external submission, or change candidate scores.
 
+## `operations-blocker-review-summary`
+
+Summarize local blocker-detail review records for operator provenance.
+
+```bash
+techno-search operations-blocker-review-summary
+techno-search operations-blocker-review-summary --fixture-path tests/fixtures/operations_blocker_review.json
+techno-search operations-blocker-review-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`, status counts,
+`residual_blocker_total`, evidence-record counts, authorization counts,
+coverage fields, `all_detail_evidence_reviewed`, `missing_action_ids`,
+`stale_review_action_ids`, `by_status`, `by_category`, `by_operator`, and
+`records`. Review records document local operator status for blocker-detail
+evidence bundles only. They do not clear readiness blockers, mutate candidate
+scores, change pathways, mutate SQLite logs, authorize live data, authorize
+external submission, or imply external validation.
+
 ## `operations-readiness-digest`
 
 Print a review-safe Markdown digest for operator handoff.

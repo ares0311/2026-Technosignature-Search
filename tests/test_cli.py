@@ -303,6 +303,7 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "operations_action_plan",
         "operations_action_resolution",
         "operations_blocker_detail",
+        "operations_blocker_review",
     }
     assert result["background_search_ledger"].endswith(
         "schemas/background_search_ledger.schema.json"
@@ -1441,7 +1442,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 74
+    assert result["schema_count"] == 75
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -1558,6 +1559,20 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
         is True
     )
     assert result["operations_blocker_detail_sqlite_context_is_resolved"] is True
+    assert result["operations_blocker_review_record_count"] == 8
+    assert result["operations_blocker_review_reviewed_evidence_record_count"] == 32
+    assert result["operations_blocker_review_unreviewed_evidence_record_count"] == 0
+    assert result["operations_blocker_review_residual_blocker_total"] == 29
+    assert result["operations_blocker_review_live_data_authorized_count"] == 0
+    assert (
+        result["operations_blocker_review_external_submission_authorized_count"] == 0
+    )
+    assert (
+        result["operations_blocker_review_all_external_authorization_disabled"]
+        is True
+    )
+    assert result["operations_blocker_review_coverage_complete"] is True
+    assert result["operations_blocker_review_all_detail_evidence_reviewed"] is True
     assert result["session_log_count"] == 5
     assert result["session_log_completed_count"] == 3
     assert result["priority_queue_depth"] == 5

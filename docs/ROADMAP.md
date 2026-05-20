@@ -554,6 +554,8 @@ introduced.
       supplied local ignored database path
 - [x] Operations blocker-detail summary traces current action-plan blockers to
       fixture-backed local source records without clearing blockers
+- [x] Operations blocker-review summary records local review status for
+      blocker-detail evidence bundles without clearing blockers
 - [x] CI template reports action-resolution visibility without clearing
       blockers or authorizing live data or external submission
 
@@ -575,4 +577,7 @@ introduced.
   not clear non-SQLite operations blockers.
 - Blocker-detail summaries are traceability aids only; fixture-backed source
   records help operator review but do not clear blockers or authorize external
+  workflow.
+- Blocker-review records are local provenance only; full evidence coverage
+  does not clear readiness blockers, mutate scores, or authorize external
   workflow.

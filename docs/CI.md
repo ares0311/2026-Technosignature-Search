@@ -25,6 +25,7 @@ techno-search operations-readiness-summary
 techno-search operations-action-plan-summary
 techno-search operations-action-resolution-summary
 techno-search operations-blocker-detail-summary
+techno-search operations-blocker-review-summary
 ```
 
 The workflow sets `TECHNO_SEARCH_ENABLE_LIVE_DATA=0`. CI must remain
@@ -40,7 +41,9 @@ network access, or external submission. Its coverage fields must show every
 current action-plan ID has a corresponding local resolution record. The
 blocker-detail summary expands current action-plan items into fixture-backed
 source records for review without clearing blockers or authorizing external
-workflow.
+workflow. The blocker-review summary records local operator review status for
+those evidence bundles while preserving residual blockers and zero live-data
+and external-submission authorization counts.
 
 ## Promotion Checklist
 

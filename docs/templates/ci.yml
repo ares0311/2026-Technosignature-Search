@@ -68,3 +68,6 @@ jobs:
 
       - name: Report operations blocker details
         run: techno-search operations-blocker-detail-summary
+
+      - name: Report operations blocker review
+        run: techno-search operations-blocker-review-summary

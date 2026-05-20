@@ -1319,3 +1319,31 @@ action-plan item without enabling live data or external submission. The summary
 does not mutate fixtures, clear blockers, change candidate scores or pathways,
 authorize live-provider access, authorize external submission, or constitute
 external validation.
+
+---
+
+## DECISION-056: Operations Blocker Review Records Preserve Evidence Review Provenance
+
+**Date**: 2026-05-20
+
+**Status**: accepted
+
+**Context**: DECISION-055 exposes blocker-detail evidence records for current
+operations actions. The repository also needs local provenance for whether
+those evidence bundles have been reviewed, which operator reviewed them, and
+how many residual blockers remain. This provenance must not be confused with
+clearing readiness blockers or approving real-data workflows.
+
+**Decision**: Add fixture-backed operations blocker-review records and an
+`operations-blocker-review-summary` command. Each record links to an
+operations action id, category, operator, review status, evidence counts,
+residual blocker count, and explicit live-data and external-submission
+authorization booleans. The summary reports coverage against current
+blocker-detail action IDs, reviewed and unreviewed evidence counts, residual
+blockers, stale or missing review IDs, and authorization counts.
+
+**Consequences**: Operators can audit local evidence-review provenance for
+current blocker-detail bundles. Full review coverage does not clear blockers,
+change candidate scores or pathways, mutate SQLite logs, authorize
+live-provider access, authorize external submission, or constitute external
+validation.

@@ -200,6 +200,8 @@ The project will support three tracks from day one:
       supplied local ignored database path
 - [x] Operations blocker-detail summary added to trace action-plan blockers to
       fixture-backed local source records without clearing blockers
+- [x] Operations blocker-review records added to preserve local review
+      provenance for blocker-detail evidence bundles without clearing blockers
 
 ---
 
@@ -273,6 +275,7 @@ The project will support three tracks from day one:
 - [x] Operations action-resolution coverage now reports full action-plan ID coverage without clearing blockers
 - [x] SQLite bootstrap summary now reports integrity and weekly-digest readiness gates without mutating resolution fixtures
 - [x] Operations blocker-detail summary now expands current action-plan blockers into local source evidence while keeping live-data and external-submission authorization counts at zero
+- [x] Operations blocker-review summary now covers current blocker-detail actions and evidence counts while preserving residual blockers and zero authorization counts
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions

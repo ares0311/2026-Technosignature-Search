@@ -137,6 +137,7 @@ from techno_search.operations_action_resolution import (
     operations_action_resolution_summary,
 )
 from techno_search.operations_blocker_detail import operations_blocker_detail_summary
+from techno_search.operations_blocker_review import operations_blocker_review_summary
 from techno_search.operations_readiness import (
     operations_readiness_digest,
     operations_readiness_summary,
@@ -271,6 +272,7 @@ SCHEMA_FILENAMES = {
     "operations_action_plan": "operations_action_plan.schema.json",
     "operations_action_resolution": "operations_action_resolution.schema.json",
     "operations_blocker_detail": "operations_blocker_detail.schema.json",
+    "operations_blocker_review": "operations_blocker_review.schema.json",
 }
 
 
@@ -1190,6 +1192,29 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(
             json.dumps(
                 operations_blocker_detail_summary(sqlite_log_path=db_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operations-blocker-review-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        db_path = getattr(args, "sqlite_log_path", None)
+        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=db_path)
+        expected_action_ids = [
+            str(detail["action_id"])
+            for detail in blocker_detail["details"]
+            if isinstance(detail, dict)
+        ]
+        print(
+            json.dumps(
+                operations_blocker_review_summary(
+                    fixture_path,
+                    expected_action_ids=expected_action_ids,
+                    blocker_detail_summary=blocker_detail,
+                ),
                 indent=2,
                 sort_keys=True,
             ),
@@ -2511,6 +2536,10 @@ def validate_all() -> dict[str, object]:
         readiness_summary=operations_readiness,
         action_plan_summary=operations_action_plan,
     )
+    operations_blocker_review = operations_blocker_review_summary(
+        expected_action_ids=operations_action_ids,
+        blocker_detail_summary=operations_blocker_detail,
+    )
     action_resolution_record_count = int(
         operations_action_resolution["record_count"]
     )
@@ -2529,6 +2558,19 @@ def validate_all() -> dict[str, object]:
     )
     blocker_detail_external_count = int(
         operations_blocker_detail["external_submission_approved_count"]
+    )
+    blocker_review_record_count = int(operations_blocker_review["record_count"])
+    blocker_review_live_authorized_count = int(
+        operations_blocker_review["live_data_authorized_count"]
+    )
+    blocker_review_external_authorized_count = int(
+        operations_blocker_review["external_submission_authorized_count"]
+    )
+    blocker_review_coverage_complete = bool(
+        operations_blocker_review["coverage_complete"]
+    )
+    blocker_review_all_detail_evidence_reviewed = bool(
+        operations_blocker_review["all_detail_evidence_reviewed"]
     )
 
     ok = (
@@ -2805,6 +2847,11 @@ def validate_all() -> dict[str, object]:
         and blocker_detail_count == len(operations_action_ids)
         and blocker_detail_network_count == 0
         and blocker_detail_external_count == 0
+        and blocker_review_record_count >= 1
+        and blocker_review_live_authorized_count == 0
+        and blocker_review_external_authorized_count == 0
+        and blocker_review_coverage_complete
+        and blocker_review_all_detail_evidence_reviewed
     )
     return {
         "ok": ok,
@@ -2925,6 +2972,7 @@ def validate_all() -> dict[str, object]:
         "operations_action_plan_summary": operations_action_plan,
         "operations_action_resolution_summary": operations_action_resolution,
         "operations_blocker_detail_summary": operations_blocker_detail,
+        "operations_blocker_review_summary": operations_blocker_review,
     }
 
 
@@ -2979,6 +3027,7 @@ def validation_summary() -> dict[str, object]:
     operations_action_plan = validation["operations_action_plan_summary"]
     operations_action_resolution = validation["operations_action_resolution_summary"]
     operations_blocker_detail = validation["operations_blocker_detail_summary"]
+    operations_blocker_review = validation["operations_blocker_review_summary"]
     return {
         "ok": validation["ok"],
         "generated_at_utc": datetime.now(UTC).isoformat(),
@@ -3502,6 +3551,51 @@ def validation_summary() -> dict[str, object]:
             operations_blocker_detail["sqlite_context_is_resolved"]
         )
         if isinstance(operations_blocker_detail, dict)
+        else False,
+        "operations_blocker_review_record_count": operations_blocker_review[
+            "record_count"
+        ]
+        if isinstance(operations_blocker_review, dict)
+        else 0,
+        "operations_blocker_review_reviewed_evidence_record_count": (
+            operations_blocker_review["reviewed_evidence_record_count"]
+        )
+        if isinstance(operations_blocker_review, dict)
+        else 0,
+        "operations_blocker_review_unreviewed_evidence_record_count": (
+            operations_blocker_review["unreviewed_evidence_record_count"]
+        )
+        if isinstance(operations_blocker_review, dict)
+        else 0,
+        "operations_blocker_review_residual_blocker_total": (
+            operations_blocker_review["residual_blocker_total"]
+        )
+        if isinstance(operations_blocker_review, dict)
+        else 0,
+        "operations_blocker_review_live_data_authorized_count": (
+            operations_blocker_review["live_data_authorized_count"]
+        )
+        if isinstance(operations_blocker_review, dict)
+        else 0,
+        "operations_blocker_review_external_submission_authorized_count": (
+            operations_blocker_review["external_submission_authorized_count"]
+        )
+        if isinstance(operations_blocker_review, dict)
+        else 0,
+        "operations_blocker_review_all_external_authorization_disabled": bool(
+            operations_blocker_review["all_external_authorization_disabled"]
+        )
+        if isinstance(operations_blocker_review, dict)
+        else False,
+        "operations_blocker_review_coverage_complete": bool(
+            operations_blocker_review["coverage_complete"]
+        )
+        if isinstance(operations_blocker_review, dict)
+        else False,
+        "operations_blocker_review_all_detail_evidence_reviewed": bool(
+            operations_blocker_review["all_detail_evidence_reviewed"]
+        )
+        if isinstance(operations_blocker_review, dict)
         else False,
         "baseline_pathway_accuracy": (
             baseline_eval_s["pathway_accuracy"]
@@ -5218,6 +5312,23 @@ def _build_parser() -> argparse.ArgumentParser:
         "--sqlite-log-path",
         type=Path,
         help="Optional SQLite log database path for readiness snapshot fields.",
+    )
+    ops_blocker_review_parser = subparsers.add_parser(
+        "operations-blocker-review-summary",
+        help=(
+            "Summarize local blocker-detail review records. Workflow provenance "
+            "only; does not clear blockers or authorize external workflow."
+        ),
+    )
+    ops_blocker_review_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional local blocker-review fixture path.",
+    )
+    ops_blocker_review_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help="Optional SQLite log database path for blocker-detail coverage fields.",
     )
     ops_digest_parser = subparsers.add_parser(
         "operations-readiness-digest",
