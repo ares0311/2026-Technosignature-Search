@@ -1292,3 +1292,30 @@ action-resolution fixtures.
 while generated databases remain ignored under `logs/`. The command does not
 enable live data, authorize external submission, clear non-SQLite blockers, or
 constitute external validation.
+
+---
+
+## DECISION-055: Operations Blocker Details Trace Actions To Local Evidence
+
+**Date**: 2026-05-20
+
+**Status**: accepted
+
+**Context**: Operations action plans identify the next local review tasks, but
+operators still need to see which fixture-backed source records explain each
+blocker before changing any status. SQLite visibility can be green while QC,
+alerts, deadlines, pipeline health, validation readiness, curated intake, and
+submission provenance remain blocked.
+
+**Decision**: Add `operations-blocker-detail-summary` as a local-only
+traceability surface. The command expands the current operations action plan
+into source summaries and compact evidence records for open alerts, review
+deadlines, pipeline-health inputs, validation-readiness records,
+curated-intake records, and submission-provenance gaps. SQLite log state is
+reported as context, not as a reason to clear non-SQLite blockers.
+
+**Consequences**: Operators can review the source records behind each current
+action-plan item without enabling live data or external submission. The summary
+does not mutate fixtures, clear blockers, change candidate scores or pathways,
+authorize live-provider access, authorize external submission, or constitute
+external validation.

@@ -302,6 +302,7 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "operations_readiness_summary",
         "operations_action_plan",
         "operations_action_resolution",
+        "operations_blocker_detail",
     }
     assert result["background_search_ledger"].endswith(
         "schemas/background_search_ledger.schema.json"
@@ -1440,7 +1441,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 73
+    assert result["schema_count"] == 74
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -1550,6 +1551,13 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
         result["operations_action_resolution_external_submission_authorized_count"]
         == 0
     )
+    assert result["operations_blocker_detail_count"] == 8
+    assert result["operations_blocker_detail_total_evidence_record_count"] >= 8
+    assert (
+        result["operations_blocker_detail_all_external_authorization_disabled"]
+        is True
+    )
+    assert result["operations_blocker_detail_sqlite_context_is_resolved"] is True
     assert result["session_log_count"] == 5
     assert result["session_log_completed_count"] == 3
     assert result["priority_queue_depth"] == 5

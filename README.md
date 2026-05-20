@@ -450,6 +450,7 @@ Run local validation summaries:
 .venv/bin/techno-search operations-readiness-summary
 .venv/bin/techno-search operations-action-plan-summary
 .venv/bin/techno-search operations-action-resolution-summary
+.venv/bin/techno-search operations-blocker-detail-summary
 ```
 
 👉 See [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md) and the non-networked CI
@@ -631,6 +632,7 @@ Recommended recalibration checks:
 .venv/bin/techno-search benchmark-run-compare \
   --results-path artifacts/benchmark_run_results.json
 .venv/bin/techno-search operations-readiness-digest
+.venv/bin/techno-search operations-blocker-detail-summary
 .venv/bin/techno-search validate-all
 ```
 
@@ -866,6 +868,7 @@ Scientific quality gates:
 | Real-data workflow before operations readiness | Local readiness dashboard surfaces QC, alert, review, route, provenance, and SQLite blockers | `operations-readiness-summary` |
 | Readiness blockers lack owner actions | Local action plan turns blockers into prioritized operator tasks | `operations-action-plan-summary` |
 | Action-plan items lack resolution provenance | Local resolution records cover every current action-plan ID while tracking open, acknowledged, deferred, and resolved operator status without clearing blockers | `operations-action-resolution-summary` |
+| Action-plan blockers lack source evidence | Local blocker-detail summary expands each current action into fixture-backed records without clearing blockers | `operations-blocker-detail-summary` |
 | CI drift or accidental live access | Template stays non-networked under `docs/templates/` until workflow-scope publishing is available | `docs/CI.md`, `docs/templates/ci.yml` |
 
 👉 See [`docs/VALIDATION.md`](docs/VALIDATION.md)

@@ -552,6 +552,8 @@ introduced.
       ID has a local provenance record
 - [x] SQLite bootstrap summary restores top-level SQLite visibility for a
       supplied local ignored database path
+- [x] Operations blocker-detail summary traces current action-plan blockers to
+      fixture-backed local source records without clearing blockers
 - [x] CI template reports action-resolution visibility without clearing
       blockers or authorizing live data or external submission
 
@@ -571,3 +573,6 @@ introduced.
   mean the underlying blockers are cleared.
 - SQLite bootstrap visibility is local to the supplied database path and does
   not clear non-SQLite operations blockers.
+- Blocker-detail summaries are traceability aids only; fixture-backed source
+  records help operator review but do not clear blockers or authorize external
+  workflow.

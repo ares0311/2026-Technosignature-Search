@@ -65,3 +65,6 @@ jobs:
 
       - name: Report operations action resolution
         run: techno-search operations-action-resolution-summary
+
+      - name: Report operations blocker details
+        run: techno-search operations-blocker-detail-summary

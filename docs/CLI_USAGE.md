@@ -1749,6 +1749,26 @@ techno-search operations-action-resolution-summary --sqlite-log-path logs/techno
 
 Output fields: `disclaimer`, `schema_version`, `record_count`, status counts, `residual_blocker_total`, authorization counts, `expected_action_count`, `covered_action_count`, `missing_action_count`, `coverage_fraction`, `coverage_complete`, `missing_action_ids`, `stale_resolution_action_ids`, `by_status`, `by_category`, `by_operator`, `action_ids`, and `categories_covered`. Resolution records are workflow provenance only. They do not clear blockers, authorize live data, authorize external submission, or imply external validation.
 
+## `operations-blocker-detail-summary`
+
+Expand current operations action-plan items into fixture-backed local source
+records for operator review.
+
+```bash
+techno-search operations-blocker-detail-summary
+techno-search operations-blocker-detail-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `action_count`,
+`detail_count`, `total_evidence_record_count`, `categories_with_details`,
+authorization counts, `readiness_recommendation`,
+`sqlite_visibility_context`, `sqlite_context_is_resolved`, and `details`.
+Detail records may include open alerts, overdue or pending review deadlines,
+blocked pipeline inputs, validation-readiness records, curated-intake records,
+and submission-provenance gaps. The summary is a local traceability aid only:
+it does not mutate fixtures, clear blockers, authorize live data, authorize
+external submission, or change candidate scores.
+
 ## `operations-readiness-digest`
 
 Print a review-safe Markdown digest for operator handoff.

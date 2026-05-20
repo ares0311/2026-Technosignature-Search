@@ -24,6 +24,7 @@ techno-search health
 techno-search operations-readiness-summary
 techno-search operations-action-plan-summary
 techno-search operations-action-resolution-summary
+techno-search operations-blocker-detail-summary
 ```
 
 The workflow sets `TECHNO_SEARCH_ENABLE_LIVE_DATA=0`. CI must remain
@@ -36,7 +37,10 @@ summary translates those blockers into local review tasks without clearing them
 or authorizing external workflow. The action-resolution summary reports local
 operator status records without clearing blockers or authorizing live data,
 network access, or external submission. Its coverage fields must show every
-current action-plan ID has a corresponding local resolution record.
+current action-plan ID has a corresponding local resolution record. The
+blocker-detail summary expands current action-plan items into fixture-backed
+source records for review without clearing blockers or authorizing external
+workflow.
 
 ## Promotion Checklist
 

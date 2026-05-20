@@ -677,6 +677,7 @@ Included in `validate-all` for informational purposes. Collects blocking issues 
 .venv/bin/techno-search operations-readiness-summary
 .venv/bin/techno-search operations-action-plan-summary
 .venv/bin/techno-search operations-action-resolution-summary
+.venv/bin/techno-search operations-blocker-detail-summary
 .venv/bin/techno-search operations-readiness-digest
 ```
 
@@ -714,3 +715,10 @@ operator tasks with categories such as `quality_control`, `alerts`,
 `validation_readiness`, `curated_intake`, `submission_provenance`, and
 `sqlite_logs`. These tasks help resolve blockers; they do not clear blockers
 automatically or authorize any external workflow.
+
+The blocker-detail summary expands those current action-plan items into
+fixture-backed local source records such as open alerts, overdue review
+deadlines, blocked pipeline health inputs, validation-readiness records,
+curated-intake records, and submission-provenance gaps. It is traceability for
+operator review only. It does not mutate fixtures, clear blockers, enable live
+data, authorize external submission, or change candidate scores.

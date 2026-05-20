@@ -393,6 +393,11 @@ from techno_search.operations_action_resolution import (
     load_operations_action_resolution_records,
     operations_action_resolution_summary,
 )
+from techno_search.operations_blocker_detail import (
+    OPERATIONS_BLOCKER_DETAIL_DISCLAIMER,
+    OPERATIONS_BLOCKER_DETAIL_SCHEMA_VERSION,
+    operations_blocker_detail_summary,
+)
 from techno_search.operations_readiness import (
     ALLOWED_OPERATIONS_READINESS_RECOMMENDATIONS,
     OPERATIONS_READINESS_DISCLAIMER,
@@ -1020,6 +1025,9 @@ __all__ = [
     "OperationsActionResolutionRecord",
     "load_operations_action_resolution_records",
     "operations_action_resolution_summary",
+    "OPERATIONS_BLOCKER_DETAIL_DISCLAIMER",
+    "OPERATIONS_BLOCKER_DETAIL_SCHEMA_VERSION",
+    "operations_blocker_detail_summary",
     "ALLOWED_OPERATIONS_READINESS_RECOMMENDATIONS",
     "OPERATIONS_READINESS_DISCLAIMER",
     "OPERATIONS_READINESS_SCHEMA_VERSION",
