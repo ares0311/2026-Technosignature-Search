@@ -1237,3 +1237,31 @@ submission, or constitute external validation.
 template reports the action plan with live data disabled. Operations blockers
 now have a deterministic local task surface before any real-data workflow is
 considered.
+
+---
+
+## DECISION-053: Operations Action Resolution Records Are Local Workflow Provenance
+
+**Date**: 2026-05-19
+
+**Status**: accepted
+
+**Context**: Operations action plans expose what operators should review next,
+but the repository also needs local provenance for whether each task is open,
+acknowledged, deferred, or resolved. That status must not be confused with
+scientific validation, live-data approval, or external-submission approval.
+
+**Decision**: Add fixture-backed operations action-resolution records. Each
+record stores an action id, category, operator id, status, evidence note,
+residual blocker count, and explicit live-data and external-submission
+authorization booleans. The summary command reports status counts, category
+coverage, operator coverage, residual blockers, and authorization counts.
+
+Resolution records are workflow provenance only. They do not clear readiness
+blockers, change candidate scores or pathways, authorize live-provider access,
+authorize external submission, or constitute external validation.
+
+**Consequences**: `validate-all` requires at least one action-resolution record
+and requires live-data and external-submission authorization counts to remain
+zero. `validation-summary` exposes action-resolution counts, and the CI template
+reports the summary with live data disabled.

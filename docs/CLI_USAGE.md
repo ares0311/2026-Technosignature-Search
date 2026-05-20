@@ -1735,6 +1735,17 @@ techno-search operations-action-plan-summary --sqlite-log-path logs/techno_searc
 
 Output fields: `disclaimer`, `schema_version`, `action_count`, `critical_action_count`, `real_data_blocking_action_count`, `operator_review_action_count`, `by_category`, `by_priority`, `by_status`, `next_action`, and `actions`. The action plan is a scheduling aid only. It does not clear blockers automatically, modify scores or pathways, authorize live data, or authorize external submission.
 
+## `operations-action-resolution-summary`
+
+Summarize local action-plan resolution records for operator provenance.
+
+```bash
+techno-search operations-action-resolution-summary
+techno-search operations-action-resolution-summary --fixture-path tests/fixtures/operations_action_resolution.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`, status counts, `residual_blocker_total`, authorization counts, `by_status`, `by_category`, `by_operator`, `action_ids`, and `categories_covered`. Resolution records are workflow provenance only. They do not clear blockers, authorize live data, authorize external submission, or imply external validation.
+
 ## `operations-readiness-digest`
 
 Print a review-safe Markdown digest for operator handoff.

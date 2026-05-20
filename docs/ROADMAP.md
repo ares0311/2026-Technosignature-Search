@@ -546,6 +546,10 @@ introduced.
       prioritized local operator tasks
 - [x] CI template reports operations action-plan visibility without clearing
       blockers or authorizing external workflow
+- [x] Operations action-resolution summary records local operator status for
+      action-plan items
+- [x] CI template reports action-resolution visibility without clearing
+      blockers or authorizing live data or external submission
 
 ## Guardrails
 
@@ -557,3 +561,5 @@ introduced.
   scientific classification and does not modify candidate scores or pathways.
 - Operations action plans are task lists only; they do not clear blockers
   automatically and do not authorize live data access.
+- Operations action-resolution records are workflow provenance only; they do not
+  clear blockers or authorize external submission.

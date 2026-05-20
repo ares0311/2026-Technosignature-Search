@@ -674,6 +674,7 @@ Included in `validate-all` for informational purposes. Collects blocking issues 
 ```bash
 .venv/bin/techno-search operations-readiness-summary
 .venv/bin/techno-search operations-action-plan-summary
+.venv/bin/techno-search operations-action-resolution-summary
 .venv/bin/techno-search operations-readiness-digest
 ```
 
@@ -682,6 +683,11 @@ than as a new hard failure gate. The summary combines QC health, open alerts,
 overdue review deadlines, route coverage, validation-readiness blockers,
 curated-intake blockers, submission provenance blockers, pipeline capacity, and
 top-level SQLite log safety fields.
+
+`validate-all` also checks local operations action-resolution records are
+present and that both live-data and external-submission authorization counts
+remain zero. These records document operator status only; they do not clear
+blockers, change candidate scores, or reduce scientific uncertainty.
 
 Recommendations are conservative local states:
 

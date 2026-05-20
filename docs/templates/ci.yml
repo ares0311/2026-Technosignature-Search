@@ -62,3 +62,6 @@ jobs:
 
       - name: Report operations action plan
         run: techno-search operations-action-plan-summary
+
+      - name: Report operations action resolution
+        run: techno-search operations-action-resolution-summary

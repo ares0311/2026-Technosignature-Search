@@ -133,6 +133,9 @@ from techno_search.observation_schedule import (
     observation_schedule_summary,
 )
 from techno_search.operations_action_plan import operations_action_plan_summary
+from techno_search.operations_action_resolution import (
+    operations_action_resolution_summary,
+)
 from techno_search.operations_readiness import (
     operations_readiness_digest,
     operations_readiness_summary,
@@ -265,6 +268,7 @@ SCHEMA_FILENAMES = {
     "review_deadlines": "review_deadlines.schema.json",
     "operations_readiness_summary": "operations_readiness_summary.schema.json",
     "operations_action_plan": "operations_action_plan.schema.json",
+    "operations_action_resolution": "operations_action_resolution.schema.json",
 }
 
 
@@ -1093,6 +1097,18 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(
             json.dumps(
                 operations_action_plan_summary(ops_summary),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operations-action-resolution-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                operations_action_resolution_summary(fixture_path),
                 indent=2,
                 sort_keys=True,
             ),
@@ -2402,6 +2418,16 @@ def validate_all() -> dict[str, object]:
         sqlite_log_path=sqlite_validation_db,
     )
     operations_action_plan = operations_action_plan_summary(operations_readiness)
+    operations_action_resolution = operations_action_resolution_summary()
+    action_resolution_record_count = int(
+        operations_action_resolution["record_count"]
+    )
+    action_resolution_live_authorized_count = int(
+        operations_action_resolution["live_data_authorized_count"]
+    )
+    action_resolution_external_authorized_count = int(
+        operations_action_resolution["external_submission_authorized_count"]
+    )
 
     ok = (
         all(result["ok"] for result in candidate_results.values())
@@ -2670,6 +2696,9 @@ def validate_all() -> dict[str, object]:
         and replay_entry_count >= 1
         and isinstance(threshold_pass_count, int)
         and threshold_pass_count >= 1
+        and action_resolution_record_count >= 1
+        and action_resolution_live_authorized_count == 0
+        and action_resolution_external_authorized_count == 0
     )
     return {
         "ok": ok,
@@ -2788,6 +2817,7 @@ def validate_all() -> dict[str, object]:
         "scoring_threshold_audit_summary": threshold_audit_data,
         "operations_readiness_summary": operations_readiness,
         "operations_action_plan_summary": operations_action_plan,
+        "operations_action_resolution_summary": operations_action_resolution,
     }
 
 
@@ -2840,6 +2870,7 @@ def validation_summary() -> dict[str, object]:
     sqlite_log_validation = validation["top_level_sqlite_log_validation"]
     operations_readiness = validation["operations_readiness_summary"]
     operations_action_plan = validation["operations_action_plan_summary"]
+    operations_action_resolution = validation["operations_action_resolution_summary"]
     return {
         "ok": validation["ok"],
         "generated_at_utc": datetime.now(UTC).isoformat(),
@@ -3246,6 +3277,51 @@ def validation_summary() -> dict[str, object]:
         )
         if isinstance(operations_action_plan, dict)
         else 0,
+        "operations_action_resolution_record_count": operations_action_resolution[
+            "record_count"
+        ]
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_open_count": operations_action_resolution[
+            "open_count"
+        ]
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_acknowledged_count": (
+            operations_action_resolution["acknowledged_count"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_deferred_count": operations_action_resolution[
+            "deferred_count"
+        ]
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_resolved_count": operations_action_resolution[
+            "resolved_count"
+        ]
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_residual_blocker_total": (
+            operations_action_resolution["residual_blocker_total"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_live_data_authorized_count": (
+            operations_action_resolution["live_data_authorized_count"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_external_submission_authorized_count": (
+            operations_action_resolution["external_submission_authorized_count"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_all_external_authorization_disabled": bool(
+            operations_action_resolution["all_external_authorization_disabled"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else False,
         "baseline_pathway_accuracy": (
             baseline_eval_s["pathway_accuracy"]
             if isinstance(baseline_eval_s := validation.get("baseline_eval_summary"), dict)
@@ -4903,6 +4979,18 @@ def _build_parser() -> argparse.ArgumentParser:
         "--sqlite-log-path",
         type=Path,
         help="Optional SQLite log database path for readiness snapshot fields.",
+    )
+    ops_resolution_parser = subparsers.add_parser(
+        "operations-action-resolution-summary",
+        help=(
+            "Summarize local action-plan resolution records. Workflow provenance "
+            "only; does not authorize live data or external submission."
+        ),
+    )
+    ops_resolution_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional local action-resolution fixture path.",
     )
     ops_digest_parser = subparsers.add_parser(
         "operations-readiness-digest",

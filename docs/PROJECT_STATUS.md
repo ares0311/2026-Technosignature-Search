@@ -190,6 +190,10 @@ The project will support three tracks from day one:
       resolution tasks
 - [x] Operations action-plan visibility added to `validation-summary` and CI
       template without clearing blockers automatically
+- [x] Operations action-resolution records added for local operator provenance
+      across open, acknowledged, deferred, and resolved actions
+- [x] Operations action-resolution visibility added to `validation-summary` and
+      CI without authorizing live data or external submission
 
 ---
 
@@ -259,6 +263,7 @@ The project will support three tracks from day one:
 - [x] Operations readiness now reports local-only states: `local_only_ready`, `operator_review_required`, and `blocked_for_real_data`
 - [x] Review-safe operations digest added without large payloads, live-provider results, or unsupported claims
 - [x] Operations action plan now converts readiness blockers into prioritized local operator tasks
+- [x] Operations action resolution now records operator status while preserving residual blockers and zero authorization counts
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions

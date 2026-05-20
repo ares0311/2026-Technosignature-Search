@@ -385,6 +385,14 @@ from techno_search.operations_action_plan import (
     build_operations_actions,
     operations_action_plan_summary,
 )
+from techno_search.operations_action_resolution import (
+    ALLOWED_ACTION_RESOLUTION_STATUSES,
+    OPERATIONS_ACTION_RESOLUTION_DISCLAIMER,
+    OPERATIONS_ACTION_RESOLUTION_SCHEMA_VERSION,
+    OperationsActionResolutionRecord,
+    load_operations_action_resolution_records,
+    operations_action_resolution_summary,
+)
 from techno_search.operations_readiness import (
     ALLOWED_OPERATIONS_READINESS_RECOMMENDATIONS,
     OPERATIONS_READINESS_DISCLAIMER,
@@ -1006,6 +1014,12 @@ __all__ = [
     "OperationsAction",
     "build_operations_actions",
     "operations_action_plan_summary",
+    "ALLOWED_ACTION_RESOLUTION_STATUSES",
+    "OPERATIONS_ACTION_RESOLUTION_DISCLAIMER",
+    "OPERATIONS_ACTION_RESOLUTION_SCHEMA_VERSION",
+    "OperationsActionResolutionRecord",
+    "load_operations_action_resolution_records",
+    "operations_action_resolution_summary",
     "ALLOWED_OPERATIONS_READINESS_RECOMMENDATIONS",
     "OPERATIONS_READINESS_DISCLAIMER",
     "OPERATIONS_READINESS_SCHEMA_VERSION",

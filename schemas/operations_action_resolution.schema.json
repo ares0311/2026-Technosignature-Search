@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/operations_action_resolution.schema.json",
+  "title": "Operations Action Resolution Records",
+  "type": "object",
+  "required": [
+    "operations_action_resolution_records"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "operations_action_resolution_v1"
+    },
+    "disclaimer": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operations_action_resolution_records": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "resolution_id",
+          "action_id",
+          "category",
+          "resolution_status",
+          "operator_id",
+          "resolution_utc",
+          "evidence_note",
+          "residual_blocker_count",
+          "live_data_authorized",
+          "external_submission_authorized"
+        ],
+        "properties": {
+          "resolution_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "action_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "alerts",
+              "capacity",
+              "curated_intake",
+              "external_submission",
+              "network_access",
+              "pipeline_health",
+              "quality_control",
+              "review_deadlines",
+              "route_coverage",
+              "sqlite_logs",
+              "submission_provenance",
+              "validation_readiness"
+            ]
+          },
+          "resolution_status": {
+            "type": "string",
+            "enum": [
+              "acknowledged",
+              "deferred",
+              "open",
+              "resolved"
+            ]
+          },
+          "operator_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "resolution_utc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "evidence_note": {
+            "type": "string",
+            "minLength": 1
+          },
+          "residual_blocker_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "live_data_authorized": {
+            "type": "boolean"
+          },
+          "external_submission_authorized": {
+            "type": "boolean"
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
