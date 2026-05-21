@@ -1347,3 +1347,30 @@ current blocker-detail bundles. Full review coverage does not clear blockers,
 change candidate scores or pathways, mutate SQLite logs, authorize
 live-provider access, authorize external submission, or constitute external
 validation.
+
+---
+
+## DECISION-057: Operations Blocker Follow-Up Is A Local Planning Rollup Only
+
+**Date**: 2026-05-20
+
+**Status**: accepted
+
+**Context**: DECISION-056 records local review provenance for blocker-detail
+evidence bundles, but operators still need a compact next-action ordering that
+distinguishes open attention items, local remediation, real-data holds, and
+workflow items ready for local verification. That ordering must not be treated
+as blocker clearance or as approval for live-provider access.
+
+**Decision**: Add `operations-blocker-followup-summary` as a derived local
+planning rollup. The command consumes blocker-detail and blocker-review
+summaries, preserves residual blocker counts and evidence-review coverage, and
+derives recommendation categories such as `operator_attention_required`,
+`continue_local_remediation`, `hold_for_real_data_evidence`, and
+`verify_resolved_locally`.
+
+**Consequences**: Operators get a deterministic local follow-up queue without
+changing blocker status. The summary is not a scientific result, does not
+clear blockers, does not change candidate scores or pathways, does not enable
+live data, does not authorize external submission, and does not constitute
+external validation.

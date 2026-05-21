@@ -202,6 +202,8 @@ The project will support three tracks from day one:
       fixture-backed local source records without clearing blockers
 - [x] Operations blocker-review records added to preserve local review
       provenance for blocker-detail evidence bundles without clearing blockers
+- [x] Operations blocker-followup summary added to derive next local operator
+      actions from blocker-review records without clearing blockers
 
 ---
 
@@ -276,11 +278,12 @@ The project will support three tracks from day one:
 - [x] SQLite bootstrap summary now reports integrity and weekly-digest readiness gates without mutating resolution fixtures
 - [x] Operations blocker-detail summary now expands current action-plan blockers into local source evidence while keeping live-data and external-submission authorization counts at zero
 - [x] Operations blocker-review summary now covers current blocker-detail actions and evidence counts while preserving residual blockers and zero authorization counts
+- [x] Operations blocker-followup summary now derives local follow-up ordering from reviewed blockers while preserving residual blockers and zero authorization counts
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions
 
-1. Review the blocker-detail source records before changing any blocker status.
+1. Work the blocker-followup next-action queue before changing any blocker status.
 2. Copy `docs/templates/ci.yml` to `.github/workflows/ci.yml` only after confirming the publishing token has GitHub `workflow` scope.
 3. Add curated validation intake examples only when provenance, licensing, labeling, and external-review requirements are satisfied.
 

@@ -679,6 +679,7 @@ Included in `validate-all` for informational purposes. Collects blocking issues 
 .venv/bin/techno-search operations-action-resolution-summary
 .venv/bin/techno-search operations-blocker-detail-summary
 .venv/bin/techno-search operations-blocker-review-summary
+.venv/bin/techno-search operations-blocker-followup-summary
 .venv/bin/techno-search operations-readiness-digest
 ```
 
@@ -731,3 +732,9 @@ authorization counts. Review records are provenance only: even full evidence
 review coverage does not clear blockers, authorize live data, authorize
 external submission, mutate SQLite logs, or change candidate scores or
 pathways.
+
+The blocker-followup summary derives next local operator actions from those
+review records. It distinguishes open attention items, local remediation,
+real-data holds, and locally resolved items ready for verification. It is a
+planning aid only and preserves residual blockers plus zero live-data and
+external-submission authorization counts.

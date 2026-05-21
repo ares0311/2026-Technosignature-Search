@@ -1788,6 +1788,26 @@ evidence bundles only. They do not clear readiness blockers, mutate candidate
 scores, change pathways, mutate SQLite logs, authorize live data, authorize
 external submission, or imply external validation.
 
+## `operations-blocker-followup-summary`
+
+Derive next local follow-up actions from blocker-detail review records.
+
+```bash
+techno-search operations-blocker-followup-summary
+techno-search operations-blocker-followup-summary --fixture-path tests/fixtures/operations_blocker_review.json
+techno-search operations-blocker-followup-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `action_count`,
+`action_required_count`, recommendation counts, `residual_blocker_total`,
+evidence-review coverage fields, authorization counts,
+`all_external_authorization_disabled`, `next_action_ids`,
+`verification_ready_action_ids`, `real_data_hold_action_ids`, and `actions`.
+Follow-up recommendations are local planning aids only. They preserve
+residual blockers and disabled authorization gates; they do not clear
+blockers, authorize live data, authorize external submission, or imply
+external validation.
+
 ## `operations-readiness-digest`
 
 Print a review-safe Markdown digest for operator handoff.

@@ -71,3 +71,6 @@ jobs:
 
       - name: Report operations blocker review
         run: techno-search operations-blocker-review-summary
+
+      - name: Report operations blocker follow-up
+        run: techno-search operations-blocker-followup-summary

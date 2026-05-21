@@ -452,6 +452,7 @@ Run local validation summaries:
 .venv/bin/techno-search operations-action-resolution-summary
 .venv/bin/techno-search operations-blocker-detail-summary
 .venv/bin/techno-search operations-blocker-review-summary
+.venv/bin/techno-search operations-blocker-followup-summary
 ```
 
 👉 See [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md) and the non-networked CI
@@ -635,6 +636,7 @@ Recommended recalibration checks:
 .venv/bin/techno-search operations-readiness-digest
 .venv/bin/techno-search operations-blocker-detail-summary
 .venv/bin/techno-search operations-blocker-review-summary
+.venv/bin/techno-search operations-blocker-followup-summary
 .venv/bin/techno-search validate-all
 ```
 
@@ -872,6 +874,7 @@ Scientific quality gates:
 | Action-plan items lack resolution provenance | Local resolution records cover every current action-plan ID while tracking open, acknowledged, deferred, and resolved operator status without clearing blockers | `operations-action-resolution-summary` |
 | Action-plan blockers lack source evidence | Local blocker-detail summary expands each current action into fixture-backed records without clearing blockers | `operations-blocker-detail-summary` |
 | Blocker-detail evidence lacks review provenance | Local blocker-review records cover current action IDs and evidence counts while preserving residual blockers | `operations-blocker-review-summary` |
+| Reviewed blockers lack local next-action ordering | Local blocker-followup summary derives operator attention, remediation, real-data hold, and verification actions without clearing blockers | `operations-blocker-followup-summary` |
 | CI drift or accidental live access | Template stays non-networked under `docs/templates/` until workflow-scope publishing is available | `docs/CI.md`, `docs/templates/ci.yml` |
 
 👉 See [`docs/VALIDATION.md`](docs/VALIDATION.md)

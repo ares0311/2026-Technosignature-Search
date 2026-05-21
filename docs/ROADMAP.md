@@ -556,6 +556,8 @@ introduced.
       fixture-backed local source records without clearing blockers
 - [x] Operations blocker-review summary records local review status for
       blocker-detail evidence bundles without clearing blockers
+- [x] Operations blocker-followup summary derives next local operator actions
+      from blocker-review records without clearing blockers
 - [x] CI template reports action-resolution visibility without clearing
       blockers or authorizing live data or external submission
 
@@ -581,3 +583,5 @@ introduced.
 - Blocker-review records are local provenance only; full evidence coverage
   does not clear readiness blockers, mutate scores, or authorize external
   workflow.
+- Blocker-followup recommendations are local planning aids only. They preserve
+  residual blockers and disabled authorization gates.

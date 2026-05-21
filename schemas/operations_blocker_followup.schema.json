@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/operations_blocker_followup.schema.json",
+  "title": "Operations Blocker Followup Summary",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "disclaimer",
+    "action_count",
+    "action_required_count",
+    "residual_blocker_total",
+    "coverage_complete",
+    "all_detail_evidence_reviewed",
+    "all_external_authorization_disabled",
+    "actions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "operations_blocker_followup_v1"
+    },
+    "disclaimer": {
+      "type": "string",
+      "minLength": 1
+    },
+    "action_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "action_required_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "operator_attention_required_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "local_remediation_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "real_data_hold_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "deferred_monitoring_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "verification_ready_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "reopen_required_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "authorization_review_required_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "residual_blocker_total": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "evidence_review_complete": {
+      "type": "boolean"
+    },
+    "coverage_complete": {
+      "type": "boolean"
+    },
+    "all_detail_evidence_reviewed": {
+      "type": "boolean"
+    },
+    "live_data_authorized_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "external_submission_authorized_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "all_external_authorization_disabled": {
+      "type": "boolean"
+    },
+    "by_recommendation": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "next_action_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "verification_ready_action_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "real_data_hold_action_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "action_id",
+          "category",
+          "review_status",
+          "recommendation",
+          "residual_blocker_count",
+          "reviewed_evidence_record_count",
+          "detail_evidence_record_count",
+          "evidence_review_complete",
+          "live_data_authorized",
+          "external_submission_authorized",
+          "note"
+        ],
+        "properties": {
+          "action_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "category": {
+            "type": "string",
+            "minLength": 1
+          },
+          "review_status": {
+            "type": "string",
+            "minLength": 1
+          },
+          "recommendation": {
+            "type": "string",
+            "enum": [
+              "continue_local_remediation",
+              "halt_for_authorization_review",
+              "hold_for_real_data_evidence",
+              "monitor_deferred_item",
+              "operator_attention_required",
+              "reopen_residual_blockers",
+              "verify_resolved_locally"
+            ]
+          },
+          "residual_blocker_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "reviewed_evidence_record_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "detail_evidence_record_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "evidence_review_complete": {
+            "type": "boolean"
+          },
+          "live_data_authorized": {
+            "type": "boolean"
+          },
+          "external_submission_authorized": {
+            "type": "boolean"
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
