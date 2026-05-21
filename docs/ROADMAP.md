@@ -560,6 +560,8 @@ introduced.
       from blocker-review records without clearing blockers
 - [x] Operations blocker-followup progress summary tracks progress notes
       against follow-up action IDs without clearing blockers
+- [x] Operations blocker progress-review summary covers unresolved progress
+      records without reopening verified-local workflow items
 - [x] CI template reports action-resolution visibility without clearing
       blockers or authorizing live data or external submission
 
@@ -589,3 +591,6 @@ introduced.
   residual blockers and disabled authorization gates.
 - Blocker-followup progress records are workflow notes only. They do not clear
   blockers or authorize live data or external submission.
+- Blocker progress-review records are second-pass local notes only. They cover
+  unresolved progress, preserve verified-local exclusions, and do not authorize
+  live data or external submission.

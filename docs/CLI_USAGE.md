@@ -1826,6 +1826,26 @@ and `records`. Progress records are workflow notes only. They do not clear
 blockers, authorize live data, authorize external submission, mutate candidate
 scores, or imply external validation.
 
+## `operations-blocker-progress-review-summary`
+
+Summarize second-pass local review for unresolved blocker progress records.
+
+```bash
+techno-search operations-blocker-progress-review-summary
+techno-search operations-blocker-progress-review-summary --fixture-path tests/fixtures/operations_blocker_progress_review.json
+techno-search operations-blocker-progress-review-summary --progress-fixture-path tests/fixtures/operations_blocker_followup_progress.json
+techno-search operations-blocker-progress-review-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`, review-status
+counts, `residual_blocker_total`, authorization counts, coverage fields,
+`status_mismatch_count`, `verified_progress_action_ids`,
+`missing_action_ids`, `stale_review_action_ids`, `by_status`,
+`by_progress_status`, `by_operator`, and `records`. Progress-review records
+cover unresolved progress only. They do not reopen verified-local workflow
+items, clear blockers, authorize live data, authorize external submission,
+mutate candidate scores, or imply external validation.
+
 ## `operations-readiness-digest`
 
 Print a review-safe Markdown digest for operator handoff.

@@ -1400,3 +1400,28 @@ counts, residual blockers, and authorization counts.
 blocker-review or blocker-followup records. Progress records do not clear
 blockers, change candidate scores or pathways, enable live data, authorize
 external submission, or constitute external validation.
+
+---
+
+## DECISION-059: Progress Review Covers Only Unresolved Blocker Progress
+
+**Date**: 2026-05-21
+
+**Status**: accepted
+
+**Context**: DECISION-058 adds local progress notes for every blocker-followup
+action, including one verified-local workflow item. Operators need a second-pass
+review queue for unresolved progress without accidentally reopening local
+verification closures or implying that residual blockers have been cleared.
+
+**Decision**: Add fixture-backed operations blocker progress-review records and
+an `operations-blocker-progress-review-summary` command. The review fixture
+covers unresolved progress IDs only, reports verified-local progress IDs as
+excluded from the unresolved queue, checks coverage and progress-status
+consistency, and preserves residual blocker totals plus explicit live-data and
+external-submission authorization booleans.
+
+**Consequences**: `validate-all`, `validation-summary`, and the CI template
+gain progress-review visibility without clearing blockers, mutating candidate
+scores or pathways, enabling live data, authorizing external submission, or
+constituting external validation.
