@@ -1888,6 +1888,27 @@ reopen verified-local workflow items, clear blockers, authorize live data,
 authorize external submission, mutate candidate scores, or imply external
 validation.
 
+## `operations-blocker-progress-execution-review-summary`
+
+Summarize local reviews for blocker progress-execution notes.
+
+```bash
+techno-search operations-blocker-progress-execution-review-summary
+techno-search operations-blocker-progress-execution-review-summary --fixture-path tests/fixtures/operations_blocker_progress_execution_review.json
+techno-search operations-blocker-progress-execution-review-summary --execution-fixture-path tests/fixtures/operations_blocker_progress_execution.json
+techno-search operations-blocker-progress-execution-review-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`,
+review-status counts, `residual_blocker_total`, authorization counts,
+coverage fields, mismatch counts, `priority_sequence_ok`,
+`verified_progress_action_ids`, `missing_execution_ids`,
+`stale_review_execution_ids`, `by_status`, `by_execution_status`,
+`by_category`, `by_reviewer`, and `records`. Execution-review records are
+local workflow review notes only. They do not reopen verified-local workflow
+items, clear blockers, authorize live data, authorize external submission,
+mutate candidate scores, or imply external validation.
+
 ## `operations-readiness-digest`
 
 Print a review-safe Markdown digest for operator handoff.

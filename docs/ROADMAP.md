@@ -566,6 +566,8 @@ introduced.
       progress-review tasks without clearing blockers
 - [x] Operations blocker progress-execution summary records local execution
       notes against next-action IDs without clearing blockers
+- [x] Operations blocker progress-execution review summary reviews execution
+      notes without clearing blockers
 - [x] CI template reports action-resolution visibility without clearing
       blockers or authorizing live data or external submission
 
@@ -604,3 +606,6 @@ introduced.
 - Blocker progress-execution records are local workflow notes only. They do
   not clear blockers, reopen verified-local items, or authorize live data or
   external submission.
+- Blocker progress-execution review records are local workflow review notes
+  only. They do not clear blockers, reopen verified-local items, or authorize
+  live data or external submission.

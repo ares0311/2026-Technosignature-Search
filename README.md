@@ -457,6 +457,7 @@ Run local validation summaries:
 .venv/bin/techno-search operations-blocker-progress-review-summary
 .venv/bin/techno-search operations-blocker-progress-next-actions-summary
 .venv/bin/techno-search operations-blocker-progress-execution-summary
+.venv/bin/techno-search operations-blocker-progress-execution-review-summary
 ```
 
 👉 See [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md) and the non-networked CI
@@ -645,6 +646,7 @@ Recommended recalibration checks:
 .venv/bin/techno-search operations-blocker-progress-review-summary
 .venv/bin/techno-search operations-blocker-progress-next-actions-summary
 .venv/bin/techno-search operations-blocker-progress-execution-summary
+.venv/bin/techno-search operations-blocker-progress-execution-review-summary
 .venv/bin/techno-search validate-all
 ```
 
@@ -887,6 +889,7 @@ Scientific quality gates:
 | Unresolved progress lacks second-pass review | Local blocker progress-review records cover unresolved progress only while preserving verified-local closures and disabled authorization gates | `operations-blocker-progress-review-summary` |
 | Unresolved progress reviews lack ordered local work | Local blocker progress next-action records order unresolved review items without reopening verified-local closures or changing authorization gates | `operations-blocker-progress-next-actions-summary` |
 | Ordered local work lacks execution notes | Local blocker progress-execution records track next-action execution notes without clearing blockers or changing authorization gates | `operations-blocker-progress-execution-summary` |
+| Execution notes lack review provenance | Local blocker progress-execution review records review execution notes without clearing blockers or changing authorization gates | `operations-blocker-progress-execution-review-summary` |
 | CI drift or accidental live access | Template stays non-networked under `docs/templates/` until workflow-scope publishing is available | `docs/CI.md`, `docs/templates/ci.yml` |
 
 👉 See [`docs/VALIDATION.md`](docs/VALIDATION.md)

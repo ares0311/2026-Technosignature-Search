@@ -84,6 +84,7 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "operations_blocker_followup.schema.json",
         "operations_blocker_followup_progress.schema.json",
         "operations_blocker_progress_execution.schema.json",
+        "operations_blocker_progress_execution_review.schema.json",
         "operations_blocker_progress_next_actions.schema.json",
         "operations_blocker_progress_review.schema.json",
         "operations_blocker_review.schema.json",

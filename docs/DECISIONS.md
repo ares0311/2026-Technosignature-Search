@@ -1482,3 +1482,30 @@ blockers, and authorization counts.
 next-action queue. Execution records do not clear blockers, reopen
 verified-local workflow items, change candidate scores or pathways, enable
 live data, authorize external submission, or constitute external validation.
+
+---
+
+## DECISION-062: Progress Execution Reviews Are Local Provenance Only
+
+**Date**: 2026-05-21
+
+**Status**: accepted
+
+**Context**: DECISION-061 records local execution notes against ordered
+progress next-action IDs. Operators need a review layer for those execution
+notes, but review coverage must not imply that residual blockers have been
+cleared or that real-data or external-submission gates have changed.
+
+**Decision**: Add fixture-backed operations blocker progress-execution review
+records and an `operations-blocker-progress-execution-review-summary` command.
+Each record links to an execution ID, next-action ID, and action ID, carries
+the execution status, review status, priority rank, reviewer, review note,
+residual blocker count, and explicit live-data and external-submission
+authorization booleans. The summary reports coverage against progress
+execution IDs, status, residual, and priority mismatches, verified-local
+exclusions, residual blockers, and authorization counts.
+
+**Consequences**: Operators get local review provenance for execution notes.
+Execution-review records do not clear blockers, reopen verified-local workflow
+items, change candidate scores or pathways, enable live data, authorize
+external submission, or constitute external validation.

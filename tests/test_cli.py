@@ -306,6 +306,7 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "operations_blocker_followup",
         "operations_blocker_followup_progress",
         "operations_blocker_progress_execution",
+        "operations_blocker_progress_execution_review",
         "operations_blocker_progress_next_actions",
         "operations_blocker_progress_review",
         "operations_blocker_review",
@@ -1447,7 +1448,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 80
+    assert result["schema_count"] == 81
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -1719,6 +1720,75 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["operations_blocker_progress_execution_residual_mismatch_count"] == 0
     assert result["operations_blocker_progress_execution_priority_mismatch_count"] == 0
     assert result["operations_blocker_progress_execution_priority_sequence_ok"] is True
+    assert result["operations_blocker_progress_execution_review_record_count"] == 7
+    assert (
+        result[
+            "operations_blocker_progress_execution_review_awaiting_operator_reviewed_count"
+        ]
+        == 1
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_review_execution_note_reviewed_count"
+        ]
+        == 4
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_review_blocked_pending_real_data_reviewed_count"
+        ]
+        == 2
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_review_residual_blocker_total"
+        ]
+        == 29
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_review_live_data_authorized_count"
+        ]
+        == 0
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_review_external_submission_authorized_count"
+        ]
+        == 0
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_review_all_external_authorization_disabled"
+        ]
+        is True
+    )
+    assert (
+        result["operations_blocker_progress_execution_review_coverage_complete"]
+        is True
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_review_status_mismatch_count"
+        ]
+        == 0
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_review_residual_mismatch_count"
+        ]
+        == 0
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_review_priority_mismatch_count"
+        ]
+        == 0
+    )
+    assert (
+        result["operations_blocker_progress_execution_review_priority_sequence_ok"]
+        is True
+    )
     assert result["session_log_count"] == 5
     assert result["session_log_completed_count"] == 3
     assert result["priority_queue_depth"] == 5
