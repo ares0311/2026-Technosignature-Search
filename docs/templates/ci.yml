@@ -83,3 +83,6 @@ jobs:
 
       - name: Report operations blocker progress next actions
         run: techno-search operations-blocker-progress-next-actions-summary
+
+      - name: Report operations blocker progress execution
+        run: techno-search operations-blocker-progress-execution-summary

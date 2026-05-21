@@ -1454,3 +1454,31 @@ unresolved progress-review layer. Next-action records do not clear blockers,
 reopen verified-local workflow items, change candidate scores or pathways,
 enable live data, authorize external submission, or constitute external
 validation.
+
+---
+
+## DECISION-061: Progress Execution Notes Preserve Blockers
+
+**Date**: 2026-05-21
+
+**Status**: accepted
+
+**Context**: DECISION-060 adds an ordered local work queue for unresolved
+progress-review records. Operators need a provenance layer for what was
+locally recorded against each next-action ID, but execution notes must not be
+treated as blocker clearance, live-data authorization, external submission
+readiness, or scientific validation.
+
+**Decision**: Add fixture-backed operations blocker progress-execution records
+and an `operations-blocker-progress-execution-summary` command. Each record
+links to a next-action ID and action ID, carries the next-action status,
+execution status, priority rank, operator, execution note, residual blocker
+count, and explicit live-data and external-submission authorization booleans.
+The summary reports coverage against progress next-action IDs, status,
+residual, and priority mismatches, verified-local exclusions, residual
+blockers, and authorization counts.
+
+**Consequences**: Operators get local execution-note provenance for the ordered
+next-action queue. Execution records do not clear blockers, reopen
+verified-local workflow items, change candidate scores or pathways, enable
+live data, authorize external submission, or constitute external validation.

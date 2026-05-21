@@ -184,6 +184,7 @@ def test_ci_template_stays_non_networked_and_outside_workflows() -> None:
     assert "techno-search operations-blocker-followup-progress-summary" in template
     assert "techno-search operations-blocker-progress-review-summary" in template
     assert "techno-search operations-blocker-progress-next-actions-summary" in template
+    assert "techno-search operations-blocker-progress-execution-summary" in template
     assert "techno-search operations-readiness-summary" in ci_doc
     assert "techno-search operations-action-plan-summary" in ci_doc
     assert "techno-search operations-action-resolution-summary" in ci_doc
@@ -193,6 +194,7 @@ def test_ci_template_stays_non_networked_and_outside_workflows() -> None:
     assert "techno-search operations-blocker-followup-progress-summary" in ci_doc
     assert "techno-search operations-blocker-progress-review-summary" in ci_doc
     assert "techno-search operations-blocker-progress-next-actions-summary" in ci_doc
+    assert "techno-search operations-blocker-progress-execution-summary" in ci_doc
 
 
 def test_cli_docs_include_draft_report_and_decision_workflows() -> None:
@@ -225,6 +227,7 @@ def test_cli_docs_include_draft_report_and_decision_workflows() -> None:
     assert "techno-search operations-blocker-followup-progress-summary" in doc
     assert "techno-search operations-blocker-progress-review-summary" in doc
     assert "techno-search operations-blocker-progress-next-actions-summary" in doc
+    assert "techno-search operations-blocker-progress-execution-summary" in doc
     assert "techno-search operations-readiness-digest" in doc
     assert "--sqlite-log-path" in doc
     assert "--confirm-external-submission-approval" in doc

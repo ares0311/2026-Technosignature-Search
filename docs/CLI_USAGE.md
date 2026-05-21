@@ -1867,6 +1867,27 @@ reopen verified-local workflow items, clear blockers, authorize live data,
 authorize external submission, mutate candidate scores, or imply external
 validation.
 
+## `operations-blocker-progress-execution-summary`
+
+Summarize local execution notes for blocker progress next actions.
+
+```bash
+techno-search operations-blocker-progress-execution-summary
+techno-search operations-blocker-progress-execution-summary --fixture-path tests/fixtures/operations_blocker_progress_execution.json
+techno-search operations-blocker-progress-execution-summary --next-actions-fixture-path tests/fixtures/operations_blocker_progress_next_actions.json
+techno-search operations-blocker-progress-execution-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`,
+execution-status counts, `residual_blocker_total`, authorization counts,
+coverage fields, mismatch counts, `priority_sequence_ok`,
+`verified_progress_action_ids`, `missing_next_action_ids`,
+`stale_execution_next_action_ids`, `by_status`, `by_category`, `by_operator`,
+and `records`. Execution records are local workflow notes only. They do not
+reopen verified-local workflow items, clear blockers, authorize live data,
+authorize external submission, mutate candidate scores, or imply external
+validation.
+
 ## `operations-readiness-digest`
 
 Print a review-safe Markdown digest for operator handoff.

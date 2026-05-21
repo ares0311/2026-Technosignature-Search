@@ -683,6 +683,7 @@ Included in `validate-all` for informational purposes. Collects blocking issues 
 .venv/bin/techno-search operations-blocker-followup-progress-summary
 .venv/bin/techno-search operations-blocker-progress-review-summary
 .venv/bin/techno-search operations-blocker-progress-next-actions-summary
+.venv/bin/techno-search operations-blocker-progress-execution-summary
 .venv/bin/techno-search operations-readiness-digest
 ```
 
@@ -691,6 +692,10 @@ than as a new hard failure gate. The summary combines QC health, open alerts,
 overdue review deadlines, route coverage, validation-readiness blockers,
 curated-intake blockers, submission provenance blockers, pipeline capacity, and
 top-level SQLite log safety fields.
+
+The blocker progress-execution summary is a local provenance layer for ordered
+next actions. It must preserve residual blockers, verified-local exclusions,
+zero live-data authorization, and zero external-submission authorization.
 
 Use `sqlite-log-bootstrap-summary --db-path logs/techno_search.sqlite3` to
 initialize a local ignored SQLite database and check the integrity and weekly

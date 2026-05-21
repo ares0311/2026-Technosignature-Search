@@ -564,6 +564,8 @@ introduced.
       records without reopening verified-local workflow items
 - [x] Operations blocker progress next-actions summary orders unresolved
       progress-review tasks without clearing blockers
+- [x] Operations blocker progress-execution summary records local execution
+      notes against next-action IDs without clearing blockers
 - [x] CI template reports action-resolution visibility without clearing
       blockers or authorizing live data or external submission
 
@@ -597,5 +599,8 @@ introduced.
   unresolved progress, preserve verified-local exclusions, and do not authorize
   live data or external submission.
 - Blocker progress next-action records are local task ordering only. They do
+  not clear blockers, reopen verified-local items, or authorize live data or
+  external submission.
+- Blocker progress-execution records are local workflow notes only. They do
   not clear blockers, reopen verified-local items, or authorize live data or
   external submission.
