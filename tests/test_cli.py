@@ -304,6 +304,7 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "operations_action_resolution",
         "operations_blocker_detail",
         "operations_blocker_followup",
+        "operations_blocker_followup_progress",
         "operations_blocker_review",
     }
     assert result["background_search_ledger"].endswith(
@@ -1443,7 +1444,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 76
+    assert result["schema_count"] == 77
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -1590,6 +1591,28 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert result["operations_blocker_followup_coverage_complete"] is True
     assert result["operations_blocker_followup_all_detail_evidence_reviewed"] is True
+    assert result["operations_blocker_followup_progress_record_count"] == 8
+    assert result["operations_blocker_followup_progress_unresolved_count"] == 7
+    assert result["operations_blocker_followup_progress_verified_local_count"] == 1
+    assert result["operations_blocker_followup_progress_residual_blocker_total"] == 29
+    assert result["operations_blocker_followup_progress_live_data_authorized_count"] == 0
+    assert (
+        result[
+            "operations_blocker_followup_progress_external_submission_authorized_count"
+        ]
+        == 0
+    )
+    assert (
+        result[
+            "operations_blocker_followup_progress_all_external_authorization_disabled"
+        ]
+        is True
+    )
+    assert result["operations_blocker_followup_progress_coverage_complete"] is True
+    assert (
+        result["operations_blocker_followup_progress_recommendation_mismatch_count"]
+        == 0
+    )
     assert result["session_log_count"] == 5
     assert result["session_log_completed_count"] == 3
     assert result["priority_queue_depth"] == 5

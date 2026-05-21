@@ -405,6 +405,14 @@ from techno_search.operations_blocker_followup import (
     OperationsBlockerFollowupAction,
     operations_blocker_followup_summary,
 )
+from techno_search.operations_blocker_followup_progress import (
+    ALLOWED_BLOCKER_FOLLOWUP_PROGRESS_STATUSES,
+    OPERATIONS_BLOCKER_FOLLOWUP_PROGRESS_DISCLAIMER,
+    OPERATIONS_BLOCKER_FOLLOWUP_PROGRESS_SCHEMA_VERSION,
+    OperationsBlockerFollowupProgressRecord,
+    load_operations_blocker_followup_progress_records,
+    operations_blocker_followup_progress_summary,
+)
 from techno_search.operations_blocker_review import (
     ALLOWED_BLOCKER_REVIEW_STATUSES,
     OPERATIONS_BLOCKER_REVIEW_DISCLAIMER,
@@ -1048,6 +1056,12 @@ __all__ = [
     "OPERATIONS_BLOCKER_FOLLOWUP_SCHEMA_VERSION",
     "OperationsBlockerFollowupAction",
     "operations_blocker_followup_summary",
+    "ALLOWED_BLOCKER_FOLLOWUP_PROGRESS_STATUSES",
+    "OPERATIONS_BLOCKER_FOLLOWUP_PROGRESS_DISCLAIMER",
+    "OPERATIONS_BLOCKER_FOLLOWUP_PROGRESS_SCHEMA_VERSION",
+    "OperationsBlockerFollowupProgressRecord",
+    "load_operations_blocker_followup_progress_records",
+    "operations_blocker_followup_progress_summary",
     "ALLOWED_BLOCKER_REVIEW_STATUSES",
     "OPERATIONS_BLOCKER_REVIEW_DISCLAIMER",
     "OPERATIONS_BLOCKER_REVIEW_SCHEMA_VERSION",

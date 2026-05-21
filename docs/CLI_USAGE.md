@@ -1808,6 +1808,24 @@ residual blockers and disabled authorization gates; they do not clear
 blockers, authorize live data, authorize external submission, or imply
 external validation.
 
+## `operations-blocker-followup-progress-summary`
+
+Summarize local progress notes for blocker follow-up actions.
+
+```bash
+techno-search operations-blocker-followup-progress-summary
+techno-search operations-blocker-followup-progress-summary --fixture-path tests/fixtures/operations_blocker_followup_progress.json
+techno-search operations-blocker-followup-progress-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`, status counts,
+`unresolved_progress_count`, `residual_blocker_total`, authorization counts,
+coverage fields, `recommendation_mismatch_count`, `missing_action_ids`,
+`stale_progress_action_ids`, `by_status`, `by_recommendation`, `by_operator`,
+and `records`. Progress records are workflow notes only. They do not clear
+blockers, authorize live data, authorize external submission, mutate candidate
+scores, or imply external validation.
+
 ## `operations-readiness-digest`
 
 Print a review-safe Markdown digest for operator handoff.

@@ -204,6 +204,8 @@ The project will support three tracks from day one:
       provenance for blocker-detail evidence bundles without clearing blockers
 - [x] Operations blocker-followup summary added to derive next local operator
       actions from blocker-review records without clearing blockers
+- [x] Operations blocker-followup progress records added to track local
+      progress notes without clearing blockers or enabling external workflow
 
 ---
 
@@ -279,11 +281,12 @@ The project will support three tracks from day one:
 - [x] Operations blocker-detail summary now expands current action-plan blockers into local source evidence while keeping live-data and external-submission authorization counts at zero
 - [x] Operations blocker-review summary now covers current blocker-detail actions and evidence counts while preserving residual blockers and zero authorization counts
 - [x] Operations blocker-followup summary now derives local follow-up ordering from reviewed blockers while preserving residual blockers and zero authorization counts
+- [x] Operations blocker-followup progress summary now covers follow-up action IDs and recommendation consistency while preserving residual blockers and zero authorization counts
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions
 
-1. Work the blocker-followup next-action queue before changing any blocker status.
+1. Continue local progress on unresolved blocker-followup progress records before changing any blocker status.
 2. Copy `docs/templates/ci.yml` to `.github/workflows/ci.yml` only after confirming the publishing token has GitHub `workflow` scope.
 3. Add curated validation intake examples only when provenance, licensing, labeling, and external-review requirements are satisfied.
 

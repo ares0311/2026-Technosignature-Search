@@ -1374,3 +1374,29 @@ changing blocker status. The summary is not a scientific result, does not
 clear blockers, does not change candidate scores or pathways, does not enable
 live data, does not authorize external submission, and does not constitute
 external validation.
+
+---
+
+## DECISION-058: Blocker Follow-Up Progress Records Preserve Local Notes Only
+
+**Date**: 2026-05-21
+
+**Status**: accepted
+
+**Context**: DECISION-057 creates a deterministic local follow-up queue, but
+operators need a separate provenance layer for what progress has been made
+against each next-action ID. Progress notes must not be confused with clearing
+the underlying blocker or authorizing real-data workflows.
+
+**Decision**: Add fixture-backed operations blocker-followup progress records
+and an `operations-blocker-followup-progress-summary` command. Each record
+links to a follow-up action ID, category, expected recommendation, progress
+status, operator, evidence note, residual blocker count, and explicit
+live-data and external-submission authorization booleans. The summary reports
+coverage against current follow-up actions, recommendation mismatches, status
+counts, residual blockers, and authorization counts.
+
+**Consequences**: Operators can track local progress without mutating
+blocker-review or blocker-followup records. Progress records do not clear
+blockers, change candidate scores or pathways, enable live data, authorize
+external submission, or constitute external validation.

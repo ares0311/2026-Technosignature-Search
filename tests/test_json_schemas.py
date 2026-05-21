@@ -82,6 +82,7 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "operations_action_resolution.schema.json",
         "operations_blocker_detail.schema.json",
         "operations_blocker_followup.schema.json",
+        "operations_blocker_followup_progress.schema.json",
         "operations_blocker_review.schema.json",
     }
     for path in schema_paths:

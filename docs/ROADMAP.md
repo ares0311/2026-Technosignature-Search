@@ -558,6 +558,8 @@ introduced.
       blocker-detail evidence bundles without clearing blockers
 - [x] Operations blocker-followup summary derives next local operator actions
       from blocker-review records without clearing blockers
+- [x] Operations blocker-followup progress summary tracks progress notes
+      against follow-up action IDs without clearing blockers
 - [x] CI template reports action-resolution visibility without clearing
       blockers or authorizing live data or external submission
 
@@ -585,3 +587,5 @@ introduced.
   workflow.
 - Blocker-followup recommendations are local planning aids only. They preserve
   residual blockers and disabled authorization gates.
+- Blocker-followup progress records are workflow notes only. They do not clear
+  blockers or authorize live data or external submission.
