@@ -1846,6 +1846,27 @@ cover unresolved progress only. They do not reopen verified-local workflow
 items, clear blockers, authorize live data, authorize external submission,
 mutate candidate scores, or imply external validation.
 
+## `operations-blocker-progress-next-actions-summary`
+
+Summarize ordered local next actions for unresolved blocker progress reviews.
+
+```bash
+techno-search operations-blocker-progress-next-actions-summary
+techno-search operations-blocker-progress-next-actions-summary --fixture-path tests/fixtures/operations_blocker_progress_next_actions.json
+techno-search operations-blocker-progress-next-actions-summary --progress-review-fixture-path tests/fixtures/operations_blocker_progress_review.json
+techno-search operations-blocker-progress-next-actions-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`,
+next-action-status counts, `residual_blocker_total`, authorization counts,
+coverage fields, `status_mismatch_count`, `priority_sequence_ok`,
+`verified_progress_action_ids`, `missing_action_ids`,
+`stale_next_action_ids`, `by_status`, `by_category`, `by_operator`, and
+`records`. Next-action records are local workflow tasks only. They do not
+reopen verified-local workflow items, clear blockers, authorize live data,
+authorize external submission, mutate candidate scores, or imply external
+validation.
+
 ## `operations-readiness-digest`
 
 Print a review-safe Markdown digest for operator handoff.

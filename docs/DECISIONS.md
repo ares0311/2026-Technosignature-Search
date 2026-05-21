@@ -1425,3 +1425,32 @@ external-submission authorization booleans.
 gain progress-review visibility without clearing blockers, mutating candidate
 scores or pathways, enabling live data, authorizing external submission, or
 constituting external validation.
+
+---
+
+## DECISION-060: Progress Next Actions Are Local Task Ordering Only
+
+**Date**: 2026-05-21
+
+**Status**: accepted
+
+**Context**: DECISION-059 identifies unresolved blocker progress-review records,
+but operators still need an ordered local work queue that distinguishes direct
+operator action, next local notes, and real-data holds. This queue must not be
+treated as blocker clearance, external submission readiness, or scientific
+validation.
+
+**Decision**: Add fixture-backed operations blocker progress next-action records
+and an `operations-blocker-progress-next-actions-summary` command. Each record
+links to an unresolved progress-review action ID and review ID, carries a
+next-action status, priority rank, operator, action note, residual blocker
+count, and explicit live-data and external-submission authorization booleans.
+The summary reports coverage against unresolved progress-review records,
+status consistency, priority ordering, verified-local exclusions, residual
+blockers, and authorization counts.
+
+**Consequences**: Operators get a deterministic local task queue for the
+unresolved progress-review layer. Next-action records do not clear blockers,
+reopen verified-local workflow items, change candidate scores or pathways,
+enable live data, authorize external submission, or constitute external
+validation.

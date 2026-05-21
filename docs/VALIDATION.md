@@ -682,6 +682,7 @@ Included in `validate-all` for informational purposes. Collects blocking issues 
 .venv/bin/techno-search operations-blocker-followup-summary
 .venv/bin/techno-search operations-blocker-followup-progress-summary
 .venv/bin/techno-search operations-blocker-progress-review-summary
+.venv/bin/techno-search operations-blocker-progress-next-actions-summary
 .venv/bin/techno-search operations-readiness-digest
 ```
 
@@ -751,3 +752,9 @@ unresolved progress only. `validate-all` checks review coverage, progress-status
 consistency, residual blocker totals, and disabled authorization gates. Verified
 local progress remains excluded from the unresolved review queue and is not
 reopened by the review summary.
+
+The blocker progress next-actions summary records ordered local tasks for the
+unresolved progress-review queue. `validate-all` checks next-action coverage,
+review-status consistency, priority ordering, residual blocker totals, and
+disabled authorization gates. Next actions are workflow tasks only; they do not
+clear blockers or change scientific interpretation.

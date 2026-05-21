@@ -141,6 +141,9 @@ from techno_search.operations_blocker_followup import operations_blocker_followu
 from techno_search.operations_blocker_followup_progress import (
     operations_blocker_followup_progress_summary,
 )
+from techno_search.operations_blocker_progress_next_actions import (
+    operations_blocker_progress_next_actions_summary,
+)
 from techno_search.operations_blocker_progress_review import (
     operations_blocker_progress_review_summary,
 )
@@ -285,6 +288,9 @@ SCHEMA_FILENAMES = {
     ),
     "operations_blocker_progress_review": (
         "operations_blocker_progress_review.schema.json"
+    ),
+    "operations_blocker_progress_next_actions": (
+        "operations_blocker_progress_next_actions.schema.json"
     ),
     "operations_blocker_review": "operations_blocker_review.schema.json",
 }
@@ -1346,6 +1352,72 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                     fixture_path,
                     expected_action_ids=unresolved_action_ids,
                     blocker_followup_progress_summary=progress_summary,
+                ),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operations-blocker-progress-next-actions-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        progress_review_fixture_path = getattr(
+            args,
+            "progress_review_fixture_path",
+            None,
+        )
+        progress_fixture_path = getattr(args, "progress_fixture_path", None)
+        review_fixture_path = getattr(args, "review_fixture_path", None)
+        db_path = getattr(args, "sqlite_log_path", None)
+        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=db_path)
+        expected_detail_action_ids = [
+            str(detail["action_id"])
+            for detail in blocker_detail["details"]
+            if isinstance(detail, dict)
+        ]
+        blocker_review = operations_blocker_review_summary(
+            review_fixture_path,
+            expected_action_ids=expected_detail_action_ids,
+            blocker_detail_summary=blocker_detail,
+        )
+        blocker_followup = operations_blocker_followup_summary(
+            review_fixture_path,
+            blocker_detail_summary_data=blocker_detail,
+            blocker_review_summary_data=blocker_review,
+        )
+        expected_action_ids = [
+            str(action["action_id"])
+            for action in blocker_followup["actions"]
+            if isinstance(action, dict)
+        ]
+        progress_summary = operations_blocker_followup_progress_summary(
+            progress_fixture_path,
+            expected_action_ids=expected_action_ids,
+            blocker_followup_summary=blocker_followup,
+        )
+        unresolved_action_ids = [
+            str(record["action_id"])
+            for record in progress_summary["records"]
+            if isinstance(record, dict)
+            and str(record.get("progress_status", "")) != "verified_local"
+        ]
+        progress_review_summary = operations_blocker_progress_review_summary(
+            progress_review_fixture_path,
+            expected_action_ids=unresolved_action_ids,
+            blocker_followup_progress_summary=progress_summary,
+        )
+        expected_next_action_ids = [
+            str(record["action_id"])
+            for record in progress_review_summary["records"]
+            if isinstance(record, dict)
+        ]
+        print(
+            json.dumps(
+                operations_blocker_progress_next_actions_summary(
+                    fixture_path,
+                    expected_action_ids=expected_next_action_ids,
+                    blocker_progress_review_summary=progress_review_summary,
                 ),
                 indent=2,
                 sort_keys=True,
@@ -2695,6 +2767,17 @@ def validate_all() -> dict[str, object]:
         expected_action_ids=operations_unresolved_progress_action_ids,
         blocker_followup_progress_summary=operations_blocker_followup_progress,
     )
+    operations_progress_review_action_ids = [
+        str(record["action_id"])
+        for record in operations_blocker_progress_review["records"]
+        if isinstance(record, dict)
+    ]
+    operations_blocker_progress_next_actions = (
+        operations_blocker_progress_next_actions_summary(
+            expected_action_ids=operations_progress_review_action_ids,
+            blocker_progress_review_summary=operations_blocker_progress_review,
+        )
+    )
     action_resolution_record_count = int(
         operations_action_resolution["record_count"]
     )
@@ -2775,6 +2858,27 @@ def validate_all() -> dict[str, object]:
     )
     blocker_progress_review_residual_blocker_total = int(
         operations_blocker_progress_review["residual_blocker_total"]
+    )
+    blocker_progress_next_action_record_count = int(
+        operations_blocker_progress_next_actions["record_count"]
+    )
+    blocker_progress_next_action_live_authorized_count = int(
+        operations_blocker_progress_next_actions["live_data_authorized_count"]
+    )
+    blocker_progress_next_action_external_authorized_count = int(
+        operations_blocker_progress_next_actions["external_submission_authorized_count"]
+    )
+    blocker_progress_next_action_coverage_complete = bool(
+        operations_blocker_progress_next_actions["coverage_complete"]
+    )
+    blocker_progress_next_action_status_mismatch_count = int(
+        operations_blocker_progress_next_actions["status_mismatch_count"]
+    )
+    blocker_progress_next_action_residual_blocker_total = int(
+        operations_blocker_progress_next_actions["residual_blocker_total"]
+    )
+    blocker_progress_next_action_priority_sequence_ok = bool(
+        operations_blocker_progress_next_actions["priority_sequence_ok"]
     )
 
     ok = (
@@ -3080,6 +3184,15 @@ def validate_all() -> dict[str, object]:
         and blocker_progress_review_status_mismatch_count == 0
         and blocker_progress_review_residual_blocker_total
         == int(operations_blocker_followup_progress["residual_blocker_total"])
+        and blocker_progress_next_action_record_count
+        == blocker_progress_review_record_count
+        and blocker_progress_next_action_live_authorized_count == 0
+        and blocker_progress_next_action_external_authorized_count == 0
+        and blocker_progress_next_action_coverage_complete
+        and blocker_progress_next_action_status_mismatch_count == 0
+        and blocker_progress_next_action_residual_blocker_total
+        == blocker_progress_review_residual_blocker_total
+        and blocker_progress_next_action_priority_sequence_ok
     )
     return {
         "ok": ok,
@@ -3208,6 +3321,9 @@ def validate_all() -> dict[str, object]:
         "operations_blocker_progress_review_summary": (
             operations_blocker_progress_review
         ),
+        "operations_blocker_progress_next_actions_summary": (
+            operations_blocker_progress_next_actions
+        ),
     }
 
 
@@ -3269,6 +3385,9 @@ def validation_summary() -> dict[str, object]:
     ]
     operations_blocker_progress_review = validation[
         "operations_blocker_progress_review_summary"
+    ]
+    operations_blocker_progress_next_actions = validation[
+        "operations_blocker_progress_next_actions_summary"
     ]
     return {
         "ok": validation["ok"],
@@ -3996,6 +4115,69 @@ def validation_summary() -> dict[str, object]:
         )
         if isinstance(operations_blocker_progress_review, dict)
         else 0,
+        "operations_blocker_progress_next_actions_record_count": (
+            operations_blocker_progress_next_actions["record_count"]
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else 0,
+        "operations_blocker_progress_next_actions_operator_action_required_count": (
+            operations_blocker_progress_next_actions["operator_action_required_count"]
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else 0,
+        "operations_blocker_progress_next_actions_local_note_ready_count": (
+            operations_blocker_progress_next_actions["local_note_ready_count"]
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else 0,
+        "operations_blocker_progress_next_actions_blocked_pending_real_data_count": (
+            operations_blocker_progress_next_actions[
+                "blocked_pending_real_data_count"
+            ]
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else 0,
+        "operations_blocker_progress_next_actions_residual_blocker_total": (
+            operations_blocker_progress_next_actions["residual_blocker_total"]
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else 0,
+        "operations_blocker_progress_next_actions_live_data_authorized_count": (
+            operations_blocker_progress_next_actions["live_data_authorized_count"]
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else 0,
+        "operations_blocker_progress_next_actions_external_submission_authorized_count": (
+            operations_blocker_progress_next_actions[
+                "external_submission_authorized_count"
+            ]
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else 0,
+        "operations_blocker_progress_next_actions_all_external_authorization_disabled": (
+            bool(
+                operations_blocker_progress_next_actions[
+                    "all_external_authorization_disabled"
+                ]
+            )
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else False,
+        "operations_blocker_progress_next_actions_coverage_complete": bool(
+            operations_blocker_progress_next_actions["coverage_complete"]
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else False,
+        "operations_blocker_progress_next_actions_status_mismatch_count": (
+            operations_blocker_progress_next_actions["status_mismatch_count"]
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else 0,
+        "operations_blocker_progress_next_actions_priority_sequence_ok": bool(
+            operations_blocker_progress_next_actions["priority_sequence_ok"]
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else False,
         "baseline_pathway_accuracy": (
             baseline_eval_s["pathway_accuracy"]
             if isinstance(baseline_eval_s := validation.get("baseline_eval_summary"), dict)
@@ -5791,6 +5973,38 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Optional local blocker-review fixture path for expected actions.",
     )
     ops_blocker_progress_review_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help="Optional SQLite log database path for blocker-detail coverage fields.",
+    )
+    ops_blocker_progress_next_parser = subparsers.add_parser(
+        "operations-blocker-progress-next-actions-summary",
+        help=(
+            "Summarize local next actions for unresolved blocker progress. "
+            "Workflow provenance only; does not clear blockers."
+        ),
+    )
+    ops_blocker_progress_next_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional local blocker progress next-action fixture path.",
+    )
+    ops_blocker_progress_next_parser.add_argument(
+        "--progress-review-fixture-path",
+        type=Path,
+        help="Optional local blocker progress-review fixture path.",
+    )
+    ops_blocker_progress_next_parser.add_argument(
+        "--progress-fixture-path",
+        type=Path,
+        help="Optional local blocker-followup progress fixture path.",
+    )
+    ops_blocker_progress_next_parser.add_argument(
+        "--review-fixture-path",
+        type=Path,
+        help="Optional local blocker-review fixture path for expected actions.",
+    )
+    ops_blocker_progress_next_parser.add_argument(
         "--sqlite-log-path",
         type=Path,
         help="Optional SQLite log database path for blocker-detail coverage fields.",

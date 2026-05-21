@@ -29,6 +29,7 @@ techno-search operations-blocker-review-summary
 techno-search operations-blocker-followup-summary
 techno-search operations-blocker-followup-progress-summary
 techno-search operations-blocker-progress-review-summary
+techno-search operations-blocker-progress-next-actions-summary
 ```
 
 The workflow sets `TECHNO_SEARCH_ENABLE_LIVE_DATA=0`. CI must remain
@@ -53,7 +54,9 @@ records local progress notes against those next actions while preserving
 residual blockers and disabled authorization gates. The blocker progress-review
 summary reviews only unresolved progress records, leaves verified-local items
 closed, and keeps live-data and external-submission authorization counts at
-zero.
+zero. The blocker progress next-actions summary turns unresolved progress-review
+records into an ordered local work queue without clearing blockers or changing
+authorization gates.
 
 ## Promotion Checklist
 
