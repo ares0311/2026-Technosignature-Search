@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "InstrumentLog",
+  "description": "Operational records for instrument/telescope status events.",
+  "type": "object",
+  "required": ["instrument_log_entries"],
+  "properties": {
+    "instrument_log_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["log_id","instrument_id","instrument_kind","event_kind","reported_by","reported_utc"],
+        "properties": {
+          "log_id": {"type": "string"},
+          "instrument_id": {"type": "string"},
+          "instrument_kind": {"type": "string", "enum": ["radio_telescope","optical_telescope","archive_node","data_pipeline"]},
+          "event_kind": {"type": "string", "enum": ["online","offline","degraded","maintenance","calibrating"]},
+          "reported_by": {"type": "string"},
+          "reported_utc": {"type": "string"},
+          "resolved_utc": {"type": ["string","null"]},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

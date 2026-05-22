@@ -1,0 +1,59 @@
+{
+  "archival_query_entries": [
+    {
+      "query_id": "aq-001",
+      "candidate_id": "radio-clean-candidate",
+      "query_kind": "cone_search",
+      "status": "completed",
+      "queried_by": "operator-a",
+      "queried_utc": "2026-01-10T09:00:00Z",
+      "archive_source": "simbad",
+      "row_count": 3,
+      "notes": "Cone search around radio candidate position."
+    },
+    {
+      "query_id": "aq-002",
+      "candidate_id": "infrared-clean-candidate",
+      "query_kind": "identifier_lookup",
+      "status": "completed",
+      "queried_by": "operator-b",
+      "queried_utc": "2026-01-11T10:00:00Z",
+      "archive_source": "gaia",
+      "row_count": 1,
+      "notes": "Identifier lookup for infrared source."
+    },
+    {
+      "query_id": "aq-003",
+      "candidate_id": "anomaly-candidate-1",
+      "query_kind": "time_series",
+      "status": "failed",
+      "queried_by": "operator-a",
+      "queried_utc": "2026-01-12T11:00:00Z",
+      "archive_source": "irsa",
+      "row_count": null,
+      "notes": "Time series query failed due to archive timeout."
+    },
+    {
+      "query_id": "aq-004",
+      "candidate_id": "radio-clean-candidate",
+      "query_kind": "spectral_query",
+      "status": "cached",
+      "queried_by": "operator-c",
+      "queried_utc": "2026-01-13T12:00:00Z",
+      "archive_source": "vizier",
+      "row_count": 7,
+      "notes": "Result served from local metadata cache."
+    },
+    {
+      "query_id": "aq-005",
+      "candidate_id": "anomaly-candidate-2",
+      "query_kind": "image_retrieval",
+      "status": "submitted",
+      "queried_by": "operator-b",
+      "queried_utc": "2026-01-14T13:00:00Z",
+      "archive_source": null,
+      "row_count": null,
+      "notes": "Image retrieval request awaiting archive response."
+    }
+  ]
+}

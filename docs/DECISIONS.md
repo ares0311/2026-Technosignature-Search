@@ -1619,3 +1619,23 @@ live data, authorize external submission, or constitute external validation.
 **Quality gate log**: records the result of consistency or completeness checks applied to a candidate during pipeline execution. Gate kinds are score_threshold, provenance_completeness, rfi_screen, catalog_check, and review_coverage. Results are pass, fail, warn, and not_applicable. Gate results are scheduling coordination aids only — a gate pass does not modify candidate scores or pathway routing and does not authorize external submission.
 
 **Consequences**: `validate-all` gates enforce `obs_request_entry_count >= 1`, `candidate_export_entry_count >= 1`, `quality_gate_entry_count >= 1`, `quality_gate_pass_count >= 1`. SCHEMA_FILENAMES grows to 94. Milestone 20 is complete. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-068: Instrument Log, Archival Query Log, And Candidate Linkage Log Complete Milestone 21
+
+**Date**: 2026-05-22
+
+**Status**: accepted
+
+**Context**: Milestone 21 adds three operational provenance modules completing coverage of instrument/telescope status events, archival/catalog query provenance, and candidate-to-candidate linkage records.
+
+**Decision**: Add three modules, all local operational provenance records only.
+
+**Instrument log**: records instrument/telescope status events for scheduling context. Instrument kinds are radio_telescope, optical_telescope, archive_node, and data_pipeline. Event kinds are online, offline, degraded, maintenance, and calibrating. Instrument log entries are operational scheduling records — instrument status does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
+
+**Archival query log**: records archival/catalog query events submitted by the pipeline for provenance. Query kinds are cone_search, identifier_lookup, time_series, spectral_query, and image_retrieval. Statuses are submitted, completed, failed, and cached. A completed query does not confirm or rule out candidate technosignature interest, does not modify candidate scores or pathway routing, and does not authorize external submission or constitute a detection claim.
+
+**Candidate linkage log**: records pairwise linkages between related candidates. Linkage kinds are same_source, temporal_followup, spatial_neighbor, frequency_related, and cross_track. Statuses are proposed, confirmed, rejected, and under_review. A confirmed linkage does not modify candidate scores or pathway routing, does not constitute a detection claim, and does not authorize external submission.
+
+**Consequences**: `validate-all` gates enforce `instrument_log_entry_count >= 1`, `archival_query_entry_count >= 1`, `candidate_linkage_entry_count >= 1`. SCHEMA_FILENAMES grows to 97. Milestone 21 is complete. Scientific guardrails remain unchanged.
