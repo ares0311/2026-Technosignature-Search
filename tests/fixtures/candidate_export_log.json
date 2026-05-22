@@ -1,0 +1,55 @@
+{
+  "schema_version": "candidate_export_log_v1",
+  "candidate_export_entries": [
+    {
+      "export_id": "exp-001",
+      "candidate_id": "radio-clean-candidate",
+      "export_format": "json",
+      "status": "exported",
+      "exported_by": "operator-alpha",
+      "exported_utc": "2026-03-02T12:00:00Z",
+      "destination": "internal-review-bucket",
+      "notes": "JSON packet exported for internal review."
+    },
+    {
+      "export_id": "exp-002",
+      "candidate_id": "infrared-excess-candidate",
+      "export_format": "csv",
+      "status": "delivered",
+      "exported_by": "operator-beta",
+      "exported_utc": "2026-03-07T15:00:00Z",
+      "destination": "team-shared-drive",
+      "notes": "CSV table delivered to shared drive for team review."
+    },
+    {
+      "export_id": "exp-003",
+      "candidate_id": "anomaly-candidate",
+      "export_format": "markdown",
+      "status": "prepared",
+      "exported_by": "operator-gamma",
+      "exported_utc": "2026-03-12T10:30:00Z",
+      "destination": null,
+      "notes": "Markdown report prepared; delivery pending operator approval."
+    },
+    {
+      "export_id": "exp-004",
+      "candidate_id": "radio-clean-candidate",
+      "export_format": "fits_stub",
+      "status": "failed",
+      "exported_by": "operator-alpha",
+      "exported_utc": "2026-03-14T08:00:00Z",
+      "destination": null,
+      "notes": "FITS stub export failed due to missing header template."
+    },
+    {
+      "export_id": "exp-005",
+      "candidate_id": "infrared-excess-candidate",
+      "export_format": "parquet_stub",
+      "status": "exported",
+      "exported_by": "operator-beta",
+      "exported_utc": "2026-03-18T16:00:00Z",
+      "destination": "reproducibility-archive",
+      "notes": "Parquet stub exported for reproducibility archive."
+    }
+  ]
+}

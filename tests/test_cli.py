@@ -315,7 +315,13 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "operations_blocker_progress_review",
         "operations_blocker_review",
         "candidate_deduplication_log",
+        "candidate_export_log",
+        "candidate_match_log",
+        "data_gap_log",
         "intake_queue_log",
+        "observation_request_log",
+        "pipeline_error_log",
+        "quality_gate_log",
         "workflow_state_log",
     }
     assert result["background_search_ledger"].endswith(
@@ -1455,7 +1461,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 88
+    assert result["schema_count"] == 94
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -1916,6 +1922,18 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["intake_queue_entry_count"] == 5
     assert result["intake_queue_blocked_count"] == 2
     assert result["workflow_state_entry_count"] == 5
+    assert result["data_gap_entry_count"] == 5
+    assert result["data_gap_unresolved_count"] == 3
+    assert result["candidate_match_entry_count"] == 5
+    assert result["candidate_match_matched_count"] == 2
+    assert result["pipeline_error_entry_count"] == 5
+    assert result["pipeline_error_unresolved_count"] == 2
+    assert result["observation_request_entry_count"] == 5
+    assert result["observation_request_pending_count"] == 3
+    assert result["candidate_export_entry_count"] == 5
+    assert result["candidate_export_delivered_count"] == 1
+    assert result["quality_gate_entry_count"] == 5
+    assert result["quality_gate_pass_count"] == 2
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 

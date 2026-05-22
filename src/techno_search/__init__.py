@@ -157,6 +157,15 @@ from techno_search.candidate_deduplication_log import (
     candidate_deduplication_summary,
     load_deduplication_entries,
 )
+from techno_search.candidate_export_log import (
+    ALLOWED_EXPORT_FORMATS,
+    ALLOWED_EXPORT_STATUSES,
+    CANDIDATE_EXPORT_DISCLAIMER,
+    CANDIDATE_EXPORT_SCHEMA_VERSION,
+    CandidateExportEntry,
+    candidate_export_summary,
+    load_export_entries,
+)
 from techno_search.candidate_feature_vector import (
     ALLOWED_NORMALIZATION_KINDS,
     CANDIDATE_FEATURE_VECTOR_DISCLAIMER,
@@ -182,6 +191,15 @@ from techno_search.candidate_lifecycle import (
     candidate_lifecycle_summary,
     lifecycle_transition_summary,
     load_lifecycle_entries,
+)
+from techno_search.candidate_match_log import (
+    ALLOWED_MATCH_SOURCES,
+    ALLOWED_MATCH_STATUSES,
+    CANDIDATE_MATCH_DISCLAIMER,
+    CANDIDATE_MATCH_SCHEMA_VERSION,
+    CandidateMatchEntry,
+    candidate_match_summary,
+    load_match_entries,
 )
 from techno_search.candidate_methods_summary import (
     CANDIDATE_METHODS_DISCLAIMER,
@@ -269,6 +287,15 @@ from techno_search.curated_dataset_intake import (
     CuratedDatasetIntakeRecord,
     curated_dataset_intake_summary,
     load_intake_records,
+)
+from techno_search.data_gap_log import (
+    ALLOWED_GAP_STATUSES,
+    ALLOWED_MISSING_REASONS,
+    DATA_GAP_DISCLAIMER,
+    DATA_GAP_SCHEMA_VERSION,
+    DataGapEntry,
+    data_gap_summary,
+    load_data_gap_entries,
 )
 from techno_search.data_quality_log import (
     ALLOWED_QUALITY_GRADES,
@@ -402,6 +429,17 @@ from techno_search.observation_campaign import (
     ObservationCampaign,
     load_observation_campaigns,
     observation_campaign_summary,
+)
+from techno_search.observation_request_log import (
+    ALLOWED_REQUEST_KINDS,
+    OBSERVATION_REQUEST_DISCLAIMER,
+    OBSERVATION_REQUEST_SCHEMA_VERSION,
+    ObservationRequestEntry,
+    load_observation_request_entries,
+    observation_request_summary,
+)
+from techno_search.observation_request_log import (
+    ALLOWED_REQUEST_STATUSES as ALLOWED_OBS_REQUEST_STATUSES,
 )
 from techno_search.observation_schedule import (
     OBSERVATION_SCHEDULE_DISCLAIMER,
@@ -556,6 +594,15 @@ from techno_search.pipeline_config import (
     load_pipeline_configs,
     pipeline_config_summary,
 )
+from techno_search.pipeline_error_log import (
+    ALLOWED_ERROR_KINDS,
+    ALLOWED_ERROR_SEVERITIES,
+    PIPELINE_ERROR_DISCLAIMER,
+    PIPELINE_ERROR_SCHEMA_VERSION,
+    PipelineErrorEntry,
+    load_error_entries,
+    pipeline_error_summary,
+)
 from techno_search.pipeline_health import (
     PIPELINE_HEALTH_DISCLAIMER,
     PIPELINE_HEALTH_TRACKS,
@@ -604,6 +651,15 @@ from techno_search.provenance_audit import (
 from techno_search.quality_control_summary import (
     QUALITY_CONTROL_DISCLAIMER,
     quality_control_summary,
+)
+from techno_search.quality_gate_log import (
+    ALLOWED_GATE_KINDS,
+    ALLOWED_GATE_RESULTS,
+    QUALITY_GATE_DISCLAIMER,
+    QUALITY_GATE_SCHEMA_VERSION,
+    QualityGateEntry,
+    load_quality_gate_entries,
+    quality_gate_summary,
 )
 from techno_search.reporting import (
     REQUIRED_DISCLAIMER,
@@ -1328,6 +1384,27 @@ __all__ = [
     "CandidateDeduplicationEntry",
     "candidate_deduplication_summary",
     "load_deduplication_entries",
+    "ALLOWED_EXPORT_FORMATS",
+    "ALLOWED_EXPORT_STATUSES",
+    "CANDIDATE_EXPORT_DISCLAIMER",
+    "CANDIDATE_EXPORT_SCHEMA_VERSION",
+    "CandidateExportEntry",
+    "candidate_export_summary",
+    "load_export_entries",
+    "ALLOWED_MATCH_SOURCES",
+    "ALLOWED_MATCH_STATUSES",
+    "CANDIDATE_MATCH_DISCLAIMER",
+    "CANDIDATE_MATCH_SCHEMA_VERSION",
+    "CandidateMatchEntry",
+    "candidate_match_summary",
+    "load_match_entries",
+    "ALLOWED_GAP_STATUSES",
+    "ALLOWED_MISSING_REASONS",
+    "DATA_GAP_DISCLAIMER",
+    "DATA_GAP_SCHEMA_VERSION",
+    "DataGapEntry",
+    "data_gap_summary",
+    "load_data_gap_entries",
     "ALLOWED_INTAKE_SOURCE_KINDS",
     "ALLOWED_INTAKE_QUEUE_STATUSES",
     "INTAKE_QUEUE_DISCLAIMER",
@@ -1335,6 +1412,27 @@ __all__ = [
     "IntakeQueueEntry",
     "intake_queue_summary",
     "load_intake_queue_entries",
+    "ALLOWED_REQUEST_KINDS",
+    "ALLOWED_OBS_REQUEST_STATUSES",
+    "OBSERVATION_REQUEST_DISCLAIMER",
+    "OBSERVATION_REQUEST_SCHEMA_VERSION",
+    "ObservationRequestEntry",
+    "load_observation_request_entries",
+    "observation_request_summary",
+    "ALLOWED_ERROR_KINDS",
+    "ALLOWED_ERROR_SEVERITIES",
+    "PIPELINE_ERROR_DISCLAIMER",
+    "PIPELINE_ERROR_SCHEMA_VERSION",
+    "PipelineErrorEntry",
+    "load_error_entries",
+    "pipeline_error_summary",
+    "ALLOWED_GATE_KINDS",
+    "ALLOWED_GATE_RESULTS",
+    "QUALITY_GATE_DISCLAIMER",
+    "QUALITY_GATE_SCHEMA_VERSION",
+    "QualityGateEntry",
+    "load_quality_gate_entries",
+    "quality_gate_summary",
     "ALLOWED_WORKFLOW_STATES",
     "ALLOWED_WORKFLOW_TRANSITION_KINDS",
     "WORKFLOW_STATE_DISCLAIMER",

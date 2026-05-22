@@ -1579,3 +1579,43 @@ live data, authorize external submission, or constitute external validation.
 **Workflow state log**: local scheduling coordination records tracking formal operator review state transitions for candidate review assignments — initial assignment, state change, reassignment, closure, or reopening. States are assigned, in_review, pending_second_opinion, escalated, closed, and deferred. State transitions are local scheduling aids only — they do not modify candidate posteriors, scores, or pathway routing, and do not authorize external submission.
 
 **Consequences**: `validate-all` gates enforce `dedup_entry_count >= 1`, `intake_entry_count >= 1`, `workflow_entry_count >= 1`. SCHEMA_FILENAMES grows to 88. Milestone 18 is complete. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-066: Data Gap Log, Candidate Match Log, And Pipeline Error Log Complete Milestone 19
+
+**Date**: 2026-05-22
+
+**Status**: accepted
+
+**Context**: Milestone 19 adds three operational provenance modules completing coverage of scheduling gaps, cross-catalog matching outcomes, and pipeline error tracking.
+
+**Decision**: Add three modules, all local operational provenance records only.
+
+**Data gap log**: records that expected observations or data deliveries were missing or incomplete due to instrument downtime, weather, scheduling conflicts, or data quality failures. Missing reasons are instrument_downtime, weather, scheduling_conflict, data_quality_failure, and unknown. Statuses are identified, under_investigation, resolved, and accepted. Gap records do not modify candidate scores, do not affect pathway routing, do not identify missing technosignatures, do not authorize external submission, and do not constitute a detection claim.
+
+**Candidate match log**: records the result of cross-catalog matching operations performed for a candidate against external or internal catalog sources (simbad, gaia, vizier, irsa, internal_catalog). Statuses are matched, no_match, ambiguous, and pending. A catalog match does not confirm or rule out candidate technosignature interest, does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.
+
+**Pipeline error log**: records that a scoring, data, configuration, or validation error occurred during pipeline execution. Error kinds are scoring_failure, data_missing, config_mismatch, timeout, and validation_error. Severities are warning, error, and critical. Error records do not modify candidate scores, do not affect pathway routing, do not authorize external submission, and do not constitute a detection claim.
+
+**Consequences**: `validate-all` gates enforce `data_gap_entry_count >= 1`, `candidate_match_entry_count >= 1`, `pipeline_error_entry_count >= 1`. SCHEMA_FILENAMES grows to 91. Milestone 19 is complete. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-067: Observation Request Log, Candidate Export Log, And Quality Gate Log Complete Milestone 20
+
+**Date**: 2026-05-22
+
+**Status**: accepted
+
+**Context**: Milestone 20 adds three operational provenance modules completing coverage of follow-up observation scheduling requests, candidate data export events, and pipeline quality gate checks.
+
+**Decision**: Add three modules, all local operational provenance records only.
+
+**Observation request log**: records that a follow-up observation slot was requested for a candidate in a local scheduling system. Request kinds are target_followup, reobservation, calibration_check, verification, and archival_search. Statuses are submitted, acknowledged, scheduled, completed, rejected, and withdrawn. Request records do not constitute telescope-time allocations, do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute a detection claim.
+
+**Candidate export log**: records candidate data export events for internal review or reproducibility purposes. Export formats are json, csv, markdown, fits_stub, and parquet_stub. Statuses are prepared, exported, delivered, failed, and cancelled. Export records do not modify candidate scores or pathway routing, do not authorize external submission or publication, and do not constitute a detection claim.
+
+**Quality gate log**: records the result of consistency or completeness checks applied to a candidate during pipeline execution. Gate kinds are score_threshold, provenance_completeness, rfi_screen, catalog_check, and review_coverage. Results are pass, fail, warn, and not_applicable. Gate results are scheduling coordination aids only — a gate pass does not modify candidate scores or pathway routing and does not authorize external submission.
+
+**Consequences**: `validate-all` gates enforce `obs_request_entry_count >= 1`, `candidate_export_entry_count >= 1`, `quality_gate_entry_count >= 1`, `quality_gate_pass_count >= 1`. SCHEMA_FILENAMES grows to 94. Milestone 20 is complete. Scientific guardrails remain unchanged.

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DataGapLog",
+  "type": "object",
+  "required": ["schema_version", "data_gap_entries"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "data_gap_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["gap_id", "track", "missing_reason", "status", "expected_utc", "reported_by", "reported_utc"],
+        "properties": {
+          "gap_id": {"type": "string"},
+          "track": {"type": "string"},
+          "missing_reason": {
+            "type": "string",
+            "enum": ["instrument_downtime", "weather", "scheduling_conflict", "data_quality_failure", "unknown"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["identified", "under_investigation", "resolved", "accepted"]
+          },
+          "expected_utc": {"type": "string"},
+          "reported_by": {"type": "string"},
+          "reported_utc": {"type": "string"},
+          "resolved_utc": {"type": ["string", "null"]},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}
