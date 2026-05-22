@@ -1715,6 +1715,38 @@ techno-search scoring-threshold-audit-summary --fixture-path tests/fixtures/scor
 
 Output fields: `disclaimer`, `schema_version`, `entry_count`, `pass_count`, `fail_count`, `warning_count`, `not_checked_count`, `by_verdict`, `by_track`, `tracks_covered`, `all_passed`. Audit pass does not authorize external submission or constitute a detection claim.
 
+## `alert-resolution-summary`
+
+Summarize alert resolution log entries recording how open candidate alerts are formally closed.
+
+```bash
+techno-search alert-resolution-summary
+techno-search alert-resolution-summary --fixture-path tests/fixtures/alert_resolution_log.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `entry_count`, `open_count`, `resolved_count`, `by_status`, `by_kind`. Resolution entries are operational provenance records — resolved_follow_up status is a local scheduling action only and does not authorize external submission.
+
+## `config-version-history-summary`
+
+Summarize config version history entries recording pipeline config changes over time.
+
+```bash
+techno-search config-version-history-summary
+techno-search config-version-history-summary --fixture-path tests/fixtures/config_version_history.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `entry_count`, `deprecated_count`, `promoted_count`, `by_kind`, `by_config`, `configs_tracked`. History entries are append-only provenance records — they do not re-run or re-route any candidate.
+
+## `operator-escalation-summary`
+
+Summarize operator escalation log entries recording inter-operator scheduling coordination.
+
+```bash
+techno-search operator-escalation-summary
+techno-search operator-escalation-summary --fixture-path tests/fixtures/operator_escalation_log.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `entry_count`, `open_count`, `acknowledged_count`, `resolved_count`, `by_severity`, `by_status`. Escalation severity reflects scheduling priority, not candidate scientific significance — escalation records do not authorize external submission or modify scores.
 ## `operations-readiness-summary`
 
 Aggregate local-only operations readiness state across QC health, candidate alerts, review deadlines, pipeline capacity, route coverage, curated intake blockers, submission provenance blockers, and top-level SQLite log safety fields.

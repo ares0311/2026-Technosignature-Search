@@ -1539,3 +1539,23 @@ counts.
 reviewed execution notes. Follow-up records do not clear blockers, reopen
 verified-local workflow items, change candidate scores or pathways, enable
 live data, authorize external submission, or constitute external validation.
+
+---
+
+## DECISION-064: Alert Resolution Log, Config Version History, And Operator Escalation Log Complete Milestone 17
+
+**Date**: 2026-05-22
+
+**Status**: accepted
+
+**Context**: Milestone 17 closes the operational lifecycle loop with three provenance modules: how open alerts get formally resolved, how pipeline config changes over time, and how operator escalations flow between operators.
+
+**Decision**: Add three modules, all local provenance records only.
+
+**Alert resolution log**: records how open candidate alerts are formally closed — through operator review, automated consistency check, deadline expiry, pathway confirmation, or watchlist action. Statuses cover resolved_false_positive, resolved_follow_up, resolved_archived, resolved_operator_closed, and open. A resolved_follow_up status means follow-up was scheduled as a local scheduling action only — it does not authorize external submission or constitute a detection claim.
+
+**Config version history**: append-only log of pipeline config changes with effective dates and the operator who made the change. Change kinds are created, promoted, updated, and deprecated. History entries do not re-run or re-route any candidate, authorize external submission, or constitute a detection claim.
+
+**Operator escalation log**: structured log of inter-operator escalations tracking when an operator transfers responsibility for a candidate or alert. Severity levels are routine, urgent, and critical; statuses are open, acknowledged, and resolved. Escalation severity reflects scheduling priority only — not candidate scientific significance. Escalation records do not modify scores or pathway routing and do not authorize external submission.
+
+**Consequences**: `validate-all` gates enforce `alert_resolution_entry_count >= 1`, `config_history_entry_count >= 1`, `operator_escalation_entry_count >= 1`. SCHEMA_FILENAMES grows to 73. Milestone 17 is complete. Scientific guardrails remain unchanged.

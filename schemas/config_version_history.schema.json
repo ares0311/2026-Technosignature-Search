@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ConfigVersionHistory",
+  "description": "Append-only provenance records for pipeline config changes. History entries do not re-route candidates or authorize external submission.",
+  "type": "object",
+  "required": ["config_version_history_entries"],
+  "properties": {
+    "config_version_history_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "history_id",
+          "config_id",
+          "change_kind",
+          "effective_utc",
+          "changed_by"
+        ],
+        "properties": {
+          "history_id": {"type": "string"},
+          "config_id": {"type": "string"},
+          "change_kind": {
+            "type": "string",
+            "enum": ["created", "promoted", "updated", "deprecated"]
+          },
+          "effective_utc": {"type": "string"},
+          "changed_by": {"type": "string"},
+          "prior_config_id": {"type": ["string", "null"]},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

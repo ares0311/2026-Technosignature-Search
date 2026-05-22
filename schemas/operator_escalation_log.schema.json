@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OperatorEscalationLog",
+  "description": "Scheduling coordination provenance records for inter-operator escalations. Escalation severity reflects scheduling priority, not candidate scientific significance.",
+  "type": "object",
+  "required": ["operator_escalation_entries"],
+  "properties": {
+    "operator_escalation_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "escalation_id",
+          "candidate_id",
+          "from_operator",
+          "to_operator",
+          "escalation_reason",
+          "severity",
+          "status",
+          "escalated_utc"
+        ],
+        "properties": {
+          "escalation_id": {"type": "string"},
+          "candidate_id": {"type": "string"},
+          "from_operator": {"type": "string"},
+          "to_operator": {"type": "string"},
+          "escalation_reason": {"type": "string"},
+          "severity": {
+            "type": "string",
+            "enum": ["routine", "urgent", "critical"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["open", "acknowledged", "resolved"]
+          },
+          "escalated_utc": {"type": "string"},
+          "resolved_utc": {"type": ["string", "null"]},
+          "linked_alert_ids": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

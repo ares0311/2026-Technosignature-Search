@@ -299,6 +299,9 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "candidate_alert_log",
         "pipeline_replay_log",
         "scoring_threshold_audit",
+        "alert_resolution_log",
+        "config_version_history",
+        "operator_escalation_log",
         "operations_readiness_summary",
         "operations_action_plan",
         "operations_action_resolution",
@@ -1449,7 +1452,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 82
+    assert result["schema_count"] == 85
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -1900,6 +1903,11 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["pipeline_replay_matched_count"] == 2
     assert result["scoring_threshold_pass_count"] == 3
     assert result["scoring_threshold_fail_count"] == 0
+    assert result["alert_resolution_entry_count"] == 5
+    assert result["alert_resolution_open_count"] == 1
+    assert result["config_history_entry_count"] == 4
+    assert result["operator_escalation_entry_count"] == 4
+    assert result["operator_escalation_open_count"] == 1
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 
