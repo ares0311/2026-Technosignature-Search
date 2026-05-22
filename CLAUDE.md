@@ -10,6 +10,65 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
+User requested fifteen iterative steps completing Milestone 17 (alert resolution log, config version history, operator escalation log).
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all fifteen steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/alert_resolution_log.py` — operational provenance records tracking how open candidate alerts are formally closed; resolution kinds: operator_review, automated_consistency_check, deadline_expiry, pathway_confirmed, watchlist_action; resolved_follow_up is a local scheduling action only
+- `schemas/alert_resolution_log.schema.json`
+- `tests/fixtures/alert_resolution_log.json` — 5 entries (2 resolved_false_positive, 1 resolved_follow_up, 1 resolved_archived, 1 open)
+- `tests/test_alert_resolution_log.py` — 22 tests
+- `src/techno_search/config_version_history.py` — append-only local provenance records of pipeline config lifecycle events (created, promoted, updated, deprecated)
+- `schemas/config_version_history.schema.json`
+- `tests/fixtures/config_version_history.json` — 4 entries (cfg-hist-001 created, cfg-hist-002 promoted, cfg-hist-003 created, cfg-hist-004 deprecated)
+- `tests/test_config_version_history.py` — 22 tests
+- `src/techno_search/operator_escalation_log.py` — scheduling coordination provenance records for operator-to-operator candidate/alert transfers; severity reflects scheduling priority, not scientific significance
+- `schemas/operator_escalation_log.schema.json`
+- `tests/fixtures/operator_escalation_log.json` — 4 entries (esc-001 critical/open, esc-002 urgent/acknowledged, esc-003 routine/resolved, esc-004 critical/resolved)
+- `tests/test_operator_escalation_log.py` — 24 tests
+- `alert_resolution_log`, `config_version_history`, `operator_escalation_log` added to `SCHEMA_FILENAMES` (total schemas: 73)
+- `techno-search alert-resolution-summary`, `techno-search config-version-history-summary`, `techno-search operator-escalation-summary` CLI commands
+- `validate-all` gates: `alert_resolution_entry_count >= 1`, `config_history_entry_count >= 1`, `operator_escalation_entry_count >= 1`
+- `validation-summary` fields: `alert_resolution_entry_count`, `alert_resolution_open_count`, `config_history_entry_count`, `operator_escalation_entry_count`, `operator_escalation_open_count`
+- DECISION-050: Alert Resolution Log, Config Version History, And Operator Escalation Log Complete Milestone 17
+- Docs: CLI_USAGE.md, DECISIONS.md, ROADMAP.md updated; Milestone 17 fully checked off
+
+Scientific guardrail:
+
+- Alert resolution entries are operational provenance records — resolution does not constitute a detection claim, authorize external submission, or modify scores or pathway routing
+- Config version history entries are append-only records — they do not re-run or re-route any candidate
+- Operator escalation severity reflects scheduling priority only — not candidate scientific significance; escalation does not authorize external submission
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/ruff check .
+.venv/bin/mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 1491 tests passed
+- 5 tests skipped
+- total coverage: 92%
+- Ruff passed
+- mypy passed (95 source files)
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, PR pending.
+
+---
+
+## Previous Iteration
+
 User requested fifteen iterative steps completing Milestone 16 (candidate alert log, pipeline replay log, scoring threshold audit).
 
 Current branch: `claude/general-session-Bb2dZ`.
