@@ -1,0 +1,60 @@
+{
+  "schema_version": "pipeline_error_log_v1",
+  "pipeline_error_entries": [
+    {
+      "error_id": "err-001",
+      "error_kind": "scoring_failure",
+      "severity": "critical",
+      "resolved": false,
+      "reported_by": "operator-alpha",
+      "reported_utc": "2026-02-10T07:00:00Z",
+      "pipeline_stage": "scoring",
+      "resolved_utc": null,
+      "notes": "Scoring module raised unhandled exception for radio candidate batch."
+    },
+    {
+      "error_id": "err-002",
+      "error_kind": "data_missing",
+      "severity": "error",
+      "resolved": true,
+      "reported_by": "operator-beta",
+      "reported_utc": "2026-02-14T12:00:00Z",
+      "pipeline_stage": "ingest",
+      "resolved_utc": "2026-02-15T09:00:00Z",
+      "notes": "Expected infrared data file not delivered; re-ingested after gap resolved."
+    },
+    {
+      "error_id": "err-003",
+      "error_kind": "config_mismatch",
+      "severity": "warning",
+      "resolved": true,
+      "reported_by": "operator-alpha",
+      "reported_utc": "2026-03-01T10:30:00Z",
+      "pipeline_stage": "config",
+      "resolved_utc": "2026-03-02T08:00:00Z",
+      "notes": "Scoring config version mismatch detected and corrected."
+    },
+    {
+      "error_id": "err-004",
+      "error_kind": "timeout",
+      "severity": "error",
+      "resolved": false,
+      "reported_by": "operator-gamma",
+      "reported_utc": "2026-03-20T16:00:00Z",
+      "pipeline_stage": "scoring",
+      "resolved_utc": null,
+      "notes": "Scoring stage exceeded maximum allowed runtime for anomaly batch."
+    },
+    {
+      "error_id": "err-005",
+      "error_kind": "validation_error",
+      "severity": "warning",
+      "resolved": true,
+      "reported_by": "operator-beta",
+      "reported_utc": "2026-04-05T11:00:00Z",
+      "pipeline_stage": "validation",
+      "resolved_utc": "2026-04-05T14:00:00Z",
+      "notes": "Candidate packet failed schema validation; corrected and resubmitted."
+    }
+  ]
+}

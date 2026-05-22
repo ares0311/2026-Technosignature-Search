@@ -1781,6 +1781,39 @@ techno-search workflow-state-summary --fixture-path tests/fixtures/workflow_stat
 
 Output fields: `disclaimer`, `schema_version`, `entry_count`, `unique_candidate_count`, `closed_count`, `open_transition_count`, `by_to_state`, `by_kind`. State transitions are local scheduling aids only — they do not modify candidate posteriors, scores, or pathway routing, and do not authorize external submission.
 
+## `data-gap-summary`
+
+Summarize data gap log entries recording expected observations or data deliveries that were missing or incomplete.
+
+```bash
+techno-search data-gap-summary
+techno-search data-gap-summary --fixture-path tests/fixtures/data_gap_log.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `entry_count`, `unresolved_count`, `resolved_count`, `accepted_count`, `by_status`, `by_reason`. Gap records are scheduling coordination aids only — they do not modify candidate scores, do not affect pathway routing, and do not constitute a detection claim.
+
+## `candidate-match-summary`
+
+Summarize candidate match log entries recording cross-catalog matching operations performed for candidates against external or internal catalog sources.
+
+```bash
+techno-search candidate-match-summary
+techno-search candidate-match-summary --fixture-path tests/fixtures/candidate_match_log.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `entry_count`, `matched_count`, `no_match_count`, `ambiguous_count`, `pending_count`, `by_status`, `by_source`. A catalog match does not confirm technosignature interest, does not modify candidate scores or pathway routing, and does not authorize external submission.
+
+## `pipeline-error-summary`
+
+Summarize pipeline error log entries recording scoring, data, configuration, or validation errors that occurred during pipeline execution.
+
+```bash
+techno-search pipeline-error-summary
+techno-search pipeline-error-summary --fixture-path tests/fixtures/pipeline_error_log.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `entry_count`, `unresolved_count`, `resolved_count`, `critical_count`, `by_severity`, `by_kind`. Error records are operational scheduling aids only — they do not modify candidate scores, do not affect pathway routing, and do not authorize external submission.
+
 ## `operations-readiness-summary`
 
 Aggregate local-only operations readiness state across QC health, candidate alerts, review deadlines, pipeline capacity, route coverage, curated intake blockers, submission provenance blockers, and top-level SQLite log safety fields.

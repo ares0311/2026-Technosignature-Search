@@ -586,6 +586,41 @@ Close the pipeline loop with three complementary operational modules: multi-cand
 
 ---
 
+# Milestone 19 — Data Gap Log, Candidate Match Log, And Pipeline Error Log
+
+## Goal
+
+Add three operational provenance modules: scheduling gap records, cross-catalog matching outcomes, and pipeline error tracking.
+
+## Tasks
+
+- [x] `src/techno_search/data_gap_log.py` — DataGapEntry, load_data_gap_entries, data_gap_summary; statuses: identified, under_investigation, resolved, accepted
+- [x] `schemas/data_gap_log.schema.json`
+- [x] `tests/fixtures/data_gap_log.json` — 5 entries (2 identified, 1 under_investigation, 1 resolved, 1 accepted)
+- [x] `tests/test_data_gap_log.py` — 22 tests
+- [x] `src/techno_search/candidate_match_log.py` — CandidateMatchEntry, load_match_entries, candidate_match_summary; sources: simbad, gaia, vizier, irsa, internal_catalog
+- [x] `schemas/candidate_match_log.schema.json`
+- [x] `tests/fixtures/candidate_match_log.json` — 5 entries (2 matched, 1 no_match, 1 ambiguous, 1 pending)
+- [x] `tests/test_candidate_match_log.py` — 22 tests
+- [x] `src/techno_search/pipeline_error_log.py` — PipelineErrorEntry, load_error_entries, pipeline_error_summary; kinds: scoring_failure, data_missing, config_mismatch, timeout, validation_error
+- [x] `schemas/pipeline_error_log.schema.json`
+- [x] `tests/fixtures/pipeline_error_log.json` — 5 entries (1 critical/unresolved, 2 error/mixed, 2 warning/resolved)
+- [x] `tests/test_pipeline_error_log.py` — 22 tests
+- [x] `data_gap_log`, `candidate_match_log`, `pipeline_error_log` added to `SCHEMA_FILENAMES` (total schemas: 91)
+- [x] CLI: `data-gap-summary`, `candidate-match-summary`, `pipeline-error-summary`
+- [x] `validate-all` gates: data_gap_entry_count >= 1, candidate_match_entry_count >= 1, pipeline_error_entry_count >= 1
+- [x] `validation-summary` fields: data_gap_entry_count, data_gap_unresolved_count, candidate_match_entry_count, candidate_match_matched_count, pipeline_error_entry_count, pipeline_error_unresolved_count
+- [x] DECISION-066: Data Gap Log, Candidate Match Log, And Pipeline Error Log Complete Milestone 19
+
+## Done When
+
+- Data gap log covers all missing reasons and statuses with resolved_utc for resolved/accepted entries
+- Candidate match log covers all match sources and statuses with angular_separation_arcsec for matched entries
+- Pipeline error log covers all error kinds and severities with resolved bool and resolved_utc for resolved entries
+- All integration tests pass without network access
+
+---
+
 # Project Operations Readiness
 
 ## Goal

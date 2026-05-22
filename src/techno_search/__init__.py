@@ -183,6 +183,15 @@ from techno_search.candidate_lifecycle import (
     lifecycle_transition_summary,
     load_lifecycle_entries,
 )
+from techno_search.candidate_match_log import (
+    ALLOWED_MATCH_SOURCES,
+    ALLOWED_MATCH_STATUSES,
+    CANDIDATE_MATCH_DISCLAIMER,
+    CANDIDATE_MATCH_SCHEMA_VERSION,
+    CandidateMatchEntry,
+    candidate_match_summary,
+    load_match_entries,
+)
 from techno_search.candidate_methods_summary import (
     CANDIDATE_METHODS_DISCLAIMER,
     candidate_methods_summary,
@@ -269,6 +278,15 @@ from techno_search.curated_dataset_intake import (
     CuratedDatasetIntakeRecord,
     curated_dataset_intake_summary,
     load_intake_records,
+)
+from techno_search.data_gap_log import (
+    ALLOWED_GAP_STATUSES,
+    ALLOWED_MISSING_REASONS,
+    DATA_GAP_DISCLAIMER,
+    DATA_GAP_SCHEMA_VERSION,
+    DataGapEntry,
+    data_gap_summary,
+    load_data_gap_entries,
 )
 from techno_search.data_quality_log import (
     ALLOWED_QUALITY_GRADES,
@@ -555,6 +573,15 @@ from techno_search.pipeline_config import (
     PipelineConfigRecord,
     load_pipeline_configs,
     pipeline_config_summary,
+)
+from techno_search.pipeline_error_log import (
+    ALLOWED_ERROR_KINDS,
+    ALLOWED_ERROR_SEVERITIES,
+    PIPELINE_ERROR_DISCLAIMER,
+    PIPELINE_ERROR_SCHEMA_VERSION,
+    PipelineErrorEntry,
+    load_error_entries,
+    pipeline_error_summary,
 )
 from techno_search.pipeline_health import (
     PIPELINE_HEALTH_DISCLAIMER,
@@ -1328,6 +1355,20 @@ __all__ = [
     "CandidateDeduplicationEntry",
     "candidate_deduplication_summary",
     "load_deduplication_entries",
+    "ALLOWED_MATCH_SOURCES",
+    "ALLOWED_MATCH_STATUSES",
+    "CANDIDATE_MATCH_DISCLAIMER",
+    "CANDIDATE_MATCH_SCHEMA_VERSION",
+    "CandidateMatchEntry",
+    "candidate_match_summary",
+    "load_match_entries",
+    "ALLOWED_GAP_STATUSES",
+    "ALLOWED_MISSING_REASONS",
+    "DATA_GAP_DISCLAIMER",
+    "DATA_GAP_SCHEMA_VERSION",
+    "DataGapEntry",
+    "data_gap_summary",
+    "load_data_gap_entries",
     "ALLOWED_INTAKE_SOURCE_KINDS",
     "ALLOWED_INTAKE_QUEUE_STATUSES",
     "INTAKE_QUEUE_DISCLAIMER",
@@ -1335,6 +1376,13 @@ __all__ = [
     "IntakeQueueEntry",
     "intake_queue_summary",
     "load_intake_queue_entries",
+    "ALLOWED_ERROR_KINDS",
+    "ALLOWED_ERROR_SEVERITIES",
+    "PIPELINE_ERROR_DISCLAIMER",
+    "PIPELINE_ERROR_SCHEMA_VERSION",
+    "PipelineErrorEntry",
+    "load_error_entries",
+    "pipeline_error_summary",
     "ALLOWED_WORKFLOW_STATES",
     "ALLOWED_WORKFLOW_TRANSITION_KINDS",
     "WORKFLOW_STATE_DISCLAIMER",
