@@ -148,6 +148,15 @@ from techno_search.candidate_comparison import (
     candidate_comparison_summary,
     load_comparison_records,
 )
+from techno_search.candidate_deduplication_log import (
+    ALLOWED_DEDUPLICATION_STATUSES,
+    ALLOWED_MATCH_KINDS,
+    CANDIDATE_DEDUPLICATION_DISCLAIMER,
+    CANDIDATE_DEDUPLICATION_SCHEMA_VERSION,
+    CandidateDeduplicationEntry,
+    candidate_deduplication_summary,
+    load_deduplication_entries,
+)
 from techno_search.candidate_feature_vector import (
     ALLOWED_NORMALIZATION_KINDS,
     CANDIDATE_FEATURE_VECTOR_DISCLAIMER,
@@ -316,6 +325,17 @@ from techno_search.injection_recovery import (
     false_negative_summary,
     injection_recovery_summary,
     load_injection_recovery_cases,
+)
+from techno_search.intake_queue_log import (
+    ALLOWED_INTAKE_SOURCE_KINDS,
+    INTAKE_QUEUE_DISCLAIMER,
+    INTAKE_QUEUE_SCHEMA_VERSION,
+    IntakeQueueEntry,
+    intake_queue_summary,
+    load_intake_queue_entries,
+)
+from techno_search.intake_queue_log import (
+    ALLOWED_INTAKE_STATUSES as ALLOWED_INTAKE_QUEUE_STATUSES,
 )
 from techno_search.live_data import live_data_enabled, require_live_data_enabled
 from techno_search.ml_model_registry import (
@@ -729,6 +749,15 @@ from techno_search.weekly_review import (
     WeeklyReviewTemplate,
     build_weekly_review_template,
     write_weekly_review_template,
+)
+from techno_search.workflow_state_log import (
+    ALLOWED_WORKFLOW_STATES,
+    ALLOWED_WORKFLOW_TRANSITION_KINDS,
+    WORKFLOW_STATE_DISCLAIMER,
+    WORKFLOW_STATE_SCHEMA_VERSION,
+    WorkflowStateEntry,
+    load_workflow_state_entries,
+    workflow_state_summary,
 )
 
 __all__ = [
@@ -1292,4 +1321,25 @@ __all__ = [
     "OperatorEscalationEntry",
     "load_operator_escalation_entries",
     "operator_escalation_summary",
+    "ALLOWED_DEDUPLICATION_STATUSES",
+    "ALLOWED_MATCH_KINDS",
+    "CANDIDATE_DEDUPLICATION_DISCLAIMER",
+    "CANDIDATE_DEDUPLICATION_SCHEMA_VERSION",
+    "CandidateDeduplicationEntry",
+    "candidate_deduplication_summary",
+    "load_deduplication_entries",
+    "ALLOWED_INTAKE_SOURCE_KINDS",
+    "ALLOWED_INTAKE_QUEUE_STATUSES",
+    "INTAKE_QUEUE_DISCLAIMER",
+    "INTAKE_QUEUE_SCHEMA_VERSION",
+    "IntakeQueueEntry",
+    "intake_queue_summary",
+    "load_intake_queue_entries",
+    "ALLOWED_WORKFLOW_STATES",
+    "ALLOWED_WORKFLOW_TRANSITION_KINDS",
+    "WORKFLOW_STATE_DISCLAIMER",
+    "WORKFLOW_STATE_SCHEMA_VERSION",
+    "WorkflowStateEntry",
+    "load_workflow_state_entries",
+    "workflow_state_summary",
 ]

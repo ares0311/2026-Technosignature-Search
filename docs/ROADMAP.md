@@ -554,6 +554,37 @@ Close the pipeline loop with three complementary operational modules: multi-cand
 
 ---
 
+# Milestone 18 — Candidate Deduplication Log, Intake Queue Log, And Workflow State Log
+
+**Status**: complete
+
+## Tasks
+
+- [x] `src/techno_search/candidate_deduplication_log.py` — provenance records for pairwise candidate deduplication comparisons
+- [x] `schemas/candidate_deduplication_log.schema.json`
+- [x] `tests/fixtures/candidate_deduplication_log.json` — 5 entries (2 confirmed_distinct, 1 confirmed_duplicate, 1 inconclusive, 1 pending)
+- [x] `tests/test_candidate_deduplication_log.py` — 22 tests
+- [x] `src/techno_search/intake_queue_log.py` — local planning placeholders for data source intake queue tracking
+- [x] `schemas/intake_queue_log.schema.json`
+- [x] `tests/fixtures/intake_queue_log.json` — 5 entries (2 blocked, 1 queued, 1 intake_ready, 1 cancelled)
+- [x] `tests/test_intake_queue_log.py` — 22 tests
+- [x] `src/techno_search/workflow_state_log.py` — local scheduling coordination records for review assignment state transitions
+- [x] `schemas/workflow_state_log.schema.json`
+- [x] `tests/fixtures/workflow_state_log.json` — 5 entries (2 initial_assign, 2 state_change, 1 close)
+- [x] `tests/test_workflow_state_log.py` — 22 tests
+- [x] CLI: `candidate-deduplication-summary`, `intake-queue-summary`, `workflow-state-summary`
+- [x] `validate-all` gates: dedup_entry_count >= 1, intake_entry_count >= 1, workflow_entry_count >= 1
+- [x] `validation-summary` fields: candidate_deduplication_entry_count, candidate_deduplication_pending_count, intake_queue_entry_count, intake_queue_blocked_count, workflow_state_entry_count
+- [x] DECISION-065: Candidate Deduplication Log, Intake Queue Log, And Workflow State Log Complete Milestone 18
+
+## Done When
+
+- Deduplication log covers all match kinds and statuses including pending with null match_score
+- Intake queue log covers all intake statuses and source kinds with blocking_reason for blocked entries
+- Workflow state log covers initial_assign (null from_state), state changes, and closure transitions
+- All integration tests pass without network access
+
+---
 
 # Project Operations Readiness
 

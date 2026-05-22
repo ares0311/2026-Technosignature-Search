@@ -1747,6 +1747,40 @@ techno-search operator-escalation-summary --fixture-path tests/fixtures/operator
 ```
 
 Output fields: `disclaimer`, `schema_version`, `entry_count`, `open_count`, `acknowledged_count`, `resolved_count`, `by_severity`, `by_status`. Escalation severity reflects scheduling priority, not candidate scientific significance — escalation records do not authorize external submission or modify scores.
+
+## `candidate-deduplication-summary`
+
+Summarize candidate deduplication log entries recording pairwise comparisons against previously seen candidates, known objects, prior-epoch observations, or catalog sources.
+
+```bash
+techno-search candidate-deduplication-summary
+techno-search candidate-deduplication-summary --fixture-path tests/fixtures/candidate_deduplication_log.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `entry_count`, `pending_count`, `confirmed_duplicate_count`, `confirmed_distinct_count`, `by_status`, `by_kind`. Deduplication does not remove candidates, does not modify scores or pathway routing, and does not authorize external submission.
+
+## `intake-queue-summary`
+
+Summarize data intake queue log entries recording data sources identified for potential ingestion and their queue position and intake status.
+
+```bash
+techno-search intake-queue-summary
+techno-search intake-queue-summary --fixture-path tests/fixtures/intake_queue_log.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `entry_count`, `blocked_count`, `queued_count`, `ready_count`, `complete_count`, `by_status`, `by_kind`. Intake remains blocked until real data policy, provenance, licensing, labeling, and external-review requirements are satisfied.
+
+## `workflow-state-summary`
+
+Summarize workflow state log entries recording formal operator review state transitions for candidate review assignments.
+
+```bash
+techno-search workflow-state-summary
+techno-search workflow-state-summary --fixture-path tests/fixtures/workflow_state_log.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `entry_count`, `unique_candidate_count`, `closed_count`, `open_transition_count`, `by_to_state`, `by_kind`. State transitions are local scheduling aids only — they do not modify candidate posteriors, scores, or pathway routing, and do not authorize external submission.
+
 ## `operations-readiness-summary`
 
 Aggregate local-only operations readiness state across QC health, candidate alerts, review deadlines, pipeline capacity, route coverage, curated intake blockers, submission provenance blockers, and top-level SQLite log safety fields.

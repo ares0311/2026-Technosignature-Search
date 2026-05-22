@@ -1,0 +1,65 @@
+{
+  "schema_version": "candidate_deduplication_log_v1",
+  "candidate_deduplication_entries": [
+    {
+      "dedup_id": "dedup-001",
+      "candidate_id": "radio-clean-candidate",
+      "match_kind": "prior_epoch",
+      "status": "confirmed_distinct",
+      "compared_to_id": "radio-epoch-2025-candidate",
+      "compared_by": "operator-alpha",
+      "compared_utc": "2026-04-10T09:00:00Z",
+      "match_score": 0.12,
+      "resolved_utc": "2026-04-10T09:30:00Z",
+      "notes": "Low match score confirms distinct detection epoch; no duplication."
+    },
+    {
+      "dedup_id": "dedup-002",
+      "candidate_id": "infrared-clean-candidate",
+      "match_kind": "catalog_match",
+      "status": "confirmed_duplicate",
+      "compared_to_id": "wise-j123456.7+654321",
+      "compared_by": "operator-beta",
+      "compared_utc": "2026-04-11T10:00:00Z",
+      "match_score": 0.95,
+      "resolved_utc": "2026-04-11T10:45:00Z",
+      "notes": "High match score against WISE catalog entry; marked as duplicate for scheduling triage."
+    },
+    {
+      "dedup_id": "dedup-003",
+      "candidate_id": "anomaly-clean-candidate",
+      "match_kind": "known_object",
+      "status": "inconclusive",
+      "compared_to_id": "simbad-obj-m31-region",
+      "compared_by": "operator-alpha",
+      "compared_utc": "2026-04-12T14:00:00Z",
+      "match_score": 0.51,
+      "resolved_utc": null,
+      "notes": "Mid-range match score; cross-track evidence needed before resolution."
+    },
+    {
+      "dedup_id": "dedup-004",
+      "candidate_id": "radio-clean-candidate",
+      "match_kind": "cross_candidate",
+      "status": "confirmed_distinct",
+      "compared_to_id": "radio-rfi-candidate",
+      "compared_by": "operator-beta",
+      "compared_utc": "2026-04-13T08:00:00Z",
+      "match_score": 0.08,
+      "resolved_utc": "2026-04-13T08:20:00Z",
+      "notes": "RFI candidate differs in frequency persistence and ON/OFF pattern."
+    },
+    {
+      "dedup_id": "dedup-005",
+      "candidate_id": "infrared-clean-candidate",
+      "match_kind": "prior_epoch",
+      "status": "pending",
+      "compared_to_id": "infrared-epoch-2024-candidate",
+      "compared_by": "operator-alpha",
+      "compared_utc": "2026-04-14T11:00:00Z",
+      "match_score": null,
+      "resolved_utc": null,
+      "notes": "Comparison initiated; awaiting operator review."
+    }
+  ]
+}

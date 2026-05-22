@@ -10,6 +10,65 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
+User requested fifteen iterative steps completing Milestone 18 (candidate deduplication log, intake queue log, workflow state log).
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all fifteen steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/candidate_deduplication_log.py` — provenance records for pairwise candidate comparisons against prior candidates, known objects, prior-epoch observations, or catalog sources; match kinds: cross_candidate, known_object, prior_epoch, catalog_match; statuses: pending, confirmed_duplicate, confirmed_distinct, inconclusive
+- `schemas/candidate_deduplication_log.schema.json`
+- `tests/fixtures/candidate_deduplication_log.json` — 5 entries (2 confirmed_distinct, 1 confirmed_duplicate, 1 inconclusive, 1 pending)
+- `tests/test_candidate_deduplication_log.py` — 22 tests
+- `src/techno_search/intake_queue_log.py` — local planning placeholders recording data sources identified for potential ingestion and tracking queue position and intake status; source kinds: radio_survey, infrared_catalog, archival_image, spectral_archive, unknown; statuses: queued, blocked, intake_ready, intake_complete, cancelled
+- `schemas/intake_queue_log.schema.json`
+- `tests/fixtures/intake_queue_log.json` — 5 entries (2 blocked, 1 queued, 1 intake_ready, 1 cancelled)
+- `tests/test_intake_queue_log.py` — 22 tests
+- `src/techno_search/workflow_state_log.py` — local scheduling coordination records for formal operator review state transitions; transition kinds: initial_assign, state_change, reassign, close, reopen; states: assigned, in_review, pending_second_opinion, escalated, closed, deferred
+- `schemas/workflow_state_log.schema.json`
+- `tests/fixtures/workflow_state_log.json` — 5 entries (2 initial_assign/null from_state, 2 state_change, 1 close)
+- `tests/test_workflow_state_log.py` — 22 tests
+- `candidate_deduplication_log`, `intake_queue_log`, `workflow_state_log` added to `SCHEMA_FILENAMES` (total schemas: 88)
+- `techno-search candidate-deduplication-summary`, `techno-search intake-queue-summary`, `techno-search workflow-state-summary` CLI commands
+- `validate-all` gates: `dedup_entry_count >= 1`, `intake_queue_entry_count >= 1`, `workflow_entry_count >= 1`
+- `validation-summary` fields: `candidate_deduplication_entry_count`, `candidate_deduplication_pending_count`, `intake_queue_entry_count`, `intake_queue_blocked_count`, `workflow_state_entry_count`
+- DECISION-065: Candidate Deduplication Log, Intake Queue Log, And Workflow State Log Complete Milestone 18
+- Docs: CLI_USAGE.md, DECISIONS.md, ROADMAP.md updated; Milestone 18 fully checked off
+
+Scientific guardrail:
+
+- Deduplication entries are operational provenance records — deduplication does not remove candidates, modify scores or pathway routing, constitute a detection claim, or authorize external submission
+- Intake queue entries are local planning placeholders — intake remains blocked until real data policy, provenance, licensing, labeling, and external-review requirements are satisfied
+- Workflow state transitions are local scheduling aids only — they do not modify candidate posteriors, scores, or pathway routing, and do not authorize external submission
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/ruff check .
+.venv/bin/mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 1668 tests passed
+- 5 tests skipped
+- total coverage: 91%
+- Ruff passed
+- mypy passed (110 source files)
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, PR pending.
+
+---
+
+## Previous Iteration
+
 User requested fifteen iterative steps completing Milestone 17 (alert resolution log, config version history, operator escalation log).
 
 Current branch: `claude/general-session-Bb2dZ`.
@@ -63,7 +122,7 @@ Result:
 - diff whitespace check passed
 - `validate-all` ok=True
 
-Merge status: committed on `claude/general-session-Bb2dZ`, pushed, PR pending.
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, merged to main via PR #15.
 
 ---
 
