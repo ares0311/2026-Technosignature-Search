@@ -1559,3 +1559,23 @@ live data, authorize external submission, or constitute external validation.
 **Operator escalation log**: structured log of inter-operator escalations tracking when an operator transfers responsibility for a candidate or alert. Severity levels are routine, urgent, and critical; statuses are open, acknowledged, and resolved. Escalation severity reflects scheduling priority only — not candidate scientific significance. Escalation records do not modify scores or pathway routing and do not authorize external submission.
 
 **Consequences**: `validate-all` gates enforce `alert_resolution_entry_count >= 1`, `config_history_entry_count >= 1`, `operator_escalation_entry_count >= 1`. SCHEMA_FILENAMES grows to 73. Milestone 17 is complete. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-065: Candidate Deduplication Log, Intake Queue Log, And Workflow State Log Complete Milestone 18
+
+**Date**: 2026-05-22
+
+**Status**: accepted
+
+**Context**: Milestone 18 adds three provenance modules completing the candidate lifecycle and data intake coordination tracking: how candidates are compared for deduplication, how data sources queue for intake, and how review assignments transition between workflow states.
+
+**Decision**: Add three modules, all local provenance records only.
+
+**Candidate deduplication log**: records pairwise comparisons against previously seen candidates, known objects, prior-epoch observations, or catalog sources. Match kinds are cross_candidate, known_object, prior_epoch, and catalog_match. Statuses are pending, confirmed_duplicate, confirmed_distinct, and inconclusive. Deduplication does not remove candidates from the record, does not modify scores or pathway routing, does not constitute a detection claim, and does not authorize external submission.
+
+**Intake queue log**: local planning placeholders recording that a data source has been identified for potential ingestion and tracking its queue position and intake status. Source kinds are radio_survey, infrared_catalog, archival_image, spectral_archive, and unknown. Statuses are queued, blocked, intake_ready, intake_complete, and cancelled. Intake remains blocked until real data policy, provenance, licensing, labeling, and external-review requirements are satisfied.
+
+**Workflow state log**: local scheduling coordination records tracking formal operator review state transitions for candidate review assignments — initial assignment, state change, reassignment, closure, or reopening. States are assigned, in_review, pending_second_opinion, escalated, closed, and deferred. State transitions are local scheduling aids only — they do not modify candidate posteriors, scores, or pathway routing, and do not authorize external submission.
+
+**Consequences**: `validate-all` gates enforce `dedup_entry_count >= 1`, `intake_entry_count >= 1`, `workflow_entry_count >= 1`. SCHEMA_FILENAMES grows to 88. Milestone 18 is complete. Scientific guardrails remain unchanged.

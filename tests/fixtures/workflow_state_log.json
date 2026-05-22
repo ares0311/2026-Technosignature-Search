@@ -1,0 +1,60 @@
+{
+  "schema_version": "workflow_state_log_v1",
+  "workflow_state_entries": [
+    {
+      "transition_id": "wf-001",
+      "candidate_id": "radio-clean-candidate",
+      "transition_kind": "initial_assign",
+      "from_state": null,
+      "to_state": "assigned",
+      "operator_id": "operator-alpha",
+      "transitioned_utc": "2026-04-01T09:00:00Z",
+      "assignment_id": "assign-001",
+      "notes": "Initial assignment to operator-alpha for radio track review."
+    },
+    {
+      "transition_id": "wf-002",
+      "candidate_id": "radio-clean-candidate",
+      "transition_kind": "state_change",
+      "from_state": "assigned",
+      "to_state": "in_review",
+      "operator_id": "operator-alpha",
+      "transitioned_utc": "2026-04-02T10:00:00Z",
+      "assignment_id": "assign-001",
+      "notes": "Operator began active review of radio candidate packet."
+    },
+    {
+      "transition_id": "wf-003",
+      "candidate_id": "infrared-clean-candidate",
+      "transition_kind": "initial_assign",
+      "from_state": null,
+      "to_state": "assigned",
+      "operator_id": "operator-beta",
+      "transitioned_utc": "2026-04-03T09:30:00Z",
+      "assignment_id": "assign-002",
+      "notes": "Initial assignment for infrared track review."
+    },
+    {
+      "transition_id": "wf-004",
+      "candidate_id": "anomaly-clean-candidate",
+      "transition_kind": "state_change",
+      "from_state": "in_review",
+      "to_state": "pending_second_opinion",
+      "operator_id": "operator-alpha",
+      "transitioned_utc": "2026-04-05T14:00:00Z",
+      "assignment_id": "assign-003",
+      "notes": "Anomaly candidate flagged for second-opinion review before triage."
+    },
+    {
+      "transition_id": "wf-005",
+      "candidate_id": "radio-clean-candidate",
+      "transition_kind": "close",
+      "from_state": "in_review",
+      "to_state": "closed",
+      "operator_id": "operator-alpha",
+      "transitioned_utc": "2026-04-07T16:00:00Z",
+      "assignment_id": "assign-001",
+      "notes": "Review complete; candidate routed to candidate_review_packet pathway."
+    }
+  ]
+}

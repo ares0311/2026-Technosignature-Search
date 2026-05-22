@@ -61,6 +61,7 @@ from techno_search.candidate_alert_log import candidate_alert_summary
 from techno_search.candidate_annotation import candidate_annotation_summary
 from techno_search.candidate_audit_trail import audit_trail_summary
 from techno_search.candidate_comparison import candidate_comparison_summary
+from techno_search.candidate_deduplication_log import candidate_deduplication_summary
 from techno_search.candidate_feature_vector import feature_vector_summary
 from techno_search.candidate_flags import candidate_flags_summary
 from techno_search.candidate_lifecycle import (
@@ -90,6 +91,7 @@ from techno_search.feature_importance import feature_importance_summary
 from techno_search.feature_normalization import feature_normalization_summary
 from techno_search.follow_up_request import follow_up_request_summary
 from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
+from techno_search.intake_queue_log import intake_queue_summary
 from techno_search.live_data import (
     CatalogCache,
     CatalogCachePolicy,
@@ -218,6 +220,7 @@ from techno_search.validation_datasets import (
     validation_readiness_summary,
 )
 from techno_search.weekly_review import build_weekly_review_template, write_weekly_review_template
+from techno_search.workflow_state_log import workflow_state_summary
 
 SCHEMA_FILENAMES = {
     "background_draft_follow_up_reports": "background_draft_follow_up_reports.schema.json",
@@ -281,8 +284,11 @@ SCHEMA_FILENAMES = {
     "pipeline_replay_log": "pipeline_replay_log.schema.json",
     "scoring_threshold_audit": "scoring_threshold_audit.schema.json",
     "alert_resolution_log": "alert_resolution_log.schema.json",
+    "candidate_deduplication_log": "candidate_deduplication_log.schema.json",
     "config_version_history": "config_version_history.schema.json",
+    "intake_queue_log": "intake_queue_log.schema.json",
     "operator_escalation_log": "operator_escalation_log.schema.json",
+    "workflow_state_log": "workflow_state_log.schema.json",
     "curated_dataset_intake": "curated_dataset_intake.schema.json",
     "operator_handoff_template": "operator_handoff_template.schema.json",
     "candidate_resolution": "candidate_resolution.schema.json",
@@ -2538,6 +2544,42 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "candidate-deduplication-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                candidate_deduplication_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "intake-queue-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                intake_queue_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "workflow-state-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                workflow_state_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     if args.command == "candidate-comparison-summary":
         fixture_path = getattr(args, "fixture_path", None)
         print(
@@ -2995,6 +3037,12 @@ def validate_all() -> dict[str, object]:
     config_history_entry_count = int(config_history_data.get("entry_count", 0))
     escalation_data = operator_escalation_summary()
     operator_escalation_entry_count = int(escalation_data.get("entry_count", 0))
+    dedup_data = candidate_deduplication_summary()
+    dedup_entry_count = int(dedup_data.get("entry_count", 0))
+    intake_queue_data = intake_queue_summary()
+    intake_queue_entry_count = int(intake_queue_data.get("entry_count", 0))
+    workflow_data = workflow_state_summary()
+    workflow_entry_count = int(workflow_data.get("entry_count", 0))
     comparison_data = candidate_comparison_summary()
     comparison_count = int(comparison_data.get("record_count", 0))
     telemetry_data = pipeline_telemetry_summary()
@@ -3614,6 +3662,12 @@ def validate_all() -> dict[str, object]:
         and config_history_entry_count >= 1
         and isinstance(operator_escalation_entry_count, int)
         and operator_escalation_entry_count >= 1
+        and isinstance(dedup_entry_count, int)
+        and dedup_entry_count >= 1
+        and isinstance(intake_queue_entry_count, int)
+        and intake_queue_entry_count >= 1
+        and isinstance(workflow_entry_count, int)
+        and workflow_entry_count >= 1
         and action_resolution_record_count >= 1
         and action_resolution_live_authorized_count == 0
         and action_resolution_external_authorized_count == 0
@@ -3809,8 +3863,11 @@ def validate_all() -> dict[str, object]:
         "pipeline_replay_summary": replay_data,
         "scoring_threshold_audit_summary": threshold_audit_data,
         "alert_resolution_summary": alert_resolution_data,
+        "candidate_deduplication_summary": dedup_data,
         "config_version_history_summary": config_history_data,
+        "intake_queue_summary": intake_queue_data,
         "operator_escalation_summary": escalation_data,
+        "workflow_state_summary": workflow_data,
         "operations_readiness_summary": operations_readiness,
         "operations_action_plan_summary": operations_action_plan,
         "operations_action_resolution_summary": operations_action_resolution,
@@ -5501,6 +5558,31 @@ def validation_summary() -> dict[str, object]:
         "operator_escalation_open_count": (
             esc_s2["open_count"]
             if isinstance(esc_s2 := validation.get("operator_escalation_summary"), dict)
+            else 0
+        ),
+        "candidate_deduplication_entry_count": (
+            dd_s["entry_count"]
+            if isinstance(dd_s := validation.get("candidate_deduplication_summary"), dict)
+            else 0
+        ),
+        "candidate_deduplication_pending_count": (
+            dd_s2["pending_count"]
+            if isinstance(dd_s2 := validation.get("candidate_deduplication_summary"), dict)
+            else 0
+        ),
+        "intake_queue_entry_count": (
+            iq_s["entry_count"]
+            if isinstance(iq_s := validation.get("intake_queue_summary"), dict)
+            else 0
+        ),
+        "intake_queue_blocked_count": (
+            iq_s2["blocked_count"]
+            if isinstance(iq_s2 := validation.get("intake_queue_summary"), dict)
+            else 0
+        ),
+        "workflow_state_entry_count": (
+            wf_s["entry_count"]
+            if isinstance(wf_s := validation.get("workflow_state_summary"), dict)
             else 0
         ),
         "recommended_commands": [
@@ -7495,6 +7577,30 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize operator escalation log entries (scheduling coordination).",
     )
     operator_escalation_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    candidate_dedup_parser = subparsers.add_parser(
+        "candidate-deduplication-summary",
+        help="Summarize candidate deduplication log entries (provenance records only).",
+    )
+    candidate_dedup_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    intake_queue_parser = subparsers.add_parser(
+        "intake-queue-summary",
+        help="Summarize intake queue log entries (planning placeholders only).",
+    )
+    intake_queue_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    workflow_state_parser = subparsers.add_parser(
+        "workflow-state-summary",
+        help="Summarize workflow state log entries (scheduling coordination records).",
+    )
+    workflow_state_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

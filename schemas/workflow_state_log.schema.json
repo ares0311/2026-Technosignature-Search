@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Workflow State Log",
+  "type": "object",
+  "required": ["schema_version", "workflow_state_entries"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "workflow_state_log_v1" },
+    "workflow_state_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "transition_id", "candidate_id", "transition_kind",
+          "to_state", "operator_id", "transitioned_utc"
+        ],
+        "properties": {
+          "transition_id": { "type": "string" },
+          "candidate_id": { "type": "string" },
+          "transition_kind": {
+            "type": "string",
+            "enum": ["initial_assign", "state_change", "reassign", "close", "reopen"]
+          },
+          "from_state": { "type": ["string", "null"] },
+          "to_state": {
+            "type": "string",
+            "enum": ["assigned", "in_review", "pending_second_opinion", "escalated", "closed", "deferred"]
+          },
+          "operator_id": { "type": "string" },
+          "transitioned_utc": { "type": "string" },
+          "assignment_id": { "type": ["string", "null"] },
+          "notes": { "type": "string" }
+        }
+      }
+    }
+  }
+}

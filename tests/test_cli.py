@@ -314,6 +314,9 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "operations_blocker_progress_next_actions",
         "operations_blocker_progress_review",
         "operations_blocker_review",
+        "candidate_deduplication_log",
+        "intake_queue_log",
+        "workflow_state_log",
     }
     assert result["background_search_ledger"].endswith(
         "schemas/background_search_ledger.schema.json"
@@ -1452,7 +1455,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 85
+    assert result["schema_count"] == 88
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -1908,6 +1911,11 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["config_history_entry_count"] == 4
     assert result["operator_escalation_entry_count"] == 4
     assert result["operator_escalation_open_count"] == 1
+    assert result["candidate_deduplication_entry_count"] == 5
+    assert result["candidate_deduplication_pending_count"] == 1
+    assert result["intake_queue_entry_count"] == 5
+    assert result["intake_queue_blocked_count"] == 2
+    assert result["workflow_state_entry_count"] == 5
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 
