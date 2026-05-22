@@ -22,6 +22,7 @@ def test_readme_references_existing_project_docs() -> None:
         "docs/SCORING_MODEL.md",
         "docs/CLI_USAGE.md",
         "docs/VALIDATION.md",
+        "docs/CI.md",
         "docs/SUBMISSION_PATHWAYS.md",
         "docs/LOCAL_SYSTEM_PROFILE.md",
     )
@@ -159,6 +160,47 @@ def test_background_scheduler_templates_use_ignored_artifact_paths() -> None:
         assert "TECHNO_SEARCH_ENABLE_LIVE_DATA" not in template
 
 
+def test_ci_template_stays_non_networked_and_outside_workflows() -> None:
+    ci_doc = Path("docs/CI.md").read_text(encoding="utf-8")
+    template = Path("docs/templates/ci.yml").read_text(encoding="utf-8")
+
+    assert Path("docs/templates/ci.yml").exists()
+    assert not Path(".github/workflows/ci.yml").exists()
+    assert "workflow` scope" in ci_doc
+    assert "TECHNO_SEARCH_ENABLE_LIVE_DATA=0" in ci_doc
+    assert 'TECHNO_SEARCH_ENABLE_LIVE_DATA: "0"' in template
+    assert 'python -m pytest -m "not integration_live"' in template
+    assert "python -m ruff check ." in template
+    assert "python -m mypy src" in template
+    assert "git diff --check" in template
+    assert "techno-search validate-all" in template
+    assert "techno-search health" in template
+    assert "techno-search operations-readiness-summary" in template
+    assert "techno-search operations-action-plan-summary" in template
+    assert "techno-search operations-action-resolution-summary" in template
+    assert "techno-search operations-blocker-detail-summary" in template
+    assert "techno-search operations-blocker-review-summary" in template
+    assert "techno-search operations-blocker-followup-summary" in template
+    assert "techno-search operations-blocker-followup-progress-summary" in template
+    assert "techno-search operations-blocker-progress-review-summary" in template
+    assert "techno-search operations-blocker-progress-next-actions-summary" in template
+    assert "techno-search operations-blocker-progress-execution-summary" in template
+    assert "techno-search operations-blocker-progress-execution-review-summary" in template
+    assert "techno-search operations-blocker-progress-execution-followup-summary" in template
+    assert "techno-search operations-readiness-summary" in ci_doc
+    assert "techno-search operations-action-plan-summary" in ci_doc
+    assert "techno-search operations-action-resolution-summary" in ci_doc
+    assert "techno-search operations-blocker-detail-summary" in ci_doc
+    assert "techno-search operations-blocker-review-summary" in ci_doc
+    assert "techno-search operations-blocker-followup-summary" in ci_doc
+    assert "techno-search operations-blocker-followup-progress-summary" in ci_doc
+    assert "techno-search operations-blocker-progress-review-summary" in ci_doc
+    assert "techno-search operations-blocker-progress-next-actions-summary" in ci_doc
+    assert "techno-search operations-blocker-progress-execution-summary" in ci_doc
+    assert "techno-search operations-blocker-progress-execution-review-summary" in ci_doc
+    assert "techno-search operations-blocker-progress-execution-followup-summary" in ci_doc
+
+
 def test_cli_docs_include_draft_report_and_decision_workflows() -> None:
     doc = Path("docs/CLI_USAGE.md").read_text(encoding="utf-8")
 
@@ -166,6 +208,7 @@ def test_cli_docs_include_draft_report_and_decision_workflows() -> None:
     assert ".venv/bin/techno-search validate-draft-reports" in doc
     assert ".venv/bin/techno-search user-decision-record" in doc
     assert ".venv/bin/techno-search init-logs" in doc
+    assert ".venv/bin/techno-search sqlite-log-bootstrap-summary" in doc
     assert ".venv/bin/techno-search sqlite-log-summary" in doc
     assert ".venv/bin/techno-search sqlite-log-integrity-summary" in doc
     assert ".venv/bin/techno-search sqlite-recent-runs" in doc
@@ -179,6 +222,19 @@ def test_cli_docs_include_draft_report_and_decision_workflows() -> None:
     assert ".venv/bin/techno-search sqlite-log-commit-guard" in doc
     assert ".venv/bin/techno-search validate-sqlite-logs" in doc
     assert ".venv/bin/techno-search scheduler-dry-run" in doc
+    assert "techno-search operations-readiness-summary" in doc
+    assert "techno-search operations-action-plan-summary" in doc
+    assert "techno-search operations-action-resolution-summary" in doc
+    assert "techno-search operations-blocker-detail-summary" in doc
+    assert "techno-search operations-blocker-review-summary" in doc
+    assert "techno-search operations-blocker-followup-summary" in doc
+    assert "techno-search operations-blocker-followup-progress-summary" in doc
+    assert "techno-search operations-blocker-progress-review-summary" in doc
+    assert "techno-search operations-blocker-progress-next-actions-summary" in doc
+    assert "techno-search operations-blocker-progress-execution-summary" in doc
+    assert "techno-search operations-blocker-progress-execution-review-summary" in doc
+    assert "techno-search operations-blocker-progress-execution-followup-summary" in doc
+    assert "techno-search operations-readiness-digest" in doc
     assert "--sqlite-log-path" in doc
     assert "--confirm-external-submission-approval" in doc
     assert "request_more_tests` and `close_as_reviewed` never imply" in doc

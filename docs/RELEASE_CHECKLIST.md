@@ -46,6 +46,10 @@ Before release, verify:
 - generated `logs/*.sqlite3` databases are not committed
 - SQLite review-safe exports preserve blockers, negative evidence, provenance, and uncertainty notes
 - SQLite PRAGMA, backup, retention, and vacuum maintenance commands pass on local logs
+- route coverage reports full synthetic coverage for all `Pathway` enum values
+- operations readiness reports outstanding local blockers before real data or external workflow
+- operations action plan reports prioritized local tasks for outstanding blockers
+- CI template remains non-networked and under `docs/templates/` until workflow-scope publishing is available
 
 Useful commands:
 
@@ -57,13 +61,21 @@ Useful commands:
 .venv/bin/techno-search catalog-cache-policy
 .venv/bin/techno-search catalog-cache-validate docs/CATALOG_CACHE_POLICY.md
 .venv/bin/techno-search sqlite-log-commit-guard
+.venv/bin/techno-search sqlite-log-bootstrap-summary --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-integrity-summary --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-pragmas --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-backup --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-retention-summary --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-vacuum --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search sqlite-log-commit-guard
 .venv/bin/techno-search validate-sqlite-logs --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search route-coverage-summary
+.venv/bin/techno-search operations-readiness-summary
+.venv/bin/techno-search operations-action-plan-summary
+.venv/bin/techno-search operations-action-resolution-summary
+.venv/bin/techno-search operations-readiness-digest
 .venv/bin/techno-search validate-all
+.venv/bin/techno-search health
 ```
 
 The `validate-all` output must include `catalog_cache_validation.ok: true`.
@@ -113,3 +125,7 @@ Current template:
 ```text
 docs/templates/ci.yml
 ```
+
+The template must keep `TECHNO_SEARCH_ENABLE_LIVE_DATA=0` and must not require
+API credentials, real observations, generated SQLite databases, or external
+submission approval.

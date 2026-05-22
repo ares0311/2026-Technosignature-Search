@@ -80,6 +80,18 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "alert_resolution_log.schema.json",
         "config_version_history.schema.json",
         "operator_escalation_log.schema.json",
+        "operations_readiness_summary.schema.json",
+        "operations_action_plan.schema.json",
+        "operations_action_resolution.schema.json",
+        "operations_blocker_detail.schema.json",
+        "operations_blocker_followup.schema.json",
+        "operations_blocker_followup_progress.schema.json",
+        "operations_blocker_progress_execution.schema.json",
+        "operations_blocker_progress_execution_followup.schema.json",
+        "operations_blocker_progress_execution_review.schema.json",
+        "operations_blocker_progress_next_actions.schema.json",
+        "operations_blocker_progress_review.schema.json",
+        "operations_blocker_review.schema.json",
     }
     for path in schema_paths:
         schema = json.loads(path.read_text(encoding="utf-8"))

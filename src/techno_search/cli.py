@@ -134,6 +134,35 @@ from techno_search.observation_schedule import (
     observation_gap_analysis,
     observation_schedule_summary,
 )
+from techno_search.operations_action_plan import operations_action_plan_summary
+from techno_search.operations_action_resolution import (
+    operations_action_resolution_summary,
+)
+from techno_search.operations_blocker_detail import operations_blocker_detail_summary
+from techno_search.operations_blocker_followup import operations_blocker_followup_summary
+from techno_search.operations_blocker_followup_progress import (
+    operations_blocker_followup_progress_summary,
+)
+from techno_search.operations_blocker_progress_execution import (
+    operations_blocker_progress_execution_summary,
+)
+from techno_search.operations_blocker_progress_execution_followup import (
+    operations_blocker_progress_execution_followup_summary,
+)
+from techno_search.operations_blocker_progress_execution_review import (
+    operations_blocker_progress_execution_review_summary,
+)
+from techno_search.operations_blocker_progress_next_actions import (
+    operations_blocker_progress_next_actions_summary,
+)
+from techno_search.operations_blocker_progress_review import (
+    operations_blocker_progress_review_summary,
+)
+from techno_search.operations_blocker_review import operations_blocker_review_summary
+from techno_search.operations_readiness import (
+    operations_readiness_digest,
+    operations_readiness_summary,
+)
 from techno_search.operator_assignment import operator_assignment_summary
 from techno_search.operator_escalation_log import operator_escalation_summary
 from techno_search.operator_handoff_template import operator_handoff_summary
@@ -264,6 +293,30 @@ SCHEMA_FILENAMES = {
     "escalation_log": "escalation_log.schema.json",
     "observation_campaign": "observation_campaign.schema.json",
     "review_deadlines": "review_deadlines.schema.json",
+    "operations_readiness_summary": "operations_readiness_summary.schema.json",
+    "operations_action_plan": "operations_action_plan.schema.json",
+    "operations_action_resolution": "operations_action_resolution.schema.json",
+    "operations_blocker_detail": "operations_blocker_detail.schema.json",
+    "operations_blocker_followup": "operations_blocker_followup.schema.json",
+    "operations_blocker_followup_progress": (
+        "operations_blocker_followup_progress.schema.json"
+    ),
+    "operations_blocker_progress_review": (
+        "operations_blocker_progress_review.schema.json"
+    ),
+    "operations_blocker_progress_next_actions": (
+        "operations_blocker_progress_next_actions.schema.json"
+    ),
+    "operations_blocker_progress_execution": (
+        "operations_blocker_progress_execution.schema.json"
+    ),
+    "operations_blocker_progress_execution_followup": (
+        "operations_blocker_progress_execution_followup.schema.json"
+    ),
+    "operations_blocker_progress_execution_review": (
+        "operations_blocker_progress_execution_review.schema.json"
+    ),
+    "operations_blocker_review": "operations_blocker_review.schema.json",
 }
 
 
@@ -736,6 +789,62 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "sqlite-log-bootstrap-summary":
+        init_result = init_sqlite_log_db(
+            args.db_path,
+            code_commit=args.code_commit,
+            config_version=args.config_version,
+        )
+        integrity = sqlite_log_integrity_summary(args.db_path)
+        weekly_digest = sqlite_log_weekly_digest(
+            args.db_path,
+            window_days=args.window_days,
+        )
+        readiness = operations_readiness_summary(sqlite_log_path=args.db_path)
+        sqlite_snapshot = readiness["sqlite_log_snapshot"]
+        bootstrap_result = {
+            "ok": (
+                bool(init_result["ok"])
+                and bool(integrity["ok"])
+                and bool(weekly_digest["ok"])
+                and bool(sqlite_snapshot["integrity_ok"])
+                and bool(sqlite_snapshot["weekly_digest_ok"])
+                and int(sqlite_snapshot["network_access_allowed_count"]) == 0
+                and int(sqlite_snapshot["external_submission_approved_count"]) == 0
+            ),
+            "db_path": str(args.db_path),
+            "schema_version": init_result["schema_version"],
+            "disclaimer": init_result["disclaimer"],
+            "sqlite_log_initialized": bool(init_result["database_exists"]),
+            "sqlite_integrity_ok": bool(integrity["ok"]),
+            "sqlite_weekly_digest_ok": bool(weekly_digest["ok"]),
+            "readiness_sqlite_integrity_ok": bool(sqlite_snapshot["integrity_ok"]),
+            "readiness_sqlite_weekly_digest_ok": bool(
+                sqlite_snapshot["weekly_digest_ok"]
+            ),
+            "readiness_recommendation": readiness["recommendation"],
+            "readiness_real_data_blocker_count": readiness["real_data_blocker_count"],
+            "network_access_allowed_count": int(
+                sqlite_snapshot["network_access_allowed_count"]
+            ),
+            "external_submission_approved_count": int(
+                sqlite_snapshot["external_submission_approved_count"]
+            ),
+            "validated_action_ids": ["ops-action-009", "ops-action-010"],
+            "does_not_mutate_action_resolution_fixture": True,
+            "uncertainty_and_limitations": [
+                "Bootstrap checks restore SQLite visibility for the supplied local database only.",
+                "Validated SQLite visibility does not clear non-SQLite operations blockers.",
+                "Generated SQLite databases and backups must remain ignored local artifacts.",
+            ],
+            "init_summary": init_result,
+            "integrity_summary": integrity,
+            "weekly_digest": weekly_digest,
+            "operations_readiness_summary": readiness,
+        }
+        print(json.dumps(bootstrap_result, indent=2, sort_keys=True), file=out)
+        return 0 if bootstrap_result["ok"] else 1
+
     if args.command == "sqlite-log-export":
         print(
             json.dumps(
@@ -1073,6 +1182,560 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         _health = _project_health_summary(out)
         print(json.dumps(_health, indent=2, sort_keys=True), file=out)
         return 0 if _health["all_gates_pass"] else 1
+
+    if args.command == "operations-readiness-summary":
+        db_path = getattr(args, "sqlite_log_path", None)
+        print(
+            json.dumps(
+                operations_readiness_summary(sqlite_log_path=db_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operations-action-plan-summary":
+        db_path = getattr(args, "sqlite_log_path", None)
+        ops_summary = operations_readiness_summary(sqlite_log_path=db_path)
+        print(
+            json.dumps(
+                operations_action_plan_summary(ops_summary),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operations-action-resolution-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        db_path = getattr(args, "sqlite_log_path", None)
+        ops_summary = operations_readiness_summary(sqlite_log_path=db_path)
+        ops_action_plan = operations_action_plan_summary(ops_summary)
+        expected_action_ids = [
+            str(action["action_id"])
+            for action in ops_action_plan["actions"]
+            if isinstance(action, dict)
+        ]
+        print(
+            json.dumps(
+                operations_action_resolution_summary(
+                    fixture_path,
+                    expected_action_ids=expected_action_ids,
+                ),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operations-blocker-detail-summary":
+        db_path = getattr(args, "sqlite_log_path", None)
+        print(
+            json.dumps(
+                operations_blocker_detail_summary(sqlite_log_path=db_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operations-blocker-review-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        db_path = getattr(args, "sqlite_log_path", None)
+        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=db_path)
+        expected_action_ids = [
+            str(detail["action_id"])
+            for detail in blocker_detail["details"]
+            if isinstance(detail, dict)
+        ]
+        print(
+            json.dumps(
+                operations_blocker_review_summary(
+                    fixture_path,
+                    expected_action_ids=expected_action_ids,
+                    blocker_detail_summary=blocker_detail,
+                ),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operations-blocker-followup-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        db_path = getattr(args, "sqlite_log_path", None)
+        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=db_path)
+        expected_action_ids = [
+            str(detail["action_id"])
+            for detail in blocker_detail["details"]
+            if isinstance(detail, dict)
+        ]
+        blocker_review = operations_blocker_review_summary(
+            fixture_path,
+            expected_action_ids=expected_action_ids,
+            blocker_detail_summary=blocker_detail,
+        )
+        print(
+            json.dumps(
+                operations_blocker_followup_summary(
+                    fixture_path,
+                    blocker_detail_summary_data=blocker_detail,
+                    blocker_review_summary_data=blocker_review,
+                ),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operations-blocker-followup-progress-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        review_fixture_path = getattr(args, "review_fixture_path", None)
+        db_path = getattr(args, "sqlite_log_path", None)
+        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=db_path)
+        expected_detail_action_ids = [
+            str(detail["action_id"])
+            for detail in blocker_detail["details"]
+            if isinstance(detail, dict)
+        ]
+        blocker_review = operations_blocker_review_summary(
+            review_fixture_path,
+            expected_action_ids=expected_detail_action_ids,
+            blocker_detail_summary=blocker_detail,
+        )
+        blocker_followup = operations_blocker_followup_summary(
+            review_fixture_path,
+            blocker_detail_summary_data=blocker_detail,
+            blocker_review_summary_data=blocker_review,
+        )
+        expected_action_ids = [
+            str(action["action_id"])
+            for action in blocker_followup["actions"]
+            if isinstance(action, dict)
+        ]
+        print(
+            json.dumps(
+                operations_blocker_followup_progress_summary(
+                    fixture_path,
+                    expected_action_ids=expected_action_ids,
+                    blocker_followup_summary=blocker_followup,
+                ),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operations-blocker-progress-review-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        progress_fixture_path = getattr(args, "progress_fixture_path", None)
+        review_fixture_path = getattr(args, "review_fixture_path", None)
+        db_path = getattr(args, "sqlite_log_path", None)
+        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=db_path)
+        expected_detail_action_ids = [
+            str(detail["action_id"])
+            for detail in blocker_detail["details"]
+            if isinstance(detail, dict)
+        ]
+        blocker_review = operations_blocker_review_summary(
+            review_fixture_path,
+            expected_action_ids=expected_detail_action_ids,
+            blocker_detail_summary=blocker_detail,
+        )
+        blocker_followup = operations_blocker_followup_summary(
+            review_fixture_path,
+            blocker_detail_summary_data=blocker_detail,
+            blocker_review_summary_data=blocker_review,
+        )
+        expected_action_ids = [
+            str(action["action_id"])
+            for action in blocker_followup["actions"]
+            if isinstance(action, dict)
+        ]
+        progress_summary = operations_blocker_followup_progress_summary(
+            progress_fixture_path,
+            expected_action_ids=expected_action_ids,
+            blocker_followup_summary=blocker_followup,
+        )
+        unresolved_action_ids = [
+            str(record["action_id"])
+            for record in progress_summary["records"]
+            if isinstance(record, dict)
+            and str(record.get("progress_status", "")) != "verified_local"
+        ]
+        print(
+            json.dumps(
+                operations_blocker_progress_review_summary(
+                    fixture_path,
+                    expected_action_ids=unresolved_action_ids,
+                    blocker_followup_progress_summary=progress_summary,
+                ),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operations-blocker-progress-next-actions-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        progress_review_fixture_path = getattr(
+            args,
+            "progress_review_fixture_path",
+            None,
+        )
+        progress_fixture_path = getattr(args, "progress_fixture_path", None)
+        review_fixture_path = getattr(args, "review_fixture_path", None)
+        db_path = getattr(args, "sqlite_log_path", None)
+        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=db_path)
+        expected_detail_action_ids = [
+            str(detail["action_id"])
+            for detail in blocker_detail["details"]
+            if isinstance(detail, dict)
+        ]
+        blocker_review = operations_blocker_review_summary(
+            review_fixture_path,
+            expected_action_ids=expected_detail_action_ids,
+            blocker_detail_summary=blocker_detail,
+        )
+        blocker_followup = operations_blocker_followup_summary(
+            review_fixture_path,
+            blocker_detail_summary_data=blocker_detail,
+            blocker_review_summary_data=blocker_review,
+        )
+        expected_action_ids = [
+            str(action["action_id"])
+            for action in blocker_followup["actions"]
+            if isinstance(action, dict)
+        ]
+        progress_summary = operations_blocker_followup_progress_summary(
+            progress_fixture_path,
+            expected_action_ids=expected_action_ids,
+            blocker_followup_summary=blocker_followup,
+        )
+        unresolved_action_ids = [
+            str(record["action_id"])
+            for record in progress_summary["records"]
+            if isinstance(record, dict)
+            and str(record.get("progress_status", "")) != "verified_local"
+        ]
+        progress_review_summary = operations_blocker_progress_review_summary(
+            progress_review_fixture_path,
+            expected_action_ids=unresolved_action_ids,
+            blocker_followup_progress_summary=progress_summary,
+        )
+        expected_next_action_ids = [
+            str(record["action_id"])
+            for record in progress_review_summary["records"]
+            if isinstance(record, dict)
+        ]
+        print(
+            json.dumps(
+                operations_blocker_progress_next_actions_summary(
+                    fixture_path,
+                    expected_action_ids=expected_next_action_ids,
+                    blocker_progress_review_summary=progress_review_summary,
+                ),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operations-blocker-progress-execution-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        next_actions_fixture_path = getattr(args, "next_actions_fixture_path", None)
+        progress_review_fixture_path = getattr(
+            args,
+            "progress_review_fixture_path",
+            None,
+        )
+        progress_fixture_path = getattr(args, "progress_fixture_path", None)
+        review_fixture_path = getattr(args, "review_fixture_path", None)
+        db_path = getattr(args, "sqlite_log_path", None)
+        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=db_path)
+        expected_detail_action_ids = [
+            str(detail["action_id"])
+            for detail in blocker_detail["details"]
+            if isinstance(detail, dict)
+        ]
+        blocker_review = operations_blocker_review_summary(
+            review_fixture_path,
+            expected_action_ids=expected_detail_action_ids,
+            blocker_detail_summary=blocker_detail,
+        )
+        blocker_followup = operations_blocker_followup_summary(
+            review_fixture_path,
+            blocker_detail_summary_data=blocker_detail,
+            blocker_review_summary_data=blocker_review,
+        )
+        expected_action_ids = [
+            str(action["action_id"])
+            for action in blocker_followup["actions"]
+            if isinstance(action, dict)
+        ]
+        progress_summary = operations_blocker_followup_progress_summary(
+            progress_fixture_path,
+            expected_action_ids=expected_action_ids,
+            blocker_followup_summary=blocker_followup,
+        )
+        unresolved_action_ids = [
+            str(record["action_id"])
+            for record in progress_summary["records"]
+            if isinstance(record, dict)
+            and str(record.get("progress_status", "")) != "verified_local"
+        ]
+        progress_review_summary = operations_blocker_progress_review_summary(
+            progress_review_fixture_path,
+            expected_action_ids=unresolved_action_ids,
+            blocker_followup_progress_summary=progress_summary,
+        )
+        expected_next_action_ids = [
+            str(record["action_id"])
+            for record in progress_review_summary["records"]
+            if isinstance(record, dict)
+        ]
+        next_actions_summary = operations_blocker_progress_next_actions_summary(
+            next_actions_fixture_path,
+            expected_action_ids=expected_next_action_ids,
+            blocker_progress_review_summary=progress_review_summary,
+        )
+        expected_execution_ids = [
+            str(record["next_action_id"])
+            for record in next_actions_summary["records"]
+            if isinstance(record, dict)
+        ]
+        print(
+            json.dumps(
+                operations_blocker_progress_execution_summary(
+                    fixture_path,
+                    expected_next_action_ids=expected_execution_ids,
+                    blocker_progress_next_actions_summary=next_actions_summary,
+                ),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operations-blocker-progress-execution-review-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        execution_fixture_path = getattr(args, "execution_fixture_path", None)
+        next_actions_fixture_path = getattr(args, "next_actions_fixture_path", None)
+        progress_review_fixture_path = getattr(
+            args,
+            "progress_review_fixture_path",
+            None,
+        )
+        progress_fixture_path = getattr(args, "progress_fixture_path", None)
+        review_fixture_path = getattr(args, "review_fixture_path", None)
+        db_path = getattr(args, "sqlite_log_path", None)
+        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=db_path)
+        expected_detail_action_ids = [
+            str(detail["action_id"])
+            for detail in blocker_detail["details"]
+            if isinstance(detail, dict)
+        ]
+        blocker_review = operations_blocker_review_summary(
+            review_fixture_path,
+            expected_action_ids=expected_detail_action_ids,
+            blocker_detail_summary=blocker_detail,
+        )
+        blocker_followup = operations_blocker_followup_summary(
+            review_fixture_path,
+            blocker_detail_summary_data=blocker_detail,
+            blocker_review_summary_data=blocker_review,
+        )
+        expected_action_ids = [
+            str(action["action_id"])
+            for action in blocker_followup["actions"]
+            if isinstance(action, dict)
+        ]
+        progress_summary = operations_blocker_followup_progress_summary(
+            progress_fixture_path,
+            expected_action_ids=expected_action_ids,
+            blocker_followup_summary=blocker_followup,
+        )
+        unresolved_action_ids = [
+            str(record["action_id"])
+            for record in progress_summary["records"]
+            if isinstance(record, dict)
+            and str(record.get("progress_status", "")) != "verified_local"
+        ]
+        progress_review_summary = operations_blocker_progress_review_summary(
+            progress_review_fixture_path,
+            expected_action_ids=unresolved_action_ids,
+            blocker_followup_progress_summary=progress_summary,
+        )
+        expected_next_action_ids = [
+            str(record["action_id"])
+            for record in progress_review_summary["records"]
+            if isinstance(record, dict)
+        ]
+        next_actions_summary = operations_blocker_progress_next_actions_summary(
+            next_actions_fixture_path,
+            expected_action_ids=expected_next_action_ids,
+            blocker_progress_review_summary=progress_review_summary,
+        )
+        expected_execution_next_action_ids = [
+            str(record["next_action_id"])
+            for record in next_actions_summary["records"]
+            if isinstance(record, dict)
+        ]
+        execution_summary = operations_blocker_progress_execution_summary(
+            execution_fixture_path,
+            expected_next_action_ids=expected_execution_next_action_ids,
+            blocker_progress_next_actions_summary=next_actions_summary,
+        )
+        expected_review_execution_ids = [
+            str(record["execution_id"])
+            for record in execution_summary["records"]
+            if isinstance(record, dict)
+        ]
+        print(
+            json.dumps(
+                operations_blocker_progress_execution_review_summary(
+                    fixture_path,
+                    expected_execution_ids=expected_review_execution_ids,
+                    blocker_progress_execution_summary=execution_summary,
+                ),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operations-blocker-progress-execution-followup-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        execution_review_fixture_path = getattr(
+            args,
+            "execution_review_fixture_path",
+            None,
+        )
+        execution_fixture_path = getattr(args, "execution_fixture_path", None)
+        next_actions_fixture_path = getattr(args, "next_actions_fixture_path", None)
+        progress_review_fixture_path = getattr(
+            args,
+            "progress_review_fixture_path",
+            None,
+        )
+        progress_fixture_path = getattr(args, "progress_fixture_path", None)
+        review_fixture_path = getattr(args, "review_fixture_path", None)
+        db_path = getattr(args, "sqlite_log_path", None)
+        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=db_path)
+        expected_detail_action_ids = [
+            str(detail["action_id"])
+            for detail in blocker_detail["details"]
+            if isinstance(detail, dict)
+        ]
+        blocker_review = operations_blocker_review_summary(
+            review_fixture_path,
+            expected_action_ids=expected_detail_action_ids,
+            blocker_detail_summary=blocker_detail,
+        )
+        blocker_followup = operations_blocker_followup_summary(
+            review_fixture_path,
+            blocker_detail_summary_data=blocker_detail,
+            blocker_review_summary_data=blocker_review,
+        )
+        expected_action_ids = [
+            str(action["action_id"])
+            for action in blocker_followup["actions"]
+            if isinstance(action, dict)
+        ]
+        progress_summary = operations_blocker_followup_progress_summary(
+            progress_fixture_path,
+            expected_action_ids=expected_action_ids,
+            blocker_followup_summary=blocker_followup,
+        )
+        unresolved_action_ids = [
+            str(record["action_id"])
+            for record in progress_summary["records"]
+            if isinstance(record, dict)
+            and str(record.get("progress_status", "")) != "verified_local"
+        ]
+        progress_review_summary = operations_blocker_progress_review_summary(
+            progress_review_fixture_path,
+            expected_action_ids=unresolved_action_ids,
+            blocker_followup_progress_summary=progress_summary,
+        )
+        expected_next_action_ids = [
+            str(record["action_id"])
+            for record in progress_review_summary["records"]
+            if isinstance(record, dict)
+        ]
+        next_actions_summary = operations_blocker_progress_next_actions_summary(
+            next_actions_fixture_path,
+            expected_action_ids=expected_next_action_ids,
+            blocker_progress_review_summary=progress_review_summary,
+        )
+        expected_execution_next_action_ids = [
+            str(record["next_action_id"])
+            for record in next_actions_summary["records"]
+            if isinstance(record, dict)
+        ]
+        execution_summary = operations_blocker_progress_execution_summary(
+            execution_fixture_path,
+            expected_next_action_ids=expected_execution_next_action_ids,
+            blocker_progress_next_actions_summary=next_actions_summary,
+        )
+        expected_review_execution_ids = [
+            str(record["execution_id"])
+            for record in execution_summary["records"]
+            if isinstance(record, dict)
+        ]
+        execution_review_summary = operations_blocker_progress_execution_review_summary(
+            execution_review_fixture_path,
+            expected_execution_ids=expected_review_execution_ids,
+            blocker_progress_execution_summary=execution_summary,
+        )
+        expected_followup_review_ids = [
+            str(record["review_id"])
+            for record in execution_review_summary["records"]
+            if isinstance(record, dict)
+        ]
+        print(
+            json.dumps(
+                operations_blocker_progress_execution_followup_summary(
+                    fixture_path,
+                    expected_review_ids=expected_followup_review_ids,
+                    blocker_progress_execution_review_summary=(
+                        execution_review_summary
+                    ),
+                ),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operations-readiness-digest":
+        db_path = getattr(args, "sqlite_log_path", None)
+        ops_summary = operations_readiness_summary(sqlite_log_path=db_path)
+        digest = operations_readiness_digest(ops_summary)
+        if args.output_path is not None:
+            args.output_path.parent.mkdir(parents=True, exist_ok=True)
+            args.output_path.write_text(digest["markdown"], encoding="utf-8")
+            output = {
+                "ok": True,
+                "path": str(args.output_path),
+                "recommendation": digest["recommendation"],
+            }
+            print(json.dumps(output, indent=2, sort_keys=True), file=out)
+        else:
+            print(digest["markdown"], file=out)
+        return 0
 
     if args.command == "baseline-confusion-matrix-summary":
         confusion_result = evaluate_baseline()
@@ -2191,6 +2854,7 @@ def validate_all() -> dict[str, object]:
     scoring_threshold_count = int(scoring_cfg.get("threshold_count", 0))
     route_coverage = route_coverage_summary()
     route_covered_count = int(route_coverage.get("covered_pathway_count", 0))
+    route_uncovered_count = int(route_coverage.get("uncovered_pathway_count", 0))
     lifecycle_transitions = lifecycle_transition_summary()
     lifecycle_invalid_count = int(lifecycle_transitions.get("invalid_transition_count", 0))
     observation_efficiency = observation_efficiency_summary()
@@ -2383,6 +3047,299 @@ def validate_all() -> dict[str, object]:
     sqlite_outcome_count = sqlite_logs["outcome_count"]
     sqlite_network_count = sqlite_logs["network_access_allowed_count"]
     sqlite_external_approved_count = sqlite_logs["external_submission_approved_count"]
+    operations_readiness = operations_readiness_summary(
+        quality_control=qc_summary,
+        pipeline_capacity=pipeline_capacity_data,
+        candidate_alerts=alert_data,
+        review_deadlines=review_deadlines,
+        pipeline_health=pipeline_health,
+        route_coverage=route_coverage,
+        validation_readiness=validation_readiness,
+        curated_intake=intake_data,
+        submission_readiness=submission_data,
+        user_decisions=user_decisions,
+        sqlite_logs=sqlite_logs,
+        sqlite_integrity=sqlite_integrity,
+        sqlite_weekly_digest=sqlite_weekly_digest,
+        sqlite_log_path=sqlite_validation_db,
+    )
+    operations_action_plan = operations_action_plan_summary(operations_readiness)
+    operations_action_ids = [
+        str(action["action_id"])
+        for action in operations_action_plan["actions"]
+        if isinstance(action, dict)
+    ]
+    operations_action_resolution = operations_action_resolution_summary(
+        expected_action_ids=operations_action_ids,
+    )
+    operations_blocker_detail = operations_blocker_detail_summary(
+        readiness_summary=operations_readiness,
+        action_plan_summary=operations_action_plan,
+    )
+    operations_blocker_review = operations_blocker_review_summary(
+        expected_action_ids=operations_action_ids,
+        blocker_detail_summary=operations_blocker_detail,
+    )
+    operations_blocker_followup = operations_blocker_followup_summary(
+        blocker_detail_summary_data=operations_blocker_detail,
+        blocker_review_summary_data=operations_blocker_review,
+    )
+    operations_followup_action_ids = [
+        str(action["action_id"])
+        for action in operations_blocker_followup["actions"]
+        if isinstance(action, dict)
+    ]
+    operations_blocker_followup_progress = operations_blocker_followup_progress_summary(
+        expected_action_ids=operations_followup_action_ids,
+        blocker_followup_summary=operations_blocker_followup,
+    )
+    operations_unresolved_progress_action_ids = [
+        str(record["action_id"])
+        for record in operations_blocker_followup_progress["records"]
+        if isinstance(record, dict)
+        and str(record.get("progress_status", "")) != "verified_local"
+    ]
+    operations_blocker_progress_review = operations_blocker_progress_review_summary(
+        expected_action_ids=operations_unresolved_progress_action_ids,
+        blocker_followup_progress_summary=operations_blocker_followup_progress,
+    )
+    operations_progress_review_action_ids = [
+        str(record["action_id"])
+        for record in operations_blocker_progress_review["records"]
+        if isinstance(record, dict)
+    ]
+    operations_blocker_progress_next_actions = (
+        operations_blocker_progress_next_actions_summary(
+            expected_action_ids=operations_progress_review_action_ids,
+            blocker_progress_review_summary=operations_blocker_progress_review,
+        )
+    )
+    operations_progress_next_action_ids = [
+        str(record["next_action_id"])
+        for record in operations_blocker_progress_next_actions["records"]
+        if isinstance(record, dict)
+    ]
+    operations_blocker_progress_execution = (
+        operations_blocker_progress_execution_summary(
+            expected_next_action_ids=operations_progress_next_action_ids,
+            blocker_progress_next_actions_summary=(
+                operations_blocker_progress_next_actions
+            ),
+        )
+    )
+    operations_progress_execution_ids = [
+        str(record["execution_id"])
+        for record in operations_blocker_progress_execution["records"]
+        if isinstance(record, dict)
+    ]
+    operations_blocker_progress_execution_review = (
+        operations_blocker_progress_execution_review_summary(
+            expected_execution_ids=operations_progress_execution_ids,
+            blocker_progress_execution_summary=(
+                operations_blocker_progress_execution
+            ),
+        )
+    )
+    operations_progress_execution_review_ids = [
+        str(record["review_id"])
+        for record in operations_blocker_progress_execution_review["records"]
+        if isinstance(record, dict)
+    ]
+    operations_blocker_progress_execution_followup = (
+        operations_blocker_progress_execution_followup_summary(
+            expected_review_ids=operations_progress_execution_review_ids,
+            blocker_progress_execution_review_summary=(
+                operations_blocker_progress_execution_review
+            ),
+        )
+    )
+    action_resolution_record_count = int(
+        operations_action_resolution["record_count"]
+    )
+    action_resolution_live_authorized_count = int(
+        operations_action_resolution["live_data_authorized_count"]
+    )
+    action_resolution_external_authorized_count = int(
+        operations_action_resolution["external_submission_authorized_count"]
+    )
+    action_resolution_coverage_complete = bool(
+        operations_action_resolution["coverage_complete"]
+    )
+    blocker_detail_count = int(operations_blocker_detail["detail_count"])
+    blocker_detail_network_count = int(
+        operations_blocker_detail["network_access_allowed_count"]
+    )
+    blocker_detail_external_count = int(
+        operations_blocker_detail["external_submission_approved_count"]
+    )
+    blocker_review_record_count = int(operations_blocker_review["record_count"])
+    blocker_review_live_authorized_count = int(
+        operations_blocker_review["live_data_authorized_count"]
+    )
+    blocker_review_external_authorized_count = int(
+        operations_blocker_review["external_submission_authorized_count"]
+    )
+    blocker_review_coverage_complete = bool(
+        operations_blocker_review["coverage_complete"]
+    )
+    blocker_review_all_detail_evidence_reviewed = bool(
+        operations_blocker_review["all_detail_evidence_reviewed"]
+    )
+    blocker_followup_action_count = int(operations_blocker_followup["action_count"])
+    blocker_followup_live_authorized_count = int(
+        operations_blocker_followup["live_data_authorized_count"]
+    )
+    blocker_followup_external_authorized_count = int(
+        operations_blocker_followup["external_submission_authorized_count"]
+    )
+    blocker_followup_coverage_complete = bool(
+        operations_blocker_followup["coverage_complete"]
+    )
+    blocker_followup_all_detail_evidence_reviewed = bool(
+        operations_blocker_followup["all_detail_evidence_reviewed"]
+    )
+    blocker_followup_residual_blocker_total = int(
+        operations_blocker_followup["residual_blocker_total"]
+    )
+    blocker_progress_record_count = int(
+        operations_blocker_followup_progress["record_count"]
+    )
+    blocker_progress_live_authorized_count = int(
+        operations_blocker_followup_progress["live_data_authorized_count"]
+    )
+    blocker_progress_external_authorized_count = int(
+        operations_blocker_followup_progress["external_submission_authorized_count"]
+    )
+    blocker_progress_coverage_complete = bool(
+        operations_blocker_followup_progress["coverage_complete"]
+    )
+    blocker_progress_recommendation_mismatch_count = int(
+        operations_blocker_followup_progress["recommendation_mismatch_count"]
+    )
+    blocker_progress_review_record_count = int(
+        operations_blocker_progress_review["record_count"]
+    )
+    blocker_progress_review_live_authorized_count = int(
+        operations_blocker_progress_review["live_data_authorized_count"]
+    )
+    blocker_progress_review_external_authorized_count = int(
+        operations_blocker_progress_review["external_submission_authorized_count"]
+    )
+    blocker_progress_review_coverage_complete = bool(
+        operations_blocker_progress_review["coverage_complete"]
+    )
+    blocker_progress_review_status_mismatch_count = int(
+        operations_blocker_progress_review["status_mismatch_count"]
+    )
+    blocker_progress_review_residual_blocker_total = int(
+        operations_blocker_progress_review["residual_blocker_total"]
+    )
+    blocker_progress_next_action_record_count = int(
+        operations_blocker_progress_next_actions["record_count"]
+    )
+    blocker_progress_next_action_live_authorized_count = int(
+        operations_blocker_progress_next_actions["live_data_authorized_count"]
+    )
+    blocker_progress_next_action_external_authorized_count = int(
+        operations_blocker_progress_next_actions["external_submission_authorized_count"]
+    )
+    blocker_progress_next_action_coverage_complete = bool(
+        operations_blocker_progress_next_actions["coverage_complete"]
+    )
+    blocker_progress_next_action_status_mismatch_count = int(
+        operations_blocker_progress_next_actions["status_mismatch_count"]
+    )
+    blocker_progress_next_action_residual_blocker_total = int(
+        operations_blocker_progress_next_actions["residual_blocker_total"]
+    )
+    blocker_progress_next_action_priority_sequence_ok = bool(
+        operations_blocker_progress_next_actions["priority_sequence_ok"]
+    )
+    blocker_progress_execution_record_count = int(
+        operations_blocker_progress_execution["record_count"]
+    )
+    blocker_progress_execution_live_authorized_count = int(
+        operations_blocker_progress_execution["live_data_authorized_count"]
+    )
+    blocker_progress_execution_external_authorized_count = int(
+        operations_blocker_progress_execution["external_submission_authorized_count"]
+    )
+    blocker_progress_execution_coverage_complete = bool(
+        operations_blocker_progress_execution["coverage_complete"]
+    )
+    blocker_progress_execution_status_mismatch_count = int(
+        operations_blocker_progress_execution["status_mismatch_count"]
+    )
+    blocker_progress_execution_residual_mismatch_count = int(
+        operations_blocker_progress_execution["residual_mismatch_count"]
+    )
+    blocker_progress_execution_priority_mismatch_count = int(
+        operations_blocker_progress_execution["priority_mismatch_count"]
+    )
+    blocker_progress_execution_residual_blocker_total = int(
+        operations_blocker_progress_execution["residual_blocker_total"]
+    )
+    blocker_progress_execution_priority_sequence_ok = bool(
+        operations_blocker_progress_execution["priority_sequence_ok"]
+    )
+    blocker_progress_execution_review_record_count = int(
+        operations_blocker_progress_execution_review["record_count"]
+    )
+    blocker_progress_execution_review_live_authorized_count = int(
+        operations_blocker_progress_execution_review["live_data_authorized_count"]
+    )
+    blocker_progress_execution_review_external_authorized_count = int(
+        operations_blocker_progress_execution_review[
+            "external_submission_authorized_count"
+        ]
+    )
+    blocker_progress_execution_review_coverage_complete = bool(
+        operations_blocker_progress_execution_review["coverage_complete"]
+    )
+    blocker_progress_execution_review_status_mismatch_count = int(
+        operations_blocker_progress_execution_review["status_mismatch_count"]
+    )
+    blocker_progress_execution_review_residual_mismatch_count = int(
+        operations_blocker_progress_execution_review["residual_mismatch_count"]
+    )
+    blocker_progress_execution_review_priority_mismatch_count = int(
+        operations_blocker_progress_execution_review["priority_mismatch_count"]
+    )
+    blocker_progress_execution_review_residual_blocker_total = int(
+        operations_blocker_progress_execution_review["residual_blocker_total"]
+    )
+    blocker_progress_execution_review_priority_sequence_ok = bool(
+        operations_blocker_progress_execution_review["priority_sequence_ok"]
+    )
+    blocker_progress_execution_followup_record_count = int(
+        operations_blocker_progress_execution_followup["record_count"]
+    )
+    blocker_progress_execution_followup_live_authorized_count = int(
+        operations_blocker_progress_execution_followup["live_data_authorized_count"]
+    )
+    blocker_progress_execution_followup_external_authorized_count = int(
+        operations_blocker_progress_execution_followup[
+            "external_submission_authorized_count"
+        ]
+    )
+    blocker_progress_execution_followup_coverage_complete = bool(
+        operations_blocker_progress_execution_followup["coverage_complete"]
+    )
+    blocker_progress_execution_followup_status_mismatch_count = int(
+        operations_blocker_progress_execution_followup["status_mismatch_count"]
+    )
+    blocker_progress_execution_followup_residual_mismatch_count = int(
+        operations_blocker_progress_execution_followup["residual_mismatch_count"]
+    )
+    blocker_progress_execution_followup_priority_mismatch_count = int(
+        operations_blocker_progress_execution_followup["priority_mismatch_count"]
+    )
+    blocker_progress_execution_followup_residual_blocker_total = int(
+        operations_blocker_progress_execution_followup["residual_blocker_total"]
+    )
+    blocker_progress_execution_followup_priority_sequence_ok = bool(
+        operations_blocker_progress_execution_followup["priority_sequence_ok"]
+    )
 
     ok = (
         all(result["ok"] for result in candidate_results.values())
@@ -2529,7 +3486,9 @@ def validate_all() -> dict[str, object]:
         and isinstance(scoring_threshold_count, int)
         and scoring_threshold_count >= 1
         and isinstance(route_covered_count, int)
-        and route_covered_count >= 4
+        and route_covered_count >= 6
+        and isinstance(route_uncovered_count, int)
+        and route_uncovered_count == 0
         and isinstance(lifecycle_invalid_count, int)
         and lifecycle_invalid_count == 0
         and isinstance(observation_completion_rate, float)
@@ -2655,6 +3614,84 @@ def validate_all() -> dict[str, object]:
         and config_history_entry_count >= 1
         and isinstance(operator_escalation_entry_count, int)
         and operator_escalation_entry_count >= 1
+        and action_resolution_record_count >= 1
+        and action_resolution_live_authorized_count == 0
+        and action_resolution_external_authorized_count == 0
+        and action_resolution_coverage_complete
+        and blocker_detail_count == len(operations_action_ids)
+        and blocker_detail_network_count == 0
+        and blocker_detail_external_count == 0
+        and blocker_review_record_count >= 1
+        and blocker_review_live_authorized_count == 0
+        and blocker_review_external_authorized_count == 0
+        and blocker_review_coverage_complete
+        and blocker_review_all_detail_evidence_reviewed
+        and blocker_followup_action_count == blocker_review_record_count
+        and blocker_followup_live_authorized_count == 0
+        and blocker_followup_external_authorized_count == 0
+        and blocker_followup_coverage_complete
+        and blocker_followup_all_detail_evidence_reviewed
+        and (
+            blocker_followup_residual_blocker_total
+            == int(operations_blocker_review["residual_blocker_total"])
+        )
+        and blocker_progress_record_count == blocker_followup_action_count
+        and blocker_progress_live_authorized_count == 0
+        and blocker_progress_external_authorized_count == 0
+        and blocker_progress_coverage_complete
+        and blocker_progress_recommendation_mismatch_count == 0
+        and (
+            blocker_progress_review_record_count
+            == int(operations_blocker_followup_progress["unresolved_progress_count"])
+        )
+        and blocker_progress_review_live_authorized_count == 0
+        and blocker_progress_review_external_authorized_count == 0
+        and blocker_progress_review_coverage_complete
+        and blocker_progress_review_status_mismatch_count == 0
+        and blocker_progress_review_residual_blocker_total
+        == int(operations_blocker_followup_progress["residual_blocker_total"])
+        and blocker_progress_next_action_record_count
+        == blocker_progress_review_record_count
+        and blocker_progress_next_action_live_authorized_count == 0
+        and blocker_progress_next_action_external_authorized_count == 0
+        and blocker_progress_next_action_coverage_complete
+        and blocker_progress_next_action_status_mismatch_count == 0
+        and blocker_progress_next_action_residual_blocker_total
+        == blocker_progress_review_residual_blocker_total
+        and blocker_progress_next_action_priority_sequence_ok
+        and blocker_progress_execution_record_count
+        == blocker_progress_next_action_record_count
+        and blocker_progress_execution_live_authorized_count == 0
+        and blocker_progress_execution_external_authorized_count == 0
+        and blocker_progress_execution_coverage_complete
+        and blocker_progress_execution_status_mismatch_count == 0
+        and blocker_progress_execution_residual_mismatch_count == 0
+        and blocker_progress_execution_priority_mismatch_count == 0
+        and blocker_progress_execution_residual_blocker_total
+        == blocker_progress_next_action_residual_blocker_total
+        and blocker_progress_execution_priority_sequence_ok
+        and blocker_progress_execution_review_record_count
+        == blocker_progress_execution_record_count
+        and blocker_progress_execution_review_live_authorized_count == 0
+        and blocker_progress_execution_review_external_authorized_count == 0
+        and blocker_progress_execution_review_coverage_complete
+        and blocker_progress_execution_review_status_mismatch_count == 0
+        and blocker_progress_execution_review_residual_mismatch_count == 0
+        and blocker_progress_execution_review_priority_mismatch_count == 0
+        and blocker_progress_execution_review_residual_blocker_total
+        == blocker_progress_execution_residual_blocker_total
+        and blocker_progress_execution_review_priority_sequence_ok
+        and blocker_progress_execution_followup_record_count
+        == blocker_progress_execution_review_record_count
+        and blocker_progress_execution_followup_live_authorized_count == 0
+        and blocker_progress_execution_followup_external_authorized_count == 0
+        and blocker_progress_execution_followup_coverage_complete
+        and blocker_progress_execution_followup_status_mismatch_count == 0
+        and blocker_progress_execution_followup_residual_mismatch_count == 0
+        and blocker_progress_execution_followup_priority_mismatch_count == 0
+        and blocker_progress_execution_followup_residual_blocker_total
+        == blocker_progress_execution_review_residual_blocker_total
+        and blocker_progress_execution_followup_priority_sequence_ok
     )
     return {
         "ok": ok,
@@ -2774,6 +3811,30 @@ def validate_all() -> dict[str, object]:
         "alert_resolution_summary": alert_resolution_data,
         "config_version_history_summary": config_history_data,
         "operator_escalation_summary": escalation_data,
+        "operations_readiness_summary": operations_readiness,
+        "operations_action_plan_summary": operations_action_plan,
+        "operations_action_resolution_summary": operations_action_resolution,
+        "operations_blocker_detail_summary": operations_blocker_detail,
+        "operations_blocker_review_summary": operations_blocker_review,
+        "operations_blocker_followup_summary": operations_blocker_followup,
+        "operations_blocker_followup_progress_summary": (
+            operations_blocker_followup_progress
+        ),
+        "operations_blocker_progress_review_summary": (
+            operations_blocker_progress_review
+        ),
+        "operations_blocker_progress_next_actions_summary": (
+            operations_blocker_progress_next_actions
+        ),
+        "operations_blocker_progress_execution_summary": (
+            operations_blocker_progress_execution
+        ),
+        "operations_blocker_progress_execution_review_summary": (
+            operations_blocker_progress_execution_review
+        ),
+        "operations_blocker_progress_execution_followup_summary": (
+            operations_blocker_progress_execution_followup
+        ),
     }
 
 
@@ -2824,6 +3885,30 @@ def validation_summary() -> dict[str, object]:
     sqlite_retention = validation["top_level_sqlite_log_retention_summary"]
     sqlite_pragmas = validation["top_level_sqlite_log_pragmas"]
     sqlite_log_validation = validation["top_level_sqlite_log_validation"]
+    operations_readiness = validation["operations_readiness_summary"]
+    operations_action_plan = validation["operations_action_plan_summary"]
+    operations_action_resolution = validation["operations_action_resolution_summary"]
+    operations_blocker_detail = validation["operations_blocker_detail_summary"]
+    operations_blocker_review = validation["operations_blocker_review_summary"]
+    operations_blocker_followup = validation["operations_blocker_followup_summary"]
+    operations_blocker_followup_progress = validation[
+        "operations_blocker_followup_progress_summary"
+    ]
+    operations_blocker_progress_review = validation[
+        "operations_blocker_progress_review_summary"
+    ]
+    operations_blocker_progress_next_actions = validation[
+        "operations_blocker_progress_next_actions_summary"
+    ]
+    operations_blocker_progress_execution = validation[
+        "operations_blocker_progress_execution_summary"
+    ]
+    operations_blocker_progress_execution_review = validation[
+        "operations_blocker_progress_execution_review_summary"
+    ]
+    operations_blocker_progress_execution_followup = validation[
+        "operations_blocker_progress_execution_followup_summary"
+    ]
     return {
         "ok": validation["ok"],
         "generated_at_utc": datetime.now(UTC).isoformat(),
@@ -3170,6 +4255,680 @@ def validation_summary() -> dict[str, object]:
         ]
         if isinstance(sqlite_logs, dict)
         else 0,
+        "operations_readiness_sqlite_log_present": bool(
+            operations_readiness["sqlite_log_snapshot"]["present"]
+        )
+        if isinstance(operations_readiness, dict)
+        else False,
+        "operations_readiness_sqlite_integrity_ok": bool(
+            operations_readiness["sqlite_log_snapshot"]["integrity_ok"]
+        )
+        if isinstance(operations_readiness, dict)
+        else False,
+        "operations_readiness_sqlite_weekly_digest_ok": bool(
+            operations_readiness["sqlite_log_snapshot"]["weekly_digest_ok"]
+        )
+        if isinstance(operations_readiness, dict)
+        else False,
+        "operations_readiness_recommendation": operations_readiness[
+            "recommendation"
+        ]
+        if isinstance(operations_readiness, dict)
+        else "unknown",
+        "operations_readiness_local_validation_ready": bool(
+            operations_readiness["local_validation_ready"]
+        )
+        if isinstance(operations_readiness, dict)
+        else False,
+        "operations_readiness_real_data_blocker_count": operations_readiness[
+            "real_data_blocker_count"
+        ]
+        if isinstance(operations_readiness, dict)
+        else 0,
+        "operations_readiness_operator_attention_count": operations_readiness[
+            "operator_attention_count"
+        ]
+        if isinstance(operations_readiness, dict)
+        else 0,
+        "operations_readiness_open_alert_count": operations_readiness[
+            "open_alert_count"
+        ]
+        if isinstance(operations_readiness, dict)
+        else 0,
+        "operations_readiness_overdue_review_deadline_count": operations_readiness[
+            "overdue_review_deadline_count"
+        ]
+        if isinstance(operations_readiness, dict)
+        else 0,
+        "operations_readiness_external_submission_approved_count": (
+            operations_readiness["external_submission_approved_count"]
+        )
+        if isinstance(operations_readiness, dict)
+        else 0,
+        "operations_readiness_network_access_allowed_count": operations_readiness[
+            "network_access_allowed_count"
+        ]
+        if isinstance(operations_readiness, dict)
+        else 0,
+        "operations_action_plan_action_count": operations_action_plan[
+            "action_count"
+        ]
+        if isinstance(operations_action_plan, dict)
+        else 0,
+        "operations_action_plan_critical_action_count": operations_action_plan[
+            "critical_action_count"
+        ]
+        if isinstance(operations_action_plan, dict)
+        else 0,
+        "operations_action_plan_real_data_blocking_action_count": (
+            operations_action_plan["real_data_blocking_action_count"]
+        )
+        if isinstance(operations_action_plan, dict)
+        else 0,
+        "operations_action_plan_operator_review_action_count": (
+            operations_action_plan["operator_review_action_count"]
+        )
+        if isinstance(operations_action_plan, dict)
+        else 0,
+        "operations_action_resolution_record_count": operations_action_resolution[
+            "record_count"
+        ]
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_open_count": operations_action_resolution[
+            "open_count"
+        ]
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_acknowledged_count": (
+            operations_action_resolution["acknowledged_count"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_deferred_count": operations_action_resolution[
+            "deferred_count"
+        ]
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_resolved_count": operations_action_resolution[
+            "resolved_count"
+        ]
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_residual_blocker_total": (
+            operations_action_resolution["residual_blocker_total"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_live_data_authorized_count": (
+            operations_action_resolution["live_data_authorized_count"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_external_submission_authorized_count": (
+            operations_action_resolution["external_submission_authorized_count"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_all_external_authorization_disabled": bool(
+            operations_action_resolution["all_external_authorization_disabled"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else False,
+        "operations_action_resolution_expected_action_count": (
+            operations_action_resolution["expected_action_count"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_covered_action_count": (
+            operations_action_resolution["covered_action_count"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_missing_action_count": (
+            operations_action_resolution["missing_action_count"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_stale_resolution_count": (
+            operations_action_resolution["stale_resolution_count"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else 0,
+        "operations_action_resolution_coverage_fraction": (
+            operations_action_resolution["coverage_fraction"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else 0.0,
+        "operations_action_resolution_coverage_complete": bool(
+            operations_action_resolution["coverage_complete"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else False,
+        "operations_action_resolution_missing_action_ids": (
+            operations_action_resolution["missing_action_ids"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else [],
+        "operations_action_resolution_stale_resolution_action_ids": (
+            operations_action_resolution["stale_resolution_action_ids"]
+        )
+        if isinstance(operations_action_resolution, dict)
+        else [],
+        "operations_blocker_detail_count": operations_blocker_detail["detail_count"]
+        if isinstance(operations_blocker_detail, dict)
+        else 0,
+        "operations_blocker_detail_total_evidence_record_count": (
+            operations_blocker_detail["total_evidence_record_count"]
+        )
+        if isinstance(operations_blocker_detail, dict)
+        else 0,
+        "operations_blocker_detail_all_external_authorization_disabled": bool(
+            operations_blocker_detail["all_external_authorization_disabled"]
+        )
+        if isinstance(operations_blocker_detail, dict)
+        else False,
+        "operations_blocker_detail_sqlite_context_is_resolved": bool(
+            operations_blocker_detail["sqlite_context_is_resolved"]
+        )
+        if isinstance(operations_blocker_detail, dict)
+        else False,
+        "operations_blocker_review_record_count": operations_blocker_review[
+            "record_count"
+        ]
+        if isinstance(operations_blocker_review, dict)
+        else 0,
+        "operations_blocker_review_reviewed_evidence_record_count": (
+            operations_blocker_review["reviewed_evidence_record_count"]
+        )
+        if isinstance(operations_blocker_review, dict)
+        else 0,
+        "operations_blocker_review_unreviewed_evidence_record_count": (
+            operations_blocker_review["unreviewed_evidence_record_count"]
+        )
+        if isinstance(operations_blocker_review, dict)
+        else 0,
+        "operations_blocker_review_residual_blocker_total": (
+            operations_blocker_review["residual_blocker_total"]
+        )
+        if isinstance(operations_blocker_review, dict)
+        else 0,
+        "operations_blocker_review_live_data_authorized_count": (
+            operations_blocker_review["live_data_authorized_count"]
+        )
+        if isinstance(operations_blocker_review, dict)
+        else 0,
+        "operations_blocker_review_external_submission_authorized_count": (
+            operations_blocker_review["external_submission_authorized_count"]
+        )
+        if isinstance(operations_blocker_review, dict)
+        else 0,
+        "operations_blocker_review_all_external_authorization_disabled": bool(
+            operations_blocker_review["all_external_authorization_disabled"]
+        )
+        if isinstance(operations_blocker_review, dict)
+        else False,
+        "operations_blocker_review_coverage_complete": bool(
+            operations_blocker_review["coverage_complete"]
+        )
+        if isinstance(operations_blocker_review, dict)
+        else False,
+        "operations_blocker_review_all_detail_evidence_reviewed": bool(
+            operations_blocker_review["all_detail_evidence_reviewed"]
+        )
+        if isinstance(operations_blocker_review, dict)
+        else False,
+        "operations_blocker_followup_action_count": operations_blocker_followup[
+            "action_count"
+        ]
+        if isinstance(operations_blocker_followup, dict)
+        else 0,
+        "operations_blocker_followup_action_required_count": (
+            operations_blocker_followup["action_required_count"]
+        )
+        if isinstance(operations_blocker_followup, dict)
+        else 0,
+        "operations_blocker_followup_real_data_hold_count": (
+            operations_blocker_followup["real_data_hold_count"]
+        )
+        if isinstance(operations_blocker_followup, dict)
+        else 0,
+        "operations_blocker_followup_verification_ready_count": (
+            operations_blocker_followup["verification_ready_count"]
+        )
+        if isinstance(operations_blocker_followup, dict)
+        else 0,
+        "operations_blocker_followup_residual_blocker_total": (
+            operations_blocker_followup["residual_blocker_total"]
+        )
+        if isinstance(operations_blocker_followup, dict)
+        else 0,
+        "operations_blocker_followup_live_data_authorized_count": (
+            operations_blocker_followup["live_data_authorized_count"]
+        )
+        if isinstance(operations_blocker_followup, dict)
+        else 0,
+        "operations_blocker_followup_external_submission_authorized_count": (
+            operations_blocker_followup["external_submission_authorized_count"]
+        )
+        if isinstance(operations_blocker_followup, dict)
+        else 0,
+        "operations_blocker_followup_all_external_authorization_disabled": bool(
+            operations_blocker_followup["all_external_authorization_disabled"]
+        )
+        if isinstance(operations_blocker_followup, dict)
+        else False,
+        "operations_blocker_followup_coverage_complete": bool(
+            operations_blocker_followup["coverage_complete"]
+        )
+        if isinstance(operations_blocker_followup, dict)
+        else False,
+        "operations_blocker_followup_all_detail_evidence_reviewed": bool(
+            operations_blocker_followup["all_detail_evidence_reviewed"]
+        )
+        if isinstance(operations_blocker_followup, dict)
+        else False,
+        "operations_blocker_followup_progress_record_count": (
+            operations_blocker_followup_progress["record_count"]
+        )
+        if isinstance(operations_blocker_followup_progress, dict)
+        else 0,
+        "operations_blocker_followup_progress_unresolved_count": (
+            operations_blocker_followup_progress["unresolved_progress_count"]
+        )
+        if isinstance(operations_blocker_followup_progress, dict)
+        else 0,
+        "operations_blocker_followup_progress_verified_local_count": (
+            operations_blocker_followup_progress["verified_local_count"]
+        )
+        if isinstance(operations_blocker_followup_progress, dict)
+        else 0,
+        "operations_blocker_followup_progress_residual_blocker_total": (
+            operations_blocker_followup_progress["residual_blocker_total"]
+        )
+        if isinstance(operations_blocker_followup_progress, dict)
+        else 0,
+        "operations_blocker_followup_progress_live_data_authorized_count": (
+            operations_blocker_followup_progress["live_data_authorized_count"]
+        )
+        if isinstance(operations_blocker_followup_progress, dict)
+        else 0,
+        "operations_blocker_followup_progress_external_submission_authorized_count": (
+            operations_blocker_followup_progress[
+                "external_submission_authorized_count"
+            ]
+        )
+        if isinstance(operations_blocker_followup_progress, dict)
+        else 0,
+        "operations_blocker_followup_progress_all_external_authorization_disabled": (
+            bool(
+                operations_blocker_followup_progress[
+                    "all_external_authorization_disabled"
+                ]
+            )
+        )
+        if isinstance(operations_blocker_followup_progress, dict)
+        else False,
+        "operations_blocker_followup_progress_coverage_complete": bool(
+            operations_blocker_followup_progress["coverage_complete"]
+        )
+        if isinstance(operations_blocker_followup_progress, dict)
+        else False,
+        "operations_blocker_followup_progress_recommendation_mismatch_count": (
+            operations_blocker_followup_progress["recommendation_mismatch_count"]
+        )
+        if isinstance(operations_blocker_followup_progress, dict)
+        else 0,
+        "operations_blocker_progress_review_record_count": (
+            operations_blocker_progress_review["record_count"]
+        )
+        if isinstance(operations_blocker_progress_review, dict)
+        else 0,
+        "operations_blocker_progress_review_needs_operator_action_count": (
+            operations_blocker_progress_review["needs_operator_action_count"]
+        )
+        if isinstance(operations_blocker_progress_review, dict)
+        else 0,
+        "operations_blocker_progress_review_ready_for_next_local_note_count": (
+            operations_blocker_progress_review["ready_for_next_local_note_count"]
+        )
+        if isinstance(operations_blocker_progress_review, dict)
+        else 0,
+        "operations_blocker_progress_review_blocked_for_real_data_count": (
+            operations_blocker_progress_review["blocked_for_real_data_count"]
+        )
+        if isinstance(operations_blocker_progress_review, dict)
+        else 0,
+        "operations_blocker_progress_review_residual_blocker_total": (
+            operations_blocker_progress_review["residual_blocker_total"]
+        )
+        if isinstance(operations_blocker_progress_review, dict)
+        else 0,
+        "operations_blocker_progress_review_live_data_authorized_count": (
+            operations_blocker_progress_review["live_data_authorized_count"]
+        )
+        if isinstance(operations_blocker_progress_review, dict)
+        else 0,
+        "operations_blocker_progress_review_external_submission_authorized_count": (
+            operations_blocker_progress_review[
+                "external_submission_authorized_count"
+            ]
+        )
+        if isinstance(operations_blocker_progress_review, dict)
+        else 0,
+        "operations_blocker_progress_review_all_external_authorization_disabled": (
+            bool(
+                operations_blocker_progress_review[
+                    "all_external_authorization_disabled"
+                ]
+            )
+        )
+        if isinstance(operations_blocker_progress_review, dict)
+        else False,
+        "operations_blocker_progress_review_coverage_complete": bool(
+            operations_blocker_progress_review["coverage_complete"]
+        )
+        if isinstance(operations_blocker_progress_review, dict)
+        else False,
+        "operations_blocker_progress_review_status_mismatch_count": (
+            operations_blocker_progress_review["status_mismatch_count"]
+        )
+        if isinstance(operations_blocker_progress_review, dict)
+        else 0,
+        "operations_blocker_progress_next_actions_record_count": (
+            operations_blocker_progress_next_actions["record_count"]
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else 0,
+        "operations_blocker_progress_next_actions_operator_action_required_count": (
+            operations_blocker_progress_next_actions["operator_action_required_count"]
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else 0,
+        "operations_blocker_progress_next_actions_local_note_ready_count": (
+            operations_blocker_progress_next_actions["local_note_ready_count"]
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else 0,
+        "operations_blocker_progress_next_actions_blocked_pending_real_data_count": (
+            operations_blocker_progress_next_actions[
+                "blocked_pending_real_data_count"
+            ]
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else 0,
+        "operations_blocker_progress_next_actions_residual_blocker_total": (
+            operations_blocker_progress_next_actions["residual_blocker_total"]
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else 0,
+        "operations_blocker_progress_next_actions_live_data_authorized_count": (
+            operations_blocker_progress_next_actions["live_data_authorized_count"]
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else 0,
+        "operations_blocker_progress_next_actions_external_submission_authorized_count": (
+            operations_blocker_progress_next_actions[
+                "external_submission_authorized_count"
+            ]
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else 0,
+        "operations_blocker_progress_next_actions_all_external_authorization_disabled": (
+            bool(
+                operations_blocker_progress_next_actions[
+                    "all_external_authorization_disabled"
+                ]
+            )
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else False,
+        "operations_blocker_progress_next_actions_coverage_complete": bool(
+            operations_blocker_progress_next_actions["coverage_complete"]
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else False,
+        "operations_blocker_progress_next_actions_status_mismatch_count": (
+            operations_blocker_progress_next_actions["status_mismatch_count"]
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else 0,
+        "operations_blocker_progress_next_actions_priority_sequence_ok": bool(
+            operations_blocker_progress_next_actions["priority_sequence_ok"]
+        )
+        if isinstance(operations_blocker_progress_next_actions, dict)
+        else False,
+        "operations_blocker_progress_execution_record_count": (
+            operations_blocker_progress_execution["record_count"]
+        )
+        if isinstance(operations_blocker_progress_execution, dict)
+        else 0,
+        "operations_blocker_progress_execution_awaiting_operator_count": (
+            operations_blocker_progress_execution["awaiting_operator_count"]
+        )
+        if isinstance(operations_blocker_progress_execution, dict)
+        else 0,
+        "operations_blocker_progress_execution_local_note_recorded_count": (
+            operations_blocker_progress_execution["local_note_recorded_count"]
+        )
+        if isinstance(operations_blocker_progress_execution, dict)
+        else 0,
+        "operations_blocker_progress_execution_blocked_pending_real_data_count": (
+            operations_blocker_progress_execution[
+                "blocked_pending_real_data_count"
+            ]
+        )
+        if isinstance(operations_blocker_progress_execution, dict)
+        else 0,
+        "operations_blocker_progress_execution_residual_blocker_total": (
+            operations_blocker_progress_execution["residual_blocker_total"]
+        )
+        if isinstance(operations_blocker_progress_execution, dict)
+        else 0,
+        "operations_blocker_progress_execution_live_data_authorized_count": (
+            operations_blocker_progress_execution["live_data_authorized_count"]
+        )
+        if isinstance(operations_blocker_progress_execution, dict)
+        else 0,
+        "operations_blocker_progress_execution_external_submission_authorized_count": (
+            operations_blocker_progress_execution[
+                "external_submission_authorized_count"
+            ]
+        )
+        if isinstance(operations_blocker_progress_execution, dict)
+        else 0,
+        "operations_blocker_progress_execution_all_external_authorization_disabled": (
+            bool(
+                operations_blocker_progress_execution[
+                    "all_external_authorization_disabled"
+                ]
+            )
+        )
+        if isinstance(operations_blocker_progress_execution, dict)
+        else False,
+        "operations_blocker_progress_execution_coverage_complete": bool(
+            operations_blocker_progress_execution["coverage_complete"]
+        )
+        if isinstance(operations_blocker_progress_execution, dict)
+        else False,
+        "operations_blocker_progress_execution_status_mismatch_count": (
+            operations_blocker_progress_execution["status_mismatch_count"]
+        )
+        if isinstance(operations_blocker_progress_execution, dict)
+        else 0,
+        "operations_blocker_progress_execution_residual_mismatch_count": (
+            operations_blocker_progress_execution["residual_mismatch_count"]
+        )
+        if isinstance(operations_blocker_progress_execution, dict)
+        else 0,
+        "operations_blocker_progress_execution_priority_mismatch_count": (
+            operations_blocker_progress_execution["priority_mismatch_count"]
+        )
+        if isinstance(operations_blocker_progress_execution, dict)
+        else 0,
+        "operations_blocker_progress_execution_priority_sequence_ok": bool(
+            operations_blocker_progress_execution["priority_sequence_ok"]
+        )
+        if isinstance(operations_blocker_progress_execution, dict)
+        else False,
+        "operations_blocker_progress_execution_review_record_count": (
+            operations_blocker_progress_execution_review["record_count"]
+        )
+        if isinstance(operations_blocker_progress_execution_review, dict)
+        else 0,
+        "operations_blocker_progress_execution_review_awaiting_operator_reviewed_count": (
+            operations_blocker_progress_execution_review[
+                "awaiting_operator_reviewed_count"
+            ]
+        )
+        if isinstance(operations_blocker_progress_execution_review, dict)
+        else 0,
+        "operations_blocker_progress_execution_review_execution_note_reviewed_count": (
+            operations_blocker_progress_execution_review[
+                "execution_note_reviewed_count"
+            ]
+        )
+        if isinstance(operations_blocker_progress_execution_review, dict)
+        else 0,
+        "operations_blocker_progress_execution_review_blocked_pending_real_data_reviewed_count": (
+            operations_blocker_progress_execution_review[
+                "blocked_pending_real_data_reviewed_count"
+            ]
+        )
+        if isinstance(operations_blocker_progress_execution_review, dict)
+        else 0,
+        "operations_blocker_progress_execution_review_residual_blocker_total": (
+            operations_blocker_progress_execution_review["residual_blocker_total"]
+        )
+        if isinstance(operations_blocker_progress_execution_review, dict)
+        else 0,
+        "operations_blocker_progress_execution_review_live_data_authorized_count": (
+            operations_blocker_progress_execution_review[
+                "live_data_authorized_count"
+            ]
+        )
+        if isinstance(operations_blocker_progress_execution_review, dict)
+        else 0,
+        "operations_blocker_progress_execution_review_external_submission_authorized_count": (
+            operations_blocker_progress_execution_review[
+                "external_submission_authorized_count"
+            ]
+        )
+        if isinstance(operations_blocker_progress_execution_review, dict)
+        else 0,
+        "operations_blocker_progress_execution_review_all_external_authorization_disabled": (
+            bool(
+                operations_blocker_progress_execution_review[
+                    "all_external_authorization_disabled"
+                ]
+            )
+        )
+        if isinstance(operations_blocker_progress_execution_review, dict)
+        else False,
+        "operations_blocker_progress_execution_review_coverage_complete": bool(
+            operations_blocker_progress_execution_review["coverage_complete"]
+        )
+        if isinstance(operations_blocker_progress_execution_review, dict)
+        else False,
+        "operations_blocker_progress_execution_review_status_mismatch_count": (
+            operations_blocker_progress_execution_review["status_mismatch_count"]
+        )
+        if isinstance(operations_blocker_progress_execution_review, dict)
+        else 0,
+        "operations_blocker_progress_execution_review_residual_mismatch_count": (
+            operations_blocker_progress_execution_review["residual_mismatch_count"]
+        )
+        if isinstance(operations_blocker_progress_execution_review, dict)
+        else 0,
+        "operations_blocker_progress_execution_review_priority_mismatch_count": (
+            operations_blocker_progress_execution_review["priority_mismatch_count"]
+        )
+        if isinstance(operations_blocker_progress_execution_review, dict)
+        else 0,
+        "operations_blocker_progress_execution_review_priority_sequence_ok": bool(
+            operations_blocker_progress_execution_review["priority_sequence_ok"]
+        )
+        if isinstance(operations_blocker_progress_execution_review, dict)
+        else False,
+        "operations_blocker_progress_execution_followup_record_count": (
+            operations_blocker_progress_execution_followup["record_count"]
+        )
+        if isinstance(operations_blocker_progress_execution_followup, dict)
+        else 0,
+        "operations_blocker_progress_execution_followup_operator_followup_required_count": (
+            operations_blocker_progress_execution_followup[
+                "operator_followup_required_count"
+            ]
+        )
+        if isinstance(operations_blocker_progress_execution_followup, dict)
+        else 0,
+        "operations_blocker_progress_execution_followup_local_note_followup_ready_count": (
+            operations_blocker_progress_execution_followup[
+                "local_note_followup_ready_count"
+            ]
+        )
+        if isinstance(operations_blocker_progress_execution_followup, dict)
+        else 0,
+        "operations_blocker_progress_execution_followup_blocked_pending_real_data_count": (
+            operations_blocker_progress_execution_followup[
+                "blocked_pending_real_data_count"
+            ]
+        )
+        if isinstance(operations_blocker_progress_execution_followup, dict)
+        else 0,
+        "operations_blocker_progress_execution_followup_residual_blocker_total": (
+            operations_blocker_progress_execution_followup["residual_blocker_total"]
+        )
+        if isinstance(operations_blocker_progress_execution_followup, dict)
+        else 0,
+        "operations_blocker_progress_execution_followup_live_data_authorized_count": (
+            operations_blocker_progress_execution_followup[
+                "live_data_authorized_count"
+            ]
+        )
+        if isinstance(operations_blocker_progress_execution_followup, dict)
+        else 0,
+        "operations_blocker_progress_execution_followup_external_submission_authorized_count": (
+            operations_blocker_progress_execution_followup[
+                "external_submission_authorized_count"
+            ]
+        )
+        if isinstance(operations_blocker_progress_execution_followup, dict)
+        else 0,
+        "operations_blocker_progress_execution_followup_all_external_authorization_disabled": (
+            bool(
+                operations_blocker_progress_execution_followup[
+                    "all_external_authorization_disabled"
+                ]
+            )
+        )
+        if isinstance(operations_blocker_progress_execution_followup, dict)
+        else False,
+        "operations_blocker_progress_execution_followup_coverage_complete": bool(
+            operations_blocker_progress_execution_followup["coverage_complete"]
+        )
+        if isinstance(operations_blocker_progress_execution_followup, dict)
+        else False,
+        "operations_blocker_progress_execution_followup_status_mismatch_count": (
+            operations_blocker_progress_execution_followup["status_mismatch_count"]
+        )
+        if isinstance(operations_blocker_progress_execution_followup, dict)
+        else 0,
+        "operations_blocker_progress_execution_followup_residual_mismatch_count": (
+            operations_blocker_progress_execution_followup["residual_mismatch_count"]
+        )
+        if isinstance(operations_blocker_progress_execution_followup, dict)
+        else 0,
+        "operations_blocker_progress_execution_followup_priority_mismatch_count": (
+            operations_blocker_progress_execution_followup["priority_mismatch_count"]
+        )
+        if isinstance(operations_blocker_progress_execution_followup, dict)
+        else 0,
+        "operations_blocker_progress_execution_followup_priority_sequence_ok": bool(
+            operations_blocker_progress_execution_followup["priority_sequence_ok"]
+        )
+        if isinstance(operations_blocker_progress_execution_followup, dict)
+        else False,
         "baseline_pathway_accuracy": (
             baseline_eval_s["pathway_accuracy"]
             if isinstance(baseline_eval_s := validation.get("baseline_eval_summary"), dict)
@@ -4442,6 +6201,35 @@ def _build_parser() -> argparse.ArgumentParser:
         default=default_sqlite_log_path(default_project_root()),
         help="SQLite log database path. Defaults to logs/techno_search.sqlite3.",
     )
+    sqlite_bootstrap_parser = subparsers.add_parser(
+        "sqlite-log-bootstrap-summary",
+        help=(
+            "Initialize local SQLite logs and report integrity, weekly digest, "
+            "and operations-readiness SQLite gate visibility."
+        ),
+    )
+    sqlite_bootstrap_parser.add_argument(
+        "--db-path",
+        type=Path,
+        default=default_sqlite_log_path(default_project_root()),
+        help="SQLite log database path. Defaults to logs/techno_search.sqlite3.",
+    )
+    sqlite_bootstrap_parser.add_argument(
+        "--code-commit",
+        default="not-recorded",
+        help="Optional code commit or workspace identifier to store in metadata.",
+    )
+    sqlite_bootstrap_parser.add_argument(
+        "--config-version",
+        default="not-recorded",
+        help="Optional config version to store in metadata.",
+    )
+    sqlite_bootstrap_parser.add_argument(
+        "--window-days",
+        type=int,
+        default=7,
+        help="Weekly digest reporting window in days (default 7).",
+    )
     sqlite_export_parser = subparsers.add_parser(
         "sqlite-log-export",
         help="Export a small review-safe JSON summary from SQLite logs.",
@@ -4828,6 +6616,317 @@ def _build_parser() -> argparse.ArgumentParser:
             "Concise project health dashboard combining key gate statuses. "
             "Returns exit 1 if any gate fails."
         ),
+    )
+    ops_ready_parser = subparsers.add_parser(
+        "operations-readiness-summary",
+        help=(
+            "Aggregate local-only readiness blockers across QC, alerts, review "
+            "deadlines, route coverage, and top-level SQLite log state."
+        ),
+    )
+    ops_ready_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help="Optional SQLite log database path for readiness snapshot fields.",
+    )
+    ops_action_parser = subparsers.add_parser(
+        "operations-action-plan-summary",
+        help=(
+            "Translate operations-readiness blockers into prioritized local "
+            "operator actions. Scheduling aid only."
+        ),
+    )
+    ops_action_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help="Optional SQLite log database path for readiness snapshot fields.",
+    )
+    ops_resolution_parser = subparsers.add_parser(
+        "operations-action-resolution-summary",
+        help=(
+            "Summarize local action-plan resolution records. Workflow provenance "
+            "only; does not authorize live data or external submission."
+        ),
+    )
+    ops_resolution_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional local action-resolution fixture path.",
+    )
+    ops_resolution_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help="Optional SQLite log database path for action-plan coverage fields.",
+    )
+    ops_blocker_detail_parser = subparsers.add_parser(
+        "operations-blocker-detail-summary",
+        help=(
+            "Expand operations action-plan blockers into fixture-backed local "
+            "source records. Operator review aid only."
+        ),
+    )
+    ops_blocker_detail_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help="Optional SQLite log database path for readiness snapshot fields.",
+    )
+    ops_blocker_review_parser = subparsers.add_parser(
+        "operations-blocker-review-summary",
+        help=(
+            "Summarize local blocker-detail review records. Workflow provenance "
+            "only; does not clear blockers or authorize external workflow."
+        ),
+    )
+    ops_blocker_review_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional local blocker-review fixture path.",
+    )
+    ops_blocker_review_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help="Optional SQLite log database path for blocker-detail coverage fields.",
+    )
+    ops_blocker_followup_parser = subparsers.add_parser(
+        "operations-blocker-followup-summary",
+        help=(
+            "Derive local blocker follow-up actions from blocker-review records. "
+            "Planning aid only; does not clear blockers or authorize workflow."
+        ),
+    )
+    ops_blocker_followup_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional local blocker-review fixture path.",
+    )
+    ops_blocker_followup_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help="Optional SQLite log database path for blocker-detail coverage fields.",
+    )
+    ops_blocker_progress_parser = subparsers.add_parser(
+        "operations-blocker-followup-progress-summary",
+        help=(
+            "Summarize local progress notes for blocker follow-up actions. "
+            "Workflow provenance only; does not clear blockers."
+        ),
+    )
+    ops_blocker_progress_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional local blocker-followup progress fixture path.",
+    )
+    ops_blocker_progress_parser.add_argument(
+        "--review-fixture-path",
+        type=Path,
+        help="Optional local blocker-review fixture path for expected actions.",
+    )
+    ops_blocker_progress_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help="Optional SQLite log database path for blocker-detail coverage fields.",
+    )
+    ops_blocker_progress_review_parser = subparsers.add_parser(
+        "operations-blocker-progress-review-summary",
+        help=(
+            "Summarize local second-pass review for unresolved blocker progress. "
+            "Workflow provenance only; does not clear blockers."
+        ),
+    )
+    ops_blocker_progress_review_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional local blocker progress-review fixture path.",
+    )
+    ops_blocker_progress_review_parser.add_argument(
+        "--progress-fixture-path",
+        type=Path,
+        help="Optional local blocker-followup progress fixture path.",
+    )
+    ops_blocker_progress_review_parser.add_argument(
+        "--review-fixture-path",
+        type=Path,
+        help="Optional local blocker-review fixture path for expected actions.",
+    )
+    ops_blocker_progress_review_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help="Optional SQLite log database path for blocker-detail coverage fields.",
+    )
+    ops_blocker_progress_next_parser = subparsers.add_parser(
+        "operations-blocker-progress-next-actions-summary",
+        help=(
+            "Summarize local next actions for unresolved blocker progress. "
+            "Workflow provenance only; does not clear blockers."
+        ),
+    )
+    ops_blocker_progress_next_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional local blocker progress next-action fixture path.",
+    )
+    ops_blocker_progress_next_parser.add_argument(
+        "--progress-review-fixture-path",
+        type=Path,
+        help="Optional local blocker progress-review fixture path.",
+    )
+    ops_blocker_progress_next_parser.add_argument(
+        "--progress-fixture-path",
+        type=Path,
+        help="Optional local blocker-followup progress fixture path.",
+    )
+    ops_blocker_progress_next_parser.add_argument(
+        "--review-fixture-path",
+        type=Path,
+        help="Optional local blocker-review fixture path for expected actions.",
+    )
+    ops_blocker_progress_next_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help="Optional SQLite log database path for blocker-detail coverage fields.",
+    )
+    ops_blocker_progress_execution_parser = subparsers.add_parser(
+        "operations-blocker-progress-execution-summary",
+        help=(
+            "Summarize local execution notes for blocker progress next actions. "
+            "Workflow provenance only; does not clear blockers."
+        ),
+    )
+    ops_blocker_progress_execution_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional local blocker progress-execution fixture path.",
+    )
+    ops_blocker_progress_execution_parser.add_argument(
+        "--next-actions-fixture-path",
+        type=Path,
+        help="Optional local blocker progress next-action fixture path.",
+    )
+    ops_blocker_progress_execution_parser.add_argument(
+        "--progress-review-fixture-path",
+        type=Path,
+        help="Optional local blocker progress-review fixture path.",
+    )
+    ops_blocker_progress_execution_parser.add_argument(
+        "--progress-fixture-path",
+        type=Path,
+        help="Optional local blocker-followup progress fixture path.",
+    )
+    ops_blocker_progress_execution_parser.add_argument(
+        "--review-fixture-path",
+        type=Path,
+        help="Optional local blocker-review fixture path for expected actions.",
+    )
+    ops_blocker_progress_execution_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help="Optional SQLite log database path for blocker-detail coverage fields.",
+    )
+    ops_blocker_progress_execution_review_parser = subparsers.add_parser(
+        "operations-blocker-progress-execution-review-summary",
+        help=(
+            "Summarize local reviews for blocker progress-execution notes. "
+            "Workflow provenance only; does not clear blockers."
+        ),
+    )
+    ops_blocker_progress_execution_review_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional local blocker progress execution-review fixture path.",
+    )
+    ops_blocker_progress_execution_review_parser.add_argument(
+        "--execution-fixture-path",
+        type=Path,
+        help="Optional local blocker progress-execution fixture path.",
+    )
+    ops_blocker_progress_execution_review_parser.add_argument(
+        "--next-actions-fixture-path",
+        type=Path,
+        help="Optional local blocker progress next-action fixture path.",
+    )
+    ops_blocker_progress_execution_review_parser.add_argument(
+        "--progress-review-fixture-path",
+        type=Path,
+        help="Optional local blocker progress-review fixture path.",
+    )
+    ops_blocker_progress_execution_review_parser.add_argument(
+        "--progress-fixture-path",
+        type=Path,
+        help="Optional local blocker-followup progress fixture path.",
+    )
+    ops_blocker_progress_execution_review_parser.add_argument(
+        "--review-fixture-path",
+        type=Path,
+        help="Optional local blocker-review fixture path for expected actions.",
+    )
+    ops_blocker_progress_execution_review_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help="Optional SQLite log database path for blocker-detail coverage fields.",
+    )
+    ops_blocker_progress_execution_followup_parser = subparsers.add_parser(
+        "operations-blocker-progress-execution-followup-summary",
+        help=(
+            "Summarize local follow-up planning for blocker progress-execution "
+            "reviews. Workflow provenance only; does not clear blockers."
+        ),
+    )
+    ops_blocker_progress_execution_followup_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional local blocker progress execution-followup fixture path.",
+    )
+    ops_blocker_progress_execution_followup_parser.add_argument(
+        "--execution-review-fixture-path",
+        type=Path,
+        help="Optional local blocker progress execution-review fixture path.",
+    )
+    ops_blocker_progress_execution_followup_parser.add_argument(
+        "--execution-fixture-path",
+        type=Path,
+        help="Optional local blocker progress-execution fixture path.",
+    )
+    ops_blocker_progress_execution_followup_parser.add_argument(
+        "--next-actions-fixture-path",
+        type=Path,
+        help="Optional local blocker progress next-action fixture path.",
+    )
+    ops_blocker_progress_execution_followup_parser.add_argument(
+        "--progress-review-fixture-path",
+        type=Path,
+        help="Optional local blocker progress-review fixture path.",
+    )
+    ops_blocker_progress_execution_followup_parser.add_argument(
+        "--progress-fixture-path",
+        type=Path,
+        help="Optional local blocker-followup progress fixture path.",
+    )
+    ops_blocker_progress_execution_followup_parser.add_argument(
+        "--review-fixture-path",
+        type=Path,
+        help="Optional local blocker-review fixture path for expected actions.",
+    )
+    ops_blocker_progress_execution_followup_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help="Optional SQLite log database path for blocker-detail coverage fields.",
+    )
+    ops_digest_parser = subparsers.add_parser(
+        "operations-readiness-digest",
+        help=(
+            "Print a review-safe Markdown operations digest. Local dashboard only; "
+            "does not authorize live data or external submission."
+        ),
+    )
+    ops_digest_parser.add_argument(
+        "--sqlite-log-path",
+        type=Path,
+        help="Optional SQLite log database path for readiness snapshot fields.",
+    )
+    ops_digest_parser.add_argument(
+        "--output-path",
+        type=Path,
+        help="Optional Markdown output path for the digest.",
     )
     subparsers.add_parser(
         "baseline-confusion-matrix-summary",

@@ -19,6 +19,18 @@ Run:
 git diff --check
 ```
 
+The non-networked CI template in `docs/templates/ci.yml` mirrors these checks
+and also runs:
+
+```bash
+.venv/bin/techno-search validate-all
+.venv/bin/techno-search health
+```
+
+Keep the template under `docs/templates/` until the publishing token has GitHub
+`workflow` scope. CI and local validation must keep live provider access
+disabled by default.
+
 ---
 
 ## CLI Validators
@@ -240,6 +252,8 @@ Review reviewed and needs-follow-up outcome logs:
 .venv/bin/techno-search user-decision-summary
 .venv/bin/techno-search init-logs \
   --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search sqlite-log-bootstrap-summary \
+  --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-summary \
   --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-integrity-summary \
@@ -274,6 +288,10 @@ Review candidate-extraction handoff readiness:
 ```
 
 `validate-all` and `validation-summary` include calibration-by-track, false-positive class, validation dataset, validation readiness, benchmark metadata, benchmark run-result metadata, background target-priority, background search ledger, background reviewed-workflow, reviewed outcome log, needs-follow-up outcome log, follow-up test results, report-readiness gates, conservative draft report summaries, persisted draft-report validation, user decision records, top-level SQLite log validation, SQLite integrity checks, SQLite migration checks, SQLite export checks, SQLite PRAGMA diagnostics, SQLite backup and retention checks, SQLite vacuum checks, generated SQLite commit-path guardrails, candidate extraction handoff, injection-recovery, reliability, precision-recall, human-review queue, consensus-label, and consensus-export coverage. Benchmark append and compare commands are local workflow helpers for ignored output paths. The reported calibration-by-track coverage, false-positive class coverage, validation dataset coverage, validation readiness counts, benchmark metadata, benchmark run-result metadata, benchmark deltas, target-priority ranking, background ledger counts, background reviewed-workflow counts, reviewed outcome counts, needs-follow-up counts, follow-up test counts, report-readiness counts, draft report counts, user decision counts, SQLite run and outcome counts, SQLite backup counts, candidate extraction handoff counts, recovery rate, false-alarm fraction, reliability errors, precision, recall, F1 score, review queue counts, consensus counts, and consensus export counts are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, per-track survey performance, classification performance estimates, discovery claims, external validation, detections, submission approvals, or scientific performance claims.
+
+Route coverage now requires every `Pathway` enum value to appear in synthetic
+coverage fixtures. The `external_followup_candidate` fixture is enum coverage
+only and does not approve external follow-up.
 
 Top-level SQLite logs under `logs/` are the operational source of truth for local background automation. Validation checks that each run has exactly one outcome, metadata is present, migrations are not required, PRAGMA integrity is healthy, timestamped backups can be written under ignored `logs/backups/`, retention state is inspectable, vacuum maintenance is runnable, network access remains disabled by default, generated databases are not committed, and no external submission approval is present unless explicitly recorded by the user. JSON files remain fixtures, compatibility artifacts, or review-safe exports.
 
@@ -569,7 +587,7 @@ Gate in `validate-all`: `synthetic_missed_injection_rate < 1.0` (at least one in
 .venv/bin/techno-search route-coverage-summary
 ```
 
-Gates in `validate-all`: at least 1 scoring threshold present; at least 2 pathway values have calibration fixture coverage. Scoring config summary reports current v0 thresholds only — not calibrated detection limits. Route coverage identifies which Pathway enum values still lack fixture support.
+Gates in `validate-all`: at least 1 scoring threshold present, all six `Pathway` enum values covered, and zero uncovered pathways. Scoring config summary reports current v0 thresholds only — not calibrated detection limits. Route coverage is synthetic enum coverage; `external_followup_candidate` coverage does not authorize external submission.
 
 ---
 
@@ -652,3 +670,108 @@ Included in `validate-all` for informational purposes. Collects blocking issues 
 ## Pipeline Health Validation
 
 `validate-all` requires `pipeline_total_blocked >= 0` (always passes; the gate confirms the health summary is reachable). Use `pipeline-health-summary` for the full per-track breakdown.
+
+## Operations Readiness Visibility
+
+```bash
+.venv/bin/techno-search operations-readiness-summary
+.venv/bin/techno-search operations-action-plan-summary
+.venv/bin/techno-search operations-action-resolution-summary
+.venv/bin/techno-search operations-blocker-detail-summary
+.venv/bin/techno-search operations-blocker-review-summary
+.venv/bin/techno-search operations-blocker-followup-summary
+.venv/bin/techno-search operations-blocker-followup-progress-summary
+.venv/bin/techno-search operations-blocker-progress-review-summary
+.venv/bin/techno-search operations-blocker-progress-next-actions-summary
+.venv/bin/techno-search operations-blocker-progress-execution-summary
+.venv/bin/techno-search operations-blocker-progress-execution-review-summary
+.venv/bin/techno-search operations-blocker-progress-execution-followup-summary
+.venv/bin/techno-search operations-readiness-digest
+```
+
+`validate-all` includes the operations-readiness summary as visibility rather
+than as a new hard failure gate. The summary combines QC health, open alerts,
+overdue review deadlines, route coverage, validation-readiness blockers,
+curated-intake blockers, submission provenance blockers, pipeline capacity, and
+top-level SQLite log safety fields.
+
+The blocker progress-execution summary is a local provenance layer for ordered
+next actions. It must preserve residual blockers, verified-local exclusions,
+zero live-data authorization, and zero external-submission authorization.
+
+The blocker progress-execution review summary is a local review-provenance
+layer for execution notes. It must preserve residual blockers, verified-local
+exclusions, zero live-data authorization, and zero external-submission
+authorization.
+
+The blocker progress-execution follow-up summary is a local planning layer for
+reviewed execution notes. It must preserve residual blockers, verified-local
+exclusions, zero live-data authorization, and zero external-submission
+authorization.
+
+Use `sqlite-log-bootstrap-summary --db-path logs/techno_search.sqlite3` to
+initialize a local ignored SQLite database and check the integrity and weekly
+digest gates used by operations readiness. This restores SQLite visibility for
+the supplied local database only; it does not clear QC, alert, validation,
+curated-intake, or submission-provenance blockers.
+
+`validate-all` also checks local operations action-resolution records are
+present and that both live-data and external-submission authorization counts
+remain zero. These records document operator status only; they do not clear
+blockers, change candidate scores, or reduce scientific uncertainty.
+Coverage is also checked: every current operations action-plan ID must have a
+resolution record, and missing resolution IDs are reported without clearing or
+downgrading the underlying blocker.
+
+Recommendations are conservative local states:
+
+- `local_only_ready`: local readiness inputs are clear; this still does not authorize real data intake or external submission.
+- `operator_review_required`: local validation is structurally clear, but operators have open work to review.
+- `blocked_for_real_data`: real observation intake or external workflow remains blocked by local provenance, review, SQLite, or safety issues.
+
+The digest is review-safe and must not include large data payloads, API keys,
+live-provider results, or claims of confirmed technosignatures.
+
+The action-plan summary converts readiness blockers into prioritized local
+operator tasks with categories such as `quality_control`, `alerts`,
+`validation_readiness`, `curated_intake`, `submission_provenance`, and
+`sqlite_logs`. These tasks help resolve blockers; they do not clear blockers
+automatically or authorize any external workflow.
+
+The blocker-detail summary expands those current action-plan items into
+fixture-backed local source records such as open alerts, overdue review
+deadlines, blocked pipeline health inputs, validation-readiness records,
+curated-intake records, and submission-provenance gaps. It is traceability for
+operator review only. It does not mutate fixtures, clear blockers, enable live
+data, authorize external submission, or change candidate scores.
+
+The blocker-review summary records local operator review status for those
+blocker-detail evidence bundles. It reports coverage against current action
+IDs, reviewed and unreviewed evidence counts, residual blockers, and
+authorization counts. Review records are provenance only: even full evidence
+review coverage does not clear blockers, authorize live data, authorize
+external submission, mutate SQLite logs, or change candidate scores or
+pathways.
+
+The blocker-followup summary derives next local operator actions from those
+review records. It distinguishes open attention items, local remediation,
+real-data holds, and locally resolved items ready for verification. It is a
+planning aid only and preserves residual blockers plus zero live-data and
+external-submission authorization counts.
+
+The blocker-followup progress summary records local progress notes against
+those next-action IDs. `validate-all` checks progress coverage, recommendation
+consistency, and zero live-data and external-submission authorization counts.
+Progress records do not clear blockers or change scientific interpretation.
+
+The blocker progress-review summary records second-pass local review for
+unresolved progress only. `validate-all` checks review coverage, progress-status
+consistency, residual blocker totals, and disabled authorization gates. Verified
+local progress remains excluded from the unresolved review queue and is not
+reopened by the review summary.
+
+The blocker progress next-actions summary records ordered local tasks for the
+unresolved progress-review queue. `validate-all` checks next-action coverage,
+review-status consistency, priority ordering, residual blocker totals, and
+disabled authorization gates. Next actions are workflow tasks only; they do not
+clear blockers or change scientific interpretation.

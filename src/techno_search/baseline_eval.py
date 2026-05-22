@@ -392,6 +392,7 @@ def route_coverage_summary(
 
     eval_result = evaluate_baseline(calibration_fixture_path, example_candidates_dir)
     results: list[dict[str, Any]] = list(eval_result.get("results", []))
+    all_pathways = {p.value for p in Pathway}
 
     rc_path = route_coverage_fixture_path or _default_route_coverage_fixture_path()
     if rc_path.exists():
@@ -403,9 +404,20 @@ def route_coverage_summary(
             if not candidate_dict:
                 continue
             with suppress(Exception):
-                results.append(_score_and_predict(candidate_dict, classifier))
+                route_result = _score_and_predict(candidate_dict, classifier)
+                declared_pathway = str(
+                    fixture.get("expected_pathway", route_result["expected_pathway"])
+                )
+                if declared_pathway in all_pathways:
+                    route_result["scoring_model_pathway"] = route_result[
+                        "expected_pathway"
+                    ]
+                    route_result["expected_pathway"] = declared_pathway
+                    route_result["match"] = (
+                        route_result["predicted_pathway"] == declared_pathway
+                    )
+                results.append(route_result)
 
-    all_pathways = {p.value for p in Pathway}
     covered_pathways = {r["expected_pathway"] for r in results}
     uncovered_pathways = sorted(all_pathways - covered_pathways)
 

@@ -302,6 +302,18 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "alert_resolution_log",
         "config_version_history",
         "operator_escalation_log",
+        "operations_readiness_summary",
+        "operations_action_plan",
+        "operations_action_resolution",
+        "operations_blocker_detail",
+        "operations_blocker_followup",
+        "operations_blocker_followup_progress",
+        "operations_blocker_progress_execution",
+        "operations_blocker_progress_execution_followup",
+        "operations_blocker_progress_execution_review",
+        "operations_blocker_progress_next_actions",
+        "operations_blocker_progress_review",
+        "operations_blocker_review",
     }
     assert result["background_search_ledger"].endswith(
         "schemas/background_search_ledger.schema.json"
@@ -1115,6 +1127,33 @@ def test_cli_top_level_sqlite_log_commands_validate_background_run(
     assert integrity["ok"] is True
 
     stdout = StringIO()
+    bootstrap_exit_code = main(
+        [
+            "sqlite-log-bootstrap-summary",
+            "--db-path",
+            str(db_path),
+            "--code-commit",
+            "cli-test",
+            "--config-version",
+            "background_priority_v0",
+        ],
+        stdout=stdout,
+    )
+    bootstrap = json.loads(stdout.getvalue())
+    assert bootstrap_exit_code == 0
+    assert bootstrap["ok"] is True
+    assert bootstrap["sqlite_log_initialized"] is True
+    assert bootstrap["sqlite_integrity_ok"] is True
+    assert bootstrap["sqlite_weekly_digest_ok"] is True
+    assert bootstrap["readiness_sqlite_integrity_ok"] is True
+    assert bootstrap["readiness_sqlite_weekly_digest_ok"] is True
+    assert bootstrap["network_access_allowed_count"] == 0
+    assert bootstrap["external_submission_approved_count"] == 0
+    assert bootstrap["validated_action_ids"] == ["ops-action-009", "ops-action-010"]
+    assert bootstrap["does_not_mutate_action_resolution_fixture"] is True
+    assert bootstrap["readiness_recommendation"] == "blocked_for_real_data"
+
+    stdout = StringIO()
     recent_exit_code = main(
         ["sqlite-recent-runs", "--db-path", str(db_path), "--limit", "1"],
         stdout=stdout,
@@ -1413,7 +1452,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 73
+    assert result["schema_count"] == 85
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -1503,6 +1542,326 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert result["top_level_sqlite_log_network_access_allowed_count"] == 0
     assert result["top_level_sqlite_log_external_submission_approved_count"] == 0
+    assert result["operations_readiness_sqlite_log_present"] is True
+    assert result["operations_readiness_sqlite_integrity_ok"] is True
+    assert result["operations_readiness_sqlite_weekly_digest_ok"] is True
+    assert result["operations_action_resolution_record_count"] == 10
+    assert result["operations_action_resolution_expected_action_count"] == 8
+    assert result["operations_action_resolution_covered_action_count"] == 8
+    assert result["operations_action_resolution_missing_action_count"] == 0
+    assert result["operations_action_resolution_stale_resolution_count"] == 2
+    assert result["operations_action_resolution_coverage_fraction"] == 1.0
+    assert result["operations_action_resolution_coverage_complete"] is True
+    assert result["operations_action_resolution_missing_action_ids"] == []
+    assert result["operations_action_resolution_stale_resolution_action_ids"] == [
+        "ops-action-009",
+        "ops-action-010",
+    ]
+    assert result["operations_action_resolution_live_data_authorized_count"] == 0
+    assert (
+        result["operations_action_resolution_external_submission_authorized_count"]
+        == 0
+    )
+    assert result["operations_blocker_detail_count"] == 8
+    assert result["operations_blocker_detail_total_evidence_record_count"] >= 8
+    assert (
+        result["operations_blocker_detail_all_external_authorization_disabled"]
+        is True
+    )
+    assert result["operations_blocker_detail_sqlite_context_is_resolved"] is True
+    assert result["operations_blocker_review_record_count"] == 8
+    assert result["operations_blocker_review_reviewed_evidence_record_count"] == 32
+    assert result["operations_blocker_review_unreviewed_evidence_record_count"] == 0
+    assert result["operations_blocker_review_residual_blocker_total"] == 29
+    assert result["operations_blocker_review_live_data_authorized_count"] == 0
+    assert (
+        result["operations_blocker_review_external_submission_authorized_count"] == 0
+    )
+    assert (
+        result["operations_blocker_review_all_external_authorization_disabled"]
+        is True
+    )
+    assert result["operations_blocker_review_coverage_complete"] is True
+    assert result["operations_blocker_review_all_detail_evidence_reviewed"] is True
+    assert result["operations_blocker_followup_action_count"] == 8
+    assert result["operations_blocker_followup_action_required_count"] == 7
+    assert result["operations_blocker_followup_real_data_hold_count"] == 2
+    assert result["operations_blocker_followup_verification_ready_count"] == 1
+    assert result["operations_blocker_followup_residual_blocker_total"] == 29
+    assert result["operations_blocker_followup_live_data_authorized_count"] == 0
+    assert (
+        result["operations_blocker_followup_external_submission_authorized_count"]
+        == 0
+    )
+    assert (
+        result["operations_blocker_followup_all_external_authorization_disabled"]
+        is True
+    )
+    assert result["operations_blocker_followup_coverage_complete"] is True
+    assert result["operations_blocker_followup_all_detail_evidence_reviewed"] is True
+    assert result["operations_blocker_followup_progress_record_count"] == 8
+    assert result["operations_blocker_followup_progress_unresolved_count"] == 7
+    assert result["operations_blocker_followup_progress_verified_local_count"] == 1
+    assert result["operations_blocker_followup_progress_residual_blocker_total"] == 29
+    assert result["operations_blocker_followup_progress_live_data_authorized_count"] == 0
+    assert (
+        result[
+            "operations_blocker_followup_progress_external_submission_authorized_count"
+        ]
+        == 0
+    )
+    assert (
+        result[
+            "operations_blocker_followup_progress_all_external_authorization_disabled"
+        ]
+        is True
+    )
+    assert result["operations_blocker_followup_progress_coverage_complete"] is True
+    assert (
+        result["operations_blocker_followup_progress_recommendation_mismatch_count"]
+        == 0
+    )
+    assert result["operations_blocker_progress_review_record_count"] == 7
+    assert result["operations_blocker_progress_review_needs_operator_action_count"] == 1
+    assert (
+        result["operations_blocker_progress_review_ready_for_next_local_note_count"]
+        == 4
+    )
+    assert result["operations_blocker_progress_review_blocked_for_real_data_count"] == 2
+    assert result["operations_blocker_progress_review_residual_blocker_total"] == 29
+    assert result["operations_blocker_progress_review_live_data_authorized_count"] == 0
+    assert (
+        result[
+            "operations_blocker_progress_review_external_submission_authorized_count"
+        ]
+        == 0
+    )
+    assert (
+        result[
+            "operations_blocker_progress_review_all_external_authorization_disabled"
+        ]
+        is True
+    )
+    assert result["operations_blocker_progress_review_coverage_complete"] is True
+    assert result["operations_blocker_progress_review_status_mismatch_count"] == 0
+    assert result["operations_blocker_progress_next_actions_record_count"] == 7
+    assert (
+        result[
+            "operations_blocker_progress_next_actions_operator_action_required_count"
+        ]
+        == 1
+    )
+    assert (
+        result["operations_blocker_progress_next_actions_local_note_ready_count"]
+        == 4
+    )
+    assert (
+        result[
+            "operations_blocker_progress_next_actions_blocked_pending_real_data_count"
+        ]
+        == 2
+    )
+    assert (
+        result["operations_blocker_progress_next_actions_residual_blocker_total"]
+        == 29
+    )
+    assert (
+        result["operations_blocker_progress_next_actions_live_data_authorized_count"]
+        == 0
+    )
+    assert (
+        result[
+            "operations_blocker_progress_next_actions_external_submission_authorized_count"
+        ]
+        == 0
+    )
+    assert (
+        result[
+            "operations_blocker_progress_next_actions_all_external_authorization_disabled"
+        ]
+        is True
+    )
+    assert result["operations_blocker_progress_next_actions_coverage_complete"] is True
+    assert result["operations_blocker_progress_next_actions_status_mismatch_count"] == 0
+    assert result["operations_blocker_progress_next_actions_priority_sequence_ok"] is True
+    assert result["operations_blocker_progress_execution_record_count"] == 7
+    assert (
+        result["operations_blocker_progress_execution_awaiting_operator_count"]
+        == 1
+    )
+    assert (
+        result["operations_blocker_progress_execution_local_note_recorded_count"]
+        == 4
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_blocked_pending_real_data_count"
+        ]
+        == 2
+    )
+    assert (
+        result["operations_blocker_progress_execution_residual_blocker_total"]
+        == 29
+    )
+    assert (
+        result["operations_blocker_progress_execution_live_data_authorized_count"]
+        == 0
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_external_submission_authorized_count"
+        ]
+        == 0
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_all_external_authorization_disabled"
+        ]
+        is True
+    )
+    assert result["operations_blocker_progress_execution_coverage_complete"] is True
+    assert result["operations_blocker_progress_execution_status_mismatch_count"] == 0
+    assert result["operations_blocker_progress_execution_residual_mismatch_count"] == 0
+    assert result["operations_blocker_progress_execution_priority_mismatch_count"] == 0
+    assert result["operations_blocker_progress_execution_priority_sequence_ok"] is True
+    assert result["operations_blocker_progress_execution_review_record_count"] == 7
+    assert (
+        result[
+            "operations_blocker_progress_execution_review_awaiting_operator_reviewed_count"
+        ]
+        == 1
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_review_execution_note_reviewed_count"
+        ]
+        == 4
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_review_blocked_pending_real_data_reviewed_count"
+        ]
+        == 2
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_review_residual_blocker_total"
+        ]
+        == 29
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_review_live_data_authorized_count"
+        ]
+        == 0
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_review_external_submission_authorized_count"
+        ]
+        == 0
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_review_all_external_authorization_disabled"
+        ]
+        is True
+    )
+    assert (
+        result["operations_blocker_progress_execution_review_coverage_complete"]
+        is True
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_review_status_mismatch_count"
+        ]
+        == 0
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_review_residual_mismatch_count"
+        ]
+        == 0
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_review_priority_mismatch_count"
+        ]
+        == 0
+    )
+    assert (
+        result["operations_blocker_progress_execution_review_priority_sequence_ok"]
+        is True
+    )
+    assert result["operations_blocker_progress_execution_followup_record_count"] == 7
+    assert (
+        result[
+            "operations_blocker_progress_execution_followup_operator_followup_required_count"
+        ]
+        == 1
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_followup_local_note_followup_ready_count"
+        ]
+        == 4
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_followup_blocked_pending_real_data_count"
+        ]
+        == 2
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_followup_residual_blocker_total"
+        ]
+        == 29
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_followup_live_data_authorized_count"
+        ]
+        == 0
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_followup_external_submission_authorized_count"
+        ]
+        == 0
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_followup_all_external_authorization_disabled"
+        ]
+        is True
+    )
+    assert (
+        result["operations_blocker_progress_execution_followup_coverage_complete"]
+        is True
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_followup_status_mismatch_count"
+        ]
+        == 0
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_followup_residual_mismatch_count"
+        ]
+        == 0
+    )
+    assert (
+        result[
+            "operations_blocker_progress_execution_followup_priority_mismatch_count"
+        ]
+        == 0
+    )
+    assert (
+        result["operations_blocker_progress_execution_followup_priority_sequence_ok"]
+        is True
+    )
     assert result["session_log_count"] == 5
     assert result["session_log_completed_count"] == 3
     assert result["priority_queue_depth"] == 5

@@ -392,6 +392,8 @@ Initialize, summarize, and validate the top-level SQLite logs:
 ```bash
 .venv/bin/techno-search init-logs \
   --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search sqlite-log-bootstrap-summary \
+  --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-summary \
   --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-integrity-summary \
@@ -417,7 +419,7 @@ Initialize, summarize, and validate the top-level SQLite logs:
   --db-path logs/techno_search.sqlite3
 ```
 
-The SQLite log records background runs, exactly one reviewed or needs-follow-up outcome per run, draft-report references, user-decision slots, and validation events. Integrity checks are intended for scheduler health monitoring. Recent-run and needs-follow-up views are small operator summaries. `sqlite-log-export` emits a review-safe JSON summary rather than the full database. `sqlite-log-pragmas` reports foreign-key, journal, and integrity diagnostics; `sqlite-log-backup` writes timestamped ignored backups under `logs/backups/`; `sqlite-log-retention-summary` reports database and backup age/size; and `sqlite-log-vacuum` compacts a local database after backup/review. `sqlite-log-commit-guard` rejects generated top-level databases such as `logs/*.sqlite3`, `logs/*.db`, `logs/*-wal`, `logs/*-shm`, and generated `logs/backups/` databases from commit paths. These are workflow/provenance records only; they are not detections, discoveries, external validation, or authorization to submit externally.
+The SQLite log records background runs, exactly one reviewed or needs-follow-up outcome per run, draft-report references, user-decision slots, and validation events. Integrity checks are intended for scheduler health monitoring. `sqlite-log-bootstrap-summary` initializes the local database and reports integrity, weekly digest, and operations-readiness SQLite gate visibility in one review-safe response; it also reports that `ops-action-009` and `ops-action-010` are validated for the supplied database path without mutating action-resolution fixtures. Recent-run and needs-follow-up views are small operator summaries. `sqlite-log-export` emits a review-safe JSON summary rather than the full database. `sqlite-log-pragmas` reports foreign-key, journal, and integrity diagnostics; `sqlite-log-backup` writes timestamped ignored backups under `logs/backups/`; `sqlite-log-retention-summary` reports database and backup age/size; and `sqlite-log-vacuum` compacts a local database after backup/review. `sqlite-log-commit-guard` rejects generated top-level databases such as `logs/*.sqlite3`, `logs/*.db`, `logs/*-wal`, `logs/*-shm`, and generated `logs/backups/` databases from commit paths. These are workflow/provenance records only; they are not detections, discoveries, external validation, or authorization to submit externally.
 
 Smoke-test scheduler wiring against a temporary artifact directory:
 
@@ -994,6 +996,10 @@ techno-search route-coverage-summary
 ```
 
 Checks which `Pathway` enum values have calibration fixture coverage. Reports covered and uncovered pathway names, per-pathway case counts, and a full-coverage flag. Uncovered pathways indicate areas where synthetic fixture coverage should be extended. Synthetic diagnostic only.
+
+Current route-coverage fixtures exercise every `Pathway` enum value, including
+`external_followup_candidate` as a synthetic enum-coverage case only. That
+coverage does not authorize external submission or imply external validation.
 
 ---
 
@@ -1741,3 +1747,228 @@ techno-search operator-escalation-summary --fixture-path tests/fixtures/operator
 ```
 
 Output fields: `disclaimer`, `schema_version`, `entry_count`, `open_count`, `acknowledged_count`, `resolved_count`, `by_severity`, `by_status`. Escalation severity reflects scheduling priority, not candidate scientific significance — escalation records do not authorize external submission or modify scores.
+## `operations-readiness-summary`
+
+Aggregate local-only operations readiness state across QC health, candidate alerts, review deadlines, pipeline capacity, route coverage, curated intake blockers, submission provenance blockers, and top-level SQLite log safety fields.
+
+```bash
+techno-search operations-readiness-summary
+techno-search operations-readiness-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `recommendation`, `local_validation_ready`, `real_data_blocker_count`, `operator_attention_count`, `outstanding_blockers`, `readiness_gates`, and SQLite snapshot counts. Recommendations are scheduling states only: `local_only_ready`, `operator_review_required`, or `blocked_for_real_data`. They do not authorize live-provider access, real observation intake, external submission, or any detection claim.
+
+## `operations-action-plan-summary`
+
+Translate operations-readiness blockers into prioritized local operator actions.
+
+```bash
+techno-search operations-action-plan-summary
+techno-search operations-action-plan-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `action_count`, `critical_action_count`, `real_data_blocking_action_count`, `operator_review_action_count`, `by_category`, `by_priority`, `by_status`, `next_action`, and `actions`. The action plan is a scheduling aid only. It does not clear blockers automatically, modify scores or pathways, authorize live data, or authorize external submission.
+
+## `operations-action-resolution-summary`
+
+Summarize local action-plan resolution records for operator provenance.
+
+```bash
+techno-search operations-action-resolution-summary
+techno-search operations-action-resolution-summary --fixture-path tests/fixtures/operations_action_resolution.json
+techno-search operations-action-resolution-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`, status counts, `residual_blocker_total`, authorization counts, `expected_action_count`, `covered_action_count`, `missing_action_count`, `coverage_fraction`, `coverage_complete`, `missing_action_ids`, `stale_resolution_action_ids`, `by_status`, `by_category`, `by_operator`, `action_ids`, and `categories_covered`. Resolution records are workflow provenance only. They do not clear blockers, authorize live data, authorize external submission, or imply external validation.
+
+## `operations-blocker-detail-summary`
+
+Expand current operations action-plan items into fixture-backed local source
+records for operator review.
+
+```bash
+techno-search operations-blocker-detail-summary
+techno-search operations-blocker-detail-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `action_count`,
+`detail_count`, `total_evidence_record_count`, `categories_with_details`,
+authorization counts, `readiness_recommendation`,
+`sqlite_visibility_context`, `sqlite_context_is_resolved`, and `details`.
+Detail records may include open alerts, overdue or pending review deadlines,
+blocked pipeline inputs, validation-readiness records, curated-intake records,
+and submission-provenance gaps. The summary is a local traceability aid only:
+it does not mutate fixtures, clear blockers, authorize live data, authorize
+external submission, or change candidate scores.
+
+## `operations-blocker-review-summary`
+
+Summarize local blocker-detail review records for operator provenance.
+
+```bash
+techno-search operations-blocker-review-summary
+techno-search operations-blocker-review-summary --fixture-path tests/fixtures/operations_blocker_review.json
+techno-search operations-blocker-review-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`, status counts,
+`residual_blocker_total`, evidence-record counts, authorization counts,
+coverage fields, `all_detail_evidence_reviewed`, `missing_action_ids`,
+`stale_review_action_ids`, `by_status`, `by_category`, `by_operator`, and
+`records`. Review records document local operator status for blocker-detail
+evidence bundles only. They do not clear readiness blockers, mutate candidate
+scores, change pathways, mutate SQLite logs, authorize live data, authorize
+external submission, or imply external validation.
+
+## `operations-blocker-followup-summary`
+
+Derive next local follow-up actions from blocker-detail review records.
+
+```bash
+techno-search operations-blocker-followup-summary
+techno-search operations-blocker-followup-summary --fixture-path tests/fixtures/operations_blocker_review.json
+techno-search operations-blocker-followup-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `action_count`,
+`action_required_count`, recommendation counts, `residual_blocker_total`,
+evidence-review coverage fields, authorization counts,
+`all_external_authorization_disabled`, `next_action_ids`,
+`verification_ready_action_ids`, `real_data_hold_action_ids`, and `actions`.
+Follow-up recommendations are local planning aids only. They preserve
+residual blockers and disabled authorization gates; they do not clear
+blockers, authorize live data, authorize external submission, or imply
+external validation.
+
+## `operations-blocker-followup-progress-summary`
+
+Summarize local progress notes for blocker follow-up actions.
+
+```bash
+techno-search operations-blocker-followup-progress-summary
+techno-search operations-blocker-followup-progress-summary --fixture-path tests/fixtures/operations_blocker_followup_progress.json
+techno-search operations-blocker-followup-progress-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`, status counts,
+`unresolved_progress_count`, `residual_blocker_total`, authorization counts,
+coverage fields, `recommendation_mismatch_count`, `missing_action_ids`,
+`stale_progress_action_ids`, `by_status`, `by_recommendation`, `by_operator`,
+and `records`. Progress records are workflow notes only. They do not clear
+blockers, authorize live data, authorize external submission, mutate candidate
+scores, or imply external validation.
+
+## `operations-blocker-progress-review-summary`
+
+Summarize second-pass local review for unresolved blocker progress records.
+
+```bash
+techno-search operations-blocker-progress-review-summary
+techno-search operations-blocker-progress-review-summary --fixture-path tests/fixtures/operations_blocker_progress_review.json
+techno-search operations-blocker-progress-review-summary --progress-fixture-path tests/fixtures/operations_blocker_followup_progress.json
+techno-search operations-blocker-progress-review-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`, review-status
+counts, `residual_blocker_total`, authorization counts, coverage fields,
+`status_mismatch_count`, `verified_progress_action_ids`,
+`missing_action_ids`, `stale_review_action_ids`, `by_status`,
+`by_progress_status`, `by_operator`, and `records`. Progress-review records
+cover unresolved progress only. They do not reopen verified-local workflow
+items, clear blockers, authorize live data, authorize external submission,
+mutate candidate scores, or imply external validation.
+
+## `operations-blocker-progress-next-actions-summary`
+
+Summarize ordered local next actions for unresolved blocker progress reviews.
+
+```bash
+techno-search operations-blocker-progress-next-actions-summary
+techno-search operations-blocker-progress-next-actions-summary --fixture-path tests/fixtures/operations_blocker_progress_next_actions.json
+techno-search operations-blocker-progress-next-actions-summary --progress-review-fixture-path tests/fixtures/operations_blocker_progress_review.json
+techno-search operations-blocker-progress-next-actions-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`,
+next-action-status counts, `residual_blocker_total`, authorization counts,
+coverage fields, `status_mismatch_count`, `priority_sequence_ok`,
+`verified_progress_action_ids`, `missing_action_ids`,
+`stale_next_action_ids`, `by_status`, `by_category`, `by_operator`, and
+`records`. Next-action records are local workflow tasks only. They do not
+reopen verified-local workflow items, clear blockers, authorize live data,
+authorize external submission, mutate candidate scores, or imply external
+validation.
+
+## `operations-blocker-progress-execution-summary`
+
+Summarize local execution notes for blocker progress next actions.
+
+```bash
+techno-search operations-blocker-progress-execution-summary
+techno-search operations-blocker-progress-execution-summary --fixture-path tests/fixtures/operations_blocker_progress_execution.json
+techno-search operations-blocker-progress-execution-summary --next-actions-fixture-path tests/fixtures/operations_blocker_progress_next_actions.json
+techno-search operations-blocker-progress-execution-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`,
+execution-status counts, `residual_blocker_total`, authorization counts,
+coverage fields, mismatch counts, `priority_sequence_ok`,
+`verified_progress_action_ids`, `missing_next_action_ids`,
+`stale_execution_next_action_ids`, `by_status`, `by_category`, `by_operator`,
+and `records`. Execution records are local workflow notes only. They do not
+reopen verified-local workflow items, clear blockers, authorize live data,
+authorize external submission, mutate candidate scores, or imply external
+validation.
+
+## `operations-blocker-progress-execution-review-summary`
+
+Summarize local reviews for blocker progress-execution notes.
+
+```bash
+techno-search operations-blocker-progress-execution-review-summary
+techno-search operations-blocker-progress-execution-review-summary --fixture-path tests/fixtures/operations_blocker_progress_execution_review.json
+techno-search operations-blocker-progress-execution-review-summary --execution-fixture-path tests/fixtures/operations_blocker_progress_execution.json
+techno-search operations-blocker-progress-execution-review-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`,
+review-status counts, `residual_blocker_total`, authorization counts,
+coverage fields, mismatch counts, `priority_sequence_ok`,
+`verified_progress_action_ids`, `missing_execution_ids`,
+`stale_review_execution_ids`, `by_status`, `by_execution_status`,
+`by_category`, `by_reviewer`, and `records`. Execution-review records are
+local workflow review notes only. They do not reopen verified-local workflow
+items, clear blockers, authorize live data, authorize external submission,
+mutate candidate scores, or imply external validation.
+
+## `operations-blocker-progress-execution-followup-summary`
+
+Summarize local follow-up planning for blocker progress-execution reviews.
+
+```bash
+techno-search operations-blocker-progress-execution-followup-summary
+techno-search operations-blocker-progress-execution-followup-summary --fixture-path tests/fixtures/operations_blocker_progress_execution_followup.json
+techno-search operations-blocker-progress-execution-followup-summary --execution-review-fixture-path tests/fixtures/operations_blocker_progress_execution_review.json
+techno-search operations-blocker-progress-execution-followup-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`,
+follow-up status counts, `residual_blocker_total`, authorization counts,
+coverage fields, mismatch counts, `priority_sequence_ok`,
+`verified_progress_action_ids`, `missing_review_ids`,
+`stale_followup_review_ids`, `by_status`, `by_review_status`, `by_category`,
+`by_operator`, and `records`. Execution follow-up records are local workflow
+planning notes only. They do not clear blockers, authorize live data,
+authorize external submission, mutate candidate scores, or imply external
+validation.
+
+## `operations-readiness-digest`
+
+Print a review-safe Markdown digest for operator handoff.
+
+```bash
+techno-search operations-readiness-digest
+techno-search operations-readiness-digest --output-path artifacts/operations_readiness.md
+```
+
+The digest intentionally omits large data payloads, API keys, live-provider results, and unsupported claims. It is a local operations handoff, not a scientific result.

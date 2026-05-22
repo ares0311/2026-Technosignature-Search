@@ -541,9 +541,9 @@ Close the pipeline loop with three complementary operational modules: multi-cand
 - [x] `tests/fixtures/operator_escalation_log.json` — 4 entries (critical open, urgent acknowledged, routine resolved, critical resolved)
 - [x] `tests/test_operator_escalation_log.py` — 24 tests
 - [x] CLI: `alert-resolution-summary`, `config-version-history-summary`, `operator-escalation-summary`
-- [x] `validate-all` gates: alert_resolution_entry_count >= 1, config_history_entry_count >= 1, escalation_entry_count >= 1
+- [x] `validate-all` gates: alert_resolution_entry_count >= 1, config_history_entry_count >= 1, operator_escalation_entry_count >= 1
 - [x] `validation-summary` fields: alert_resolution_entry_count, alert_resolution_open_count, config_history_entry_count, operator_escalation_entry_count, operator_escalation_open_count
-- [x] DECISION-050: Alert Resolution Log, Config Version History, And Operator Escalation Log Complete Milestone 17
+- [x] DECISION-064: Alert Resolution Log, Config Version History, And Operator Escalation Log Complete Milestone 17
 
 ## Done When
 
@@ -551,3 +551,99 @@ Close the pipeline loop with three complementary operational modules: multi-cand
 - Config version history covers created, promoted, and deprecated change kinds
 - Operator escalation log covers open, acknowledged, and resolved states with all severity levels
 - All integration tests pass without network access
+
+---
+
+
+# Project Operations Readiness
+
+## Goal
+
+Keep validation, route coverage, and CI scaffolding aligned with the scientific
+guardrails before any non-synthetic validation data or external workflow is
+introduced.
+
+## Tasks
+
+- [x] Non-networked GitHub Actions template kept under `docs/templates/ci.yml`
+- [x] CI promotion caveat documented until publishing has GitHub `workflow` scope
+- [x] Route coverage fixtures cover all 6/6 `Pathway` enum values
+- [x] `validate-all` requires zero uncovered route-coverage pathways
+- [x] Operations-readiness summary aggregates QC, alerts, review deadlines,
+      route coverage, pipeline capacity, submission provenance, and SQLite log
+      safety fields
+- [x] Review-safe operations-readiness Markdown digest added for local operator
+      handoff
+- [x] CI template reports operations readiness without enabling live data
+- [x] Operations action-plan summary translates readiness blockers into
+      prioritized local operator tasks
+- [x] CI template reports operations action-plan visibility without clearing
+      blockers or authorizing external workflow
+- [x] Operations action-resolution summary records local operator status for
+      action-plan items
+- [x] Operations action-resolution coverage verifies every current action-plan
+      ID has a local provenance record
+- [x] SQLite bootstrap summary restores top-level SQLite visibility for a
+      supplied local ignored database path
+- [x] Operations blocker-detail summary traces current action-plan blockers to
+      fixture-backed local source records without clearing blockers
+- [x] Operations blocker-review summary records local review status for
+      blocker-detail evidence bundles without clearing blockers
+- [x] Operations blocker-followup summary derives next local operator actions
+      from blocker-review records without clearing blockers
+- [x] Operations blocker-followup progress summary tracks progress notes
+      against follow-up action IDs without clearing blockers
+- [x] Operations blocker progress-review summary covers unresolved progress
+      records without reopening verified-local workflow items
+- [x] Operations blocker progress next-actions summary orders unresolved
+      progress-review tasks without clearing blockers
+- [x] Operations blocker progress-execution summary records local execution
+      notes against next-action IDs without clearing blockers
+- [x] Operations blocker progress-execution review summary reviews execution
+      notes without clearing blockers
+- [x] Operations blocker progress-execution follow-up summary plans reviewed
+      execution follow-up without clearing blockers
+- [x] CI template reports action-resolution visibility without clearing
+      blockers or authorizing live data or external submission
+
+## Guardrails
+
+- CI must not enable live provider access by default.
+- `external_followup_candidate` route coverage is synthetic enum coverage only.
+- Real observation intake remains blocked until data policy, provenance,
+  licensing, labeling, and external-review requirements are satisfied.
+- `blocked_for_real_data` is an operations recommendation only. It is not a
+  scientific classification and does not modify candidate scores or pathways.
+- Operations action plans are task lists only; they do not clear blockers
+  automatically and do not authorize live data access.
+- Operations action-resolution records are workflow provenance only; they do not
+  clear blockers or authorize external submission.
+- Action-resolution coverage is an audit check only; full coverage does not
+  mean the underlying blockers are cleared.
+- SQLite bootstrap visibility is local to the supplied database path and does
+  not clear non-SQLite operations blockers.
+- Blocker-detail summaries are traceability aids only; fixture-backed source
+  records help operator review but do not clear blockers or authorize external
+  workflow.
+- Blocker-review records are local provenance only; full evidence coverage
+  does not clear readiness blockers, mutate scores, or authorize external
+  workflow.
+- Blocker-followup recommendations are local planning aids only. They preserve
+  residual blockers and disabled authorization gates.
+- Blocker-followup progress records are workflow notes only. They do not clear
+  blockers or authorize live data or external submission.
+- Blocker progress-review records are second-pass local notes only. They cover
+  unresolved progress, preserve verified-local exclusions, and do not authorize
+  live data or external submission.
+- Blocker progress next-action records are local task ordering only. They do
+  not clear blockers, reopen verified-local items, or authorize live data or
+  external submission.
+- Blocker progress-execution records are local workflow notes only. They do
+  not clear blockers, reopen verified-local items, or authorize live data or
+  external submission.
+- Blocker progress-execution review records are local workflow review notes
+  only. They do not clear blockers, reopen verified-local items, or authorize
+  live data or external submission.
+- Blocker progress-execution follow-up records are local workflow planning
+  notes only. They do not clear blockers, reopen verified-local items, or
+  authorize live data or external submission.

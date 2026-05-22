@@ -1151,7 +1151,398 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 
 ---
 
-## DECISION-050: Alert Resolution Log, Config Version History, And Operator Escalation Log Complete Milestone 17
+## DECISION-050: CI Template And Full Route Coverage Are Operational Readiness Gates
+
+**Date**: 2026-05-19
+
+**Status**: accepted
+
+**Context**: The project needs a reproducible CI contract, but the current
+publishing path must not add `.github/workflows/*.yml` until a token with
+GitHub `workflow` scope is available. Route coverage also had one uncovered
+`Pathway` enum value, `external_followup_candidate`.
+
+**Decision**: Keep the GitHub Actions workflow as a non-networked template under
+`docs/templates/ci.yml` and document the workflow-scope promotion caveat in
+`docs/CI.md`. The template mirrors local validation and keeps
+`TECHNO_SEARCH_ENABLE_LIVE_DATA=0`.
+
+Extend route-coverage fixtures so every `Pathway` enum value is represented.
+The `external_followup_candidate` fixture is synthetic enum coverage only. It
+does not authorize external submission, does not claim external validation, and
+does not modify scoring or pathway logic.
+
+**Consequences**: `validate-all` now gates on full route coverage with zero
+uncovered pathways. CI promotion remains a manual publishing step until
+workflow-scope permissions are available. Scientific guardrails remain
+unchanged.
+
+---
+
+## DECISION-051: Operations Readiness Is A Local-Only Pre-Real-Data Gate
+
+**Date**: 2026-05-19
+
+**Status**: accepted
+
+**Context**: Health gates can pass while the repository still has operational
+work outstanding: QC blockers, open alerts, overdue review deadlines, pipeline
+capacity strain, curated-intake blockers, submission-provenance gaps, and
+SQLite log safety checks. These signals need one review-safe operator surface
+before any real observation intake, live-provider workflow, or external
+submission is considered.
+
+**Decision**: Add an operations-readiness summary and Markdown digest as
+local-only dashboards. The summary aggregates QC health, candidate alerts,
+review deadlines, pipeline health, route coverage, validation readiness,
+curated dataset intake, submission readiness, user decision records, and
+top-level SQLite log state. It reports one conservative recommendation:
+`local_only_ready`, `operator_review_required`, or `blocked_for_real_data`.
+
+`blocked_for_real_data` is an operations state only. It does not classify a
+candidate scientifically, does not modify candidate scores or pathways, does
+not authorize live-provider access, and does not authorize external submission.
+
+**Consequences**: `validation-summary` exposes operations-readiness fields and
+the CI template reports the summary with live data disabled. The summary is
+visibility for operators, not a claim of discovery or external validation.
+
+---
+
+## DECISION-052: Operations Action Plans Translate Readiness Blockers Into Local Operator Tasks
+
+**Date**: 2026-05-19
+
+**Status**: accepted
+
+**Context**: DECISION-051 added operations-readiness visibility, but visibility
+alone does not tell operators what to do next. Readiness blockers need a
+review-safe local task list that preserves uncertainty and does not imply that
+blockers have been cleared.
+
+**Decision**: Add an operations action-plan summary that converts
+operations-readiness blockers into prioritized local actions. Actions are
+categorized by source, including quality control, alerts, review deadlines,
+pipeline health, validation readiness, curated intake, submission provenance,
+route coverage, SQLite logs, network access, and external submission records.
+Each action records priority, status, required local action, evidence field,
+and blocker count.
+
+Action-plan status is operational only. An action plan does not modify scores,
+pathways, candidate packets, SQLite logs, or review records. It does not clear
+blockers automatically, authorize live-provider access, authorize external
+submission, or constitute external validation.
+
+**Consequences**: `validation-summary` exposes action-plan counts and the CI
+template reports the action plan with live data disabled. Operations blockers
+now have a deterministic local task surface before any real-data workflow is
+considered.
+
+---
+
+## DECISION-053: Operations Action Resolution Records Are Local Workflow Provenance
+
+**Date**: 2026-05-19
+
+**Status**: accepted
+
+**Context**: Operations action plans expose what operators should review next,
+but the repository also needs local provenance for whether each task is open,
+acknowledged, deferred, or resolved. That status must not be confused with
+scientific validation, live-data approval, or external-submission approval.
+
+**Decision**: Add fixture-backed operations action-resolution records. Each
+record stores an action id, category, operator id, status, evidence note,
+residual blocker count, and explicit live-data and external-submission
+authorization booleans. The summary command reports status counts, category
+coverage, operator coverage, residual blockers, authorization counts, and
+coverage against the current operations action-plan IDs.
+
+Resolution records are workflow provenance only. They do not clear readiness
+blockers, change candidate scores or pathways, authorize live-provider access,
+authorize external submission, or constitute external validation.
+
+**Consequences**: `validate-all` requires at least one action-resolution record
+and requires live-data and external-submission authorization counts to remain
+zero. It also requires every current action-plan ID to have a resolution record.
+`validation-summary` exposes action-resolution counts and coverage fields, and
+the CI template reports the summary with live data disabled.
+
+---
+
+## DECISION-054: SQLite Bootstrap Summary Restores Local Log Visibility Only
+
+**Date**: 2026-05-19
+
+**Status**: accepted
+
+**Context**: Operations readiness can be blocked by missing top-level SQLite
+visibility even when the project health gates pass. Operators need one local
+command that initializes the ignored SQLite database and reports the integrity
+and weekly-digest gates used by readiness checks.
+
+**Decision**: Add `sqlite-log-bootstrap-summary` as a local-only bootstrap and
+smoke summary. The command initializes the supplied SQLite path, checks
+integrity, checks the review-safe weekly digest, and runs operations readiness
+against the same database. It reports that `ops-action-009` and
+`ops-action-010` are validated for that database path, but it does not mutate
+action-resolution fixtures.
+
+**Consequences**: SQLite readiness gates can be validated with a single command
+while generated databases remain ignored under `logs/`. The command does not
+enable live data, authorize external submission, clear non-SQLite blockers, or
+constitute external validation.
+
+---
+
+## DECISION-055: Operations Blocker Details Trace Actions To Local Evidence
+
+**Date**: 2026-05-20
+
+**Status**: accepted
+
+**Context**: Operations action plans identify the next local review tasks, but
+operators still need to see which fixture-backed source records explain each
+blocker before changing any status. SQLite visibility can be green while QC,
+alerts, deadlines, pipeline health, validation readiness, curated intake, and
+submission provenance remain blocked.
+
+**Decision**: Add `operations-blocker-detail-summary` as a local-only
+traceability surface. The command expands the current operations action plan
+into source summaries and compact evidence records for open alerts, review
+deadlines, pipeline-health inputs, validation-readiness records,
+curated-intake records, and submission-provenance gaps. SQLite log state is
+reported as context, not as a reason to clear non-SQLite blockers.
+
+**Consequences**: Operators can review the source records behind each current
+action-plan item without enabling live data or external submission. The summary
+does not mutate fixtures, clear blockers, change candidate scores or pathways,
+authorize live-provider access, authorize external submission, or constitute
+external validation.
+
+---
+
+## DECISION-056: Operations Blocker Review Records Preserve Evidence Review Provenance
+
+**Date**: 2026-05-20
+
+**Status**: accepted
+
+**Context**: DECISION-055 exposes blocker-detail evidence records for current
+operations actions. The repository also needs local provenance for whether
+those evidence bundles have been reviewed, which operator reviewed them, and
+how many residual blockers remain. This provenance must not be confused with
+clearing readiness blockers or approving real-data workflows.
+
+**Decision**: Add fixture-backed operations blocker-review records and an
+`operations-blocker-review-summary` command. Each record links to an
+operations action id, category, operator, review status, evidence counts,
+residual blocker count, and explicit live-data and external-submission
+authorization booleans. The summary reports coverage against current
+blocker-detail action IDs, reviewed and unreviewed evidence counts, residual
+blockers, stale or missing review IDs, and authorization counts.
+
+**Consequences**: Operators can audit local evidence-review provenance for
+current blocker-detail bundles. Full review coverage does not clear blockers,
+change candidate scores or pathways, mutate SQLite logs, authorize
+live-provider access, authorize external submission, or constitute external
+validation.
+
+---
+
+## DECISION-057: Operations Blocker Follow-Up Is A Local Planning Rollup Only
+
+**Date**: 2026-05-20
+
+**Status**: accepted
+
+**Context**: DECISION-056 records local review provenance for blocker-detail
+evidence bundles, but operators still need a compact next-action ordering that
+distinguishes open attention items, local remediation, real-data holds, and
+workflow items ready for local verification. That ordering must not be treated
+as blocker clearance or as approval for live-provider access.
+
+**Decision**: Add `operations-blocker-followup-summary` as a derived local
+planning rollup. The command consumes blocker-detail and blocker-review
+summaries, preserves residual blocker counts and evidence-review coverage, and
+derives recommendation categories such as `operator_attention_required`,
+`continue_local_remediation`, `hold_for_real_data_evidence`, and
+`verify_resolved_locally`.
+
+**Consequences**: Operators get a deterministic local follow-up queue without
+changing blocker status. The summary is not a scientific result, does not
+clear blockers, does not change candidate scores or pathways, does not enable
+live data, does not authorize external submission, and does not constitute
+external validation.
+
+---
+
+## DECISION-058: Blocker Follow-Up Progress Records Preserve Local Notes Only
+
+**Date**: 2026-05-21
+
+**Status**: accepted
+
+**Context**: DECISION-057 creates a deterministic local follow-up queue, but
+operators need a separate provenance layer for what progress has been made
+against each next-action ID. Progress notes must not be confused with clearing
+the underlying blocker or authorizing real-data workflows.
+
+**Decision**: Add fixture-backed operations blocker-followup progress records
+and an `operations-blocker-followup-progress-summary` command. Each record
+links to a follow-up action ID, category, expected recommendation, progress
+status, operator, evidence note, residual blocker count, and explicit
+live-data and external-submission authorization booleans. The summary reports
+coverage against current follow-up actions, recommendation mismatches, status
+counts, residual blockers, and authorization counts.
+
+**Consequences**: Operators can track local progress without mutating
+blocker-review or blocker-followup records. Progress records do not clear
+blockers, change candidate scores or pathways, enable live data, authorize
+external submission, or constitute external validation.
+
+---
+
+## DECISION-059: Progress Review Covers Only Unresolved Blocker Progress
+
+**Date**: 2026-05-21
+
+**Status**: accepted
+
+**Context**: DECISION-058 adds local progress notes for every blocker-followup
+action, including one verified-local workflow item. Operators need a second-pass
+review queue for unresolved progress without accidentally reopening local
+verification closures or implying that residual blockers have been cleared.
+
+**Decision**: Add fixture-backed operations blocker progress-review records and
+an `operations-blocker-progress-review-summary` command. The review fixture
+covers unresolved progress IDs only, reports verified-local progress IDs as
+excluded from the unresolved queue, checks coverage and progress-status
+consistency, and preserves residual blocker totals plus explicit live-data and
+external-submission authorization booleans.
+
+**Consequences**: `validate-all`, `validation-summary`, and the CI template
+gain progress-review visibility without clearing blockers, mutating candidate
+scores or pathways, enabling live data, authorizing external submission, or
+constituting external validation.
+
+---
+
+## DECISION-060: Progress Next Actions Are Local Task Ordering Only
+
+**Date**: 2026-05-21
+
+**Status**: accepted
+
+**Context**: DECISION-059 identifies unresolved blocker progress-review records,
+but operators still need an ordered local work queue that distinguishes direct
+operator action, next local notes, and real-data holds. This queue must not be
+treated as blocker clearance, external submission readiness, or scientific
+validation.
+
+**Decision**: Add fixture-backed operations blocker progress next-action records
+and an `operations-blocker-progress-next-actions-summary` command. Each record
+links to an unresolved progress-review action ID and review ID, carries a
+next-action status, priority rank, operator, action note, residual blocker
+count, and explicit live-data and external-submission authorization booleans.
+The summary reports coverage against unresolved progress-review records,
+status consistency, priority ordering, verified-local exclusions, residual
+blockers, and authorization counts.
+
+**Consequences**: Operators get a deterministic local task queue for the
+unresolved progress-review layer. Next-action records do not clear blockers,
+reopen verified-local workflow items, change candidate scores or pathways,
+enable live data, authorize external submission, or constitute external
+validation.
+
+---
+
+## DECISION-061: Progress Execution Notes Preserve Blockers
+
+**Date**: 2026-05-21
+
+**Status**: accepted
+
+**Context**: DECISION-060 adds an ordered local work queue for unresolved
+progress-review records. Operators need a provenance layer for what was
+locally recorded against each next-action ID, but execution notes must not be
+treated as blocker clearance, live-data authorization, external submission
+readiness, or scientific validation.
+
+**Decision**: Add fixture-backed operations blocker progress-execution records
+and an `operations-blocker-progress-execution-summary` command. Each record
+links to a next-action ID and action ID, carries the next-action status,
+execution status, priority rank, operator, execution note, residual blocker
+count, and explicit live-data and external-submission authorization booleans.
+The summary reports coverage against progress next-action IDs, status,
+residual, and priority mismatches, verified-local exclusions, residual
+blockers, and authorization counts.
+
+**Consequences**: Operators get local execution-note provenance for the ordered
+next-action queue. Execution records do not clear blockers, reopen
+verified-local workflow items, change candidate scores or pathways, enable
+live data, authorize external submission, or constitute external validation.
+
+---
+
+## DECISION-062: Progress Execution Reviews Are Local Provenance Only
+
+**Date**: 2026-05-21
+
+**Status**: accepted
+
+**Context**: DECISION-061 records local execution notes against ordered
+progress next-action IDs. Operators need a review layer for those execution
+notes, but review coverage must not imply that residual blockers have been
+cleared or that real-data or external-submission gates have changed.
+
+**Decision**: Add fixture-backed operations blocker progress-execution review
+records and an `operations-blocker-progress-execution-review-summary` command.
+Each record links to an execution ID, next-action ID, and action ID, carries
+the execution status, review status, priority rank, reviewer, review note,
+residual blocker count, and explicit live-data and external-submission
+authorization booleans. The summary reports coverage against progress
+execution IDs, status, residual, and priority mismatches, verified-local
+exclusions, residual blockers, and authorization counts.
+
+**Consequences**: Operators get local review provenance for execution notes.
+Execution-review records do not clear blockers, reopen verified-local workflow
+items, change candidate scores or pathways, enable live data, authorize
+external submission, or constitute external validation.
+
+---
+
+## DECISION-063: Progress Execution Follow-Up Is Local Planning Only
+
+**Date**: 2026-05-21
+
+**Status**: accepted
+
+**Context**: DECISION-062 adds local review provenance for progress-execution
+notes. Operators still need a follow-up planning layer for reviewed execution
+records, especially records requiring operator follow-up or held pending real
+data. This layer must not be interpreted as blocker clearance, real-data
+authorization, external submission readiness, or scientific validation.
+
+**Decision**: Add fixture-backed operations blocker progress-execution
+follow-up records and an
+`operations-blocker-progress-execution-followup-summary` command. Each record
+links to a review ID, execution ID, next-action ID, and action ID; carries the
+review status, follow-up status, priority rank, operator, planned timestamp,
+follow-up note, residual blocker count, and explicit live-data and
+external-submission authorization booleans. The summary reports coverage
+against progress-execution review IDs, status, residual, and priority
+mismatches, verified-local exclusions, residual blockers, and authorization
+counts.
+
+**Consequences**: Operators get deterministic local planning visibility for
+reviewed execution notes. Follow-up records do not clear blockers, reopen
+verified-local workflow items, change candidate scores or pathways, enable
+live data, authorize external submission, or constitute external validation.
+
+---
+
+## DECISION-064: Alert Resolution Log, Config Version History, And Operator Escalation Log Complete Milestone 17
 
 **Date**: 2026-05-22
 
@@ -1167,4 +1558,4 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 
 **Operator escalation log**: structured log of inter-operator escalations tracking when an operator transfers responsibility for a candidate or alert. Severity levels are routine, urgent, and critical; statuses are open, acknowledged, and resolved. Escalation severity reflects scheduling priority only — not candidate scientific significance. Escalation records do not modify scores or pathway routing and do not authorize external submission.
 
-**Consequences**: `validate-all` gates enforce `alert_resolution_entry_count >= 1`, `config_history_entry_count >= 1`, `escalation_entry_count >= 1`. SCHEMA_FILENAMES grows 70→73. Milestone 17 is complete. Scientific guardrails remain unchanged.
+**Consequences**: `validate-all` gates enforce `alert_resolution_entry_count >= 1`, `config_history_entry_count >= 1`, `operator_escalation_entry_count >= 1`. SCHEMA_FILENAMES grows to 73. Milestone 17 is complete. Scientific guardrails remain unchanged.

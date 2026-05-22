@@ -447,9 +447,22 @@ Run local validation summaries:
 ```bash
 .venv/bin/techno-search validate-all
 .venv/bin/techno-search validation-summary
+.venv/bin/techno-search operations-readiness-summary
+.venv/bin/techno-search operations-action-plan-summary
+.venv/bin/techno-search operations-action-resolution-summary
+.venv/bin/techno-search operations-blocker-detail-summary
+.venv/bin/techno-search operations-blocker-review-summary
+.venv/bin/techno-search operations-blocker-followup-summary
+.venv/bin/techno-search operations-blocker-followup-progress-summary
+.venv/bin/techno-search operations-blocker-progress-review-summary
+.venv/bin/techno-search operations-blocker-progress-next-actions-summary
+.venv/bin/techno-search operations-blocker-progress-execution-summary
+.venv/bin/techno-search operations-blocker-progress-execution-review-summary
+.venv/bin/techno-search operations-blocker-progress-execution-followup-summary
 ```
 
-👉 See [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md)
+👉 See [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md) and the non-networked CI
+template guidance in [`docs/CI.md`](docs/CI.md).
 
 ---
 
@@ -537,6 +550,7 @@ To inspect what the passive/background system has already searched, run:
 .venv/bin/techno-search validate-draft-reports artifacts/background_draft_reports
 .venv/bin/techno-search user-decision-summary
 .venv/bin/techno-search init-logs
+.venv/bin/techno-search sqlite-log-bootstrap-summary
 .venv/bin/techno-search sqlite-log-summary
 .venv/bin/techno-search sqlite-log-integrity-summary
 .venv/bin/techno-search sqlite-recent-runs
@@ -553,7 +567,7 @@ To inspect what the passive/background system has already searched, run:
   --artifact-dir artifacts/background_scheduler_dry_run
 ```
 
-The ledger summary reports searched targets, candidate counts, blocking issues, conservative pathway labels, and run IDs. The reviewed-log summary captures targets that do not currently require follow-up. The needs-follow-up summary captures targets requiring mandatory local tests, human review, and possible report preparation. Follow-up test and report-readiness summaries then show whether mandatory local checks are complete, whether a conservative draft report is allowed, and which top-three review destinations are recommended. Draft follow-up report summaries preserve evidence, negative evidence, uncertainty, limitations, blockers, and next steps; the writer can persist Markdown plus a manifest under ignored `artifacts/` paths. A small persisted example is committed under [`examples/background_draft_reports`](examples/background_draft_reports) for documentation review and can be inspected with `validate-draft-reports examples/background_draft_reports`. User-decision summaries preserve explicit choices to request more tests or close as reviewed while keeping external submission disabled unless the user explicitly approves it. The top-level SQLite log commands initialize, summarize, query, export, check migration status, print a non-destructive migration plan, print a review-safe weekly digest, inspect PRAGMA health, create ignored local backups, summarize retention state, compact the database with `VACUUM`, and validate `logs/techno_search.sqlite3`. The scheduler dry-run writes temporary local artifacts without enabling live provider access. Negative searches must still be logged because they are part of the reproducibility record.
+The ledger summary reports searched targets, candidate counts, blocking issues, conservative pathway labels, and run IDs. The reviewed-log summary captures targets that do not currently require follow-up. The needs-follow-up summary captures targets requiring mandatory local tests, human review, and possible report preparation. Follow-up test and report-readiness summaries then show whether mandatory local checks are complete, whether a conservative draft report is allowed, and which top-three review destinations are recommended. Draft follow-up report summaries preserve evidence, negative evidence, uncertainty, limitations, blockers, and next steps; the writer can persist Markdown plus a manifest under ignored `artifacts/` paths. A small persisted example is committed under [`examples/background_draft_reports`](examples/background_draft_reports) for documentation review and can be inspected with `validate-draft-reports examples/background_draft_reports`. User-decision summaries preserve explicit choices to request more tests or close as reviewed while keeping external submission disabled unless the user explicitly approves it. The top-level SQLite log commands initialize, bootstrap readiness visibility, summarize, query, export, check migration status, print a non-destructive migration plan, print a review-safe weekly digest, inspect PRAGMA health, create ignored local backups, summarize retention state, compact the database with `VACUUM`, and validate `logs/techno_search.sqlite3`. The scheduler dry-run writes temporary local artifacts without enabling live provider access. Negative searches must still be logged because they are part of the reproducibility record.
 
 Operators can also clean up the ignored `artifacts/` directory between sessions:
 
@@ -625,6 +639,16 @@ Recommended recalibration checks:
 .venv/bin/techno-search benchmark-run-summary
 .venv/bin/techno-search benchmark-run-compare \
   --results-path artifacts/benchmark_run_results.json
+.venv/bin/techno-search operations-readiness-digest
+.venv/bin/techno-search operations-blocker-detail-summary
+.venv/bin/techno-search operations-blocker-review-summary
+.venv/bin/techno-search operations-blocker-followup-summary
+.venv/bin/techno-search operations-blocker-followup-progress-summary
+.venv/bin/techno-search operations-blocker-progress-review-summary
+.venv/bin/techno-search operations-blocker-progress-next-actions-summary
+.venv/bin/techno-search operations-blocker-progress-execution-summary
+.venv/bin/techno-search operations-blocker-progress-execution-review-summary
+.venv/bin/techno-search operations-blocker-progress-execution-followup-summary
 .venv/bin/techno-search validate-all
 ```
 
@@ -762,6 +786,7 @@ In v0, the committed ledger fixture is summarized by:
 .venv/bin/techno-search user-decision-summary
 .venv/bin/techno-search candidate-extraction-handoff-summary
 .venv/bin/techno-search init-logs
+.venv/bin/techno-search sqlite-log-bootstrap-summary
 .venv/bin/techno-search sqlite-log-summary
 .venv/bin/techno-search sqlite-log-integrity-summary
 .venv/bin/techno-search sqlite-recent-runs
@@ -827,6 +852,11 @@ Release-grade local validation:
 git diff --check
 ```
 
+The GitHub Actions template lives at `docs/templates/ci.yml` until the
+publishing token has GitHub `workflow` scope. It mirrors the local validation
+gate, keeps `TECHNO_SEARCH_ENABLE_LIVE_DATA=0`, and also runs
+`techno-search validate-all` plus `techno-search health`.
+
 Scientific quality gates:
 
 - Default tests must be deterministic and non-networked.
@@ -851,6 +881,19 @@ Scientific quality gates:
 | Benchmark drift | Append-only local benchmark run results and repeated-run comparison | `benchmark-run-append`, `benchmark-run-compare` |
 | Unreviewed background automation | Reviewed workflow summary for scheduling-only and negative-result ledger entries | `background-reviewed-workflow-summary` |
 | Premature candidate extraction | Local handoff contract before target selection becomes candidate packet generation | `candidate-extraction-handoff-summary` |
+| Real-data workflow before operations readiness | Local readiness dashboard surfaces QC, alert, review, route, provenance, and SQLite blockers | `operations-readiness-summary` |
+| Readiness blockers lack owner actions | Local action plan turns blockers into prioritized operator tasks | `operations-action-plan-summary` |
+| Action-plan items lack resolution provenance | Local resolution records cover every current action-plan ID while tracking open, acknowledged, deferred, and resolved operator status without clearing blockers | `operations-action-resolution-summary` |
+| Action-plan blockers lack source evidence | Local blocker-detail summary expands each current action into fixture-backed records without clearing blockers | `operations-blocker-detail-summary` |
+| Blocker-detail evidence lacks review provenance | Local blocker-review records cover current action IDs and evidence counts while preserving residual blockers | `operations-blocker-review-summary` |
+| Reviewed blockers lack local next-action ordering | Local blocker-followup summary derives operator attention, remediation, real-data hold, and verification actions without clearing blockers | `operations-blocker-followup-summary` |
+| Follow-up actions lack progress provenance | Local blocker-followup progress records track progress notes, residual blockers, and recommendation consistency without clearing blockers | `operations-blocker-followup-progress-summary` |
+| Unresolved progress lacks second-pass review | Local blocker progress-review records cover unresolved progress only while preserving verified-local closures and disabled authorization gates | `operations-blocker-progress-review-summary` |
+| Unresolved progress reviews lack ordered local work | Local blocker progress next-action records order unresolved review items without reopening verified-local closures or changing authorization gates | `operations-blocker-progress-next-actions-summary` |
+| Ordered local work lacks execution notes | Local blocker progress-execution records track next-action execution notes without clearing blockers or changing authorization gates | `operations-blocker-progress-execution-summary` |
+| Execution notes lack review provenance | Local blocker progress-execution review records review execution notes without clearing blockers or changing authorization gates | `operations-blocker-progress-execution-review-summary` |
+| Execution reviews lack follow-up planning | Local blocker progress-execution follow-up records plan reviewed execution follow-up without clearing blockers or changing authorization gates | `operations-blocker-progress-execution-followup-summary` |
+| CI drift or accidental live access | Template stays non-networked under `docs/templates/` until workflow-scope publishing is available | `docs/CI.md`, `docs/templates/ci.yml` |
 
 👉 See [`docs/VALIDATION.md`](docs/VALIDATION.md)
 

@@ -178,6 +178,46 @@ The project will support three tracks from day one:
 - [x] Cross-track candidate cross-reference schema, fixture, and summary CLI added
 - [x] Persisted-report reproducibility verification helper and CLI added
 - [x] Cross-track and reproducibility wiring added to `validate-all` and `validation-summary`
+- [x] Non-networked CI template hardened under `docs/templates/ci.yml`
+- [x] CI guidance added under `docs/CI.md`
+- [x] Route coverage extended to all 6/6 `Pathway` enum values
+- [x] `validate-all` route-coverage gate now requires zero uncovered pathways
+- [x] Operations-readiness summary and review-safe digest added for local-only
+      operator handoff
+- [x] Operations-readiness visibility added to `validation-summary` and CI
+      template without enabling live data
+- [x] Operations action-plan summary added to prioritize local blocker
+      resolution tasks
+- [x] Operations action-plan visibility added to `validation-summary` and CI
+      template without clearing blockers automatically
+- [x] Operations action-resolution records added for local operator provenance
+      across open, acknowledged, deferred, and resolved actions
+- [x] Operations action-resolution visibility added to `validation-summary` and
+      CI without authorizing live data or external submission
+- [x] Operations action-resolution coverage now checks every current action-plan
+      ID has a local provenance record
+- [x] SQLite bootstrap summary added to restore top-level log visibility for a
+      supplied local ignored database path
+- [x] Operations blocker-detail summary added to trace action-plan blockers to
+      fixture-backed local source records without clearing blockers
+- [x] Operations blocker-review records added to preserve local review
+      provenance for blocker-detail evidence bundles without clearing blockers
+- [x] Operations blocker-followup summary added to derive next local operator
+      actions from blocker-review records without clearing blockers
+- [x] Operations blocker-followup progress records added to track local
+      progress notes without clearing blockers or enabling external workflow
+- [x] Operations blocker progress-review records added for unresolved progress
+      only, preserving verified-local closures and disabled authorization gates
+- [x] Operations blocker progress next-action records added to order unresolved
+      review items without clearing blockers or enabling external workflow
+- [x] Operations blocker progress-execution records added to capture local
+      next-action execution notes without clearing blockers or enabling
+      external workflow
+- [x] Operations blocker progress-execution review records added to review
+      execution notes without clearing blockers or enabling external workflow
+- [x] Operations blocker progress-execution follow-up records added to plan
+      reviewed execution follow-up without clearing blockers or enabling
+      external workflow
 
 ---
 
@@ -230,7 +270,7 @@ The project will support three tracks from day one:
 - [x] Observation efficiency summary (`observation-efficiency-summary`) with per-track rates
 - [x] DECISION-031: Scoring Config And Route Coverage Are Required Local Validation Gates
 - [x] 29 JSON schema artifacts (added scoring_config_summary)
-- [x] Route coverage extended to 5/6 Pathway values via dedicated route-coverage fixtures
+- [x] Route coverage extended to 6/6 Pathway values via dedicated route-coverage fixtures
 - [x] Per-track sensitivity config summary (`sensitivity-config-summary`) — synthetic weights audit
 - [x] Candidate triage notes schema (`candidate_triage_v1`), fixture, loader, and `triage-summary` CLI
 - [x] DECISION-032: Candidate Triage And Sensitivity Config Are Validated Scheduling Aids
@@ -240,17 +280,32 @@ The project will support three tracks from day one:
 
 ## Recently Completed (this iteration)
 
-- [x] Candidate observation notes schema (`candidate_observation_notes_v1`), fixture (5 notes), loader, and `observation-notes-summary` CLI
-- [x] Epoch plan schema (`epoch_plan_v1`), fixture (5 entries), loader, and `epoch-plan-summary` CLI
-- [x] Aggregate blockers summary (`aggregate-blockers-summary`) consolidating triage, lifecycle, observation, and handoff issues
-- [x] 37 JSON schema artifacts (added candidate_observation_notes and epoch_plan)
-- [x] 582 tests passing, 92% coverage, validate-all ok=True
+- [x] CI template now runs pytest, Ruff, mypy, whitespace check, `validate-all`, and `health` with live data disabled
+- [x] CI workflow-scope caveat documented in `docs/CI.md` and release checklist
+- [x] Synthetic route coverage now includes `external_followup_candidate` without authorizing external submission
+- [x] Route coverage summary reports 6/6 Pathway values covered and zero uncovered pathways
+- [x] Operations readiness now reports local-only states: `local_only_ready`, `operator_review_required`, and `blocked_for_real_data`
+- [x] Review-safe operations digest added without large payloads, live-provider results, or unsupported claims
+- [x] Operations action plan now converts readiness blockers into prioritized local operator tasks
+- [x] Operations action resolution now records operator status while preserving residual blockers and zero authorization counts
+- [x] Operations action-resolution coverage now reports full action-plan ID coverage without clearing blockers
+- [x] SQLite bootstrap summary now reports integrity and weekly-digest readiness gates without mutating resolution fixtures
+- [x] Operations blocker-detail summary now expands current action-plan blockers into local source evidence while keeping live-data and external-submission authorization counts at zero
+- [x] Operations blocker-review summary now covers current blocker-detail actions and evidence counts while preserving residual blockers and zero authorization counts
+- [x] Operations blocker-followup summary now derives local follow-up ordering from reviewed blockers while preserving residual blockers and zero authorization counts
+- [x] Operations blocker-followup progress summary now covers follow-up action IDs and recommendation consistency while preserving residual blockers and zero authorization counts
+- [x] Operations blocker progress-review summary now covers unresolved progress records while leaving verified-local workflow items closed
+- [x] Operations blocker progress next-actions summary now orders unresolved progress-review tasks while preserving residual blockers and zero authorization counts
+- [x] Operations blocker progress-execution summary now records local execution notes while preserving residual blockers, verified-local exclusions, and zero authorization counts
+- [x] Operations blocker progress-execution review summary now reviews local execution notes while preserving residual blockers, verified-local exclusions, and zero authorization counts
+- [x] Operations blocker progress-execution follow-up summary now plans reviewed execution follow-up while preserving residual blockers, verified-local exclusions, and zero authorization counts
+- [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions
 
-1. Add a CI workflow file once a token with `workflow` scope is available.
-2. Begin non-synthetic validation dataset integration once real observations are available under appropriate data policy.
-3. Extend route coverage fixtures to cover remaining uncovered pathways as the classifier evolves.
+1. Continue operator follow-up for records marked `operator_followup_required` before changing any blocker status.
+2. Copy `docs/templates/ci.yml` to `.github/workflows/ci.yml` only after confirming the publishing token has GitHub `workflow` scope.
+3. Add curated validation intake examples only when provenance, licensing, labeling, and external-review requirements are satisfied.
 
 ---
 
