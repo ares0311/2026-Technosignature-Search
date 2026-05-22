@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ArchivalQueryLog",
+  "description": "Operational records for archival/catalog query events submitted by the pipeline.",
+  "type": "object",
+  "required": ["archival_query_entries"],
+  "properties": {
+    "archival_query_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["query_id","candidate_id","query_kind","status","queried_by","queried_utc"],
+        "properties": {
+          "query_id": {"type": "string"},
+          "candidate_id": {"type": "string"},
+          "query_kind": {"type": "string", "enum": ["cone_search","identifier_lookup","time_series","spectral_query","image_retrieval"]},
+          "status": {"type": "string", "enum": ["submitted","completed","failed","cached"]},
+          "queried_by": {"type": "string"},
+          "queried_utc": {"type": "string"},
+          "archive_source": {"type": ["string","null"]},
+          "row_count": {"type": ["integer","null"]},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

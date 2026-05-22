@@ -1,0 +1,54 @@
+{
+  "instrument_log_entries": [
+    {
+      "log_id": "ilog-001",
+      "instrument_id": "gbt-radio-1",
+      "instrument_kind": "radio_telescope",
+      "event_kind": "online",
+      "reported_by": "operator-a",
+      "reported_utc": "2026-01-10T08:00:00Z",
+      "resolved_utc": null,
+      "notes": "GBT radio receiver back online after scheduled downtime."
+    },
+    {
+      "log_id": "ilog-002",
+      "instrument_id": "gbt-radio-1",
+      "instrument_kind": "radio_telescope",
+      "event_kind": "offline",
+      "reported_by": "operator-b",
+      "reported_utc": "2026-01-12T14:30:00Z",
+      "resolved_utc": "2026-01-13T09:00:00Z",
+      "notes": "Temporary outage due to power supply issue."
+    },
+    {
+      "log_id": "ilog-003",
+      "instrument_id": "wise-archive-1",
+      "instrument_kind": "archive_node",
+      "event_kind": "degraded",
+      "reported_by": "operator-a",
+      "reported_utc": "2026-01-15T11:00:00Z",
+      "resolved_utc": null,
+      "notes": "Archive node experiencing elevated query latency."
+    },
+    {
+      "log_id": "ilog-004",
+      "instrument_id": "scoring-pipeline-1",
+      "instrument_kind": "data_pipeline",
+      "event_kind": "maintenance",
+      "reported_by": "operator-c",
+      "reported_utc": "2026-01-18T06:00:00Z",
+      "resolved_utc": "2026-01-18T10:00:00Z",
+      "notes": "Scheduled maintenance for config version update."
+    },
+    {
+      "log_id": "ilog-005",
+      "instrument_id": "optical-scope-1",
+      "instrument_kind": "optical_telescope",
+      "event_kind": "calibrating",
+      "reported_by": "operator-b",
+      "reported_utc": "2026-01-20T20:00:00Z",
+      "resolved_utc": null,
+      "notes": "Running nightly flat-field calibration sequence."
+    }
+  ]
+}

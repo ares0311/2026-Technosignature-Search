@@ -14,6 +14,7 @@ from typing import TextIO
 
 from techno_search.aggregate_blockers import aggregate_blockers_summary
 from techno_search.alert_resolution_log import alert_resolution_summary
+from techno_search.archival_query_log import archival_query_summary
 from techno_search.artifact_cleanup import (
     apply_artifact_cleanup,
     plan_artifact_cleanup,
@@ -69,6 +70,7 @@ from techno_search.candidate_lifecycle import (
     candidate_lifecycle_summary,
     lifecycle_transition_summary,
 )
+from techno_search.candidate_linkage_log import candidate_linkage_summary
 from techno_search.candidate_match_log import candidate_match_summary
 from techno_search.candidate_methods_summary import candidate_methods_summary
 from techno_search.candidate_observation_notes import observation_notes_summary
@@ -94,6 +96,7 @@ from techno_search.feature_importance import feature_importance_summary
 from techno_search.feature_normalization import feature_normalization_summary
 from techno_search.follow_up_request import follow_up_request_summary
 from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
+from techno_search.instrument_log import instrument_log_summary
 from techno_search.intake_queue_log import intake_queue_summary
 from techno_search.live_data import (
     CatalogCache,
@@ -335,6 +338,9 @@ SCHEMA_FILENAMES = {
         "operations_blocker_progress_execution_review.schema.json"
     ),
     "operations_blocker_review": "operations_blocker_review.schema.json",
+    "instrument_log": "instrument_log.schema.json",
+    "archival_query_log": "archival_query_log.schema.json",
+    "candidate_linkage_log": "candidate_linkage_log.schema.json",
 }
 
 
@@ -2700,6 +2706,42 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "instrument-log-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                instrument_log_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "archival-query-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                archival_query_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "candidate-linkage-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                candidate_linkage_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -3140,6 +3182,13 @@ def validate_all() -> dict[str, object]:
     quality_gate_data = quality_gate_summary()
     quality_gate_entry_count = int(quality_gate_data.get("entry_count", 0))
     quality_gate_pass_count = int(quality_gate_data.get("pass_count", 0))
+    instrument_log_data = instrument_log_summary()
+    instrument_log_entry_count = instrument_log_data.get("entry_count", 0)
+    archival_query_data = archival_query_summary()
+    archival_query_entry_count = archival_query_data.get("entry_count", 0)
+    candidate_linkage_data = candidate_linkage_summary()
+    candidate_linkage_entry_count = int(candidate_linkage_data.get("entry_count", 0))
+    _candidate_linkage_confirmed_count = int(candidate_linkage_data.get("confirmed_count", 0))
     comparison_data = candidate_comparison_summary()
     comparison_count = int(comparison_data.get("record_count", 0))
     telemetry_data = pipeline_telemetry_summary()
@@ -3778,6 +3827,9 @@ def validate_all() -> dict[str, object]:
         and isinstance(quality_gate_entry_count, int)
         and quality_gate_entry_count >= 1
         and quality_gate_pass_count >= 1
+        and instrument_log_entry_count >= 1
+        and archival_query_entry_count >= 1
+        and candidate_linkage_entry_count >= 1
         and action_resolution_record_count >= 1
         and action_resolution_live_authorized_count == 0
         and action_resolution_external_authorized_count == 0
@@ -3984,6 +4036,9 @@ def validate_all() -> dict[str, object]:
         "observation_request_summary": obs_request_data,
         "candidate_export_summary": candidate_export_data,
         "quality_gate_summary": quality_gate_data,
+        "instrument_log_summary": instrument_log_data,
+        "archival_query_summary": archival_query_data,
+        "candidate_linkage_summary": candidate_linkage_data,
         "operations_readiness_summary": operations_readiness,
         "operations_action_plan_summary": operations_action_plan,
         "operations_action_resolution_summary": operations_action_resolution,
@@ -5759,6 +5814,26 @@ def validation_summary() -> dict[str, object]:
         "quality_gate_pass_count": (
             qg_s2["pass_count"]
             if isinstance(qg_s2 := validation.get("quality_gate_summary"), dict)
+            else 0
+        ),
+        "instrument_log_entry_count": (
+            il_s["entry_count"]
+            if isinstance(il_s := validation.get("instrument_log_summary"), dict)
+            else 0
+        ),
+        "archival_query_entry_count": (
+            aq_s["entry_count"]
+            if isinstance(aq_s := validation.get("archival_query_summary"), dict)
+            else 0
+        ),
+        "candidate_linkage_entry_count": (
+            cl_s["entry_count"]
+            if isinstance(cl_s := validation.get("candidate_linkage_summary"), dict)
+            else 0
+        ),
+        "candidate_linkage_confirmed_count": (
+            cl_s2["confirmed_count"]
+            if isinstance(cl_s2 := validation.get("candidate_linkage_summary"), dict)
             else 0
         ),
         "recommended_commands": [
@@ -7849,6 +7924,30 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize cross-module provenance audit consistency verdicts.",
     )
     provenance_audit_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    instrument_log_parser = subparsers.add_parser(
+        "instrument-log-summary",
+        help="Summarize instrument/telescope status event log entries (scheduling records only).",
+    )
+    instrument_log_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    archival_query_parser = subparsers.add_parser(
+        "archival-query-summary",
+        help="Summarize archival/catalog query event log entries (provenance records only).",
+    )
+    archival_query_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    candidate_linkage_parser = subparsers.add_parser(
+        "candidate-linkage-summary",
+        help="Summarize candidate linkage log entries (provenance records only).",
+    )
+    candidate_linkage_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

@@ -13,6 +13,15 @@ from techno_search.alert_resolution_log import (
     alert_resolution_summary,
     load_alert_resolution_entries,
 )
+from techno_search.archival_query_log import (
+    ALLOWED_QUERY_KINDS,
+    ALLOWED_QUERY_STATUSES,
+    ARCHIVAL_QUERY_DISCLAIMER,
+    ARCHIVAL_QUERY_SCHEMA_VERSION,
+    ArchivalQueryEntry,
+    archival_query_summary,
+    load_archival_query_entries,
+)
 from techno_search.artifact_cleanup import (
     ARTIFACT_CLEANUP_DISCLAIMER,
     ARTIFACT_CLEANUP_SCHEMA_VERSION,
@@ -192,6 +201,15 @@ from techno_search.candidate_lifecycle import (
     lifecycle_transition_summary,
     load_lifecycle_entries,
 )
+from techno_search.candidate_linkage_log import (
+    ALLOWED_LINKAGE_KINDS,
+    ALLOWED_LINKAGE_STATUSES,
+    CANDIDATE_LINKAGE_DISCLAIMER,
+    CANDIDATE_LINKAGE_SCHEMA_VERSION,
+    CandidateLinkageEntry,
+    candidate_linkage_summary,
+    load_linkage_entries,
+)
 from techno_search.candidate_match_log import (
     ALLOWED_MATCH_SOURCES,
     ALLOWED_MATCH_STATUSES,
@@ -352,6 +370,15 @@ from techno_search.injection_recovery import (
     false_negative_summary,
     injection_recovery_summary,
     load_injection_recovery_cases,
+)
+from techno_search.instrument_log import (
+    ALLOWED_EVENT_KINDS,
+    ALLOWED_INSTRUMENT_KINDS,
+    INSTRUMENT_LOG_DISCLAIMER,
+    INSTRUMENT_LOG_SCHEMA_VERSION,
+    InstrumentLogEntry,
+    instrument_log_summary,
+    load_instrument_log_entries,
 )
 from techno_search.intake_queue_log import (
     ALLOWED_INTAKE_SOURCE_KINDS,
@@ -1440,4 +1467,25 @@ __all__ = [
     "WorkflowStateEntry",
     "load_workflow_state_entries",
     "workflow_state_summary",
+    "ALLOWED_QUERY_KINDS",
+    "ALLOWED_QUERY_STATUSES",
+    "ARCHIVAL_QUERY_DISCLAIMER",
+    "ARCHIVAL_QUERY_SCHEMA_VERSION",
+    "ArchivalQueryEntry",
+    "archival_query_summary",
+    "load_archival_query_entries",
+    "ALLOWED_LINKAGE_KINDS",
+    "ALLOWED_LINKAGE_STATUSES",
+    "CANDIDATE_LINKAGE_DISCLAIMER",
+    "CANDIDATE_LINKAGE_SCHEMA_VERSION",
+    "CandidateLinkageEntry",
+    "candidate_linkage_summary",
+    "load_linkage_entries",
+    "ALLOWED_EVENT_KINDS",
+    "ALLOWED_INSTRUMENT_KINDS",
+    "INSTRUMENT_LOG_DISCLAIMER",
+    "INSTRUMENT_LOG_SCHEMA_VERSION",
+    "InstrumentLogEntry",
+    "instrument_log_summary",
+    "load_instrument_log_entries",
 ]

@@ -316,9 +316,12 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "operations_blocker_review",
         "candidate_deduplication_log",
         "candidate_export_log",
+        "candidate_linkage_log",
         "candidate_match_log",
         "data_gap_log",
         "intake_queue_log",
+        "instrument_log",
+        "archival_query_log",
         "observation_request_log",
         "pipeline_error_log",
         "quality_gate_log",
@@ -1461,7 +1464,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 94
+    assert result["schema_count"] == 97
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
@@ -1934,6 +1937,10 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["candidate_export_delivered_count"] == 1
     assert result["quality_gate_entry_count"] == 5
     assert result["quality_gate_pass_count"] == 2
+    assert result["instrument_log_entry_count"] == 5
+    assert result["archival_query_entry_count"] == 5
+    assert result["candidate_linkage_entry_count"] == 5
+    assert result["candidate_linkage_confirmed_count"] == 2
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 
