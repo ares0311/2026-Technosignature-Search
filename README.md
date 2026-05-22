@@ -458,6 +458,7 @@ Run local validation summaries:
 .venv/bin/techno-search operations-blocker-progress-next-actions-summary
 .venv/bin/techno-search operations-blocker-progress-execution-summary
 .venv/bin/techno-search operations-blocker-progress-execution-review-summary
+.venv/bin/techno-search operations-blocker-progress-execution-followup-summary
 ```
 
 👉 See [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md) and the non-networked CI
@@ -647,6 +648,7 @@ Recommended recalibration checks:
 .venv/bin/techno-search operations-blocker-progress-next-actions-summary
 .venv/bin/techno-search operations-blocker-progress-execution-summary
 .venv/bin/techno-search operations-blocker-progress-execution-review-summary
+.venv/bin/techno-search operations-blocker-progress-execution-followup-summary
 .venv/bin/techno-search validate-all
 ```
 
@@ -890,6 +892,7 @@ Scientific quality gates:
 | Unresolved progress reviews lack ordered local work | Local blocker progress next-action records order unresolved review items without reopening verified-local closures or changing authorization gates | `operations-blocker-progress-next-actions-summary` |
 | Ordered local work lacks execution notes | Local blocker progress-execution records track next-action execution notes without clearing blockers or changing authorization gates | `operations-blocker-progress-execution-summary` |
 | Execution notes lack review provenance | Local blocker progress-execution review records review execution notes without clearing blockers or changing authorization gates | `operations-blocker-progress-execution-review-summary` |
+| Execution reviews lack follow-up planning | Local blocker progress-execution follow-up records plan reviewed execution follow-up without clearing blockers or changing authorization gates | `operations-blocker-progress-execution-followup-summary` |
 | CI drift or accidental live access | Template stays non-networked under `docs/templates/` until workflow-scope publishing is available | `docs/CI.md`, `docs/templates/ci.yml` |
 
 👉 See [`docs/VALIDATION.md`](docs/VALIDATION.md)

@@ -421,6 +421,14 @@ from techno_search.operations_blocker_progress_execution import (
     load_operations_blocker_progress_execution_records,
     operations_blocker_progress_execution_summary,
 )
+from techno_search.operations_blocker_progress_execution_followup import (
+    ALLOWED_BLOCKER_PROGRESS_EXECUTION_FOLLOWUP_STATUSES,
+    OPERATIONS_BLOCKER_PROGRESS_EXECUTION_FOLLOWUP_DISCLAIMER,
+    OPERATIONS_BLOCKER_PROGRESS_EXECUTION_FOLLOWUP_SCHEMA_VERSION,
+    OperationsBlockerProgressExecutionFollowupRecord,
+    load_operations_blocker_progress_execution_followup_records,
+    operations_blocker_progress_execution_followup_summary,
+)
 from techno_search.operations_blocker_progress_execution_review import (
     ALLOWED_BLOCKER_PROGRESS_EXECUTION_REVIEW_STATUSES,
     OPERATIONS_BLOCKER_PROGRESS_EXECUTION_REVIEW_DISCLAIMER,
@@ -1100,6 +1108,12 @@ __all__ = [
     "OperationsBlockerProgressExecutionRecord",
     "load_operations_blocker_progress_execution_records",
     "operations_blocker_progress_execution_summary",
+    "ALLOWED_BLOCKER_PROGRESS_EXECUTION_FOLLOWUP_STATUSES",
+    "OPERATIONS_BLOCKER_PROGRESS_EXECUTION_FOLLOWUP_DISCLAIMER",
+    "OPERATIONS_BLOCKER_PROGRESS_EXECUTION_FOLLOWUP_SCHEMA_VERSION",
+    "OperationsBlockerProgressExecutionFollowupRecord",
+    "load_operations_blocker_progress_execution_followup_records",
+    "operations_blocker_progress_execution_followup_summary",
     "ALLOWED_BLOCKER_PROGRESS_EXECUTION_REVIEW_STATUSES",
     "OPERATIONS_BLOCKER_PROGRESS_EXECUTION_REVIEW_DISCLAIMER",
     "OPERATIONS_BLOCKER_PROGRESS_EXECUTION_REVIEW_SCHEMA_VERSION",

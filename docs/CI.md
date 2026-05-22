@@ -32,6 +32,7 @@ techno-search operations-blocker-progress-review-summary
 techno-search operations-blocker-progress-next-actions-summary
 techno-search operations-blocker-progress-execution-summary
 techno-search operations-blocker-progress-execution-review-summary
+techno-search operations-blocker-progress-execution-followup-summary
 ```
 
 The workflow sets `TECHNO_SEARCH_ENABLE_LIVE_DATA=0`. CI must remain
@@ -62,7 +63,10 @@ authorization gates. The blocker progress-execution summary records local
 execution notes against that queue while preserving residual blockers, verified
 local exclusions, and disabled authorization gates. The blocker
 progress-execution review summary reviews those execution notes without
-clearing blockers or changing authorization gates.
+clearing blockers or changing authorization gates. The blocker
+progress-execution follow-up summary plans local follow-up for those reviewed
+execution notes while preserving residual blockers, verified-local exclusions,
+and disabled authorization gates.
 
 ## Promotion Checklist
 

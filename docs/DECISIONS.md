@@ -1509,3 +1509,33 @@ exclusions, residual blockers, and authorization counts.
 Execution-review records do not clear blockers, reopen verified-local workflow
 items, change candidate scores or pathways, enable live data, authorize
 external submission, or constitute external validation.
+
+---
+
+## DECISION-063: Progress Execution Follow-Up Is Local Planning Only
+
+**Date**: 2026-05-21
+
+**Status**: accepted
+
+**Context**: DECISION-062 adds local review provenance for progress-execution
+notes. Operators still need a follow-up planning layer for reviewed execution
+records, especially records requiring operator follow-up or held pending real
+data. This layer must not be interpreted as blocker clearance, real-data
+authorization, external submission readiness, or scientific validation.
+
+**Decision**: Add fixture-backed operations blocker progress-execution
+follow-up records and an
+`operations-blocker-progress-execution-followup-summary` command. Each record
+links to a review ID, execution ID, next-action ID, and action ID; carries the
+review status, follow-up status, priority rank, operator, planned timestamp,
+follow-up note, residual blocker count, and explicit live-data and
+external-submission authorization booleans. The summary reports coverage
+against progress-execution review IDs, status, residual, and priority
+mismatches, verified-local exclusions, residual blockers, and authorization
+counts.
+
+**Consequences**: Operators get deterministic local planning visibility for
+reviewed execution notes. Follow-up records do not clear blockers, reopen
+verified-local workflow items, change candidate scores or pathways, enable
+live data, authorize external submission, or constitute external validation.

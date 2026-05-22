@@ -1909,6 +1909,27 @@ local workflow review notes only. They do not reopen verified-local workflow
 items, clear blockers, authorize live data, authorize external submission,
 mutate candidate scores, or imply external validation.
 
+## `operations-blocker-progress-execution-followup-summary`
+
+Summarize local follow-up planning for blocker progress-execution reviews.
+
+```bash
+techno-search operations-blocker-progress-execution-followup-summary
+techno-search operations-blocker-progress-execution-followup-summary --fixture-path tests/fixtures/operations_blocker_progress_execution_followup.json
+techno-search operations-blocker-progress-execution-followup-summary --execution-review-fixture-path tests/fixtures/operations_blocker_progress_execution_review.json
+techno-search operations-blocker-progress-execution-followup-summary --sqlite-log-path logs/techno_search.sqlite3
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`,
+follow-up status counts, `residual_blocker_total`, authorization counts,
+coverage fields, mismatch counts, `priority_sequence_ok`,
+`verified_progress_action_ids`, `missing_review_ids`,
+`stale_followup_review_ids`, `by_status`, `by_review_status`, `by_category`,
+`by_operator`, and `records`. Execution follow-up records are local workflow
+planning notes only. They do not clear blockers, authorize live data,
+authorize external submission, mutate candidate scores, or imply external
+validation.
+
 ## `operations-readiness-digest`
 
 Print a review-safe Markdown digest for operator handoff.

@@ -215,6 +215,9 @@ The project will support three tracks from day one:
       external workflow
 - [x] Operations blocker progress-execution review records added to review
       execution notes without clearing blockers or enabling external workflow
+- [x] Operations blocker progress-execution follow-up records added to plan
+      reviewed execution follow-up without clearing blockers or enabling
+      external workflow
 
 ---
 
@@ -295,11 +298,12 @@ The project will support three tracks from day one:
 - [x] Operations blocker progress next-actions summary now orders unresolved progress-review tasks while preserving residual blockers and zero authorization counts
 - [x] Operations blocker progress-execution summary now records local execution notes while preserving residual blockers, verified-local exclusions, and zero authorization counts
 - [x] Operations blocker progress-execution review summary now reviews local execution notes while preserving residual blockers, verified-local exclusions, and zero authorization counts
+- [x] Operations blocker progress-execution follow-up summary now plans reviewed execution follow-up while preserving residual blockers, verified-local exclusions, and zero authorization counts
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions
 
-1. Continue local follow-up for execution-review records marked `awaiting_operator_reviewed` before changing any blocker status.
+1. Continue operator follow-up for records marked `operator_followup_required` before changing any blocker status.
 2. Copy `docs/templates/ci.yml` to `.github/workflows/ci.yml` only after confirming the publishing token has GitHub `workflow` scope.
 3. Add curated validation intake examples only when provenance, licensing, labeling, and external-review requirements are satisfied.
 

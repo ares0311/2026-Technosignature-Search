@@ -685,6 +685,7 @@ Included in `validate-all` for informational purposes. Collects blocking issues 
 .venv/bin/techno-search operations-blocker-progress-next-actions-summary
 .venv/bin/techno-search operations-blocker-progress-execution-summary
 .venv/bin/techno-search operations-blocker-progress-execution-review-summary
+.venv/bin/techno-search operations-blocker-progress-execution-followup-summary
 .venv/bin/techno-search operations-readiness-digest
 ```
 
@@ -700,6 +701,11 @@ zero live-data authorization, and zero external-submission authorization.
 
 The blocker progress-execution review summary is a local review-provenance
 layer for execution notes. It must preserve residual blockers, verified-local
+exclusions, zero live-data authorization, and zero external-submission
+authorization.
+
+The blocker progress-execution follow-up summary is a local planning layer for
+reviewed execution notes. It must preserve residual blockers, verified-local
 exclusions, zero live-data authorization, and zero external-submission
 authorization.
 
