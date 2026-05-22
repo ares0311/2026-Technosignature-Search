@@ -1,0 +1,40 @@
+{
+  "config_version_history_entries": [
+    {
+      "history_id": "cfg-hist-001",
+      "config_id": "pcfg-001",
+      "change_kind": "created",
+      "effective_utc": "2026-05-01T08:00:00Z",
+      "changed_by": "operator-alpha",
+      "prior_config_id": null,
+      "notes": "Initial active pipeline config created. Provenance record only."
+    },
+    {
+      "history_id": "cfg-hist-002",
+      "config_id": "pcfg-001",
+      "change_kind": "promoted",
+      "effective_utc": "2026-05-02T09:00:00Z",
+      "changed_by": "operator-alpha",
+      "prior_config_id": null,
+      "notes": "Config pcfg-001 promoted to active status. Does not re-run or re-route any candidate."
+    },
+    {
+      "history_id": "cfg-hist-003",
+      "config_id": "pcfg-002",
+      "change_kind": "created",
+      "effective_utc": "2026-05-10T10:00:00Z",
+      "changed_by": "operator-beta",
+      "prior_config_id": "pcfg-001",
+      "notes": "Staging config pcfg-002 created as candidate for future promotion. Provenance record only."
+    },
+    {
+      "history_id": "cfg-hist-004",
+      "config_id": "pcfg-003",
+      "change_kind": "deprecated",
+      "effective_utc": "2026-05-15T12:00:00Z",
+      "changed_by": "operator-alpha",
+      "prior_config_id": null,
+      "notes": "Stub config pcfg-003 deprecated. No active candidates were using this config. Provenance record only."
+    }
+  ]
+}

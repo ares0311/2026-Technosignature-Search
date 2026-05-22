@@ -519,3 +519,35 @@ Close the pipeline loop with three complementary operational modules: multi-cand
 - Replay log covers matched, diverged, and mismatch outcomes
 - Threshold audit covers pass, warning, and not_checked verdicts across all three tracks
 - All integration tests pass without network access
+
+---
+
+# Milestone 17 — Alert Resolution Log, Config Version History, And Operator Escalation Log
+
+**Status**: complete
+
+## Tasks
+
+- [x] `src/techno_search/alert_resolution_log.py` — provenance records for formally closing open alerts
+- [x] `schemas/alert_resolution_log.schema.json`
+- [x] `tests/fixtures/alert_resolution_log.json` — 5 entries (4 resolved, 1 open)
+- [x] `tests/test_alert_resolution_log.py` — 22 tests
+- [x] `src/techno_search/config_version_history.py` — append-only config change log
+- [x] `schemas/config_version_history.schema.json`
+- [x] `tests/fixtures/config_version_history.json` — 4 entries (created×2, promoted×1, deprecated×1)
+- [x] `tests/test_config_version_history.py` — 22 tests
+- [x] `src/techno_search/operator_escalation_log.py` — inter-operator escalation records
+- [x] `schemas/operator_escalation_log.schema.json`
+- [x] `tests/fixtures/operator_escalation_log.json` — 4 entries (critical open, urgent acknowledged, routine resolved, critical resolved)
+- [x] `tests/test_operator_escalation_log.py` — 24 tests
+- [x] CLI: `alert-resolution-summary`, `config-version-history-summary`, `operator-escalation-summary`
+- [x] `validate-all` gates: alert_resolution_entry_count >= 1, config_history_entry_count >= 1, escalation_entry_count >= 1
+- [x] `validation-summary` fields: alert_resolution_entry_count, alert_resolution_open_count, config_history_entry_count, operator_escalation_entry_count, operator_escalation_open_count
+- [x] DECISION-050: Alert Resolution Log, Config Version History, And Operator Escalation Log Complete Milestone 17
+
+## Done When
+
+- Alert resolution log covers all resolution statuses and kinds
+- Config version history covers created, promoted, and deprecated change kinds
+- Operator escalation log covers open, acknowledged, and resolved states with all severity levels
+- All integration tests pass without network access

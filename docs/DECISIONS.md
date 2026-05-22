@@ -1148,3 +1148,23 @@ Candidates accumulate post-observation annotations, follow-up scheduling entries
 **Scoring threshold audit**: local provenance consistency checks verifying that scoring thresholds recorded in the pipeline config match the active scoring config version. Verdicts are pass/fail/warning/not_checked. An audit pass does not mean thresholds are scientifically calibrated — it does not authorize external submission or constitute a detection claim.
 
 **Consequences**: `validate-all` gates enforce `alert_entry_count >= 1`, `replay_entry_count >= 1`, `threshold_pass_count >= 1`. SCHEMA_FILENAMES grows 67→70. Milestone 16 is complete. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-050: Alert Resolution Log, Config Version History, And Operator Escalation Log Complete Milestone 17
+
+**Date**: 2026-05-22
+
+**Status**: accepted
+
+**Context**: Milestone 17 closes the operational lifecycle loop with three provenance modules: how open alerts get formally resolved, how pipeline config changes over time, and how operator escalations flow between operators.
+
+**Decision**: Add three modules, all local provenance records only.
+
+**Alert resolution log**: records how open candidate alerts are formally closed — through operator review, automated consistency check, deadline expiry, pathway confirmation, or watchlist action. Statuses cover resolved_false_positive, resolved_follow_up, resolved_archived, resolved_operator_closed, and open. A resolved_follow_up status means follow-up was scheduled as a local scheduling action only — it does not authorize external submission or constitute a detection claim.
+
+**Config version history**: append-only log of pipeline config changes with effective dates and the operator who made the change. Change kinds are created, promoted, updated, and deprecated. History entries do not re-run or re-route any candidate, authorize external submission, or constitute a detection claim.
+
+**Operator escalation log**: structured log of inter-operator escalations tracking when an operator transfers responsibility for a candidate or alert. Severity levels are routine, urgent, and critical; statuses are open, acknowledged, and resolved. Escalation severity reflects scheduling priority only — not candidate scientific significance. Escalation records do not modify scores or pathway routing and do not authorize external submission.
+
+**Consequences**: `validate-all` gates enforce `alert_resolution_entry_count >= 1`, `config_history_entry_count >= 1`, `escalation_entry_count >= 1`. SCHEMA_FILENAMES grows 70→73. Milestone 17 is complete. Scientific guardrails remain unchanged.

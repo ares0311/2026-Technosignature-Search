@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import TextIO
 
 from techno_search.aggregate_blockers import aggregate_blockers_summary
+from techno_search.alert_resolution_log import alert_resolution_summary
 from techno_search.artifact_cleanup import (
     apply_artifact_cleanup,
     plan_artifact_cleanup,
@@ -78,6 +79,7 @@ from techno_search.candidate_triage import (
     triage_label_completeness_check,
     triage_summary,
 )
+from techno_search.config_version_history import config_version_history_summary
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.cross_track import cross_track_summary
 from techno_search.curated_dataset_intake import curated_dataset_intake_summary
@@ -133,6 +135,7 @@ from techno_search.observation_schedule import (
     observation_schedule_summary,
 )
 from techno_search.operator_assignment import operator_assignment_summary
+from techno_search.operator_escalation_log import operator_escalation_summary
 from techno_search.operator_handoff_template import operator_handoff_summary
 from techno_search.operator_performance import operator_performance_summary
 from techno_search.pipeline_audit_summary import pipeline_audit_summary
@@ -248,6 +251,9 @@ SCHEMA_FILENAMES = {
     "candidate_alert_log": "candidate_alert_log.schema.json",
     "pipeline_replay_log": "pipeline_replay_log.schema.json",
     "scoring_threshold_audit": "scoring_threshold_audit.schema.json",
+    "alert_resolution_log": "alert_resolution_log.schema.json",
+    "config_version_history": "config_version_history.schema.json",
+    "operator_escalation_log": "operator_escalation_log.schema.json",
     "curated_dataset_intake": "curated_dataset_intake.schema.json",
     "operator_handoff_template": "operator_handoff_template.schema.json",
     "candidate_resolution": "candidate_resolution.schema.json",
@@ -1833,6 +1839,42 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "alert-resolution-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                alert_resolution_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "config-version-history-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                config_version_history_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "operator-escalation-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                operator_escalation_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     if args.command == "candidate-comparison-summary":
         fixture_path = getattr(args, "fixture_path", None)
         print(
@@ -2283,6 +2325,12 @@ def validate_all() -> dict[str, object]:
     replay_entry_count = int(replay_data.get("entry_count", 0))
     threshold_audit_data = scoring_threshold_audit_summary()
     threshold_pass_count = int(threshold_audit_data.get("pass_count", 0))
+    alert_resolution_data = alert_resolution_summary()
+    alert_resolution_entry_count = int(alert_resolution_data.get("entry_count", 0))
+    config_history_data = config_version_history_summary()
+    config_history_entry_count = int(config_history_data.get("entry_count", 0))
+    escalation_data = operator_escalation_summary()
+    operator_escalation_entry_count = int(escalation_data.get("entry_count", 0))
     comparison_data = candidate_comparison_summary()
     comparison_count = int(comparison_data.get("record_count", 0))
     telemetry_data = pipeline_telemetry_summary()
@@ -2601,6 +2649,12 @@ def validate_all() -> dict[str, object]:
         and replay_entry_count >= 1
         and isinstance(threshold_pass_count, int)
         and threshold_pass_count >= 1
+        and isinstance(alert_resolution_entry_count, int)
+        and alert_resolution_entry_count >= 1
+        and isinstance(config_history_entry_count, int)
+        and config_history_entry_count >= 1
+        and isinstance(operator_escalation_entry_count, int)
+        and operator_escalation_entry_count >= 1
     )
     return {
         "ok": ok,
@@ -2717,6 +2771,9 @@ def validate_all() -> dict[str, object]:
         "candidate_alert_summary": alert_data,
         "pipeline_replay_summary": replay_data,
         "scoring_threshold_audit_summary": threshold_audit_data,
+        "alert_resolution_summary": alert_resolution_data,
+        "config_version_history_summary": config_history_data,
+        "operator_escalation_summary": escalation_data,
     }
 
 
@@ -3660,6 +3717,31 @@ def validation_summary() -> dict[str, object]:
         "scoring_threshold_fail_count": (
             thr_s2["fail_count"]
             if isinstance(thr_s2 := validation.get("scoring_threshold_audit_summary"), dict)
+            else 0
+        ),
+        "alert_resolution_entry_count": (
+            ares_s["entry_count"]
+            if isinstance(ares_s := validation.get("alert_resolution_summary"), dict)
+            else 0
+        ),
+        "alert_resolution_open_count": (
+            ares_s2["open_count"]
+            if isinstance(ares_s2 := validation.get("alert_resolution_summary"), dict)
+            else 0
+        ),
+        "config_history_entry_count": (
+            cfgh_s["entry_count"]
+            if isinstance(cfgh_s := validation.get("config_version_history_summary"), dict)
+            else 0
+        ),
+        "operator_escalation_entry_count": (
+            esc_s["entry_count"]
+            if isinstance(esc_s := validation.get("operator_escalation_summary"), dict)
+            else 0
+        ),
+        "operator_escalation_open_count": (
+            esc_s2["open_count"]
+            if isinstance(esc_s2 := validation.get("operator_escalation_summary"), dict)
             else 0
         ),
         "recommended_commands": [
@@ -5290,6 +5372,30 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize scoring threshold audit verdicts against pipeline config.",
     )
     scoring_threshold_audit_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    alert_resolution_parser = subparsers.add_parser(
+        "alert-resolution-summary",
+        help="Summarize alert resolution log entries (provenance records only).",
+    )
+    alert_resolution_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    config_history_parser = subparsers.add_parser(
+        "config-version-history-summary",
+        help="Summarize config version history entries (append-only provenance).",
+    )
+    config_history_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    operator_escalation_parser = subparsers.add_parser(
+        "operator-escalation-summary",
+        help="Summarize operator escalation log entries (scheduling coordination).",
+    )
+    operator_escalation_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 
