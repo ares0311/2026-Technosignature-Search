@@ -621,6 +621,41 @@ Add three operational provenance modules: scheduling gap records, cross-catalog 
 
 ---
 
+# Milestone 20 — Observation Request Log, Candidate Export Log, And Quality Gate Log
+
+## Goal
+
+Add three operational provenance modules: follow-up observation scheduling requests, candidate data export events, and pipeline quality gate checks.
+
+## Tasks
+
+- [x] `src/techno_search/observation_request_log.py` — ObservationRequestEntry, load_observation_request_entries, observation_request_summary; kinds: target_followup, reobservation, calibration_check, verification, archival_search
+- [x] `schemas/observation_request_log.schema.json`
+- [x] `tests/fixtures/observation_request_log.json` — 5 entries (1 submitted, 1 acknowledged, 1 completed, 1 rejected, 1 scheduled)
+- [x] `tests/test_observation_request_log.py` — 22 tests
+- [x] `src/techno_search/candidate_export_log.py` — CandidateExportEntry, load_export_entries, candidate_export_summary; formats: json, csv, markdown, fits_stub, parquet_stub
+- [x] `schemas/candidate_export_log.schema.json`
+- [x] `tests/fixtures/candidate_export_log.json` — 5 entries (2 exported, 1 delivered, 1 prepared, 1 failed)
+- [x] `tests/test_candidate_export_log.py` — 22 tests
+- [x] `src/techno_search/quality_gate_log.py` — QualityGateEntry, load_quality_gate_entries, quality_gate_summary; kinds: score_threshold, provenance_completeness, rfi_screen, catalog_check, review_coverage
+- [x] `schemas/quality_gate_log.schema.json`
+- [x] `tests/fixtures/quality_gate_log.json` — 5 entries (2 pass, 1 fail, 1 warn, 1 not_applicable)
+- [x] `tests/test_quality_gate_log.py` — 26 tests
+- [x] `observation_request_log`, `candidate_export_log`, `quality_gate_log` added to `SCHEMA_FILENAMES` (total schemas: 94)
+- [x] CLI: `observation-request-summary`, `candidate-export-summary`, `quality-gate-summary`
+- [x] `validate-all` gates: obs_request_entry_count >= 1, candidate_export_entry_count >= 1, quality_gate_entry_count >= 1, quality_gate_pass_count >= 1
+- [x] `validation-summary` fields: observation_request_entry_count, observation_request_pending_count, candidate_export_entry_count, candidate_export_delivered_count, quality_gate_entry_count, quality_gate_pass_count
+- [x] DECISION-067: Observation Request Log, Candidate Export Log, And Quality Gate Log Complete Milestone 20
+
+## Done When
+
+- Observation request log covers all request kinds and statuses with target_utc for scheduled/completed entries
+- Candidate export log covers all export formats and statuses with destination for delivered entries
+- Quality gate log covers all gate kinds and results with score_at_check for applicable entries
+- All integration tests pass without network access
+
+---
+
 # Project Operations Readiness
 
 ## Goal

@@ -1814,6 +1814,39 @@ techno-search pipeline-error-summary --fixture-path tests/fixtures/pipeline_erro
 
 Output fields: `disclaimer`, `schema_version`, `entry_count`, `unresolved_count`, `resolved_count`, `critical_count`, `by_severity`, `by_kind`. Error records are operational scheduling aids only — they do not modify candidate scores, do not affect pathway routing, and do not authorize external submission.
 
+## `observation-request-summary`
+
+Summarize observation request log entries recording local follow-up observation slot requests submitted to scheduling systems.
+
+```bash
+techno-search observation-request-summary
+techno-search observation-request-summary --fixture-path tests/fixtures/observation_request_log.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `entry_count`, `pending_count`, `completed_count`, `rejected_count`, `by_status`, `by_kind`. Request records are local scheduling coordination aids only — they do not constitute telescope-time allocations, do not modify candidate scores or pathway routing, and do not authorize external submission.
+
+## `candidate-export-summary`
+
+Summarize candidate export log entries recording candidate data export events for internal review or reproducibility purposes.
+
+```bash
+techno-search candidate-export-summary
+techno-search candidate-export-summary --fixture-path tests/fixtures/candidate_export_log.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `entry_count`, `delivered_count`, `exported_count`, `failed_count`, `by_status`, `by_format`. Export records do not authorize external submission or publication and do not constitute a detection claim.
+
+## `quality-gate-summary`
+
+Summarize quality gate log entries recording consistency and completeness checks applied to candidates during pipeline execution.
+
+```bash
+techno-search quality-gate-summary
+techno-search quality-gate-summary --fixture-path tests/fixtures/quality_gate_log.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `entry_count`, `pass_count`, `fail_count`, `warn_count`, `not_applicable_count`, `by_result`, `by_kind`. Gate results are scheduling coordination aids only — a gate pass does not modify candidate scores or pathway routing and does not authorize external submission.
+
 ## `operations-readiness-summary`
 
 Aggregate local-only operations readiness state across QC health, candidate alerts, review deadlines, pipeline capacity, route coverage, curated intake blockers, submission provenance blockers, and top-level SQLite log safety fields.

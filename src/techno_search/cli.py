@@ -62,6 +62,7 @@ from techno_search.candidate_annotation import candidate_annotation_summary
 from techno_search.candidate_audit_trail import audit_trail_summary
 from techno_search.candidate_comparison import candidate_comparison_summary
 from techno_search.candidate_deduplication_log import candidate_deduplication_summary
+from techno_search.candidate_export_log import candidate_export_summary
 from techno_search.candidate_feature_vector import feature_vector_summary
 from techno_search.candidate_flags import candidate_flags_summary
 from techno_search.candidate_lifecycle import (
@@ -133,6 +134,7 @@ from techno_search.model_performance_history import model_performance_history_su
 from techno_search.model_serving import model_serving_summary
 from techno_search.multi_epoch_summary import multi_epoch_summary
 from techno_search.observation_campaign import observation_campaign_summary
+from techno_search.observation_request_log import observation_request_summary
 from techno_search.observation_schedule import (
     observation_efficiency_summary,
     observation_gap_analysis,
@@ -185,6 +187,7 @@ from techno_search.plotting import plot_artifact_summary
 from techno_search.provenance import provenance_chain_validator
 from techno_search.provenance_audit import provenance_audit_summary
 from techno_search.quality_control_summary import quality_control_summary
+from techno_search.quality_gate_log import quality_gate_summary
 from techno_search.reporting import (
     candidate_packet_json,
     write_candidate_reports,
@@ -288,12 +291,15 @@ SCHEMA_FILENAMES = {
     "scoring_threshold_audit": "scoring_threshold_audit.schema.json",
     "alert_resolution_log": "alert_resolution_log.schema.json",
     "candidate_deduplication_log": "candidate_deduplication_log.schema.json",
+    "candidate_export_log": "candidate_export_log.schema.json",
     "candidate_match_log": "candidate_match_log.schema.json",
     "data_gap_log": "data_gap_log.schema.json",
     "config_version_history": "config_version_history.schema.json",
     "intake_queue_log": "intake_queue_log.schema.json",
     "operator_escalation_log": "operator_escalation_log.schema.json",
+    "observation_request_log": "observation_request_log.schema.json",
     "pipeline_error_log": "pipeline_error_log.schema.json",
+    "quality_gate_log": "quality_gate_log.schema.json",
     "workflow_state_log": "workflow_state_log.schema.json",
     "curated_dataset_intake": "curated_dataset_intake.schema.json",
     "operator_handoff_template": "operator_handoff_template.schema.json",
@@ -2622,6 +2628,42 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "observation-request-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                observation_request_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "candidate-export-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                candidate_export_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "quality-gate-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                quality_gate_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     if args.command == "candidate-comparison-summary":
         fixture_path = getattr(args, "fixture_path", None)
         print(
@@ -3091,6 +3133,13 @@ def validate_all() -> dict[str, object]:
     candidate_match_entry_count = int(candidate_match_data.get("entry_count", 0))
     pipeline_error_data = pipeline_error_summary()
     pipeline_error_entry_count = int(pipeline_error_data.get("entry_count", 0))
+    obs_request_data = observation_request_summary()
+    obs_request_entry_count = int(obs_request_data.get("entry_count", 0))
+    candidate_export_data = candidate_export_summary()
+    candidate_export_entry_count = int(candidate_export_data.get("entry_count", 0))
+    quality_gate_data = quality_gate_summary()
+    quality_gate_entry_count = int(quality_gate_data.get("entry_count", 0))
+    quality_gate_pass_count = int(quality_gate_data.get("pass_count", 0))
     comparison_data = candidate_comparison_summary()
     comparison_count = int(comparison_data.get("record_count", 0))
     telemetry_data = pipeline_telemetry_summary()
@@ -3722,6 +3771,13 @@ def validate_all() -> dict[str, object]:
         and candidate_match_entry_count >= 1
         and isinstance(pipeline_error_entry_count, int)
         and pipeline_error_entry_count >= 1
+        and isinstance(obs_request_entry_count, int)
+        and obs_request_entry_count >= 1
+        and isinstance(candidate_export_entry_count, int)
+        and candidate_export_entry_count >= 1
+        and isinstance(quality_gate_entry_count, int)
+        and quality_gate_entry_count >= 1
+        and quality_gate_pass_count >= 1
         and action_resolution_record_count >= 1
         and action_resolution_live_authorized_count == 0
         and action_resolution_external_authorized_count == 0
@@ -3925,6 +3981,9 @@ def validate_all() -> dict[str, object]:
         "data_gap_summary": data_gap_data,
         "candidate_match_summary": candidate_match_data,
         "pipeline_error_summary": pipeline_error_data,
+        "observation_request_summary": obs_request_data,
+        "candidate_export_summary": candidate_export_data,
+        "quality_gate_summary": quality_gate_data,
         "operations_readiness_summary": operations_readiness,
         "operations_action_plan_summary": operations_action_plan,
         "operations_action_resolution_summary": operations_action_resolution,
@@ -5670,6 +5729,36 @@ def validation_summary() -> dict[str, object]:
         "pipeline_error_unresolved_count": (
             pe_s2["unresolved_count"]
             if isinstance(pe_s2 := validation.get("pipeline_error_summary"), dict)
+            else 0
+        ),
+        "observation_request_entry_count": (
+            or_s["entry_count"]
+            if isinstance(or_s := validation.get("observation_request_summary"), dict)
+            else 0
+        ),
+        "observation_request_pending_count": (
+            or_s2["pending_count"]
+            if isinstance(or_s2 := validation.get("observation_request_summary"), dict)
+            else 0
+        ),
+        "candidate_export_entry_count": (
+            ce_s["entry_count"]
+            if isinstance(ce_s := validation.get("candidate_export_summary"), dict)
+            else 0
+        ),
+        "candidate_export_delivered_count": (
+            ce_s2["delivered_count"]
+            if isinstance(ce_s2 := validation.get("candidate_export_summary"), dict)
+            else 0
+        ),
+        "quality_gate_entry_count": (
+            qg_s["entry_count"]
+            if isinstance(qg_s := validation.get("quality_gate_summary"), dict)
+            else 0
+        ),
+        "quality_gate_pass_count": (
+            qg_s2["pass_count"]
+            if isinstance(qg_s2 := validation.get("quality_gate_summary"), dict)
             else 0
         ),
         "recommended_commands": [
@@ -7712,6 +7801,30 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize pipeline error log entries (operational records only).",
     )
     pipeline_error_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    obs_request_parser = subparsers.add_parser(
+        "observation-request-summary",
+        help="Summarize observation request log entries (scheduling records only).",
+    )
+    obs_request_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    candidate_export_parser = subparsers.add_parser(
+        "candidate-export-summary",
+        help="Summarize candidate export log entries (provenance records only).",
+    )
+    candidate_export_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    quality_gate_parser = subparsers.add_parser(
+        "quality-gate-summary",
+        help="Summarize quality gate log entries (operational provenance records only).",
+    )
+    quality_gate_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

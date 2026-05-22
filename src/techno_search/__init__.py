@@ -157,6 +157,15 @@ from techno_search.candidate_deduplication_log import (
     candidate_deduplication_summary,
     load_deduplication_entries,
 )
+from techno_search.candidate_export_log import (
+    ALLOWED_EXPORT_FORMATS,
+    ALLOWED_EXPORT_STATUSES,
+    CANDIDATE_EXPORT_DISCLAIMER,
+    CANDIDATE_EXPORT_SCHEMA_VERSION,
+    CandidateExportEntry,
+    candidate_export_summary,
+    load_export_entries,
+)
 from techno_search.candidate_feature_vector import (
     ALLOWED_NORMALIZATION_KINDS,
     CANDIDATE_FEATURE_VECTOR_DISCLAIMER,
@@ -421,6 +430,17 @@ from techno_search.observation_campaign import (
     load_observation_campaigns,
     observation_campaign_summary,
 )
+from techno_search.observation_request_log import (
+    ALLOWED_REQUEST_KINDS,
+    OBSERVATION_REQUEST_DISCLAIMER,
+    OBSERVATION_REQUEST_SCHEMA_VERSION,
+    ObservationRequestEntry,
+    load_observation_request_entries,
+    observation_request_summary,
+)
+from techno_search.observation_request_log import (
+    ALLOWED_REQUEST_STATUSES as ALLOWED_OBS_REQUEST_STATUSES,
+)
 from techno_search.observation_schedule import (
     OBSERVATION_SCHEDULE_DISCLAIMER,
     OBSERVATION_SCHEDULE_SCHEMA_VERSION,
@@ -631,6 +651,15 @@ from techno_search.provenance_audit import (
 from techno_search.quality_control_summary import (
     QUALITY_CONTROL_DISCLAIMER,
     quality_control_summary,
+)
+from techno_search.quality_gate_log import (
+    ALLOWED_GATE_KINDS,
+    ALLOWED_GATE_RESULTS,
+    QUALITY_GATE_DISCLAIMER,
+    QUALITY_GATE_SCHEMA_VERSION,
+    QualityGateEntry,
+    load_quality_gate_entries,
+    quality_gate_summary,
 )
 from techno_search.reporting import (
     REQUIRED_DISCLAIMER,
@@ -1355,6 +1384,13 @@ __all__ = [
     "CandidateDeduplicationEntry",
     "candidate_deduplication_summary",
     "load_deduplication_entries",
+    "ALLOWED_EXPORT_FORMATS",
+    "ALLOWED_EXPORT_STATUSES",
+    "CANDIDATE_EXPORT_DISCLAIMER",
+    "CANDIDATE_EXPORT_SCHEMA_VERSION",
+    "CandidateExportEntry",
+    "candidate_export_summary",
+    "load_export_entries",
     "ALLOWED_MATCH_SOURCES",
     "ALLOWED_MATCH_STATUSES",
     "CANDIDATE_MATCH_DISCLAIMER",
@@ -1376,6 +1412,13 @@ __all__ = [
     "IntakeQueueEntry",
     "intake_queue_summary",
     "load_intake_queue_entries",
+    "ALLOWED_REQUEST_KINDS",
+    "ALLOWED_OBS_REQUEST_STATUSES",
+    "OBSERVATION_REQUEST_DISCLAIMER",
+    "OBSERVATION_REQUEST_SCHEMA_VERSION",
+    "ObservationRequestEntry",
+    "load_observation_request_entries",
+    "observation_request_summary",
     "ALLOWED_ERROR_KINDS",
     "ALLOWED_ERROR_SEVERITIES",
     "PIPELINE_ERROR_DISCLAIMER",
@@ -1383,6 +1426,13 @@ __all__ = [
     "PipelineErrorEntry",
     "load_error_entries",
     "pipeline_error_summary",
+    "ALLOWED_GATE_KINDS",
+    "ALLOWED_GATE_RESULTS",
+    "QUALITY_GATE_DISCLAIMER",
+    "QUALITY_GATE_SCHEMA_VERSION",
+    "QualityGateEntry",
+    "load_quality_gate_entries",
+    "quality_gate_summary",
     "ALLOWED_WORKFLOW_STATES",
     "ALLOWED_WORKFLOW_TRANSITION_KINDS",
     "WORKFLOW_STATE_DISCLAIMER",

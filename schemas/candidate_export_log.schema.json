@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CandidateExportLog",
+  "type": "object",
+  "required": ["schema_version", "candidate_export_entries"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "candidate_export_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["export_id", "candidate_id", "export_format", "status", "exported_by", "exported_utc"],
+        "properties": {
+          "export_id": {"type": "string"},
+          "candidate_id": {"type": "string"},
+          "export_format": {
+            "type": "string",
+            "enum": ["json", "csv", "markdown", "fits_stub", "parquet_stub"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["prepared", "exported", "delivered", "failed", "cancelled"]
+          },
+          "exported_by": {"type": "string"},
+          "exported_utc": {"type": "string"},
+          "destination": {"type": ["string", "null"]},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

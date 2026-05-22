@@ -1,0 +1,55 @@
+{
+  "schema_version": "quality_gate_log_v1",
+  "quality_gate_entries": [
+    {
+      "gate_id": "gate-001",
+      "candidate_id": "radio-clean-candidate",
+      "gate_kind": "score_threshold",
+      "result": "pass",
+      "checked_by": "pipeline-auto",
+      "checked_utc": "2026-03-01T06:00:00Z",
+      "score_at_check": 0.72,
+      "notes": "Score threshold gate passed; score above minimum."
+    },
+    {
+      "gate_id": "gate-002",
+      "candidate_id": "infrared-excess-candidate",
+      "gate_kind": "provenance_completeness",
+      "result": "pass",
+      "checked_by": "pipeline-auto",
+      "checked_utc": "2026-03-05T07:30:00Z",
+      "score_at_check": 0.65,
+      "notes": "Provenance completeness gate passed; all required fields present."
+    },
+    {
+      "gate_id": "gate-003",
+      "candidate_id": "radio-clean-candidate",
+      "gate_kind": "rfi_screen",
+      "result": "fail",
+      "checked_by": "operator-alpha",
+      "checked_utc": "2026-03-08T09:00:00Z",
+      "score_at_check": 0.72,
+      "notes": "RFI screen gate failed; candidate overlaps known RFI band edge."
+    },
+    {
+      "gate_id": "gate-004",
+      "candidate_id": "anomaly-candidate",
+      "gate_kind": "catalog_check",
+      "result": "warn",
+      "checked_by": "pipeline-auto",
+      "checked_utc": "2026-03-10T11:00:00Z",
+      "score_at_check": null,
+      "notes": "Catalog check returned warning; ambiguous cross-match found."
+    },
+    {
+      "gate_id": "gate-005",
+      "candidate_id": "infrared-excess-candidate",
+      "gate_kind": "review_coverage",
+      "result": "not_applicable",
+      "checked_by": "pipeline-auto",
+      "checked_utc": "2026-03-15T14:00:00Z",
+      "score_at_check": null,
+      "notes": "Review coverage gate not applicable; candidate in initial triage."
+    }
+  ]
+}

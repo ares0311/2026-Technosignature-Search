@@ -10,6 +10,65 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
+User requested fifteen iterative steps completing Milestone 20 (observation request log, candidate export log, quality gate log).
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all fifteen steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/observation_request_log.py` — local scheduling records for follow-up observation slot requests; request kinds: target_followup, reobservation, calibration_check, verification, archival_search; statuses: submitted, acknowledged, scheduled, completed, rejected, withdrawn
+- `schemas/observation_request_log.schema.json`
+- `tests/fixtures/observation_request_log.json` — 5 entries (1 submitted, 1 acknowledged, 1 completed, 1 rejected, 1 scheduled)
+- `tests/test_observation_request_log.py` — 22 tests
+- `src/techno_search/candidate_export_log.py` — operational provenance records for candidate data export events; export formats: json, csv, markdown, fits_stub, parquet_stub; statuses: prepared, exported, delivered, failed, cancelled
+- `schemas/candidate_export_log.schema.json`
+- `tests/fixtures/candidate_export_log.json` — 5 entries (2 exported, 1 delivered, 1 prepared, 1 failed)
+- `tests/test_candidate_export_log.py` — 22 tests
+- `src/techno_search/quality_gate_log.py` — operational provenance records for pipeline quality gate checks; gate kinds: score_threshold, provenance_completeness, rfi_screen, catalog_check, review_coverage; results: pass, fail, warn, not_applicable
+- `schemas/quality_gate_log.schema.json`
+- `tests/fixtures/quality_gate_log.json` — 5 entries (2 pass, 1 fail, 1 warn, 1 not_applicable)
+- `tests/test_quality_gate_log.py` — 26 tests
+- `observation_request_log`, `candidate_export_log`, `quality_gate_log` added to `SCHEMA_FILENAMES` (total schemas: 94)
+- `techno-search observation-request-summary`, `techno-search candidate-export-summary`, `techno-search quality-gate-summary` CLI commands
+- `validate-all` gates: `obs_request_entry_count >= 1`, `candidate_export_entry_count >= 1`, `quality_gate_entry_count >= 1`, `quality_gate_pass_count >= 1`
+- `validation-summary` fields: `observation_request_entry_count`, `observation_request_pending_count`, `candidate_export_entry_count`, `candidate_export_delivered_count`, `quality_gate_entry_count`, `quality_gate_pass_count`
+- DECISION-067: Observation Request Log, Candidate Export Log, And Quality Gate Log Complete Milestone 20
+- Docs: CLI_USAGE.md, DECISIONS.md, ROADMAP.md updated; Milestone 20 fully checked off
+
+Scientific guardrail:
+
+- Observation request entries are local scheduling coordination records — they do not constitute telescope-time allocations, do not modify candidate scores or pathway routing, and do not authorize external submission or constitute a detection claim
+- Candidate export entries are operational provenance records — export records do not authorize external submission or publication and do not constitute a detection claim
+- Quality gate entries are operational provenance records — a gate pass does not modify candidate scores or pathway routing and does not authorize external submission
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/ruff check .
+.venv/bin/mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 1804 tests passed
+- 5 tests skipped
+- total coverage: 91%
+- Ruff passed
+- mypy passed (116 source files)
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, PR pending.
+
+---
+
+## Previous Iteration
+
 User requested fifteen iterative steps completing Milestone 19 (data gap log, candidate match log, pipeline error log).
 
 Current branch: `claude/general-session-Bb2dZ`.

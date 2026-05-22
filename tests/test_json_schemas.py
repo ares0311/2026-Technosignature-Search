@@ -93,10 +93,13 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "operations_blocker_progress_review.schema.json",
         "operations_blocker_review.schema.json",
         "candidate_deduplication_log.schema.json",
+        "candidate_export_log.schema.json",
         "candidate_match_log.schema.json",
         "data_gap_log.schema.json",
         "intake_queue_log.schema.json",
+        "observation_request_log.schema.json",
         "pipeline_error_log.schema.json",
+        "quality_gate_log.schema.json",
         "workflow_state_log.schema.json",
     }
     for path in schema_paths:
