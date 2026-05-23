@@ -1678,3 +1678,22 @@ live data, authorize external submission, or constitute external validation.
 **Candidate status log**: records candidate-level status transition events as an audit trail. Transition kinds are initial, promotion, demotion, hold, and archive. Current status values are new, active, under_review, on_hold, and archived. Candidate status entries are operational provenance records — a status transition does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.
 
 **Consequences**: validate-all gates enforce frequency_channel_entry_count >= 1, pipeline_checkpoint_entry_count >= 1, candidate_status_entry_count >= 1. SCHEMA_FILENAMES grows to 103. Milestone 23 is complete. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-071: Beam Configuration Log, Calibration Event Log, And Pipeline Run Log Complete Milestone 24
+
+**Date**: 2026-05-23
+**Status**: accepted
+
+**Context**: Milestone 24 adds three operational provenance modules covering radio telescope beam configuration provenance, pipeline calibration event provenance, and top-level pipeline run execution provenance.
+
+**Decision**: Add three modules, all local operational provenance records only.
+
+**Beam configuration log**: records radio telescope beam configuration events for pipeline provenance. Beam kinds are primary_beam, sidelobe, calibrator_beam, off_source, and synthetic_beam. Statuses are configured, applied, superseded, and failed. Beam configuration entries are operational processing provenance records — beam configuration does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
+
+**Calibration event log**: records pipeline calibration events for provenance. Event kinds are flux_calibration, bandpass_calibration, phase_calibration, polarization_calibration, and pointing_calibration. Statuses are applied, failed, skipped, and deferred. Calibration event entries are operational processing provenance records — a calibration event does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
+
+**Pipeline run log**: records top-level pipeline execution run events for reproducibility provenance. Run kinds are full_pipeline, partial_rerun, calibration_only, test_run, and recovery_run. Statuses are started, completed, failed, aborted, and paused. Pipeline run entries are operational reproducibility records — a pipeline run record does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
+
+**Consequences**: validate-all gates enforce beam_configuration_entry_count >= 1, calibration_event_entry_count >= 1, pipeline_run_entry_count >= 1. SCHEMA_FILENAMES grows to 106. Milestone 24 is complete. Scientific guardrails remain unchanged.

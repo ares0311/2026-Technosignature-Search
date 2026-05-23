@@ -2140,3 +2140,42 @@ techno-search candidate-status-summary --fixture-path tests/fixtures/candidate_s
 ```
 
 Output fields: `schema_version`, `disclaimer`, `entry_count`, `active_count`, `archived_count`, `counts_by_kind`, `counts_by_status`, `unique_candidate_count`. Candidate status entries are operational provenance records — a status transition does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.
+
+## `beam-configuration-summary`
+
+Summarize beam configuration log entries.
+
+```bash
+techno-search beam-configuration-summary
+techno-search beam-configuration-summary --fixture-path tests/fixtures/beam_configuration_log.json
+```
+
+Output fields: `entry_count`, `applied_count`, `configured_count`, `counts_by_kind`, `counts_by_status`, `schema_version`, `disclaimer`.
+
+Beam configuration entries are operational processing provenance records — beam configuration does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
+
+## `calibration-event-summary`
+
+Summarize calibration event log entries.
+
+```bash
+techno-search calibration-event-summary
+techno-search calibration-event-summary --fixture-path tests/fixtures/calibration_event_log.json
+```
+
+Output fields: `entry_count`, `applied_count`, `failed_count`, `counts_by_kind`, `counts_by_status`, `schema_version`, `disclaimer`.
+
+Calibration event entries are operational processing provenance records — a calibration event does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
+
+## `pipeline-run-summary`
+
+Summarize pipeline run log entries.
+
+```bash
+techno-search pipeline-run-summary
+techno-search pipeline-run-summary --fixture-path tests/fixtures/pipeline_run_log.json
+```
+
+Output fields: `entry_count`, `completed_count`, `failed_count`, `counts_by_kind`, `counts_by_status`, `schema_version`, `disclaimer`.
+
+Pipeline run entries are operational reproducibility records — a pipeline run record does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.

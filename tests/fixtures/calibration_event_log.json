@@ -1,0 +1,54 @@
+{
+  "calibration_event_entries": [
+    {
+      "entry_id": "cel-001",
+      "run_id": "run-2026-001",
+      "event_kind": "flux_calibration",
+      "status": "applied",
+      "calibrated_by": "operator-a",
+      "calibrated_at": "2026-01-10T09:00:00Z",
+      "source_name": "3C286",
+      "notes": "Flux calibration applied using 3C286."
+    },
+    {
+      "entry_id": "cel-002",
+      "run_id": "run-2026-001",
+      "event_kind": "bandpass_calibration",
+      "status": "applied",
+      "calibrated_by": "operator-a",
+      "calibrated_at": "2026-01-10T09:15:00Z",
+      "source_name": "3C48",
+      "notes": "Bandpass calibration applied using 3C48."
+    },
+    {
+      "entry_id": "cel-003",
+      "run_id": "run-2026-001",
+      "event_kind": "phase_calibration",
+      "status": "applied",
+      "calibrated_by": "pipeline-auto",
+      "calibrated_at": "2026-01-10T09:30:00Z",
+      "source_name": "J0137+3309",
+      "notes": null
+    },
+    {
+      "entry_id": "cel-004",
+      "run_id": "run-2026-002",
+      "event_kind": "polarization_calibration",
+      "status": "skipped",
+      "calibrated_by": "operator-b",
+      "calibrated_at": "2026-01-11T10:00:00Z",
+      "source_name": null,
+      "notes": "Skipped: single polarization mode active for this run."
+    },
+    {
+      "entry_id": "cel-005",
+      "run_id": "run-2026-002",
+      "event_kind": "pointing_calibration",
+      "status": "deferred",
+      "calibrated_by": "operator-b",
+      "calibrated_at": "2026-01-11T10:05:00Z",
+      "source_name": null,
+      "notes": "Deferred: pointing calibration scheduled for next run."
+    }
+  ]
+}

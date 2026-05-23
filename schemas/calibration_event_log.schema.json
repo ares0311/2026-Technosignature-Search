@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CalibrationEventLog",
+  "description": "Operational processing provenance records for pipeline calibration events.",
+  "type": "object",
+  "required": ["calibration_event_entries"],
+  "properties": {
+    "calibration_event_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entry_id","run_id","event_kind","status","calibrated_by","calibrated_at"],
+        "properties": {
+          "entry_id": {"type": "string"},
+          "run_id": {"type": "string"},
+          "event_kind": {"type": "string", "enum": ["flux_calibration","bandpass_calibration","phase_calibration","polarization_calibration","pointing_calibration"]},
+          "status": {"type": "string", "enum": ["applied","failed","skipped","deferred"]},
+          "calibrated_by": {"type": "string"},
+          "calibrated_at": {"type": "string"},
+          "source_name": {"type": ["string","null"]},
+          "notes": {"type": ["string","null"]}
+        }
+      }
+    }
+  }
+}

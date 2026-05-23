@@ -835,3 +835,20 @@ introduced.
 - Frequency channel entries are operational processing provenance records — channel configuration does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim
 - Pipeline checkpoint entries are operational reproducibility records — a restored checkpoint does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim
 - Candidate status entries are operational provenance records — a status transition does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim
+
+# Milestone 24 — Beam Configuration Log, Calibration Event Log, And Pipeline Run Log
+
+- [x] `beam_configuration_log` — operational processing provenance records for radio telescope beam configuration; beam kinds: primary_beam, sidelobe, calibrator_beam, off_source, synthetic_beam; statuses: configured, applied, superseded, failed
+- [x] `calibration_event_log` — operational processing provenance records for pipeline calibration events; event kinds: flux_calibration, bandpass_calibration, phase_calibration, polarization_calibration, pointing_calibration; statuses: applied, failed, skipped, deferred
+- [x] `pipeline_run_log` — operational reproducibility records for top-level pipeline execution runs; run kinds: full_pipeline, partial_rerun, calibration_only, test_run, recovery_run; statuses: started, completed, failed, aborted, paused
+- [x] `beam_configuration_log`, `calibration_event_log`, `pipeline_run_log` added to `SCHEMA_FILENAMES` (total schemas: 106)
+- [x] `techno-search beam-configuration-summary`, `techno-search calibration-event-summary`, `techno-search pipeline-run-summary` CLI commands
+- [x] `validate-all` gates: `beam_configuration_entry_count >= 1`, `calibration_event_entry_count >= 1`, `pipeline_run_entry_count >= 1`
+- [x] `validation-summary` fields: `beam_configuration_entry_count`, `beam_configuration_applied_count`, `calibration_event_entry_count`, `calibration_event_applied_count`, `pipeline_run_entry_count`, `pipeline_run_completed_count`
+- [x] DECISION-071: Beam Configuration Log, Calibration Event Log, And Pipeline Run Log Complete Milestone 24
+
+## Guardrails
+
+- Beam configuration entries are operational processing provenance records — beam configuration does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim
+- Calibration event entries are operational processing provenance records — a calibration event does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim
+- Pipeline run entries are operational reproducibility records — a pipeline run record does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim

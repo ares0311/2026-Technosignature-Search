@@ -1,0 +1,59 @@
+{
+  "pipeline_run_entries": [
+    {
+      "entry_id": "prl-001",
+      "run_id": "run-2026-001",
+      "run_kind": "full_pipeline",
+      "status": "completed",
+      "started_by": "operator-a",
+      "started_at": "2026-01-10T08:00:00Z",
+      "completed_at": "2026-01-10T10:30:00Z",
+      "candidate_count": 10,
+      "notes": "Full pipeline run completed successfully."
+    },
+    {
+      "entry_id": "prl-002",
+      "run_id": "run-2026-002",
+      "run_kind": "full_pipeline",
+      "status": "completed",
+      "started_by": "operator-b",
+      "started_at": "2026-01-11T08:00:00Z",
+      "completed_at": "2026-01-11T11:00:00Z",
+      "candidate_count": 8,
+      "notes": null
+    },
+    {
+      "entry_id": "prl-003",
+      "run_id": "run-2026-003",
+      "run_kind": "partial_rerun",
+      "status": "failed",
+      "started_by": "pipeline-auto",
+      "started_at": "2026-01-12T09:00:00Z",
+      "completed_at": null,
+      "candidate_count": null,
+      "notes": "Failed: scoring stage error encountered."
+    },
+    {
+      "entry_id": "prl-004",
+      "run_id": "run-2026-004",
+      "run_kind": "test_run",
+      "status": "aborted",
+      "started_by": "operator-a",
+      "started_at": "2026-01-13T10:00:00Z",
+      "completed_at": null,
+      "candidate_count": null,
+      "notes": "Aborted: test run halted by operator."
+    },
+    {
+      "entry_id": "prl-005",
+      "run_id": "run-2026-005",
+      "run_kind": "recovery_run",
+      "status": "paused",
+      "started_by": "operator-c",
+      "started_at": "2026-01-14T11:00:00Z",
+      "completed_at": null,
+      "candidate_count": null,
+      "notes": "Paused: awaiting operator review before resuming."
+    }
+  ]
+}

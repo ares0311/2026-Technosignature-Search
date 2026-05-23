@@ -44,6 +44,7 @@ from techno_search.baseline_eval import (
     route_coverage_summary,
     score_determinism_check,
 )
+from techno_search.beam_configuration_log import beam_configuration_log_summary
 from techno_search.benchmark_metadata import (
     BenchmarkRunResult,
     append_benchmark_run_result,
@@ -57,6 +58,7 @@ from techno_search.calibration import (
     load_calibration_fixtures,
     summarize_calibration_fixtures,
 )
+from techno_search.calibration_event_log import calibration_event_log_summary
 from techno_search.calibration_metrics import precision_recall_summary, reliability_summary
 from techno_search.candidate_alert_log import candidate_alert_summary
 from techno_search.candidate_annotation import candidate_annotation_summary
@@ -188,6 +190,7 @@ from techno_search.pipeline_error_log import pipeline_error_summary
 from techno_search.pipeline_health import pipeline_health_summary
 from techno_search.pipeline_integration import pipeline_integration_summary
 from techno_search.pipeline_replay_log import pipeline_replay_summary
+from techno_search.pipeline_run_log import pipeline_run_log_summary
 from techno_search.pipeline_telemetry import pipeline_telemetry_summary
 from techno_search.pipeline_throughput import pipeline_throughput_summary
 from techno_search.plotting import plot_artifact_summary
@@ -353,6 +356,9 @@ SCHEMA_FILENAMES = {
     "frequency_channel_log": "frequency_channel_log.schema.json",
     "pipeline_checkpoint_log": "pipeline_checkpoint_log.schema.json",
     "candidate_status_log": "candidate_status_log.schema.json",
+    "beam_configuration_log": "beam_configuration_log.schema.json",
+    "calibration_event_log": "calibration_event_log.schema.json",
+    "pipeline_run_log": "pipeline_run_log.schema.json",
 }
 
 
@@ -2826,6 +2832,42 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "beam-configuration-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                beam_configuration_log_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "calibration-event-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                calibration_event_log_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "pipeline-run-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                pipeline_run_log_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -3303,6 +3345,23 @@ def validate_all() -> dict[str, object]:
     _candidate_status_active_count = int(
         candidate_status_log_data.get("active_count", 0)
     )
+    beam_configuration_data = beam_configuration_log_summary()
+    beam_configuration_entry_count = int(
+        beam_configuration_data.get("entry_count", 0)
+    )
+    _beam_configuration_applied_count = int(
+        beam_configuration_data.get("applied_count", 0)
+    )
+    calibration_event_data = calibration_event_log_summary()
+    calibration_event_entry_count = int(
+        calibration_event_data.get("entry_count", 0)
+    )
+    _calibration_event_applied_count = int(
+        calibration_event_data.get("applied_count", 0)
+    )
+    pipeline_run_data = pipeline_run_log_summary()
+    pipeline_run_entry_count = int(pipeline_run_data.get("entry_count", 0))
+    _pipeline_run_completed_count = int(pipeline_run_data.get("completed_count", 0))
     comparison_data = candidate_comparison_summary()
     comparison_count = int(comparison_data.get("record_count", 0))
     telemetry_data = pipeline_telemetry_summary()
@@ -3956,6 +4015,12 @@ def validate_all() -> dict[str, object]:
         and pipeline_checkpoint_entry_count >= 1
         and isinstance(candidate_status_entry_count, int)
         and candidate_status_entry_count >= 1
+        and isinstance(beam_configuration_entry_count, int)
+        and beam_configuration_entry_count >= 1
+        and isinstance(calibration_event_entry_count, int)
+        and calibration_event_entry_count >= 1
+        and isinstance(pipeline_run_entry_count, int)
+        and pipeline_run_entry_count >= 1
         and action_resolution_record_count >= 1
         and action_resolution_live_authorized_count == 0
         and action_resolution_external_authorized_count == 0
@@ -4171,6 +4236,9 @@ def validate_all() -> dict[str, object]:
         "frequency_channel_log_summary": frequency_channel_data,
         "pipeline_checkpoint_log_summary": pipeline_checkpoint_data,
         "candidate_status_log_summary": candidate_status_log_data,
+        "beam_configuration_log_summary": beam_configuration_data,
+        "calibration_event_log_summary": calibration_event_data,
+        "pipeline_run_log_summary": pipeline_run_data,
         "operations_readiness_summary": operations_readiness,
         "operations_action_plan_summary": operations_action_plan,
         "operations_action_resolution_summary": operations_action_resolution,
@@ -6026,6 +6094,36 @@ def validation_summary() -> dict[str, object]:
         "candidate_status_active_count": (
             csl_s2["active_count"]
             if isinstance(csl_s2 := validation.get("candidate_status_log_summary"), dict)
+            else 0
+        ),
+        "beam_configuration_entry_count": (
+            bcl_s["entry_count"]
+            if isinstance(bcl_s := validation.get("beam_configuration_log_summary"), dict)
+            else 0
+        ),
+        "beam_configuration_applied_count": (
+            bcl_s2["applied_count"]
+            if isinstance(bcl_s2 := validation.get("beam_configuration_log_summary"), dict)
+            else 0
+        ),
+        "calibration_event_entry_count": (
+            cel_s["entry_count"]
+            if isinstance(cel_s := validation.get("calibration_event_log_summary"), dict)
+            else 0
+        ),
+        "calibration_event_applied_count": (
+            cel_s2["applied_count"]
+            if isinstance(cel_s2 := validation.get("calibration_event_log_summary"), dict)
+            else 0
+        ),
+        "pipeline_run_entry_count": (
+            prl_s["entry_count"]
+            if isinstance(prl_s := validation.get("pipeline_run_log_summary"), dict)
+            else 0
+        ),
+        "pipeline_run_completed_count": (
+            prl_s2["completed_count"]
+            if isinstance(prl_s2 := validation.get("pipeline_run_log_summary"), dict)
             else 0
         ),
         "recommended_commands": [
@@ -8188,6 +8286,30 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize candidate status log entries (operational provenance records only).",
     )
     candidate_status_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    beam_configuration_parser = subparsers.add_parser(
+        "beam-configuration-summary",
+        help="Summarize beam configuration log entries (operational provenance records only).",
+    )
+    beam_configuration_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    calibration_event_parser = subparsers.add_parser(
+        "calibration-event-summary",
+        help="Summarize calibration event log entries (operational provenance records only).",
+    )
+    calibration_event_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    pipeline_run_parser = subparsers.add_parser(
+        "pipeline-run-summary",
+        help="Summarize pipeline run log entries (operational reproducibility records only).",
+    )
+    pipeline_run_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 
