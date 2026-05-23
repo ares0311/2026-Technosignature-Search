@@ -60,6 +60,7 @@ from techno_search.calibration import (
 from techno_search.calibration_metrics import precision_recall_summary, reliability_summary
 from techno_search.candidate_alert_log import candidate_alert_summary
 from techno_search.candidate_annotation import candidate_annotation_summary
+from techno_search.candidate_annotation_log import candidate_annotation_log_summary
 from techno_search.candidate_audit_trail import audit_trail_summary
 from techno_search.candidate_comparison import candidate_comparison_summary
 from techno_search.candidate_deduplication_log import candidate_deduplication_summary
@@ -202,6 +203,7 @@ from techno_search.review_queue import (
     consensus_summary,
     review_queue_summary,
 )
+from techno_search.rfi_mitigation_log import rfi_mitigation_summary
 from techno_search.schemas import Candidate, Track, candidate_from_mapping
 from techno_search.scoring import score_candidate
 from techno_search.scoring_audit_log import scoring_audit_log_summary
@@ -209,6 +211,7 @@ from techno_search.scoring_config import scoring_config_summary
 from techno_search.scoring_threshold_audit import scoring_threshold_audit_summary
 from techno_search.sensitivity_config import sensitivity_config_summary
 from techno_search.session_log import session_log_summary
+from techno_search.signal_classification_log import signal_classification_summary
 from techno_search.signal_registry import (
     signal_registry_summary,
     signal_registry_track_summary,
@@ -341,6 +344,9 @@ SCHEMA_FILENAMES = {
     "instrument_log": "instrument_log.schema.json",
     "archival_query_log": "archival_query_log.schema.json",
     "candidate_linkage_log": "candidate_linkage_log.schema.json",
+    "signal_classification_log": "signal_classification_log.schema.json",
+    "rfi_mitigation_log": "rfi_mitigation_log.schema.json",
+    "candidate_annotation_log": "candidate_annotation_log.schema.json",
 }
 
 
@@ -2742,6 +2748,42 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "signal-classification-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                signal_classification_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "rfi-mitigation-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                rfi_mitigation_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "candidate-annotation-log-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                candidate_annotation_log_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -3189,6 +3231,21 @@ def validate_all() -> dict[str, object]:
     candidate_linkage_data = candidate_linkage_summary()
     candidate_linkage_entry_count = int(candidate_linkage_data.get("entry_count", 0))
     _candidate_linkage_confirmed_count = int(candidate_linkage_data.get("confirmed_count", 0))
+    signal_classification_data = signal_classification_summary()
+    signal_classification_entry_count = int(signal_classification_data.get("entry_count", 0))
+    _signal_classification_classified_count = int(
+        signal_classification_data.get("classified_count", 0)
+    )
+    rfi_mitigation_data = rfi_mitigation_summary()
+    rfi_mitigation_entry_count = int(rfi_mitigation_data.get("entry_count", 0))
+    _rfi_mitigation_flagged_count = int(rfi_mitigation_data.get("flagged_count", 0))
+    candidate_annotation_log_data = candidate_annotation_log_summary()
+    candidate_annotation_entry_count = int(
+        candidate_annotation_log_data.get("entry_count", 0)
+    )
+    _candidate_annotation_active_count = int(
+        candidate_annotation_log_data.get("active_count", 0)
+    )
     comparison_data = candidate_comparison_summary()
     comparison_count = int(comparison_data.get("record_count", 0))
     telemetry_data = pipeline_telemetry_summary()
@@ -3830,6 +3887,12 @@ def validate_all() -> dict[str, object]:
         and instrument_log_entry_count >= 1
         and archival_query_entry_count >= 1
         and candidate_linkage_entry_count >= 1
+        and isinstance(signal_classification_entry_count, int)
+        and signal_classification_entry_count >= 1
+        and isinstance(rfi_mitigation_entry_count, int)
+        and rfi_mitigation_entry_count >= 1
+        and isinstance(candidate_annotation_entry_count, int)
+        and candidate_annotation_entry_count >= 1
         and action_resolution_record_count >= 1
         and action_resolution_live_authorized_count == 0
         and action_resolution_external_authorized_count == 0
@@ -4039,6 +4102,9 @@ def validate_all() -> dict[str, object]:
         "instrument_log_summary": instrument_log_data,
         "archival_query_summary": archival_query_data,
         "candidate_linkage_summary": candidate_linkage_data,
+        "signal_classification_summary": signal_classification_data,
+        "rfi_mitigation_summary": rfi_mitigation_data,
+        "candidate_annotation_log_summary": candidate_annotation_log_data,
         "operations_readiness_summary": operations_readiness,
         "operations_action_plan_summary": operations_action_plan,
         "operations_action_resolution_summary": operations_action_resolution,
@@ -5834,6 +5900,36 @@ def validation_summary() -> dict[str, object]:
         "candidate_linkage_confirmed_count": (
             cl_s2["confirmed_count"]
             if isinstance(cl_s2 := validation.get("candidate_linkage_summary"), dict)
+            else 0
+        ),
+        "signal_classification_entry_count": (
+            sc_s["entry_count"]
+            if isinstance(sc_s := validation.get("signal_classification_summary"), dict)
+            else 0
+        ),
+        "signal_classification_classified_count": (
+            sc_s2["classified_count"]
+            if isinstance(sc_s2 := validation.get("signal_classification_summary"), dict)
+            else 0
+        ),
+        "rfi_mitigation_entry_count": (
+            rm_s["entry_count"]
+            if isinstance(rm_s := validation.get("rfi_mitigation_summary"), dict)
+            else 0
+        ),
+        "rfi_mitigation_flagged_count": (
+            rm_s2["flagged_count"]
+            if isinstance(rm_s2 := validation.get("rfi_mitigation_summary"), dict)
+            else 0
+        ),
+        "candidate_annotation_entry_count": (
+            cal_s["entry_count"]
+            if isinstance(cal_s := validation.get("candidate_annotation_log_summary"), dict)
+            else 0
+        ),
+        "candidate_annotation_active_count": (
+            cal_s2["active_count"]
+            if isinstance(cal_s2 := validation.get("candidate_annotation_log_summary"), dict)
             else 0
         ),
         "recommended_commands": [
@@ -7948,6 +8044,30 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize candidate linkage log entries (provenance records only).",
     )
     candidate_linkage_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    signal_classification_parser = subparsers.add_parser(
+        "signal-classification-summary",
+        help="Summarize signal classification log entries (provenance records only).",
+    )
+    signal_classification_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    rfi_mitigation_parser = subparsers.add_parser(
+        "rfi-mitigation-summary",
+        help="Summarize RFI mitigation log entries (processing provenance records only).",
+    )
+    rfi_mitigation_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    candidate_annotation_log_parser = subparsers.add_parser(
+        "candidate-annotation-log-summary",
+        help="Summarize candidate annotation log entries (operator provenance records only).",
+    )
+    candidate_annotation_log_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

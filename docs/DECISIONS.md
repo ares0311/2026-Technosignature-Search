@@ -1639,3 +1639,23 @@ live data, authorize external submission, or constitute external validation.
 **Candidate linkage log**: records pairwise linkages between related candidates. Linkage kinds are same_source, temporal_followup, spatial_neighbor, frequency_related, and cross_track. Statuses are proposed, confirmed, rejected, and under_review. A confirmed linkage does not modify candidate scores or pathway routing, does not constitute a detection claim, and does not authorize external submission.
 
 **Consequences**: `validate-all` gates enforce `instrument_log_entry_count >= 1`, `archival_query_entry_count >= 1`, `candidate_linkage_entry_count >= 1`. SCHEMA_FILENAMES grows to 97. Milestone 21 is complete. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-069: Signal Classification Log, RFI Mitigation Log, And Candidate Annotation Log Complete Milestone 22
+
+**Date**: 2026-05-23
+
+**Status**: accepted
+
+**Context**: Milestone 22 adds three operational provenance modules completing coverage of signal characterization provenance, RFI handling provenance, and operator annotation provenance.
+
+**Decision**: Add three modules, all local operational provenance records only.
+
+**Signal classification log**: records signal classification events for pipeline provenance. Classification kinds are narrowband, broadband, pulsed, intermittent, and unknown. Statuses are classified, unclassified, ambiguous, and reclassified. Signal classification entries are operational provenance records — a classification does not confirm or rule out technosignature interest, does not modify candidate scores or pathway routing, and does not authorize external submission or constitute a detection claim.
+
+**RFI mitigation log**: records RFI flagging and mitigation actions during pipeline processing. Mitigation kinds are known_rfi_source, statistical_outlier, satellite_track, terrestrial_interference, and other. Actions are flagged, excised, masked, passed, and deferred. A passed action does not confirm a signal is not RFI, does not modify candidate scores or pathway routing, and does not authorize external submission or constitute a detection claim.
+
+**Candidate annotation log**: records operator and automated annotation provenance for candidates. Annotation kinds are manual_tag, automated_flag, cross_reference, operator_note, and classification_hint. Statuses are active, superseded, and withdrawn. Annotation entries do not modify candidate posteriors, scores, or pathway routing, and do not authorize external submission or constitute a detection claim.
+
+**Consequences**: `validate-all` gates enforce `signal_classification_entry_count >= 1`, `rfi_mitigation_entry_count >= 1`, `candidate_annotation_entry_count >= 1`. SCHEMA_FILENAMES grows to 100. Milestone 22 is complete. Scientific guardrails remain unchanged.

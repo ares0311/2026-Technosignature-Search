@@ -656,6 +656,76 @@ Add three operational provenance modules: follow-up observation scheduling reque
 
 ---
 
+# Milestone 21 — Instrument Log, Archival Query Log, And Candidate Linkage Log
+
+## Goal
+
+Add three operational provenance modules: instrument/telescope status events, archival/catalog query provenance, and candidate-to-candidate linkage records.
+
+## Tasks
+
+- [x] `src/techno_search/instrument_log.py` — InstrumentLogEntry, load_instrument_log_entries, instrument_log_summary; instrument kinds: radio_telescope, optical_telescope, archive_node, data_pipeline
+- [x] `schemas/instrument_log.schema.json`
+- [x] `tests/fixtures/instrument_log.json` — 5 entries (1 online, 1 offline, 1 degraded, 1 maintenance, 1 calibrating)
+- [x] `tests/test_instrument_log.py` — 22 tests
+- [x] `src/techno_search/archival_query_log.py` — ArchivalQueryEntry, load_archival_query_entries, archival_query_summary; query kinds: cone_search, identifier_lookup, time_series, spectral_query, image_retrieval
+- [x] `schemas/archival_query_log.schema.json`
+- [x] `tests/fixtures/archival_query_log.json` — 5 entries (2 completed, 1 submitted, 1 failed, 1 cached)
+- [x] `tests/test_archival_query_log.py` — 22 tests
+- [x] `src/techno_search/candidate_linkage_log.py` — CandidateLinkageEntry, load_linkage_entries, candidate_linkage_summary; linkage kinds: same_source, temporal_followup, spatial_neighbor, frequency_related, cross_track
+- [x] `schemas/candidate_linkage_log.schema.json`
+- [x] `tests/fixtures/candidate_linkage_log.json` — 5 entries (2 confirmed, 1 proposed, 1 rejected, 1 under_review)
+- [x] `tests/test_candidate_linkage_log.py` — 22 tests
+- [x] `instrument_log`, `archival_query_log`, `candidate_linkage_log` added to `SCHEMA_FILENAMES` (total schemas: 97)
+- [x] CLI: `instrument-log-summary`, `archival-query-summary`, `candidate-linkage-summary`
+- [x] `validate-all` gates: instrument_log_entry_count >= 1, archival_query_entry_count >= 1, candidate_linkage_entry_count >= 1
+- [x] `validation-summary` fields: instrument_log_entry_count, archival_query_entry_count, candidate_linkage_entry_count, candidate_linkage_confirmed_count
+- [x] DECISION-068: Instrument Log, Archival Query Log, And Candidate Linkage Log Complete Milestone 21
+
+## Done When
+
+- Instrument log covers all instrument and event kinds
+- Archival query log covers all query kinds and statuses
+- Candidate linkage log covers all linkage kinds and statuses with separation_arcsec for spatial entries
+- All integration tests pass without network access
+
+---
+
+# Milestone 22 — Signal Classification Log, RFI Mitigation Log, And Candidate Annotation Log
+
+## Goal
+
+Add three operational provenance modules: signal characterization classification provenance, RFI flagging and mitigation provenance, and operator/automated annotation provenance.
+
+## Tasks
+
+- [x] `src/techno_search/signal_classification_log.py` — SignalClassificationEntry, load_signal_classification_entries, signal_classification_summary; classification kinds: narrowband, broadband, pulsed, intermittent, unknown
+- [x] `schemas/signal_classification_log.schema.json`
+- [x] `tests/fixtures/signal_classification_log.json` — 5 entries (2 classified, 1 unclassified, 1 ambiguous, 1 reclassified)
+- [x] `tests/test_signal_classification_log.py` — 22 tests
+- [x] `src/techno_search/rfi_mitigation_log.py` — RfiMitigationEntry, load_rfi_mitigation_entries, rfi_mitigation_summary; mitigation kinds: known_rfi_source, statistical_outlier, satellite_track, terrestrial_interference, other
+- [x] `schemas/rfi_mitigation_log.schema.json`
+- [x] `tests/fixtures/rfi_mitigation_log.json` — 5 entries (2 flagged, 1 excised, 1 masked, 1 passed)
+- [x] `tests/test_rfi_mitigation_log.py` — 22 tests
+- [x] `src/techno_search/candidate_annotation_log.py` — CandidateAnnotationLogEntry, load_candidate_annotation_log_entries, candidate_annotation_log_summary; annotation kinds: manual_tag, automated_flag, cross_reference, operator_note, classification_hint
+- [x] `schemas/candidate_annotation_log.schema.json`
+- [x] `tests/fixtures/candidate_annotation_log.json` — 5 entries (3 active, 1 superseded, 1 withdrawn)
+- [x] `tests/test_candidate_annotation_log.py` — 22 tests
+- [x] `signal_classification_log`, `rfi_mitigation_log`, `candidate_annotation_log` added to `SCHEMA_FILENAMES` (total schemas: 100)
+- [x] CLI: `signal-classification-summary`, `rfi-mitigation-summary`, `candidate-annotation-log-summary`
+- [x] `validate-all` gates: signal_classification_entry_count >= 1, rfi_mitigation_entry_count >= 1, candidate_annotation_entry_count >= 1
+- [x] `validation-summary` fields: signal_classification_entry_count, signal_classification_classified_count, rfi_mitigation_entry_count, rfi_mitigation_flagged_count, candidate_annotation_entry_count, candidate_annotation_active_count
+- [x] DECISION-069: Signal Classification Log, RFI Mitigation Log, And Candidate Annotation Log Complete Milestone 22
+
+## Done When
+
+- Signal classification log covers all classification kinds and statuses
+- RFI mitigation log covers all mitigation kinds and actions with frequency_mhz for applicable entries
+- Candidate annotation log covers all annotation kinds and statuses with supersedes_entry_id for superseded entries
+- All integration tests pass without network access
+
+---
+
 # Project Operations Readiness
 
 ## Goal

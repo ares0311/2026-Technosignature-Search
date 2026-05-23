@@ -10,6 +10,55 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
+User requested implementation of Milestone 22 (signal classification log, RFI mitigation log, candidate annotation log).
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/signal_classification_log.py` — operational provenance records for signal classification events; classification kinds: narrowband, broadband, pulsed, intermittent, unknown; statuses: classified, unclassified, ambiguous, reclassified
+- `schemas/signal_classification_log.schema.json`
+- `tests/fixtures/signal_classification_log.json` — 5 entries (2 classified, 1 unclassified, 1 ambiguous, 1 reclassified)
+- `tests/test_signal_classification_log.py` — 22 tests
+- `src/techno_search/rfi_mitigation_log.py` — operational processing provenance records for RFI mitigation actions; mitigation kinds: known_rfi_source, statistical_outlier, satellite_track, terrestrial_interference, other; actions: flagged, excised, masked, passed, deferred
+- `schemas/rfi_mitigation_log.schema.json`
+- `tests/fixtures/rfi_mitigation_log.json` — 5 entries (2 flagged, 1 excised, 1 masked, 1 passed)
+- `tests/test_rfi_mitigation_log.py` — 22 tests
+- `src/techno_search/candidate_annotation_log.py` — operator provenance records for candidate annotation events; annotation kinds: manual_tag, automated_flag, cross_reference, operator_note, classification_hint; statuses: active, superseded, withdrawn
+- `schemas/candidate_annotation_log.schema.json`
+- `tests/fixtures/candidate_annotation_log.json` — 5 entries (3 active, 1 superseded, 1 withdrawn)
+- `tests/test_candidate_annotation_log.py` — 22 tests
+- `signal_classification_log`, `rfi_mitigation_log`, `candidate_annotation_log` added to `SCHEMA_FILENAMES` (total schemas: 100)
+- `techno-search signal-classification-summary`, `techno-search rfi-mitigation-summary`, `techno-search candidate-annotation-log-summary` CLI commands
+- `validate-all` gates: `signal_classification_entry_count >= 1`, `rfi_mitigation_entry_count >= 1`, `candidate_annotation_entry_count >= 1`
+- `validation-summary` fields: `signal_classification_entry_count`, `signal_classification_classified_count`, `rfi_mitigation_entry_count`, `rfi_mitigation_flagged_count`, `candidate_annotation_entry_count`, `candidate_annotation_active_count`
+- DECISION-069: Signal Classification Log, RFI Mitigation Log, And Candidate Annotation Log Complete Milestone 22
+- Docs: CLI_USAGE.md, DECISIONS.md, ROADMAP.md updated; Milestone 22 fully checked off
+
+Scientific guardrail:
+
+- Signal classification entries are operational provenance records — a classification does not confirm or rule out technosignature interest, does not modify candidate scores or pathway routing, and does not authorize external submission or constitute a detection claim
+- RFI mitigation entries are operational processing provenance records — a passed action does not confirm a signal is not RFI, does not modify candidate scores or pathway routing, and does not authorize external submission or constitute a detection claim
+- Candidate annotation entries are operator provenance records — annotations do not modify candidate posteriors, scores, or pathway routing, and do not authorize external submission or constitute a detection claim
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/ruff check .
+.venv/bin/mypy src
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed.
+
+---
+
+## Previous Iteration
+
 User requested fifteen iterative steps completing Milestone 20 (observation request log, candidate export log, quality gate log).
 
 Current branch: `claude/general-session-Bb2dZ`.

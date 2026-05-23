@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CandidateAnnotationLog",
+  "description": "Operator provenance records for candidate annotation events.",
+  "type": "object",
+  "required": ["candidate_annotation_log_entries"],
+  "properties": {
+    "candidate_annotation_log_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entry_id","candidate_id","annotation_kind","status","annotated_by","annotated_at","track","annotation_text"],
+        "properties": {
+          "entry_id": {"type": "string"},
+          "candidate_id": {"type": "string"},
+          "annotation_kind": {"type": "string", "enum": ["manual_tag","automated_flag","cross_reference","operator_note","classification_hint"]},
+          "status": {"type": "string", "enum": ["active","superseded","withdrawn"]},
+          "annotated_by": {"type": "string"},
+          "annotated_at": {"type": "string"},
+          "track": {"type": "string"},
+          "annotation_text": {"type": "string"},
+          "supersedes_entry_id": {"type": ["string","null"]}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "candidate_annotation_log_entries": [
+    {
+      "entry_id": "ann-001",
+      "candidate_id": "radio-clean-candidate",
+      "annotation_kind": "manual_tag",
+      "status": "active",
+      "annotated_by": "operator-a",
+      "annotated_at": "2026-01-10T10:00:00Z",
+      "track": "radio",
+      "annotation_text": "Candidate exhibits stable drift rate consistent with synthetic test parameters.",
+      "supersedes_entry_id": null
+    },
+    {
+      "entry_id": "ann-002",
+      "candidate_id": "infrared-clean-candidate",
+      "annotation_kind": "operator_note",
+      "status": "active",
+      "annotated_by": "operator-b",
+      "annotated_at": "2026-01-11T11:00:00Z",
+      "track": "infrared",
+      "annotation_text": "Infrared excess candidate. Photometric quality flags reviewed; no bad pixels detected.",
+      "supersedes_entry_id": null
+    },
+    {
+      "entry_id": "ann-003",
+      "candidate_id": "anomaly-candidate-1",
+      "annotation_kind": "cross_reference",
+      "status": "active",
+      "annotated_by": "operator-a",
+      "annotated_at": "2026-01-12T12:00:00Z",
+      "track": "anomaly",
+      "annotation_text": "Cross-referenced against SIMBAD; no known variable star match within 5 arcsec.",
+      "supersedes_entry_id": null
+    },
+    {
+      "entry_id": "ann-004",
+      "candidate_id": "radio-clean-candidate",
+      "annotation_kind": "classification_hint",
+      "status": "superseded",
+      "annotated_by": "operator-c",
+      "annotated_at": "2026-01-13T13:00:00Z",
+      "track": "radio",
+      "annotation_text": "Initial classification hint: narrowband. Superseded after second epoch review.",
+      "supersedes_entry_id": null
+    },
+    {
+      "entry_id": "ann-005",
+      "candidate_id": "radio-rfi-candidate",
+      "annotation_kind": "automated_flag",
+      "status": "withdrawn",
+      "annotated_by": "pipeline-auto",
+      "annotated_at": "2026-01-14T14:00:00Z",
+      "track": "radio",
+      "annotation_text": "Automated flag: broadband emission pattern detected. Withdrawn after operator review confirmed RFI pathway.",
+      "supersedes_entry_id": null
+    }
+  ]
+}

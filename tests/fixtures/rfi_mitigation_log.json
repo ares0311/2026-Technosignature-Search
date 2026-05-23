@@ -1,0 +1,59 @@
+{
+  "rfi_mitigation_entries": [
+    {
+      "entry_id": "rfimit-001",
+      "candidate_id": "radio-rfi-candidate",
+      "mitigation_kind": "known_rfi_source",
+      "action": "flagged",
+      "mitigated_by": "operator-a",
+      "mitigated_at": "2026-01-10T10:00:00Z",
+      "track": "radio",
+      "frequency_mhz": 1575.42,
+      "notes": "Flagged as known GPS L1 frequency; consistent with known RFI catalog entry."
+    },
+    {
+      "entry_id": "rfimit-002",
+      "candidate_id": "radio-clean-candidate",
+      "mitigation_kind": "satellite_track",
+      "action": "flagged",
+      "mitigated_by": "operator-b",
+      "mitigated_at": "2026-01-11T11:00:00Z",
+      "track": "radio",
+      "frequency_mhz": 137.1,
+      "notes": "Satellite track pattern detected at NOAA frequency; flagged for review."
+    },
+    {
+      "entry_id": "rfimit-003",
+      "candidate_id": "radio-rfi-candidate",
+      "mitigation_kind": "statistical_outlier",
+      "action": "excised",
+      "mitigated_by": "operator-a",
+      "mitigated_at": "2026-01-12T12:00:00Z",
+      "track": "radio",
+      "frequency_mhz": null,
+      "notes": "Statistical outlier detected in ON/OFF power ratio; excised from candidate set."
+    },
+    {
+      "entry_id": "rfimit-004",
+      "candidate_id": "radio-clean-candidate",
+      "mitigation_kind": "terrestrial_interference",
+      "action": "masked",
+      "mitigated_by": "operator-c",
+      "mitigated_at": "2026-01-13T13:00:00Z",
+      "track": "radio",
+      "frequency_mhz": 88.5,
+      "notes": "FM broadcast interference masked; residual candidate retained after masking."
+    },
+    {
+      "entry_id": "rfimit-005",
+      "candidate_id": "radio-clean-candidate",
+      "mitigation_kind": "other",
+      "action": "passed",
+      "mitigated_by": "operator-b",
+      "mitigated_at": "2026-01-14T14:00:00Z",
+      "track": "radio",
+      "frequency_mhz": 1420.0,
+      "notes": "No known RFI match at 1420 MHz; candidate passed RFI mitigation screen."
+    }
+  ]
+}

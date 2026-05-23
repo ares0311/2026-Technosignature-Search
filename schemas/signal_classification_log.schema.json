@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SignalClassificationLog",
+  "description": "Operational provenance records for signal classification events.",
+  "type": "object",
+  "required": ["signal_classification_entries"],
+  "properties": {
+    "signal_classification_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entry_id","candidate_id","classification_kind","status","classified_by","classified_at","track"],
+        "properties": {
+          "entry_id": {"type": "string"},
+          "candidate_id": {"type": "string"},
+          "classification_kind": {"type": "string", "enum": ["narrowband","broadband","pulsed","intermittent","unknown"]},
+          "status": {"type": "string", "enum": ["classified","unclassified","ambiguous","reclassified"]},
+          "classified_by": {"type": "string"},
+          "classified_at": {"type": "string"},
+          "track": {"type": "string"},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

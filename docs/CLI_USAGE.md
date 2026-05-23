@@ -2072,3 +2072,38 @@ techno-search operations-readiness-digest --output-path artifacts/operations_rea
 ```
 
 The digest intentionally omits large data payloads, API keys, live-provider results, and unsupported claims. It is a local operations handoff, not a scientific result.
+
+---
+
+## `signal-classification-summary`
+
+Summarize signal classification log entries (operational provenance records only).
+
+```bash
+techno-search signal-classification-summary
+techno-search signal-classification-summary --fixture-path tests/fixtures/signal_classification_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `classified_count`, `unclassified_count`, `ambiguous_count`, `reclassified_count`, `by_status`, `by_classification_kind`, `by_track`. Signal classification entries are operational provenance records — a classification does not confirm or rule out technosignature interest, does not modify candidate scores or pathway routing, and does not authorize external submission or constitute a detection claim.
+
+## `rfi-mitigation-summary`
+
+Summarize RFI mitigation log entries (operational processing provenance records only).
+
+```bash
+techno-search rfi-mitigation-summary
+techno-search rfi-mitigation-summary --fixture-path tests/fixtures/rfi_mitigation_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `flagged_count`, `excised_count`, `masked_count`, `passed_count`, `deferred_count`, `by_action`, `by_mitigation_kind`, `by_track`. A passed action does not confirm a signal is not RFI, does not modify candidate scores or pathway routing, and does not authorize external submission or constitute a detection claim.
+
+## `candidate-annotation-log-summary`
+
+Summarize candidate annotation log entries (operator provenance records only).
+
+```bash
+techno-search candidate-annotation-log-summary
+techno-search candidate-annotation-log-summary --fixture-path tests/fixtures/candidate_annotation_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `active_count`, `superseded_count`, `withdrawn_count`, `by_status`, `by_annotation_kind`, `by_track`. Annotation entries do not modify candidate posteriors, scores, or pathway routing, and do not authorize external submission or constitute a detection claim.
