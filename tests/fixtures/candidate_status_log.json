@@ -1,0 +1,59 @@
+{
+  "candidate_status_entries": [
+    {
+      "entry_id": "csl-001",
+      "candidate_id": "cand-radio-001",
+      "transition_kind": "initial",
+      "current_status": "new",
+      "previous_status": null,
+      "transitioned_by": "pipeline-auto",
+      "transitioned_at": "2026-01-10T10:00:00Z",
+      "track": "radio",
+      "reason": "Initial candidate registration."
+    },
+    {
+      "entry_id": "csl-002",
+      "candidate_id": "cand-radio-001",
+      "transition_kind": "promotion",
+      "current_status": "active",
+      "previous_status": "new",
+      "transitioned_by": "operator-a",
+      "transitioned_at": "2026-01-10T12:00:00Z",
+      "track": "radio",
+      "reason": "Promoted to active after initial triage review."
+    },
+    {
+      "entry_id": "csl-003",
+      "candidate_id": "cand-infrared-001",
+      "transition_kind": "promotion",
+      "current_status": "under_review",
+      "previous_status": "active",
+      "transitioned_by": "operator-b",
+      "transitioned_at": "2026-01-11T09:00:00Z",
+      "track": "infrared",
+      "reason": "Promoted to under_review for second-opinion assessment."
+    },
+    {
+      "entry_id": "csl-004",
+      "candidate_id": "cand-radio-002",
+      "transition_kind": "hold",
+      "current_status": "on_hold",
+      "previous_status": "active",
+      "transitioned_by": "operator-a",
+      "transitioned_at": "2026-01-12T14:00:00Z",
+      "track": "radio",
+      "reason": "Placed on hold pending additional observation data."
+    },
+    {
+      "entry_id": "csl-005",
+      "candidate_id": "cand-anomaly-001",
+      "transition_kind": "archive",
+      "current_status": "archived",
+      "previous_status": "on_hold",
+      "transitioned_by": "operator-c",
+      "transitioned_at": "2026-01-13T16:00:00Z",
+      "track": "anomaly",
+      "reason": "Archived after operator review determined likely artifact origin."
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "pipeline_checkpoint_entries": [
+    {
+      "entry_id": "pck-001",
+      "run_id": "run-2026-001",
+      "checkpoint_kind": "stage_start",
+      "status": "saved",
+      "stage_name": "ingestion",
+      "checkpointed_by": "pipeline-runner",
+      "checkpointed_at": "2026-01-10T10:00:00Z",
+      "candidate_count": 12,
+      "notes": "Checkpoint saved at ingestion stage start."
+    },
+    {
+      "entry_id": "pck-002",
+      "run_id": "run-2026-001",
+      "checkpoint_kind": "stage_complete",
+      "status": "saved",
+      "stage_name": "scoring",
+      "checkpointed_by": "pipeline-runner",
+      "checkpointed_at": "2026-01-10T10:30:00Z",
+      "candidate_count": 10,
+      "notes": "Checkpoint saved after scoring stage completed."
+    },
+    {
+      "entry_id": "pck-003",
+      "run_id": "run-2026-002",
+      "checkpoint_kind": "recovery_point",
+      "status": "restored",
+      "stage_name": "rfi_mitigation",
+      "checkpointed_by": "operator-a",
+      "checkpointed_at": "2026-01-11T09:00:00Z",
+      "candidate_count": null,
+      "notes": "Recovery point restored after pipeline interruption."
+    },
+    {
+      "entry_id": "pck-004",
+      "run_id": "run-2026-002",
+      "checkpoint_kind": "validation_gate",
+      "status": "expired",
+      "stage_name": "quality_gate",
+      "checkpointed_by": "pipeline-runner",
+      "checkpointed_at": "2026-01-11T11:00:00Z",
+      "candidate_count": null,
+      "notes": "Validation gate checkpoint expired before retrieval."
+    },
+    {
+      "entry_id": "pck-005",
+      "run_id": "run-2026-003",
+      "checkpoint_kind": "end_of_run",
+      "status": "invalidated",
+      "stage_name": "reporting",
+      "checkpointed_by": "pipeline-runner",
+      "checkpointed_at": "2026-01-12T15:00:00Z",
+      "candidate_count": 0,
+      "notes": "End-of-run checkpoint invalidated due to config mismatch."
+    }
+  ]
+}

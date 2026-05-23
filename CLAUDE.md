@@ -10,6 +10,55 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
+User requested implementation of Milestone 23 (frequency channel log, pipeline checkpoint log, candidate status log).
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/frequency_channel_log.py` — operational processing provenance records for frequency channel configuration; channel kinds: primary, backup, rfi_free, reserved, calibration; statuses: active, flagged, reserved, disabled
+- `schemas/frequency_channel_log.schema.json`
+- `tests/fixtures/frequency_channel_log.json` — 5 entries (2 active, 1 flagged, 1 reserved, 1 disabled)
+- `tests/test_frequency_channel_log.py` — 21 tests
+- `src/techno_search/pipeline_checkpoint_log.py` — operational reproducibility records for pipeline execution checkpoints; checkpoint kinds: stage_start, stage_complete, recovery_point, validation_gate, end_of_run; statuses: saved, restored, expired, invalidated
+- `schemas/pipeline_checkpoint_log.schema.json`
+- `tests/fixtures/pipeline_checkpoint_log.json` — 5 entries (2 saved, 1 restored, 1 expired, 1 invalidated)
+- `tests/test_pipeline_checkpoint_log.py` — 21 tests
+- `src/techno_search/candidate_status_log.py` — operational provenance records for candidate status transitions; transition kinds: initial, promotion, demotion, hold, archive; statuses: new, active, under_review, on_hold, archived
+- `schemas/candidate_status_log.schema.json`
+- `tests/fixtures/candidate_status_log.json` — 5 entries spanning radio/infrared/anomaly tracks
+- `tests/test_candidate_status_log.py` — 22 tests
+- `frequency_channel_log`, `pipeline_checkpoint_log`, `candidate_status_log` added to `SCHEMA_FILENAMES` (total schemas: 103)
+- `techno-search frequency-channel-summary`, `techno-search pipeline-checkpoint-summary`, `techno-search candidate-status-summary` CLI commands
+- `validate-all` gates: `frequency_channel_entry_count >= 1`, `pipeline_checkpoint_entry_count >= 1`, `candidate_status_entry_count >= 1`
+- `validation-summary` fields: `frequency_channel_entry_count`, `frequency_channel_active_count`, `pipeline_checkpoint_entry_count`, `pipeline_checkpoint_saved_count`, `candidate_status_entry_count`, `candidate_status_active_count`
+- DECISION-070: Frequency Channel Log, Pipeline Checkpoint Log, And Candidate Status Log Complete Milestone 23
+- Docs: CLI_USAGE.md, DECISIONS.md, ROADMAP.md updated; Milestone 23 fully checked off
+
+Scientific guardrail:
+
+- Frequency channel entries are operational processing provenance records — channel configuration does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim
+- Pipeline checkpoint entries are operational reproducibility records — a restored checkpoint does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim
+- Candidate status entries are operational provenance records — a status transition does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --tb=short -q
+.venv/bin/ruff check .
+.venv/bin/mypy src --no-error-summary
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed.
+
+---
+
+## Previous Iteration
+
 User requested implementation of Milestone 22 (signal classification log, RFI mitigation log, candidate annotation log).
 
 Current branch: `claude/general-session-Bb2dZ`.

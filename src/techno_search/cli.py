@@ -80,6 +80,7 @@ from techno_search.candidate_rescore import candidate_rescore_summary
 from techno_search.candidate_resolution import candidate_resolution_summary
 from techno_search.candidate_retention import candidate_retention_summary
 from techno_search.candidate_score_history import score_history_summary
+from techno_search.candidate_status_log import candidate_status_log_summary
 from techno_search.candidate_triage import (
     operator_coverage_summary,
     triage_label_completeness_check,
@@ -96,6 +97,7 @@ from techno_search.escalation_log import escalation_log_summary
 from techno_search.feature_importance import feature_importance_summary
 from techno_search.feature_normalization import feature_normalization_summary
 from techno_search.follow_up_request import follow_up_request_summary
+from techno_search.frequency_channel_log import frequency_channel_log_summary
 from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
 from techno_search.instrument_log import instrument_log_summary
 from techno_search.intake_queue_log import intake_queue_summary
@@ -180,6 +182,7 @@ from techno_search.operator_performance import operator_performance_summary
 from techno_search.pipeline_audit_summary import pipeline_audit_summary
 from techno_search.pipeline_bottleneck import pipeline_bottleneck_summary
 from techno_search.pipeline_capacity import pipeline_capacity_summary
+from techno_search.pipeline_checkpoint_log import pipeline_checkpoint_log_summary
 from techno_search.pipeline_config import pipeline_config_summary
 from techno_search.pipeline_error_log import pipeline_error_summary
 from techno_search.pipeline_health import pipeline_health_summary
@@ -347,6 +350,9 @@ SCHEMA_FILENAMES = {
     "signal_classification_log": "signal_classification_log.schema.json",
     "rfi_mitigation_log": "rfi_mitigation_log.schema.json",
     "candidate_annotation_log": "candidate_annotation_log.schema.json",
+    "frequency_channel_log": "frequency_channel_log.schema.json",
+    "pipeline_checkpoint_log": "pipeline_checkpoint_log.schema.json",
+    "candidate_status_log": "candidate_status_log.schema.json",
 }
 
 
@@ -2784,6 +2790,42 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "frequency-channel-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                frequency_channel_log_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "pipeline-checkpoint-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                pipeline_checkpoint_log_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "candidate-status-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(
+            json.dumps(
+                candidate_status_log_summary(fixture_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -3245,6 +3287,21 @@ def validate_all() -> dict[str, object]:
     )
     _candidate_annotation_active_count = int(
         candidate_annotation_log_data.get("active_count", 0)
+    )
+    frequency_channel_data = frequency_channel_log_summary()
+    frequency_channel_entry_count = int(frequency_channel_data.get("entry_count", 0))
+    _frequency_channel_active_count = int(frequency_channel_data.get("active_count", 0))
+    pipeline_checkpoint_data = pipeline_checkpoint_log_summary()
+    pipeline_checkpoint_entry_count = int(
+        pipeline_checkpoint_data.get("entry_count", 0)
+    )
+    _pipeline_checkpoint_saved_count = int(
+        pipeline_checkpoint_data.get("saved_count", 0)
+    )
+    candidate_status_log_data = candidate_status_log_summary()
+    candidate_status_entry_count = int(candidate_status_log_data.get("entry_count", 0))
+    _candidate_status_active_count = int(
+        candidate_status_log_data.get("active_count", 0)
     )
     comparison_data = candidate_comparison_summary()
     comparison_count = int(comparison_data.get("record_count", 0))
@@ -3893,6 +3950,12 @@ def validate_all() -> dict[str, object]:
         and rfi_mitigation_entry_count >= 1
         and isinstance(candidate_annotation_entry_count, int)
         and candidate_annotation_entry_count >= 1
+        and isinstance(frequency_channel_entry_count, int)
+        and frequency_channel_entry_count >= 1
+        and isinstance(pipeline_checkpoint_entry_count, int)
+        and pipeline_checkpoint_entry_count >= 1
+        and isinstance(candidate_status_entry_count, int)
+        and candidate_status_entry_count >= 1
         and action_resolution_record_count >= 1
         and action_resolution_live_authorized_count == 0
         and action_resolution_external_authorized_count == 0
@@ -4105,6 +4168,9 @@ def validate_all() -> dict[str, object]:
         "signal_classification_summary": signal_classification_data,
         "rfi_mitigation_summary": rfi_mitigation_data,
         "candidate_annotation_log_summary": candidate_annotation_log_data,
+        "frequency_channel_log_summary": frequency_channel_data,
+        "pipeline_checkpoint_log_summary": pipeline_checkpoint_data,
+        "candidate_status_log_summary": candidate_status_log_data,
         "operations_readiness_summary": operations_readiness,
         "operations_action_plan_summary": operations_action_plan,
         "operations_action_resolution_summary": operations_action_resolution,
@@ -5930,6 +5996,36 @@ def validation_summary() -> dict[str, object]:
         "candidate_annotation_active_count": (
             cal_s2["active_count"]
             if isinstance(cal_s2 := validation.get("candidate_annotation_log_summary"), dict)
+            else 0
+        ),
+        "frequency_channel_entry_count": (
+            fc_s["entry_count"]
+            if isinstance(fc_s := validation.get("frequency_channel_log_summary"), dict)
+            else 0
+        ),
+        "frequency_channel_active_count": (
+            fc_s2["active_count"]
+            if isinstance(fc_s2 := validation.get("frequency_channel_log_summary"), dict)
+            else 0
+        ),
+        "pipeline_checkpoint_entry_count": (
+            pck_s["entry_count"]
+            if isinstance(pck_s := validation.get("pipeline_checkpoint_log_summary"), dict)
+            else 0
+        ),
+        "pipeline_checkpoint_saved_count": (
+            pck_s2["saved_count"]
+            if isinstance(pck_s2 := validation.get("pipeline_checkpoint_log_summary"), dict)
+            else 0
+        ),
+        "candidate_status_entry_count": (
+            csl_s["entry_count"]
+            if isinstance(csl_s := validation.get("candidate_status_log_summary"), dict)
+            else 0
+        ),
+        "candidate_status_active_count": (
+            csl_s2["active_count"]
+            if isinstance(csl_s2 := validation.get("candidate_status_log_summary"), dict)
             else 0
         ),
         "recommended_commands": [
@@ -8068,6 +8164,30 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize candidate annotation log entries (operator provenance records only).",
     )
     candidate_annotation_log_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    frequency_channel_parser = subparsers.add_parser(
+        "frequency-channel-summary",
+        help="Summarize frequency channel log entries (processing provenance records only).",
+    )
+    frequency_channel_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    pipeline_checkpoint_parser = subparsers.add_parser(
+        "pipeline-checkpoint-summary",
+        help="Summarize pipeline checkpoint log entries (reproducibility records only).",
+    )
+    pipeline_checkpoint_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    candidate_status_parser = subparsers.add_parser(
+        "candidate-status-summary",
+        help="Summarize candidate status log entries (operational provenance records only).",
+    )
+    candidate_status_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

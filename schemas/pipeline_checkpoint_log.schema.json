@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PipelineCheckpointLog",
+  "description": "Operational reproducibility records for pipeline execution checkpoints.",
+  "type": "object",
+  "required": ["pipeline_checkpoint_entries"],
+  "properties": {
+    "pipeline_checkpoint_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entry_id","run_id","checkpoint_kind","status","stage_name","checkpointed_by","checkpointed_at"],
+        "properties": {
+          "entry_id": {"type": "string"},
+          "run_id": {"type": "string"},
+          "checkpoint_kind": {"type": "string", "enum": ["stage_start","stage_complete","recovery_point","validation_gate","end_of_run"]},
+          "status": {"type": "string", "enum": ["saved","restored","expired","invalidated"]},
+          "stage_name": {"type": "string"},
+          "checkpointed_by": {"type": "string"},
+          "checkpointed_at": {"type": "string"},
+          "candidate_count": {"type": ["integer","null"]},
+          "notes": {"type": ["string","null"]}
+        }
+      }
+    }
+  }
+}

@@ -1659,3 +1659,22 @@ live data, authorize external submission, or constitute external validation.
 **Candidate annotation log**: records operator and automated annotation provenance for candidates. Annotation kinds are manual_tag, automated_flag, cross_reference, operator_note, and classification_hint. Statuses are active, superseded, and withdrawn. Annotation entries do not modify candidate posteriors, scores, or pathway routing, and do not authorize external submission or constitute a detection claim.
 
 **Consequences**: `validate-all` gates enforce `signal_classification_entry_count >= 1`, `rfi_mitigation_entry_count >= 1`, `candidate_annotation_entry_count >= 1`. SCHEMA_FILENAMES grows to 100. Milestone 22 is complete. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-070: Frequency Channel Log, Pipeline Checkpoint Log, And Candidate Status Log Complete Milestone 23
+
+**Date**: 2026-05-23
+**Status**: accepted
+
+**Context**: Milestone 23 adds three operational provenance modules covering radio frequency channel configuration provenance, pipeline execution checkpoint/recovery provenance, and candidate-level status transition audit trail provenance.
+
+**Decision**: Add three modules, all local operational provenance records only.
+
+**Frequency channel log**: records frequency channel configuration events during radio pipeline processing. Channel kinds are primary, backup, rfi_free, reserved, and calibration. Statuses are active, flagged, reserved, and disabled. Frequency channel entries are operational processing provenance records — channel configuration does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
+
+**Pipeline checkpoint log**: records pipeline execution checkpoint and recovery events for reproducibility provenance. Checkpoint kinds are stage_start, stage_complete, recovery_point, validation_gate, and end_of_run. Statuses are saved, restored, expired, and invalidated. Pipeline checkpoint entries are operational reproducibility records — a restored checkpoint does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
+
+**Candidate status log**: records candidate-level status transition events as an audit trail. Transition kinds are initial, promotion, demotion, hold, and archive. Current status values are new, active, under_review, on_hold, and archived. Candidate status entries are operational provenance records — a status transition does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.
+
+**Consequences**: validate-all gates enforce frequency_channel_entry_count >= 1, pipeline_checkpoint_entry_count >= 1, candidate_status_entry_count >= 1. SCHEMA_FILENAMES grows to 103. Milestone 23 is complete. Scientific guardrails remain unchanged.

@@ -2107,3 +2107,36 @@ techno-search candidate-annotation-log-summary --fixture-path tests/fixtures/can
 ```
 
 Output fields: `schema_version`, `disclaimer`, `entry_count`, `active_count`, `superseded_count`, `withdrawn_count`, `by_status`, `by_annotation_kind`, `by_track`. Annotation entries do not modify candidate posteriors, scores, or pathway routing, and do not authorize external submission or constitute a detection claim.
+
+## `frequency-channel-summary`
+
+Summarize frequency channel log entries (operational processing provenance records only).
+
+```bash
+techno-search frequency-channel-summary
+techno-search frequency-channel-summary --fixture-path tests/fixtures/frequency_channel_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `active_count`, `flagged_count`, `counts_by_kind`, `counts_by_status`. Frequency channel entries are operational processing provenance records — channel configuration does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
+
+## `pipeline-checkpoint-summary`
+
+Summarize pipeline checkpoint log entries (operational reproducibility records only).
+
+```bash
+techno-search pipeline-checkpoint-summary
+techno-search pipeline-checkpoint-summary --fixture-path tests/fixtures/pipeline_checkpoint_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `saved_count`, `restored_count`, `counts_by_kind`, `counts_by_status`. Pipeline checkpoint entries are operational reproducibility records — a restored checkpoint does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
+
+## `candidate-status-summary`
+
+Summarize candidate status log entries (operational provenance records only).
+
+```bash
+techno-search candidate-status-summary
+techno-search candidate-status-summary --fixture-path tests/fixtures/candidate_status_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `active_count`, `archived_count`, `counts_by_kind`, `counts_by_status`, `unique_candidate_count`. Candidate status entries are operational provenance records — a status transition does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.

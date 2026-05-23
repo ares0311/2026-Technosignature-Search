@@ -818,3 +818,20 @@ introduced.
 - Blocker progress-execution follow-up records are local workflow planning
   notes only. They do not clear blockers, reopen verified-local items, or
   authorize live data or external submission.
+
+# Milestone 23 — Frequency Channel Log, Pipeline Checkpoint Log, And Candidate Status Log
+
+- [x] `frequency_channel_log` — operational processing provenance records for frequency channel configuration; channel kinds: primary, backup, rfi_free, reserved, calibration; statuses: active, flagged, reserved, disabled
+- [x] `pipeline_checkpoint_log` — operational reproducibility records for pipeline execution checkpoints; checkpoint kinds: stage_start, stage_complete, recovery_point, validation_gate, end_of_run; statuses: saved, restored, expired, invalidated
+- [x] `candidate_status_log` — operational provenance records for candidate status transitions; transition kinds: initial, promotion, demotion, hold, archive; statuses: new, active, under_review, on_hold, archived
+- [x] `frequency_channel_log`, `pipeline_checkpoint_log`, `candidate_status_log` added to `SCHEMA_FILENAMES` (total schemas: 103)
+- [x] `techno-search frequency-channel-summary`, `techno-search pipeline-checkpoint-summary`, `techno-search candidate-status-summary` CLI commands
+- [x] `validate-all` gates: `frequency_channel_entry_count >= 1`, `pipeline_checkpoint_entry_count >= 1`, `candidate_status_entry_count >= 1`
+- [x] `validation-summary` fields: `frequency_channel_entry_count`, `frequency_channel_active_count`, `pipeline_checkpoint_entry_count`, `pipeline_checkpoint_saved_count`, `candidate_status_entry_count`, `candidate_status_active_count`
+- [x] DECISION-070: Frequency Channel Log, Pipeline Checkpoint Log, And Candidate Status Log Complete Milestone 23
+
+## Guardrails
+
+- Frequency channel entries are operational processing provenance records — channel configuration does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim
+- Pipeline checkpoint entries are operational reproducibility records — a restored checkpoint does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim
+- Candidate status entries are operational provenance records — a status transition does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim
