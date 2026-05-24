@@ -119,6 +119,7 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "polarization_log.schema.json",
         "telescope_status_log.schema.json",
         "observation_parameter_log.schema.json",
+        "labeled_candidates.schema.json",
     }
     for path in schema_paths:
         schema = json.loads(path.read_text(encoding="utf-8"))

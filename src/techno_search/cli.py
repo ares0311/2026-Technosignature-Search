@@ -371,6 +371,7 @@ SCHEMA_FILENAMES = {
     "polarization_log": "polarization_log.schema.json",
     "telescope_status_log": "telescope_status_log.schema.json",
     "observation_parameter_log": "observation_parameter_log.schema.json",
+    "labeled_candidates": "labeled_candidates.schema.json",
 }
 
 
@@ -2916,6 +2917,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(opl_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "labeled-dataset-summary":
+        from techno_search.labeled_dataset import labeled_dataset_summary
+        fixture_path = getattr(args, "fixture_path", None)
+        print(json.dumps(labeled_dataset_summary(fixture_path), indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "eval-against-labels":
+        from techno_search.baseline_eval import eval_against_labels
+        fixture_path = getattr(args, "fixture_path", None)
+        print(json.dumps(eval_against_labels(fixture_path), indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "validate-input":
+        from techno_search.data_quality import validate_input
+        dq_result = validate_input(Path(args.input), args.track)
+        print(json.dumps(dq_result.as_dict(), indent=2, sort_keys=True), file=out)
+        return 0 if dq_result.ok else 1
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -3428,6 +3447,12 @@ def validate_all() -> dict[str, object]:
     obs_parameter_data = observation_parameter_log_summary()
     obs_parameter_entry_count = int(obs_parameter_data.get("entry_count", 0))
     _obs_parameter_applied_count = int(obs_parameter_data.get("applied_count", 0))
+    from techno_search.labeled_dataset import labeled_dataset_summary as _lds
+    labeled_data = _lds()
+    labeled_entry_count = int(labeled_data.get("entry_count", 0))
+    from techno_search.baseline_eval import eval_against_labels as _eal
+    label_eval_data = _eal()
+    label_eval_entry_count = int(label_eval_data.get("entry_count", 0))
     comparison_data = candidate_comparison_summary()
     comparison_count = int(comparison_data.get("record_count", 0))
     telemetry_data = pipeline_telemetry_summary()
@@ -4099,6 +4124,10 @@ def validate_all() -> dict[str, object]:
         and telescope_status_entry_count >= 1
         and isinstance(obs_parameter_entry_count, int)
         and obs_parameter_entry_count >= 1
+        and isinstance(labeled_entry_count, int)
+        and labeled_entry_count >= 1
+        and isinstance(label_eval_entry_count, int)
+        and label_eval_entry_count >= 1
         and action_resolution_record_count >= 1
         and action_resolution_live_authorized_count == 0
         and action_resolution_external_authorized_count == 0
@@ -4323,6 +4352,8 @@ def validate_all() -> dict[str, object]:
         "polarization_log_summary": polarization_data,
         "telescope_status_log_summary": telescope_status_data,
         "observation_parameter_log_summary": obs_parameter_data,
+        "labeled_dataset_summary": labeled_data,
+        "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
         "operations_action_plan_summary": operations_action_plan,
         "operations_action_resolution_summary": operations_action_resolution,
@@ -6271,6 +6302,26 @@ def validation_summary() -> dict[str, object]:
                 opl_s2 := validation.get("observation_parameter_log_summary"), dict
             )
             else 0
+        ),
+        "labeled_candidate_count": (
+            lds_s["entry_count"]
+            if isinstance(lds_s := validation.get("labeled_dataset_summary"), dict)
+            else 0
+        ),
+        "labeled_candidate_follow_up_count": (
+            lds_s2["follow_up_count"]
+            if isinstance(lds_s2 := validation.get("labeled_dataset_summary"), dict)
+            else 0
+        ),
+        "eval_against_labels_entry_count": (
+            eal_s["entry_count"]
+            if isinstance(eal_s := validation.get("eval_against_labels_summary"), dict)
+            else 0
+        ),
+        "eval_against_labels_accuracy": (
+            eal_s2["accuracy"]
+            if isinstance(eal_s2 := validation.get("eval_against_labels_summary"), dict)
+            else 0.0
         ),
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
@@ -8508,6 +8559,32 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     obs_parameter_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    labeled_dataset_parser = subparsers.add_parser(
+        "labeled-dataset-summary",
+        help="Summarize labeled candidate dataset (synthetic ground-truth annotations only).",
+    )
+    labeled_dataset_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    eval_labels_parser = subparsers.add_parser(
+        "eval-against-labels",
+        help="Evaluate scoring model against labeled candidate dataset (synthetic only).",
+    )
+    eval_labels_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional labeled candidates fixture path override."
+    )
+
+    validate_input_parser = subparsers.add_parser(
+        "validate-input",
+        help="Validate a pipeline input file for structural correctness.",
+    )
+    validate_input_parser.add_argument("input", type=Path, help="Input CSV file path.")
+    validate_input_parser.add_argument(
+        "--track", required=True, choices=["radio", "infrared", "anomaly"],
+        help="Track type for validation.",
     )
 
     return parser

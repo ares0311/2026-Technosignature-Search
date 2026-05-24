@@ -372,6 +372,96 @@ def classifier_rule_coverage_summary(
     }
 
 
+def _default_labeled_candidates_path() -> Path:
+    return (
+        Path(__file__).resolve().parents[2]
+        / "tests"
+        / "fixtures"
+        / "labeled_candidates.json"
+    )
+
+
+# Maps dataset labels to scoring pathway predictions for eval purposes.
+# follow_up → candidate_review_packet
+# false_positive / known_object → do_not_submit_false_positive
+# insufficient_evidence → needs_more_data (if implemented) or human_review_queue
+_LABEL_TO_EXPECTED_PATHWAY = {
+    "follow_up": "candidate_review_packet",
+    "false_positive": "do_not_submit_false_positive",
+    "known_object": "do_not_submit_false_positive",
+    "insufficient_evidence": "human_review_queue",
+}
+
+
+def eval_against_labels(
+    labeled_dataset_path: Path | None = None,
+) -> dict[str, Any]:
+    """Evaluate the scoring model against the labeled candidate dataset.
+
+    Maps dataset labels to expected pathways and checks scoring model predictions.
+    Results are local synthetic diagnostics only — not detection claims.
+    """
+    from techno_search.labeled_dataset import load_labeled_candidates
+
+    path = labeled_dataset_path or _default_labeled_candidates_path()
+    if not path.exists():
+        return {
+            "schema_version": "eval_against_labels_v0",
+            "disclaimer": BASELINE_EVAL_DISCLAIMER,
+            "entry_count": 0,
+            "correct_count": 0,
+            "accuracy": 0.0,
+            "results": [],
+        }
+
+    entries = load_labeled_candidates(path)
+    results = []
+    for entry in entries:
+        expected_pathway = _LABEL_TO_EXPECTED_PATHWAY.get(entry.label, "human_review_queue")
+        with suppress(Exception):
+            candidate = candidate_from_mapping(entry.candidate)
+            scored = score_candidate(candidate)
+            actual_pathway = scored.recommended_pathway.value
+            results.append({
+                "entry_id": entry.entry_id,
+                "candidate_id": entry.candidate_id,
+                "track": entry.track,
+                "label": entry.label,
+                "label_confidence": entry.label_confidence,
+                "expected_pathway": expected_pathway,
+                "actual_pathway": actual_pathway,
+                "match": actual_pathway == expected_pathway,
+            })
+
+    total = len(results)
+    correct = sum(1 for r in results if r["match"])
+    accuracy = correct / total if total > 0 else 0.0
+
+    by_label: dict[str, dict[str, int]] = {}
+    for r in results:
+        lbl = str(r["label"])
+        if lbl not in by_label:
+            by_label[lbl] = {"total": 0, "correct": 0}
+        by_label[lbl]["total"] += 1
+        if r["match"]:
+            by_label[lbl]["correct"] += 1
+
+    label_accuracy = {
+        lbl: (counts["correct"] / counts["total"] if counts["total"] > 0 else 0.0)
+        for lbl, counts in by_label.items()
+    }
+
+    return {
+        "schema_version": "eval_against_labels_v0",
+        "disclaimer": BASELINE_EVAL_DISCLAIMER,
+        "entry_count": total,
+        "correct_count": correct,
+        "accuracy": round(accuracy, 4),
+        "by_label_accuracy": label_accuracy,
+        "results": results,
+    }
+
+
 def _default_route_coverage_fixture_path() -> Path:
     return (
         Path(__file__).resolve().parents[2]

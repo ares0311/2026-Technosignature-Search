@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LabeledCandidates",
+  "description": "Labeled candidate dataset for scoring model evaluation. Synthetic ground-truth annotations only.",
+  "type": "object",
+  "required": ["schema_version", "entries"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "description": {"type": "string"},
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entry_id", "candidate_id", "track", "label", "label_confidence", "labeled_by", "labeled_at", "candidate"],
+        "properties": {
+          "entry_id": {"type": "string"},
+          "candidate_id": {"type": "string"},
+          "track": {"type": "string", "enum": ["radio", "infrared", "anomaly"]},
+          "label": {"type": "string", "enum": ["false_positive", "known_object", "follow_up", "insufficient_evidence"]},
+          "label_confidence": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+          "labeled_by": {"type": "string"},
+          "labeled_at": {"type": "string"},
+          "false_positive_class": {"type": ["string", "null"]},
+          "candidate": {"type": "object"},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

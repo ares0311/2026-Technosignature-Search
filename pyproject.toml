@@ -9,7 +9,12 @@ description = "Conservative, reproducible technosignature-interest candidate sea
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
-dependencies = []
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.13",
+    "astropy>=6.0",
+    "pandas>=2.2",
+]
 
 [project.scripts]
 techno-search = "techno_search.cli:main"
@@ -20,6 +25,15 @@ dev = [
     "pytest-cov>=5",
     "ruff>=0.6",
     "mypy>=1.11",
+]
+science = [
+    "numpy>=1.26",
+    "scipy>=1.13",
+    "astropy>=6.0",
+    "pandas>=2.2",
+]
+radio = [
+    "blimpy>=2.1",
 ]
 
 [tool.setuptools.packages.find]

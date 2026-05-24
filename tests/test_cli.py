@@ -341,6 +341,7 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "polarization_log",
         "telescope_status_log",
         "observation_parameter_log",
+        "labeled_candidates",
     }
     assert result["background_search_ledger"].endswith(
         "schemas/background_search_ledger.schema.json"
@@ -1479,7 +1480,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 112
+    assert result["schema_count"] == 113
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3

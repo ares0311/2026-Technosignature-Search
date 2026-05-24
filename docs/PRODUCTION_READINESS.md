@@ -1,0 +1,95 @@
+# Production Readiness Assessment
+
+**Last updated:** 2026-05-24  
+**Current milestone:** 27 (Production Foundation)
+
+---
+
+## Summary
+
+The pipeline is approximately **20–25% of the way to real production** for a research-grade technosignature search system. The foundation is now in place; the remaining gap is almost entirely in real data, real models, and telescope access.
+
+---
+
+## What Is Complete
+
+| Capability | Status |
+|---|---|
+| Synthetic scoring pipeline (radio, infrared, anomaly) | ✅ Complete |
+| Candidate report generation (Markdown, JSON, manifest) | ✅ Complete |
+| Calibration fixture set (15 false-positive classes) | ✅ Complete |
+| Score regression + determinism checks | ✅ Complete |
+| Interpretable baseline classifier | ✅ Complete |
+| 112+ JSON schema artifacts | ✅ Complete |
+| Local validation gate (`validate-all`) | ✅ Complete |
+| Provenance, audit trail, lifecycle tracking | ✅ Complete |
+| Operational log system (26 log types) | ✅ Complete |
+| CI workflow (GitHub Actions) | ✅ Complete |
+| Real hit-table CSV reader (turboSETI format) | ✅ Complete |
+| Real Gaia+WISE catalog CSV reader (IRSA TAP format) | ✅ Complete |
+| End-to-end pipeline runner (CSV → scored report) | ✅ Complete |
+| Data quality validator (`validate-input`) | ✅ Complete |
+| Labeled candidate dataset v0 (10 synthetic entries) | ✅ Complete |
+| Scoring model evaluation against labeled dataset | ✅ Complete |
+| Live catalog clients (Gaia TAP, SIMBAD) with opt-in guard | ✅ Complete |
+
+---
+
+## What Is Missing for Production
+
+### Tier 1 — Blockers (nothing ships without these)
+
+| Gap | Effort estimate |
+|---|---|
+| **Real observation data** — no actual telescope data has been ingested | Large (requires telescope time or approved archive access) |
+| **Real labeled dataset** — all labels are synthetic; model can't be validated against ground truth | Medium (requires human expert labeling of real detections) |
+| **Calibrated scoring thresholds** — current thresholds are synthetic v0 defaults | Medium (requires sensitivity analysis against real noise distributions) |
+| **RFI database** — the RFI band list is a placeholder; real site-specific RFI catalogs needed | Medium |
+| **Peer review** — no external scientific review of pipeline logic or candidate reports | Large |
+
+### Tier 2 — Required for Research-Grade Use
+
+| Gap | Effort estimate |
+|---|---|
+| Real Gaia/WISE cross-match queries at scale | Small (client exists, needs real queries) |
+| Multi-epoch observation support | Medium |
+| Real turboSETI file ingestion from BL archive | Medium (requires BL data policy compliance) |
+| Known object catalog integration (SIMBAD cross-match) | Small (client exists) |
+| Learned scoring model (replace rule-based baseline) | Large |
+
+### Tier 3 — Production Hardening
+
+| Gap | Effort estimate |
+|---|---|
+| Parallelized batch processing | Small |
+| Database-backed candidate store (not file-based) | Medium |
+| Operator UI / review dashboard | Large |
+| External submission workflow | Large (requires institutional policy approval) |
+| Reproducibility verification across data releases | Medium |
+
+---
+
+## Production Readiness Estimate
+
+- **Current state:** ~20–25%
+- **After Tier 1 complete:** ~60%
+- **After Tier 2 complete:** ~80%
+- **After Tier 3 complete:** ~100%
+
+---
+
+## Scientific Guardrails (Non-Negotiable)
+
+Regardless of engineering readiness:
+
+1. No candidate report authorizes external submission without peer review.
+2. No scoring result constitutes a detection claim.
+3. Pathway routing is a local scheduling aid, not a scientific verdict.
+4. All external catalog queries remain opt-in via `TECHNO_SEARCH_ENABLE_LIVE_DATA=1`.
+5. The pipeline is a provenance and triage tool — human expert review gates every step.
+
+---
+
+## Decision Reference
+
+See `docs/DECISIONS.md` (DECISION-074) for the formal production readiness assessment.
