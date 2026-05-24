@@ -10,6 +10,55 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
+User requested implementation of Milestone 26 (polarization log, telescope status log, observation parameter log).
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/polarization_log.py` — operational processing provenance records for polarization measurements; polarization kinds: stokes_i, stokes_q, stokes_u, stokes_v, circular_polarization; statuses: measured, calibrated, flagged, failed
+- `schemas/polarization_log.schema.json`
+- `tests/fixtures/polarization_log.json` — 5 entries (2 measured, 1 calibrated, 1 flagged, 1 failed)
+- `tests/test_polarization_log.py` — 22 tests
+- `src/techno_search/telescope_status_log.py` — operational scheduling provenance records for telescope operational status; status kinds: operational, maintenance, degraded, offline, commissioning; statuses: recorded, updated, superseded, error
+- `schemas/telescope_status_log.schema.json`
+- `tests/fixtures/telescope_status_log.json` — 5 entries (2 recorded, 1 updated, 1 superseded, 1 error)
+- `tests/test_telescope_status_log.py` — 22 tests
+- `src/techno_search/observation_parameter_log.py` — operational processing provenance records for observation configuration parameters; parameter kinds: integration_time, bandwidth, center_frequency, resolution, sensitivity_target; statuses: applied, overridden, flagged, failed
+- `schemas/observation_parameter_log.schema.json`
+- `tests/fixtures/observation_parameter_log.json` — 5 entries (2 applied, 1 overridden, 1 flagged, 1 failed)
+- `tests/test_observation_parameter_log.py` — 22 tests
+- `polarization_log`, `telescope_status_log`, `observation_parameter_log` added to `SCHEMA_FILENAMES` (total schemas: 112)
+- `techno-search polarization-summary`, `techno-search telescope-status-summary`, `techno-search observation-parameter-summary` CLI commands
+- `validate-all` gates: `polarization_entry_count >= 1`, `telescope_status_entry_count >= 1`, `obs_parameter_entry_count >= 1`
+- `validation-summary` fields: `polarization_entry_count`, `polarization_measured_count`, `telescope_status_entry_count`, `telescope_status_recorded_count`, `obs_parameter_entry_count`, `obs_parameter_applied_count`
+- DECISION-073: Polarization Log, Telescope Status Log, And Observation Parameter Log Complete Milestone 26
+- Docs: CLI_USAGE.md, DECISIONS.md, ROADMAP.md updated; Milestone 26 fully checked off
+
+Scientific guardrail:
+
+- Polarization entries are operational processing provenance records — a polarization measurement does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim
+- Telescope status entries are operational scheduling provenance records — a telescope status does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim
+- Observation parameter entries are operational processing provenance records — a parameter record does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --tb=short -q
+.venv/bin/ruff check .
+.venv/bin/mypy src --no-error-summary
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed.
+
+---
+
+## Previous Iteration
+
 User requested implementation of Milestone 25 (source catalog log, noise measurement log, spectral feature log).
 
 Current branch: `claude/general-session-Bb2dZ`.

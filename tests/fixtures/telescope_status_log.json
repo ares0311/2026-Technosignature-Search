@@ -1,0 +1,59 @@
+{
+  "telescope_status_entries": [
+    {
+      "entry_id": "tsl-001",
+      "run_id": "run-2026-001",
+      "status_kind": "operational",
+      "status": "recorded",
+      "recorded_by": "pipeline-auto",
+      "recorded_at": "2026-01-10T08:00:00Z",
+      "telescope_id": "GBT",
+      "affected_tracks": ["radio"],
+      "notes": null
+    },
+    {
+      "entry_id": "tsl-002",
+      "run_id": "run-2026-001",
+      "status_kind": "maintenance",
+      "status": "recorded",
+      "recorded_by": "operator-a",
+      "recorded_at": "2026-01-10T12:00:00Z",
+      "telescope_id": "GBT",
+      "affected_tracks": ["radio", "infrared"],
+      "notes": null
+    },
+    {
+      "entry_id": "tsl-003",
+      "run_id": "run-2026-001",
+      "status_kind": "degraded",
+      "status": "updated",
+      "recorded_by": "operator-a",
+      "recorded_at": "2026-01-10T14:00:00Z",
+      "telescope_id": "GBT",
+      "affected_tracks": ["radio"],
+      "notes": null
+    },
+    {
+      "entry_id": "tsl-004",
+      "run_id": "run-2026-002",
+      "status_kind": "offline",
+      "status": "superseded",
+      "recorded_by": "pipeline-auto",
+      "recorded_at": "2026-01-11T09:00:00Z",
+      "telescope_id": null,
+      "affected_tracks": [],
+      "notes": null
+    },
+    {
+      "entry_id": "tsl-005",
+      "run_id": "run-2026-002",
+      "status_kind": "commissioning",
+      "status": "error",
+      "recorded_by": "pipeline-auto",
+      "recorded_at": "2026-01-11T10:00:00Z",
+      "telescope_id": null,
+      "affected_tracks": [],
+      "notes": null
+    }
+  ]
+}

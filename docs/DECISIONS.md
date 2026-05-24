@@ -1716,3 +1716,22 @@ live data, authorize external submission, or constitute external validation.
 **Spectral feature log**: records spectral feature extraction events for candidate provenance. Feature kinds are emission_line, absorption_line, continuum_fit, spectral_index, and line_complex. Statuses are detected, tentative, not_detected, and artifact. Spectral feature entries are operational provenance records — a detected feature does not confirm technosignature interest, does not modify candidate scores or pathway routing, and does not authorize external submission or constitute a detection claim.
 
 **Consequences**: validate-all gates enforce source_catalog_entry_count >= 1, noise_measurement_entry_count >= 1, spectral_feature_entry_count >= 1. SCHEMA_FILENAMES grows to 109. Milestone 25 is complete. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-073: Polarization Log, Telescope Status Log, And Observation Parameter Log Complete Milestone 26
+
+**Date**: 2026-05-24
+**Status**: accepted
+
+**Context**: Milestone 26 adds three operational provenance modules covering polarization measurement provenance, telescope operational status provenance, and observation configuration parameter provenance.
+
+**Decision**: Add three modules, all local operational provenance records only.
+
+**Polarization log**: records polarization measurement and calibration events during radio pipeline processing. Polarization kinds are stokes_i, stokes_q, stokes_u, stokes_v, and circular_polarization. Statuses are measured, calibrated, flagged, and failed. Polarization entries are operational processing provenance records — a polarization measurement does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
+
+**Telescope status log**: records telescope operational state transitions for reproducibility and scheduling provenance. Status kinds are operational, maintenance, degraded, offline, and commissioning. Statuses are recorded, updated, superseded, and error. Telescope status entries are operational scheduling provenance records — a telescope status does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
+
+**Observation parameter log**: records observation configuration parameters for pipeline reproducibility provenance. Parameter kinds are integration_time, bandwidth, center_frequency, resolution, and sensitivity_target. Statuses are applied, overridden, flagged, and failed. Observation parameter entries are operational processing provenance records — a parameter record does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
+
+**Consequences**: validate-all gates enforce polarization_entry_count >= 1, telescope_status_entry_count >= 1, obs_parameter_entry_count >= 1. SCHEMA_FILENAMES grows to 112. Milestone 26 is complete. Scientific guardrails remain unchanged.

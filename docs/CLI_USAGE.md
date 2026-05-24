@@ -2218,3 +2218,42 @@ techno-search spectral-feature-summary --fixture-path tests/fixtures/spectral_fe
 Output fields: `entry_count`, `detected_count`, `artifact_count`, `counts_by_kind`, `counts_by_status`, `schema_version`, `disclaimer`.
 
 Spectral feature entries are operational provenance records — a detected feature does not confirm technosignature interest, does not modify candidate scores or pathway routing, and does not authorize external submission or constitute a detection claim.
+
+## `polarization-summary`
+
+Summarize polarization log entries.
+
+```bash
+techno-search polarization-summary
+techno-search polarization-summary --fixture-path tests/fixtures/polarization_log.json
+```
+
+Output fields: `entry_count`, `measured_count`, `flagged_count`, `counts_by_kind`, `counts_by_status`, `schema_version`, `disclaimer`.
+
+Polarization entries are operational processing provenance records — a polarization measurement does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
+
+## `telescope-status-summary`
+
+Summarize telescope status log entries.
+
+```bash
+techno-search telescope-status-summary
+techno-search telescope-status-summary --fixture-path tests/fixtures/telescope_status_log.json
+```
+
+Output fields: `entry_count`, `recorded_count`, `operational_count`, `counts_by_kind`, `counts_by_status`, `schema_version`, `disclaimer`.
+
+Telescope status entries are operational scheduling provenance records — a telescope status does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
+
+## `observation-parameter-summary`
+
+Summarize observation parameter log entries.
+
+```bash
+techno-search observation-parameter-summary
+techno-search observation-parameter-summary --fixture-path tests/fixtures/observation_parameter_log.json
+```
+
+Output fields: `entry_count`, `applied_count`, `flagged_count`, `counts_by_kind`, `counts_by_status`, `schema_version`, `disclaimer`.
+
+Observation parameter entries are operational processing provenance records — a parameter record does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.

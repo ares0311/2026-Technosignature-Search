@@ -1,0 +1,59 @@
+{
+  "polarization_entries": [
+    {
+      "entry_id": "pol-001",
+      "run_id": "run-2026-001",
+      "polarization_kind": "stokes_i",
+      "status": "measured",
+      "measured_by": "pipeline-auto",
+      "measured_at": "2026-01-10T08:30:00Z",
+      "fractional_polarization": 0.02,
+      "position_angle_deg": 45.0,
+      "notes": null
+    },
+    {
+      "entry_id": "pol-002",
+      "run_id": "run-2026-001",
+      "polarization_kind": "stokes_q",
+      "status": "measured",
+      "measured_by": "pipeline-auto",
+      "measured_at": "2026-01-10T08:35:00Z",
+      "fractional_polarization": 0.01,
+      "position_angle_deg": null,
+      "notes": null
+    },
+    {
+      "entry_id": "pol-003",
+      "run_id": "run-2026-001",
+      "polarization_kind": "stokes_u",
+      "status": "calibrated",
+      "measured_by": "pipeline-auto",
+      "measured_at": "2026-01-10T09:00:00Z",
+      "fractional_polarization": 0.015,
+      "position_angle_deg": 30.0,
+      "notes": null
+    },
+    {
+      "entry_id": "pol-004",
+      "run_id": "run-2026-002",
+      "polarization_kind": "stokes_v",
+      "status": "flagged",
+      "measured_by": "operator-a",
+      "measured_at": "2026-01-11T10:00:00Z",
+      "fractional_polarization": null,
+      "position_angle_deg": null,
+      "notes": null
+    },
+    {
+      "entry_id": "pol-005",
+      "run_id": "run-2026-002",
+      "polarization_kind": "circular_polarization",
+      "status": "failed",
+      "measured_by": "pipeline-auto",
+      "measured_at": "2026-01-11T10:15:00Z",
+      "fractional_polarization": null,
+      "position_angle_deg": null,
+      "notes": null
+    }
+  ]
+}

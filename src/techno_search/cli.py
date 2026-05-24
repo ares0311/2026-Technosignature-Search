@@ -143,6 +143,7 @@ from techno_search.model_serving import model_serving_summary
 from techno_search.multi_epoch_summary import multi_epoch_summary
 from techno_search.noise_measurement_log import noise_measurement_log_summary
 from techno_search.observation_campaign import observation_campaign_summary
+from techno_search.observation_parameter_log import observation_parameter_log_summary
 from techno_search.observation_request_log import observation_request_summary
 from techno_search.observation_schedule import (
     observation_efficiency_summary,
@@ -195,6 +196,7 @@ from techno_search.pipeline_run_log import pipeline_run_log_summary
 from techno_search.pipeline_telemetry import pipeline_telemetry_summary
 from techno_search.pipeline_throughput import pipeline_throughput_summary
 from techno_search.plotting import plot_artifact_summary
+from techno_search.polarization_log import polarization_log_summary
 from techno_search.provenance import provenance_chain_validator
 from techno_search.provenance_audit import provenance_audit_summary
 from techno_search.quality_control_summary import quality_control_summary
@@ -228,6 +230,7 @@ from techno_search.spectral_feature_log import spectral_feature_log_summary
 from techno_search.submission_readiness import submission_readiness_summary
 from techno_search.target_recalibration_summary import target_recalibration_summary
 from techno_search.target_watchlist import target_watchlist_summary
+from techno_search.telescope_status_log import telescope_status_log_summary
 from techno_search.track_comparison import track_comparison_summary
 from techno_search.validation import (
     validate_candidate_file,
@@ -365,6 +368,9 @@ SCHEMA_FILENAMES = {
     "source_catalog_log": "source_catalog_log.schema.json",
     "noise_measurement_log": "noise_measurement_log.schema.json",
     "spectral_feature_log": "spectral_feature_log.schema.json",
+    "polarization_log": "polarization_log.schema.json",
+    "telescope_status_log": "telescope_status_log.schema.json",
+    "observation_parameter_log": "observation_parameter_log.schema.json",
 }
 
 
@@ -2892,6 +2898,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(sfl_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "polarization-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        pol_out = polarization_log_summary(fixture_path)
+        print(json.dumps(pol_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "telescope-status-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        tsl_out = telescope_status_log_summary(fixture_path)
+        print(json.dumps(tsl_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "observation-parameter-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        opl_out = observation_parameter_log_summary(fixture_path)
+        print(json.dumps(opl_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -3395,6 +3419,15 @@ def validate_all() -> dict[str, object]:
     spectral_feature_data = spectral_feature_log_summary()
     spectral_feature_entry_count = int(spectral_feature_data.get("entry_count", 0))
     _spectral_feature_detected_count = int(spectral_feature_data.get("detected_count", 0))
+    polarization_data = polarization_log_summary()
+    polarization_entry_count = int(polarization_data.get("entry_count", 0))
+    _polarization_measured_count = int(polarization_data.get("measured_count", 0))
+    telescope_status_data = telescope_status_log_summary()
+    telescope_status_entry_count = int(telescope_status_data.get("entry_count", 0))
+    _telescope_status_recorded_count = int(telescope_status_data.get("recorded_count", 0))
+    obs_parameter_data = observation_parameter_log_summary()
+    obs_parameter_entry_count = int(obs_parameter_data.get("entry_count", 0))
+    _obs_parameter_applied_count = int(obs_parameter_data.get("applied_count", 0))
     comparison_data = candidate_comparison_summary()
     comparison_count = int(comparison_data.get("record_count", 0))
     telemetry_data = pipeline_telemetry_summary()
@@ -4060,6 +4093,12 @@ def validate_all() -> dict[str, object]:
         and noise_measurement_entry_count >= 1
         and isinstance(spectral_feature_entry_count, int)
         and spectral_feature_entry_count >= 1
+        and isinstance(polarization_entry_count, int)
+        and polarization_entry_count >= 1
+        and isinstance(telescope_status_entry_count, int)
+        and telescope_status_entry_count >= 1
+        and isinstance(obs_parameter_entry_count, int)
+        and obs_parameter_entry_count >= 1
         and action_resolution_record_count >= 1
         and action_resolution_live_authorized_count == 0
         and action_resolution_external_authorized_count == 0
@@ -4281,6 +4320,9 @@ def validate_all() -> dict[str, object]:
         "source_catalog_log_summary": source_catalog_data,
         "noise_measurement_log_summary": noise_measurement_data,
         "spectral_feature_log_summary": spectral_feature_data,
+        "polarization_log_summary": polarization_data,
+        "telescope_status_log_summary": telescope_status_data,
+        "observation_parameter_log_summary": obs_parameter_data,
         "operations_readiness_summary": operations_readiness,
         "operations_action_plan_summary": operations_action_plan,
         "operations_action_resolution_summary": operations_action_resolution,
@@ -6196,6 +6238,38 @@ def validation_summary() -> dict[str, object]:
         "spectral_feature_detected_count": (
             sfl_s2["detected_count"]
             if isinstance(sfl_s2 := validation.get("spectral_feature_log_summary"), dict)
+            else 0
+        ),
+        "polarization_entry_count": (
+            pol_s["entry_count"]
+            if isinstance(pol_s := validation.get("polarization_log_summary"), dict)
+            else 0
+        ),
+        "polarization_measured_count": (
+            pol_s2["measured_count"]
+            if isinstance(pol_s2 := validation.get("polarization_log_summary"), dict)
+            else 0
+        ),
+        "telescope_status_entry_count": (
+            tsl_s["entry_count"]
+            if isinstance(tsl_s := validation.get("telescope_status_log_summary"), dict)
+            else 0
+        ),
+        "telescope_status_recorded_count": (
+            tsl_s2["recorded_count"]
+            if isinstance(tsl_s2 := validation.get("telescope_status_log_summary"), dict)
+            else 0
+        ),
+        "obs_parameter_entry_count": (
+            opl_s["entry_count"]
+            if isinstance(opl_s := validation.get("observation_parameter_log_summary"), dict)
+            else 0
+        ),
+        "obs_parameter_applied_count": (
+            opl_s2["applied_count"]
+            if isinstance(
+                opl_s2 := validation.get("observation_parameter_log_summary"), dict
+            )
             else 0
         ),
         "recommended_commands": [
@@ -8406,6 +8480,33 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize spectral feature log entries (operational provenance records only).",
     )
     spectral_feature_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    polarization_parser = subparsers.add_parser(
+        "polarization-summary",
+        help="Summarize polarization log entries (operational provenance records only).",
+    )
+    polarization_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    telescope_status_parser = subparsers.add_parser(
+        "telescope-status-summary",
+        help="Summarize telescope status log entries (operational provenance records only).",
+    )
+    telescope_status_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    obs_parameter_parser = subparsers.add_parser(
+        "observation-parameter-summary",
+        help=(
+            "Summarize observation parameter log entries "
+            "(operational provenance records only)."
+        ),
+    )
+    obs_parameter_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

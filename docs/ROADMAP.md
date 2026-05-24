@@ -874,3 +874,25 @@ introduced.
 - [x] `validate-all` gates: `source_catalog_entry_count >= 1`, `noise_measurement_entry_count >= 1`, `spectral_feature_entry_count >= 1`
 - [x] `validation-summary` fields: `source_catalog_entry_count`, `source_catalog_matched_count`, `noise_measurement_entry_count`, `noise_measurement_recorded_count`, `spectral_feature_entry_count`, `spectral_feature_detected_count`
 - [x] DECISION-072: Source Catalog Log, Noise Measurement Log, And Spectral Feature Log Complete Milestone 25
+
+---
+
+# Milestone 26 — Polarization Log, Telescope Status Log, And Observation Parameter Log
+
+- [x] `src/techno_search/polarization_log.py` — operational processing provenance records for polarization measurements; polarization kinds: stokes_i, stokes_q, stokes_u, stokes_v, circular_polarization; statuses: measured, calibrated, flagged, failed
+- [x] `schemas/polarization_log.schema.json`
+- [x] `tests/fixtures/polarization_log.json` — 5 entries (2 measured, 1 calibrated, 1 flagged, 1 failed)
+- [x] `tests/test_polarization_log.py` — 22 tests
+- [x] `src/techno_search/telescope_status_log.py` — operational scheduling provenance records for telescope operational status; status kinds: operational, maintenance, degraded, offline, commissioning; statuses: recorded, updated, superseded, error
+- [x] `schemas/telescope_status_log.schema.json`
+- [x] `tests/fixtures/telescope_status_log.json` — 5 entries (2 recorded, 1 updated, 1 superseded, 1 error)
+- [x] `tests/test_telescope_status_log.py` — 22 tests
+- [x] `src/techno_search/observation_parameter_log.py` — operational processing provenance records for observation configuration parameters; parameter kinds: integration_time, bandwidth, center_frequency, resolution, sensitivity_target; statuses: applied, overridden, flagged, failed
+- [x] `schemas/observation_parameter_log.schema.json`
+- [x] `tests/fixtures/observation_parameter_log.json` — 5 entries (2 applied, 1 overridden, 1 flagged, 1 failed)
+- [x] `tests/test_observation_parameter_log.py` — 22 tests
+- [x] `polarization_log`, `telescope_status_log`, `observation_parameter_log` added to `SCHEMA_FILENAMES` (total schemas: 112)
+- [x] `techno-search polarization-summary`, `techno-search telescope-status-summary`, `techno-search observation-parameter-summary` CLI commands
+- [x] `validate-all` gates: `polarization_entry_count >= 1`, `telescope_status_entry_count >= 1`, `obs_parameter_entry_count >= 1`
+- [x] `validation-summary` fields: `polarization_entry_count`, `polarization_measured_count`, `telescope_status_entry_count`, `telescope_status_recorded_count`, `obs_parameter_entry_count`, `obs_parameter_applied_count`
+- [x] DECISION-073: Polarization Log, Telescope Status Log, And Observation Parameter Log Complete Milestone 26
