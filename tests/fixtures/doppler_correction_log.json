@@ -1,0 +1,65 @@
+{
+  "schema_version": "doppler_correction_log_v1",
+  "entries": [
+    {
+      "entry_id": "dcl-001",
+      "candidate_id": "cand-radio-001",
+      "track": "radio",
+      "correction_kind": "barycentric",
+      "status": "applied",
+      "applied_by": "pipeline-auto",
+      "applied_at": "2026-01-10T08:05:00Z",
+      "correction_hz": 1234.56,
+      "reference_frame": "ICRS",
+      "notes": null
+    },
+    {
+      "entry_id": "dcl-002",
+      "candidate_id": "cand-radio-002",
+      "track": "radio",
+      "correction_kind": "topocentric",
+      "status": "applied",
+      "applied_by": "pipeline-auto",
+      "applied_at": "2026-01-10T09:20:00Z",
+      "correction_hz": -567.89,
+      "reference_frame": "GBT",
+      "notes": null
+    },
+    {
+      "entry_id": "dcl-003",
+      "candidate_id": "cand-infrared-001",
+      "track": "infrared",
+      "correction_kind": "heliocentric",
+      "status": "failed",
+      "applied_by": "pipeline-auto",
+      "applied_at": "2026-01-11T10:10:00Z",
+      "correction_hz": null,
+      "reference_frame": null,
+      "notes": "Ephemeris lookup failed for target coordinates"
+    },
+    {
+      "entry_id": "dcl-004",
+      "candidate_id": "cand-infrared-002",
+      "track": "infrared",
+      "correction_kind": "observatory_frame",
+      "status": "not_applicable",
+      "applied_by": "pipeline-auto",
+      "applied_at": "2026-01-11T11:45:00Z",
+      "correction_hz": null,
+      "reference_frame": null,
+      "notes": "Infrared photometry track; Doppler correction not applicable"
+    },
+    {
+      "entry_id": "dcl-005",
+      "candidate_id": "cand-anomaly-001",
+      "track": "anomaly",
+      "correction_kind": "rest_frame",
+      "status": "flagged",
+      "applied_by": "operator-a",
+      "applied_at": "2026-01-12T14:30:00Z",
+      "correction_hz": 0.0,
+      "reference_frame": "stellar_rest",
+      "notes": "Correction value suspiciously zero; flagged for review"
+    }
+  ]
+}

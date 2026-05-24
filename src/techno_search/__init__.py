@@ -306,6 +306,15 @@ from techno_search.curated_dataset_intake import (
     curated_dataset_intake_summary,
     load_intake_records,
 )
+from techno_search.data_archival_log import (
+    ALLOWED_DATA_ARCHIVAL_KINDS,
+    ALLOWED_DATA_ARCHIVAL_STATUSES,
+    DATA_ARCHIVAL_LOG_DISCLAIMER,
+    DATA_ARCHIVAL_LOG_SCHEMA_VERSION,
+    DataArchivalEntry,
+    data_archival_summary,
+    load_data_archival_entries,
+)
 from techno_search.data_gap_log import (
     ALLOWED_GAP_STATUSES,
     ALLOWED_MISSING_REASONS,
@@ -323,6 +332,15 @@ from techno_search.data_quality_log import (
     DataQualityEntry,
     data_quality_log_summary,
     load_data_quality_entries,
+)
+from techno_search.doppler_correction_log import (
+    ALLOWED_DOPPLER_CORRECTION_KINDS,
+    ALLOWED_DOPPLER_CORRECTION_STATUSES,
+    DOPPLER_CORRECTION_LOG_DISCLAIMER,
+    DOPPLER_CORRECTION_LOG_SCHEMA_VERSION,
+    DopplerCorrectionEntry,
+    doppler_correction_summary,
+    load_doppler_correction_entries,
 )
 from techno_search.epoch_plan import (
     ALLOWED_EPOCH_PLAN_STATUSES,
@@ -796,6 +814,15 @@ from techno_search.target_recalibration_summary import (
     TargetPrioritySnapshot,
     load_priority_snapshots,
     target_recalibration_summary,
+)
+from techno_search.target_selection_log import (
+    ALLOWED_TARGET_SELECTION_KINDS,
+    ALLOWED_TARGET_SELECTION_STATUSES,
+    TARGET_SELECTION_LOG_DISCLAIMER,
+    TARGET_SELECTION_LOG_SCHEMA_VERSION,
+    TargetSelectionEntry,
+    load_target_selection_entries,
+    target_selection_summary,
 )
 from techno_search.target_watchlist import (
     TARGET_WATCHLIST_DISCLAIMER,
@@ -1488,4 +1515,25 @@ __all__ = [
     "InstrumentLogEntry",
     "instrument_log_summary",
     "load_instrument_log_entries",
+    "ALLOWED_TARGET_SELECTION_KINDS",
+    "ALLOWED_TARGET_SELECTION_STATUSES",
+    "TARGET_SELECTION_LOG_DISCLAIMER",
+    "TARGET_SELECTION_LOG_SCHEMA_VERSION",
+    "TargetSelectionEntry",
+    "load_target_selection_entries",
+    "target_selection_summary",
+    "ALLOWED_DOPPLER_CORRECTION_KINDS",
+    "ALLOWED_DOPPLER_CORRECTION_STATUSES",
+    "DOPPLER_CORRECTION_LOG_DISCLAIMER",
+    "DOPPLER_CORRECTION_LOG_SCHEMA_VERSION",
+    "DopplerCorrectionEntry",
+    "doppler_correction_summary",
+    "load_doppler_correction_entries",
+    "ALLOWED_DATA_ARCHIVAL_KINDS",
+    "ALLOWED_DATA_ARCHIVAL_STATUSES",
+    "DATA_ARCHIVAL_LOG_DISCLAIMER",
+    "DATA_ARCHIVAL_LOG_SCHEMA_VERSION",
+    "DataArchivalEntry",
+    "data_archival_summary",
+    "load_data_archival_entries",
 ]

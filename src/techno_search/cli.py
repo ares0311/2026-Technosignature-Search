@@ -92,8 +92,10 @@ from techno_search.config_version_history import config_version_history_summary
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.cross_track import cross_track_summary
 from techno_search.curated_dataset_intake import curated_dataset_intake_summary
+from techno_search.data_archival_log import data_archival_summary
 from techno_search.data_gap_log import data_gap_summary
 from techno_search.data_quality_log import data_quality_log_summary
+from techno_search.doppler_correction_log import doppler_correction_summary
 from techno_search.epoch_plan import epoch_plan_summary
 from techno_search.escalation_log import escalation_log_summary
 from techno_search.feature_importance import feature_importance_summary
@@ -229,6 +231,7 @@ from techno_search.source_catalog_log import source_catalog_log_summary
 from techno_search.spectral_feature_log import spectral_feature_log_summary
 from techno_search.submission_readiness import submission_readiness_summary
 from techno_search.target_recalibration_summary import target_recalibration_summary
+from techno_search.target_selection_log import target_selection_summary
 from techno_search.target_watchlist import target_watchlist_summary
 from techno_search.telescope_status_log import telescope_status_log_summary
 from techno_search.track_comparison import track_comparison_summary
@@ -372,6 +375,9 @@ SCHEMA_FILENAMES = {
     "telescope_status_log": "telescope_status_log.schema.json",
     "observation_parameter_log": "observation_parameter_log.schema.json",
     "labeled_candidates": "labeled_candidates.schema.json",
+    "target_selection_log": "target_selection_log.schema.json",
+    "doppler_correction_log": "doppler_correction_log.schema.json",
+    "data_archival_log": "data_archival_log.schema.json",
 }
 
 
@@ -2917,6 +2923,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(opl_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "target-selection-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        tsel_out = target_selection_summary(fixture_path)
+        print(json.dumps(tsel_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "doppler-correction-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        dcl_out = doppler_correction_summary(fixture_path)
+        print(json.dumps(dcl_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "data-archival-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        dal_out = data_archival_summary(fixture_path)
+        print(json.dumps(dal_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -3447,6 +3471,21 @@ def validate_all() -> dict[str, object]:
     obs_parameter_data = observation_parameter_log_summary()
     obs_parameter_entry_count = int(obs_parameter_data.get("entry_count", 0))
     _obs_parameter_applied_count = int(obs_parameter_data.get("applied_count", 0))
+    target_selection_data = target_selection_summary()
+    target_selection_entry_count = int(target_selection_data.get("entry_count", 0))
+    _target_selection_selected_count = int(
+        target_selection_data.get("selected_count", 0)
+    )
+    doppler_correction_data = doppler_correction_summary()
+    doppler_correction_entry_count = int(
+        doppler_correction_data.get("entry_count", 0)
+    )
+    _doppler_correction_applied_count = int(
+        doppler_correction_data.get("applied_count", 0)
+    )
+    data_archival_data = data_archival_summary()
+    data_archival_entry_count = int(data_archival_data.get("entry_count", 0))
+    _data_archival_archived_count = int(data_archival_data.get("archived_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -4124,6 +4163,12 @@ def validate_all() -> dict[str, object]:
         and telescope_status_entry_count >= 1
         and isinstance(obs_parameter_entry_count, int)
         and obs_parameter_entry_count >= 1
+        and isinstance(target_selection_entry_count, int)
+        and target_selection_entry_count >= 1
+        and isinstance(doppler_correction_entry_count, int)
+        and doppler_correction_entry_count >= 1
+        and isinstance(data_archival_entry_count, int)
+        and data_archival_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -4352,6 +4397,9 @@ def validate_all() -> dict[str, object]:
         "polarization_log_summary": polarization_data,
         "telescope_status_log_summary": telescope_status_data,
         "observation_parameter_log_summary": obs_parameter_data,
+        "target_selection_log_summary": target_selection_data,
+        "doppler_correction_log_summary": doppler_correction_data,
+        "data_archival_log_summary": data_archival_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -6300,6 +6348,48 @@ def validation_summary() -> dict[str, object]:
             opl_s2["applied_count"]
             if isinstance(
                 opl_s2 := validation.get("observation_parameter_log_summary"), dict
+            )
+            else 0
+        ),
+        "target_selection_entry_count": (
+            tsel_s["entry_count"]
+            if isinstance(
+                tsel_s := validation.get("target_selection_log_summary"), dict
+            )
+            else 0
+        ),
+        "target_selection_selected_count": (
+            tsel_s2["selected_count"]
+            if isinstance(
+                tsel_s2 := validation.get("target_selection_log_summary"), dict
+            )
+            else 0
+        ),
+        "doppler_correction_entry_count": (
+            dcl_s["entry_count"]
+            if isinstance(
+                dcl_s := validation.get("doppler_correction_log_summary"), dict
+            )
+            else 0
+        ),
+        "doppler_correction_applied_count": (
+            dcl_s2["applied_count"]
+            if isinstance(
+                dcl_s2 := validation.get("doppler_correction_log_summary"), dict
+            )
+            else 0
+        ),
+        "data_archival_entry_count": (
+            dal_s["entry_count"]
+            if isinstance(
+                dal_s := validation.get("data_archival_log_summary"), dict
+            )
+            else 0
+        ),
+        "data_archival_archived_count": (
+            dal_s2["archived_count"]
+            if isinstance(
+                dal_s2 := validation.get("data_archival_log_summary"), dict
             )
             else 0
         ),
@@ -8558,6 +8648,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     obs_parameter_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    target_selection_parser = subparsers.add_parser(
+        "target-selection-summary",
+        help=(
+            "Summarize target selection log entries "
+            "(operational scheduling provenance records only)."
+        ),
+    )
+    target_selection_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    doppler_correction_parser = subparsers.add_parser(
+        "doppler-correction-summary",
+        help=(
+            "Summarize Doppler correction log entries "
+            "(operational processing provenance records only)."
+        ),
+    )
+    doppler_correction_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    data_archival_parser = subparsers.add_parser(
+        "data-archival-summary",
+        help=(
+            "Summarize data archival log entries "
+            "(operational provenance records only)."
+        ),
+    )
+    data_archival_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

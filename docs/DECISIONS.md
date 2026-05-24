@@ -1757,3 +1757,20 @@ live data, authorize external submission, or constitute external validation.
 9. **Production readiness assessment** — `docs/PRODUCTION_READINESS.md` with honest ~20–25% estimate and gap analysis.
 
 **Consequences**: SCHEMA_FILENAMES grows to 113. validate-all gates enforce labeled_entry_count >= 1 and label_eval_entry_count >= 1. CI is now active. Real CSV files can now be ingested through the full pipeline. Production readiness estimate is ~20–25% — the remaining gap is almost entirely in real observation data, real labeled datasets, and calibrated scoring thresholds. Scientific guardrails remain unchanged.
+
+# DECISION-075: Target Selection Log, Doppler Correction Log, And Data Archival Log Complete Milestone 28
+
+Date: 2026-05-24
+Status: accepted
+
+## Context
+Milestone 28 extends the operational log system with target selection, Doppler correction, and data archival provenance records.
+
+## Decision
+Implement three new log types:
+- `target_selection_log` — operational scheduling provenance records for target selection events
+- `doppler_correction_log` — operational processing provenance records for Doppler/barycentric correction
+- `data_archival_log` — operational provenance records for observation data archival events
+
+## Consequences
+Schema count grows from 113 to 116. All three log types carry explicit guardrails that entries are operational provenance records only and do not modify candidate scores, pathway routing, or authorize external submission.
