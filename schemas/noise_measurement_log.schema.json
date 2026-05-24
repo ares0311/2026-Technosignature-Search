@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NoiseMeasurementLog",
+  "description": "Operational processing provenance records for pipeline noise and sensitivity measurements.",
+  "type": "object",
+  "required": ["noise_measurement_entries"],
+  "properties": {
+    "noise_measurement_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entry_id","run_id","measurement_kind","status","measured_by","measured_at"],
+        "properties": {
+          "entry_id": {"type": "string"},
+          "run_id": {"type": "string"},
+          "measurement_kind": {"type": "string", "enum": ["system_temperature","noise_floor","rms_baseline","sensitivity_estimate","interference_level"]},
+          "status": {"type": "string", "enum": ["recorded","flagged","superseded","failed"]},
+          "measured_by": {"type": "string"},
+          "measured_at": {"type": "string"},
+          "value": {"type": ["number","null"]},
+          "unit": {"type": ["string","null"]},
+          "notes": {"type": ["string","null"]}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SourceCatalogLog",
+  "description": "Operational provenance records for external source catalog query events.",
+  "type": "object",
+  "required": ["source_catalog_entries"],
+  "properties": {
+    "source_catalog_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entry_id","candidate_id","catalog_kind","status","catalog_name","queried_by","queried_at","track"],
+        "properties": {
+          "entry_id": {"type": "string"},
+          "candidate_id": {"type": "string"},
+          "catalog_kind": {"type": "string", "enum": ["stellar","radio_source","infrared","known_rfi","known_object"]},
+          "status": {"type": "string", "enum": ["queried","matched","no_match","error"]},
+          "catalog_name": {"type": "string"},
+          "queried_by": {"type": "string"},
+          "queried_at": {"type": "string"},
+          "track": {"type": "string"},
+          "match_count": {"type": ["integer","null"]},
+          "notes": {"type": ["string","null"]}
+        }
+      }
+    }
+  }
+}

@@ -852,3 +852,25 @@ introduced.
 - Beam configuration entries are operational processing provenance records — beam configuration does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim
 - Calibration event entries are operational processing provenance records — a calibration event does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim
 - Pipeline run entries are operational reproducibility records — a pipeline run record does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim
+
+---
+
+# Milestone 25 — Source Catalog Log, Noise Measurement Log, And Spectral Feature Log
+
+- [x] `src/techno_search/source_catalog_log.py` — operational provenance records for source catalog cross-matching events; catalog kinds: radio_source, infrared, stellar, known_object, known_rfi; statuses: queried, matched, no_match, error
+- [x] `schemas/source_catalog_log.schema.json`
+- [x] `tests/fixtures/source_catalog_log.json` — 5 entries (2 matched, 1 queried, 1 no_match, 1 error)
+- [x] `tests/test_source_catalog_log.py` — 22 tests
+- [x] `src/techno_search/noise_measurement_log.py` — operational processing provenance records for pipeline noise and sensitivity measurements; measurement kinds: system_temperature, noise_floor, rms_baseline, sensitivity_estimate, interference_level; statuses: recorded, flagged, superseded, failed
+- [x] `schemas/noise_measurement_log.schema.json`
+- [x] `tests/fixtures/noise_measurement_log.json` — 5 entries (2 recorded, 1 flagged, 1 superseded, 1 failed)
+- [x] `tests/test_noise_measurement_log.py` — 22 tests
+- [x] `src/techno_search/spectral_feature_log.py` — operational provenance records for spectral feature extraction events; feature kinds: emission_line, absorption_line, continuum_fit, spectral_index, line_complex; statuses: detected, tentative, not_detected, artifact
+- [x] `schemas/spectral_feature_log.schema.json`
+- [x] `tests/fixtures/spectral_feature_log.json` — 5 entries (2 detected, 1 tentative, 1 not_detected, 1 artifact)
+- [x] `tests/test_spectral_feature_log.py` — 22 tests
+- [x] `source_catalog_log`, `noise_measurement_log`, `spectral_feature_log` added to `SCHEMA_FILENAMES` (total schemas: 109)
+- [x] `techno-search source-catalog-summary`, `techno-search noise-measurement-summary`, `techno-search spectral-feature-summary` CLI commands
+- [x] `validate-all` gates: `source_catalog_entry_count >= 1`, `noise_measurement_entry_count >= 1`, `spectral_feature_entry_count >= 1`
+- [x] `validation-summary` fields: `source_catalog_entry_count`, `source_catalog_matched_count`, `noise_measurement_entry_count`, `noise_measurement_recorded_count`, `spectral_feature_entry_count`, `spectral_feature_detected_count`
+- [x] DECISION-072: Source Catalog Log, Noise Measurement Log, And Spectral Feature Log Complete Milestone 25

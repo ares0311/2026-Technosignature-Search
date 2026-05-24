@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpectralFeatureLog",
+  "description": "Operational provenance records for spectral feature extraction events.",
+  "type": "object",
+  "required": ["spectral_feature_entries"],
+  "properties": {
+    "spectral_feature_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entry_id","candidate_id","feature_kind","status","detected_by","detected_at","track"],
+        "properties": {
+          "entry_id": {"type": "string"},
+          "candidate_id": {"type": "string"},
+          "feature_kind": {"type": "string", "enum": ["emission_line","absorption_line","continuum_fit","spectral_index","line_complex"]},
+          "status": {"type": "string", "enum": ["detected","tentative","not_detected","artifact"]},
+          "detected_by": {"type": "string"},
+          "detected_at": {"type": "string"},
+          "track": {"type": "string"},
+          "frequency_mhz": {"type": ["number","null"]},
+          "significance": {"type": ["number","null"]},
+          "notes": {"type": ["string","null"]}
+        }
+      }
+    }
+  }
+}

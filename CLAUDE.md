@@ -10,6 +10,55 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
+User requested implementation of Milestone 25 (source catalog log, noise measurement log, spectral feature log).
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/source_catalog_log.py` — operational provenance records for source catalog cross-matching events; catalog kinds: radio_source, infrared, stellar, known_object, known_rfi; statuses: queried, matched, no_match, error
+- `schemas/source_catalog_log.schema.json`
+- `tests/fixtures/source_catalog_log.json` — 5 entries (2 matched, 1 queried, 1 no_match, 1 error)
+- `tests/test_source_catalog_log.py` — 22 tests
+- `src/techno_search/noise_measurement_log.py` — operational processing provenance records for pipeline noise and sensitivity measurements; measurement kinds: system_temperature, noise_floor, rms_baseline, sensitivity_estimate, interference_level; statuses: recorded, flagged, superseded, failed
+- `schemas/noise_measurement_log.schema.json`
+- `tests/fixtures/noise_measurement_log.json` — 5 entries (2 recorded, 1 flagged, 1 superseded, 1 failed)
+- `tests/test_noise_measurement_log.py` — 22 tests
+- `src/techno_search/spectral_feature_log.py` — operational provenance records for spectral feature extraction events; feature kinds: emission_line, absorption_line, continuum_fit, spectral_index, line_complex; statuses: detected, tentative, not_detected, artifact
+- `schemas/spectral_feature_log.schema.json`
+- `tests/fixtures/spectral_feature_log.json` — 5 entries (2 detected, 1 tentative, 1 not_detected, 1 artifact)
+- `tests/test_spectral_feature_log.py` — 22 tests
+- `source_catalog_log`, `noise_measurement_log`, `spectral_feature_log` added to `SCHEMA_FILENAMES` (total schemas: 109)
+- `techno-search source-catalog-summary`, `techno-search noise-measurement-summary`, `techno-search spectral-feature-summary` CLI commands
+- `validate-all` gates: `source_catalog_entry_count >= 1`, `noise_measurement_entry_count >= 1`, `spectral_feature_entry_count >= 1`
+- `validation-summary` fields: `source_catalog_entry_count`, `source_catalog_matched_count`, `noise_measurement_entry_count`, `noise_measurement_recorded_count`, `spectral_feature_entry_count`, `spectral_feature_detected_count`
+- DECISION-072: Source Catalog Log, Noise Measurement Log, And Spectral Feature Log Complete Milestone 25
+- Docs: CLI_USAGE.md, DECISIONS.md, ROADMAP.md updated; Milestone 25 fully checked off
+
+Scientific guardrail:
+
+- Source catalog entries are operational provenance records — a catalog match does not confirm or rule out technosignature interest, does not modify candidate scores or pathway routing, and does not authorize external submission or constitute a detection claim
+- Noise measurement entries are operational processing provenance records — a noise measurement does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim
+- Spectral feature entries are operational provenance records — a detected feature does not confirm technosignature interest, does not modify candidate scores or pathway routing, and does not authorize external submission or constitute a detection claim
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --tb=short -q
+.venv/bin/ruff check .
+.venv/bin/mypy src --no-error-summary
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed.
+
+---
+
+## Previous Iteration
+
 User requested implementation of Milestone 23 (frequency channel log, pipeline checkpoint log, candidate status log).
 
 Current branch: `claude/general-session-Bb2dZ`.

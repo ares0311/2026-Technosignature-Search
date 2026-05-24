@@ -2179,3 +2179,42 @@ techno-search pipeline-run-summary --fixture-path tests/fixtures/pipeline_run_lo
 Output fields: `entry_count`, `completed_count`, `failed_count`, `counts_by_kind`, `counts_by_status`, `schema_version`, `disclaimer`.
 
 Pipeline run entries are operational reproducibility records — a pipeline run record does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
+
+## `source-catalog-summary`
+
+Summarize source catalog log entries.
+
+```bash
+techno-search source-catalog-summary
+techno-search source-catalog-summary --fixture-path tests/fixtures/source_catalog_log.json
+```
+
+Output fields: `entry_count`, `matched_count`, `no_match_count`, `counts_by_kind`, `counts_by_status`, `schema_version`, `disclaimer`.
+
+Source catalog entries are operational provenance records — a catalog match does not confirm or rule out technosignature interest, does not modify candidate scores or pathway routing, and does not authorize external submission or constitute a detection claim.
+
+## `noise-measurement-summary`
+
+Summarize noise measurement log entries.
+
+```bash
+techno-search noise-measurement-summary
+techno-search noise-measurement-summary --fixture-path tests/fixtures/noise_measurement_log.json
+```
+
+Output fields: `entry_count`, `recorded_count`, `flagged_count`, `counts_by_kind`, `counts_by_status`, `schema_version`, `disclaimer`.
+
+Noise measurement entries are operational processing provenance records — a noise measurement does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
+
+## `spectral-feature-summary`
+
+Summarize spectral feature log entries.
+
+```bash
+techno-search spectral-feature-summary
+techno-search spectral-feature-summary --fixture-path tests/fixtures/spectral_feature_log.json
+```
+
+Output fields: `entry_count`, `detected_count`, `artifact_count`, `counts_by_kind`, `counts_by_status`, `schema_version`, `disclaimer`.
+
+Spectral feature entries are operational provenance records — a detected feature does not confirm technosignature interest, does not modify candidate scores or pathway routing, and does not authorize external submission or constitute a detection claim.

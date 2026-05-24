@@ -141,6 +141,7 @@ from techno_search.model_evaluation import model_evaluation_summary
 from techno_search.model_performance_history import model_performance_history_summary
 from techno_search.model_serving import model_serving_summary
 from techno_search.multi_epoch_summary import multi_epoch_summary
+from techno_search.noise_measurement_log import noise_measurement_log_summary
 from techno_search.observation_campaign import observation_campaign_summary
 from techno_search.observation_request_log import observation_request_summary
 from techno_search.observation_schedule import (
@@ -222,6 +223,8 @@ from techno_search.signal_registry import (
     signal_registry_summary,
     signal_registry_track_summary,
 )
+from techno_search.source_catalog_log import source_catalog_log_summary
+from techno_search.spectral_feature_log import spectral_feature_log_summary
 from techno_search.submission_readiness import submission_readiness_summary
 from techno_search.target_recalibration_summary import target_recalibration_summary
 from techno_search.target_watchlist import target_watchlist_summary
@@ -359,6 +362,9 @@ SCHEMA_FILENAMES = {
     "beam_configuration_log": "beam_configuration_log.schema.json",
     "calibration_event_log": "calibration_event_log.schema.json",
     "pipeline_run_log": "pipeline_run_log.schema.json",
+    "source_catalog_log": "source_catalog_log.schema.json",
+    "noise_measurement_log": "noise_measurement_log.schema.json",
+    "spectral_feature_log": "spectral_feature_log.schema.json",
 }
 
 
@@ -2868,6 +2874,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "source-catalog-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        scl_out = source_catalog_log_summary(fixture_path)
+        print(json.dumps(scl_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "noise-measurement-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        nml_out = noise_measurement_log_summary(fixture_path)
+        print(json.dumps(nml_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "spectral-feature-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        sfl_out = spectral_feature_log_summary(fixture_path)
+        print(json.dumps(sfl_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -3362,6 +3386,15 @@ def validate_all() -> dict[str, object]:
     pipeline_run_data = pipeline_run_log_summary()
     pipeline_run_entry_count = int(pipeline_run_data.get("entry_count", 0))
     _pipeline_run_completed_count = int(pipeline_run_data.get("completed_count", 0))
+    source_catalog_data = source_catalog_log_summary()
+    source_catalog_entry_count = int(source_catalog_data.get("entry_count", 0))
+    _source_catalog_matched_count = int(source_catalog_data.get("matched_count", 0))
+    noise_measurement_data = noise_measurement_log_summary()
+    noise_measurement_entry_count = int(noise_measurement_data.get("entry_count", 0))
+    _noise_measurement_recorded_count = int(noise_measurement_data.get("recorded_count", 0))
+    spectral_feature_data = spectral_feature_log_summary()
+    spectral_feature_entry_count = int(spectral_feature_data.get("entry_count", 0))
+    _spectral_feature_detected_count = int(spectral_feature_data.get("detected_count", 0))
     comparison_data = candidate_comparison_summary()
     comparison_count = int(comparison_data.get("record_count", 0))
     telemetry_data = pipeline_telemetry_summary()
@@ -4021,6 +4054,12 @@ def validate_all() -> dict[str, object]:
         and calibration_event_entry_count >= 1
         and isinstance(pipeline_run_entry_count, int)
         and pipeline_run_entry_count >= 1
+        and isinstance(source_catalog_entry_count, int)
+        and source_catalog_entry_count >= 1
+        and isinstance(noise_measurement_entry_count, int)
+        and noise_measurement_entry_count >= 1
+        and isinstance(spectral_feature_entry_count, int)
+        and spectral_feature_entry_count >= 1
         and action_resolution_record_count >= 1
         and action_resolution_live_authorized_count == 0
         and action_resolution_external_authorized_count == 0
@@ -4239,6 +4278,9 @@ def validate_all() -> dict[str, object]:
         "beam_configuration_log_summary": beam_configuration_data,
         "calibration_event_log_summary": calibration_event_data,
         "pipeline_run_log_summary": pipeline_run_data,
+        "source_catalog_log_summary": source_catalog_data,
+        "noise_measurement_log_summary": noise_measurement_data,
+        "spectral_feature_log_summary": spectral_feature_data,
         "operations_readiness_summary": operations_readiness,
         "operations_action_plan_summary": operations_action_plan,
         "operations_action_resolution_summary": operations_action_resolution,
@@ -6124,6 +6166,36 @@ def validation_summary() -> dict[str, object]:
         "pipeline_run_completed_count": (
             prl_s2["completed_count"]
             if isinstance(prl_s2 := validation.get("pipeline_run_log_summary"), dict)
+            else 0
+        ),
+        "source_catalog_entry_count": (
+            scl_s["entry_count"]
+            if isinstance(scl_s := validation.get("source_catalog_log_summary"), dict)
+            else 0
+        ),
+        "source_catalog_matched_count": (
+            scl_s2["matched_count"]
+            if isinstance(scl_s2 := validation.get("source_catalog_log_summary"), dict)
+            else 0
+        ),
+        "noise_measurement_entry_count": (
+            nml_s["entry_count"]
+            if isinstance(nml_s := validation.get("noise_measurement_log_summary"), dict)
+            else 0
+        ),
+        "noise_measurement_recorded_count": (
+            nml_s2["recorded_count"]
+            if isinstance(nml_s2 := validation.get("noise_measurement_log_summary"), dict)
+            else 0
+        ),
+        "spectral_feature_entry_count": (
+            sfl_s["entry_count"]
+            if isinstance(sfl_s := validation.get("spectral_feature_log_summary"), dict)
+            else 0
+        ),
+        "spectral_feature_detected_count": (
+            sfl_s2["detected_count"]
+            if isinstance(sfl_s2 := validation.get("spectral_feature_log_summary"), dict)
             else 0
         ),
         "recommended_commands": [
@@ -8310,6 +8382,30 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize pipeline run log entries (operational reproducibility records only).",
     )
     pipeline_run_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    source_catalog_parser = subparsers.add_parser(
+        "source-catalog-summary",
+        help="Summarize source catalog log entries (operational provenance records only).",
+    )
+    source_catalog_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    noise_measurement_parser = subparsers.add_parser(
+        "noise-measurement-summary",
+        help="Summarize noise measurement log entries (operational provenance records only).",
+    )
+    noise_measurement_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    spectral_feature_parser = subparsers.add_parser(
+        "spectral-feature-summary",
+        help="Summarize spectral feature log entries (operational provenance records only).",
+    )
+    spectral_feature_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

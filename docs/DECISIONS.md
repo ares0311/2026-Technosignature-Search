@@ -1697,3 +1697,22 @@ live data, authorize external submission, or constitute external validation.
 **Pipeline run log**: records top-level pipeline execution run events for reproducibility provenance. Run kinds are full_pipeline, partial_rerun, calibration_only, test_run, and recovery_run. Statuses are started, completed, failed, aborted, and paused. Pipeline run entries are operational reproducibility records — a pipeline run record does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
 
 **Consequences**: validate-all gates enforce beam_configuration_entry_count >= 1, calibration_event_entry_count >= 1, pipeline_run_entry_count >= 1. SCHEMA_FILENAMES grows to 106. Milestone 24 is complete. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-072: Source Catalog Log, Noise Measurement Log, And Spectral Feature Log Complete Milestone 25
+
+**Date**: 2026-05-24
+**Status**: accepted
+
+**Context**: Milestone 25 adds three operational provenance modules covering source catalog cross-matching provenance, pipeline noise and sensitivity measurement provenance, and spectral feature extraction provenance.
+
+**Decision**: Add three modules, all local operational provenance records only.
+
+**Source catalog log**: records source catalog cross-matching events for candidate provenance. Catalog kinds are radio_source, infrared, stellar, known_object, and known_rfi. Statuses are queried, matched, no_match, and error. Source catalog entries are operational provenance records — a catalog match does not confirm or rule out technosignature interest, does not modify candidate scores or pathway routing, and does not authorize external submission or constitute a detection claim.
+
+**Noise measurement log**: records pipeline noise and sensitivity measurement events for processing provenance. Measurement kinds are system_temperature, noise_floor, rms_baseline, sensitivity_estimate, and interference_level. Statuses are recorded, flagged, superseded, and failed. Noise measurement entries are operational processing provenance records — a noise measurement does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
+
+**Spectral feature log**: records spectral feature extraction events for candidate provenance. Feature kinds are emission_line, absorption_line, continuum_fit, spectral_index, and line_complex. Statuses are detected, tentative, not_detected, and artifact. Spectral feature entries are operational provenance records — a detected feature does not confirm technosignature interest, does not modify candidate scores or pathway routing, and does not authorize external submission or constitute a detection claim.
+
+**Consequences**: validate-all gates enforce source_catalog_entry_count >= 1, noise_measurement_entry_count >= 1, spectral_feature_entry_count >= 1. SCHEMA_FILENAMES grows to 109. Milestone 25 is complete. Scientific guardrails remain unchanged.

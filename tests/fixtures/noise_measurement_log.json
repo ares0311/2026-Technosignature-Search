@@ -1,0 +1,59 @@
+{
+  "noise_measurement_entries": [
+    {
+      "entry_id": "nml-001",
+      "run_id": "run-2026-001",
+      "measurement_kind": "system_temperature",
+      "status": "recorded",
+      "measured_by": "pipeline-auto",
+      "measured_at": "2026-01-10T08:30:00Z",
+      "value": 25.0,
+      "unit": "K",
+      "notes": null
+    },
+    {
+      "entry_id": "nml-002",
+      "run_id": "run-2026-001",
+      "measurement_kind": "noise_floor",
+      "status": "recorded",
+      "measured_by": "pipeline-auto",
+      "measured_at": "2026-01-10T08:35:00Z",
+      "value": 0.0012,
+      "unit": "Jy",
+      "notes": null
+    },
+    {
+      "entry_id": "nml-003",
+      "run_id": "run-2026-001",
+      "measurement_kind": "rms_baseline",
+      "status": "flagged",
+      "measured_by": "pipeline-auto",
+      "measured_at": "2026-01-10T09:00:00Z",
+      "value": 0.005,
+      "unit": "Jy",
+      "notes": null
+    },
+    {
+      "entry_id": "nml-004",
+      "run_id": "run-2026-002",
+      "measurement_kind": "sensitivity_estimate",
+      "status": "superseded",
+      "measured_by": "operator-a",
+      "measured_at": "2026-01-11T10:00:00Z",
+      "value": null,
+      "unit": null,
+      "notes": null
+    },
+    {
+      "entry_id": "nml-005",
+      "run_id": "run-2026-002",
+      "measurement_kind": "interference_level",
+      "status": "failed",
+      "measured_by": "pipeline-auto",
+      "measured_at": "2026-01-11T10:15:00Z",
+      "value": null,
+      "unit": null,
+      "notes": null
+    }
+  ]
+}

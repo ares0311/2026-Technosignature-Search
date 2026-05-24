@@ -1,0 +1,64 @@
+{
+  "source_catalog_entries": [
+    {
+      "entry_id": "scl-001",
+      "candidate_id": "cand-radio-001",
+      "catalog_kind": "radio_source",
+      "status": "matched",
+      "catalog_name": "NVSS",
+      "queried_by": "pipeline-auto",
+      "queried_at": "2026-01-10T10:00:00Z",
+      "track": "radio",
+      "match_count": 2,
+      "notes": null
+    },
+    {
+      "entry_id": "scl-002",
+      "candidate_id": "cand-infrared-001",
+      "catalog_kind": "infrared",
+      "status": "matched",
+      "catalog_name": "WISE",
+      "queried_by": "pipeline-auto",
+      "queried_at": "2026-01-10T10:05:00Z",
+      "track": "infrared",
+      "match_count": 1,
+      "notes": null
+    },
+    {
+      "entry_id": "scl-003",
+      "candidate_id": "cand-radio-002",
+      "catalog_kind": "stellar",
+      "status": "queried",
+      "catalog_name": "Gaia DR3",
+      "queried_by": "operator-a",
+      "queried_at": "2026-01-11T09:00:00Z",
+      "track": "radio",
+      "match_count": null,
+      "notes": null
+    },
+    {
+      "entry_id": "scl-004",
+      "candidate_id": "cand-anomaly-001",
+      "catalog_kind": "known_object",
+      "status": "no_match",
+      "catalog_name": "SIMBAD",
+      "queried_by": "pipeline-auto",
+      "queried_at": "2026-01-12T11:00:00Z",
+      "track": "anomaly",
+      "match_count": 0,
+      "notes": null
+    },
+    {
+      "entry_id": "scl-005",
+      "candidate_id": "cand-radio-003",
+      "catalog_kind": "known_rfi",
+      "status": "error",
+      "catalog_name": "RFI Registry",
+      "queried_by": "pipeline-auto",
+      "queried_at": "2026-01-13T12:00:00Z",
+      "track": "radio",
+      "match_count": null,
+      "notes": null
+    }
+  ]
+}
