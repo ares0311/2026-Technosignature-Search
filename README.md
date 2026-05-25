@@ -450,6 +450,7 @@ Validate and run one local CSV input through the hardened ingestion path:
   --track radio \
   --output-dir artifacts/pipeline_smoke \
   --candidate-id local-radio-smoke
+.venv/bin/techno-search rfi-database-summary
 ```
 
 Run local validation summaries:
@@ -886,6 +887,7 @@ Scientific quality gates:
 | Score instability | Golden score regression snapshots | `score-regression-summary` |
 | Hidden data dependency | Synthetic fixtures and mocked services by default | `pytest`, live-data opt-in guards |
 | Invalid real-file input | Structural validation before pipeline scoring | `validate-input`, `run-pipeline` |
+| Unreviewed RFI screening | RFI database records require ranges, provenance, review status, and synthetic-vs-real labeling | `rfi-database-summary` |
 | Lost provenance | Manifest and provenance summary validation | Report manifests and provenance summary CLI |
 | Misleading calibration | Synthetic-only disclaimers on reliability and PR summaries | Validation summary commands |
 | Premature non-synthetic calibration | Readiness review before curated dataset promotion | `validation-readiness-summary` |

@@ -1804,3 +1804,36 @@ Schema count grows from 116 to 117. Local CSV pipeline runs are easier to use
 and harder to misuse. Structural validation does not inspect scientific
 significance, does not modify scores or pathways, does not authorize live data
 access or external submission, and does not constitute a detection claim.
+
+---
+
+# DECISION-077: RFI Database Guardrails Precede Any Radio Threshold Recalibration
+
+Date: 2026-05-25
+Status: accepted
+
+## Context
+The production-readiness assessment identified the radio RFI band list as a
+placeholder. Before changing radio false-positive thresholds or ingesting a
+real site-specific RFI catalog, the project needs a versioned local database
+shape, provenance checks, and validation gates.
+
+## Decision
+Implement Milestone 30 RFI database guardrails:
+
+- Add a local `rfi_database` module with records for site ID, frequency range,
+  source class, confidence, review status, provenance, active state, and
+  synthetic-vs-real status.
+- Add a synthetic RFI database fixture and JSON schema.
+- Add `rfi-database-summary` and wire the summary into `validate-all` and
+  `validation-summary`.
+- Add radio candidate feature enrichment that records database overlap
+  provenance without changing calibrated scientific claims.
+
+## Consequences
+Schema count grows from 117 to 118. The current fixture is synthetic and local
+only. RFI database matches are false-positive screening aids; they do not
+calibrate thresholds, confirm or rule out candidate technosignature interest,
+authorize live data access, authorize external submission, or constitute a
+detection claim. Real site-specific RFI records remain blocked until their
+provenance, licensing, monitoring context, and review status are documented.

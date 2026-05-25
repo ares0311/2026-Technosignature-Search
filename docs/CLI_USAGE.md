@@ -2297,6 +2297,25 @@ Output fields: `entry_count`, `archived_count`, `pending_count`, `failed_count`,
 
 Data archival entries are operational provenance records — an archival record does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.
 
+## `rfi-database-summary`
+
+Summarize the local RFI database fixture used for conservative radio
+false-positive screening.
+
+```bash
+.venv/bin/techno-search rfi-database-summary
+.venv/bin/techno-search rfi-database-summary --fixture-path tests/fixtures/rfi_database.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `record_count`,
+`active_count`, `reviewed_count`, `provisional_count`, `synthetic_count`,
+`real_record_count`, `validation_ok`, `validation_issue_count`,
+`validation_issues`, `by_source_class`, `by_review_status`, and `by_site_id`.
+
+RFI database records are local false-positive screening aids only. They do not
+calibrate scoring thresholds, authorize live data access, authorize external
+submission, or constitute detections, discoveries, or external validation.
+
 ## `validate-input`
 
 Validate one local CSV input file before pipeline execution.

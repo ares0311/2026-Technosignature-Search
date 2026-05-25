@@ -34,6 +34,10 @@ def test_data_quality_importable() -> None:
     from techno_search.data_quality import validate_input  # noqa: F401
 
 
+def test_rfi_database_importable() -> None:
+    from techno_search.rfi_database import rfi_database_summary  # noqa: F401
+
+
 def test_labeled_dataset_importable() -> None:
     from techno_search.labeled_dataset import labeled_dataset_summary  # noqa: F401
 

@@ -1,0 +1,74 @@
+{
+  "rfi_database_entries": [
+    {
+      "entry_id": "rfi-db-001",
+      "site_id": "synthetic-gbt",
+      "site_name": "Synthetic Green Bank Telescope Fixture",
+      "frequency_low_hz": 1575000000.0,
+      "frequency_high_hz": 1576000000.0,
+      "source_class": "gps",
+      "confidence": 0.95,
+      "review_status": "reviewed",
+      "provenance": "Synthetic fixture mirroring existing gps_l1 placeholder band.",
+      "notes": "Local false-positive screen only; not real site monitoring data.",
+      "active": true,
+      "synthetic": true
+    },
+    {
+      "entry_id": "rfi-db-002",
+      "site_id": "synthetic-gbt",
+      "site_name": "Synthetic Green Bank Telescope Fixture",
+      "frequency_low_hz": 1227000000.0,
+      "frequency_high_hz": 1228000000.0,
+      "source_class": "gps",
+      "confidence": 0.9,
+      "review_status": "reviewed",
+      "provenance": "Synthetic fixture mirroring existing gps_l2 placeholder band.",
+      "notes": "Local false-positive screen only; not real site monitoring data.",
+      "active": true,
+      "synthetic": true
+    },
+    {
+      "entry_id": "rfi-db-003",
+      "site_id": "synthetic-gbt",
+      "site_name": "Synthetic Green Bank Telescope Fixture",
+      "frequency_low_hz": 1089500000.0,
+      "frequency_high_hz": 1090500000.0,
+      "source_class": "aircraft",
+      "confidence": 0.85,
+      "review_status": "reviewed",
+      "provenance": "Synthetic fixture mirroring existing aircraft_ads_b placeholder band.",
+      "notes": "Local false-positive screen only; not real site monitoring data.",
+      "active": true,
+      "synthetic": true
+    },
+    {
+      "entry_id": "rfi-db-004",
+      "site_id": "synthetic-local",
+      "site_name": "Synthetic Local Test Site",
+      "frequency_low_hz": 137000000.0,
+      "frequency_high_hz": 137200000.0,
+      "source_class": "satellite",
+      "confidence": 0.7,
+      "review_status": "provisional",
+      "provenance": "Synthetic fixture for provisional-review guardrail tests.",
+      "notes": "Provisional entries remain review aids and do not recalibrate thresholds.",
+      "active": true,
+      "synthetic": true
+    },
+    {
+      "entry_id": "rfi-db-005",
+      "site_id": "synthetic-local",
+      "site_name": "Synthetic Local Test Site",
+      "frequency_low_hz": 88000000.0,
+      "frequency_high_hz": 108000000.0,
+      "source_class": "observatory_local",
+      "confidence": 0.6,
+      "review_status": "deprecated",
+      "provenance": "Synthetic fixture for deprecated-entry accounting tests.",
+      "notes": "Retained for provenance; active false prevents overlap matching.",
+      "active": false,
+      "synthetic": true
+    }
+  ]
+}

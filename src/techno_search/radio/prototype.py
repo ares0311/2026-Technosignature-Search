@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 
 from techno_search.config import TrackConfig, load_track_config
 from techno_search.schemas import Candidate, FeatureValue, Track
@@ -92,6 +93,7 @@ def build_radio_candidate(
     source_ids: Sequence[str] = (),
     provenance: Mapping[str, FeatureValue] | None = None,
     rfi_bands: Sequence[RfiBand] = DEFAULT_RFI_BANDS_HZ,
+    rfi_database_path: Path | None = None,
     diagnostics: RadioDiagnosticPaths | None = None,
     track_config: TrackConfig | None = None,
 ) -> Candidate:
@@ -108,6 +110,12 @@ def build_radio_candidate(
     recurrence_targets = {
         hit.target_id for hit in hits if hit.target_id != best_hit.target_id and hit.snr >= 8.0
     }
+    rfi_database_features = _rfi_database_features(
+        best_hit.frequency_hz,
+        path=rfi_database_path,
+    )
+    configured_rfi_overlap = rfi_band_overlap_score(best_hit.frequency_hz, rfi_bands)
+    database_rfi_overlap = _float(rfi_database_features["rfi_database_overlap_score"])
 
     features: dict[str, FeatureValue] = {
         "frequency_hz": best_hit.frequency_hz,
@@ -116,7 +124,7 @@ def build_radio_candidate(
         "bandwidth_hz": best_hit.bandwidth_hz,
         "on_target_presence_score": _presence_score(max_on_snr),
         "off_target_presence_score": _presence_score(max_off_snr),
-        "rfi_band_overlap_score": rfi_band_overlap_score(best_hit.frequency_hz, rfi_bands),
+        "rfi_band_overlap_score": max(configured_rfi_overlap, database_rfi_overlap),
         "frequency_persistence_score": _frequency_persistence_score(hits, best_hit),
         "nearby_target_recurrence_score": _clamp(len(recurrence_targets) / 3.0),
         "instrumental_artifact_score": max(
@@ -137,6 +145,7 @@ def build_radio_candidate(
         "on_hit_count": len(on_hits),
         "off_hit_count": len(off_hits),
     }
+    features.update(rfi_database_features)
     if diagnostics is not None:
         features.update(diagnostics.as_features())
 
@@ -201,6 +210,33 @@ def _data_quality_score(hits: Sequence[RadioHit]) -> float:
     artifact_penalty = max((hit.instrumental_artifact_score for hit in hits), default=0.0)
     metadata_score = _metadata_completeness_score(hits)
     return _clamp((0.7 * metadata_score) + (0.3 * (1.0 - artifact_penalty)))
+
+
+def _rfi_database_features(
+    frequency_hz: float,
+    *,
+    path: Path | None = None,
+) -> dict[str, FeatureValue]:
+    from techno_search.rfi_database import (
+        RFI_DATABASE_SCHEMA_VERSION,
+        rfi_database_matches,
+        rfi_database_summary,
+    )
+
+    matches = rfi_database_matches(frequency_hz, path)
+    summary = rfi_database_summary(path)
+    match_names = ",".join(match.entry_id for match in matches)
+    source_classes = ",".join(sorted({match.source_class for match in matches}))
+    return {
+        "rfi_database_schema_version": RFI_DATABASE_SCHEMA_VERSION,
+        "rfi_database_record_count": int(summary["record_count"]),
+        "rfi_database_reviewed_count": int(summary["reviewed_count"]),
+        "rfi_database_validation_ok": bool(summary["validation_ok"]),
+        "rfi_database_match_count": len(matches),
+        "rfi_database_match_ids": match_names,
+        "rfi_database_source_classes": source_classes,
+        "rfi_database_overlap_score": 1.0 if matches else 0.0,
+    }
 
 
 def _presence_score(snr: float) -> float:

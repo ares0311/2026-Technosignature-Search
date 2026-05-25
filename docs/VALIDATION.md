@@ -791,3 +791,22 @@ unresolved progress-review queue. `validate-all` checks next-action coverage,
 review-status consistency, priority ordering, residual blocker totals, and
 disabled authorization gates. Next actions are workflow tasks only; they do not
 clear blockers or change scientific interpretation.
+
+## RFI Database Guardrails
+
+Use `rfi-database-summary` to inspect the local RFI database fixture:
+
+```bash
+.venv/bin/techno-search rfi-database-summary
+.venv/bin/techno-search rfi-database-summary --fixture-path tests/fixtures/rfi_database.json
+```
+
+The summary reports record counts, active counts, reviewed/provisional counts,
+synthetic-vs-real counts, source-class counts, site counts, and validation
+issues. `validate-all` requires at least one record, at least one reviewed
+record, and a clean validation result.
+
+These records are false-positive screening aids only. They do not recalibrate
+radio thresholds, confirm or reject candidate technosignature interest,
+authorize live-provider access, authorize external submission, or constitute a
+detection claim.

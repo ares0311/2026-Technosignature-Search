@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RfiDatabase",
+  "description": "Local site-specific RFI database records for conservative false-positive screening.",
+  "type": "object",
+  "required": ["rfi_database_entries"],
+  "properties": {
+    "rfi_database_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "entry_id",
+          "site_id",
+          "site_name",
+          "frequency_low_hz",
+          "frequency_high_hz",
+          "source_class",
+          "confidence",
+          "review_status",
+          "provenance",
+          "active",
+          "synthetic"
+        ],
+        "properties": {
+          "entry_id": {"type": "string"},
+          "site_id": {"type": "string"},
+          "site_name": {"type": "string"},
+          "frequency_low_hz": {"type": "number", "exclusiveMinimum": 0},
+          "frequency_high_hz": {"type": "number", "exclusiveMinimum": 0},
+          "source_class": {
+            "type": "string",
+            "enum": ["gps", "aircraft", "satellite", "observatory_local", "test_equipment", "unknown"]
+          },
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+          "review_status": {
+            "type": "string",
+            "enum": ["reviewed", "provisional", "deprecated", "rejected"]
+          },
+          "provenance": {"type": "string"},
+          "notes": {"type": "string"},
+          "active": {"type": "boolean"},
+          "synthetic": {"type": "boolean"}
+        }
+      }
+    }
+  }
+}

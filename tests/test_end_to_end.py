@@ -51,6 +51,17 @@ def test_radio_pipeline_manifest_has_candidate_id(tmp_path: Path) -> None:
     assert manifest["candidate_id"] == "test-radio-e2e"
 
 
+def test_radio_pipeline_records_rfi_database_evidence(tmp_path: Path) -> None:
+    result = run_pipeline(RADIO_FIXTURE, "radio", tmp_path, candidate_id="radio-rfi-db")
+    assert result.ok
+    packet = json.loads(result.report_paths.json_path.read_text(encoding="utf-8"))
+    features = packet["features"]
+    assert features["rfi_database_schema_version"] == "rfi_database_v1"
+    assert features["rfi_database_match_count"] == 1
+    assert features["rfi_database_match_ids"] == "rfi-db-001"
+    assert features["rfi_database_validation_ok"] is True
+
+
 def test_infrared_pipeline_runs_successfully(tmp_path: Path) -> None:
     result = run_pipeline(INFRARED_FIXTURE, "infrared", tmp_path)
     assert isinstance(result, PipelineRunResult)

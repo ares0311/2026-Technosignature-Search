@@ -214,6 +214,7 @@ from techno_search.review_queue import (
     consensus_summary,
     review_queue_summary,
 )
+from techno_search.rfi_database import rfi_database_summary
 from techno_search.rfi_mitigation_log import rfi_mitigation_summary
 from techno_search.schemas import Candidate, Track, candidate_from_mapping
 from techno_search.scoring import score_candidate
@@ -361,6 +362,7 @@ SCHEMA_FILENAMES = {
     "archival_query_log": "archival_query_log.schema.json",
     "candidate_linkage_log": "candidate_linkage_log.schema.json",
     "signal_classification_log": "signal_classification_log.schema.json",
+    "rfi_database": "rfi_database.schema.json",
     "rfi_mitigation_log": "rfi_mitigation_log.schema.json",
     "candidate_annotation_log": "candidate_annotation_log.schema.json",
     "frequency_channel_log": "frequency_channel_log.schema.json",
@@ -2792,6 +2794,12 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "rfi-database-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        rfi_db_summary = rfi_database_summary(fixture_path)
+        print(json.dumps(rfi_db_summary, indent=2, sort_keys=True), file=out)
+        return 0 if rfi_db_summary["validation_ok"] else 1
+
     if args.command == "rfi-mitigation-summary":
         fixture_path = getattr(args, "fixture_path", None)
         print(
@@ -3424,6 +3432,10 @@ def validate_all() -> dict[str, object]:
     _signal_classification_classified_count = int(
         signal_classification_data.get("classified_count", 0)
     )
+    rfi_database_data = rfi_database_summary()
+    rfi_database_record_count = int(rfi_database_data.get("record_count", 0))
+    rfi_database_reviewed_count = int(rfi_database_data.get("reviewed_count", 0))
+    rfi_database_validation_ok = bool(rfi_database_data.get("validation_ok", False))
     rfi_mitigation_data = rfi_mitigation_summary()
     rfi_mitigation_entry_count = int(rfi_mitigation_data.get("entry_count", 0))
     _rfi_mitigation_flagged_count = int(rfi_mitigation_data.get("flagged_count", 0))
@@ -4148,6 +4160,11 @@ def validate_all() -> dict[str, object]:
         and candidate_linkage_entry_count >= 1
         and isinstance(signal_classification_entry_count, int)
         and signal_classification_entry_count >= 1
+        and isinstance(rfi_database_record_count, int)
+        and rfi_database_record_count >= 1
+        and isinstance(rfi_database_reviewed_count, int)
+        and rfi_database_reviewed_count >= 1
+        and rfi_database_validation_ok
         and isinstance(rfi_mitigation_entry_count, int)
         and rfi_mitigation_entry_count >= 1
         and isinstance(candidate_annotation_entry_count, int)
@@ -4396,6 +4413,7 @@ def validate_all() -> dict[str, object]:
         "archival_query_summary": archival_query_data,
         "candidate_linkage_summary": candidate_linkage_data,
         "signal_classification_summary": signal_classification_data,
+        "rfi_database_summary": rfi_database_data,
         "rfi_mitigation_summary": rfi_mitigation_data,
         "candidate_annotation_log_summary": candidate_annotation_log_data,
         "frequency_channel_log_summary": frequency_channel_data,
@@ -6220,6 +6238,26 @@ def validation_summary() -> dict[str, object]:
         "signal_classification_classified_count": (
             sc_s2["classified_count"]
             if isinstance(sc_s2 := validation.get("signal_classification_summary"), dict)
+            else 0
+        ),
+        "rfi_database_record_count": (
+            rfidb_s["record_count"]
+            if isinstance(rfidb_s := validation.get("rfi_database_summary"), dict)
+            else 0
+        ),
+        "rfi_database_reviewed_count": (
+            rfidb_s2["reviewed_count"]
+            if isinstance(rfidb_s2 := validation.get("rfi_database_summary"), dict)
+            else 0
+        ),
+        "rfi_database_validation_ok": (
+            bool(rfidb_s3["validation_ok"])
+            if isinstance(rfidb_s3 := validation.get("rfi_database_summary"), dict)
+            else False
+        ),
+        "rfi_database_synthetic_count": (
+            rfidb_s4["synthetic_count"]
+            if isinstance(rfidb_s4 := validation.get("rfi_database_summary"), dict)
             else 0
         ),
         "rfi_mitigation_entry_count": (
@@ -8546,6 +8584,14 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize signal classification log entries (provenance records only).",
     )
     signal_classification_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    rfi_database_parser = subparsers.add_parser(
+        "rfi-database-summary",
+        help="Summarize local RFI database guardrails (false-positive aids only).",
+    )
+    rfi_database_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

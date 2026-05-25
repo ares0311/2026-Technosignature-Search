@@ -1,7 +1,7 @@
 # Production Readiness Assessment
 
 **Last updated:** 2026-05-25
-**Current milestone:** 29 (Production Ingestion Hardening)
+**Current milestone:** 30 (RFI Database Guardrails)
 
 ---
 
@@ -20,7 +20,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Calibration fixture set (15 false-positive classes) | ✅ Complete |
 | Score regression + determinism checks | ✅ Complete |
 | Interpretable baseline classifier | ✅ Complete |
-| 117 JSON schema artifacts | ✅ Complete |
+| 118 JSON schema artifacts | ✅ Complete |
 | Local validation gate (`validate-all`) | ✅ Complete |
 | Provenance, audit trail, lifecycle tracking | ✅ Complete |
 | Operational log system (26 log types) | ✅ Complete |
@@ -31,6 +31,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Data quality validator (`validate-input`) | ✅ Complete |
 | Direct `run-pipeline` CLI with validation-first execution | ✅ Complete |
 | Archival anomaly CSV reader scaffold | ✅ Complete |
+| Synthetic/local RFI database guardrails | ✅ Complete |
 | Labeled candidate dataset v0 (10 synthetic entries) | ✅ Complete |
 | Scoring model evaluation against labeled dataset | ✅ Complete |
 | Live catalog clients (Gaia TAP, SIMBAD) with opt-in guard | ✅ Complete |
@@ -46,7 +47,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | **Real observation data** — no actual telescope data has been ingested | Large (requires telescope time or approved archive access) |
 | **Real labeled dataset** — all labels are synthetic; model can't be validated against ground truth | Medium (requires human expert labeling of real detections) |
 | **Calibrated scoring thresholds** — current thresholds are synthetic v0 defaults | Medium (requires sensitivity analysis against real noise distributions) |
-| **RFI database** — the RFI band list is a placeholder; real site-specific RFI catalogs needed | Medium |
+| **Real site-specific RFI database** — synthetic guardrails exist, but no permitted site-monitoring catalog has been reviewed | Medium |
 | **Peer review** — no external scientific review of pipeline logic or candidate reports | Large |
 
 ### Tier 2 — Required for Research-Grade Use

@@ -130,6 +130,28 @@ def test_radio_candidate_uses_track_config_feature_defaults() -> None:
     assert candidate.features["provenance_completeness_score"] == 0.72
 
 
+def test_radio_candidate_records_rfi_database_overlap_features() -> None:
+    candidate = build_radio_candidate(
+        "radio-rfi-database",
+        [
+            {
+                "frequency_hz": 1_575_420_000.0,
+                "drift_rate_hz_per_sec": 0.0,
+                "snr": 20.0,
+                "bandwidth_hz": 1.5,
+                "scan_role": "on",
+                "target_id": "target-a",
+            }
+        ],
+    )
+
+    assert candidate.features["rfi_band_overlap_score"] == 1.0
+    assert candidate.features["rfi_database_schema_version"] == "rfi_database_v1"
+    assert candidate.features["rfi_database_match_count"] == 1
+    assert candidate.features["rfi_database_match_ids"] == "rfi-db-001"
+    assert candidate.features["rfi_database_validation_ok"] is True
+
+
 def test_radio_prototype_candidate_scores_better_than_rfi_candidate() -> None:
     clean = build_radio_candidate(
         "radio-clean-prototype",

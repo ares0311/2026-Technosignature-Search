@@ -930,3 +930,18 @@ introduced.
 - [x] Synthetic anomaly CSV fixture added under `tests/fixtures/anomaly/`
 - [x] Focused tests added for anomaly CSV reading, structural input validation, and `run-pipeline`
 - [x] DECISION-076: Pipeline Input Validation Gates Local CSV Scoring
+
+---
+
+# Milestone 30 — RFI Database Guardrails
+
+- [x] `src/techno_search/rfi_database.py` — local site-specific RFI database records with provenance validation
+- [x] `schemas/rfi_database.schema.json`
+- [x] `tests/fixtures/rfi_database.json` — 5 synthetic entries covering reviewed, provisional, and deprecated records
+- [x] `tests/test_rfi_database.py` — guardrail tests for ranges, provenance, matching, and conservative disclaimers
+- [x] `techno-search rfi-database-summary` CLI command
+- [x] Radio candidates now record RFI database schema version, record count, reviewed count, validation status, and overlap IDs
+- [x] `rfi_database` added to `SCHEMA_FILENAMES` (total schemas: 118)
+- [x] `validate-all` gates: `rfi_database_record_count >= 1`, `rfi_database_reviewed_count >= 1`, and `rfi_database_validation_ok`
+- [x] `validation-summary` fields: `rfi_database_record_count`, `rfi_database_reviewed_count`, `rfi_database_validation_ok`, `rfi_database_synthetic_count`
+- [x] DECISION-077: RFI Database Guardrails Precede Any Radio Threshold Recalibration
