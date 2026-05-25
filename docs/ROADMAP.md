@@ -918,3 +918,15 @@ introduced.
 - [x] `validate-all` gates: `target_selection_entry_count >= 1`, `doppler_correction_entry_count >= 1`, `data_archival_entry_count >= 1`
 - [x] `validation-summary` fields: `target_selection_entry_count`, `target_selection_selected_count`, `doppler_correction_entry_count`, `doppler_correction_applied_count`, `data_archival_entry_count`, `data_archival_archived_count`
 - [x] DECISION-075: Target Selection Log, Doppler Correction Log, And Data Archival Log Complete Milestone 28
+
+---
+
+# Milestone 29 — Production Ingestion Hardening
+
+- [x] `run-pipeline` CLI command validates one local CSV input before scoring and report writing
+- [x] Pipeline run JSON records the structural validation result, reader type, row count, report paths, and conservative disclaimer
+- [x] `schemas/data_quality.schema.json` added for `validate-input` output (total schemas: 117)
+- [x] Archival/catalog anomaly CSV reader added for synthetic-compatible anomaly feature tables
+- [x] Synthetic anomaly CSV fixture added under `tests/fixtures/anomaly/`
+- [x] Focused tests added for anomaly CSV reading, structural input validation, and `run-pipeline`
+- [x] DECISION-076: Pipeline Input Validation Gates Local CSV Scoring

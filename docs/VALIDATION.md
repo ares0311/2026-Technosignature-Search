@@ -671,6 +671,22 @@ Included in `validate-all` for informational purposes. Collects blocking issues 
 
 `validate-all` requires `pipeline_total_blocked >= 0` (always passes; the gate confirms the health summary is reachable). Use `pipeline-health-summary` for the full per-track breakdown.
 
+## Pipeline Input Validation
+
+```bash
+.venv/bin/techno-search validate-input tests/fixtures/radio/sample_hits.csv --track radio
+.venv/bin/techno-search validate-input tests/fixtures/infrared/sample_gaia_wise.csv --track infrared
+.venv/bin/techno-search validate-input tests/fixtures/anomaly/sample_archival_anomaly.csv --track anomaly
+.venv/bin/techno-search run-pipeline tests/fixtures/radio/sample_hits.csv --track radio --output-dir artifacts/pipeline_smoke
+```
+
+`validate-input` performs structural checks before a local CSV file can be
+used by `run-pipeline`. The pipeline runner refuses invalid input before
+scoring and records the validation result, reader type, row count, and report
+paths in its JSON output. These commands are local triage and provenance aids
+only. They do not authorize live data access, external submission, or
+scientific claims.
+
 ## Operations Readiness Visibility
 
 ```bash

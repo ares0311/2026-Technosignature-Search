@@ -326,6 +326,7 @@ SCHEMA_FILENAMES = {
     "operator_handoff_template": "operator_handoff_template.schema.json",
     "candidate_resolution": "candidate_resolution.schema.json",
     "candidate_retention": "candidate_retention.schema.json",
+    "data_quality": "data_quality.schema.json",
     "data_quality_log": "data_quality_log.schema.json",
     "follow_up_request": "follow_up_request.schema.json",
     "session_log": "session_log.schema.json",
@@ -2958,6 +2959,18 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         dq_result = validate_input(Path(args.input), args.track)
         print(json.dumps(dq_result.as_dict(), indent=2, sort_keys=True), file=out)
         return 0 if dq_result.ok else 1
+
+    if args.command == "run-pipeline":
+        from techno_search.pipeline_runner import run_pipeline
+
+        pipeline_result = run_pipeline(
+            Path(args.input),
+            args.track,
+            Path(args.output_dir),
+            candidate_id=getattr(args, "candidate_id", None),
+        )
+        print(json.dumps(pipeline_result.as_dict(), indent=2, sort_keys=True), file=out)
+        return 0 if pipeline_result.ok else 1
 
     parser.error(f"Unknown command: {args.command}")
     return 2
@@ -8708,6 +8721,31 @@ def _build_parser() -> argparse.ArgumentParser:
     validate_input_parser.add_argument(
         "--track", required=True, choices=["radio", "infrared", "anomaly"],
         help="Track type for validation.",
+    )
+
+    run_pipeline_parser = subparsers.add_parser(
+        "run-pipeline",
+        help=(
+            "Run structural validation, candidate scoring, and report writing "
+            "for one local CSV input. Triage/provenance only."
+        ),
+    )
+    run_pipeline_parser.add_argument("input", type=Path, help="Input CSV file path.")
+    run_pipeline_parser.add_argument(
+        "--track",
+        required=True,
+        choices=["radio", "infrared", "anomaly"],
+        help="Track type for the input file.",
+    )
+    run_pipeline_parser.add_argument(
+        "--output-dir",
+        required=True,
+        type=Path,
+        help="Directory for generated report artifacts.",
+    )
+    run_pipeline_parser.add_argument(
+        "--candidate-id",
+        help="Optional candidate ID override for generated reports.",
     )
 
     return parser

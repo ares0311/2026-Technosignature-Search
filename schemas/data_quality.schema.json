@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DataQuality",
+  "description": "Structural validation result for one local pipeline input file. This is an ingestion guardrail only, not a scientific significance assessment.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "disclaimer",
+    "path",
+    "track",
+    "ok",
+    "row_count",
+    "issue_count",
+    "warning_count",
+    "issues",
+    "warnings"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "disclaimer": { "type": "string" },
+    "path": { "type": "string" },
+    "track": { "type": "string", "enum": ["radio", "infrared", "anomaly"] },
+    "ok": { "type": "boolean" },
+    "row_count": { "type": "integer", "minimum": 0 },
+    "issue_count": { "type": "integer", "minimum": 0 },
+    "warning_count": { "type": "integer", "minimum": 0 },
+    "issues": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

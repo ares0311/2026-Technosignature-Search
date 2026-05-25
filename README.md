@@ -442,6 +442,16 @@ Score every example candidate:
 .venv/bin/techno-search score-batch examples/candidates examples/batch_reports
 ```
 
+Validate and run one local CSV input through the hardened ingestion path:
+
+```bash
+.venv/bin/techno-search validate-input tests/fixtures/radio/sample_hits.csv --track radio
+.venv/bin/techno-search run-pipeline tests/fixtures/radio/sample_hits.csv \
+  --track radio \
+  --output-dir artifacts/pipeline_smoke \
+  --candidate-id local-radio-smoke
+```
+
 Run local validation summaries:
 
 ```bash
@@ -875,6 +885,7 @@ Scientific quality gates:
 | Schema drift | Versioned JSON schemas and schema path checks | `schema-paths`, schema tests |
 | Score instability | Golden score regression snapshots | `score-regression-summary` |
 | Hidden data dependency | Synthetic fixtures and mocked services by default | `pytest`, live-data opt-in guards |
+| Invalid real-file input | Structural validation before pipeline scoring | `validate-input`, `run-pipeline` |
 | Lost provenance | Manifest and provenance summary validation | Report manifests and provenance summary CLI |
 | Misleading calibration | Synthetic-only disclaimers on reliability and PR summaries | Validation summary commands |
 | Premature non-synthetic calibration | Readiness review before curated dataset promotion | `validation-readiness-summary` |

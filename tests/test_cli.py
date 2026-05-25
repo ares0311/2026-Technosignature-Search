@@ -273,6 +273,7 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "candidate_annotation",
         "candidate_retention",
         "candidate_resolution",
+        "data_quality",
         "data_quality_log",
         "escalation_log",
         "follow_up_request",
@@ -1483,7 +1484,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 116
+    assert result["schema_count"] == 117
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3

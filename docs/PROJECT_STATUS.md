@@ -218,6 +218,8 @@ The project will support three tracks from day one:
 - [x] Operations blocker progress-execution follow-up records added to plan
       reviewed execution follow-up without clearing blockers or enabling
       external workflow
+- [x] Production ingestion hardening added for local CSV validation, direct
+      `run-pipeline` execution, and archival anomaly CSV fixtures
 
 ---
 
@@ -299,13 +301,15 @@ The project will support three tracks from day one:
 - [x] Operations blocker progress-execution summary now records local execution notes while preserving residual blockers, verified-local exclusions, and zero authorization counts
 - [x] Operations blocker progress-execution review summary now reviews local execution notes while preserving residual blockers, verified-local exclusions, and zero authorization counts
 - [x] Operations blocker progress-execution follow-up summary now plans reviewed execution follow-up while preserving residual blockers, verified-local exclusions, and zero authorization counts
+- [x] `run-pipeline` now refuses structurally invalid local CSV input before
+      scoring and records validation provenance in its JSON output
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions
 
-1. Continue operator follow-up for records marked `operator_followup_required` before changing any blocker status.
-2. Copy `docs/templates/ci.yml` to `.github/workflows/ci.yml` only after confirming the publishing token has GitHub `workflow` scope.
-3. Add curated validation intake examples only when provenance, licensing, labeling, and external-review requirements are satisfied.
+1. Add real labeled dataset intake examples only when provenance, licensing, labeling, and external-review requirements are satisfied.
+2. Add a site-specific RFI database fixture and guardrails before changing radio false-positive thresholds.
+3. Calibrate scoring thresholds only after real labeled cases and peer-review feedback are available.
 
 ---
 

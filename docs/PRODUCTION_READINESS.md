@@ -1,7 +1,7 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-05-24  
-**Current milestone:** 27 (Production Foundation)
+**Last updated:** 2026-05-25
+**Current milestone:** 29 (Production Ingestion Hardening)
 
 ---
 
@@ -20,7 +20,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Calibration fixture set (15 false-positive classes) | ✅ Complete |
 | Score regression + determinism checks | ✅ Complete |
 | Interpretable baseline classifier | ✅ Complete |
-| 112+ JSON schema artifacts | ✅ Complete |
+| 117 JSON schema artifacts | ✅ Complete |
 | Local validation gate (`validate-all`) | ✅ Complete |
 | Provenance, audit trail, lifecycle tracking | ✅ Complete |
 | Operational log system (26 log types) | ✅ Complete |
@@ -29,6 +29,8 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Real Gaia+WISE catalog CSV reader (IRSA TAP format) | ✅ Complete |
 | End-to-end pipeline runner (CSV → scored report) | ✅ Complete |
 | Data quality validator (`validate-input`) | ✅ Complete |
+| Direct `run-pipeline` CLI with validation-first execution | ✅ Complete |
+| Archival anomaly CSV reader scaffold | ✅ Complete |
 | Labeled candidate dataset v0 (10 synthetic entries) | ✅ Complete |
 | Scoring model evaluation against labeled dataset | ✅ Complete |
 | Live catalog clients (Gaia TAP, SIMBAD) with opt-in guard | ✅ Complete |

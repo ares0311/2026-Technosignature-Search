@@ -26,6 +26,10 @@ def test_catalog_reader_importable() -> None:
     from techno_search.infrared.catalog_reader import read_gaia_wise_csv  # noqa: F401
 
 
+def test_anomaly_catalog_reader_importable() -> None:
+    from techno_search.anomalies.catalog_reader import read_anomaly_csv  # noqa: F401
+
+
 def test_data_quality_importable() -> None:
     from techno_search.data_quality import validate_input  # noqa: F401
 

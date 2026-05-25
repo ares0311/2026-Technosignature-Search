@@ -1774,3 +1774,33 @@ Implement three new log types:
 
 ## Consequences
 Schema count grows from 113 to 116. All three log types carry explicit guardrails that entries are operational provenance records only and do not modify candidate scores, pathway routing, or authorize external submission.
+
+---
+
+# DECISION-076: Pipeline Input Validation Gates Local CSV Scoring
+
+Date: 2026-05-25
+Status: accepted
+
+## Context
+Milestone 27 added real CSV readers and an end-to-end pipeline runner, but the
+runner was not exposed as a direct CLI workflow and anomaly CSV input still
+used an empty feature set. Operators need a safer local path for testing CSV
+ingestion that refuses invalid files before scoring.
+
+## Decision
+Implement Milestone 29 production ingestion hardening:
+
+- Add a `run-pipeline` CLI command that runs structural validation before
+  candidate scoring and report generation.
+- Add `data_quality.schema.json` for the `validate-input` JSON output.
+- Record `input_validation`, `reader_type`, `row_count`, report paths, and a
+  conservative disclaimer in pipeline run JSON.
+- Add an archival/catalog anomaly CSV reader and a synthetic anomaly fixture so
+  all three tracks have a local CSV ingestion path.
+
+## Consequences
+Schema count grows from 116 to 117. Local CSV pipeline runs are easier to use
+and harder to misuse. Structural validation does not inspect scientific
+significance, does not modify scores or pathways, does not authorize live data
+access or external submission, and does not constitute a detection claim.

@@ -1,0 +1,5 @@
+# Archival/catalog anomaly feature table -- synthetic fixture matching reader format
+# Source: synthetic only, not real observation data
+historical_source_id,modern_source_id,ra,dec,historical_epoch,modern_epoch,historical_magnitude,modern_magnitude,modern_limit_magnitude,crossmatch_distance_arcsec,crossmatch_confidence,historical_detection_score,proper_motion_explanation_score,survey_depth_explanation_score,artifact_score,moving_object_score,variability_score,catalog_mismatch_score
+hist-synth-001,,101.2873,-16.7161,1954.2,2026.1,13.2,,19.8,8.4,0.18,0.92,0.08,0.12,0.05,0.04,0.21,0.10
+hist-synth-002,modern-synth-002,165.4601,35.2014,1978.5,2026.1,15.1,15.4,,0.7,0.86,0.81,0.15,0.18,0.09,0.06,0.31,0.12

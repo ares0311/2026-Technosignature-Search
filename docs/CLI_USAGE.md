@@ -2296,3 +2296,36 @@ techno-search data-archival-summary --fixture-path tests/fixtures/data_archival_
 Output fields: `entry_count`, `archived_count`, `pending_count`, `failed_count`, `deleted_count`, `counts_by_kind`, `counts_by_track`, `schema_version`, `disclaimer`.
 
 Data archival entries are operational provenance records — an archival record does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.
+
+## `validate-input`
+
+Validate one local CSV input file before pipeline execution.
+
+```bash
+.venv/bin/techno-search validate-input tests/fixtures/radio/sample_hits.csv --track radio
+.venv/bin/techno-search validate-input tests/fixtures/infrared/sample_gaia_wise.csv --track infrared
+.venv/bin/techno-search validate-input tests/fixtures/anomaly/sample_archival_anomaly.csv --track anomaly
+```
+
+Output fields: `schema_version`, `disclaimer`, `path`, `track`, `ok`,
+`row_count`, `issue_count`, `warning_count`, `issues`, and `warnings`.
+Validation is structural only. It does not inspect scientific significance,
+modify candidate scores, authorize live data access, authorize external
+submission, or constitute a detection claim.
+
+## `run-pipeline`
+
+Run structural validation, scoring, and report writing for one local CSV input.
+
+```bash
+.venv/bin/techno-search run-pipeline tests/fixtures/radio/sample_hits.csv --track radio --output-dir artifacts/pipeline_smoke --candidate-id local-radio-smoke
+.venv/bin/techno-search run-pipeline tests/fixtures/infrared/sample_gaia_wise.csv --track infrared --output-dir artifacts/pipeline_smoke
+.venv/bin/techno-search run-pipeline tests/fixtures/anomaly/sample_archival_anomaly.csv --track anomaly --output-dir artifacts/pipeline_smoke
+```
+
+Output fields: `disclaimer`, `candidate_id`, `track`, `pathway`,
+`input_path`, `reader_type`, `row_count`, `input_validation`, report paths,
+`ok`, and `error`. The command refuses structurally invalid inputs before
+scoring. Pipeline run results are local triage and provenance records only;
+they are not detections, discoveries, external validation, or authorization
+for external submission.

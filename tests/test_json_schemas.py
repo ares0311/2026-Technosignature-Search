@@ -51,6 +51,7 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "candidate_annotation.schema.json",
         "candidate_retention.schema.json",
         "candidate_resolution.schema.json",
+        "data_quality.schema.json",
         "data_quality_log.schema.json",
         "escalation_log.schema.json",
         "follow_up_request.schema.json",
