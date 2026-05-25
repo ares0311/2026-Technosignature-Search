@@ -10,6 +10,64 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
+User requested implementation of Milestone 28 (target selection log, Doppler correction log, data archival log).
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/target_selection_log.py` — operational scheduling provenance records for target selection events; selection_kinds: priority_queue, manual_selection, automated_filter, watchlist_trigger, follow_up_request; statuses: selected, deferred, rejected, pending
+- `schemas/target_selection_log.schema.json`
+- `tests/fixtures/target_selection_log.json` — 5 entries (2 selected, 1 deferred, 1 rejected, 1 pending)
+- `tests/test_target_selection_log.py` — 22 tests
+- `src/techno_search/doppler_correction_log.py` — operational processing provenance records for Doppler/barycentric correction; correction_kinds: barycentric, topocentric, heliocentric, observatory_frame, rest_frame; statuses: applied, failed, not_applicable, flagged
+- `schemas/doppler_correction_log.schema.json`
+- `tests/fixtures/doppler_correction_log.json` — 5 entries (2 applied, 1 failed, 1 not_applicable, 1 flagged)
+- `tests/test_doppler_correction_log.py` — 22 tests
+- `src/techno_search/data_archival_log.py` — operational provenance records for observation data archival events; archival_kinds: raw_data, processed_data, candidate_packet, pipeline_artifact, calibration_data; statuses: archived, pending, failed, deleted
+- `schemas/data_archival_log.schema.json`
+- `tests/fixtures/data_archival_log.json` — 5 entries (2 archived, 1 pending, 1 failed, 1 deleted)
+- `tests/test_data_archival_log.py` — 22 tests
+- `target_selection_log`, `doppler_correction_log`, `data_archival_log` added to `SCHEMA_FILENAMES` (total schemas: 116)
+- `techno-search target-selection-summary`, `techno-search doppler-correction-summary`, `techno-search data-archival-summary` CLI commands
+- `validate-all` gates: `target_selection_entry_count >= 1`, `doppler_correction_entry_count >= 1`, `data_archival_entry_count >= 1`
+- `validation-summary` fields: `target_selection_entry_count`, `target_selection_selected_count`, `doppler_correction_entry_count`, `doppler_correction_applied_count`, `data_archival_entry_count`, `data_archival_archived_count`
+- DECISION-075: Target Selection Log, Doppler Correction Log, And Data Archival Log Complete Milestone 28
+- CI workflow updated to use `python -m pip`, `python -m pytest`, `python -m ruff`, `python -m mypy` for robustness
+
+Scientific guardrail:
+
+- Target selection entries are operational scheduling provenance records — a selection does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim
+- Doppler correction entries are operational processing provenance records — a correction does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim
+- Data archival entries are operational provenance records — an archival record does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --tb=short -q
+.venv/bin/ruff check .
+.venv/bin/mypy src --no-error-summary
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 2282 tests passed
+- 7 tests skipped
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed.
+
+---
+
+## Previous Iteration
+
 User requested implementation of Milestone 27 (Production Foundation).
 
 Current branch: `claude/general-session-Bb2dZ`.
