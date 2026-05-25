@@ -1,0 +1,64 @@
+{
+  "rfi_database_admission_records": [
+    {
+      "source_id": "rfi-admit-synthetic-v0",
+      "site_id": "synthetic-gbt",
+      "source_label": "Synthetic RFI database fixture",
+      "admission_status": "synthetic_only",
+      "provenance_reviewed": true,
+      "license_reviewed": true,
+      "monitoring_context_reviewed": true,
+      "external_review_required": false,
+      "external_review_completed": false,
+      "real_data_authorized": false,
+      "synthetic_fixture_only": true,
+      "blocker_count": 0,
+      "notes": "Synthetic fixture is allowed for local regression tests only."
+    },
+    {
+      "source_id": "rfi-admit-real-provenance-blocked",
+      "site_id": "future-site-rfi",
+      "source_label": "Future site-specific RFI monitoring catalog",
+      "admission_status": "blocked_pending_provenance",
+      "provenance_reviewed": false,
+      "license_reviewed": false,
+      "monitoring_context_reviewed": false,
+      "external_review_required": true,
+      "external_review_completed": false,
+      "real_data_authorized": false,
+      "synthetic_fixture_only": false,
+      "blocker_count": 4,
+      "notes": "Placeholder for a permitted real RFI catalog; no real records are admitted."
+    },
+    {
+      "source_id": "rfi-admit-real-license-blocked",
+      "site_id": "future-site-rfi",
+      "source_label": "Future licensed site RFI list",
+      "admission_status": "blocked_pending_license",
+      "provenance_reviewed": true,
+      "license_reviewed": false,
+      "monitoring_context_reviewed": true,
+      "external_review_required": true,
+      "external_review_completed": false,
+      "real_data_authorized": false,
+      "synthetic_fixture_only": false,
+      "blocker_count": 2,
+      "notes": "Licensing and external-review blockers remain open."
+    },
+    {
+      "source_id": "rfi-admit-review-blocked",
+      "site_id": "future-site-rfi",
+      "source_label": "Future reviewed site RFI list",
+      "admission_status": "blocked_pending_review",
+      "provenance_reviewed": true,
+      "license_reviewed": true,
+      "monitoring_context_reviewed": true,
+      "external_review_required": true,
+      "external_review_completed": false,
+      "real_data_authorized": false,
+      "synthetic_fixture_only": false,
+      "blocker_count": 1,
+      "notes": "External review is still required before real RFI records may be admitted."
+    }
+  ]
+}

@@ -810,3 +810,23 @@ These records are false-positive screening aids only. They do not recalibrate
 radio thresholds, confirm or reject candidate technosignature interest,
 authorize live-provider access, authorize external submission, or constitute a
 detection claim.
+
+## RFI Database Admission Gates
+
+Use `rfi-database-admission-summary` to inspect the local readiness records for
+proposed RFI database sources:
+
+```bash
+.venv/bin/techno-search rfi-database-admission-summary
+.venv/bin/techno-search rfi-database-admission-summary --fixture-path tests/fixtures/rfi_database_admission.json
+```
+
+The summary reports blocked counts, synthetic-only counts, real-data
+authorization counts, external-review counts, blocker totals, status counts,
+site counts, and validation issues. `validate-all` requires admission records
+to exist, validation to be clean, and `real_data_authorized_count` to remain
+zero in the committed fixture.
+
+Admission records gate future RFI source lists only. They do not ingest real
+monitoring data, calibrate thresholds, authorize live data, authorize external
+submission, or constitute external validation.

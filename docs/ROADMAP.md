@@ -945,3 +945,17 @@ introduced.
 - [x] `validate-all` gates: `rfi_database_record_count >= 1`, `rfi_database_reviewed_count >= 1`, and `rfi_database_validation_ok`
 - [x] `validation-summary` fields: `rfi_database_record_count`, `rfi_database_reviewed_count`, `rfi_database_validation_ok`, `rfi_database_synthetic_count`
 - [x] DECISION-077: RFI Database Guardrails Precede Any Radio Threshold Recalibration
+
+---
+
+# Milestone 31 — RFI Database Admission Gates
+
+- [x] `src/techno_search/rfi_database_admission.py` — local readiness records for proposed RFI database sources
+- [x] `schemas/rfi_database_admission.schema.json`
+- [x] `tests/fixtures/rfi_database_admission.json` — 4 records covering synthetic-only and blocked real-source admission states
+- [x] `tests/test_rfi_database_admission.py` — guardrail tests for review requirements, blocker counts, and real-data authorization
+- [x] `techno-search rfi-database-admission-summary` CLI command
+- [x] `rfi_database_admission` added to `SCHEMA_FILENAMES` (total schemas: 119)
+- [x] `validate-all` gates: admission records exist, validation is clean, and real-data authorization count remains zero
+- [x] `validation-summary` fields: `rfi_database_admission_record_count`, `rfi_database_admission_blocked_count`, `rfi_database_admission_real_data_authorized_count`, `rfi_database_admission_validation_ok`
+- [x] DECISION-078: RFI Database Admission Records Gate Real RFI Source Lists

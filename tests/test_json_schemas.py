@@ -106,6 +106,7 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "quality_gate_log.schema.json",
         "workflow_state_log.schema.json",
         "signal_classification_log.schema.json",
+        "rfi_database_admission.schema.json",
         "rfi_database.schema.json",
         "rfi_mitigation_log.schema.json",
         "candidate_annotation_log.schema.json",

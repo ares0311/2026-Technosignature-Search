@@ -225,6 +225,7 @@ def test_cli_docs_include_draft_report_and_decision_workflows() -> None:
     assert ".venv/bin/techno-search validate-input" in doc
     assert ".venv/bin/techno-search run-pipeline" in doc
     assert ".venv/bin/techno-search rfi-database-summary" in doc
+    assert ".venv/bin/techno-search rfi-database-admission-summary" in doc
     assert ".venv/bin/techno-search scheduler-dry-run" in doc
     assert "techno-search operations-readiness-summary" in doc
     assert "techno-search operations-action-plan-summary" in doc

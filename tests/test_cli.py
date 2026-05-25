@@ -176,6 +176,21 @@ def test_cli_rfi_database_summary_outputs_guardrail_counts() -> None:
     assert "do not calibrate scoring thresholds" in result["disclaimer"]
 
 
+def test_cli_rfi_database_admission_summary_outputs_gate_counts() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["rfi-database-admission-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "rfi_database_admission_v1"
+    assert result["record_count"] == 4
+    assert result["blocked_count"] == 3
+    assert result["real_data_authorized_count"] == 0
+    assert result["validation_ok"] is True
+    assert "do not ingest real monitoring data" in result["disclaimer"]
+
+
 def test_cli_calibration_track_summary_outputs_track_counts() -> None:
     stdout = StringIO()
 
@@ -342,6 +357,7 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "quality_gate_log",
         "workflow_state_log",
         "signal_classification_log",
+        "rfi_database_admission",
         "rfi_database",
         "rfi_mitigation_log",
         "candidate_annotation_log",
@@ -1499,7 +1515,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 118
+    assert result["schema_count"] == 119
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RfiDatabaseAdmission",
+  "description": "Local readiness records for proposed RFI database sources.",
+  "type": "object",
+  "required": ["rfi_database_admission_records"],
+  "properties": {
+    "rfi_database_admission_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "source_id",
+          "site_id",
+          "source_label",
+          "admission_status",
+          "provenance_reviewed",
+          "license_reviewed",
+          "monitoring_context_reviewed",
+          "external_review_required",
+          "external_review_completed",
+          "real_data_authorized",
+          "synthetic_fixture_only",
+          "blocker_count"
+        ],
+        "properties": {
+          "source_id": {"type": "string"},
+          "site_id": {"type": "string"},
+          "source_label": {"type": "string"},
+          "admission_status": {
+            "type": "string",
+            "enum": [
+              "synthetic_only",
+              "blocked_pending_provenance",
+              "blocked_pending_license",
+              "blocked_pending_review",
+              "ready_for_local_fixture"
+            ]
+          },
+          "provenance_reviewed": {"type": "boolean"},
+          "license_reviewed": {"type": "boolean"},
+          "monitoring_context_reviewed": {"type": "boolean"},
+          "external_review_required": {"type": "boolean"},
+          "external_review_completed": {"type": "boolean"},
+          "real_data_authorized": {"type": "boolean"},
+          "synthetic_fixture_only": {"type": "boolean"},
+          "blocker_count": {"type": "integer", "minimum": 0},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

@@ -2316,6 +2316,26 @@ RFI database records are local false-positive screening aids only. They do not
 calibrate scoring thresholds, authorize live data access, authorize external
 submission, or constitute detections, discoveries, or external validation.
 
+## `rfi-database-admission-summary`
+
+Summarize local admission-readiness records for proposed RFI database sources.
+
+```bash
+.venv/bin/techno-search rfi-database-admission-summary
+.venv/bin/techno-search rfi-database-admission-summary --fixture-path tests/fixtures/rfi_database_admission.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `record_count`,
+`blocked_count`, `ready_for_local_fixture_count`, `synthetic_only_count`,
+`real_data_authorized_count`, `external_review_required_count`,
+`external_review_completed_count`, `total_blocker_count`, `validation_ok`,
+`validation_issue_count`, `validation_issues`, `by_status`, `by_site_id`, and
+`records`.
+
+Admission records are local readiness checks only. They do not ingest real
+monitoring data, calibrate scoring thresholds, authorize live data access,
+authorize external submission, or constitute external validation.
+
 ## `validate-input`
 
 Validate one local CSV input file before pipeline execution.

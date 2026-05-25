@@ -1837,3 +1837,33 @@ calibrate thresholds, confirm or rule out candidate technosignature interest,
 authorize live data access, authorize external submission, or constitute a
 detection claim. Real site-specific RFI records remain blocked until their
 provenance, licensing, monitoring context, and review status are documented.
+
+---
+
+# DECISION-078: RFI Database Admission Records Gate Real RFI Source Lists
+
+Date: 2026-05-25
+Status: accepted
+
+## Context
+Milestone 30 added a synthetic RFI database fixture and validation for
+individual RFI records. The next risk is accidentally treating a proposed real
+site-specific RFI source list as admissible without provenance, licensing,
+monitoring context, and external-review evidence.
+
+## Decision
+Implement Milestone 31 RFI database admission gates:
+
+- Add local admission records for proposed RFI database sources.
+- Track provenance review, license review, monitoring-context review,
+  external-review requirements, blocker counts, synthetic-only status, and
+  explicit real-data authorization state.
+- Add `rfi-database-admission-summary` and wire it into local validation.
+- Require `real_data_authorized_count == 0` for the committed fixture.
+
+## Consequences
+Schema count grows from 118 to 119. The committed admission fixture permits
+synthetic local regression use only and keeps all proposed real RFI source
+lists blocked. Admission records do not ingest real monitoring data, calibrate
+scoring thresholds, authorize live data access, authorize external submission,
+or constitute external validation or detection claims.

@@ -305,12 +305,15 @@ The project will support three tracks from day one:
       scoring and records validation provenance in its JSON output
 - [x] Local synthetic RFI database guardrails added with schema, summary CLI,
       validation gates, and radio candidate overlap provenance
+- [x] RFI database admission gates added so proposed real source lists remain
+      blocked until provenance, licensing, monitoring context, and review
+      requirements are satisfied
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions
 
 1. Add real labeled dataset intake examples only when provenance, licensing, labeling, and external-review requirements are satisfied.
-2. Replace or supplement the synthetic RFI database fixture only when a permitted site-specific RFI catalog has provenance, licensing, and review status.
+2. Replace or supplement the synthetic RFI database fixture only when an RFI database admission record has zero blockers and explicit approval for local real-data use.
 3. Calibrate scoring thresholds only after real labeled cases, site-specific RFI evidence, and peer-review feedback are available.
 
 ---
