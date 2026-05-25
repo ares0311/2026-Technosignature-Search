@@ -2257,3 +2257,42 @@ techno-search observation-parameter-summary --fixture-path tests/fixtures/observ
 Output fields: `entry_count`, `applied_count`, `flagged_count`, `counts_by_kind`, `counts_by_status`, `schema_version`, `disclaimer`.
 
 Observation parameter entries are operational processing provenance records — a parameter record does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
+
+## `target-selection-summary`
+
+Summarize target selection log entries.
+
+```bash
+techno-search target-selection-summary
+techno-search target-selection-summary --fixture-path tests/fixtures/target_selection_log.json
+```
+
+Output fields: `entry_count`, `selected_count`, `deferred_count`, `rejected_count`, `pending_count`, `counts_by_kind`, `counts_by_track`, `schema_version`, `disclaimer`.
+
+Target selection entries are operational scheduling provenance records — a selection does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.
+
+## `doppler-correction-summary`
+
+Summarize Doppler correction log entries.
+
+```bash
+techno-search doppler-correction-summary
+techno-search doppler-correction-summary --fixture-path tests/fixtures/doppler_correction_log.json
+```
+
+Output fields: `entry_count`, `applied_count`, `failed_count`, `not_applicable_count`, `flagged_count`, `counts_by_kind`, `counts_by_track`, `schema_version`, `disclaimer`.
+
+Doppler correction entries are operational processing provenance records — a correction does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.
+
+## `data-archival-summary`
+
+Summarize data archival log entries.
+
+```bash
+techno-search data-archival-summary
+techno-search data-archival-summary --fixture-path tests/fixtures/data_archival_log.json
+```
+
+Output fields: `entry_count`, `archived_count`, `pending_count`, `failed_count`, `deleted_count`, `counts_by_kind`, `counts_by_track`, `schema_version`, `disclaimer`.
+
+Data archival entries are operational provenance records — an archival record does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.

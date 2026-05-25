@@ -636,6 +636,10 @@ class GaiaAdapter(LiveProviderAdapter):
     def __init__(self, fetcher: ProviderFetch | None = None) -> None:
         super().__init__("gaia", "https://gea.esac.esa.int/archive/", fetcher)
 
+    @classmethod
+    def from_client(cls, client: LiveProviderClient) -> GaiaAdapter:  # type: ignore[override]
+        return cls(fetcher_from_client(client))
+
     def build_cone_search_request(
         self,
         *,

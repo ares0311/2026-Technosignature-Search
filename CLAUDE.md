@@ -10,6 +10,127 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
+User requested implementation of Milestone 28 (target selection log, Doppler correction log, data archival log).
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/target_selection_log.py` — operational scheduling provenance records for target selection events; selection_kinds: priority_queue, manual_selection, automated_filter, watchlist_trigger, follow_up_request; statuses: selected, deferred, rejected, pending
+- `schemas/target_selection_log.schema.json`
+- `tests/fixtures/target_selection_log.json` — 5 entries (2 selected, 1 deferred, 1 rejected, 1 pending)
+- `tests/test_target_selection_log.py` — 22 tests
+- `src/techno_search/doppler_correction_log.py` — operational processing provenance records for Doppler/barycentric correction; correction_kinds: barycentric, topocentric, heliocentric, observatory_frame, rest_frame; statuses: applied, failed, not_applicable, flagged
+- `schemas/doppler_correction_log.schema.json`
+- `tests/fixtures/doppler_correction_log.json` — 5 entries (2 applied, 1 failed, 1 not_applicable, 1 flagged)
+- `tests/test_doppler_correction_log.py` — 22 tests
+- `src/techno_search/data_archival_log.py` — operational provenance records for observation data archival events; archival_kinds: raw_data, processed_data, candidate_packet, pipeline_artifact, calibration_data; statuses: archived, pending, failed, deleted
+- `schemas/data_archival_log.schema.json`
+- `tests/fixtures/data_archival_log.json` — 5 entries (2 archived, 1 pending, 1 failed, 1 deleted)
+- `tests/test_data_archival_log.py` — 22 tests
+- `target_selection_log`, `doppler_correction_log`, `data_archival_log` added to `SCHEMA_FILENAMES` (total schemas: 116)
+- `techno-search target-selection-summary`, `techno-search doppler-correction-summary`, `techno-search data-archival-summary` CLI commands
+- `validate-all` gates: `target_selection_entry_count >= 1`, `doppler_correction_entry_count >= 1`, `data_archival_entry_count >= 1`
+- `validation-summary` fields: `target_selection_entry_count`, `target_selection_selected_count`, `doppler_correction_entry_count`, `doppler_correction_applied_count`, `data_archival_entry_count`, `data_archival_archived_count`
+- DECISION-075: Target Selection Log, Doppler Correction Log, And Data Archival Log Complete Milestone 28
+- CI workflow updated to use `python -m pip`, `python -m pytest`, `python -m ruff`, `python -m mypy` for robustness
+
+Scientific guardrail:
+
+- Target selection entries are operational scheduling provenance records — a selection does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim
+- Doppler correction entries are operational processing provenance records — a correction does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim
+- Data archival entries are operational provenance records — an archival record does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --tb=short -q
+.venv/bin/ruff check .
+.venv/bin/mypy src --no-error-summary
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 2282 tests passed
+- 7 tests skipped
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed.
+
+---
+
+## Previous Iteration
+
+User requested implementation of Milestone 27 (Production Foundation).
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/labeled_dataset.py` — labeled candidate dataset v0; labels: false_positive, known_object, follow_up, insufficient_evidence; `LabeledCandidate` dataclass, `load_labeled_candidates()`, `labeled_dataset_summary()`
+- `schemas/labeled_candidates.schema.json`
+- `tests/fixtures/labeled_candidates.json` — 10 entries across radio (4), infrared (3), anomaly (3) tracks
+- `src/techno_search/data_quality.py` — structural data quality validator; `DataQualityResult` dataclass, `validate_input(path, track)` dispatches to radio/infrared/anomaly validators; structural checks only, no astronomical interpretation
+- `src/techno_search/pipeline_runner.py` — end-to-end pipeline runner; `PipelineRunResult` dataclass, `run_pipeline(input_path, track, output_dir)` covering CSV → scored report
+- `src/techno_search/radio/hit_table_reader.py` — real turboSETI hit-table CSV reader; `read_hit_table_csv()`, `hit_table_to_radio_hit_dicts()`
+- `src/techno_search/infrared/catalog_reader.py` — real Gaia+WISE catalog CSV reader (IRSA TAP format); `read_gaia_wise_csv()`, `catalog_rows_to_infrared_source_dicts()`
+- `tests/fixtures/radio/sample_hits.csv` — 5 synthetic turboSETI-format hit rows
+- `tests/fixtures/infrared/sample_gaia_wise.csv` — 5 synthetic Gaia+WISE catalog rows
+- `tests/test_hit_table_reader.py` — 12 tests
+- `tests/test_end_to_end.py` — 10 pipeline integration tests
+- `tests/test_deps.py` — 8 dependency availability tests
+- `tests/conftest.py` — `pytest_collection_modifyitems` auto-skip for `@pytest.mark.integration_live` unless `TECHNO_SEARCH_ENABLE_LIVE_DATA=1`
+- `.github/workflows/ci.yml` — GitHub Actions CI workflow (Python 3.11, pytest, ruff, mypy)
+- `docs/PRODUCTION_READINESS.md` — production readiness assessment (~20–25%), tier 1/2/3 gap analysis
+- `eval_against_labels()` added to `baseline_eval.py` — maps labeled dataset to expected pathways, scores each, reports accuracy
+- `labeled_candidates` added to `SCHEMA_FILENAMES` (total schemas: 113)
+- `techno-search labeled-dataset-summary`, `techno-search eval-against-labels`, `techno-search validate-input` CLI commands
+- `validate-all` gates: `labeled_entry_count >= 1`, `label_eval_entry_count >= 1`
+- `validation-summary` fields: `labeled_entry_count`, `label_eval_entry_count`, `label_eval_accuracy`
+- DECISION-074: Production Foundation (Milestone 27) — Real File Ingestion, CI, And Production Readiness Assessment
+- pyproject.toml: `science` and `radio` optional dependency extras; numpy, scipy, astropy, pandas as core deps
+
+Scientific guardrail:
+
+- Labeled dataset entries are synthetic development scaffolds — labels and evaluations do not constitute detections, confirmed candidates, or external validation
+- Data quality validation is structural only — ok=True means format is parseable, not that the data is scientifically valid
+- Pipeline integration tests use synthetic fixture data only — no real telescope data has been ingested
+- CI activation gates on synthetic tests only; live integration tests remain opt-in via `TECHNO_SEARCH_ENABLE_LIVE_DATA=1`
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --tb=short -q
+.venv/bin/ruff check .
+.venv/bin/mypy src --no-error-summary
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 2216 tests passed
+- 7 tests skipped
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed.
+
+---
+
+## Previous Iteration
+
 User requested implementation of Milestone 26 (polarization log, telescope status log, observation parameter log).
 
 Current branch: `claude/general-session-Bb2dZ`.

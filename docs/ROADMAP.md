@@ -896,3 +896,25 @@ introduced.
 - [x] `validate-all` gates: `polarization_entry_count >= 1`, `telescope_status_entry_count >= 1`, `obs_parameter_entry_count >= 1`
 - [x] `validation-summary` fields: `polarization_entry_count`, `polarization_measured_count`, `telescope_status_entry_count`, `telescope_status_recorded_count`, `obs_parameter_entry_count`, `obs_parameter_applied_count`
 - [x] DECISION-073: Polarization Log, Telescope Status Log, And Observation Parameter Log Complete Milestone 26
+
+---
+
+# Milestone 28 — Target Selection Log, Doppler Correction Log, And Data Archival Log
+
+- [x] `src/techno_search/target_selection_log.py` — operational scheduling provenance records for target selection events; selection_kinds: priority_queue, manual_selection, automated_filter, watchlist_trigger, follow_up_request; statuses: selected, deferred, rejected, pending
+- [x] `schemas/target_selection_log.schema.json`
+- [x] `tests/fixtures/target_selection_log.json` — 5 entries (2 selected, 1 deferred, 1 rejected, 1 pending)
+- [x] `tests/test_target_selection_log.py` — 22 tests
+- [x] `src/techno_search/doppler_correction_log.py` — operational processing provenance records for Doppler correction; correction_kinds: barycentric, topocentric, heliocentric, observatory_frame, rest_frame; statuses: applied, failed, not_applicable, flagged
+- [x] `schemas/doppler_correction_log.schema.json`
+- [x] `tests/fixtures/doppler_correction_log.json` — 5 entries (2 applied, 1 failed, 1 not_applicable, 1 flagged)
+- [x] `tests/test_doppler_correction_log.py` — 22 tests
+- [x] `src/techno_search/data_archival_log.py` — operational provenance records for observation data archival events; archival_kinds: raw_data, processed_data, candidate_packet, pipeline_artifact, calibration_data; statuses: archived, pending, failed, deleted
+- [x] `schemas/data_archival_log.schema.json`
+- [x] `tests/fixtures/data_archival_log.json` — 5 entries (2 archived, 1 pending, 1 failed, 1 deleted)
+- [x] `tests/test_data_archival_log.py` — 22 tests
+- [x] `target_selection_log`, `doppler_correction_log`, `data_archival_log` added to `SCHEMA_FILENAMES` (total schemas: 116)
+- [x] `techno-search target-selection-summary`, `techno-search doppler-correction-summary`, `techno-search data-archival-summary` CLI commands
+- [x] `validate-all` gates: `target_selection_entry_count >= 1`, `doppler_correction_entry_count >= 1`, `data_archival_entry_count >= 1`
+- [x] `validation-summary` fields: `target_selection_entry_count`, `target_selection_selected_count`, `doppler_correction_entry_count`, `doppler_correction_applied_count`, `data_archival_entry_count`, `data_archival_archived_count`
+- [x] DECISION-075: Target Selection Log, Doppler Correction Log, And Data Archival Log Complete Milestone 28

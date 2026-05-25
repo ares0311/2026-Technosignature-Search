@@ -1,0 +1,6 @@
+# Gaia+AllWISE cross-match — synthetic fixture matching IRSA TAP column format
+# Source: synthetic only, not real catalog data
+source_id,ra,dec,phot_g_mean_mag,w1mpro,w2mpro,w3mpro,w4mpro,parallax,parallax_error
+1234567890123456789,83.8221,22.0145,8.42,7.81,7.79,7.71,7.55,23.45,0.12
+9876543210987654321,101.2873,-16.7161,10.15,9.40,9.38,9.21,8.90,5.23,0.45
+5555555555555555555,165.4601,35.2014,12.33,10.90,10.25,8.10,5.20,1.15,0.22

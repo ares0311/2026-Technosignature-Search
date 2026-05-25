@@ -1,0 +1,300 @@
+{
+  "schema_version": "labeled_candidates_v1",
+  "description": "Synthetic labeled candidate dataset for scoring model evaluation. Not real observations.",
+  "entries": [
+    {
+      "entry_id": "lc-001",
+      "candidate_id": "radio-clean-synth",
+      "track": "radio",
+      "label": "follow_up",
+      "label_confidence": 0.75,
+      "labeled_by": "synth-labeler-v0",
+      "labeled_at": "2026-05-01T10:00:00Z",
+      "false_positive_class": null,
+      "notes": "Synthetic narrowband signal with non-zero drift, passes ON/OFF test.",
+      "candidate": {
+        "candidate_id": "radio-clean-synth",
+        "track": "radio",
+        "features": {
+          "snr": 35.0,
+          "bandwidth_hz": 1.2,
+          "drift_rate_hz_per_sec": -0.38,
+          "on_target_presence_score": 0.95,
+          "off_target_presence_score": 0.05,
+          "rfi_band_overlap_score": 0.05,
+          "frequency_persistence_score": 0.1,
+          "nearby_target_recurrence_score": 0.05,
+          "instrumental_artifact_score": 0.05,
+          "metadata_completeness_score": 0.95,
+          "data_quality_score": 0.9,
+          "provenance_completeness_score": 0.95
+        },
+        "provenance": {"source_dataset": "synthetic-labeled-v0"}
+      }
+    },
+    {
+      "entry_id": "lc-002",
+      "candidate_id": "radio-rfi-synth",
+      "track": "radio",
+      "label": "false_positive",
+      "label_confidence": 0.95,
+      "labeled_by": "synth-labeler-v0",
+      "labeled_at": "2026-05-01T10:05:00Z",
+      "false_positive_class": "rfi",
+      "notes": "Signal present in OFF beams and matches known RFI band.",
+      "candidate": {
+        "candidate_id": "radio-rfi-synth",
+        "track": "radio",
+        "features": {
+          "snr": 50.0,
+          "bandwidth_hz": 2.0,
+          "drift_rate_hz_per_sec": 0.0,
+          "on_target_presence_score": 0.9,
+          "off_target_presence_score": 0.92,
+          "rfi_band_overlap_score": 0.98,
+          "frequency_persistence_score": 0.95,
+          "nearby_target_recurrence_score": 0.9,
+          "instrumental_artifact_score": 0.1,
+          "metadata_completeness_score": 0.9,
+          "data_quality_score": 0.85,
+          "provenance_completeness_score": 0.9
+        },
+        "provenance": {"source_dataset": "synthetic-labeled-v0", "false_positive_class": "rfi"}
+      }
+    },
+    {
+      "entry_id": "lc-003",
+      "candidate_id": "radio-instrumental-synth",
+      "track": "radio",
+      "label": "false_positive",
+      "label_confidence": 0.90,
+      "labeled_by": "synth-labeler-v0",
+      "labeled_at": "2026-05-01T10:10:00Z",
+      "false_positive_class": "instrumental_artifact",
+      "notes": "High instrumental artifact score, low data quality.",
+      "candidate": {
+        "candidate_id": "radio-instrumental-synth",
+        "track": "radio",
+        "features": {
+          "snr": 30.0,
+          "bandwidth_hz": 8.0,
+          "drift_rate_hz_per_sec": 0.0,
+          "on_target_presence_score": 0.8,
+          "off_target_presence_score": 0.5,
+          "rfi_band_overlap_score": 0.2,
+          "frequency_persistence_score": 0.9,
+          "nearby_target_recurrence_score": 0.8,
+          "instrumental_artifact_score": 0.98,
+          "metadata_completeness_score": 0.25,
+          "data_quality_score": 0.2,
+          "provenance_completeness_score": 0.9
+        },
+        "provenance": {"source_dataset": "synthetic-labeled-v0", "false_positive_class": "instrumental_artifact"}
+      }
+    },
+    {
+      "entry_id": "lc-004",
+      "candidate_id": "radio-insufficient-synth",
+      "track": "radio",
+      "label": "insufficient_evidence",
+      "label_confidence": 0.65,
+      "labeled_by": "synth-labeler-v0",
+      "labeled_at": "2026-05-01T10:15:00Z",
+      "false_positive_class": null,
+      "notes": "Single detection, low provenance completeness, no repeat observation.",
+      "candidate": {
+        "candidate_id": "radio-insufficient-synth",
+        "track": "radio",
+        "features": {
+          "snr": 15.0,
+          "bandwidth_hz": 1.5,
+          "drift_rate_hz_per_sec": -0.2,
+          "on_target_presence_score": 0.65,
+          "off_target_presence_score": 0.3,
+          "rfi_band_overlap_score": 0.2,
+          "frequency_persistence_score": 0.1,
+          "nearby_target_recurrence_score": 0.1,
+          "instrumental_artifact_score": 0.2,
+          "metadata_completeness_score": 0.5,
+          "data_quality_score": 0.6,
+          "provenance_completeness_score": 0.35
+        },
+        "provenance": {"source_dataset": "synthetic-labeled-v0"}
+      }
+    },
+    {
+      "entry_id": "lc-005",
+      "candidate_id": "ir-excess-clean-synth",
+      "track": "infrared",
+      "label": "follow_up",
+      "label_confidence": 0.70,
+      "labeled_by": "synth-labeler-v0",
+      "labeled_at": "2026-05-01T10:20:00Z",
+      "false_positive_class": null,
+      "notes": "Clean stellar solution with significant IR excess, low dust and AGN scores.",
+      "candidate": {
+        "candidate_id": "ir-excess-clean-synth",
+        "track": "infrared",
+        "features": {
+          "ir_excess_score": 0.85,
+          "sed_fit_residual_score": 0.8,
+          "stellar_solution_quality": 0.9,
+          "galaxy_agn_indicator_score": 0.05,
+          "dust_indicator_score": 0.1,
+          "confusion_score": 0.05,
+          "photometric_quality_score": 0.9,
+          "catalog_artifact_score": 0.05,
+          "data_quality_score": 0.9,
+          "provenance_completeness_score": 0.95
+        },
+        "provenance": {"source_dataset": "synthetic-labeled-v0"}
+      }
+    },
+    {
+      "entry_id": "lc-006",
+      "candidate_id": "ir-agn-synth",
+      "track": "infrared",
+      "label": "false_positive",
+      "label_confidence": 0.92,
+      "labeled_by": "synth-labeler-v0",
+      "labeled_at": "2026-05-01T10:25:00Z",
+      "false_positive_class": "agn_blend",
+      "notes": "AGN contamination confirmed by high galaxy indicator and poor stellar solution.",
+      "candidate": {
+        "candidate_id": "ir-agn-synth",
+        "track": "infrared",
+        "features": {
+          "ir_excess_score": 0.88,
+          "sed_fit_residual_score": 0.78,
+          "stellar_solution_quality": 0.1,
+          "galaxy_agn_indicator_score": 0.96,
+          "dust_indicator_score": 0.4,
+          "confusion_score": 0.9,
+          "photometric_quality_score": 0.3,
+          "catalog_artifact_score": 0.6,
+          "data_quality_score": 0.3,
+          "provenance_completeness_score": 0.9
+        },
+        "provenance": {"source_dataset": "synthetic-labeled-v0", "false_positive_class": "agn_blend"}
+      }
+    },
+    {
+      "entry_id": "lc-007",
+      "candidate_id": "ir-insufficient-synth",
+      "track": "infrared",
+      "label": "insufficient_evidence",
+      "label_confidence": 0.60,
+      "labeled_by": "synth-labeler-v0",
+      "labeled_at": "2026-05-01T10:30:00Z",
+      "false_positive_class": null,
+      "notes": "Marginal excess, low photometric quality, missing WISE W4 band.",
+      "candidate": {
+        "candidate_id": "ir-insufficient-synth",
+        "track": "infrared",
+        "features": {
+          "ir_excess_score": 0.55,
+          "sed_fit_residual_score": 0.5,
+          "stellar_solution_quality": 0.6,
+          "galaxy_agn_indicator_score": 0.3,
+          "dust_indicator_score": 0.4,
+          "confusion_score": 0.4,
+          "photometric_quality_score": 0.45,
+          "catalog_artifact_score": 0.35,
+          "data_quality_score": 0.45,
+          "provenance_completeness_score": 0.5
+        },
+        "provenance": {"source_dataset": "synthetic-labeled-v0"}
+      }
+    },
+    {
+      "entry_id": "lc-008",
+      "candidate_id": "anomaly-clean-synth",
+      "track": "anomaly",
+      "label": "follow_up",
+      "label_confidence": 0.68,
+      "labeled_by": "synth-labeler-v0",
+      "labeled_at": "2026-05-01T10:35:00Z",
+      "false_positive_class": null,
+      "notes": "Historical detection not explained by proper motion, survey depth, or artifacts.",
+      "candidate": {
+        "candidate_id": "anomaly-clean-synth",
+        "track": "anomaly",
+        "features": {
+          "historical_detection_score": 0.9,
+          "modern_non_detection_score": 0.85,
+          "magnitude_change": 5.0,
+          "proper_motion_explanation_score": 0.05,
+          "survey_depth_explanation_score": 0.1,
+          "artifact_score": 0.05,
+          "moving_object_score": 0.05,
+          "variability_score": 0.15,
+          "catalog_mismatch_score": 0.1,
+          "crossmatch_confidence": 0.95,
+          "data_quality_score": 0.9,
+          "provenance_completeness_score": 0.95
+        },
+        "provenance": {"source_dataset": "synthetic-labeled-v0"}
+      }
+    },
+    {
+      "entry_id": "lc-009",
+      "candidate_id": "anomaly-artifact-synth",
+      "track": "anomaly",
+      "label": "false_positive",
+      "label_confidence": 0.93,
+      "labeled_by": "synth-labeler-v0",
+      "labeled_at": "2026-05-01T10:40:00Z",
+      "false_positive_class": "image_artifact",
+      "notes": "High artifact score, poor crossmatch confidence, bad data quality.",
+      "candidate": {
+        "candidate_id": "anomaly-artifact-synth",
+        "track": "anomaly",
+        "features": {
+          "historical_detection_score": 0.6,
+          "modern_non_detection_score": 0.7,
+          "magnitude_change": 4.0,
+          "proper_motion_explanation_score": 0.3,
+          "survey_depth_explanation_score": 0.6,
+          "artifact_score": 0.97,
+          "moving_object_score": 0.2,
+          "variability_score": 0.5,
+          "catalog_mismatch_score": 0.75,
+          "crossmatch_confidence": 0.3,
+          "data_quality_score": 0.35,
+          "provenance_completeness_score": 0.9
+        },
+        "provenance": {"source_dataset": "synthetic-labeled-v0", "false_positive_class": "image_artifact"}
+      }
+    },
+    {
+      "entry_id": "lc-010",
+      "candidate_id": "anomaly-known-object-synth",
+      "track": "anomaly",
+      "label": "known_object",
+      "label_confidence": 0.85,
+      "labeled_by": "synth-labeler-v0",
+      "labeled_at": "2026-05-01T10:45:00Z",
+      "false_positive_class": null,
+      "notes": "Matches known variable star catalog entry. Not a technosignature candidate.",
+      "candidate": {
+        "candidate_id": "anomaly-known-object-synth",
+        "track": "anomaly",
+        "features": {
+          "historical_detection_score": 0.85,
+          "modern_non_detection_score": 0.75,
+          "magnitude_change": 4.5,
+          "proper_motion_explanation_score": 0.5,
+          "survey_depth_explanation_score": 0.8,
+          "artifact_score": 0.55,
+          "moving_object_score": 0.2,
+          "variability_score": 0.98,
+          "catalog_mismatch_score": 0.9,
+          "crossmatch_confidence": 0.25,
+          "data_quality_score": 0.3,
+          "provenance_completeness_score": 0.9
+        },
+        "provenance": {"source_dataset": "synthetic-labeled-v0", "known_object": "variable_star_catalog"}
+      }
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+# turboSETI hit table — synthetic fixture matching real column format
+# Source: synthetic only, not real observation data
+Frequency,SEFD,SNR,Drift_Rate,Source_Name,MJD,RA,DEC,FOFF,Index,top_hit_num
+1420.405752,14.2,25.3,-0.382,GBT_synth_target,59000.5,83.8221,22.0145,-2.79,0,1
+1420.403100,14.2,8.7,0.191,GBT_synth_target,59000.5,83.8221,22.0145,-2.79,1,2
+1575.420000,12.1,45.1,0.000,GBT_synth_target,59000.5,83.8221,22.0145,-2.79,2,3
+1420.400000,14.2,6.2,-0.955,GBT_synth_off,59000.6,83.8221,22.0145,-2.79,3,4
+1420.405752,14.2,3.1,-0.382,GBT_synth_off2,59000.7,83.8221,22.0145,-2.79,4,5

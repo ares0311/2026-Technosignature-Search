@@ -1735,3 +1735,42 @@ live data, authorize external submission, or constitute external validation.
 **Observation parameter log**: records observation configuration parameters for pipeline reproducibility provenance. Parameter kinds are integration_time, bandwidth, center_frequency, resolution, and sensitivity_target. Statuses are applied, overridden, flagged, and failed. Observation parameter entries are operational processing provenance records — a parameter record does not modify candidate scores or pathway routing and does not authorize external submission or constitute a detection claim.
 
 **Consequences**: validate-all gates enforce polarization_entry_count >= 1, telescope_status_entry_count >= 1, obs_parameter_entry_count >= 1. SCHEMA_FILENAMES grows to 112. Milestone 26 is complete. Scientific guardrails remain unchanged.
+
+---
+
+## DECISION-074: Production Foundation (Milestone 27) — Real File Ingestion, CI, And Production Readiness Assessment
+
+**Date**: 2026-05-24
+
+**Context**: After completing 26 milestones of provenance logging infrastructure, an honest production readiness assessment was requested. The 12-milestone provenance log series (M15–M26) built important operational infrastructure but did not advance real data ingestion, CI, or model validation. M27 addresses the most impactful production gaps.
+
+**Decision**: Implement the production foundation milestone with the following components:
+
+1. **CI activation** — `.github/workflows/ci.yml` with Python 3.11, pytest, ruff, mypy, and validate-all gates. Skips integration_live tests by default.
+2. **Real hit-table reader** — `radio/hit_table_reader.py` reads turboSETI-format CSV (MHz → Hz conversion, column alias handling).
+3. **Real catalog reader** — `infrared/catalog_reader.py` reads IRSA TAP Gaia+AllWISE CSV format.
+4. **End-to-end pipeline runner** — `pipeline_runner.py` runs full pipeline from real CSV input to scored candidate report.
+5. **Live client integration tests** — `test_live_client_integration.py` with default-off guard tests and `@pytest.mark.integration_live` opt-in tests for Gaia TAP and SIMBAD.
+6. **Data quality validator** — `data_quality.py` validates pipeline input files structurally before ingestion.
+7. **Labeled candidate dataset v0** — 10 synthetic labeled entries with `LabeledCandidate` dataclass and summary CLI.
+8. **Scoring model evaluation against labels** — `eval_against_labels()` maps dataset labels to expected pathways and checks predictions.
+9. **Production readiness assessment** — `docs/PRODUCTION_READINESS.md` with honest ~20–25% estimate and gap analysis.
+
+**Consequences**: SCHEMA_FILENAMES grows to 113. validate-all gates enforce labeled_entry_count >= 1 and label_eval_entry_count >= 1. CI is now active. Real CSV files can now be ingested through the full pipeline. Production readiness estimate is ~20–25% — the remaining gap is almost entirely in real observation data, real labeled datasets, and calibrated scoring thresholds. Scientific guardrails remain unchanged.
+
+# DECISION-075: Target Selection Log, Doppler Correction Log, And Data Archival Log Complete Milestone 28
+
+Date: 2026-05-24
+Status: accepted
+
+## Context
+Milestone 28 extends the operational log system with target selection, Doppler correction, and data archival provenance records.
+
+## Decision
+Implement three new log types:
+- `target_selection_log` — operational scheduling provenance records for target selection events
+- `doppler_correction_log` — operational processing provenance records for Doppler/barycentric correction
+- `data_archival_log` — operational provenance records for observation data archival events
+
+## Consequences
+Schema count grows from 113 to 116. All three log types carry explicit guardrails that entries are operational provenance records only and do not modify candidate scores, pathway routing, or authorize external submission.
