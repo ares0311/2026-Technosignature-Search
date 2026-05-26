@@ -50,6 +50,12 @@ def test_curated_dataset_admission_importable() -> None:
     )
 
 
+def test_project_status_consistency_importable() -> None:
+    from techno_search.project_status_consistency import (  # noqa: F401
+        project_status_consistency_summary,
+    )
+
+
 def test_labeled_dataset_importable() -> None:
     from techno_search.labeled_dataset import labeled_dataset_summary  # noqa: F401
 

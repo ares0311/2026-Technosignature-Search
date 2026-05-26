@@ -973,3 +973,17 @@ introduced.
 - [x] `validate-all` gates: admission records exist, validation is clean, and real-data authorization count remains zero
 - [x] `validation-summary` fields: `curated_dataset_admission_record_count`, `curated_dataset_admission_blocked_count`, `curated_dataset_admission_real_data_authorized_count`, `curated_dataset_admission_validation_ok`
 - [x] DECISION-079: Curated Dataset Admission Records Gate Real Labeled Dataset Supplements
+
+---
+
+# Milestone 33 — Production Readiness Status Consistency Gates
+
+- [x] `src/techno_search/project_status_consistency.py` — local documentation and validation drift checks for project readiness status
+- [x] `schemas/project_status_consistency.schema.json`
+- [x] `tests/fixtures/project_status_consistency.json` — expected latest milestone, decision, schema count, and zero-real-data authorization gate metadata
+- [x] `tests/test_project_status_consistency.py` — guardrail tests for stale milestone metadata, schema-count drift, and zero-real-data authorization visibility
+- [x] `techno-search project-status-consistency-summary` CLI command
+- [x] `project_status_consistency` added to `SCHEMA_FILENAMES` (total schemas: 121)
+- [x] `validate-all` gate: project status consistency check must pass
+- [x] `validation-summary` fields: `project_status_consistency_ok`, `project_status_latest_milestone`, `project_status_latest_decision`, `project_status_schema_count`
+- [x] DECISION-080: Production Readiness Status Must Stay Aligned With Validation Gates

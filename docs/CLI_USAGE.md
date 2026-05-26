@@ -664,7 +664,7 @@ Print a concise local health dashboard without network access:
 .venv/bin/techno-search validation-summary
 ```
 
-This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, calibration-by-track, false-positive class, validation-dataset, validation-readiness, curated dataset admission, benchmark-metadata, benchmark-run, score-regression, background target-priority, background ledger, background reviewed-workflow, reviewed outcome, needs-follow-up outcome, follow-up tests, report readiness, candidate extraction handoff, review-queue, consensus-label, consensus-export, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
+This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, calibration-by-track, false-positive class, validation-dataset, validation-readiness, curated dataset admission, project status consistency, benchmark-metadata, benchmark-run, score-regression, background target-priority, background ledger, background reviewed-workflow, reviewed outcome, needs-follow-up outcome, follow-up tests, report readiness, candidate extraction handoff, review-queue, consensus-label, consensus-export, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
 
 It also reports conservative draft follow-up report counts and user decision gate counts. These counts remain workflow diagnostics only; they are not submission approvals.
 
@@ -1595,6 +1595,17 @@ Summarize curated dataset admission-readiness records including authorization bl
 ```
 
 Output fields: `disclaimer`, `schema_version`, `record_count`, `blocked_count`, `ready_for_local_fixture_count`, `synthetic_only_count`, `real_data_authorized_count`, `external_review_required_count`, `external_review_completed_count`, `total_blocker_count`, `validation_ok`, `validation_issue_count`, `validation_issues`, `by_status`, `by_track`, `by_dataset_kind`, and `records`. Admission records are local readiness gates only; they do not ingest real observation data, calibrate scoring thresholds, authorize live data, or approve external submission.
+
+## `project-status-consistency-summary`
+
+Summarize project status and production-readiness metadata drift checks.
+
+```bash
+.venv/bin/techno-search project-status-consistency-summary
+.venv/bin/techno-search project-status-consistency-summary --fixture-path tests/fixtures/project_status_consistency.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `ok`, `issue_count`, `issues`, expected/latest milestone and decision fields, schema-count fields, production-readiness metadata fields, and real-data authorization counts from the RFI and curated dataset admission gates. This is a documentation drift guard only; it does not ingest data, calibrate thresholds, authorize live access, or approve external submission.
 
 ## `candidate-rescore-summary`
 

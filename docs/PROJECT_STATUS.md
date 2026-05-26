@@ -311,6 +311,8 @@ The project will support three tracks from day one:
 - [x] Curated dataset admission gates added so proposed real labeled datasets
       remain blocked until provenance, licensing, labeling-method,
       false-positive-baseline, and review requirements are satisfied
+- [x] Project status consistency gates added so production-readiness metadata,
+      schema counts, latest decisions, and zero-real-data authorization gates remain aligned
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions

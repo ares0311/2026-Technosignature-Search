@@ -694,6 +694,12 @@ from techno_search.plotting import (
     plot_artifact_summary,
     write_synthetic_plot_artifacts,
 )
+from techno_search.project_status_consistency import (
+    PROJECT_STATUS_CONSISTENCY_DISCLAIMER,
+    PROJECT_STATUS_CONSISTENCY_SCHEMA_VERSION,
+    load_project_status_expectations,
+    project_status_consistency_summary,
+)
 from techno_search.provenance_audit import (
     ALLOWED_AUDIT_VERDICTS,
     PROVENANCE_AUDIT_DISCLAIMER,
@@ -1408,6 +1414,10 @@ __all__ = [
     "ProvenanceAuditEntry",
     "load_provenance_audit_entries",
     "provenance_audit_summary",
+    "PROJECT_STATUS_CONSISTENCY_DISCLAIMER",
+    "PROJECT_STATUS_CONSISTENCY_SCHEMA_VERSION",
+    "load_project_status_expectations",
+    "project_status_consistency_summary",
     "ALERT_RESOLUTION_DISCLAIMER",
     "ALERT_RESOLUTION_SCHEMA_VERSION",
     "ALLOWED_ALERT_RESOLUTION_KINDS",

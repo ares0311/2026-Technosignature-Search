@@ -1,0 +1,11 @@
+{
+  "schema_version": "project_status_consistency_v1",
+  "expected_status": {
+    "latest_milestone_number": 33,
+    "latest_milestone_label": "Production Readiness Status Consistency Gates",
+    "latest_decision_number": 80,
+    "schema_count": 121,
+    "require_zero_real_data_authorization": true,
+    "project_status_completed_phrase": "Project status consistency gates added so production-readiness metadata, schema counts, latest decisions, and zero-real-data authorization gates remain aligned"
+  }
+}

@@ -200,6 +200,7 @@ from techno_search.pipeline_telemetry import pipeline_telemetry_summary
 from techno_search.pipeline_throughput import pipeline_throughput_summary
 from techno_search.plotting import plot_artifact_summary
 from techno_search.polarization_log import polarization_log_summary
+from techno_search.project_status_consistency import project_status_consistency_summary
 from techno_search.provenance import provenance_chain_validator
 from techno_search.provenance_audit import provenance_audit_summary
 from techno_search.quality_control_summary import quality_control_summary
@@ -310,6 +311,7 @@ SCHEMA_FILENAMES = {
     "candidate_comparison": "candidate_comparison.schema.json",
     "pipeline_telemetry": "pipeline_telemetry.schema.json",
     "provenance_audit": "provenance_audit.schema.json",
+    "project_status_consistency": "project_status_consistency.schema.json",
     "candidate_alert_log": "candidate_alert_log.schema.json",
     "pipeline_replay_log": "pipeline_replay_log.schema.json",
     "scoring_threshold_audit": "scoring_threshold_audit.schema.json",
@@ -2477,6 +2479,19 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0 if admission_summary["validation_ok"] else 1
 
+    if args.command == "project-status-consistency-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        consistency_summary = project_status_consistency_summary(fixture_path)
+        print(
+            json.dumps(
+                consistency_summary,
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0 if consistency_summary["ok"] else 1
+
     if args.command == "candidate-rescore-summary":
         fixture_path = Path(args.fixture_path) if args.fixture_path else None
         print(
@@ -3417,6 +3432,8 @@ def validate_all() -> dict[str, object]:
     curated_dataset_admission_real_authorized_count = int(
         curated_dataset_admission_data.get("real_data_authorized_count", 0)
     )
+    project_status_consistency = project_status_consistency_summary()
+    project_status_consistency_ok = bool(project_status_consistency.get("ok", False))
     rescore_data = candidate_rescore_summary()
     rescore_event_count = int(rescore_data.get("event_count", 0))
     handoff_data = operator_handoff_summary()
@@ -4154,6 +4171,7 @@ def validate_all() -> dict[str, object]:
         and curated_dataset_admission_validation_ok
         and isinstance(curated_dataset_admission_real_authorized_count, int)
         and curated_dataset_admission_real_authorized_count == 0
+        and project_status_consistency_ok
         and isinstance(rescore_event_count, int)
         and rescore_event_count >= 1
         and isinstance(handoff_template_count, int)
@@ -4441,6 +4459,7 @@ def validate_all() -> dict[str, object]:
         "scoring_audit_log_summary": audit_log_data,
         "curated_dataset_intake_summary": intake_data,
         "curated_dataset_admission_summary": curated_dataset_admission_data,
+        "project_status_consistency_summary": project_status_consistency,
         "candidate_rescore_summary": rescore_data,
         "operator_handoff_summary": handoff_data,
         "pipeline_config_summary": pipeline_cfg_data,
@@ -6092,6 +6111,34 @@ def validation_summary() -> dict[str, object]:
                 cda_s4 := validation.get("curated_dataset_admission_summary"), dict
             )
             else False
+        ),
+        "project_status_consistency_ok": (
+            bool(psc_s["ok"])
+            if isinstance(
+                psc_s := validation.get("project_status_consistency_summary"), dict
+            )
+            else False
+        ),
+        "project_status_latest_milestone": (
+            psc_s2["roadmap_latest_milestone"]
+            if isinstance(
+                psc_s2 := validation.get("project_status_consistency_summary"), dict
+            )
+            else 0
+        ),
+        "project_status_latest_decision": (
+            psc_s3["decisions_latest_decision"]
+            if isinstance(
+                psc_s3 := validation.get("project_status_consistency_summary"), dict
+            )
+            else 0
+        ),
+        "project_status_schema_count": (
+            psc_s4["actual_schema_count"]
+            if isinstance(
+                psc_s4 := validation.get("project_status_consistency_summary"), dict
+            )
+            else 0
         ),
         "candidate_rescore_event_count": (
             rs_s["event_count"]
@@ -8478,6 +8525,14 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     curated_admission_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    status_consistency_parser = subparsers.add_parser(
+        "project-status-consistency-summary",
+        help="Summarize project status/readiness metadata drift checks.",
+    )
+    status_consistency_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional expectation fixture path override."
     )
 
     candidate_rescore_parser = subparsers.add_parser(

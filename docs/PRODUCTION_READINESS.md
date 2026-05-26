@@ -1,7 +1,7 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-05-25
-**Current milestone:** 31 (RFI Database Admission Gates)
+**Last updated:** 2026-05-26
+**Current milestone:** 33 (Production Readiness Status Consistency Gates)
 
 ---
 
@@ -20,7 +20,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Calibration fixture set (15 false-positive classes) | ✅ Complete |
 | Score regression + determinism checks | ✅ Complete |
 | Interpretable baseline classifier | ✅ Complete |
-| 120 JSON schema artifacts | ✅ Complete |
+| 121 JSON schema artifacts | ✅ Complete |
 | Local validation gate (`validate-all`) | ✅ Complete |
 | Provenance, audit trail, lifecycle tracking | ✅ Complete |
 | Operational log system (26 log types) | ✅ Complete |
@@ -34,6 +34,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Synthetic/local RFI database guardrails | ✅ Complete |
 | RFI database admission gates | ✅ Complete |
 | Curated dataset admission gates | ✅ Complete |
+| Project status consistency gates | ✅ Complete |
 | Labeled candidate dataset v0 (10 synthetic entries) | ✅ Complete |
 | Scoring model evaluation against labeled dataset | ✅ Complete |
 | Live catalog clients (Gaia TAP, SIMBAD) with opt-in guard | ✅ Complete |
@@ -97,4 +98,5 @@ Regardless of engineering readiness:
 
 ## Decision Reference
 
-See `docs/DECISIONS.md` (DECISION-074) for the formal production readiness assessment.
+See `docs/DECISIONS.md` (DECISION-074) for the formal production readiness
+assessment and DECISION-080 for the status-consistency gate.

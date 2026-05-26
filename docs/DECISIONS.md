@@ -1897,3 +1897,34 @@ synthetic local regression use only and keeps all proposed real labeled dataset
 supplements blocked. Admission records do not ingest real observation data,
 calibrate scoring thresholds, authorize live data access, authorize external
 submission, or constitute external validation or detection claims.
+
+---
+
+# DECISION-080: Production Readiness Status Must Stay Aligned With Validation Gates
+
+Date: 2026-05-26
+Status: accepted
+
+## Context
+Production-readiness metadata can lag behind code and validation gates. After
+Milestone 32, the production readiness document still identified Milestone 31 as
+current, which could mislead operators about what gates are active.
+
+## Decision
+Implement Milestone 33 production readiness status consistency gates:
+
+- Add a local status-consistency expectation fixture.
+- Check the latest roadmap milestone, latest decision number,
+  production-readiness current milestone, production-readiness schema count,
+  actual schema artifact count, and required project-status completion phrase.
+- Include RFI database admission and curated dataset admission real-data
+  authorization counts so zero-authorization gates remain visible.
+- Add `project-status-consistency-summary` and wire it into local validation.
+
+## Consequences
+Schema count grows from 120 to 121. Production-readiness status metadata now
+fails local validation if it drifts from the expected milestone, decision,
+schema-count, or zero-real-data authorization gates. These checks are
+documentation drift guards only; they do not ingest real observation data,
+calibrate scoring thresholds, authorize live data access, authorize external
+submission, or constitute external validation or detection claims.

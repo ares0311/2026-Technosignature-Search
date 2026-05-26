@@ -453,6 +453,7 @@ Validate and run one local CSV input through the hardened ingestion path:
 .venv/bin/techno-search rfi-database-summary
 .venv/bin/techno-search rfi-database-admission-summary
 .venv/bin/techno-search curated-dataset-admission-summary
+.venv/bin/techno-search project-status-consistency-summary
 ```
 
 Run local validation summaries:
@@ -892,6 +893,7 @@ Scientific quality gates:
 | Unreviewed RFI screening | RFI database records require ranges, provenance, review status, and synthetic-vs-real labeling | `rfi-database-summary` |
 | Premature real RFI source admission | Proposed RFI source lists require admission records with zero real-data authorization by default | `rfi-database-admission-summary` |
 | Premature real labeled dataset admission | Proposed curated validation datasets require provenance, licensing, labeling-method, false-positive-baseline, and review gates | `curated-dataset-admission-summary` |
+| Stale readiness metadata | Production-readiness milestone, schema-count, decision, and authorization metadata must match validation gates | `project-status-consistency-summary` |
 | Lost provenance | Manifest and provenance summary validation | Report manifests and provenance summary CLI |
 | Misleading calibration | Synthetic-only disclaimers on reliability and PR summaries | Validation summary commands |
 | Premature non-synthetic calibration | Readiness review before curated dataset promotion | `validation-readiness-summary` |

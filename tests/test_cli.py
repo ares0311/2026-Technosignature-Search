@@ -206,6 +206,22 @@ def test_cli_curated_dataset_admission_summary_outputs_gate_counts() -> None:
     assert "do not ingest real observation data" in result["disclaimer"]
 
 
+def test_cli_project_status_consistency_summary_outputs_drift_gates() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["project-status-consistency-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "project_status_consistency_v1"
+    assert result["ok"] is True
+    assert result["roadmap_latest_milestone"] == 33
+    assert result["decisions_latest_decision"] == 80
+    assert result["actual_schema_count"] == 121
+    assert result["rfi_database_admission_real_data_authorized_count"] == 0
+    assert result["curated_dataset_admission_real_data_authorized_count"] == 0
+
+
 def test_cli_calibration_track_summary_outputs_track_counts() -> None:
     stdout = StringIO()
 
@@ -372,6 +388,7 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "quality_gate_log",
         "workflow_state_log",
         "signal_classification_log",
+        "project_status_consistency",
         "curated_dataset_admission",
         "rfi_database_admission",
         "rfi_database",
@@ -1531,8 +1548,12 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 120
+    assert result["schema_count"] == 121
     assert result["schemas_ok"] is True
+    assert result["project_status_consistency_ok"] is True
+    assert result["project_status_latest_milestone"] == 33
+    assert result["project_status_latest_decision"] == 80
+    assert result["project_status_schema_count"] == 121
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
     assert result["calibration_minimum_track_case_count"] == 4
