@@ -68,6 +68,12 @@ def test_operations_action_resolution_consistency_importable() -> None:
     )
 
 
+def test_operations_blocker_progress_consistency_importable() -> None:
+    from techno_search.operations_blocker_progress_consistency import (  # noqa: F401
+        operations_blocker_progress_consistency_summary,
+    )
+
+
 def test_labeled_dataset_importable() -> None:
     from techno_search.labeled_dataset import labeled_dataset_summary  # noqa: F401
 

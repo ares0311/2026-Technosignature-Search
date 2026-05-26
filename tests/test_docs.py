@@ -121,6 +121,10 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
         ".venv/bin/techno-search operations-action-resolution-consistency-summary"
         in readme
     )
+    assert (
+        ".venv/bin/techno-search operations-blocker-progress-consistency-summary"
+        in readme
+    )
     assert "configs/background_priority_v0.json" in readme
     assert "Readiness status is a gate, not a scientific result." in readme
     assert "The selected target is a scheduling recommendation only." in readme
@@ -244,6 +248,10 @@ def test_cli_docs_include_draft_report_and_decision_workflows() -> None:
     )
     assert (
         ".venv/bin/techno-search operations-action-resolution-consistency-summary"
+        in doc
+    )
+    assert (
+        ".venv/bin/techno-search operations-blocker-progress-consistency-summary"
         in doc
     )
     assert ".venv/bin/techno-search scheduler-dry-run" in doc

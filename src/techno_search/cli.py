@@ -168,6 +168,9 @@ from techno_search.operations_blocker_followup import operations_blocker_followu
 from techno_search.operations_blocker_followup_progress import (
     operations_blocker_followup_progress_summary,
 )
+from techno_search.operations_blocker_progress_consistency import (
+    operations_blocker_progress_consistency_summary,
+)
 from techno_search.operations_blocker_progress_execution import (
     operations_blocker_progress_execution_summary,
 )
@@ -355,6 +358,9 @@ SCHEMA_FILENAMES = {
     "operations_blocker_followup": "operations_blocker_followup.schema.json",
     "operations_blocker_followup_progress": (
         "operations_blocker_followup_progress.schema.json"
+    ),
+    "operations_blocker_progress_consistency": (
+        "operations_blocker_progress_consistency.schema.json"
     ),
     "operations_blocker_progress_review": (
         "operations_blocker_progress_review.schema.json"
@@ -1816,6 +1822,21 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             file=out,
         )
         return 0
+
+    if args.command == "operations-blocker-progress-consistency-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        consistency_summary = operations_blocker_progress_consistency_summary(
+            fixture_path
+        )
+        print(
+            json.dumps(
+                consistency_summary,
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0 if consistency_summary["ok"] else 1
 
     if args.command == "operations-readiness-digest":
         db_path = getattr(args, "sqlite_log_path", None)
@@ -3786,6 +3807,23 @@ def validate_all() -> dict[str, object]:
             ),
         )
     )
+    operations_blocker_progress_consistency = (
+        operations_blocker_progress_consistency_summary(
+            blocker_detail=operations_blocker_detail,
+            blocker_review=operations_blocker_review,
+            blocker_followup=operations_blocker_followup,
+            blocker_followup_progress=operations_blocker_followup_progress,
+            blocker_progress_review=operations_blocker_progress_review,
+            blocker_progress_next_actions=operations_blocker_progress_next_actions,
+            blocker_progress_execution=operations_blocker_progress_execution,
+            blocker_progress_execution_review=(
+                operations_blocker_progress_execution_review
+            ),
+            blocker_progress_execution_followup=(
+                operations_blocker_progress_execution_followup
+            ),
+        )
+    )
     action_resolution_record_count = int(
         operations_action_resolution["record_count"]
     )
@@ -3975,6 +4013,9 @@ def validate_all() -> dict[str, object]:
     )
     blocker_progress_execution_followup_priority_sequence_ok = bool(
         operations_blocker_progress_execution_followup["priority_sequence_ok"]
+    )
+    blocker_progress_consistency_ok = bool(
+        operations_blocker_progress_consistency["ok"]
     )
 
     ok = (
@@ -4408,6 +4449,7 @@ def validate_all() -> dict[str, object]:
         and blocker_progress_execution_followup_residual_blocker_total
         == blocker_progress_execution_review_residual_blocker_total
         and blocker_progress_execution_followup_priority_sequence_ok
+        and blocker_progress_consistency_ok
     )
     return {
         "ok": ok,
@@ -4593,6 +4635,9 @@ def validate_all() -> dict[str, object]:
         "operations_blocker_progress_execution_followup_summary": (
             operations_blocker_progress_execution_followup
         ),
+        "operations_blocker_progress_consistency_summary": (
+            operations_blocker_progress_consistency
+        ),
     }
 
 
@@ -4669,6 +4714,9 @@ def validation_summary() -> dict[str, object]:
     ]
     operations_blocker_progress_execution_followup = validation[
         "operations_blocker_progress_execution_followup_summary"
+    ]
+    operations_blocker_progress_consistency = validation[
+        "operations_blocker_progress_consistency_summary"
     ]
     return {
         "ok": validation["ok"],
@@ -5712,6 +5760,40 @@ def validation_summary() -> dict[str, object]:
         )
         if isinstance(operations_blocker_progress_execution_followup, dict)
         else False,
+        "operations_blocker_progress_consistency_ok": bool(
+            operations_blocker_progress_consistency["ok"]
+        )
+        if isinstance(operations_blocker_progress_consistency, dict)
+        else False,
+        "operations_blocker_progress_consistency_issue_count": (
+            operations_blocker_progress_consistency["issue_count"]
+        )
+        if isinstance(operations_blocker_progress_consistency, dict)
+        else 0,
+        "operations_blocker_progress_consistency_residual_blocker_total": (
+            operations_blocker_progress_consistency[
+                "expected_residual_blocker_total"
+            ]
+        )
+        if isinstance(operations_blocker_progress_consistency, dict)
+        else 0,
+        "operations_blocker_progress_consistency_mismatch_total": (
+            operations_blocker_progress_consistency["mismatch_total"]
+        )
+        if isinstance(operations_blocker_progress_consistency, dict)
+        else 0,
+        "operations_blocker_progress_consistency_live_data_authorized_total": (
+            operations_blocker_progress_consistency["live_data_authorized_total"]
+        )
+        if isinstance(operations_blocker_progress_consistency, dict)
+        else 0,
+        "operations_blocker_progress_consistency_external_submission_authorized_total": (
+            operations_blocker_progress_consistency[
+                "external_submission_authorized_total"
+            ]
+        )
+        if isinstance(operations_blocker_progress_consistency, dict)
+        else 0,
         "baseline_pathway_accuracy": (
             baseline_eval_s["pathway_accuracy"]
             if isinstance(baseline_eval_s := validation.get("baseline_eval_summary"), dict)
@@ -8160,6 +8242,18 @@ def _build_parser() -> argparse.ArgumentParser:
         "--sqlite-log-path",
         type=Path,
         help="Optional SQLite log database path for blocker-detail coverage fields.",
+    )
+    ops_blocker_progress_consistency_parser = subparsers.add_parser(
+        "operations-blocker-progress-consistency-summary",
+        help=(
+            "Check local blocker-progress chain consistency. Visibility gate "
+            "only; does not clear blockers."
+        ),
+    )
+    ops_blocker_progress_consistency_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional blocker-progress consistency expectation fixture path.",
     )
     ops_digest_parser = subparsers.add_parser(
         "operations-readiness-digest",

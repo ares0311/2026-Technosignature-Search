@@ -1993,3 +1993,41 @@ checks are local workflow staleness visibility gates only; they do not clear
 blockers, modify candidate scores or pathway routing, authorize live data
 access, authorize external submission, or constitute external validation or
 detection claims.
+
+---
+
+# DECISION-083: Operations Blocker Progress Chains Must Stay Aligned
+
+Date: 2026-05-26
+Status: accepted
+
+## Context
+Operations blocker-progress records now span blocker details, local evidence
+review, follow-up planning, progress notes, progress review, next-action
+ordering, execution notes, execution review, and execution follow-up. Each
+stage preserves useful local provenance, but the chain can drift if counts,
+residual blockers, verified-local exclusions, categories, mismatch totals, or
+authorization flags are updated independently.
+
+## Decision
+Implement Milestone 36 operations blocker-progress consistency gates:
+
+- Add a local blocker-progress consistency expectation fixture.
+- Check blocker-detail, review, follow-up, progress, next-action, execution,
+  execution-review, and execution-follow-up counts.
+- Require residual blocker totals to remain aligned across every unresolved
+  blocker-progress stage.
+- Require verified-local progress action IDs and categories covered to match
+  the expected local chain state.
+- Require coverage completion, priority ordering, zero mismatch totals, and
+  zero live/external authorization totals.
+- Add `operations-blocker-progress-consistency-summary` and wire it into local
+  validation.
+
+## Consequences
+Schema count grows from 123 to 124. Local validation now fails if
+blocker-progress chain visibility drifts from the expected local operator
+state. These checks are local workflow consistency gates only; they do not
+clear blockers, modify candidate scores or pathway routing, authorize live data
+access, authorize external submission, or constitute external validation or
+detection claims.

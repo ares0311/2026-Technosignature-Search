@@ -215,9 +215,9 @@ def test_cli_project_status_consistency_summary_outputs_drift_gates() -> None:
     assert exit_code == 0
     assert result["schema_version"] == "project_status_consistency_v1"
     assert result["ok"] is True
-    assert result["roadmap_latest_milestone"] == 35
-    assert result["decisions_latest_decision"] == 82
-    assert result["actual_schema_count"] == 123
+    assert result["roadmap_latest_milestone"] == 36
+    assert result["decisions_latest_decision"] == 83
+    assert result["actual_schema_count"] == 124
     assert result["rfi_database_admission_real_data_authorized_count"] == 0
     assert result["curated_dataset_admission_real_data_authorized_count"] == 0
 
@@ -256,6 +256,25 @@ def test_cli_operations_action_resolution_consistency_summary_outputs_staleness_
     ]
     assert result["live_data_authorized_count"] == 0
     assert result["external_submission_authorized_count"] == 0
+
+
+def test_cli_operations_blocker_progress_consistency_summary_outputs_chain_gates() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["operations-blocker-progress-consistency-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "operations_blocker_progress_consistency_v1"
+    assert result["ok"] is True
+    assert result["actual_counts"]["detail_count"] == 8
+    assert result["actual_counts"]["execution_followup_record_count"] == 7
+    assert result["expected_residual_blocker_total"] == 29
+    assert result["coverage_complete"] is True
+    assert result["priority_sequence_ok"] is True
+    assert result["mismatch_total"] == 0
+    assert result["live_data_authorized_total"] == 0
+    assert result["external_submission_authorized_total"] == 0
 
 
 def test_cli_calibration_track_summary_outputs_track_counts() -> None:
@@ -405,6 +424,7 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "operations_blocker_detail",
         "operations_blocker_followup",
         "operations_blocker_followup_progress",
+        "operations_blocker_progress_consistency",
         "operations_blocker_progress_execution",
         "operations_blocker_progress_execution_followup",
         "operations_blocker_progress_execution_review",
@@ -1586,12 +1606,12 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 123
+    assert result["schema_count"] == 124
     assert result["schemas_ok"] is True
     assert result["project_status_consistency_ok"] is True
-    assert result["project_status_latest_milestone"] == 35
-    assert result["project_status_latest_decision"] == 82
-    assert result["project_status_schema_count"] == 123
+    assert result["project_status_latest_milestone"] == 36
+    assert result["project_status_latest_decision"] == 83
+    assert result["project_status_schema_count"] == 124
     assert result["operations_alert_review_consistency_ok"] is True
     assert result["operations_alert_review_open_alert_count"] == 3
     assert result["operations_alert_review_critical_open_alert_count"] == 1
@@ -1603,6 +1623,23 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
         "ops-action-010",
     ]
     assert result["operations_action_resolution_consistency_missing_action_count"] == 0
+    assert result["operations_blocker_progress_consistency_ok"] is True
+    assert result["operations_blocker_progress_consistency_issue_count"] == 0
+    assert (
+        result["operations_blocker_progress_consistency_residual_blocker_total"]
+        == 29
+    )
+    assert result["operations_blocker_progress_consistency_mismatch_total"] == 0
+    assert (
+        result["operations_blocker_progress_consistency_live_data_authorized_total"]
+        == 0
+    )
+    assert (
+        result[
+            "operations_blocker_progress_consistency_external_submission_authorized_total"
+        ]
+        == 0
+    )
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
     assert result["calibration_minimum_track_case_count"] == 4

@@ -1925,6 +1925,17 @@ Summarize local action-resolution staleness consistency checks.
 
 Output fields: `disclaimer`, `schema_version`, `ok`, `issue_count`, `issues`, expected and actual current action counts, resolution record counts, stale resolution counts and IDs, residual blocker totals, coverage fields, and live/external authorization counts. This is a local workflow staleness visibility gate only; it does not clear blockers, modify scores, authorize live data, or approve external submission.
 
+## `operations-blocker-progress-consistency-summary`
+
+Summarize local blocker-progress chain consistency checks.
+
+```bash
+.venv/bin/techno-search operations-blocker-progress-consistency-summary
+.venv/bin/techno-search operations-blocker-progress-consistency-summary --fixture-path tests/fixtures/operations_blocker_progress_consistency.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `ok`, `issue_count`, `issues`, expected and actual chain counts, residual blocker totals by stage, categories covered, verified-local progress action IDs, coverage state, priority sequence state, mismatch total, and live/external authorization totals. This is a local workflow chain visibility gate only; it does not clear blockers, modify scores, authorize live data, or approve external submission.
+
 ## `operations-blocker-detail-summary`
 
 Expand current operations action-plan items into fixture-backed local source

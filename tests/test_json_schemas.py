@@ -79,6 +79,7 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "project_status_consistency.schema.json",
         "operations_alert_review_consistency.schema.json",
         "operations_action_resolution_consistency.schema.json",
+        "operations_blocker_progress_consistency.schema.json",
         "candidate_alert_log.schema.json",
         "pipeline_replay_log.schema.json",
         "scoring_threshold_audit.schema.json",

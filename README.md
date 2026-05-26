@@ -456,6 +456,7 @@ Validate and run one local CSV input through the hardened ingestion path:
 .venv/bin/techno-search project-status-consistency-summary
 .venv/bin/techno-search operations-alert-review-consistency-summary
 .venv/bin/techno-search operations-action-resolution-consistency-summary
+.venv/bin/techno-search operations-blocker-progress-consistency-summary
 ```
 
 Run local validation summaries:
@@ -476,6 +477,7 @@ Run local validation summaries:
 .venv/bin/techno-search operations-blocker-progress-execution-summary
 .venv/bin/techno-search operations-blocker-progress-execution-review-summary
 .venv/bin/techno-search operations-blocker-progress-execution-followup-summary
+.venv/bin/techno-search operations-blocker-progress-consistency-summary
 ```
 
 👉 See [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md) and the non-networked CI
@@ -899,6 +901,7 @@ Scientific quality gates:
 | Stale readiness metadata | Production-readiness milestone, schema-count, decision, and authorization metadata must match validation gates | `project-status-consistency-summary` |
 | Alert/QC review drift | Open-alert, alert-resolution, QC, readiness, and authorization blocker visibility must remain aligned | `operations-alert-review-consistency-summary` |
 | Action-resolution staleness drift | Stale resolution records, current action-plan IDs, residual blockers, and disabled authorization counts must remain aligned | `operations-action-resolution-consistency-summary` |
+| Blocker-progress chain drift | Blocker-detail, review, follow-up, progress, next-action, execution, execution-review, execution-follow-up, residual blockers, and disabled authorization counts must remain aligned | `operations-blocker-progress-consistency-summary` |
 | Lost provenance | Manifest and provenance summary validation | Report manifests and provenance summary CLI |
 | Misleading calibration | Synthetic-only disclaimers on reliability and PR summaries | Validation summary commands |
 | Premature non-synthetic calibration | Readiness review before curated dataset promotion | `validation-readiness-summary` |

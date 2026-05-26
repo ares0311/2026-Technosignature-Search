@@ -1,7 +1,7 @@
 # Production Readiness Assessment
 
 **Last updated:** 2026-05-26
-**Current milestone:** 35 (Operations Action Resolution Staleness Gates)
+**Current milestone:** 36 (Operations Blocker Progress Consistency Gates)
 
 ---
 
@@ -20,7 +20,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Calibration fixture set (15 false-positive classes) | ✅ Complete |
 | Score regression + determinism checks | ✅ Complete |
 | Interpretable baseline classifier | ✅ Complete |
-| 123 JSON schema artifacts | ✅ Complete |
+| 124 JSON schema artifacts | ✅ Complete |
 | Local validation gate (`validate-all`) | ✅ Complete |
 | Provenance, audit trail, lifecycle tracking | ✅ Complete |
 | Operational log system (26 log types) | ✅ Complete |
@@ -37,6 +37,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Project status consistency gates | ✅ Complete |
 | Operations alert review consistency gates | ✅ Complete |
 | Operations action resolution staleness gates | ✅ Complete |
+| Operations blocker-progress consistency gates | ✅ Complete |
 | Labeled candidate dataset v0 (10 synthetic entries) | ✅ Complete |
 | Scoring model evaluation against labeled dataset | ✅ Complete |
 | Live catalog clients (Gaia TAP, SIMBAD) with opt-in guard | ✅ Complete |
@@ -101,6 +102,6 @@ Regardless of engineering readiness:
 ## Decision Reference
 
 See `docs/DECISIONS.md` (DECISION-074) for the formal production readiness
-assessment, DECISION-080 for the status-consistency gate, and DECISION-081 for
-the alert/QC review consistency gate, and DECISION-082 for the action-resolution
-staleness gate.
+assessment, DECISION-080 for the status-consistency gate, DECISION-081 for the
+alert/QC review consistency gate, DECISION-082 for the action-resolution
+staleness gate, and DECISION-083 for the blocker-progress consistency gate.

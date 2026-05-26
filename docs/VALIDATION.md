@@ -703,6 +703,7 @@ scientific claims.
 .venv/bin/techno-search operations-blocker-progress-execution-summary
 .venv/bin/techno-search operations-blocker-progress-execution-review-summary
 .venv/bin/techno-search operations-blocker-progress-execution-followup-summary
+.venv/bin/techno-search operations-blocker-progress-consistency-summary
 .venv/bin/techno-search operations-readiness-digest
 ```
 
@@ -907,6 +908,25 @@ The summary reports expected and observed current action counts, resolution
 record counts, stale resolution counts and IDs, residual blocker totals,
 coverage fields, and live/external authorization counts. `validate-all`
 requires the consistency check to pass.
+
+## Operations Blocker Progress Consistency Gates
+
+Use `operations-blocker-progress-consistency-summary` to inspect local
+blocker-progress chain consistency across blocker-detail, review, follow-up,
+progress, next-action, execution, execution-review, and execution-follow-up
+records:
+
+```bash
+.venv/bin/techno-search operations-blocker-progress-consistency-summary
+.venv/bin/techno-search operations-blocker-progress-consistency-summary --fixture-path tests/fixtures/operations_blocker_progress_consistency.json
+```
+
+The summary reports expected and observed chain counts, residual blocker totals
+by stage, verified-local progress action IDs, categories covered, coverage
+state, priority ordering state, mismatch totals, and live/external
+authorization totals. `validate-all` requires the consistency check to pass.
+These gates are workflow visibility checks only; they do not clear blockers or
+authorize live data or external submission.
 
 Operations action resolution consistency records are local workflow staleness
 visibility gates only. They do not clear blockers, modify candidate scores or

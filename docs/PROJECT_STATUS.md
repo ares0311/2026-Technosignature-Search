@@ -318,6 +318,10 @@ The project will support three tracks from day one:
 - [x] Operations action resolution staleness gates added so stale resolution
       records, current action-plan IDs, residual blockers, and disabled
       authorization counts remain aligned
+- [x] Operations blocker-progress consistency gates added so blocker-detail,
+      review, follow-up, progress, next-action, execution, execution-review,
+      execution-follow-up, residual blockers, and disabled authorization counts
+      remain aligned
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions

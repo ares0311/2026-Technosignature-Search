@@ -1015,3 +1015,17 @@ introduced.
 - [x] `validate-all` gate: operations action-resolution consistency check must pass
 - [x] `validation-summary` fields: `operations_action_resolution_consistency_ok`, `operations_action_resolution_consistency_stale_count`, `operations_action_resolution_consistency_stale_action_ids`, `operations_action_resolution_consistency_missing_action_count`
 - [x] DECISION-082: Operations Action Resolution Staleness Must Stay Aligned With Action Plans
+
+---
+
+# Milestone 36 — Operations Blocker Progress Consistency Gates
+
+- [x] `src/techno_search/operations_blocker_progress_consistency.py` — local blocker-progress chain checks for blocker-detail, review, follow-up, progress, next-action, execution, execution-review, execution-follow-up, residual blockers, verified-local exclusions, categories, mismatch totals, priority ordering, and disabled authorization counts
+- [x] `schemas/operations_blocker_progress_consistency.schema.json`
+- [x] `tests/fixtures/operations_blocker_progress_consistency.json` — expected chain counts, residual blocker total, verified-local progress action IDs, categories covered, coverage requirement, priority ordering requirement, zero mismatch requirement, and zero live/external authorization gates
+- [x] `tests/test_operations_blocker_progress_consistency.py` — guardrail tests for count drift, residual drift, category drift, coverage drift, mismatch drift, and authorization drift
+- [x] `techno-search operations-blocker-progress-consistency-summary` CLI command
+- [x] `operations_blocker_progress_consistency` added to `SCHEMA_FILENAMES` (total schemas: 124)
+- [x] `validate-all` gate: operations blocker-progress consistency check must pass
+- [x] `validation-summary` fields: `operations_blocker_progress_consistency_ok`, `operations_blocker_progress_consistency_issue_count`, `operations_blocker_progress_consistency_residual_blocker_total`, `operations_blocker_progress_consistency_mismatch_total`, `operations_blocker_progress_consistency_live_data_authorized_total`, `operations_blocker_progress_consistency_external_submission_authorized_total`
+- [x] DECISION-083: Operations Blocker Progress Chains Must Stay Aligned
