@@ -1928,3 +1928,36 @@ schema-count, or zero-real-data authorization gates. These checks are
 documentation drift guards only; they do not ingest real observation data,
 calibrate scoring thresholds, authorize live data access, authorize external
 submission, or constitute external validation or detection claims.
+
+---
+
+# DECISION-081: Operations Alert Review Visibility Must Stay Aligned With QC Gates
+
+Date: 2026-05-26
+Status: accepted
+
+## Context
+Operations readiness remains intentionally blocked for local operator review
+and real-data prerequisites. Candidate-alert, alert-resolution, QC, and
+operations-readiness summaries can drift apart unless the current blocker
+visibility is checked explicitly.
+
+## Decision
+Implement Milestone 34 operations alert review consistency gates:
+
+- Add a local alert-review consistency expectation fixture.
+- Check open candidate-alert counts, critical-open-alert counts,
+  alert-resolution open counts, QC health, and operations-readiness
+  recommendation.
+- Require open-alert IDs to have alert-resolution coverage and critical open
+  alerts to remain covered by open resolution records.
+- Keep live data access and external submission authorization counts at zero.
+- Add `operations-alert-review-consistency-summary` and wire it into local
+  validation.
+
+## Consequences
+Schema count grows from 121 to 122. Local validation now fails if alert/QC
+operator-review visibility drifts from the expected blocker state. These checks
+are local visibility gates only; they do not clear blockers, modify candidate
+scores or pathway routing, authorize live data access, authorize external
+submission, or constitute external validation or detection claims.

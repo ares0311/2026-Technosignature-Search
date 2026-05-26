@@ -77,6 +77,7 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "pipeline_telemetry.schema.json",
         "provenance_audit.schema.json",
         "project_status_consistency.schema.json",
+        "operations_alert_review_consistency.schema.json",
         "candidate_alert_log.schema.json",
         "pipeline_replay_log.schema.json",
         "scoring_threshold_audit.schema.json",

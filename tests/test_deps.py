@@ -56,6 +56,12 @@ def test_project_status_consistency_importable() -> None:
     )
 
 
+def test_operations_alert_review_consistency_importable() -> None:
+    from techno_search.operations_alert_review_consistency import (  # noqa: F401
+        operations_alert_review_consistency_summary,
+    )
+
+
 def test_labeled_dataset_importable() -> None:
     from techno_search.labeled_dataset import labeled_dataset_summary  # noqa: F401
 

@@ -987,3 +987,17 @@ introduced.
 - [x] `validate-all` gate: project status consistency check must pass
 - [x] `validation-summary` fields: `project_status_consistency_ok`, `project_status_latest_milestone`, `project_status_latest_decision`, `project_status_schema_count`
 - [x] DECISION-080: Production Readiness Status Must Stay Aligned With Validation Gates
+
+---
+
+# Milestone 34 — Operations Alert Review Consistency Gates
+
+- [x] `src/techno_search/operations_alert_review_consistency.py` — local alert/QC operator-review visibility checks for candidate alerts, alert resolutions, QC health, operations readiness, and disabled authorization counts
+- [x] `schemas/operations_alert_review_consistency.schema.json`
+- [x] `tests/fixtures/operations_alert_review_consistency.json` — expected open-alert count, critical-open-alert count, alert-resolution open count, QC health, readiness recommendation, and zero live/external authorization gates
+- [x] `tests/test_operations_alert_review_consistency.py` — guardrail tests for count drift, missing critical-alert resolution coverage, and authorization drift
+- [x] `techno-search operations-alert-review-consistency-summary` CLI command
+- [x] `operations_alert_review_consistency` added to `SCHEMA_FILENAMES` (total schemas: 122)
+- [x] `validate-all` gate: operations alert review consistency check must pass
+- [x] `validation-summary` fields: `operations_alert_review_consistency_ok`, `operations_alert_review_open_alert_count`, `operations_alert_review_critical_open_alert_count`, `operations_alert_review_uncovered_open_alert_count`
+- [x] DECISION-081: Operations Alert Review Visibility Must Stay Aligned With QC Gates

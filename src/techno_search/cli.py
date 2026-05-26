@@ -157,6 +157,9 @@ from techno_search.operations_action_plan import operations_action_plan_summary
 from techno_search.operations_action_resolution import (
     operations_action_resolution_summary,
 )
+from techno_search.operations_alert_review_consistency import (
+    operations_alert_review_consistency_summary,
+)
 from techno_search.operations_blocker_detail import operations_blocker_detail_summary
 from techno_search.operations_blocker_followup import operations_blocker_followup_summary
 from techno_search.operations_blocker_followup_progress import (
@@ -363,6 +366,9 @@ SCHEMA_FILENAMES = {
         "operations_blocker_progress_execution_review.schema.json"
     ),
     "operations_blocker_review": "operations_blocker_review.schema.json",
+    "operations_alert_review_consistency": (
+        "operations_alert_review_consistency.schema.json"
+    ),
     "instrument_log": "instrument_log.schema.json",
     "archival_query_log": "archival_query_log.schema.json",
     "candidate_linkage_log": "candidate_linkage_log.schema.json",
@@ -2492,6 +2498,19 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0 if consistency_summary["ok"] else 1
 
+    if args.command == "operations-alert-review-consistency-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        consistency_summary = operations_alert_review_consistency_summary(fixture_path)
+        print(
+            json.dumps(
+                consistency_summary,
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0 if consistency_summary["ok"] else 1
+
     if args.command == "candidate-rescore-summary":
         fixture_path = Path(args.fixture_path) if args.fixture_path else None
         print(
@@ -3434,6 +3453,12 @@ def validate_all() -> dict[str, object]:
     )
     project_status_consistency = project_status_consistency_summary()
     project_status_consistency_ok = bool(project_status_consistency.get("ok", False))
+    operations_alert_review_consistency = (
+        operations_alert_review_consistency_summary()
+    )
+    operations_alert_review_consistency_ok = bool(
+        operations_alert_review_consistency.get("ok", False)
+    )
     rescore_data = candidate_rescore_summary()
     rescore_event_count = int(rescore_data.get("event_count", 0))
     handoff_data = operator_handoff_summary()
@@ -4172,6 +4197,7 @@ def validate_all() -> dict[str, object]:
         and isinstance(curated_dataset_admission_real_authorized_count, int)
         and curated_dataset_admission_real_authorized_count == 0
         and project_status_consistency_ok
+        and operations_alert_review_consistency_ok
         and isinstance(rescore_event_count, int)
         and rescore_event_count >= 1
         and isinstance(handoff_template_count, int)
@@ -4460,6 +4486,9 @@ def validate_all() -> dict[str, object]:
         "curated_dataset_intake_summary": intake_data,
         "curated_dataset_admission_summary": curated_dataset_admission_data,
         "project_status_consistency_summary": project_status_consistency,
+        "operations_alert_review_consistency_summary": (
+            operations_alert_review_consistency
+        ),
         "candidate_rescore_summary": rescore_data,
         "operator_handoff_summary": handoff_data,
         "pipeline_config_summary": pipeline_cfg_data,
@@ -6137,6 +6166,46 @@ def validation_summary() -> dict[str, object]:
             psc_s4["actual_schema_count"]
             if isinstance(
                 psc_s4 := validation.get("project_status_consistency_summary"), dict
+            )
+            else 0
+        ),
+        "operations_alert_review_consistency_ok": (
+            bool(oar_s["ok"])
+            if isinstance(
+                oar_s := validation.get(
+                    "operations_alert_review_consistency_summary"
+                ),
+                dict,
+            )
+            else False
+        ),
+        "operations_alert_review_open_alert_count": (
+            oar_s2["actual_open_alert_count"]
+            if isinstance(
+                oar_s2 := validation.get(
+                    "operations_alert_review_consistency_summary"
+                ),
+                dict,
+            )
+            else 0
+        ),
+        "operations_alert_review_critical_open_alert_count": (
+            oar_s3["actual_critical_open_alert_count"]
+            if isinstance(
+                oar_s3 := validation.get(
+                    "operations_alert_review_consistency_summary"
+                ),
+                dict,
+            )
+            else 0
+        ),
+        "operations_alert_review_uncovered_open_alert_count": (
+            oar_s4["uncovered_open_alert_count"]
+            if isinstance(
+                oar_s4 := validation.get(
+                    "operations_alert_review_consistency_summary"
+                ),
+                dict,
             )
             else 0
         ),
@@ -8532,6 +8601,14 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize project status/readiness metadata drift checks.",
     )
     status_consistency_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional expectation fixture path override."
+    )
+
+    alert_review_consistency_parser = subparsers.add_parser(
+        "operations-alert-review-consistency-summary",
+        help="Summarize local alert/QC operator-review consistency checks.",
+    )
+    alert_review_consistency_parser.add_argument(
         "--fixture-path", type=Path, help="Optional expectation fixture path override."
     )
 

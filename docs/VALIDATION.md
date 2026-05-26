@@ -870,3 +870,24 @@ admission gates. `validate-all` requires the consistency check to pass.
 Project status consistency records are documentation drift guards only. They do
 not ingest real observation data, calibrate scoring thresholds, authorize live
 data, authorize external submission, or constitute external validation.
+
+## Operations Alert Review Consistency Gates
+
+Use `operations-alert-review-consistency-summary` to inspect local alert/QC
+operator-review consistency across candidate alerts, alert resolutions, QC
+health, operations readiness, and disabled authorization counts:
+
+```bash
+.venv/bin/techno-search operations-alert-review-consistency-summary
+.venv/bin/techno-search operations-alert-review-consistency-summary --fixture-path tests/fixtures/operations_alert_review_consistency.json
+```
+
+The summary reports expected and observed open-alert counts,
+critical-open-alert counts, alert-resolution open counts, QC health,
+operations-readiness recommendation, uncovered alert IDs, and live/external
+authorization counts. `validate-all` requires the consistency check to pass.
+
+Operations alert review consistency records are local operator-review
+visibility gates only. They do not clear blockers, modify candidate scores or
+pathway routing, authorize live data, authorize external submission, or
+constitute external validation.

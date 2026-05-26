@@ -313,6 +313,8 @@ The project will support three tracks from day one:
       false-positive-baseline, and review requirements are satisfied
 - [x] Project status consistency gates added so production-readiness metadata,
       schema counts, latest decisions, and zero-real-data authorization gates remain aligned
+- [x] Operations alert review consistency gates added so alert, QC, readiness,
+      and authorization blocker visibility remains aligned
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions

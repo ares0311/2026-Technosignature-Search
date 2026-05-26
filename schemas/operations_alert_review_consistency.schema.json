@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Operations Alert Review Consistency Expectations",
+  "description": "Expected local alert, QC, and operations-readiness state for operator-review visibility gates.",
+  "type": "object",
+  "required": ["schema_version", "expected_review"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "operations_alert_review_consistency_v1"
+    },
+    "expected_review": {
+      "type": "object",
+      "required": [
+        "open_alert_count",
+        "critical_open_alert_count",
+        "alert_resolution_open_count",
+        "qc_overall_health",
+        "operations_readiness_recommendation",
+        "require_open_alert_resolution_coverage",
+        "require_zero_external_authorization",
+        "require_zero_network_access"
+      ],
+      "properties": {
+        "open_alert_count": {"type": "integer", "minimum": 0},
+        "critical_open_alert_count": {"type": "integer", "minimum": 0},
+        "alert_resolution_open_count": {"type": "integer", "minimum": 0},
+        "qc_overall_health": {
+          "type": "string",
+          "enum": ["ok", "degraded", "blocked"]
+        },
+        "operations_readiness_recommendation": {
+          "type": "string",
+          "enum": [
+            "local_only_ready",
+            "operator_review_required",
+            "blocked_for_real_data"
+          ]
+        },
+        "require_open_alert_resolution_coverage": {"type": "boolean"},
+        "require_zero_external_authorization": {"type": "boolean"},
+        "require_zero_network_access": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
