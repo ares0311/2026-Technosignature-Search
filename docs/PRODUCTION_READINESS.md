@@ -20,7 +20,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Calibration fixture set (15 false-positive classes) | ✅ Complete |
 | Score regression + determinism checks | ✅ Complete |
 | Interpretable baseline classifier | ✅ Complete |
-| 119 JSON schema artifacts | ✅ Complete |
+| 120 JSON schema artifacts | ✅ Complete |
 | Local validation gate (`validate-all`) | ✅ Complete |
 | Provenance, audit trail, lifecycle tracking | ✅ Complete |
 | Operational log system (26 log types) | ✅ Complete |
@@ -33,6 +33,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Archival anomaly CSV reader scaffold | ✅ Complete |
 | Synthetic/local RFI database guardrails | ✅ Complete |
 | RFI database admission gates | ✅ Complete |
+| Curated dataset admission gates | ✅ Complete |
 | Labeled candidate dataset v0 (10 synthetic entries) | ✅ Complete |
 | Scoring model evaluation against labeled dataset | ✅ Complete |
 | Live catalog clients (Gaia TAP, SIMBAD) with opt-in guard | ✅ Complete |
@@ -46,7 +47,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Gap | Effort estimate |
 |---|---|
 | **Real observation data** — no actual telescope data has been ingested | Large (requires telescope time or approved archive access) |
-| **Real labeled dataset** — all labels are synthetic; model can't be validated against ground truth | Medium (requires human expert labeling of real detections) |
+| **Real labeled dataset** — admission gates exist, but all committed labels are synthetic and no real labeled dataset has been approved | Medium (requires human expert labeling of real detections) |
 | **Calibrated scoring thresholds** — current thresholds are synthetic v0 defaults | Medium (requires sensitivity analysis against real noise distributions) |
 | **Real site-specific RFI database** — synthetic guardrails and admission gates exist, but no permitted site-monitoring catalog has been approved | Medium |
 | **Peer review** — no external scientific review of pipeline logic or candidate reports | Large |

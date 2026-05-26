@@ -1,0 +1,72 @@
+{
+  "curated_dataset_admission_records": [
+    {
+      "dataset_id": "curated-admit-synthetic-v0",
+      "dataset_label": "Synthetic Calibration Fixtures",
+      "track": "multi",
+      "dataset_kind": "synthetic_false_positive_suite",
+      "admission_status": "synthetic_only",
+      "provenance_reviewed": true,
+      "license_reviewed": true,
+      "labeling_method_reviewed": true,
+      "false_positive_baseline_reviewed": true,
+      "external_review_required": false,
+      "external_review_completed": false,
+      "real_data_authorized": false,
+      "synthetic_fixture_only": true,
+      "blocker_count": 0,
+      "notes": "Synthetic fixtures are approved for local regression use only."
+    },
+    {
+      "dataset_id": "curated-admit-radio-provenance-blocked",
+      "dataset_label": "Future Radio RFI False-Positive Dataset",
+      "track": "radio",
+      "dataset_kind": "curated_non_synthetic_false_positive_suite",
+      "admission_status": "blocked_pending_provenance",
+      "provenance_reviewed": false,
+      "license_reviewed": false,
+      "labeling_method_reviewed": false,
+      "false_positive_baseline_reviewed": false,
+      "external_review_required": true,
+      "external_review_completed": false,
+      "real_data_authorized": false,
+      "synthetic_fixture_only": false,
+      "blocker_count": 4,
+      "notes": "Blocked until provenance, licensing, labeling, and false-positive baseline evidence are reviewed."
+    },
+    {
+      "dataset_id": "curated-admit-infrared-license-blocked",
+      "dataset_label": "Future Infrared Contaminant Dataset",
+      "track": "infrared",
+      "dataset_kind": "curated_non_synthetic_false_positive_suite",
+      "admission_status": "blocked_pending_license",
+      "provenance_reviewed": true,
+      "license_reviewed": false,
+      "labeling_method_reviewed": false,
+      "false_positive_baseline_reviewed": true,
+      "external_review_required": true,
+      "external_review_completed": false,
+      "real_data_authorized": false,
+      "synthetic_fixture_only": false,
+      "blocker_count": 3,
+      "notes": "Blocked until reuse permissions and labeling review are complete."
+    },
+    {
+      "dataset_id": "curated-admit-anomaly-labeling-blocked",
+      "dataset_label": "Future Archival Artifact Dataset",
+      "track": "anomaly",
+      "dataset_kind": "curated_non_synthetic_false_positive_suite",
+      "admission_status": "blocked_pending_labeling",
+      "provenance_reviewed": true,
+      "license_reviewed": true,
+      "labeling_method_reviewed": false,
+      "false_positive_baseline_reviewed": true,
+      "external_review_required": true,
+      "external_review_completed": false,
+      "real_data_authorized": false,
+      "synthetic_fixture_only": false,
+      "blocker_count": 2,
+      "notes": "Blocked until labeling methodology and external review are complete."
+    }
+  ]
+}

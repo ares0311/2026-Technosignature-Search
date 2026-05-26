@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Curated Dataset Admission Records",
+  "description": "Local readiness records for proposed curated validation datasets.",
+  "type": "object",
+  "required": ["curated_dataset_admission_records"],
+  "properties": {
+    "curated_dataset_admission_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "dataset_id",
+          "dataset_label",
+          "track",
+          "dataset_kind",
+          "admission_status",
+          "provenance_reviewed",
+          "license_reviewed",
+          "labeling_method_reviewed",
+          "false_positive_baseline_reviewed",
+          "external_review_required",
+          "external_review_completed",
+          "real_data_authorized",
+          "synthetic_fixture_only",
+          "blocker_count",
+          "notes"
+        ],
+        "properties": {
+          "dataset_id": {"type": "string", "minLength": 1},
+          "dataset_label": {"type": "string", "minLength": 1},
+          "track": {
+            "type": "string",
+            "enum": ["radio", "infrared", "anomaly", "multi"]
+          },
+          "dataset_kind": {"type": "string", "minLength": 1},
+          "admission_status": {
+            "type": "string",
+            "enum": [
+              "synthetic_only",
+              "blocked_pending_provenance",
+              "blocked_pending_license",
+              "blocked_pending_labeling",
+              "blocked_pending_false_positive_baseline",
+              "blocked_pending_review",
+              "ready_for_local_fixture"
+            ]
+          },
+          "provenance_reviewed": {"type": "boolean"},
+          "license_reviewed": {"type": "boolean"},
+          "labeling_method_reviewed": {"type": "boolean"},
+          "false_positive_baseline_reviewed": {"type": "boolean"},
+          "external_review_required": {"type": "boolean"},
+          "external_review_completed": {"type": "boolean"},
+          "real_data_authorized": {"type": "boolean"},
+          "synthetic_fixture_only": {"type": "boolean"},
+          "blocker_count": {"type": "integer", "minimum": 0},
+          "notes": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

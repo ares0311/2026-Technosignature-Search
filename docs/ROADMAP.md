@@ -959,3 +959,17 @@ introduced.
 - [x] `validate-all` gates: admission records exist, validation is clean, and real-data authorization count remains zero
 - [x] `validation-summary` fields: `rfi_database_admission_record_count`, `rfi_database_admission_blocked_count`, `rfi_database_admission_real_data_authorized_count`, `rfi_database_admission_validation_ok`
 - [x] DECISION-078: RFI Database Admission Records Gate Real RFI Source Lists
+
+---
+
+# Milestone 32 — Curated Dataset Admission Gates
+
+- [x] `src/techno_search/curated_dataset_admission.py` — local readiness records for proposed curated validation datasets
+- [x] `schemas/curated_dataset_admission.schema.json`
+- [x] `tests/fixtures/curated_dataset_admission.json` — 4 records covering synthetic-only and blocked real-dataset admission states
+- [x] `tests/test_curated_dataset_admission.py` — guardrail tests for review requirements, blocker counts, and real-data authorization
+- [x] `techno-search curated-dataset-admission-summary` CLI command
+- [x] `curated_dataset_admission` added to `SCHEMA_FILENAMES` (total schemas: 120)
+- [x] `validate-all` gates: admission records exist, validation is clean, and real-data authorization count remains zero
+- [x] `validation-summary` fields: `curated_dataset_admission_record_count`, `curated_dataset_admission_blocked_count`, `curated_dataset_admission_real_data_authorized_count`, `curated_dataset_admission_validation_ok`
+- [x] DECISION-079: Curated Dataset Admission Records Gate Real Labeled Dataset Supplements

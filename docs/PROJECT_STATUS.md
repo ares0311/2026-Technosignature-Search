@@ -308,11 +308,14 @@ The project will support three tracks from day one:
 - [x] RFI database admission gates added so proposed real source lists remain
       blocked until provenance, licensing, monitoring context, and review
       requirements are satisfied
+- [x] Curated dataset admission gates added so proposed real labeled datasets
+      remain blocked until provenance, licensing, labeling-method,
+      false-positive-baseline, and review requirements are satisfied
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions
 
-1. Add real labeled dataset intake examples only when provenance, licensing, labeling, and external-review requirements are satisfied.
+1. Add real labeled dataset intake examples only when a curated dataset admission record has zero blockers and explicit approval for local real-data use.
 2. Replace or supplement the synthetic RFI database fixture only when an RFI database admission record has zero blockers and explicit approval for local real-data use.
 3. Calibrate scoring thresholds only after real labeled cases, site-specific RFI evidence, and peer-review feedback are available.
 

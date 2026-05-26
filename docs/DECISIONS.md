@@ -1867,3 +1867,33 @@ synthetic local regression use only and keeps all proposed real RFI source
 lists blocked. Admission records do not ingest real monitoring data, calibrate
 scoring thresholds, authorize live data access, authorize external submission,
 or constitute external validation or detection claims.
+
+---
+
+# DECISION-079: Curated Dataset Admission Records Gate Real Labeled Dataset Supplements
+
+Date: 2026-05-25
+Status: accepted
+
+## Context
+The project has synthetic labeled candidates, curated-intake placeholders, and
+validation-readiness fixtures, but a future real labeled dataset must not be
+treated as admissible without explicit review of provenance, licensing,
+labeling methodology, false-positive baselines, external review, and blockers.
+
+## Decision
+Implement Milestone 32 curated dataset admission gates:
+
+- Add local admission records for proposed curated validation datasets.
+- Track provenance review, license review, labeling-method review,
+  false-positive-baseline review, external-review requirements, blocker counts,
+  synthetic-only status, and explicit real-data authorization state.
+- Add `curated-dataset-admission-summary` and wire it into local validation.
+- Require `real_data_authorized_count == 0` for the committed fixture.
+
+## Consequences
+Schema count grows from 119 to 120. The committed admission fixture permits
+synthetic local regression use only and keeps all proposed real labeled dataset
+supplements blocked. Admission records do not ingest real observation data,
+calibrate scoring thresholds, authorize live data access, authorize external
+submission, or constitute external validation or detection claims.

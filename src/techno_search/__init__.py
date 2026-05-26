@@ -297,6 +297,15 @@ from techno_search.cross_track import (
     cross_track_summary,
     load_cross_track_references,
 )
+from techno_search.curated_dataset_admission import (
+    ALLOWED_CURATED_DATASET_ADMISSION_STATUSES,
+    CURATED_DATASET_ADMISSION_DISCLAIMER,
+    CURATED_DATASET_ADMISSION_SCHEMA_VERSION,
+    CuratedDatasetAdmissionRecord,
+    curated_dataset_admission_summary,
+    load_curated_dataset_admission_records,
+    validate_curated_dataset_admission_records,
+)
 from techno_search.curated_dataset_intake import (
     ALLOWED_DATA_KINDS,
     ALLOWED_INTAKE_STATUSES,
@@ -944,6 +953,13 @@ __all__ = [
     "CuratedDatasetIntakeRecord",
     "curated_dataset_intake_summary",
     "load_intake_records",
+    "ALLOWED_CURATED_DATASET_ADMISSION_STATUSES",
+    "CURATED_DATASET_ADMISSION_DISCLAIMER",
+    "CURATED_DATASET_ADMISSION_SCHEMA_VERSION",
+    "CuratedDatasetAdmissionRecord",
+    "curated_dataset_admission_summary",
+    "load_curated_dataset_admission_records",
+    "validate_curated_dataset_admission_records",
     "ALLOWED_ARCHITECTURE_KINDS",
     "ALLOWED_ARCHITECTURE_STATUSES",
     "MODEL_ARCHITECTURE_DISCLAIMER",

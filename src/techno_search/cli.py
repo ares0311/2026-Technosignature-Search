@@ -91,6 +91,7 @@ from techno_search.candidate_triage import (
 from techno_search.config_version_history import config_version_history_summary
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.cross_track import cross_track_summary
+from techno_search.curated_dataset_admission import curated_dataset_admission_summary
 from techno_search.curated_dataset_intake import curated_dataset_intake_summary
 from techno_search.data_archival_log import data_archival_summary
 from techno_search.data_gap_log import data_gap_summary
@@ -324,6 +325,7 @@ SCHEMA_FILENAMES = {
     "pipeline_error_log": "pipeline_error_log.schema.json",
     "quality_gate_log": "quality_gate_log.schema.json",
     "workflow_state_log": "workflow_state_log.schema.json",
+    "curated_dataset_admission": "curated_dataset_admission.schema.json",
     "curated_dataset_intake": "curated_dataset_intake.schema.json",
     "operator_handoff_template": "operator_handoff_template.schema.json",
     "candidate_resolution": "candidate_resolution.schema.json",
@@ -2462,6 +2464,19 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "curated-dataset-admission-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        admission_summary = curated_dataset_admission_summary(fixture_path)
+        print(
+            json.dumps(
+                admission_summary,
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0 if admission_summary["validation_ok"] else 1
+
     if args.command == "candidate-rescore-summary":
         fixture_path = Path(args.fixture_path) if args.fixture_path else None
         print(
@@ -3392,6 +3407,16 @@ def validate_all() -> dict[str, object]:
     audit_entry_count = int(audit_log_data.get("entry_count", 0))
     intake_data = curated_dataset_intake_summary()
     intake_record_count = int(intake_data.get("record_count", 0))
+    curated_dataset_admission_data = curated_dataset_admission_summary()
+    curated_dataset_admission_record_count = int(
+        curated_dataset_admission_data.get("record_count", 0)
+    )
+    curated_dataset_admission_validation_ok = bool(
+        curated_dataset_admission_data.get("validation_ok", False)
+    )
+    curated_dataset_admission_real_authorized_count = int(
+        curated_dataset_admission_data.get("real_data_authorized_count", 0)
+    )
     rescore_data = candidate_rescore_summary()
     rescore_event_count = int(rescore_data.get("event_count", 0))
     handoff_data = operator_handoff_summary()
@@ -4124,6 +4149,11 @@ def validate_all() -> dict[str, object]:
         and audit_entry_count >= 1
         and isinstance(intake_record_count, int)
         and intake_record_count >= 1
+        and isinstance(curated_dataset_admission_record_count, int)
+        and curated_dataset_admission_record_count >= 1
+        and curated_dataset_admission_validation_ok
+        and isinstance(curated_dataset_admission_real_authorized_count, int)
+        and curated_dataset_admission_real_authorized_count == 0
         and isinstance(rescore_event_count, int)
         and rescore_event_count >= 1
         and isinstance(handoff_template_count, int)
@@ -4410,6 +4440,7 @@ def validate_all() -> dict[str, object]:
         "model_serving_summary": serving_data,
         "scoring_audit_log_summary": audit_log_data,
         "curated_dataset_intake_summary": intake_data,
+        "curated_dataset_admission_summary": curated_dataset_admission_data,
         "candidate_rescore_summary": rescore_data,
         "operator_handoff_summary": handoff_data,
         "pipeline_config_summary": pipeline_cfg_data,
@@ -6033,6 +6064,34 @@ def validation_summary() -> dict[str, object]:
             ci_s2["approved_count"]
             if isinstance(ci_s2 := validation.get("curated_dataset_intake_summary"), dict)
             else 0
+        ),
+        "curated_dataset_admission_record_count": (
+            cda_s["record_count"]
+            if isinstance(
+                cda_s := validation.get("curated_dataset_admission_summary"), dict
+            )
+            else 0
+        ),
+        "curated_dataset_admission_blocked_count": (
+            cda_s2["blocked_count"]
+            if isinstance(
+                cda_s2 := validation.get("curated_dataset_admission_summary"), dict
+            )
+            else 0
+        ),
+        "curated_dataset_admission_real_data_authorized_count": (
+            cda_s3["real_data_authorized_count"]
+            if isinstance(
+                cda_s3 := validation.get("curated_dataset_admission_summary"), dict
+            )
+            else 0
+        ),
+        "curated_dataset_admission_validation_ok": (
+            bool(cda_s4["validation_ok"])
+            if isinstance(
+                cda_s4 := validation.get("curated_dataset_admission_summary"), dict
+            )
+            else False
         ),
         "candidate_rescore_event_count": (
             rs_s["event_count"]
@@ -8410,6 +8469,14 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize curated dataset intake checklist records.",
     )
     curated_intake_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    curated_admission_parser = subparsers.add_parser(
+        "curated-dataset-admission-summary",
+        help="Summarize curated dataset admission gates (local readiness only).",
+    )
+    curated_admission_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

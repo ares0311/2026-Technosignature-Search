@@ -287,7 +287,7 @@ Review candidate-extraction handoff readiness:
 .venv/bin/techno-search candidate-extraction-handoff-summary
 ```
 
-`validate-all` and `validation-summary` include calibration-by-track, false-positive class, validation dataset, validation readiness, benchmark metadata, benchmark run-result metadata, background target-priority, background search ledger, background reviewed-workflow, reviewed outcome log, needs-follow-up outcome log, follow-up test results, report-readiness gates, conservative draft report summaries, persisted draft-report validation, user decision records, top-level SQLite log validation, SQLite integrity checks, SQLite migration checks, SQLite export checks, SQLite PRAGMA diagnostics, SQLite backup and retention checks, SQLite vacuum checks, generated SQLite commit-path guardrails, candidate extraction handoff, injection-recovery, reliability, precision-recall, human-review queue, consensus-label, and consensus-export coverage. Benchmark append and compare commands are local workflow helpers for ignored output paths. The reported calibration-by-track coverage, false-positive class coverage, validation dataset coverage, validation readiness counts, benchmark metadata, benchmark run-result metadata, benchmark deltas, target-priority ranking, background ledger counts, background reviewed-workflow counts, reviewed outcome counts, needs-follow-up counts, follow-up test counts, report-readiness counts, draft report counts, user decision counts, SQLite run and outcome counts, SQLite backup counts, candidate extraction handoff counts, recovery rate, false-alarm fraction, reliability errors, precision, recall, F1 score, review queue counts, consensus counts, and consensus export counts are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, per-track survey performance, classification performance estimates, discovery claims, external validation, detections, submission approvals, or scientific performance claims.
+`validate-all` and `validation-summary` include calibration-by-track, false-positive class, validation dataset, validation readiness, curated dataset admission, benchmark metadata, benchmark run-result metadata, background target-priority, background search ledger, background reviewed-workflow, reviewed outcome log, needs-follow-up outcome log, follow-up test results, report-readiness gates, conservative draft report summaries, persisted draft-report validation, user decision records, top-level SQLite log validation, SQLite integrity checks, SQLite migration checks, SQLite export checks, SQLite PRAGMA diagnostics, SQLite backup and retention checks, SQLite vacuum checks, generated SQLite commit-path guardrails, candidate extraction handoff, injection-recovery, reliability, precision-recall, human-review queue, consensus-label, and consensus-export coverage. Benchmark append and compare commands are local workflow helpers for ignored output paths. The reported calibration-by-track coverage, false-positive class coverage, validation dataset coverage, validation readiness counts, curated dataset admission counts, benchmark metadata, benchmark run-result metadata, benchmark deltas, target-priority ranking, background ledger counts, background reviewed-workflow counts, reviewed outcome counts, needs-follow-up counts, follow-up test counts, report-readiness counts, draft report counts, user decision counts, SQLite run and outcome counts, SQLite backup counts, candidate extraction handoff counts, recovery rate, false-alarm fraction, reliability errors, precision, recall, F1 score, review queue counts, consensus counts, and consensus export counts are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, per-track survey performance, classification performance estimates, discovery claims, external validation, detections, submission approvals, or scientific performance claims.
 
 Route coverage now requires every `Pathway` enum value to appear in synthetic
 coverage fixtures. The `external_followup_candidate` fixture is enum coverage
@@ -830,3 +830,23 @@ zero in the committed fixture.
 Admission records gate future RFI source lists only. They do not ingest real
 monitoring data, calibrate thresholds, authorize live data, authorize external
 submission, or constitute external validation.
+
+## Curated Dataset Admission Gates
+
+Use `curated-dataset-admission-summary` to inspect local readiness records for
+proposed curated validation datasets:
+
+```bash
+.venv/bin/techno-search curated-dataset-admission-summary
+.venv/bin/techno-search curated-dataset-admission-summary --fixture-path tests/fixtures/curated_dataset_admission.json
+```
+
+The summary reports blocked counts, synthetic-only counts, real-data
+authorization counts, external-review counts, blocker totals, track counts,
+dataset-kind counts, and validation issues. `validate-all` requires admission
+records to exist, validation to be clean, and `real_data_authorized_count` to
+remain zero in the committed fixture.
+
+Admission records gate future labeled-dataset supplements only. They do not
+ingest real observation data, calibrate scoring thresholds, authorize live data,
+authorize external submission, or constitute external validation.

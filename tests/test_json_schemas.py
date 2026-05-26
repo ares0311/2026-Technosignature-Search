@@ -67,6 +67,7 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "model_performance_history.schema.json",
         "model_serving.schema.json",
         "scoring_audit_log.schema.json",
+        "curated_dataset_admission.schema.json",
         "curated_dataset_intake.schema.json",
         "candidate_rescore.schema.json",
         "operator_handoff_template.schema.json",

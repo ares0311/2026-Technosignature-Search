@@ -44,6 +44,12 @@ def test_rfi_database_admission_importable() -> None:
     )
 
 
+def test_curated_dataset_admission_importable() -> None:
+    from techno_search.curated_dataset_admission import (  # noqa: F401
+        curated_dataset_admission_summary,
+    )
+
+
 def test_labeled_dataset_importable() -> None:
     from techno_search.labeled_dataset import labeled_dataset_summary  # noqa: F401
 

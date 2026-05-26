@@ -664,7 +664,7 @@ Print a concise local health dashboard without network access:
 .venv/bin/techno-search validation-summary
 ```
 
-This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, calibration-by-track, false-positive class, validation-dataset, validation-readiness, benchmark-metadata, benchmark-run, score-regression, background target-priority, background ledger, background reviewed-workflow, reviewed outcome, needs-follow-up outcome, follow-up tests, report readiness, candidate extraction handoff, review-queue, consensus-label, consensus-export, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
+This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, calibration-by-track, false-positive class, validation-dataset, validation-readiness, curated dataset admission, benchmark-metadata, benchmark-run, score-regression, background target-priority, background ledger, background reviewed-workflow, reviewed outcome, needs-follow-up outcome, follow-up tests, report readiness, candidate extraction handoff, review-queue, consensus-label, consensus-export, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
 
 It also reports conservative draft follow-up report counts and user decision gate counts. These counts remain workflow diagnostics only; they are not submission approvals.
 
@@ -1584,6 +1584,17 @@ techno-search curated-dataset-intake-summary --fixture-path tests/fixtures/curat
 ```
 
 Output fields: `disclaimer`, `schema_version`, `record_count`, `approved_count`, `blocked_count`, `total_blocking_issue_count`, `by_status`, `by_track`, `by_kind`. Intake records are planning placeholders only — no real observation data is ingested.
+
+## `curated-dataset-admission-summary`
+
+Summarize curated dataset admission-readiness records including authorization blockers.
+
+```bash
+.venv/bin/techno-search curated-dataset-admission-summary
+.venv/bin/techno-search curated-dataset-admission-summary --fixture-path tests/fixtures/curated_dataset_admission.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `record_count`, `blocked_count`, `ready_for_local_fixture_count`, `synthetic_only_count`, `real_data_authorized_count`, `external_review_required_count`, `external_review_completed_count`, `total_blocker_count`, `validation_ok`, `validation_issue_count`, `validation_issues`, `by_status`, `by_track`, `by_dataset_kind`, and `records`. Admission records are local readiness gates only; they do not ingest real observation data, calibrate scoring thresholds, authorize live data, or approve external submission.
 
 ## `candidate-rescore-summary`
 
