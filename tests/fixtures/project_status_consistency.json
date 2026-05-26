@@ -1,11 +1,11 @@
 {
   "schema_version": "project_status_consistency_v1",
   "expected_status": {
-    "latest_milestone_number": 34,
-    "latest_milestone_label": "Operations Alert Review Consistency Gates",
-    "latest_decision_number": 81,
-    "schema_count": 122,
+    "latest_milestone_number": 35,
+    "latest_milestone_label": "Operations Action Resolution Staleness Gates",
+    "latest_decision_number": 82,
+    "schema_count": 123,
     "require_zero_real_data_authorization": true,
-    "project_status_completed_phrase": "Operations alert review consistency gates added so alert, QC, readiness, and authorization blocker visibility remains aligned"
+    "project_status_completed_phrase": "Operations action resolution staleness gates added so stale resolution records, current action-plan IDs, residual blockers, and disabled authorization counts remain aligned"
   }
 }

@@ -693,6 +693,7 @@ scientific claims.
 .venv/bin/techno-search operations-readiness-summary
 .venv/bin/techno-search operations-action-plan-summary
 .venv/bin/techno-search operations-action-resolution-summary
+.venv/bin/techno-search operations-action-resolution-consistency-summary
 .venv/bin/techno-search operations-blocker-detail-summary
 .venv/bin/techno-search operations-blocker-review-summary
 .venv/bin/techno-search operations-blocker-followup-summary
@@ -888,6 +889,26 @@ operations-readiness recommendation, uncovered alert IDs, and live/external
 authorization counts. `validate-all` requires the consistency check to pass.
 
 Operations alert review consistency records are local operator-review
+visibility gates only. They do not clear blockers, modify candidate scores or
+pathway routing, authorize live data, authorize external submission, or
+constitute external validation.
+
+## Operations Action Resolution Staleness Gates
+
+Use `operations-action-resolution-consistency-summary` to inspect local
+action-resolution staleness against the current operations action plan:
+
+```bash
+.venv/bin/techno-search operations-action-resolution-consistency-summary
+.venv/bin/techno-search operations-action-resolution-consistency-summary --fixture-path tests/fixtures/operations_action_resolution_consistency.json
+```
+
+The summary reports expected and observed current action counts, resolution
+record counts, stale resolution counts and IDs, residual blocker totals,
+coverage fields, and live/external authorization counts. `validate-all`
+requires the consistency check to pass.
+
+Operations action resolution consistency records are local workflow staleness
 visibility gates only. They do not clear blockers, modify candidate scores or
 pathway routing, authorize live data, authorize external submission, or
 constitute external validation.

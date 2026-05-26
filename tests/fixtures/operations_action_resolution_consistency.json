@@ -1,0 +1,13 @@
+{
+  "schema_version": "operations_action_resolution_consistency_v1",
+  "expected_resolution": {
+    "expected_action_count": 8,
+    "record_count": 10,
+    "stale_resolution_count": 2,
+    "stale_resolution_action_ids": ["ops-action-009", "ops-action-010"],
+    "residual_blocker_total": 31,
+    "require_coverage_complete": true,
+    "require_zero_live_data_authorization": true,
+    "require_zero_external_authorization": true
+  }
+}

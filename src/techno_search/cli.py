@@ -157,6 +157,9 @@ from techno_search.operations_action_plan import operations_action_plan_summary
 from techno_search.operations_action_resolution import (
     operations_action_resolution_summary,
 )
+from techno_search.operations_action_resolution_consistency import (
+    operations_action_resolution_consistency_summary,
+)
 from techno_search.operations_alert_review_consistency import (
     operations_alert_review_consistency_summary,
 )
@@ -345,6 +348,9 @@ SCHEMA_FILENAMES = {
     "operations_readiness_summary": "operations_readiness_summary.schema.json",
     "operations_action_plan": "operations_action_plan.schema.json",
     "operations_action_resolution": "operations_action_resolution.schema.json",
+    "operations_action_resolution_consistency": (
+        "operations_action_resolution_consistency.schema.json"
+    ),
     "operations_blocker_detail": "operations_blocker_detail.schema.json",
     "operations_blocker_followup": "operations_blocker_followup.schema.json",
     "operations_blocker_followup_progress": (
@@ -1306,6 +1312,21 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             file=out,
         )
         return 0
+
+    if args.command == "operations-action-resolution-consistency-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        consistency_summary = operations_action_resolution_consistency_summary(
+            fixture_path
+        )
+        print(
+            json.dumps(
+                consistency_summary,
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0 if consistency_summary["ok"] else 1
 
     if args.command == "operations-blocker-detail-summary":
         db_path = getattr(args, "sqlite_log_path", None)
@@ -3679,6 +3700,11 @@ def validate_all() -> dict[str, object]:
     operations_action_resolution = operations_action_resolution_summary(
         expected_action_ids=operations_action_ids,
     )
+    operations_action_resolution_consistency = (
+        operations_action_resolution_consistency_summary(
+            action_plan=operations_action_plan,
+        )
+    )
     operations_blocker_detail = operations_blocker_detail_summary(
         readiness_summary=operations_readiness,
         action_plan_summary=operations_action_plan,
@@ -3771,6 +3797,9 @@ def validate_all() -> dict[str, object]:
     )
     action_resolution_coverage_complete = bool(
         operations_action_resolution["coverage_complete"]
+    )
+    action_resolution_consistency_ok = bool(
+        operations_action_resolution_consistency["ok"]
     )
     blocker_detail_count = int(operations_blocker_detail["detail_count"])
     blocker_detail_network_count = int(
@@ -4304,6 +4333,7 @@ def validate_all() -> dict[str, object]:
         and action_resolution_live_authorized_count == 0
         and action_resolution_external_authorized_count == 0
         and action_resolution_coverage_complete
+        and action_resolution_consistency_ok
         and blocker_detail_count == len(operations_action_ids)
         and blocker_detail_network_count == 0
         and blocker_detail_external_count == 0
@@ -4539,6 +4569,9 @@ def validate_all() -> dict[str, object]:
         "operations_readiness_summary": operations_readiness,
         "operations_action_plan_summary": operations_action_plan,
         "operations_action_resolution_summary": operations_action_resolution,
+        "operations_action_resolution_consistency_summary": (
+            operations_action_resolution_consistency
+        ),
         "operations_blocker_detail_summary": operations_blocker_detail,
         "operations_blocker_review_summary": operations_blocker_review,
         "operations_blocker_followup_summary": operations_blocker_followup,
@@ -4613,6 +4646,9 @@ def validation_summary() -> dict[str, object]:
     operations_readiness = validation["operations_readiness_summary"]
     operations_action_plan = validation["operations_action_plan_summary"]
     operations_action_resolution = validation["operations_action_resolution_summary"]
+    operations_action_resolution_consistency = validation[
+        "operations_action_resolution_consistency_summary"
+    ]
     operations_blocker_detail = validation["operations_blocker_detail_summary"]
     operations_blocker_review = validation["operations_blocker_review_summary"]
     operations_blocker_followup = validation["operations_blocker_followup_summary"]
@@ -5140,6 +5176,28 @@ def validation_summary() -> dict[str, object]:
         )
         if isinstance(operations_action_resolution, dict)
         else [],
+        "operations_action_resolution_consistency_ok": bool(
+            operations_action_resolution_consistency["ok"]
+        )
+        if isinstance(operations_action_resolution_consistency, dict)
+        else False,
+        "operations_action_resolution_consistency_stale_count": (
+            operations_action_resolution_consistency["actual_stale_resolution_count"]
+        )
+        if isinstance(operations_action_resolution_consistency, dict)
+        else 0,
+        "operations_action_resolution_consistency_stale_action_ids": (
+            operations_action_resolution_consistency[
+                "actual_stale_resolution_action_ids"
+            ]
+        )
+        if isinstance(operations_action_resolution_consistency, dict)
+        else [],
+        "operations_action_resolution_consistency_missing_action_count": (
+            operations_action_resolution_consistency["missing_action_count"]
+        )
+        if isinstance(operations_action_resolution_consistency, dict)
+        else 0,
         "operations_blocker_detail_count": operations_blocker_detail["detail_count"]
         if isinstance(operations_blocker_detail, dict)
         else 0,
@@ -7837,6 +7895,18 @@ def _build_parser() -> argparse.ArgumentParser:
         "--sqlite-log-path",
         type=Path,
         help="Optional SQLite log database path for action-plan coverage fields.",
+    )
+    ops_resolution_consistency_parser = subparsers.add_parser(
+        "operations-action-resolution-consistency-summary",
+        help=(
+            "Summarize local action-resolution staleness consistency checks. "
+            "Visibility gate only; does not clear blockers."
+        ),
+    )
+    ops_resolution_consistency_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional expectation fixture path override.",
     )
     ops_blocker_detail_parser = subparsers.add_parser(
         "operations-blocker-detail-summary",

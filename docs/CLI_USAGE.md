@@ -1914,6 +1914,17 @@ techno-search operations-action-resolution-summary --sqlite-log-path logs/techno
 
 Output fields: `disclaimer`, `schema_version`, `record_count`, status counts, `residual_blocker_total`, authorization counts, `expected_action_count`, `covered_action_count`, `missing_action_count`, `coverage_fraction`, `coverage_complete`, `missing_action_ids`, `stale_resolution_action_ids`, `by_status`, `by_category`, `by_operator`, `action_ids`, and `categories_covered`. Resolution records are workflow provenance only. They do not clear blockers, authorize live data, authorize external submission, or imply external validation.
 
+## `operations-action-resolution-consistency-summary`
+
+Summarize local action-resolution staleness consistency checks.
+
+```bash
+.venv/bin/techno-search operations-action-resolution-consistency-summary
+.venv/bin/techno-search operations-action-resolution-consistency-summary --fixture-path tests/fixtures/operations_action_resolution_consistency.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `ok`, `issue_count`, `issues`, expected and actual current action counts, resolution record counts, stale resolution counts and IDs, residual blocker totals, coverage fields, and live/external authorization counts. This is a local workflow staleness visibility gate only; it does not clear blockers, modify scores, authorize live data, or approve external submission.
+
 ## `operations-blocker-detail-summary`
 
 Expand current operations action-plan items into fixture-backed local source

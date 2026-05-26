@@ -215,9 +215,9 @@ def test_cli_project_status_consistency_summary_outputs_drift_gates() -> None:
     assert exit_code == 0
     assert result["schema_version"] == "project_status_consistency_v1"
     assert result["ok"] is True
-    assert result["roadmap_latest_milestone"] == 34
-    assert result["decisions_latest_decision"] == 81
-    assert result["actual_schema_count"] == 122
+    assert result["roadmap_latest_milestone"] == 35
+    assert result["decisions_latest_decision"] == 82
+    assert result["actual_schema_count"] == 123
     assert result["rfi_database_admission_real_data_authorized_count"] == 0
     assert result["curated_dataset_admission_real_data_authorized_count"] == 0
 
@@ -236,6 +236,26 @@ def test_cli_operations_alert_review_consistency_summary_outputs_gate_counts() -
     assert result["uncovered_open_alert_count"] == 0
     assert result["external_submission_approved_count"] == 0
     assert result["network_access_allowed_count"] == 0
+
+
+def test_cli_operations_action_resolution_consistency_summary_outputs_staleness_gates() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["operations-action-resolution-consistency-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "operations_action_resolution_consistency_v1"
+    assert result["ok"] is True
+    assert result["actual_action_count"] == 8
+    assert result["actual_record_count"] == 10
+    assert result["actual_stale_resolution_count"] == 2
+    assert result["actual_stale_resolution_action_ids"] == [
+        "ops-action-009",
+        "ops-action-010",
+    ]
+    assert result["live_data_authorized_count"] == 0
+    assert result["external_submission_authorized_count"] == 0
 
 
 def test_cli_calibration_track_summary_outputs_track_counts() -> None:
@@ -406,6 +426,7 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "signal_classification_log",
         "project_status_consistency",
         "operations_alert_review_consistency",
+        "operations_action_resolution_consistency",
         "curated_dataset_admission",
         "rfi_database_admission",
         "rfi_database",
@@ -1565,16 +1586,23 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 122
+    assert result["schema_count"] == 123
     assert result["schemas_ok"] is True
     assert result["project_status_consistency_ok"] is True
-    assert result["project_status_latest_milestone"] == 34
-    assert result["project_status_latest_decision"] == 81
-    assert result["project_status_schema_count"] == 122
+    assert result["project_status_latest_milestone"] == 35
+    assert result["project_status_latest_decision"] == 82
+    assert result["project_status_schema_count"] == 123
     assert result["operations_alert_review_consistency_ok"] is True
     assert result["operations_alert_review_open_alert_count"] == 3
     assert result["operations_alert_review_critical_open_alert_count"] == 1
     assert result["operations_alert_review_uncovered_open_alert_count"] == 0
+    assert result["operations_action_resolution_consistency_ok"] is True
+    assert result["operations_action_resolution_consistency_stale_count"] == 2
+    assert result["operations_action_resolution_consistency_stale_action_ids"] == [
+        "ops-action-009",
+        "ops-action-010",
+    ]
+    assert result["operations_action_resolution_consistency_missing_action_count"] == 0
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3
     assert result["calibration_minimum_track_case_count"] == 4

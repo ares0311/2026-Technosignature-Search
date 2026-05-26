@@ -315,6 +315,9 @@ The project will support three tracks from day one:
       schema counts, latest decisions, and zero-real-data authorization gates remain aligned
 - [x] Operations alert review consistency gates added so alert, QC, readiness,
       and authorization blocker visibility remains aligned
+- [x] Operations action resolution staleness gates added so stale resolution
+      records, current action-plan IDs, residual blockers, and disabled
+      authorization counts remain aligned
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions

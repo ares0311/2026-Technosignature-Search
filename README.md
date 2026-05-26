@@ -455,6 +455,7 @@ Validate and run one local CSV input through the hardened ingestion path:
 .venv/bin/techno-search curated-dataset-admission-summary
 .venv/bin/techno-search project-status-consistency-summary
 .venv/bin/techno-search operations-alert-review-consistency-summary
+.venv/bin/techno-search operations-action-resolution-consistency-summary
 ```
 
 Run local validation summaries:
@@ -465,6 +466,7 @@ Run local validation summaries:
 .venv/bin/techno-search operations-readiness-summary
 .venv/bin/techno-search operations-action-plan-summary
 .venv/bin/techno-search operations-action-resolution-summary
+.venv/bin/techno-search operations-action-resolution-consistency-summary
 .venv/bin/techno-search operations-blocker-detail-summary
 .venv/bin/techno-search operations-blocker-review-summary
 .venv/bin/techno-search operations-blocker-followup-summary
@@ -896,6 +898,7 @@ Scientific quality gates:
 | Premature real labeled dataset admission | Proposed curated validation datasets require provenance, licensing, labeling-method, false-positive-baseline, and review gates | `curated-dataset-admission-summary` |
 | Stale readiness metadata | Production-readiness milestone, schema-count, decision, and authorization metadata must match validation gates | `project-status-consistency-summary` |
 | Alert/QC review drift | Open-alert, alert-resolution, QC, readiness, and authorization blocker visibility must remain aligned | `operations-alert-review-consistency-summary` |
+| Action-resolution staleness drift | Stale resolution records, current action-plan IDs, residual blockers, and disabled authorization counts must remain aligned | `operations-action-resolution-consistency-summary` |
 | Lost provenance | Manifest and provenance summary validation | Report manifests and provenance summary CLI |
 | Misleading calibration | Synthetic-only disclaimers on reliability and PR summaries | Validation summary commands |
 | Premature non-synthetic calibration | Readiness review before curated dataset promotion | `validation-readiness-summary` |

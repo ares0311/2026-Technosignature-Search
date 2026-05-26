@@ -522,6 +522,12 @@ from techno_search.operations_action_resolution import (
     load_operations_action_resolution_records,
     operations_action_resolution_summary,
 )
+from techno_search.operations_action_resolution_consistency import (
+    OPERATIONS_ACTION_RESOLUTION_CONSISTENCY_DISCLAIMER,
+    OPERATIONS_ACTION_RESOLUTION_CONSISTENCY_SCHEMA_VERSION,
+    load_operations_action_resolution_expectations,
+    operations_action_resolution_consistency_summary,
+)
 from techno_search.operations_alert_review_consistency import (
     OPERATIONS_ALERT_REVIEW_CONSISTENCY_DISCLAIMER,
     OPERATIONS_ALERT_REVIEW_CONSISTENCY_SCHEMA_VERSION,
@@ -1275,6 +1281,10 @@ __all__ = [
     "OperationsAction",
     "build_operations_actions",
     "operations_action_plan_summary",
+    "OPERATIONS_ACTION_RESOLUTION_CONSISTENCY_DISCLAIMER",
+    "OPERATIONS_ACTION_RESOLUTION_CONSISTENCY_SCHEMA_VERSION",
+    "load_operations_action_resolution_expectations",
+    "operations_action_resolution_consistency_summary",
     "ALLOWED_ACTION_RESOLUTION_STATUSES",
     "OPERATIONS_ACTION_RESOLUTION_DISCLAIMER",
     "OPERATIONS_ACTION_RESOLUTION_SCHEMA_VERSION",

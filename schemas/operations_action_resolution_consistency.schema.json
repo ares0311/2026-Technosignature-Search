@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Operations Action Resolution Consistency Expectations",
+  "description": "Expected local action-resolution staleness and authorization state for workflow visibility gates.",
+  "type": "object",
+  "required": ["schema_version", "expected_resolution"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "operations_action_resolution_consistency_v1"
+    },
+    "expected_resolution": {
+      "type": "object",
+      "required": [
+        "expected_action_count",
+        "record_count",
+        "stale_resolution_count",
+        "stale_resolution_action_ids",
+        "residual_blocker_total",
+        "require_coverage_complete",
+        "require_zero_live_data_authorization",
+        "require_zero_external_authorization"
+      ],
+      "properties": {
+        "expected_action_count": {"type": "integer", "minimum": 0},
+        "record_count": {"type": "integer", "minimum": 0},
+        "stale_resolution_count": {"type": "integer", "minimum": 0},
+        "stale_resolution_action_ids": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "residual_blocker_total": {"type": "integer", "minimum": 0},
+        "require_coverage_complete": {"type": "boolean"},
+        "require_zero_live_data_authorization": {"type": "boolean"},
+        "require_zero_external_authorization": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

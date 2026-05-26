@@ -1001,3 +1001,17 @@ introduced.
 - [x] `validate-all` gate: operations alert review consistency check must pass
 - [x] `validation-summary` fields: `operations_alert_review_consistency_ok`, `operations_alert_review_open_alert_count`, `operations_alert_review_critical_open_alert_count`, `operations_alert_review_uncovered_open_alert_count`
 - [x] DECISION-081: Operations Alert Review Visibility Must Stay Aligned With QC Gates
+
+---
+
+# Milestone 35 — Operations Action Resolution Staleness Gates
+
+- [x] `src/techno_search/operations_action_resolution_consistency.py` — local action-resolution staleness checks for current action-plan IDs, stale resolution records, residual blockers, coverage, and disabled authorization counts
+- [x] `schemas/operations_action_resolution_consistency.schema.json`
+- [x] `tests/fixtures/operations_action_resolution_consistency.json` — expected current action count, resolution record count, stale resolution IDs, residual blocker total, coverage requirement, and zero live/external authorization gates
+- [x] `tests/test_operations_action_resolution_consistency.py` — guardrail tests for stale-ID drift, missing current action coverage, and authorization drift
+- [x] `techno-search operations-action-resolution-consistency-summary` CLI command
+- [x] `operations_action_resolution_consistency` added to `SCHEMA_FILENAMES` (total schemas: 123)
+- [x] `validate-all` gate: operations action-resolution consistency check must pass
+- [x] `validation-summary` fields: `operations_action_resolution_consistency_ok`, `operations_action_resolution_consistency_stale_count`, `operations_action_resolution_consistency_stale_action_ids`, `operations_action_resolution_consistency_missing_action_count`
+- [x] DECISION-082: Operations Action Resolution Staleness Must Stay Aligned With Action Plans

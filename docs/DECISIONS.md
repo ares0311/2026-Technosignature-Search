@@ -1961,3 +1961,35 @@ operator-review visibility drifts from the expected blocker state. These checks
 are local visibility gates only; they do not clear blockers, modify candidate
 scores or pathway routing, authorize live data access, authorize external
 submission, or constitute external validation or detection claims.
+
+---
+
+# DECISION-082: Operations Action Resolution Staleness Must Stay Aligned With Action Plans
+
+Date: 2026-05-26
+Status: accepted
+
+## Context
+Operations action-resolution records may outlive the current action-plan IDs
+that generated them. Stale records are useful local provenance, but they must
+remain explicit so operators do not confuse historical workflow notes with
+current blockers or cleared actions.
+
+## Decision
+Implement Milestone 35 operations action-resolution staleness gates:
+
+- Add a local action-resolution consistency expectation fixture.
+- Check current action-plan count, action-resolution record count, stale
+  resolution count, stale resolution IDs, residual blocker total, and coverage
+  completeness.
+- Keep live data access and external submission authorization counts at zero.
+- Add `operations-action-resolution-consistency-summary` and wire it into local
+  validation.
+
+## Consequences
+Schema count grows from 122 to 123. Local validation now fails if stale
+action-resolution visibility drifts from the expected action-plan state. These
+checks are local workflow staleness visibility gates only; they do not clear
+blockers, modify candidate scores or pathway routing, authorize live data
+access, authorize external submission, or constitute external validation or
+detection claims.
