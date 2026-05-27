@@ -209,6 +209,9 @@ from techno_search.pipeline_telemetry import pipeline_telemetry_summary
 from techno_search.pipeline_throughput import pipeline_throughput_summary
 from techno_search.plotting import plot_artifact_summary
 from techno_search.polarization_log import polarization_log_summary
+from techno_search.production_blocker_consistency import (
+    production_blocker_consistency_summary,
+)
 from techno_search.project_status_consistency import project_status_consistency_summary
 from techno_search.provenance import provenance_chain_validator
 from techno_search.provenance_audit import provenance_audit_summary
@@ -325,6 +328,7 @@ SCHEMA_FILENAMES = {
     "pipeline_telemetry": "pipeline_telemetry.schema.json",
     "provenance_audit": "provenance_audit.schema.json",
     "project_status_consistency": "project_status_consistency.schema.json",
+    "production_blocker_consistency": "production_blocker_consistency.schema.json",
     "candidate_alert_log": "candidate_alert_log.schema.json",
     "pipeline_replay_log": "pipeline_replay_log.schema.json",
     "scoring_threshold_audit": "scoring_threshold_audit.schema.json",
@@ -2558,6 +2562,19 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0 if consistency_summary["ok"] else 1
 
+    if args.command == "production-blocker-consistency-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        consistency_summary = production_blocker_consistency_summary(fixture_path)
+        print(
+            json.dumps(
+                consistency_summary,
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0 if consistency_summary["ok"] else 1
+
     if args.command == "operations-alert-review-consistency-summary":
         fixture_path = Path(args.fixture_path) if args.fixture_path else None
         consistency_summary = operations_alert_review_consistency_summary(fixture_path)
@@ -3743,6 +3760,14 @@ def validate_all() -> dict[str, object]:
         sqlite_weekly_digest=sqlite_weekly_digest,
         sqlite_log_path=sqlite_validation_db,
     )
+    production_blocker_consistency = production_blocker_consistency_summary(
+        rfi_admission=rfi_database_admission_data,
+        curated_admission=curated_dataset_admission_data,
+        readiness=operations_readiness,
+    )
+    production_blocker_consistency_ok = bool(
+        production_blocker_consistency.get("ok", False)
+    )
     operations_action_plan = operations_action_plan_summary(operations_readiness)
     operations_action_ids = [
         str(action["action_id"])
@@ -4299,6 +4324,7 @@ def validate_all() -> dict[str, object]:
         and isinstance(curated_dataset_admission_real_authorized_count, int)
         and curated_dataset_admission_real_authorized_count == 0
         and project_status_consistency_ok
+        and production_blocker_consistency_ok
         and operations_alert_review_consistency_ok
         and isinstance(rescore_event_count, int)
         and rescore_event_count >= 1
@@ -4591,6 +4617,7 @@ def validate_all() -> dict[str, object]:
         "curated_dataset_intake_summary": intake_data,
         "curated_dataset_admission_summary": curated_dataset_admission_data,
         "project_status_consistency_summary": project_status_consistency,
+        "production_blocker_consistency_summary": production_blocker_consistency,
         "operations_alert_review_consistency_summary": (
             operations_alert_review_consistency
         ),
@@ -4722,6 +4749,9 @@ def validation_summary() -> dict[str, object]:
     sqlite_pragmas = validation["top_level_sqlite_log_pragmas"]
     sqlite_log_validation = validation["top_level_sqlite_log_validation"]
     sqlite_log_consistency = validation["top_level_sqlite_log_consistency_summary"]
+    production_blocker_consistency = validation[
+        "production_blocker_consistency_summary"
+    ]
     operations_readiness = validation["operations_readiness_summary"]
     operations_action_plan = validation["operations_action_plan_summary"]
     operations_action_resolution = validation["operations_action_resolution_summary"]
@@ -6349,6 +6379,31 @@ def validation_summary() -> dict[str, object]:
             if isinstance(
                 psc_s4 := validation.get("project_status_consistency_summary"), dict
             )
+            else 0
+        ),
+        "production_blocker_consistency_ok": (
+            bool(production_blocker_consistency["ok"])
+            if isinstance(production_blocker_consistency, dict)
+            else False
+        ),
+        "production_blocker_consistency_issue_count": (
+            production_blocker_consistency["issue_count"]
+            if isinstance(production_blocker_consistency, dict)
+            else 0
+        ),
+        "production_blocker_tier1_blocker_count": (
+            production_blocker_consistency["actual_tier1_blocker_count"]
+            if isinstance(production_blocker_consistency, dict)
+            else 0
+        ),
+        "production_blocker_real_data_authorized_total": (
+            production_blocker_consistency["real_data_authorized_total"]
+            if isinstance(production_blocker_consistency, dict)
+            else 0
+        ),
+        "production_blocker_external_submission_authorized_total": (
+            production_blocker_consistency["external_submission_authorized_total"]
+            if isinstance(production_blocker_consistency, dict)
             else 0
         ),
         "operations_alert_review_consistency_ok": (
@@ -8825,6 +8880,14 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize project status/readiness metadata drift checks.",
     )
     status_consistency_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional expectation fixture path override."
+    )
+
+    production_blocker_consistency_parser = subparsers.add_parser(
+        "production-blocker-consistency-summary",
+        help="Summarize production-readiness blocker visibility checks.",
+    )
+    production_blocker_consistency_parser.add_argument(
         "--fixture-path", type=Path, help="Optional expectation fixture path override."
     )
 

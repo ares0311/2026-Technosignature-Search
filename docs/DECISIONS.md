@@ -2063,3 +2063,41 @@ SQLite log health, migration state, run/outcome alignment, retention, PRAGMAs,
 commit-guard state, or authorization counts drift from the expected local
 state. These checks are local workflow and provenance gates only; they are not
 detections, discoveries, external validation, or external submission approval.
+
+---
+
+# DECISION-085: Production Blockers Must Remain Visible Until Explicitly Resolved
+
+Date: 2026-05-27
+Status: accepted
+
+## Context
+Production readiness still depends on Tier 1 blockers that cannot be resolved
+by local synthetic validation alone: real observation data, real labeled
+datasets, calibrated thresholds, a real site-specific RFI database, and peer
+review. The project has admission gates and operations-readiness summaries, but
+those blocker states can drift independently from the production-readiness
+document.
+
+## Decision
+Implement Milestone 38 production blocker visibility consistency gates:
+
+- Add a local production blocker consistency expectation fixture.
+- Check that all required Tier 1 production blocker phrases remain visible in
+  `docs/PRODUCTION_READINESS.md`.
+- Check RFI database and curated-dataset admission blockers remain visible.
+- Check operations readiness remains blocked for real data until the blocker
+  state is explicitly changed.
+- Require real-data authorization, external-submission authorization, and
+  network-access counts to remain zero.
+- Add `production-blocker-consistency-summary` and wire it into local
+  validation.
+
+## Consequences
+Schema count grows from 125 to 126. Local validation now fails if production
+blocker visibility, admission blockers, operations-readiness blocker state, or
+authorization counts drift from the expected local state. These checks are
+local readiness visibility gates only; they do not ingest real observation
+data, calibrate thresholds, clear blockers, authorize live data access,
+authorize external submission, or constitute detections, discoveries, or
+external validation.

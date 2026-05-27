@@ -325,6 +325,9 @@ The project will support three tracks from day one:
 - [x] Top-level SQLite log consistency gates added so SQLite health, migration
       state, run/outcome alignment, retention, PRAGMAs, commit guard, and
       disabled authorization counts remain aligned
+- [x] Production blocker visibility consistency gates added so Tier 1
+      production blockers, admission blockers, operations readiness blockers,
+      and disabled authorization counts remain aligned
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions

@@ -712,6 +712,12 @@ from techno_search.plotting import (
     plot_artifact_summary,
     write_synthetic_plot_artifacts,
 )
+from techno_search.production_blocker_consistency import (
+    PRODUCTION_BLOCKER_CONSISTENCY_DISCLAIMER,
+    PRODUCTION_BLOCKER_CONSISTENCY_SCHEMA_VERSION,
+    load_production_blocker_expectations,
+    production_blocker_consistency_summary,
+)
 from techno_search.project_status_consistency import (
     PROJECT_STATUS_CONSISTENCY_DISCLAIMER,
     PROJECT_STATUS_CONSISTENCY_SCHEMA_VERSION,
@@ -1458,6 +1464,10 @@ __all__ = [
     "PROJECT_STATUS_CONSISTENCY_SCHEMA_VERSION",
     "load_project_status_expectations",
     "project_status_consistency_summary",
+    "PRODUCTION_BLOCKER_CONSISTENCY_DISCLAIMER",
+    "PRODUCTION_BLOCKER_CONSISTENCY_SCHEMA_VERSION",
+    "load_production_blocker_expectations",
+    "production_blocker_consistency_summary",
     "ALERT_RESOLUTION_DISCLAIMER",
     "ALERT_RESOLUTION_SCHEMA_VERSION",
     "ALLOWED_ALERT_RESOLUTION_KINDS",

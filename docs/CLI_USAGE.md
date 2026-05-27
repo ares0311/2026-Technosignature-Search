@@ -1609,6 +1609,17 @@ Summarize project status and production-readiness metadata drift checks.
 
 Output fields: `disclaimer`, `schema_version`, `ok`, `issue_count`, `issues`, expected/latest milestone and decision fields, schema-count fields, production-readiness metadata fields, and real-data authorization counts from the RFI and curated dataset admission gates. This is a documentation drift guard only; it does not ingest data, calibrate thresholds, authorize live access, or approve external submission.
 
+## `production-blocker-consistency-summary`
+
+Summarize production-readiness blocker visibility checks.
+
+```bash
+.venv/bin/techno-search production-blocker-consistency-summary
+.venv/bin/techno-search production-blocker-consistency-summary --fixture-path tests/fixtures/production_blocker_consistency.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `ok`, `issue_count`, `issues`, Tier 1 blocker counts, missing blocker phrases, admission blocker counts, real-data authorization totals, external-submission authorization totals, network-access counts, and operations-readiness blocker state. This is a local readiness visibility gate only; it does not ingest real observation data, calibrate thresholds, clear blockers, authorize live data, or approve external submission.
+
 ## `operations-alert-review-consistency-summary`
 
 Summarize local alert/QC operator-review consistency checks.

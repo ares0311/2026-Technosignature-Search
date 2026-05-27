@@ -56,6 +56,12 @@ def test_project_status_consistency_importable() -> None:
     )
 
 
+def test_production_blocker_consistency_importable() -> None:
+    from techno_search.production_blocker_consistency import (  # noqa: F401
+        production_blocker_consistency_summary,
+    )
+
+
 def test_operations_alert_review_consistency_importable() -> None:
     from techno_search.operations_alert_review_consistency import (  # noqa: F401
         operations_alert_review_consistency_summary,

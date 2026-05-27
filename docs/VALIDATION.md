@@ -888,6 +888,29 @@ Project status consistency records are documentation drift guards only. They do
 not ingest real observation data, calibrate scoring thresholds, authorize live
 data, authorize external submission, or constitute external validation.
 
+## Production Blocker Consistency Gates
+
+Use `production-blocker-consistency-summary` to inspect local production
+blocker visibility across Tier 1 readiness blockers, RFI admission blockers,
+curated-dataset admission blockers, operations readiness, and disabled
+authorization counts:
+
+```bash
+.venv/bin/techno-search production-blocker-consistency-summary
+.venv/bin/techno-search production-blocker-consistency-summary --fixture-path tests/fixtures/production_blocker_consistency.json
+```
+
+The summary reports required Tier 1 blocker phrase coverage, missing blocker
+phrases, admission blocker counts, real-data authorization totals,
+external-submission authorization totals, network-access counts, and
+operations-readiness blocker state. `validate-all` requires the consistency
+check to pass.
+
+Production blocker consistency records are local readiness visibility gates
+only. They do not ingest real observation data, calibrate scoring thresholds,
+clear blockers, authorize live data, authorize external submission, or
+constitute external validation.
+
 ## Operations Alert Review Consistency Gates
 
 Use `operations-alert-review-consistency-summary` to inspect local alert/QC

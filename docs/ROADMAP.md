@@ -1043,3 +1043,17 @@ introduced.
 - [x] `validate-all` gate: top-level SQLite log consistency check must pass
 - [x] `validation-summary` fields: `top_level_sqlite_log_consistency_ok`, `top_level_sqlite_log_consistency_issue_count`
 - [x] DECISION-084: Top-Level SQLite Logs Must Keep Health And Authorization Gates Aligned
+
+---
+
+# Milestone 38 — Production Blocker Visibility Consistency Gates
+
+- [x] `src/techno_search/production_blocker_consistency.py` — local production-readiness blocker visibility checks for Tier 1 blocker phrases, RFI admission blockers, curated-dataset admission blockers, operations-readiness blocker state, and disabled authorization counts
+- [x] `schemas/production_blocker_consistency.schema.json`
+- [x] `tests/fixtures/production_blocker_consistency.json` — expected Tier 1 blocker phrases, minimum blocker visibility, admission blocker requirements, operations-readiness blocker requirement, and zero authorization gates
+- [x] `tests/test_production_blocker_consistency.py` — guardrail tests for missing blocker drift, authorization drift, admission blocker drift, and operations-readiness drift
+- [x] `techno-search production-blocker-consistency-summary` CLI command
+- [x] `production_blocker_consistency` added to `SCHEMA_FILENAMES` (total schemas: 126)
+- [x] `validate-all` gate: production blocker consistency check must pass
+- [x] `validation-summary` fields: `production_blocker_consistency_ok`, `production_blocker_consistency_issue_count`, `production_blocker_tier1_blocker_count`, `production_blocker_real_data_authorized_total`, `production_blocker_external_submission_authorized_total`
+- [x] DECISION-085: Production Blockers Must Remain Visible Until Explicitly Resolved

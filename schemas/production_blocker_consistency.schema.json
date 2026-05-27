@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Production Blocker Consistency Expectations",
+  "description": "Expected local production-readiness blocker visibility gates.",
+  "type": "object",
+  "required": ["schema_version", "expected_blockers"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "production_blocker_consistency_v1"
+    },
+    "expected_blockers": {
+      "type": "object",
+      "required": [
+        "required_tier1_blocker_phrases",
+        "min_tier1_blocker_count",
+        "require_zero_real_data_authorization",
+        "require_zero_external_submission_authorization",
+        "require_admission_blockers_visible",
+        "require_operations_readiness_blocked_for_real_data"
+      ],
+      "properties": {
+        "required_tier1_blocker_phrases": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "min_tier1_blocker_count": {"type": "integer", "minimum": 1},
+        "require_zero_real_data_authorization": {"type": "boolean"},
+        "require_zero_external_submission_authorization": {"type": "boolean"},
+        "require_admission_blockers_visible": {"type": "boolean"},
+        "require_operations_readiness_blocked_for_real_data": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

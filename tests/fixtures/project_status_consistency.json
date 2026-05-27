@@ -1,11 +1,11 @@
 {
   "schema_version": "project_status_consistency_v1",
   "expected_status": {
-    "latest_milestone_number": 37,
-    "latest_milestone_label": "Top-Level SQLite Log Consistency Gates",
-    "latest_decision_number": 84,
-    "schema_count": 125,
+    "latest_milestone_number": 38,
+    "latest_milestone_label": "Production Blocker Visibility Consistency Gates",
+    "latest_decision_number": 85,
+    "schema_count": 126,
     "require_zero_real_data_authorization": true,
-    "project_status_completed_phrase": "Top-level SQLite log consistency gates added so SQLite health, migration state, run/outcome alignment, retention, PRAGMAs, commit guard, and disabled authorization counts remain aligned"
+    "project_status_completed_phrase": "Production blocker visibility consistency gates added so Tier 1 production blockers, admission blockers, operations readiness blockers, and disabled authorization counts remain aligned"
   }
 }
