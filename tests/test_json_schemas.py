@@ -37,6 +37,7 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "scoring_config_summary.schema.json",
         "sensitivity_config_summary.schema.json",
         "target_watchlist.schema.json",
+        "top_level_sqlite_log_consistency.schema.json",
         "weekly_review_template.schema.json",
         "signal_registry.schema.json",
         "candidate_audit_trail.schema.json",

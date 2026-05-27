@@ -322,6 +322,9 @@ The project will support three tracks from day one:
       review, follow-up, progress, next-action, execution, execution-review,
       execution-follow-up, residual blockers, and disabled authorization counts
       remain aligned
+- [x] Top-level SQLite log consistency gates added so SQLite health, migration
+      state, run/outcome alignment, retention, PRAGMAs, commit guard, and
+      disabled authorization counts remain aligned
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions

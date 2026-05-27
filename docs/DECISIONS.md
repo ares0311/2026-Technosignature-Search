@@ -2031,3 +2031,35 @@ state. These checks are local workflow consistency gates only; they do not
 clear blockers, modify candidate scores or pathway routing, authorize live data
 access, authorize external submission, or constitute external validation or
 detection claims.
+
+---
+
+# DECISION-084: Top-Level SQLite Logs Must Keep Health And Authorization Gates Aligned
+
+Date: 2026-05-26
+Status: accepted
+
+## Context
+Top-level SQLite logs are the local operational source of truth for scheduled
+background runs and review-safe workflow provenance. The project already has
+summary, validation, integrity, migration, digest, retention, PRAGMA, backup,
+vacuum, export, and commit-guard commands, but the health and authorization
+state can drift unless those outputs are checked together.
+
+## Decision
+Implement Milestone 37 top-level SQLite log consistency gates:
+
+- Add a local SQLite log consistency expectation fixture.
+- Check database visibility, readability, metadata, validation, integrity,
+  PRAGMAs, weekly digest, retention, commit-guard state, and migration state.
+- Require run counts and outcome counts to remain aligned.
+- Require network-access and external-submission approval counts to remain
+  disabled by default.
+- Add `sqlite-log-consistency-summary` and wire it into local validation.
+
+## Consequences
+Schema count grows from 124 to 125. Local validation now fails if top-level
+SQLite log health, migration state, run/outcome alignment, retention, PRAGMAs,
+commit-guard state, or authorization counts drift from the expected local
+state. These checks are local workflow and provenance gates only; they are not
+detections, discoveries, external validation, or external submission approval.

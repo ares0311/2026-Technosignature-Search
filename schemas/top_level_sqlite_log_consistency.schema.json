@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Top-Level SQLite Log Consistency Expectations",
+  "description": "Expected local SQLite workflow-log health, migration, authorization, and commit-guard state.",
+  "type": "object",
+  "required": ["schema_version", "expected_sqlite_log"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "top_level_sqlite_log_consistency_v1"
+    },
+    "expected_sqlite_log": {
+      "type": "object",
+      "required": [
+        "min_run_count",
+        "max_network_access_allowed_count",
+        "max_external_submission_approved_count",
+        "require_database_exists",
+        "require_database_readable",
+        "require_metadata_ok",
+        "require_validation_ok",
+        "require_integrity_ok",
+        "require_pragmas_ok",
+        "require_weekly_digest_ok",
+        "require_retention_ok",
+        "require_commit_guard_ok",
+        "require_no_migration_required",
+        "require_outcome_count_matches_run_count"
+      ],
+      "properties": {
+        "min_run_count": {"type": "integer", "minimum": 0},
+        "max_network_access_allowed_count": {"type": "integer", "minimum": 0},
+        "max_external_submission_approved_count": {"type": "integer", "minimum": 0},
+        "require_database_exists": {"type": "boolean"},
+        "require_database_readable": {"type": "boolean"},
+        "require_metadata_ok": {"type": "boolean"},
+        "require_validation_ok": {"type": "boolean"},
+        "require_integrity_ok": {"type": "boolean"},
+        "require_pragmas_ok": {"type": "boolean"},
+        "require_weekly_digest_ok": {"type": "boolean"},
+        "require_retention_ok": {"type": "boolean"},
+        "require_commit_guard_ok": {"type": "boolean"},
+        "require_no_migration_required": {"type": "boolean"},
+        "require_outcome_count_matches_run_count": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

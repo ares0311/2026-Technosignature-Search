@@ -864,6 +864,12 @@ from techno_search.target_watchlist import (
     load_watchlist_entries,
     target_watchlist_summary,
 )
+from techno_search.top_level_sqlite_log_consistency import (
+    TOP_LEVEL_SQLITE_LOG_CONSISTENCY_DISCLAIMER,
+    TOP_LEVEL_SQLITE_LOG_CONSISTENCY_SCHEMA_VERSION,
+    load_top_level_sqlite_log_expectations,
+    top_level_sqlite_log_consistency_summary,
+)
 from techno_search.track_comparison import (
     COMPARISON_TRACKS,
     TRACK_COMPARISON_DISCLAIMER,
@@ -1094,6 +1100,10 @@ __all__ = [
     "WatchlistEntry",
     "load_watchlist_entries",
     "target_watchlist_summary",
+    "TOP_LEVEL_SQLITE_LOG_CONSISTENCY_DISCLAIMER",
+    "TOP_LEVEL_SQLITE_LOG_CONSISTENCY_SCHEMA_VERSION",
+    "load_top_level_sqlite_log_expectations",
+    "top_level_sqlite_log_consistency_summary",
     "WEEKLY_REVIEW_DISCLAIMER",
     "WEEKLY_REVIEW_SCHEMA_VERSION",
     "WeeklyReviewTemplate",

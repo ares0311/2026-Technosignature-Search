@@ -581,6 +581,7 @@ To inspect what the passive/background system has already searched, run:
 .venv/bin/techno-search sqlite-log-retention-summary
 .venv/bin/techno-search sqlite-log-vacuum
 .venv/bin/techno-search sqlite-log-commit-guard
+.venv/bin/techno-search sqlite-log-consistency-summary
 .venv/bin/techno-search validate-sqlite-logs
 .venv/bin/techno-search scheduler-dry-run \
   --artifact-dir artifacts/background_scheduler_dry_run
@@ -817,6 +818,7 @@ In v0, the committed ledger fixture is summarized by:
 .venv/bin/techno-search sqlite-log-retention-summary
 .venv/bin/techno-search sqlite-log-vacuum
 .venv/bin/techno-search sqlite-log-commit-guard
+.venv/bin/techno-search sqlite-log-consistency-summary
 .venv/bin/techno-search validate-sqlite-logs
 ```
 
@@ -902,6 +904,7 @@ Scientific quality gates:
 | Alert/QC review drift | Open-alert, alert-resolution, QC, readiness, and authorization blocker visibility must remain aligned | `operations-alert-review-consistency-summary` |
 | Action-resolution staleness drift | Stale resolution records, current action-plan IDs, residual blockers, and disabled authorization counts must remain aligned | `operations-action-resolution-consistency-summary` |
 | Blocker-progress chain drift | Blocker-detail, review, follow-up, progress, next-action, execution, execution-review, execution-follow-up, residual blockers, and disabled authorization counts must remain aligned | `operations-blocker-progress-consistency-summary` |
+| SQLite log health drift | Top-level SQLite log health, migration state, run/outcome alignment, retention, PRAGMAs, commit guard, and disabled authorization counts must remain aligned | `sqlite-log-consistency-summary` |
 | Lost provenance | Manifest and provenance summary validation | Report manifests and provenance summary CLI |
 | Misleading calibration | Synthetic-only disclaimers on reliability and PR summaries | Validation summary commands |
 | Premature non-synthetic calibration | Readiness review before curated dataset promotion | `validation-readiness-summary` |

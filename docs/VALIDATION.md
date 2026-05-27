@@ -275,6 +275,8 @@ Review reviewed and needs-follow-up outcome logs:
 .venv/bin/techno-search sqlite-log-vacuum \
   --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search sqlite-log-commit-guard
+.venv/bin/techno-search sqlite-log-consistency-summary \
+  --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search validate-sqlite-logs \
   --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search scheduler-dry-run \
@@ -507,6 +509,19 @@ Print a review-safe rolling digest of the SQLite operational log:
 ```
 
 The digest reports run counts, reviewed and needs-follow-up counts, blocking-issue totals, network-access counts (must remain zero by default), and external-submission approval counts (must remain zero unless directly recorded by the user).
+
+Check top-level SQLite log consistency:
+
+```bash
+.venv/bin/techno-search sqlite-log-consistency-summary
+.venv/bin/techno-search sqlite-log-consistency-summary --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search sqlite-log-consistency-summary --fixture-path tests/fixtures/top_level_sqlite_log_consistency.json
+```
+
+The summary verifies database visibility, validation, integrity, migration
+state, weekly digest state, retention state, PRAGMA diagnostics, commit-guard
+state, run/outcome alignment, and disabled network/external authorization
+counts. It is a local workflow/provenance gate only.
 
 ---
 

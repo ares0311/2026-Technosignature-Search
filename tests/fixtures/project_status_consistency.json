@@ -1,11 +1,11 @@
 {
   "schema_version": "project_status_consistency_v1",
   "expected_status": {
-    "latest_milestone_number": 36,
-    "latest_milestone_label": "Operations Blocker Progress Consistency Gates",
-    "latest_decision_number": 83,
-    "schema_count": 124,
+    "latest_milestone_number": 37,
+    "latest_milestone_label": "Top-Level SQLite Log Consistency Gates",
+    "latest_decision_number": 84,
+    "schema_count": 125,
     "require_zero_real_data_authorization": true,
-    "project_status_completed_phrase": "Operations blocker-progress consistency gates added so blocker-detail, review, follow-up, progress, next-action, execution, execution-review, execution-follow-up, residual blockers, and disabled authorization counts remain aligned"
+    "project_status_completed_phrase": "Top-level SQLite log consistency gates added so SQLite health, migration state, run/outcome alignment, retention, PRAGMAs, commit guard, and disabled authorization counts remain aligned"
   }
 }

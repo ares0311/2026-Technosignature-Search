@@ -1029,3 +1029,17 @@ introduced.
 - [x] `validate-all` gate: operations blocker-progress consistency check must pass
 - [x] `validation-summary` fields: `operations_blocker_progress_consistency_ok`, `operations_blocker_progress_consistency_issue_count`, `operations_blocker_progress_consistency_residual_blocker_total`, `operations_blocker_progress_consistency_mismatch_total`, `operations_blocker_progress_consistency_live_data_authorized_total`, `operations_blocker_progress_consistency_external_submission_authorized_total`
 - [x] DECISION-083: Operations Blocker Progress Chains Must Stay Aligned
+
+---
+
+# Milestone 37 — Top-Level SQLite Log Consistency Gates
+
+- [x] `src/techno_search/top_level_sqlite_log_consistency.py` — local top-level SQLite log consistency checks for database visibility, validation, integrity, migration state, weekly digest state, retention state, PRAGMA diagnostics, commit-guard state, run/outcome alignment, and disabled network/external authorization counts
+- [x] `schemas/top_level_sqlite_log_consistency.schema.json`
+- [x] `tests/fixtures/top_level_sqlite_log_consistency.json` — expected SQLite health, migration, authorization, run/outcome, and commit-guard requirements
+- [x] `tests/test_top_level_sqlite_log_consistency.py` — guardrail tests for missing database visibility, run/outcome drift, authorization drift, migration drift, and commit-guard drift
+- [x] `techno-search sqlite-log-consistency-summary` CLI command
+- [x] `top_level_sqlite_log_consistency` added to `SCHEMA_FILENAMES` (total schemas: 125)
+- [x] `validate-all` gate: top-level SQLite log consistency check must pass
+- [x] `validation-summary` fields: `top_level_sqlite_log_consistency_ok`, `top_level_sqlite_log_consistency_issue_count`
+- [x] DECISION-084: Top-Level SQLite Logs Must Keep Health And Authorization Gates Aligned

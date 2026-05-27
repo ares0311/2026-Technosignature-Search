@@ -247,6 +247,9 @@ from techno_search.target_recalibration_summary import target_recalibration_summ
 from techno_search.target_selection_log import target_selection_summary
 from techno_search.target_watchlist import target_watchlist_summary
 from techno_search.telescope_status_log import telescope_status_log_summary
+from techno_search.top_level_sqlite_log_consistency import (
+    top_level_sqlite_log_consistency_summary,
+)
 from techno_search.track_comparison import track_comparison_summary
 from techno_search.validation import (
     validate_candidate_file,
@@ -286,6 +289,7 @@ SCHEMA_FILENAMES = {
     "validation_promotion_rules": "validation_promotion_rules.schema.json",
     "validation_readiness": "validation_readiness.schema.json",
     "target_watchlist": "target_watchlist.schema.json",
+    "top_level_sqlite_log_consistency": "top_level_sqlite_log_consistency.schema.json",
     "weekly_review_template": "weekly_review_template.schema.json",
     "baseline_eval": "baseline_eval.schema.json",
     "baseline_performance_history": "baseline_performance_history.schema.json",
@@ -1040,6 +1044,20 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         print(json.dumps(commit_guard_result, indent=2, sort_keys=True), file=out)
         return 0 if commit_guard_result["ok"] else 1
+
+    if args.command == "sqlite-log-consistency-summary":
+        root = default_project_root()
+        consistency_commit_guard = validate_sqlite_log_commit_paths(
+            git_tracked_paths(root),
+            project_root=root,
+        )
+        consistency_result = top_level_sqlite_log_consistency_summary(
+            args.fixture_path,
+            db_path=args.db_path,
+            commit_guard=consistency_commit_guard,
+        )
+        print(json.dumps(consistency_result, indent=2, sort_keys=True), file=out)
+        return 0 if consistency_result["ok"] else 1
 
     if args.command == "validate-sqlite-logs":
         result = validate_sqlite_log_database(args.db_path)
@@ -3692,10 +3710,23 @@ def validate_all() -> dict[str, object]:
         else False
     )
     sqlite_log_validation = validate_sqlite_log_database(sqlite_validation_db).as_dict()
+    sqlite_log_consistency = top_level_sqlite_log_consistency_summary(
+        db_path=sqlite_validation_db,
+        sqlite_summary=sqlite_logs,
+        integrity_summary=sqlite_integrity,
+        migration_summary=sqlite_migration,
+        migration_plan=sqlite_migration_plan,
+        weekly_digest=sqlite_weekly_digest,
+        retention_summary=sqlite_retention,
+        pragmas_summary=sqlite_pragmas,
+        validation_summary=sqlite_log_validation,
+        commit_guard=sqlite_commit_guard,
+    )
     sqlite_run_count = sqlite_logs["run_count"]
     sqlite_outcome_count = sqlite_logs["outcome_count"]
     sqlite_network_count = sqlite_logs["network_access_allowed_count"]
     sqlite_external_approved_count = sqlite_logs["external_submission_approved_count"]
+    sqlite_consistency_ok = bool(sqlite_log_consistency["ok"])
     operations_readiness = operations_readiness_summary(
         quality_control=qc_summary,
         pipeline_capacity=pipeline_capacity_data,
@@ -4128,6 +4159,7 @@ def validate_all() -> dict[str, object]:
         and isinstance(candidate_handoff_network_count, int)
         and candidate_handoff_network_count == 0
         and bool(sqlite_log_validation["ok"])
+        and sqlite_consistency_ok
         and bool(sqlite_integrity["ok"])
         and not bool(sqlite_migration["migration_required"])
         and sqlite_export_ok
@@ -4497,6 +4529,7 @@ def validate_all() -> dict[str, object]:
         "top_level_sqlite_log_migration_plan": sqlite_migration_plan,
         "top_level_sqlite_log_weekly_digest": sqlite_weekly_digest,
         "top_level_sqlite_log_validation": sqlite_log_validation,
+        "top_level_sqlite_log_consistency_summary": sqlite_log_consistency,
         "top_level_sqlite_log_commit_guard": sqlite_commit_guard,
         "target_watchlist_summary": watchlist,
         "baseline_eval_summary": baseline_eval,
@@ -4688,6 +4721,7 @@ def validation_summary() -> dict[str, object]:
     sqlite_retention = validation["top_level_sqlite_log_retention_summary"]
     sqlite_pragmas = validation["top_level_sqlite_log_pragmas"]
     sqlite_log_validation = validation["top_level_sqlite_log_validation"]
+    sqlite_log_consistency = validation["top_level_sqlite_log_consistency_summary"]
     operations_readiness = validation["operations_readiness_summary"]
     operations_action_plan = validation["operations_action_plan_summary"]
     operations_action_resolution = validation["operations_action_resolution_summary"]
@@ -5022,6 +5056,14 @@ def validation_summary() -> dict[str, object]:
         "top_level_sqlite_log_validation_ok": bool(sqlite_log_validation["ok"])
         if isinstance(sqlite_log_validation, dict)
         else False,
+        "top_level_sqlite_log_consistency_ok": bool(sqlite_log_consistency["ok"])
+        if isinstance(sqlite_log_consistency, dict)
+        else False,
+        "top_level_sqlite_log_consistency_issue_count": sqlite_log_consistency[
+            "issue_count"
+        ]
+        if isinstance(sqlite_log_consistency, dict)
+        else 0,
         "top_level_sqlite_log_integrity_ok": bool(sqlite_integrity["ok"])
         if isinstance(sqlite_integrity, dict)
         else False,
@@ -7714,6 +7756,24 @@ def _build_parser() -> argparse.ArgumentParser:
         help=(
             "Optional paths to validate. Defaults to Git-tracked paths when omitted."
         ),
+    )
+    sqlite_consistency_parser = subparsers.add_parser(
+        "sqlite-log-consistency-summary",
+        help=(
+            "Check top-level SQLite log health, migration, authorization, and "
+            "commit-guard consistency."
+        ),
+    )
+    sqlite_consistency_parser.add_argument(
+        "--db-path",
+        type=Path,
+        default=default_sqlite_log_path(default_project_root()),
+        help="SQLite log database path. Defaults to logs/techno_search.sqlite3.",
+    )
+    sqlite_consistency_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional SQLite log consistency expectation fixture path.",
     )
     validate_sqlite_parser = subparsers.add_parser(
         "validate-sqlite-logs",

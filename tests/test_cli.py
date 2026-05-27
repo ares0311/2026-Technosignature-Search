@@ -215,9 +215,9 @@ def test_cli_project_status_consistency_summary_outputs_drift_gates() -> None:
     assert exit_code == 0
     assert result["schema_version"] == "project_status_consistency_v1"
     assert result["ok"] is True
-    assert result["roadmap_latest_milestone"] == 36
-    assert result["decisions_latest_decision"] == 83
-    assert result["actual_schema_count"] == 124
+    assert result["roadmap_latest_milestone"] == 37
+    assert result["decisions_latest_decision"] == 84
+    assert result["actual_schema_count"] == 125
     assert result["rfi_database_admission_real_data_authorized_count"] == 0
     assert result["curated_dataset_admission_real_data_authorized_count"] == 0
 
@@ -415,6 +415,7 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "candidate_alert_log",
         "pipeline_replay_log",
         "scoring_threshold_audit",
+        "top_level_sqlite_log_consistency",
         "alert_resolution_log",
         "config_version_history",
         "operator_escalation_log",
@@ -1376,6 +1377,20 @@ def test_cli_top_level_sqlite_log_commands_validate_background_run(
     assert retention["backup_count"] >= 1
 
     stdout = StringIO()
+    consistency_exit_code = main(
+        ["sqlite-log-consistency-summary", "--db-path", str(db_path)],
+        stdout=stdout,
+    )
+    consistency = json.loads(stdout.getvalue())
+    assert consistency_exit_code == 0
+    assert consistency["schema_version"] == "top_level_sqlite_log_consistency_v1"
+    assert consistency["ok"] is True
+    assert consistency["run_count"] == 1
+    assert consistency["outcome_count"] == 1
+    assert consistency["network_access_allowed_count"] == 0
+    assert consistency["external_submission_approved_count"] == 0
+
+    stdout = StringIO()
     vacuum_exit_code = main(
         ["sqlite-log-vacuum", "--db-path", str(db_path)],
         stdout=stdout,
@@ -1567,6 +1582,8 @@ def test_cli_validate_all_outputs_local_summary() -> None:
         "network_access_allowed_count"
     ] == 0
     assert result["top_level_sqlite_log_validation"]["ok"] is True
+    assert result["top_level_sqlite_log_consistency_summary"]["ok"] is True
+    assert result["top_level_sqlite_log_consistency_summary"]["issue_count"] == 0
     assert result["top_level_sqlite_log_integrity_summary"]["ok"] is True
     assert result["top_level_sqlite_log_migration_summary"][
         "migration_required"
@@ -1606,12 +1623,12 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 124
+    assert result["schema_count"] == 125
     assert result["schemas_ok"] is True
     assert result["project_status_consistency_ok"] is True
-    assert result["project_status_latest_milestone"] == 36
-    assert result["project_status_latest_decision"] == 83
-    assert result["project_status_schema_count"] == 124
+    assert result["project_status_latest_milestone"] == 37
+    assert result["project_status_latest_decision"] == 84
+    assert result["project_status_schema_count"] == 125
     assert result["operations_alert_review_consistency_ok"] is True
     assert result["operations_alert_review_open_alert_count"] == 3
     assert result["operations_alert_review_critical_open_alert_count"] == 1
@@ -1714,6 +1731,8 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
         "candidate_extraction_handoff_negative_result_required_count"
     ] == 2
     assert result["top_level_sqlite_log_validation_ok"] is True
+    assert result["top_level_sqlite_log_consistency_ok"] is True
+    assert result["top_level_sqlite_log_consistency_issue_count"] == 0
     assert result["top_level_sqlite_log_integrity_ok"] is True
     assert result["top_level_sqlite_log_migration_required"] is False
     assert result["top_level_sqlite_log_commit_guard_ok"] is True

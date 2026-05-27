@@ -1,0 +1,19 @@
+{
+  "schema_version": "top_level_sqlite_log_consistency_v1",
+  "expected_sqlite_log": {
+    "min_run_count": 0,
+    "max_network_access_allowed_count": 0,
+    "max_external_submission_approved_count": 0,
+    "require_database_exists": true,
+    "require_database_readable": true,
+    "require_metadata_ok": true,
+    "require_validation_ok": true,
+    "require_integrity_ok": true,
+    "require_pragmas_ok": true,
+    "require_weekly_digest_ok": true,
+    "require_retention_ok": true,
+    "require_commit_guard_ok": true,
+    "require_no_migration_required": true,
+    "require_outcome_count_matches_run_count": true
+  }
+}

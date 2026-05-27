@@ -107,6 +107,7 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     assert ".venv/bin/techno-search sqlite-log-retention-summary" in readme
     assert ".venv/bin/techno-search sqlite-log-vacuum" in readme
     assert ".venv/bin/techno-search sqlite-log-commit-guard" in readme
+    assert ".venv/bin/techno-search sqlite-log-consistency-summary" in readme
     assert ".venv/bin/techno-search validate-sqlite-logs" in readme
     assert ".venv/bin/techno-search benchmark-run-append" in readme
     assert ".venv/bin/techno-search benchmark-run-compare" in readme
@@ -241,6 +242,7 @@ def test_cli_docs_include_draft_report_and_decision_workflows() -> None:
     assert ".venv/bin/techno-search rfi-database-summary" in doc
     assert ".venv/bin/techno-search rfi-database-admission-summary" in doc
     assert ".venv/bin/techno-search curated-dataset-admission-summary" in doc
+    assert ".venv/bin/techno-search sqlite-log-consistency-summary" in doc
     assert ".venv/bin/techno-search project-status-consistency-summary" in doc
     assert (
         ".venv/bin/techno-search operations-alert-review-consistency-summary"

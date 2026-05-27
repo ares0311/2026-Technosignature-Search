@@ -74,6 +74,12 @@ def test_operations_blocker_progress_consistency_importable() -> None:
     )
 
 
+def test_top_level_sqlite_log_consistency_importable() -> None:
+    from techno_search.top_level_sqlite_log_consistency import (  # noqa: F401
+        top_level_sqlite_log_consistency_summary,
+    )
+
+
 def test_labeled_dataset_importable() -> None:
     from techno_search.labeled_dataset import labeled_dataset_summary  # noqa: F401
 
