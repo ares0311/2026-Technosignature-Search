@@ -724,6 +724,15 @@ from techno_search.project_status_consistency import (
     load_project_status_expectations,
     project_status_consistency_summary,
 )
+from techno_search.real_data_admission_preflight import (
+    REAL_DATA_ADMISSION_PREFLIGHT_DISCLAIMER,
+    REAL_DATA_ADMISSION_PREFLIGHT_SCHEMA_VERSION,
+    RealDataAdmissionPreflightCategory,
+    load_real_data_admission_preflight_categories,
+    load_real_data_admission_preflight_expectations,
+    real_data_admission_preflight_summary,
+    validate_real_data_admission_preflight_categories,
+)
 from techno_search.provenance_audit import (
     ALLOWED_AUDIT_VERDICTS,
     PROVENANCE_AUDIT_DISCLAIMER,
@@ -1468,6 +1477,13 @@ __all__ = [
     "PRODUCTION_BLOCKER_CONSISTENCY_SCHEMA_VERSION",
     "load_production_blocker_expectations",
     "production_blocker_consistency_summary",
+    "REAL_DATA_ADMISSION_PREFLIGHT_DISCLAIMER",
+    "REAL_DATA_ADMISSION_PREFLIGHT_SCHEMA_VERSION",
+    "RealDataAdmissionPreflightCategory",
+    "load_real_data_admission_preflight_categories",
+    "load_real_data_admission_preflight_expectations",
+    "real_data_admission_preflight_summary",
+    "validate_real_data_admission_preflight_categories",
     "ALERT_RESOLUTION_DISCLAIMER",
     "ALERT_RESOLUTION_SCHEMA_VERSION",
     "ALLOWED_ALERT_RESOLUTION_KINDS",

@@ -1,0 +1,95 @@
+{
+  "schema_version": "real_data_admission_preflight_v1",
+  "preflight_categories": [
+    {
+      "category_id": "real_observation_data",
+      "label": "Real observation data",
+      "required_evidence": [
+        "approved local data path or archive access record",
+        "data-use policy review",
+        "provenance and instrument metadata review"
+      ],
+      "current_evidence_count": 0,
+      "blocker_count": 3,
+      "review_status": "blocked_pending_observation_data",
+      "real_data_authorized": false,
+      "live_data_authorized": false,
+      "external_submission_authorized": false,
+      "notes": "No real observation data has been admitted."
+    },
+    {
+      "category_id": "real_labeled_dataset",
+      "label": "Real labeled dataset",
+      "required_evidence": [
+        "curated dataset admission record with zero blockers",
+        "labeling methodology review",
+        "expert-review evidence"
+      ],
+      "current_evidence_count": 0,
+      "blocker_count": 3,
+      "review_status": "blocked_pending_labeled_dataset",
+      "real_data_authorized": false,
+      "live_data_authorized": false,
+      "external_submission_authorized": false,
+      "notes": "Committed labels remain synthetic."
+    },
+    {
+      "category_id": "scoring_calibration",
+      "label": "Scoring calibration",
+      "required_evidence": [
+        "real labeled cases",
+        "site-specific false-positive baseline",
+        "threshold review record"
+      ],
+      "current_evidence_count": 0,
+      "blocker_count": 3,
+      "review_status": "blocked_pending_calibration",
+      "real_data_authorized": false,
+      "live_data_authorized": false,
+      "external_submission_authorized": false,
+      "notes": "Thresholds remain synthetic v0 defaults."
+    },
+    {
+      "category_id": "site_specific_rfi_database",
+      "label": "Real site-specific RFI database",
+      "required_evidence": [
+        "RFI database admission record with zero blockers",
+        "monitoring-context review",
+        "license review"
+      ],
+      "current_evidence_count": 0,
+      "blocker_count": 3,
+      "review_status": "blocked_pending_rfi_database",
+      "real_data_authorized": false,
+      "live_data_authorized": false,
+      "external_submission_authorized": false,
+      "notes": "No real site-monitoring catalog has been admitted."
+    },
+    {
+      "category_id": "peer_review",
+      "label": "Peer review",
+      "required_evidence": [
+        "external scientific review record",
+        "candidate-report review checklist",
+        "methodology review disposition"
+      ],
+      "current_evidence_count": 0,
+      "blocker_count": 3,
+      "review_status": "blocked_pending_peer_review",
+      "real_data_authorized": false,
+      "live_data_authorized": false,
+      "external_submission_authorized": false,
+      "notes": "No external scientific review has approved production use."
+    }
+  ],
+  "expected_preflight": {
+    "category_count": 5,
+    "min_blocker_total": 5,
+    "require_zero_real_data_authorization": true,
+    "require_zero_live_data_authorization": true,
+    "require_zero_external_submission_authorization": true,
+    "require_rfi_admission_blockers_visible": true,
+    "require_curated_dataset_admission_blockers_visible": true,
+    "require_production_blocker_consistency_ok": true
+  }
+}

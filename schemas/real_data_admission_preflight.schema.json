@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Real Data Admission Preflight",
+  "description": "Local preflight records for proposed real-data admission evidence and authorization gates.",
+  "type": "object",
+  "required": ["schema_version", "preflight_categories", "expected_preflight"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "real_data_admission_preflight_v1"
+    },
+    "preflight_categories": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "category_id",
+          "label",
+          "required_evidence",
+          "current_evidence_count",
+          "blocker_count",
+          "review_status",
+          "real_data_authorized",
+          "live_data_authorized",
+          "external_submission_authorized",
+          "notes"
+        ],
+        "properties": {
+          "category_id": {"type": "string", "minLength": 1},
+          "label": {"type": "string", "minLength": 1},
+          "required_evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1},
+            "minItems": 1
+          },
+          "current_evidence_count": {"type": "integer", "minimum": 0},
+          "blocker_count": {"type": "integer", "minimum": 0},
+          "review_status": {"type": "string", "minLength": 1},
+          "real_data_authorized": {"type": "boolean"},
+          "live_data_authorized": {"type": "boolean"},
+          "external_submission_authorized": {"type": "boolean"},
+          "notes": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "expected_preflight": {
+      "type": "object",
+      "required": [
+        "category_count",
+        "min_blocker_total",
+        "require_zero_real_data_authorization",
+        "require_zero_live_data_authorization",
+        "require_zero_external_submission_authorization",
+        "require_rfi_admission_blockers_visible",
+        "require_curated_dataset_admission_blockers_visible",
+        "require_production_blocker_consistency_ok"
+      ],
+      "properties": {
+        "category_count": {"type": "integer", "minimum": 1},
+        "min_blocker_total": {"type": "integer", "minimum": 0},
+        "require_zero_real_data_authorization": {"type": "boolean"},
+        "require_zero_live_data_authorization": {"type": "boolean"},
+        "require_zero_external_submission_authorization": {"type": "boolean"},
+        "require_rfi_admission_blockers_visible": {"type": "boolean"},
+        "require_curated_dataset_admission_blockers_visible": {"type": "boolean"},
+        "require_production_blocker_consistency_ok": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -213,6 +213,9 @@ from techno_search.production_blocker_consistency import (
     production_blocker_consistency_summary,
 )
 from techno_search.project_status_consistency import project_status_consistency_summary
+from techno_search.real_data_admission_preflight import (
+    real_data_admission_preflight_summary,
+)
 from techno_search.provenance import provenance_chain_validator
 from techno_search.provenance_audit import provenance_audit_summary
 from techno_search.quality_control_summary import quality_control_summary
@@ -329,6 +332,7 @@ SCHEMA_FILENAMES = {
     "provenance_audit": "provenance_audit.schema.json",
     "project_status_consistency": "project_status_consistency.schema.json",
     "production_blocker_consistency": "production_blocker_consistency.schema.json",
+    "real_data_admission_preflight": "real_data_admission_preflight.schema.json",
     "candidate_alert_log": "candidate_alert_log.schema.json",
     "pipeline_replay_log": "pipeline_replay_log.schema.json",
     "scoring_threshold_audit": "scoring_threshold_audit.schema.json",
@@ -2575,6 +2579,19 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0 if consistency_summary["ok"] else 1
 
+    if args.command == "real-data-admission-preflight-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        preflight_summary = real_data_admission_preflight_summary(fixture_path)
+        print(
+            json.dumps(
+                preflight_summary,
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0 if preflight_summary["ok"] else 1
+
     if args.command == "operations-alert-review-consistency-summary":
         fixture_path = Path(args.fixture_path) if args.fixture_path else None
         consistency_summary = operations_alert_review_consistency_summary(fixture_path)
@@ -3768,6 +3785,14 @@ def validate_all() -> dict[str, object]:
     production_blocker_consistency_ok = bool(
         production_blocker_consistency.get("ok", False)
     )
+    real_data_admission_preflight = real_data_admission_preflight_summary(
+        rfi_admission=rfi_database_admission_data,
+        curated_admission=curated_dataset_admission_data,
+        production_blockers=production_blocker_consistency,
+    )
+    real_data_admission_preflight_ok = bool(
+        real_data_admission_preflight.get("ok", False)
+    )
     operations_action_plan = operations_action_plan_summary(operations_readiness)
     operations_action_ids = [
         str(action["action_id"])
@@ -4325,6 +4350,7 @@ def validate_all() -> dict[str, object]:
         and curated_dataset_admission_real_authorized_count == 0
         and project_status_consistency_ok
         and production_blocker_consistency_ok
+        and real_data_admission_preflight_ok
         and operations_alert_review_consistency_ok
         and isinstance(rescore_event_count, int)
         and rescore_event_count >= 1
@@ -4618,6 +4644,7 @@ def validate_all() -> dict[str, object]:
         "curated_dataset_admission_summary": curated_dataset_admission_data,
         "project_status_consistency_summary": project_status_consistency,
         "production_blocker_consistency_summary": production_blocker_consistency,
+        "real_data_admission_preflight_summary": real_data_admission_preflight,
         "operations_alert_review_consistency_summary": (
             operations_alert_review_consistency
         ),
@@ -4751,6 +4778,9 @@ def validation_summary() -> dict[str, object]:
     sqlite_log_consistency = validation["top_level_sqlite_log_consistency_summary"]
     production_blocker_consistency = validation[
         "production_blocker_consistency_summary"
+    ]
+    real_data_admission_preflight = validation[
+        "real_data_admission_preflight_summary"
     ]
     operations_readiness = validation["operations_readiness_summary"]
     operations_action_plan = validation["operations_action_plan_summary"]
@@ -6404,6 +6434,41 @@ def validation_summary() -> dict[str, object]:
         "production_blocker_external_submission_authorized_total": (
             production_blocker_consistency["external_submission_authorized_total"]
             if isinstance(production_blocker_consistency, dict)
+            else 0
+        ),
+        "real_data_admission_preflight_ok": (
+            bool(real_data_admission_preflight["ok"])
+            if isinstance(real_data_admission_preflight, dict)
+            else False
+        ),
+        "real_data_admission_preflight_issue_count": (
+            real_data_admission_preflight["issue_count"]
+            if isinstance(real_data_admission_preflight, dict)
+            else 0
+        ),
+        "real_data_admission_preflight_category_count": (
+            real_data_admission_preflight["category_count"]
+            if isinstance(real_data_admission_preflight, dict)
+            else 0
+        ),
+        "real_data_admission_preflight_blocker_total": (
+            real_data_admission_preflight["blocker_total"]
+            if isinstance(real_data_admission_preflight, dict)
+            else 0
+        ),
+        "real_data_admission_preflight_real_data_authorized_total": (
+            real_data_admission_preflight["real_data_authorized_total"]
+            if isinstance(real_data_admission_preflight, dict)
+            else 0
+        ),
+        "real_data_admission_preflight_live_data_authorized_total": (
+            real_data_admission_preflight["live_data_authorized_total"]
+            if isinstance(real_data_admission_preflight, dict)
+            else 0
+        ),
+        "real_data_admission_preflight_external_submission_authorized_total": (
+            real_data_admission_preflight["external_submission_authorized_total"]
+            if isinstance(real_data_admission_preflight, dict)
             else 0
         ),
         "operations_alert_review_consistency_ok": (
@@ -8889,6 +8954,14 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     production_blocker_consistency_parser.add_argument(
         "--fixture-path", type=Path, help="Optional expectation fixture path override."
+    )
+
+    real_data_preflight_parser = subparsers.add_parser(
+        "real-data-admission-preflight-summary",
+        help="Summarize local real-data admission preflight gates.",
+    )
+    real_data_preflight_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional preflight fixture path override."
     )
 
     alert_review_consistency_parser = subparsers.add_parser(
