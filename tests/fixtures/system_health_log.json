@@ -1,0 +1,61 @@
+{
+  "schema_version": "system_health_log_v1",
+  "disclaimer": "System health entries are operational provenance records — a health record does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.",
+  "entries": [
+    {
+      "entry_id": "health-001",
+      "health_kind": "cpu_usage",
+      "status": "healthy",
+      "recorded_by": "monitor-agent",
+      "recorded_at": "2026-05-01T10:00:00Z",
+      "metric_value": 23.5,
+      "metric_unit": "percent",
+      "threshold": 80.0,
+      "notes": "CPU usage within normal operating range."
+    },
+    {
+      "entry_id": "health-002",
+      "health_kind": "disk_space",
+      "status": "healthy",
+      "recorded_by": "monitor-agent",
+      "recorded_at": "2026-05-01T10:05:00Z",
+      "metric_value": 45.2,
+      "metric_unit": "percent_used",
+      "threshold": 90.0,
+      "notes": "Disk usage within acceptable limits."
+    },
+    {
+      "entry_id": "health-003",
+      "health_kind": "memory_usage",
+      "status": "warning",
+      "recorded_by": "monitor-agent",
+      "recorded_at": "2026-05-02T14:30:00Z",
+      "metric_value": 78.1,
+      "metric_unit": "percent",
+      "threshold": 75.0,
+      "notes": "Memory usage above warning threshold. Pipeline batch size may need reduction."
+    },
+    {
+      "entry_id": "health-004",
+      "health_kind": "network_latency",
+      "status": "critical",
+      "recorded_by": "monitor-agent",
+      "recorded_at": "2026-05-03T08:00:00Z",
+      "metric_value": 2500.0,
+      "metric_unit": "milliseconds",
+      "threshold": 500.0,
+      "notes": "Network latency critical. Data transfers suspended until connectivity restored."
+    },
+    {
+      "entry_id": "health-005",
+      "health_kind": "process_uptime",
+      "status": "unknown",
+      "recorded_by": "monitor-agent",
+      "recorded_at": "2026-05-04T06:00:00Z",
+      "metric_value": null,
+      "metric_unit": null,
+      "threshold": null,
+      "notes": "Process uptime check returned no data. Monitoring agent connectivity issue."
+    }
+  ]
+}

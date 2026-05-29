@@ -1057,3 +1057,26 @@ introduced.
 - [x] `validate-all` gate: production blocker consistency check must pass
 - [x] `validation-summary` fields: `production_blocker_consistency_ok`, `production_blocker_consistency_issue_count`, `production_blocker_tier1_blocker_count`, `production_blocker_real_data_authorized_total`, `production_blocker_external_submission_authorized_total`
 - [x] DECISION-085: Production Blockers Must Remain Visible Until Explicitly Resolved
+
+# Milestone 39 — Consistency Gate Repair And Three New Operational Logs
+
+- [x] `tests/fixtures/operations_action_resolution_consistency.json` — corrected expected values to match actual action plan (8 actions, 2 stale resolutions)
+- [x] `tests/fixtures/operations_blocker_progress_consistency.json` — corrected expected `detail_count` to match actual detail records (8)
+- [x] `tests/conftest.py` — `ensure_sqlite_log_initialized` session fixture ensures SQLite log is ready before consistency tests
+- [x] `src/techno_search/data_transfer_log.py` — operational provenance records for data transfer events; transfer_kinds: archive_transfer, inter_site_transfer, local_copy, cloud_upload, network_delivery; statuses: pending, completed, failed, verified
+- [x] `schemas/data_transfer_log.schema.json`
+- [x] `tests/fixtures/data_transfer_log.json` — 5 entries (2 completed, 1 pending, 1 failed, 1 verified)
+- [x] `tests/test_data_transfer_log.py` — 23 tests
+- [x] `src/techno_search/scheduling_conflict_log.py` — operational provenance records for scheduling conflict events; conflict_kinds: time_slot_overlap, resource_contention, priority_conflict, maintenance_window, weather_hold; statuses: detected, resolved, escalated, deferred
+- [x] `schemas/scheduling_conflict_log.schema.json`
+- [x] `tests/fixtures/scheduling_conflict_log.json` — 5 entries (2 detected, 1 resolved, 1 escalated, 1 deferred)
+- [x] `tests/test_scheduling_conflict_log.py` — 22 tests
+- [x] `src/techno_search/system_health_log.py` — operational provenance records for system health monitoring events; health_kinds: cpu_usage, memory_usage, disk_space, network_latency, process_uptime; statuses: healthy, warning, critical, unknown
+- [x] `schemas/system_health_log.schema.json`
+- [x] `tests/fixtures/system_health_log.json` — 5 entries (2 healthy, 1 warning, 1 critical, 1 unknown)
+- [x] `tests/test_system_health_log.py` — 22 tests
+- [x] `data_transfer_log`, `scheduling_conflict_log`, `system_health_log` added to `SCHEMA_FILENAMES` (total schemas: 133)
+- [x] `techno-search data-transfer-summary`, `techno-search scheduling-conflict-summary`, `techno-search system-health-summary` CLI commands
+- [x] `validate-all` gates: `data_transfer_entry_count >= 1`, `scheduling_conflict_entry_count >= 1`, `system_health_entry_count >= 1`
+- [x] `validation-summary` fields: `data_transfer_entry_count`, `data_transfer_completed_count`, `scheduling_conflict_entry_count`, `scheduling_conflict_detected_count`, `system_health_entry_count`, `system_health_healthy_count`
+- [x] DECISION-086: Data Transfer Log, Scheduling Conflict Log, And System Health Log Complete Milestone 39

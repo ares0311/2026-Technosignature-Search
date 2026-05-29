@@ -96,6 +96,7 @@ from techno_search.curated_dataset_intake import curated_dataset_intake_summary
 from techno_search.data_archival_log import data_archival_summary
 from techno_search.data_gap_log import data_gap_summary
 from techno_search.data_quality_log import data_quality_log_summary
+from techno_search.data_transfer_log import data_transfer_summary
 from techno_search.doppler_correction_log import doppler_correction_summary
 from techno_search.epoch_plan import epoch_plan_summary
 from techno_search.escalation_log import escalation_log_summary
@@ -237,6 +238,7 @@ from techno_search.review_queue import (
 from techno_search.rfi_database import rfi_database_summary
 from techno_search.rfi_database_admission import rfi_database_admission_summary
 from techno_search.rfi_mitigation_log import rfi_mitigation_summary
+from techno_search.scheduling_conflict_log import scheduling_conflict_summary
 from techno_search.schemas import Candidate, Track, candidate_from_mapping
 from techno_search.scoring import score_candidate
 from techno_search.scoring_audit_log import scoring_audit_log_summary
@@ -252,6 +254,7 @@ from techno_search.signal_registry import (
 from techno_search.source_catalog_log import source_catalog_log_summary
 from techno_search.spectral_feature_log import spectral_feature_log_summary
 from techno_search.submission_readiness import submission_readiness_summary
+from techno_search.system_health_log import system_health_summary
 from techno_search.target_recalibration_summary import target_recalibration_summary
 from techno_search.target_selection_log import target_selection_summary
 from techno_search.target_watchlist import target_watchlist_summary
@@ -423,6 +426,9 @@ SCHEMA_FILENAMES = {
     "interference_environment_log": "interference_environment_log.schema.json",
     "receiver_health_log": "receiver_health_log.schema.json",
     "pipeline_version_log": "pipeline_version_log.schema.json",
+    "data_transfer_log": "data_transfer_log.schema.json",
+    "scheduling_conflict_log": "scheduling_conflict_log.schema.json",
+    "system_health_log": "system_health_log.schema.json",
 }
 
 
@@ -3125,6 +3131,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(pvl_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "data-transfer-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        dtl_out = data_transfer_summary(fixture_path)
+        print(json.dumps(dtl_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "scheduling-conflict-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        scl_out = scheduling_conflict_summary(fixture_path)
+        print(json.dumps(scl_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "system-health-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        shl_out = system_health_summary(fixture_path)
+        print(json.dumps(shl_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -3729,6 +3753,19 @@ def validate_all() -> dict[str, object]:
     _pipeline_version_active_count = int(
         pipeline_version_data.get("active_count", 0)
     )
+    data_transfer_data = data_transfer_summary()
+    data_transfer_entry_count = int(data_transfer_data.get("entry_count", 0))
+    _data_transfer_completed_count = int(data_transfer_data.get("completed_count", 0))
+    scheduling_conflict_data = scheduling_conflict_summary()
+    scheduling_conflict_entry_count = int(
+        scheduling_conflict_data.get("entry_count", 0)
+    )
+    _scheduling_conflict_detected_count = int(
+        scheduling_conflict_data.get("detected_count", 0)
+    )
+    system_health_data = system_health_summary()
+    system_health_entry_count = int(system_health_data.get("entry_count", 0))
+    _system_health_healthy_count = int(system_health_data.get("healthy_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -4495,6 +4532,12 @@ def validate_all() -> dict[str, object]:
         and receiver_health_entry_count >= 1
         and isinstance(pipeline_version_entry_count, int)
         and pipeline_version_entry_count >= 1
+        and isinstance(data_transfer_entry_count, int)
+        and data_transfer_entry_count >= 1
+        and isinstance(scheduling_conflict_entry_count, int)
+        and scheduling_conflict_entry_count >= 1
+        and isinstance(system_health_entry_count, int)
+        and system_health_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -4741,6 +4784,9 @@ def validate_all() -> dict[str, object]:
         "interference_environment_log_summary": interference_env_data,
         "receiver_health_log_summary": receiver_health_data,
         "pipeline_version_log_summary": pipeline_version_data,
+        "data_transfer_log_summary": data_transfer_data,
+        "scheduling_conflict_log_summary": scheduling_conflict_data,
+        "system_health_log_summary": system_health_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -7052,6 +7098,48 @@ def validation_summary() -> dict[str, object]:
             pvl_s2["active_count"]
             if isinstance(
                 pvl_s2 := validation.get("pipeline_version_log_summary"), dict
+            )
+            else 0
+        ),
+        "data_transfer_entry_count": (
+            dtl_s["entry_count"]
+            if isinstance(
+                dtl_s := validation.get("data_transfer_log_summary"), dict
+            )
+            else 0
+        ),
+        "data_transfer_completed_count": (
+            dtl_s2["completed_count"]
+            if isinstance(
+                dtl_s2 := validation.get("data_transfer_log_summary"), dict
+            )
+            else 0
+        ),
+        "scheduling_conflict_entry_count": (
+            scl_s["entry_count"]
+            if isinstance(
+                scl_s := validation.get("scheduling_conflict_log_summary"), dict
+            )
+            else 0
+        ),
+        "scheduling_conflict_detected_count": (
+            scl_s2["detected_count"]
+            if isinstance(
+                scl_s2 := validation.get("scheduling_conflict_log_summary"), dict
+            )
+            else 0
+        ),
+        "system_health_entry_count": (
+            shl_s["entry_count"]
+            if isinstance(
+                shl_s := validation.get("system_health_log_summary"), dict
+            )
+            else 0
+        ),
+        "system_health_healthy_count": (
+            shl_s2["healthy_count"]
+            if isinstance(
+                shl_s2 := validation.get("system_health_log_summary"), dict
             )
             else 0
         ),
@@ -9474,6 +9562,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     pipeline_version_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    data_transfer_parser = subparsers.add_parser(
+        "data-transfer-summary",
+        help=(
+            "Summarize data transfer log entries "
+            "(operational provenance records only)."
+        ),
+    )
+    data_transfer_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    scheduling_conflict_parser = subparsers.add_parser(
+        "scheduling-conflict-summary",
+        help=(
+            "Summarize scheduling conflict log entries "
+            "(operational provenance records only)."
+        ),
+    )
+    scheduling_conflict_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    system_health_parser = subparsers.add_parser(
+        "system-health-summary",
+        help=(
+            "Summarize system health log entries "
+            "(operational monitoring provenance records only)."
+        ),
+    )
+    system_health_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 
