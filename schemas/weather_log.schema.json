@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "weather_log.schema.json",
+  "title": "Weather Log",
+  "description": "Operational provenance records for site weather monitoring events.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "entries"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "weather_log_v1"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/WeatherEntry"
+      }
+    }
+  },
+  "$defs": {
+    "WeatherEntry": {
+      "type": "object",
+      "required": [
+        "entry_id",
+        "weather_kind",
+        "status",
+        "recorded_by",
+        "timestamp_utc"
+      ],
+      "properties": {
+        "entry_id": { "type": "string" },
+        "weather_kind": {
+          "type": "string",
+          "enum": [
+            "wind_speed",
+            "temperature",
+            "humidity",
+            "precipitation",
+            "seeing"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["nominal", "advisory", "warning", "observation_hold"]
+        },
+        "recorded_by": { "type": "string" },
+        "timestamp_utc": { "type": "string" },
+        "site_id": {
+          "oneOf": [{ "type": "string" }, { "type": "null" }]
+        },
+        "value": {
+          "oneOf": [{ "type": "number" }, { "type": "null" }]
+        },
+        "unit": {
+          "oneOf": [{ "type": "string" }, { "type": "null" }]
+        },
+        "notes": {
+          "oneOf": [{ "type": "string" }, { "type": "null" }]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

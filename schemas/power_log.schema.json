@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "power_log.schema.json",
+  "title": "Power Log",
+  "description": "Operational provenance records for facility power system events.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "entries"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "power_log_v1"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/PowerEntry"
+      }
+    }
+  },
+  "$defs": {
+    "PowerEntry": {
+      "type": "object",
+      "required": [
+        "entry_id",
+        "power_kind",
+        "status",
+        "recorded_by",
+        "timestamp_utc"
+      ],
+      "properties": {
+        "entry_id": { "type": "string" },
+        "power_kind": {
+          "type": "string",
+          "enum": [
+            "ups_event",
+            "mains_failure",
+            "generator_start",
+            "load_shed",
+            "power_restoration"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["normal", "degraded", "critical", "restored"]
+        },
+        "recorded_by": { "type": "string" },
+        "timestamp_utc": { "type": "string" },
+        "facility_id": {
+          "oneOf": [{ "type": "string" }, { "type": "null" }]
+        },
+        "duration_seconds": {
+          "oneOf": [{ "type": "number" }, { "type": "null" }]
+        },
+        "notes": {
+          "oneOf": [{ "type": "string" }, { "type": "null" }]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

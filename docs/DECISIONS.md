@@ -2191,3 +2191,17 @@ Three new operational log modules were added as part of Milestone 40.
 `time_synchronization_log` records operational provenance for time and clock synchronization events (NTP sync, GPS sync, manual correction, drift checks, epoch resets). Synchronization entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
 
 Schema count increased from 133 to 136. Consistency fixture updated: milestone 39→40, decision 86→87, schema_count 133→136.
+
+# DECISION-088: Antenna Pointing Log, Weather Log, And Power Log Complete Milestone 41
+
+Date: 2026-05-29
+
+Three new operational log modules were added as part of Milestone 41.
+
+`antenna_pointing_log` records operational provenance for antenna pointing and slew events (target slews, park/stow position moves, tracking start/end). Pointing entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+`weather_log` records operational provenance for site weather monitoring events (wind speed, temperature, humidity, precipitation, seeing). Weather entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+`power_log` records operational provenance for facility power system events (UPS events, mains failures, generator starts, load shedding, power restoration). Power entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+Schema count increased from 136 to 139. Consistency fixture updated: milestone 40→41, decision 87→88, schema_count 136→139.

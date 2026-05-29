@@ -1,0 +1,56 @@
+{
+  "schema_version": "power_log_v1",
+  "disclaimer": "Power log entries are operational provenance records — a power event record does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.",
+  "entries": [
+    {
+      "entry_id": "power-001",
+      "power_kind": "power_restoration",
+      "status": "normal",
+      "recorded_by": "operator-alpha",
+      "timestamp_utc": "2026-05-01T09:00:00Z",
+      "facility_id": "facility-gbt",
+      "duration_seconds": null,
+      "notes": "Mains power restored after scheduled maintenance. All systems nominal."
+    },
+    {
+      "entry_id": "power-002",
+      "power_kind": "ups_event",
+      "status": "normal",
+      "recorded_by": "operator-beta",
+      "timestamp_utc": "2026-05-02T11:00:00Z",
+      "facility_id": "facility-gbt",
+      "duration_seconds": 3.0,
+      "notes": "UPS transfer event during brief grid fluctuation. No data loss."
+    },
+    {
+      "entry_id": "power-003",
+      "power_kind": "mains_failure",
+      "status": "degraded",
+      "recorded_by": "operator-gamma",
+      "timestamp_utc": "2026-05-03T08:30:00Z",
+      "facility_id": "facility-gbt",
+      "duration_seconds": 45.0,
+      "notes": "Mains supply failure. UPS active. Generator starting."
+    },
+    {
+      "entry_id": "power-004",
+      "power_kind": "load_shed",
+      "status": "critical",
+      "recorded_by": "operator-alpha",
+      "timestamp_utc": "2026-05-04T13:00:00Z",
+      "facility_id": "facility-gbt",
+      "duration_seconds": 120.0,
+      "notes": "Load shed initiated. Non-essential systems powered down. Observations suspended."
+    },
+    {
+      "entry_id": "power-005",
+      "power_kind": "generator_start",
+      "status": "restored",
+      "recorded_by": "operator-beta",
+      "timestamp_utc": "2026-05-05T15:00:00Z",
+      "facility_id": "facility-gbt",
+      "duration_seconds": 8.0,
+      "notes": "Generator started successfully. Facility power restored to backup configuration."
+    }
+  ]
+}

@@ -1100,3 +1100,23 @@ introduced.
 - [x] `validate-all` gates: `instrument_configuration_entry_count >= 1`, `scan_entry_count >= 1`, `time_sync_entry_count >= 1`
 - [x] `validation-summary` fields: `instrument_configuration_entry_count`, `instrument_configuration_applied_count`, `scan_entry_count`, `scan_completed_count`, `time_synchronization_entry_count`, `time_synchronization_synchronized_count`
 - [x] DECISION-087: Instrument Configuration Log, Scan Log, And Time Synchronization Log Complete Milestone 40
+
+# Milestone 41 — Antenna Pointing Log, Weather Log, And Power Log
+
+- [x] `src/techno_search/antenna_pointing_log.py` — operational provenance records for antenna pointing and slew events; pointing_kinds: target_slew, park_position, stow_position, tracking_start, tracking_end; statuses: completed, failed, timeout, cancelled
+- [x] `schemas/antenna_pointing_log.schema.json`
+- [x] `tests/fixtures/antenna_pointing_log.json` — 5 entries (2 completed, 1 failed, 1 timeout, 1 cancelled)
+- [x] `tests/test_antenna_pointing_log.py` — 22 tests
+- [x] `src/techno_search/weather_log.py` — operational provenance records for site weather monitoring events; weather_kinds: wind_speed, temperature, humidity, precipitation, seeing; statuses: nominal, advisory, warning, observation_hold
+- [x] `schemas/weather_log.schema.json`
+- [x] `tests/fixtures/weather_log.json` — 5 entries (2 nominal, 1 advisory, 1 warning, 1 observation_hold)
+- [x] `tests/test_weather_log.py` — 22 tests
+- [x] `src/techno_search/power_log.py` — operational provenance records for facility power system events; power_kinds: ups_event, mains_failure, generator_start, load_shed, power_restoration; statuses: normal, degraded, critical, restored
+- [x] `schemas/power_log.schema.json`
+- [x] `tests/fixtures/power_log.json` — 5 entries (2 normal, 1 degraded, 1 critical, 1 restored)
+- [x] `tests/test_power_log.py` — 22 tests
+- [x] `antenna_pointing_log`, `weather_log`, `power_log` added to `SCHEMA_FILENAMES` (total schemas: 139)
+- [x] `techno-search antenna-pointing-summary`, `techno-search weather-summary`, `techno-search power-summary` CLI commands
+- [x] `validate-all` gates: `antenna_pointing_entry_count >= 1`, `weather_entry_count >= 1`, `power_entry_count >= 1`
+- [x] `validation-summary` fields: `antenna_pointing_entry_count`, `antenna_pointing_completed_count`, `weather_entry_count`, `weather_nominal_count`, `power_entry_count`, `power_normal_count`
+- [x] DECISION-088: Antenna Pointing Log, Weather Log, And Power Log Complete Milestone 41

@@ -1,7 +1,7 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-05-27
-**Current milestone:** 40 (Instrument Configuration Log, Scan Log, And Time Synchronization Log)
+**Last updated:** 2026-05-29
+**Current milestone:** 41 (Antenna Pointing Log, Weather Log, And Power Log)
 
 ---
 
@@ -20,10 +20,10 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Calibration fixture set (15 false-positive classes) | ✅ Complete |
 | Score regression + determinism checks | ✅ Complete |
 | Interpretable baseline classifier | ✅ Complete |
-| 136 JSON schema artifacts | ✅ Complete |
+| 139 JSON schema artifacts | ✅ Complete |
 | Local validation gate (`validate-all`) | ✅ Complete |
 | Provenance, audit trail, lifecycle tracking | ✅ Complete |
-| Operational log system (26 log types) | ✅ Complete |
+| Operational log system (29 log types) | ✅ Complete |
 | CI workflow (GitHub Actions) | ✅ Complete |
 | Real hit-table CSV reader (turboSETI format) | ✅ Complete |
 | Real Gaia+WISE catalog CSV reader (IRSA TAP format) | ✅ Complete |

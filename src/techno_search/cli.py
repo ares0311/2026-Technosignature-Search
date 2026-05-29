@@ -14,6 +14,7 @@ from typing import TextIO
 
 from techno_search.aggregate_blockers import aggregate_blockers_summary
 from techno_search.alert_resolution_log import alert_resolution_summary
+from techno_search.antenna_pointing_log import antenna_pointing_summary
 from techno_search.archival_query_log import archival_query_summary
 from techno_search.artifact_cleanup import (
     apply_artifact_cleanup,
@@ -213,6 +214,7 @@ from techno_search.pipeline_throughput import pipeline_throughput_summary
 from techno_search.pipeline_version_log import pipeline_version_summary
 from techno_search.plotting import plot_artifact_summary
 from techno_search.polarization_log import polarization_log_summary
+from techno_search.power_log import power_log_summary
 from techno_search.production_blocker_consistency import (
     production_blocker_consistency_summary,
 )
@@ -277,6 +279,7 @@ from techno_search.validation_datasets import (
     validation_promotion_summary,
     validation_readiness_summary,
 )
+from techno_search.weather_log import weather_log_summary
 from techno_search.weekly_review import build_weekly_review_template, write_weekly_review_template
 from techno_search.workflow_state_log import workflow_state_summary
 
@@ -435,6 +438,9 @@ SCHEMA_FILENAMES = {
     "instrument_configuration_log": "instrument_configuration_log.schema.json",
     "scan_log": "scan_log.schema.json",
     "time_synchronization_log": "time_synchronization_log.schema.json",
+    "antenna_pointing_log": "antenna_pointing_log.schema.json",
+    "weather_log": "weather_log.schema.json",
+    "power_log": "power_log.schema.json",
 }
 
 
@@ -3173,6 +3179,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(tsl_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "antenna-pointing-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        apl_out = antenna_pointing_summary(fixture_path)
+        print(json.dumps(apl_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "weather-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        wl_out = weather_log_summary(fixture_path)
+        print(json.dumps(wl_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "power-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        pl_out = power_log_summary(fixture_path)
+        print(json.dumps(pl_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -3799,6 +3823,15 @@ def validate_all() -> dict[str, object]:
     time_sync_data = time_synchronization_summary()
     time_sync_entry_count = int(time_sync_data.get("entry_count", 0))
     _time_sync_synchronized_count = int(time_sync_data.get("synchronized_count", 0))
+    antenna_pointing_data = antenna_pointing_summary()
+    antenna_pointing_entry_count = int(antenna_pointing_data.get("entry_count", 0))
+    _antenna_pointing_completed_count = int(antenna_pointing_data.get("completed_count", 0))
+    weather_data = weather_log_summary()
+    weather_entry_count = int(weather_data.get("entry_count", 0))
+    _weather_nominal_count = int(weather_data.get("nominal_count", 0))
+    power_data = power_log_summary()
+    power_entry_count = int(power_data.get("entry_count", 0))
+    _power_normal_count = int(power_data.get("normal_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -4577,6 +4610,12 @@ def validate_all() -> dict[str, object]:
         and scan_entry_count >= 1
         and isinstance(time_sync_entry_count, int)
         and time_sync_entry_count >= 1
+        and isinstance(antenna_pointing_entry_count, int)
+        and antenna_pointing_entry_count >= 1
+        and isinstance(weather_entry_count, int)
+        and weather_entry_count >= 1
+        and isinstance(power_entry_count, int)
+        and power_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -4829,6 +4868,9 @@ def validate_all() -> dict[str, object]:
         "instrument_configuration_log_summary": instrument_config_data,
         "scan_log_summary": scan_data,
         "time_synchronization_log_summary": time_sync_data,
+        "antenna_pointing_log_summary": antenna_pointing_data,
+        "weather_log_summary": weather_data,
+        "power_log_summary": power_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -7221,6 +7263,36 @@ def validation_summary() -> dict[str, object]:
             if isinstance(
                 tsl_s2 := validation.get("time_synchronization_log_summary"), dict
             )
+            else 0
+        ),
+        "antenna_pointing_entry_count": (
+            apl_s["entry_count"]
+            if isinstance(apl_s := validation.get("antenna_pointing_log_summary"), dict)
+            else 0
+        ),
+        "antenna_pointing_completed_count": (
+            apl_s2["completed_count"]
+            if isinstance(apl_s2 := validation.get("antenna_pointing_log_summary"), dict)
+            else 0
+        ),
+        "weather_entry_count": (
+            wl_s["entry_count"]
+            if isinstance(wl_s := validation.get("weather_log_summary"), dict)
+            else 0
+        ),
+        "weather_nominal_count": (
+            wl_s2["nominal_count"]
+            if isinstance(wl_s2 := validation.get("weather_log_summary"), dict)
+            else 0
+        ),
+        "power_entry_count": (
+            pl_s["entry_count"]
+            if isinstance(pl_s := validation.get("power_log_summary"), dict)
+            else 0
+        ),
+        "power_normal_count": (
+            pl_s2["normal_count"]
+            if isinstance(pl_s2 := validation.get("power_log_summary"), dict)
             else 0
         ),
         "labeled_candidate_count": (
@@ -9708,6 +9780,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     time_synchronization_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    antenna_pointing_parser = subparsers.add_parser(
+        "antenna-pointing-summary",
+        help=(
+            "Summarize antenna pointing log entries "
+            "(operational antenna pointing provenance records only)."
+        ),
+    )
+    antenna_pointing_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    weather_parser = subparsers.add_parser(
+        "weather-summary",
+        help=(
+            "Summarize weather log entries "
+            "(operational site weather monitoring provenance records only)."
+        ),
+    )
+    weather_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    power_parser = subparsers.add_parser(
+        "power-summary",
+        help=(
+            "Summarize power log entries "
+            "(operational facility power system provenance records only)."
+        ),
+    )
+    power_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

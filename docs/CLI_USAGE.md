@@ -2580,3 +2580,51 @@ Output fields: `schema_version`, `disclaimer`, `entry_count`, `synchronized_coun
 Time synchronization entries are operational clock synchronization provenance records —
 a synchronization record does not modify candidate scores or pathway routing, does not
 authorize external submission, and does not constitute a detection claim.
+
+## `antenna-pointing-summary`
+
+Print a summary of antenna pointing log entries.
+
+```bash
+.venv/bin/techno-search antenna-pointing-summary
+.venv/bin/techno-search antenna-pointing-summary --fixture-path tests/fixtures/antenna_pointing_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `completed_count`,
+`failed_count`, `timeout_count`, `cancelled_count`, `counts_by_kind`, `counts_by_status`.
+
+Antenna pointing entries are operational antenna pointing provenance records —
+a pointing record does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+## `weather-summary`
+
+Print a summary of weather log entries.
+
+```bash
+.venv/bin/techno-search weather-summary
+.venv/bin/techno-search weather-summary --fixture-path tests/fixtures/weather_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `nominal_count`,
+`advisory_count`, `warning_count`, `observation_hold_count`, `counts_by_kind`, `counts_by_status`.
+
+Weather log entries are operational site weather monitoring provenance records —
+a weather record does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+## `power-summary`
+
+Print a summary of power log entries.
+
+```bash
+.venv/bin/techno-search power-summary
+.venv/bin/techno-search power-summary --fixture-path tests/fixtures/power_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `normal_count`,
+`degraded_count`, `critical_count`, `restored_count`, `counts_by_kind`, `counts_by_status`.
+
+Power log entries are operational facility power system provenance records —
+a power event record does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
