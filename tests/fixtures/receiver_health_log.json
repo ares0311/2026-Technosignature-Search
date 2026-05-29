@@ -1,0 +1,60 @@
+{
+  "schema_version": "receiver_health_log_v1",
+  "entries": [
+    {
+      "entry_id": "rhl-001",
+      "run_id": "run-2026-01-10-a",
+      "health_kind": "gain_stability",
+      "status": "nominal",
+      "checked_by": "pipeline-auto",
+      "checked_at": "2026-01-10T06:00:00Z",
+      "metric_value": 0.98,
+      "threshold_value": 0.95,
+      "notes": null
+    },
+    {
+      "entry_id": "rhl-002",
+      "run_id": "run-2026-01-10-b",
+      "health_kind": "noise_temperature",
+      "status": "nominal",
+      "checked_by": "pipeline-auto",
+      "checked_at": "2026-01-10T06:05:00Z",
+      "metric_value": 22.5,
+      "threshold_value": 30.0,
+      "notes": null
+    },
+    {
+      "entry_id": "rhl-003",
+      "run_id": "run-2026-01-11-a",
+      "health_kind": "bandpass_flatness",
+      "status": "degraded",
+      "checked_by": "pipeline-auto",
+      "checked_at": "2026-01-11T06:10:00Z",
+      "metric_value": 0.82,
+      "threshold_value": 0.90,
+      "notes": "Bandpass ripple exceeds threshold; recommend recalibration"
+    },
+    {
+      "entry_id": "rhl-004",
+      "run_id": "run-2026-01-11-b",
+      "health_kind": "pointing_accuracy",
+      "status": "critical",
+      "checked_by": "operator-a",
+      "checked_at": "2026-01-11T10:30:00Z",
+      "metric_value": 5.8,
+      "threshold_value": 2.0,
+      "notes": "Pointing offset well above threshold; observation halted"
+    },
+    {
+      "entry_id": "rhl-005",
+      "run_id": "run-2026-01-12-a",
+      "health_kind": "focus_setting",
+      "status": "maintenance_required",
+      "checked_by": "operator-b",
+      "checked_at": "2026-01-12T08:00:00Z",
+      "metric_value": null,
+      "threshold_value": null,
+      "notes": "Focus actuator unresponsive; maintenance ticket filed"
+    }
+  ]
+}

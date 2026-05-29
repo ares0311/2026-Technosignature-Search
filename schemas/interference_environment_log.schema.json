@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "InterferenceEnvironmentLog",
+  "description": "Operational processing provenance records for interference environment assessments.",
+  "type": "object",
+  "required": ["schema_version", "entries"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "entry_id", "run_id",
+          "interference_kind", "status", "assessed_by", "assessed_at"
+        ],
+        "properties": {
+          "entry_id": {"type": "string"},
+          "run_id": {"type": "string"},
+          "interference_kind": {
+            "type": "string",
+            "enum": [
+              "local_rfi_survey",
+              "satellite_interference",
+              "ionospheric_event",
+              "anthropogenic_source",
+              "unknown_transient"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["assessed", "flagged", "cleared", "inconclusive"]
+          },
+          "assessed_by": {"type": "string"},
+          "assessed_at": {"type": "string"},
+          "frequency_mhz": {"type": ["number", "null"]},
+          "severity": {"type": ["string", "null"]},
+          "notes": {"type": ["string", "null"]}
+        }
+      }
+    }
+  }
+}
