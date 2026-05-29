@@ -1,0 +1,56 @@
+{
+  "schema_version": "time_synchronization_log_v1",
+  "disclaimer": "Time synchronization entries are operational provenance records — a synchronization record does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.",
+  "entries": [
+    {
+      "entry_id": "time-sync-001",
+      "sync_kind": "ntp_sync",
+      "status": "synchronized",
+      "recorded_by": "operator-alpha",
+      "recorded_at": "2026-05-01T00:00:00Z",
+      "offset_microseconds": 12.5,
+      "drift_rate_ppb": 0.3,
+      "notes": "NTP synchronization successful. Offset within acceptable range."
+    },
+    {
+      "entry_id": "time-sync-002",
+      "sync_kind": "gps_sync",
+      "status": "synchronized",
+      "recorded_by": "operator-beta",
+      "recorded_at": "2026-05-02T00:00:00Z",
+      "offset_microseconds": 0.8,
+      "drift_rate_ppb": 0.05,
+      "notes": "GPS synchronization successful. Sub-microsecond accuracy achieved."
+    },
+    {
+      "entry_id": "time-sync-003",
+      "sync_kind": "drift_check",
+      "status": "drifted",
+      "recorded_by": "operator-gamma",
+      "recorded_at": "2026-05-03T12:00:00Z",
+      "offset_microseconds": 850.0,
+      "drift_rate_ppb": 42.1,
+      "notes": "Clock drift detected. Offset exceeds threshold. Re-synchronization required."
+    },
+    {
+      "entry_id": "time-sync-004",
+      "sync_kind": "manual_correction",
+      "status": "failed",
+      "recorded_by": "operator-alpha",
+      "recorded_at": "2026-05-04T06:00:00Z",
+      "offset_microseconds": null,
+      "drift_rate_ppb": null,
+      "notes": "Manual time correction failed. NTP server unreachable. Escalated."
+    },
+    {
+      "entry_id": "time-sync-005",
+      "sync_kind": "epoch_reset",
+      "status": "not_required",
+      "recorded_by": "operator-beta",
+      "recorded_at": "2026-05-05T00:00:00Z",
+      "offset_microseconds": 5.2,
+      "drift_rate_ppb": 0.1,
+      "notes": "Epoch reset check performed. No reset required. System time within tolerance."
+    }
+  ]
+}

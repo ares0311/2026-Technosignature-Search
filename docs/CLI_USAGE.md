@@ -2532,3 +2532,51 @@ Output fields: `schema_version`, `disclaimer`, `entry_count`, `healthy_count`,
 System health entries are operational monitoring provenance records —
 a health record does not modify candidate scores or pathway routing, does not
 authorize external submission, and does not constitute a detection claim.
+
+## `instrument-configuration-summary`
+
+Print a summary of instrument configuration log entries.
+
+```bash
+.venv/bin/techno-search instrument-configuration-summary
+.venv/bin/techno-search instrument-configuration-summary --fixture-path tests/fixtures/instrument_configuration_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `applied_count`,
+`pending_count`, `reverted_count`, `failed_count`, `counts_by_kind`, `counts_by_status`.
+
+Instrument configuration entries are operational hardware provenance records —
+a configuration change does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+## `scan-log-summary`
+
+Print a summary of scan log entries.
+
+```bash
+.venv/bin/techno-search scan-log-summary
+.venv/bin/techno-search scan-log-summary --fixture-path tests/fixtures/scan_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `completed_count`,
+`aborted_count`, `flagged_count`, `pending_count`, `counts_by_kind`, `counts_by_status`.
+
+Scan log entries are operational telescope scan provenance records —
+a scan record does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+## `time-synchronization-summary`
+
+Print a summary of time synchronization log entries.
+
+```bash
+.venv/bin/techno-search time-synchronization-summary
+.venv/bin/techno-search time-synchronization-summary --fixture-path tests/fixtures/time_synchronization_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `synchronized_count`,
+`drifted_count`, `failed_count`, `not_required_count`, `counts_by_kind`, `counts_by_status`.
+
+Time synchronization entries are operational clock synchronization provenance records —
+a synchronization record does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.

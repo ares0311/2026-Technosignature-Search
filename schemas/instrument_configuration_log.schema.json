@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "instrument_configuration_log.schema.json",
+  "title": "Instrument Configuration Log",
+  "description": "Operational provenance records for instrument hardware configuration changes.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "entries"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "instrument_configuration_log_v1"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/InstrumentConfigurationEntry"
+      }
+    }
+  },
+  "$defs": {
+    "InstrumentConfigurationEntry": {
+      "type": "object",
+      "required": [
+        "entry_id",
+        "configuration_kind",
+        "status",
+        "configured_by",
+        "configured_at",
+        "instrument_id",
+        "track"
+      ],
+      "properties": {
+        "entry_id": { "type": "string" },
+        "configuration_kind": {
+          "type": "string",
+          "enum": [
+            "frontend_swap",
+            "backend_change",
+            "receiver_install",
+            "filter_change",
+            "attenuator_set"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["applied", "pending", "reverted", "failed"]
+        },
+        "configured_by": { "type": "string" },
+        "configured_at": { "type": "string" },
+        "instrument_id": { "type": "string" },
+        "track": { "type": "string" },
+        "previous_value": {
+          "oneOf": [{ "type": "string" }, { "type": "null" }]
+        },
+        "new_value": {
+          "oneOf": [{ "type": "string" }, { "type": "null" }]
+        },
+        "notes": {
+          "oneOf": [{ "type": "string" }, { "type": "null" }]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
