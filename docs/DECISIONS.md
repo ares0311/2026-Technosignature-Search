@@ -2101,3 +2101,43 @@ local readiness visibility gates only; they do not ingest real observation
 data, calibrate thresholds, clear blockers, authorize live data access,
 authorize external submission, or constitute detections, discoveries, or
 external validation.
+
+---
+
+# DECISION-077: Interference Environment Log, Receiver Health Log, And Pipeline Version Log Complete Milestone 29
+
+**Date:** 2026-05-29
+**Status:** Accepted
+
+## Context
+
+Milestone 29 requires operational provenance records for three additional pipeline subsystems:
+interference environment assessments, receiver hardware health checks, and pipeline component
+version tracking.
+
+## Decision
+
+Implement three operational log modules:
+
+1. `interference_environment_log` — operational processing provenance records for interference
+   environment assessments; interference_kinds: local_rfi_survey, satellite_interference,
+   ionospheric_event, anthropogenic_source, unknown_transient; statuses: assessed, flagged,
+   cleared, inconclusive
+2. `receiver_health_log` — operational scheduling provenance records for receiver hardware health
+   checks; health_kinds: gain_stability, noise_temperature, bandpass_flatness, pointing_accuracy,
+   focus_setting; statuses: nominal, degraded, critical, maintenance_required
+3. `pipeline_version_log` — operational reproducibility records for pipeline component version
+   tracking; version_kinds: scoring_engine, rfi_filter, catalog_client, feature_extractor,
+   baseline_model; statuses: active, deprecated, superseded, testing
+
+## Scientific Guardrail
+
+- Interference environment entries are operational processing provenance records — assessments do
+  not modify candidate scores or pathway routing, do not authorize external submission, and do not
+  constitute a detection claim
+- Receiver health entries are operational scheduling provenance records — health checks do not
+  modify candidate scores or pathway routing, do not authorize external submission, and do not
+  constitute a detection claim
+- Pipeline version entries are operational reproducibility records — version tracking does not
+  modify candidate scores or pathway routing, does not authorize external submission, and does not
+  constitute a detection claim

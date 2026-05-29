@@ -2436,3 +2436,51 @@ Output fields: `disclaimer`, `candidate_id`, `track`, `pathway`,
 scoring. Pipeline run results are local triage and provenance records only;
 they are not detections, discoveries, external validation, or authorization
 for external submission.
+
+## `interference-environment-summary`
+
+Print a summary of interference environment assessment log entries.
+
+```bash
+.venv/bin/techno-search interference-environment-summary
+.venv/bin/techno-search interference-environment-summary --fixture-path tests/fixtures/interference_environment_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `assessed_count`,
+`flagged_count`, `counts_by_kind`, `counts_by_status`.
+
+Interference environment entries are operational processing provenance records —
+assessments do not modify candidate scores or pathway routing, do not authorize
+external submission, and do not constitute a detection claim.
+
+## `receiver-health-summary`
+
+Print a summary of receiver health check log entries.
+
+```bash
+.venv/bin/techno-search receiver-health-summary
+.venv/bin/techno-search receiver-health-summary --fixture-path tests/fixtures/receiver_health_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `nominal_count`,
+`maintenance_required_count`, `counts_by_kind`, `counts_by_status`.
+
+Receiver health entries are operational scheduling provenance records —
+health checks do not modify candidate scores or pathway routing, do not authorize
+external submission, and do not constitute a detection claim.
+
+## `pipeline-version-summary`
+
+Print a summary of pipeline version tracking log entries.
+
+```bash
+.venv/bin/techno-search pipeline-version-summary
+.venv/bin/techno-search pipeline-version-summary --fixture-path tests/fixtures/pipeline_version_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `active_count`,
+`deprecated_count`, `counts_by_kind`, `counts_by_status`.
+
+Pipeline version entries are operational reproducibility records —
+version tracking does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
