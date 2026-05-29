@@ -2628,3 +2628,51 @@ Output fields: `schema_version`, `disclaimer`, `entry_count`, `normal_count`,
 Power log entries are operational facility power system provenance records —
 a power event record does not modify candidate scores or pathway routing, does not
 authorize external submission, and does not constitute a detection claim.
+
+## `cooling-system-summary`
+
+Print a summary of cooling system log entries.
+
+```bash
+.venv/bin/techno-search cooling-system-summary
+.venv/bin/techno-search cooling-system-summary --fixture-path tests/fixtures/cooling_system_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `operating_count`,
+`warning_count`, `fault_count`, `maintenance_count`, `counts_by_kind`, `counts_by_status`.
+
+Cooling system log entries are operational cryogenic and cooling system provenance records —
+a cooling system record does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+## `network-connectivity-summary`
+
+Print a summary of network connectivity log entries.
+
+```bash
+.venv/bin/techno-search network-connectivity-summary
+.venv/bin/techno-search network-connectivity-summary --fixture-path tests/fixtures/network_connectivity_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `connected_count`,
+`degraded_count`, `disconnected_count`, `restored_count`, `counts_by_kind`, `counts_by_status`.
+
+Network connectivity log entries are operational network infrastructure provenance records —
+a network event record does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+## `software-update-summary`
+
+Print a summary of software update log entries.
+
+```bash
+.venv/bin/techno-search software-update-summary
+.venv/bin/techno-search software-update-summary --fixture-path tests/fixtures/software_update_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `deployed_count`,
+`failed_count`, `rolled_back_count`, `pending_count`, `counts_by_kind`, `counts_by_status`.
+
+Software update log entries are operational software and firmware update provenance records —
+a software update record does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.

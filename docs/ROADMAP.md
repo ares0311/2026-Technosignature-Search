@@ -1120,3 +1120,23 @@ introduced.
 - [x] `validate-all` gates: `antenna_pointing_entry_count >= 1`, `weather_entry_count >= 1`, `power_entry_count >= 1`
 - [x] `validation-summary` fields: `antenna_pointing_entry_count`, `antenna_pointing_completed_count`, `weather_entry_count`, `weather_nominal_count`, `power_entry_count`, `power_normal_count`
 - [x] DECISION-088: Antenna Pointing Log, Weather Log, And Power Log Complete Milestone 41
+
+# Milestone 42 — Cooling System Log, Network Connectivity Log, And Software Update Log
+
+- [x] `src/techno_search/cooling_system_log.py` — operational provenance records for cryogenic and cooling system events; cooling_kinds: cooldown_start, cooldown_complete, warmup_event, temperature_alarm, helium_refill; statuses: operating, warning, fault, maintenance
+- [x] `schemas/cooling_system_log.schema.json`
+- [x] `tests/fixtures/cooling_system_log.json` — 5 entries (2 operating, 1 warning, 1 fault, 1 maintenance)
+- [x] `tests/test_cooling_system_log.py` — 22 tests
+- [x] `src/techno_search/network_connectivity_log.py` — operational provenance records for network infrastructure events; network_kinds: link_up, link_down, latency_spike, packet_loss, vpn_event; statuses: connected, degraded, disconnected, restored
+- [x] `schemas/network_connectivity_log.schema.json`
+- [x] `tests/fixtures/network_connectivity_log.json` — 5 entries (2 connected, 1 degraded, 1 disconnected, 1 restored)
+- [x] `tests/test_network_connectivity_log.py` — 22 tests
+- [x] `src/techno_search/software_update_log.py` — operational provenance records for software and firmware update events; update_kinds: pipeline_update, firmware_update, os_patch, driver_update, config_deploy; statuses: deployed, failed, rolled_back, pending
+- [x] `schemas/software_update_log.schema.json`
+- [x] `tests/fixtures/software_update_log.json` — 5 entries (2 deployed, 1 failed, 1 rolled_back, 1 pending)
+- [x] `tests/test_software_update_log.py` — 22 tests
+- [x] `cooling_system_log`, `network_connectivity_log`, `software_update_log` added to `SCHEMA_FILENAMES` (total schemas: 142)
+- [x] `techno-search cooling-system-summary`, `techno-search network-connectivity-summary`, `techno-search software-update-summary` CLI commands
+- [x] `validate-all` gates: `cooling_entry_count >= 1`, `network_entry_count >= 1`, `sw_update_entry_count >= 1`
+- [x] `validation-summary` fields: `cooling_system_entry_count`, `cooling_system_operating_count`, `network_connectivity_entry_count`, `network_connectivity_connected_count`, `software_update_entry_count`, `software_update_deployed_count`
+- [x] DECISION-089: Cooling System Log, Network Connectivity Log, And Software Update Log Complete Milestone 42
