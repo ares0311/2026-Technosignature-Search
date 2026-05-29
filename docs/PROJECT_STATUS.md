@@ -332,6 +332,7 @@ The project will support three tracks from day one:
       operational provenance records added
 - [x] Instrument configuration log, scan log, and time synchronization log
       operational provenance records added
+- [x] Antenna pointing log, weather log, and power log operational provenance records added
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions

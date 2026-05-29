@@ -1,11 +1,11 @@
 {
   "schema_version": "project_status_consistency_v1",
   "expected_status": {
-    "latest_milestone_number": 40,
-    "latest_milestone_label": "Instrument Configuration Log, Scan Log, And Time Synchronization Log",
-    "latest_decision_number": 87,
-    "schema_count": 136,
+    "latest_milestone_number": 41,
+    "latest_milestone_label": "Antenna Pointing Log, Weather Log, And Power Log",
+    "latest_decision_number": 88,
+    "schema_count": 139,
     "require_zero_real_data_authorization": true,
-    "project_status_completed_phrase": "Instrument configuration log, scan log, and time synchronization log operational provenance records added"
+    "project_status_completed_phrase": "Antenna pointing log, weather log, and power log operational provenance records added"
   }
 }

@@ -1,0 +1,61 @@
+{
+  "schema_version": "antenna_pointing_log_v1",
+  "disclaimer": "Antenna pointing log entries are operational provenance records — a pointing record does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.",
+  "entries": [
+    {
+      "entry_id": "apoint-001",
+      "pointing_kind": "target_slew",
+      "status": "completed",
+      "recorded_by": "operator-alpha",
+      "timestamp_utc": "2026-05-01T09:00:00Z",
+      "target_id": "radio-candidate-001",
+      "azimuth_deg": 145.3,
+      "elevation_deg": 42.7,
+      "notes": "Slew to target completed. Pointing within 2 arcsec of nominal."
+    },
+    {
+      "entry_id": "apoint-002",
+      "pointing_kind": "tracking_start",
+      "status": "completed",
+      "recorded_by": "operator-beta",
+      "timestamp_utc": "2026-05-02T11:00:00Z",
+      "target_id": "radio-candidate-002",
+      "azimuth_deg": 210.1,
+      "elevation_deg": 55.0,
+      "notes": "Tracking started successfully for scheduled observation window."
+    },
+    {
+      "entry_id": "apoint-003",
+      "pointing_kind": "park_position",
+      "status": "failed",
+      "recorded_by": "operator-gamma",
+      "timestamp_utc": "2026-05-03T08:30:00Z",
+      "target_id": null,
+      "azimuth_deg": null,
+      "elevation_deg": null,
+      "notes": "Park position move failed due to drive controller fault."
+    },
+    {
+      "entry_id": "apoint-004",
+      "pointing_kind": "stow_position",
+      "status": "timeout",
+      "recorded_by": "operator-alpha",
+      "timestamp_utc": "2026-05-04T13:00:00Z",
+      "target_id": null,
+      "azimuth_deg": null,
+      "elevation_deg": null,
+      "notes": "Stow command timed out. Wind hold in effect."
+    },
+    {
+      "entry_id": "apoint-005",
+      "pointing_kind": "tracking_end",
+      "status": "cancelled",
+      "recorded_by": "operator-beta",
+      "timestamp_utc": "2026-05-05T15:00:00Z",
+      "target_id": "infrared-candidate-003",
+      "azimuth_deg": 88.4,
+      "elevation_deg": 30.2,
+      "notes": "Tracking cancelled by operator due to scheduling conflict."
+    }
+  ]
+}
