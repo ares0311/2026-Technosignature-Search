@@ -2177,3 +2177,17 @@ consistency test fixtures so that `operations_action_resolution_consistency`,
 - System health entries are operational provenance records — a health record does not modify
   candidate scores or pathway routing, does not authorize external submission, and does not
   constitute a detection claim
+
+# DECISION-087: Instrument Configuration Log, Scan Log, And Time Synchronization Log Complete Milestone 40
+
+Date: 2026-05-29
+
+Three new operational log modules were added as part of Milestone 40.
+
+`instrument_configuration_log` records operational provenance for instrument hardware configuration changes (frontend swaps, backend changes, receiver installs, filter changes, attenuator settings). Configuration entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+`scan_log` records operational provenance for individual telescope scan events (on-source, off-source, calibrator, reference position, and slew scans). Scan entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+`time_synchronization_log` records operational provenance for time and clock synchronization events (NTP sync, GPS sync, manual correction, drift checks, epoch resets). Synchronization entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+Schema count increased from 133 to 136. Consistency fixture updated: milestone 39→40, decision 86→87, schema_count 133→136.

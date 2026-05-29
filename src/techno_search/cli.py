@@ -105,6 +105,7 @@ from techno_search.feature_normalization import feature_normalization_summary
 from techno_search.follow_up_request import follow_up_request_summary
 from techno_search.frequency_channel_log import frequency_channel_log_summary
 from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
+from techno_search.instrument_configuration_log import instrument_configuration_summary
 from techno_search.instrument_log import instrument_log_summary
 from techno_search.intake_queue_log import intake_queue_summary
 from techno_search.interference_environment_log import interference_environment_summary
@@ -238,6 +239,7 @@ from techno_search.review_queue import (
 from techno_search.rfi_database import rfi_database_summary
 from techno_search.rfi_database_admission import rfi_database_admission_summary
 from techno_search.rfi_mitigation_log import rfi_mitigation_summary
+from techno_search.scan_log import scan_log_summary
 from techno_search.scheduling_conflict_log import scheduling_conflict_summary
 from techno_search.schemas import Candidate, Track, candidate_from_mapping
 from techno_search.scoring import score_candidate
@@ -259,6 +261,7 @@ from techno_search.target_recalibration_summary import target_recalibration_summ
 from techno_search.target_selection_log import target_selection_summary
 from techno_search.target_watchlist import target_watchlist_summary
 from techno_search.telescope_status_log import telescope_status_log_summary
+from techno_search.time_synchronization_log import time_synchronization_summary
 from techno_search.top_level_sqlite_log_consistency import (
     top_level_sqlite_log_consistency_summary,
 )
@@ -429,6 +432,9 @@ SCHEMA_FILENAMES = {
     "data_transfer_log": "data_transfer_log.schema.json",
     "scheduling_conflict_log": "scheduling_conflict_log.schema.json",
     "system_health_log": "system_health_log.schema.json",
+    "instrument_configuration_log": "instrument_configuration_log.schema.json",
+    "scan_log": "scan_log.schema.json",
+    "time_synchronization_log": "time_synchronization_log.schema.json",
 }
 
 
@@ -3149,6 +3155,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(shl_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "instrument-configuration-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        icl_out = instrument_configuration_summary(fixture_path)
+        print(json.dumps(icl_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "scan-log-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        sl_out = scan_log_summary(fixture_path)
+        print(json.dumps(sl_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "time-synchronization-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        tsl_out = time_synchronization_summary(fixture_path)
+        print(json.dumps(tsl_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -3766,6 +3790,15 @@ def validate_all() -> dict[str, object]:
     system_health_data = system_health_summary()
     system_health_entry_count = int(system_health_data.get("entry_count", 0))
     _system_health_healthy_count = int(system_health_data.get("healthy_count", 0))
+    instrument_config_data = instrument_configuration_summary()
+    instrument_config_entry_count = int(instrument_config_data.get("entry_count", 0))
+    _instrument_config_applied_count = int(instrument_config_data.get("applied_count", 0))
+    scan_data = scan_log_summary()
+    scan_entry_count = int(scan_data.get("entry_count", 0))
+    _scan_completed_count = int(scan_data.get("completed_count", 0))
+    time_sync_data = time_synchronization_summary()
+    time_sync_entry_count = int(time_sync_data.get("entry_count", 0))
+    _time_sync_synchronized_count = int(time_sync_data.get("synchronized_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -4538,6 +4571,12 @@ def validate_all() -> dict[str, object]:
         and scheduling_conflict_entry_count >= 1
         and isinstance(system_health_entry_count, int)
         and system_health_entry_count >= 1
+        and isinstance(instrument_config_entry_count, int)
+        and instrument_config_entry_count >= 1
+        and isinstance(scan_entry_count, int)
+        and scan_entry_count >= 1
+        and isinstance(time_sync_entry_count, int)
+        and time_sync_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -4787,6 +4826,9 @@ def validate_all() -> dict[str, object]:
         "data_transfer_log_summary": data_transfer_data,
         "scheduling_conflict_log_summary": scheduling_conflict_data,
         "system_health_log_summary": system_health_data,
+        "instrument_configuration_log_summary": instrument_config_data,
+        "scan_log_summary": scan_data,
+        "time_synchronization_log_summary": time_sync_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -7140,6 +7182,44 @@ def validation_summary() -> dict[str, object]:
             shl_s2["healthy_count"]
             if isinstance(
                 shl_s2 := validation.get("system_health_log_summary"), dict
+            )
+            else 0
+        ),
+        "instrument_configuration_entry_count": (
+            icl_s["entry_count"]
+            if isinstance(
+                icl_s := validation.get("instrument_configuration_log_summary"), dict
+            )
+            else 0
+        ),
+        "instrument_configuration_applied_count": (
+            icl_s2["applied_count"]
+            if isinstance(
+                icl_s2 := validation.get("instrument_configuration_log_summary"), dict
+            )
+            else 0
+        ),
+        "scan_entry_count": (
+            sl_s["entry_count"]
+            if isinstance(sl_s := validation.get("scan_log_summary"), dict)
+            else 0
+        ),
+        "scan_completed_count": (
+            sl_s2["completed_count"]
+            if isinstance(sl_s2 := validation.get("scan_log_summary"), dict)
+            else 0
+        ),
+        "time_synchronization_entry_count": (
+            tsl_s["entry_count"]
+            if isinstance(
+                tsl_s := validation.get("time_synchronization_log_summary"), dict
+            )
+            else 0
+        ),
+        "time_synchronization_synchronized_count": (
+            tsl_s2["synchronized_count"]
+            if isinstance(
+                tsl_s2 := validation.get("time_synchronization_log_summary"), dict
             )
             else 0
         ),
@@ -9595,6 +9675,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     system_health_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    instrument_configuration_parser = subparsers.add_parser(
+        "instrument-configuration-summary",
+        help=(
+            "Summarize instrument configuration log entries "
+            "(operational hardware provenance records only)."
+        ),
+    )
+    instrument_configuration_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    scan_log_parser = subparsers.add_parser(
+        "scan-log-summary",
+        help=(
+            "Summarize scan log entries "
+            "(operational telescope scan provenance records only)."
+        ),
+    )
+    scan_log_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    time_synchronization_parser = subparsers.add_parser(
+        "time-synchronization-summary",
+        help=(
+            "Summarize time synchronization log entries "
+            "(operational clock synchronization provenance records only)."
+        ),
+    )
+    time_synchronization_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

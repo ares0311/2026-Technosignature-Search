@@ -330,6 +330,8 @@ The project will support three tracks from day one:
       and disabled authorization counts remain aligned
 - [x] Data transfer log, scheduling conflict log, and system health log
       operational provenance records added
+- [x] Instrument configuration log, scan log, and time synchronization log
+      operational provenance records added
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions

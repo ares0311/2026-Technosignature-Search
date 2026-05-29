@@ -407,6 +407,15 @@ from techno_search.injection_recovery import (
     injection_recovery_summary,
     load_injection_recovery_cases,
 )
+from techno_search.instrument_configuration_log import (
+    ALLOWED_CONFIGURATION_KINDS,
+    ALLOWED_CONFIGURATION_STATUSES,
+    INSTRUMENT_CONFIGURATION_LOG_DISCLAIMER,
+    INSTRUMENT_CONFIGURATION_LOG_SCHEMA_VERSION,
+    InstrumentConfigurationEntry,
+    instrument_configuration_summary,
+    load_instrument_configuration_entries,
+)
 from techno_search.instrument_log import (
     ALLOWED_EVENT_KINDS,
     ALLOWED_INSTRUMENT_KINDS,
@@ -839,6 +848,15 @@ from techno_search.review_queue import (
     load_review_queue_items,
     review_queue_summary,
 )
+from techno_search.scan_log import (
+    ALLOWED_SCAN_KINDS,
+    ALLOWED_SCAN_STATUSES,
+    SCAN_LOG_DISCLAIMER,
+    SCAN_LOG_SCHEMA_VERSION,
+    ScanEntry,
+    load_scan_entries,
+    scan_log_summary,
+)
 from techno_search.scheduling_conflict_log import (
     ALLOWED_CONFLICT_KINDS,
     ALLOWED_CONFLICT_STATUSES,
@@ -932,6 +950,15 @@ from techno_search.target_watchlist import (
     WatchlistEntry,
     load_watchlist_entries,
     target_watchlist_summary,
+)
+from techno_search.time_synchronization_log import (
+    ALLOWED_SYNC_KINDS,
+    ALLOWED_SYNC_STATUSES,
+    TIME_SYNCHRONIZATION_LOG_DISCLAIMER,
+    TIME_SYNCHRONIZATION_LOG_SCHEMA_VERSION,
+    TimeSynchronizationEntry,
+    load_time_synchronization_entries,
+    time_synchronization_summary,
 )
 from techno_search.top_level_sqlite_log_consistency import (
     TOP_LEVEL_SQLITE_LOG_CONSISTENCY_DISCLAIMER,
@@ -1724,4 +1751,25 @@ __all__ = [
     "SystemHealthEntry",
     "load_system_health_entries",
     "system_health_summary",
+    "ALLOWED_CONFIGURATION_KINDS",
+    "ALLOWED_CONFIGURATION_STATUSES",
+    "INSTRUMENT_CONFIGURATION_LOG_DISCLAIMER",
+    "INSTRUMENT_CONFIGURATION_LOG_SCHEMA_VERSION",
+    "InstrumentConfigurationEntry",
+    "instrument_configuration_summary",
+    "load_instrument_configuration_entries",
+    "ALLOWED_SCAN_KINDS",
+    "ALLOWED_SCAN_STATUSES",
+    "SCAN_LOG_DISCLAIMER",
+    "SCAN_LOG_SCHEMA_VERSION",
+    "ScanEntry",
+    "load_scan_entries",
+    "scan_log_summary",
+    "ALLOWED_SYNC_KINDS",
+    "ALLOWED_SYNC_STATUSES",
+    "TIME_SYNCHRONIZATION_LOG_DISCLAIMER",
+    "TIME_SYNCHRONIZATION_LOG_SCHEMA_VERSION",
+    "TimeSynchronizationEntry",
+    "load_time_synchronization_entries",
+    "time_synchronization_summary",
 ]

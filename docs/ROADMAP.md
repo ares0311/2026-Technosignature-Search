@@ -1080,3 +1080,23 @@ introduced.
 - [x] `validate-all` gates: `data_transfer_entry_count >= 1`, `scheduling_conflict_entry_count >= 1`, `system_health_entry_count >= 1`
 - [x] `validation-summary` fields: `data_transfer_entry_count`, `data_transfer_completed_count`, `scheduling_conflict_entry_count`, `scheduling_conflict_detected_count`, `system_health_entry_count`, `system_health_healthy_count`
 - [x] DECISION-086: Data Transfer Log, Scheduling Conflict Log, And System Health Log Complete Milestone 39
+
+# Milestone 40 — Instrument Configuration Log, Scan Log, And Time Synchronization Log
+
+- [x] `src/techno_search/instrument_configuration_log.py` — operational provenance records for instrument hardware configuration changes; configuration_kinds: frontend_swap, backend_change, receiver_install, filter_change, attenuator_set; statuses: applied, pending, reverted, failed
+- [x] `schemas/instrument_configuration_log.schema.json`
+- [x] `tests/fixtures/instrument_configuration_log.json` — 5 entries (2 applied, 1 pending, 1 reverted, 1 failed)
+- [x] `tests/test_instrument_configuration_log.py` — 22 tests
+- [x] `src/techno_search/scan_log.py` — operational provenance records for individual telescope scan events; scan_kinds: on_source, off_source, calibrator, reference_position, slew; statuses: completed, aborted, flagged, pending
+- [x] `schemas/scan_log.schema.json`
+- [x] `tests/fixtures/scan_log.json` — 5 entries (2 completed, 1 aborted, 1 flagged, 1 pending)
+- [x] `tests/test_scan_log.py` — 22 tests
+- [x] `src/techno_search/time_synchronization_log.py` — operational provenance records for time and clock synchronization events; sync_kinds: ntp_sync, gps_sync, manual_correction, drift_check, epoch_reset; statuses: synchronized, drifted, failed, not_required
+- [x] `schemas/time_synchronization_log.schema.json`
+- [x] `tests/fixtures/time_synchronization_log.json` — 5 entries (2 synchronized, 1 drifted, 1 failed, 1 not_required)
+- [x] `tests/test_time_synchronization_log.py` — 22 tests
+- [x] `instrument_configuration_log`, `scan_log`, `time_synchronization_log` added to `SCHEMA_FILENAMES` (total schemas: 136)
+- [x] `techno-search instrument-configuration-summary`, `techno-search scan-log-summary`, `techno-search time-synchronization-summary` CLI commands
+- [x] `validate-all` gates: `instrument_configuration_entry_count >= 1`, `scan_entry_count >= 1`, `time_sync_entry_count >= 1`
+- [x] `validation-summary` fields: `instrument_configuration_entry_count`, `instrument_configuration_applied_count`, `scan_entry_count`, `scan_completed_count`, `time_synchronization_entry_count`, `time_synchronization_synchronized_count`
+- [x] DECISION-087: Instrument Configuration Log, Scan Log, And Time Synchronization Log Complete Milestone 40

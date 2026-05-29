@@ -1,0 +1,61 @@
+{
+  "schema_version": "scan_log_v1",
+  "disclaimer": "Scan log entries are operational provenance records — a scan record does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.",
+  "entries": [
+    {
+      "entry_id": "scan-001",
+      "scan_kind": "on_source",
+      "status": "completed",
+      "recorded_by": "operator-alpha",
+      "scan_start": "2026-05-01T09:00:00Z",
+      "track": "radio",
+      "scan_duration_seconds": 300.0,
+      "target_name": "radio-candidate-001",
+      "notes": "On-source scan completed. No RFI flagged."
+    },
+    {
+      "entry_id": "scan-002",
+      "scan_kind": "calibrator",
+      "status": "completed",
+      "recorded_by": "operator-beta",
+      "scan_start": "2026-05-02T11:00:00Z",
+      "track": "radio",
+      "scan_duration_seconds": 60.0,
+      "target_name": "3C-286",
+      "notes": "Flux calibrator scan completed successfully."
+    },
+    {
+      "entry_id": "scan-003",
+      "scan_kind": "off_source",
+      "status": "aborted",
+      "recorded_by": "operator-gamma",
+      "scan_start": "2026-05-03T08:30:00Z",
+      "track": "infrared",
+      "scan_duration_seconds": null,
+      "target_name": null,
+      "notes": "Off-source scan aborted due to telescope pointing error."
+    },
+    {
+      "entry_id": "scan-004",
+      "scan_kind": "reference_position",
+      "status": "flagged",
+      "recorded_by": "operator-alpha",
+      "scan_start": "2026-05-04T13:00:00Z",
+      "track": "infrared",
+      "scan_duration_seconds": 120.0,
+      "target_name": null,
+      "notes": "Reference position scan flagged for elevated sky background."
+    },
+    {
+      "entry_id": "scan-005",
+      "scan_kind": "slew",
+      "status": "pending",
+      "recorded_by": "operator-beta",
+      "scan_start": "2026-05-05T15:00:00Z",
+      "track": "anomaly",
+      "scan_duration_seconds": null,
+      "target_name": "anomaly-candidate-005",
+      "notes": "Slew to target position pending scheduling confirmation."
+    }
+  ]
+}
