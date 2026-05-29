@@ -2484,3 +2484,51 @@ Output fields: `schema_version`, `disclaimer`, `entry_count`, `active_count`,
 Pipeline version entries are operational reproducibility records —
 version tracking does not modify candidate scores or pathway routing, does not
 authorize external submission, and does not constitute a detection claim.
+
+## `data-transfer-summary`
+
+Print a summary of data transfer log entries.
+
+```bash
+.venv/bin/techno-search data-transfer-summary
+.venv/bin/techno-search data-transfer-summary --fixture-path tests/fixtures/data_transfer_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `completed_count`,
+`pending_count`, `failed_count`, `verified_count`, `counts_by_kind`, `counts_by_track`.
+
+Data transfer entries are operational provenance records —
+a transfer record does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+## `scheduling-conflict-summary`
+
+Print a summary of scheduling conflict log entries.
+
+```bash
+.venv/bin/techno-search scheduling-conflict-summary
+.venv/bin/techno-search scheduling-conflict-summary --fixture-path tests/fixtures/scheduling_conflict_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `detected_count`,
+`resolved_count`, `escalated_count`, `deferred_count`, `counts_by_kind`.
+
+Scheduling conflict entries are operational provenance records —
+a conflict record does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+## `system-health-summary`
+
+Print a summary of system health log entries.
+
+```bash
+.venv/bin/techno-search system-health-summary
+.venv/bin/techno-search system-health-summary --fixture-path tests/fixtures/system_health_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `healthy_count`,
+`warning_count`, `critical_count`, `unknown_count`, `counts_by_kind`.
+
+System health entries are operational monitoring provenance records —
+a health record does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.

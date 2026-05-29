@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DataTransferLog",
+  "description": "Operational provenance records for data transfer events. Transfer records do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "entries"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "data_transfer_log_v1"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "entry_id",
+          "candidate_id",
+          "track",
+          "transfer_kind",
+          "status",
+          "initiated_by",
+          "initiated_at"
+        ],
+        "properties": {
+          "entry_id": { "type": "string" },
+          "candidate_id": { "type": "string" },
+          "track": {
+            "type": "string",
+            "enum": ["radio", "infrared", "anomaly"]
+          },
+          "transfer_kind": {
+            "type": "string",
+            "enum": [
+              "archive_transfer",
+              "inter_site_transfer",
+              "local_copy",
+              "cloud_upload",
+              "network_delivery"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "completed", "failed", "verified"]
+          },
+          "initiated_by": { "type": "string" },
+          "initiated_at": { "type": "string" },
+          "source_path": {
+            "oneOf": [{ "type": "string" }, { "type": "null" }]
+          },
+          "destination_path": {
+            "oneOf": [{ "type": "string" }, { "type": "null" }]
+          },
+          "bytes_transferred": {
+            "oneOf": [{ "type": "integer" }, { "type": "null" }]
+          },
+          "notes": {
+            "oneOf": [{ "type": "string" }, { "type": "null" }]
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

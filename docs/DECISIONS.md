@@ -2141,3 +2141,39 @@ Implement three operational log modules:
 - Pipeline version entries are operational reproducibility records — version tracking does not
   modify candidate scores or pathway routing, does not authorize external submission, and does not
   constitute a detection claim
+
+---
+
+# DECISION-086: Data Transfer Log, Scheduling Conflict Log, And System Health Log Complete Milestone 39
+
+**Date:** 2026-05-29
+
+**Decision:** Add operational provenance records for data transfer events, scheduling conflict
+events, and system health monitoring events as part of Milestone 39. Also repair three pre-existing
+consistency test fixtures so that `operations_action_resolution_consistency`,
+`operations_blocker_progress_consistency`, and `top_level_sqlite_log_consistency` tests pass.
+
+## Rationale
+
+1. `data_transfer_log` — operational provenance records for data movement between local storage,
+   archive, and staging locations; transfer_kinds: archive_transfer, inter_site_transfer, local_copy,
+   cloud_upload, network_delivery; statuses: pending, completed, failed, verified
+2. `scheduling_conflict_log` — operational provenance records for scheduling conflict events that
+   affect observation planning; conflict_kinds: time_slot_overlap, resource_contention,
+   priority_conflict, maintenance_window, weather_hold; statuses: detected, resolved, escalated,
+   deferred
+3. `system_health_log` — operational provenance records for system health monitoring measurements;
+   health_kinds: cpu_usage, memory_usage, disk_space, network_latency, process_uptime; statuses:
+   healthy, warning, critical, unknown
+
+## Scientific Guardrail
+
+- Data transfer entries are operational provenance records — a transfer record does not modify
+  candidate scores or pathway routing, does not authorize external submission, and does not
+  constitute a detection claim
+- Scheduling conflict entries are operational provenance records — a conflict record does not modify
+  candidate scores or pathway routing, does not authorize external submission, and does not
+  constitute a detection claim
+- System health entries are operational provenance records — a health record does not modify
+  candidate scores or pathway routing, does not authorize external submission, and does not
+  constitute a detection claim

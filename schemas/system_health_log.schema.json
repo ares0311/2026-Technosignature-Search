@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SystemHealthLog",
+  "description": "Operational provenance records for system health monitoring events. Health records do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "entries"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "system_health_log_v1"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "entry_id",
+          "health_kind",
+          "status",
+          "recorded_by",
+          "recorded_at"
+        ],
+        "properties": {
+          "entry_id": { "type": "string" },
+          "health_kind": {
+            "type": "string",
+            "enum": [
+              "cpu_usage",
+              "memory_usage",
+              "disk_space",
+              "network_latency",
+              "process_uptime"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["healthy", "warning", "critical", "unknown"]
+          },
+          "recorded_by": { "type": "string" },
+          "recorded_at": { "type": "string" },
+          "metric_value": {
+            "oneOf": [{ "type": "number" }, { "type": "null" }]
+          },
+          "metric_unit": {
+            "oneOf": [{ "type": "string" }, { "type": "null" }]
+          },
+          "threshold": {
+            "oneOf": [{ "type": "number" }, { "type": "null" }]
+          },
+          "notes": {
+            "oneOf": [{ "type": "string" }, { "type": "null" }]
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
