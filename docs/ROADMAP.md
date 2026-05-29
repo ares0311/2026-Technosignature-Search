@@ -918,3 +918,26 @@ introduced.
 - [x] `validate-all` gates: `target_selection_entry_count >= 1`, `doppler_correction_entry_count >= 1`, `data_archival_entry_count >= 1`
 - [x] `validation-summary` fields: `target_selection_entry_count`, `target_selection_selected_count`, `doppler_correction_entry_count`, `doppler_correction_applied_count`, `data_archival_entry_count`, `data_archival_archived_count`
 - [x] DECISION-075: Target Selection Log, Doppler Correction Log, And Data Archival Log Complete Milestone 28
+
+# Milestone 29 — Interference Environment Log, Receiver Health Log, And Pipeline Version Log
+
+- [x] `src/techno_search/interference_environment_log.py` — operational processing provenance records for interference environment assessments
+- [x] `schemas/interference_environment_log.schema.json`
+- [x] `tests/fixtures/interference_environment_log.json` — 5 entries (2 assessed, 1 flagged, 1 cleared, 1 inconclusive)
+- [x] `tests/test_interference_environment_log.py` — 22 tests
+- [x] `techno-search interference-environment-summary` CLI command
+- [x] `validate-all` gate: `interference_env_entry_count >= 1`
+- [x] `src/techno_search/receiver_health_log.py` — operational scheduling provenance records for receiver hardware health checks
+- [x] `schemas/receiver_health_log.schema.json`
+- [x] `tests/fixtures/receiver_health_log.json` — 5 entries (2 nominal, 1 degraded, 1 critical, 1 maintenance_required)
+- [x] `tests/test_receiver_health_log.py` — 22 tests
+- [x] `techno-search receiver-health-summary` CLI command
+- [x] `validate-all` gate: `receiver_health_entry_count >= 1`
+- [x] `src/techno_search/pipeline_version_log.py` — operational reproducibility records for pipeline component version tracking
+- [x] `schemas/pipeline_version_log.schema.json`
+- [x] `tests/fixtures/pipeline_version_log.json` — 5 entries (2 active, 1 deprecated, 1 superseded, 1 testing)
+- [x] `tests/test_pipeline_version_log.py` — 22 tests
+- [x] `techno-search pipeline-version-summary` CLI command
+- [x] `validate-all` gate: `pipeline_version_entry_count >= 1`
+- [x] `interference_environment_log`, `receiver_health_log`, `pipeline_version_log` added to `SCHEMA_FILENAMES` (total schemas: 119)
+- [x] DECISION-076: Interference Environment Log, Receiver Health Log, And Pipeline Version Log Complete Milestone 29

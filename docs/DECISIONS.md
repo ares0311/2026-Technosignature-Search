@@ -1774,3 +1774,20 @@ Implement three new log types:
 
 ## Consequences
 Schema count grows from 113 to 116. All three log types carry explicit guardrails that entries are operational provenance records only and do not modify candidate scores, pathway routing, or authorize external submission.
+
+# DECISION-076: Interference Environment Log, Receiver Health Log, And Pipeline Version Log Complete Milestone 29
+
+Date: 2026-05-29
+Status: accepted
+
+## Context
+Milestone 29 extends the operational log system with interference environment assessment, receiver hardware health, and pipeline component version provenance records.
+
+## Decision
+Implement three new log types:
+- `interference_environment_log` — operational processing provenance records for local RFI environment assessments; interference_kinds: local_rfi_survey, satellite_interference, ionospheric_event, anthropogenic_source, unknown_transient; statuses: assessed, flagged, cleared, inconclusive
+- `receiver_health_log` — operational scheduling provenance records for receiver/front-end hardware health checks; health_kinds: gain_stability, noise_temperature, bandpass_flatness, pointing_accuracy, focus_setting; statuses: nominal, degraded, critical, maintenance_required
+- `pipeline_version_log` — operational reproducibility records for pipeline component version tracking; version_kinds: scoring_engine, rfi_filter, catalog_client, feature_extractor, baseline_model; statuses: active, deprecated, superseded, testing
+
+## Consequences
+Schema count grows from 116 to 119. All three log types carry explicit guardrails that entries are operational provenance/reproducibility records only and do not modify candidate scores, pathway routing, or authorize external submission. validate-all gates enforce entry_count >= 1 for each new log type.

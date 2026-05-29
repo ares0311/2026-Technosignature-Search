@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PipelineVersionLog",
+  "description": "Operational reproducibility records for pipeline component version tracking.",
+  "type": "object",
+  "required": ["schema_version", "entries"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "entry_id", "run_id",
+          "version_kind", "status", "version_string", "recorded_by", "recorded_at"
+        ],
+        "properties": {
+          "entry_id": {"type": "string"},
+          "run_id": {"type": "string"},
+          "version_kind": {
+            "type": "string",
+            "enum": [
+              "scoring_engine",
+              "rfi_filter",
+              "catalog_client",
+              "feature_extractor",
+              "baseline_model"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["active", "deprecated", "superseded", "testing"]
+          },
+          "version_string": {"type": "string"},
+          "recorded_by": {"type": "string"},
+          "recorded_at": {"type": "string"},
+          "component_name": {"type": ["string", "null"]},
+          "notes": {"type": ["string", "null"]}
+        }
+      }
+    }
+  }
+}

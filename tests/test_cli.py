@@ -345,6 +345,9 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "target_selection_log",
         "doppler_correction_log",
         "data_archival_log",
+        "interference_environment_log",
+        "receiver_health_log",
+        "pipeline_version_log",
     }
     assert result["background_search_ledger"].endswith(
         "schemas/background_search_ledger.schema.json"
@@ -1483,7 +1486,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 116
+    assert result["schema_count"] == 119
     assert result["schemas_ok"] is True
     assert result["calibration_fixture_count"] == 15
     assert result["calibration_track_count"] == 3

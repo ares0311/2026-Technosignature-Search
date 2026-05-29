@@ -2296,3 +2296,42 @@ techno-search data-archival-summary --fixture-path tests/fixtures/data_archival_
 Output fields: `entry_count`, `archived_count`, `pending_count`, `failed_count`, `deleted_count`, `counts_by_kind`, `counts_by_track`, `schema_version`, `disclaimer`.
 
 Data archival entries are operational provenance records — an archival record does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.
+
+## `interference-environment-summary`
+
+Summarize interference environment log entries.
+
+```bash
+techno-search interference-environment-summary
+techno-search interference-environment-summary --fixture-path tests/fixtures/interference_environment_log.json
+```
+
+Output fields: `entry_count`, `assessed_count`, `flagged_count`, `cleared_count`, `inconclusive_count`, `counts_by_kind`, `schema_version`, `disclaimer`.
+
+Interference environment entries are operational processing provenance records — an assessment does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.
+
+## `receiver-health-summary`
+
+Summarize receiver health log entries.
+
+```bash
+techno-search receiver-health-summary
+techno-search receiver-health-summary --fixture-path tests/fixtures/receiver_health_log.json
+```
+
+Output fields: `entry_count`, `nominal_count`, `degraded_count`, `critical_count`, `maintenance_required_count`, `counts_by_kind`, `schema_version`, `disclaimer`.
+
+Receiver health entries are operational scheduling provenance records — a health check does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.
+
+## `pipeline-version-summary`
+
+Summarize pipeline version log entries.
+
+```bash
+techno-search pipeline-version-summary
+techno-search pipeline-version-summary --fixture-path tests/fixtures/pipeline_version_log.json
+```
+
+Output fields: `entry_count`, `active_count`, `deprecated_count`, `superseded_count`, `testing_count`, `counts_by_kind`, `schema_version`, `disclaimer`.
+
+Pipeline version entries are operational reproducibility records — version tracking does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.

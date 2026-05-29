@@ -105,6 +105,7 @@ from techno_search.frequency_channel_log import frequency_channel_log_summary
 from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
 from techno_search.instrument_log import instrument_log_summary
 from techno_search.intake_queue_log import intake_queue_summary
+from techno_search.interference_environment_log import interference_environment_summary
 from techno_search.live_data import (
     CatalogCache,
     CatalogCachePolicy,
@@ -197,12 +198,14 @@ from techno_search.pipeline_replay_log import pipeline_replay_summary
 from techno_search.pipeline_run_log import pipeline_run_log_summary
 from techno_search.pipeline_telemetry import pipeline_telemetry_summary
 from techno_search.pipeline_throughput import pipeline_throughput_summary
+from techno_search.pipeline_version_log import pipeline_version_summary
 from techno_search.plotting import plot_artifact_summary
 from techno_search.polarization_log import polarization_log_summary
 from techno_search.provenance import provenance_chain_validator
 from techno_search.provenance_audit import provenance_audit_summary
 from techno_search.quality_control_summary import quality_control_summary
 from techno_search.quality_gate_log import quality_gate_summary
+from techno_search.receiver_health_log import receiver_health_summary
 from techno_search.reporting import (
     candidate_packet_json,
     write_candidate_reports,
@@ -378,6 +381,9 @@ SCHEMA_FILENAMES = {
     "target_selection_log": "target_selection_log.schema.json",
     "doppler_correction_log": "doppler_correction_log.schema.json",
     "data_archival_log": "data_archival_log.schema.json",
+    "interference_environment_log": "interference_environment_log.schema.json",
+    "receiver_health_log": "receiver_health_log.schema.json",
+    "pipeline_version_log": "pipeline_version_log.schema.json",
 }
 
 
@@ -2941,6 +2947,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(dal_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "interference-environment-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        iel_out = interference_environment_summary(fixture_path)
+        print(json.dumps(iel_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "receiver-health-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        rhl_out = receiver_health_summary(fixture_path)
+        print(json.dumps(rhl_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "pipeline-version-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        pvl_out = pipeline_version_summary(fixture_path)
+        print(json.dumps(pvl_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -3486,6 +3510,21 @@ def validate_all() -> dict[str, object]:
     data_archival_data = data_archival_summary()
     data_archival_entry_count = int(data_archival_data.get("entry_count", 0))
     _data_archival_archived_count = int(data_archival_data.get("archived_count", 0))
+    interference_env_data = interference_environment_summary()
+    interference_env_entry_count = int(interference_env_data.get("entry_count", 0))
+    _interference_env_assessed_count = int(
+        interference_env_data.get("assessed_count", 0)
+    )
+    receiver_health_data = receiver_health_summary()
+    receiver_health_entry_count = int(receiver_health_data.get("entry_count", 0))
+    _receiver_health_nominal_count = int(
+        receiver_health_data.get("nominal_count", 0)
+    )
+    pipeline_version_data = pipeline_version_summary()
+    pipeline_version_entry_count = int(pipeline_version_data.get("entry_count", 0))
+    _pipeline_version_active_count = int(
+        pipeline_version_data.get("active_count", 0)
+    )
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -4169,6 +4208,12 @@ def validate_all() -> dict[str, object]:
         and doppler_correction_entry_count >= 1
         and isinstance(data_archival_entry_count, int)
         and data_archival_entry_count >= 1
+        and isinstance(interference_env_entry_count, int)
+        and interference_env_entry_count >= 1
+        and isinstance(receiver_health_entry_count, int)
+        and receiver_health_entry_count >= 1
+        and isinstance(pipeline_version_entry_count, int)
+        and pipeline_version_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -4400,6 +4445,9 @@ def validate_all() -> dict[str, object]:
         "target_selection_log_summary": target_selection_data,
         "doppler_correction_log_summary": doppler_correction_data,
         "data_archival_log_summary": data_archival_data,
+        "interference_environment_log_summary": interference_env_data,
+        "receiver_health_log_summary": receiver_health_data,
+        "pipeline_version_log_summary": pipeline_version_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -6390,6 +6438,48 @@ def validation_summary() -> dict[str, object]:
             dal_s2["archived_count"]
             if isinstance(
                 dal_s2 := validation.get("data_archival_log_summary"), dict
+            )
+            else 0
+        ),
+        "interference_env_entry_count": (
+            iel_s["entry_count"]
+            if isinstance(
+                iel_s := validation.get("interference_environment_log_summary"), dict
+            )
+            else 0
+        ),
+        "interference_env_assessed_count": (
+            iel_s2["assessed_count"]
+            if isinstance(
+                iel_s2 := validation.get("interference_environment_log_summary"), dict
+            )
+            else 0
+        ),
+        "receiver_health_entry_count": (
+            rhl_s["entry_count"]
+            if isinstance(
+                rhl_s := validation.get("receiver_health_log_summary"), dict
+            )
+            else 0
+        ),
+        "receiver_health_nominal_count": (
+            rhl_s2["nominal_count"]
+            if isinstance(
+                rhl_s2 := validation.get("receiver_health_log_summary"), dict
+            )
+            else 0
+        ),
+        "pipeline_version_entry_count": (
+            pvl_s["entry_count"]
+            if isinstance(
+                pvl_s := validation.get("pipeline_version_log_summary"), dict
+            )
+            else 0
+        ),
+        "pipeline_version_active_count": (
+            pvl_s2["active_count"]
+            if isinstance(
+                pvl_s2 := validation.get("pipeline_version_log_summary"), dict
             )
             else 0
         ),
@@ -8681,6 +8771,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     data_archival_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    interference_environment_parser = subparsers.add_parser(
+        "interference-environment-summary",
+        help=(
+            "Summarize interference environment log entries "
+            "(operational processing provenance records only)."
+        ),
+    )
+    interference_environment_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    receiver_health_parser = subparsers.add_parser(
+        "receiver-health-summary",
+        help=(
+            "Summarize receiver health log entries "
+            "(operational scheduling provenance records only)."
+        ),
+    )
+    receiver_health_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    pipeline_version_parser = subparsers.add_parser(
+        "pipeline-version-summary",
+        help=(
+            "Summarize pipeline version log entries "
+            "(operational reproducibility records only)."
+        ),
+    )
+    pipeline_version_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

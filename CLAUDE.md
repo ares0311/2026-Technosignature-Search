@@ -10,6 +10,63 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
+User requested implementation of Milestone 29 (interference environment log, receiver health log, pipeline version log).
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all steps implemented, tested, and validated.
+
+Added:
+
+- `src/techno_search/interference_environment_log.py` — operational processing provenance records for interference environment assessments; interference_kinds: local_rfi_survey, satellite_interference, ionospheric_event, anthropogenic_source, unknown_transient; statuses: assessed, flagged, cleared, inconclusive
+- `schemas/interference_environment_log.schema.json`
+- `tests/fixtures/interference_environment_log.json` — 5 entries (2 assessed, 1 flagged, 1 cleared, 1 inconclusive)
+- `tests/test_interference_environment_log.py` — 22 tests
+- `src/techno_search/receiver_health_log.py` — operational scheduling provenance records for receiver hardware health checks; health_kinds: gain_stability, noise_temperature, bandpass_flatness, pointing_accuracy, focus_setting; statuses: nominal, degraded, critical, maintenance_required
+- `schemas/receiver_health_log.schema.json`
+- `tests/fixtures/receiver_health_log.json` — 5 entries (2 nominal, 1 degraded, 1 critical, 1 maintenance_required)
+- `tests/test_receiver_health_log.py` — 22 tests
+- `src/techno_search/pipeline_version_log.py` — operational reproducibility records for pipeline component version tracking; version_kinds: scoring_engine, rfi_filter, catalog_client, feature_extractor, baseline_model; statuses: active, deprecated, superseded, testing
+- `schemas/pipeline_version_log.schema.json`
+- `tests/fixtures/pipeline_version_log.json` — 5 entries (2 active, 1 deprecated, 1 superseded, 1 testing)
+- `tests/test_pipeline_version_log.py` — 22 tests
+- `interference_environment_log`, `receiver_health_log`, `pipeline_version_log` added to `SCHEMA_FILENAMES` (total schemas: 119)
+- `techno-search interference-environment-summary`, `techno-search receiver-health-summary`, `techno-search pipeline-version-summary` CLI commands
+- `validate-all` gates: `interference_env_entry_count >= 1`, `receiver_health_entry_count >= 1`, `pipeline_version_entry_count >= 1`
+- `validation-summary` fields: `interference_env_entry_count`, `interference_env_assessed_count`, `receiver_health_entry_count`, `receiver_health_nominal_count`, `pipeline_version_entry_count`, `pipeline_version_active_count`
+- DECISION-076: Interference Environment Log, Receiver Health Log, And Pipeline Version Log Complete Milestone 29
+
+Scientific guardrail:
+
+- Interference environment entries are operational processing provenance records — an assessment does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim
+- Receiver health entries are operational scheduling provenance records — a health check does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim
+- Pipeline version entries are operational reproducibility records — version tracking does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --tb=short -q
+.venv/bin/ruff check .
+.venv/bin/mypy src --no-error-summary
+git diff --check
+.venv/bin/techno-search validate-all
+```
+
+Result:
+
+- 2349 tests passed
+- 7 tests skipped
+- Ruff passed
+- mypy passed
+- diff whitespace check passed
+- `validate-all` ok=True
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed.
+
+---
+
+## Previous Iteration
+
 User requested implementation of Milestone 28 (target selection log, Doppler correction log, data archival log).
 
 Current branch: `claude/general-session-Bb2dZ`.
