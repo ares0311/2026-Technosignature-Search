@@ -211,6 +211,7 @@ from techno_search.operator_assignment import operator_assignment_summary
 from techno_search.operator_escalation_log import operator_escalation_summary
 from techno_search.operator_handoff_template import operator_handoff_summary
 from techno_search.operator_performance import operator_performance_summary
+from techno_search.performance_monitoring_log import performance_monitoring_summary
 from techno_search.pipeline_audit_summary import pipeline_audit_summary
 from techno_search.pipeline_bottleneck import pipeline_bottleneck_summary
 from techno_search.pipeline_capacity import pipeline_capacity_summary
@@ -269,6 +270,7 @@ from techno_search.signal_registry import (
     signal_registry_summary,
     signal_registry_track_summary,
 )
+from techno_search.software_deployment_log import software_deployment_summary
 from techno_search.software_update_log import software_update_summary
 from techno_search.source_catalog_log import source_catalog_log_summary
 from techno_search.spectral_feature_log import spectral_feature_log_summary
@@ -283,6 +285,7 @@ from techno_search.top_level_sqlite_log_consistency import (
     top_level_sqlite_log_consistency_summary,
 )
 from techno_search.track_comparison import track_comparison_summary
+from techno_search.user_activity_log import user_activity_summary
 from techno_search.validation import (
     validate_candidate_file,
     validate_draft_report_directory,
@@ -471,6 +474,9 @@ SCHEMA_FILENAMES = {
     "change_management_log": "change_management_log.schema.json",
     "compliance_report_log": "compliance_report_log.schema.json",
     "risk_assessment_log": "risk_assessment_log.schema.json",
+    "software_deployment_log": "software_deployment_log.schema.json",
+    "performance_monitoring_log": "performance_monitoring_log.schema.json",
+    "user_activity_log": "user_activity_log.schema.json",
 }
 
 
@@ -3315,6 +3321,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(cp_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "software-deployment-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        sd_out = software_deployment_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(sd_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "performance-monitoring-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        pm_out = performance_monitoring_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(pm_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "user-activity-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        ua_out = user_activity_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(ua_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -3992,6 +4016,15 @@ def validate_all() -> dict[str, object]:
     capacity_planning_data = capacity_planning_summary()
     capacity_planning_entry_count = int(capacity_planning_data.get("entry_count", 0))
     _capacity_planning_adequate_count = int(capacity_planning_data.get("adequate_count", 0))
+    software_deployment_data = software_deployment_summary()
+    software_deployment_entry_count = int(software_deployment_data.get("entry_count", 0))
+    _software_deployment_completed_count = int(software_deployment_data.get("completed_count", 0))
+    performance_monitoring_data = performance_monitoring_summary()
+    performance_monitoring_entry_count = int(performance_monitoring_data.get("entry_count", 0))
+    _performance_monitoring_normal_count = int(performance_monitoring_data.get("normal_count", 0))
+    user_activity_data = user_activity_summary()
+    user_activity_entry_count = int(user_activity_data.get("entry_count", 0))
+    _user_activity_succeeded_count = int(user_activity_data.get("succeeded_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -4806,6 +4839,12 @@ def validate_all() -> dict[str, object]:
         and backup_recovery_entry_count >= 1
         and isinstance(capacity_planning_entry_count, int)
         and capacity_planning_entry_count >= 1
+        and isinstance(software_deployment_entry_count, int)
+        and software_deployment_entry_count >= 1
+        and isinstance(performance_monitoring_entry_count, int)
+        and performance_monitoring_entry_count >= 1
+        and isinstance(user_activity_entry_count, int)
+        and user_activity_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -5076,6 +5115,9 @@ def validate_all() -> dict[str, object]:
         "risk_assessment_log_summary": risk_assessment_data,
         "backup_recovery_log_summary": backup_recovery_data,
         "capacity_planning_log_summary": capacity_planning_data,
+        "software_deployment_log_summary": software_deployment_data,
+        "performance_monitoring_log_summary": performance_monitoring_data,
+        "user_activity_log_summary": user_activity_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -7648,6 +7690,36 @@ def validation_summary() -> dict[str, object]:
         "capacity_planning_adequate_count": (
             cp_s2["adequate_count"]
             if isinstance(cp_s2 := validation.get("capacity_planning_log_summary"), dict)
+            else 0
+        ),
+        "software_deployment_entry_count": (
+            sd_s["entry_count"]
+            if isinstance(sd_s := validation.get("software_deployment_log_summary"), dict)
+            else 0
+        ),
+        "software_deployment_completed_count": (
+            sd_s2["completed_count"]
+            if isinstance(sd_s2 := validation.get("software_deployment_log_summary"), dict)
+            else 0
+        ),
+        "performance_monitoring_entry_count": (
+            pm_s["entry_count"]
+            if isinstance(pm_s := validation.get("performance_monitoring_log_summary"), dict)
+            else 0
+        ),
+        "performance_monitoring_normal_count": (
+            pm_s2["normal_count"]
+            if isinstance(pm_s2 := validation.get("performance_monitoring_log_summary"), dict)
+            else 0
+        ),
+        "user_activity_entry_count": (
+            ua_s["entry_count"]
+            if isinstance(ua_s := validation.get("user_activity_log_summary"), dict)
+            else 0
+        ),
+        "user_activity_succeeded_count": (
+            ua_s2["succeeded_count"]
+            if isinstance(ua_s2 := validation.get("user_activity_log_summary"), dict)
             else 0
         ),
         "labeled_candidate_count": (
@@ -10333,6 +10405,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     capacity_planning_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    software_deployment_parser = subparsers.add_parser(
+        "software-deployment-summary",
+        help=(
+            "Summarize software deployment log entries "
+            "(operational software deployment provenance records only)."
+        ),
+    )
+    software_deployment_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    performance_monitoring_parser = subparsers.add_parser(
+        "performance-monitoring-summary",
+        help=(
+            "Summarize performance monitoring log entries "
+            "(operational performance monitoring provenance records only)."
+        ),
+    )
+    performance_monitoring_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    user_activity_parser = subparsers.add_parser(
+        "user-activity-summary",
+        help=(
+            "Summarize user activity log entries "
+            "(operational user activity provenance records only)."
+        ),
+    )
+    user_activity_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "user_activity_log.schema.json",
+  "title": "User Activity Log",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "entries"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "user_activity_log_v1"},
+    "disclaimer": {"type": "string"},
+    "entries": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/UserActivityEntry"}
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "UserActivityEntry": {
+      "type": "object",
+      "required": ["entry_id", "activity_kind", "status", "actor_id", "resource_id", "timestamp_utc"],
+      "properties": {
+        "entry_id": {"type": "string"},
+        "activity_kind": {
+          "type": "string",
+          "enum": ["admin_action", "api_call", "config_change", "data_export", "login"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["blocked", "failed", "succeeded", "warning"]
+        },
+        "actor_id": {"type": "string"},
+        "resource_id": {"type": "string"},
+        "timestamp_utc": {"type": "string"},
+        "notes": {"oneOf": [{"type": "string"}, {"type": "null"}]}
+      },
+      "additionalProperties": false
+    }
+  }
+}
