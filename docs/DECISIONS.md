@@ -2247,3 +2247,17 @@ Three new operational log modules were added as part of Milestone 44.
 `audit_trail_log` records operational provenance for audit trail events (config changes, data access, user actions, system events, compliance checks). Audit trail entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
 
 Schema count increased from 145 to 148. Consistency fixture updated: milestone 43→44, decision 90→91, schema_count 145→148.
+
+# DECISION-092: Incident Response Log, Change Management Log, And Compliance Report Log Complete Milestone 45
+
+Date: 2026-05-30
+
+Three new operational log modules were added as part of Milestone 45.
+
+`incident_response_log` records operational provenance for facility incident response events (detection, containment, eradication, recovery, lessons_learned). Incident response entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+`change_management_log` records operational provenance for structured change management events (planned changes, emergency changes, rollbacks, approval requests, rejections). Change management entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+`compliance_report_log` records operational provenance for compliance reporting events (internal audits, external audits, certification checks, policy reviews, regulatory reports). Compliance report entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+Schema count increased from 148 to 151. Consistency fixture updated: milestone 44→45, decision 91→92, schema_count 148→151.

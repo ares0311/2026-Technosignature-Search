@@ -1,0 +1,51 @@
+{
+  "schema_version": "compliance_report_log_v1",
+  "disclaimer": "Compliance report log entries are operational provenance records — a compliance reporting event does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.",
+  "entries": [
+    {
+      "entry_id": "compliance-001",
+      "timestamp_utc": "2026-01-03T10:00:00Z",
+      "report_kind": "internal_audit",
+      "status": "passed",
+      "actor_id": "operator-alice",
+      "resource_id": "pipeline-config-audit-q1",
+      "notes": "Quarterly internal audit of pipeline configuration completed; no findings."
+    },
+    {
+      "entry_id": "compliance-002",
+      "timestamp_utc": "2026-01-10T14:00:00Z",
+      "report_kind": "policy_review",
+      "status": "passed",
+      "actor_id": "operator-bob",
+      "resource_id": "data-retention-policy-v3",
+      "notes": "Annual data retention policy review completed; policy confirmed current."
+    },
+    {
+      "entry_id": "compliance-003",
+      "timestamp_utc": "2026-01-15T09:30:00Z",
+      "report_kind": "external_audit",
+      "status": "failed",
+      "actor_id": "operator-carol",
+      "resource_id": "access-control-audit-2026",
+      "notes": "External audit identified gaps in access control logging; remediation plan required."
+    },
+    {
+      "entry_id": "compliance-004",
+      "timestamp_utc": "2026-01-20T11:00:00Z",
+      "report_kind": "certification_check",
+      "status": "pending",
+      "actor_id": "operator-alice",
+      "resource_id": "iso-27001-certification",
+      "notes": "Annual certification renewal check initiated; documentation under review."
+    },
+    {
+      "entry_id": "compliance-005",
+      "timestamp_utc": "2026-01-25T16:00:00Z",
+      "report_kind": "regulatory_report",
+      "status": "waived",
+      "actor_id": "operator-bob",
+      "resource_id": "spectrum-usage-report-q1",
+      "notes": "Regulatory filing waived for this quarter under exemption clause 4.2."
+    }
+  ]
+}
