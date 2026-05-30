@@ -1,11 +1,11 @@
 {
   "schema_version": "project_status_consistency_v1",
   "expected_status": {
-    "latest_milestone_number": 42,
-    "latest_milestone_label": "Cooling System Log, Network Connectivity Log, And Software Update Log",
-    "latest_decision_number": 89,
-    "schema_count": 142,
+    "latest_milestone_number": 43,
+    "latest_milestone_label": "Hardware Fault Log, Maintenance Log, And Environmental Log",
+    "latest_decision_number": 90,
+    "schema_count": 145,
     "require_zero_real_data_authorization": true,
-    "project_status_completed_phrase": "Cooling system log, network connectivity log, and software update log operational provenance records added"
+    "project_status_completed_phrase": "Hardware fault log, maintenance log, and environmental log operational provenance records added"
   }
 }

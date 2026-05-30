@@ -100,12 +100,14 @@ from techno_search.data_gap_log import data_gap_summary
 from techno_search.data_quality_log import data_quality_log_summary
 from techno_search.data_transfer_log import data_transfer_summary
 from techno_search.doppler_correction_log import doppler_correction_summary
+from techno_search.environmental_log import environmental_log_summary
 from techno_search.epoch_plan import epoch_plan_summary
 from techno_search.escalation_log import escalation_log_summary
 from techno_search.feature_importance import feature_importance_summary
 from techno_search.feature_normalization import feature_normalization_summary
 from techno_search.follow_up_request import follow_up_request_summary
 from techno_search.frequency_channel_log import frequency_channel_log_summary
+from techno_search.hardware_fault_log import hardware_fault_summary
 from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
 from techno_search.instrument_configuration_log import instrument_configuration_summary
 from techno_search.instrument_log import instrument_log_summary
@@ -141,6 +143,7 @@ from techno_search.log_store import (
     sqlite_recent_runs,
     validate_sqlite_log_commit_paths,
 )
+from techno_search.maintenance_log import maintenance_log_summary
 from techno_search.ml_model_registry import model_registry_summary
 from techno_search.ml_pipeline_diagnostics import ml_pipeline_diagnostics_summary
 from techno_search.ml_training_data import ml_training_data_summary
@@ -445,6 +448,9 @@ SCHEMA_FILENAMES = {
     "weather_log": "weather_log.schema.json",
     "power_log": "power_log.schema.json",
     "cooling_system_log": "cooling_system_log.schema.json",
+    "environmental_log": "environmental_log.schema.json",
+    "hardware_fault_log": "hardware_fault_log.schema.json",
+    "maintenance_log": "maintenance_log.schema.json",
     "network_connectivity_log": "network_connectivity_log.schema.json",
     "software_update_log": "software_update_log.schema.json",
 }
@@ -3221,6 +3227,22 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(su_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "hardware-fault-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(json.dumps(hardware_fault_summary(fixture_path), indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "maintenance-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        print(json.dumps(maintenance_log_summary(fixture_path), indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "environmental-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        env_out = environmental_log_summary(fixture_path)
+        print(json.dumps(env_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -3865,6 +3887,12 @@ def validate_all() -> dict[str, object]:
     sw_update_data = software_update_summary()
     sw_update_entry_count = int(sw_update_data.get("entry_count", 0))
     _sw_update_deployed_count = int(sw_update_data.get("deployed_count", 0))
+    hw_fault_data = hardware_fault_summary()
+    hw_fault_entry_count = int(hw_fault_data.get("entry_count", 0))
+    maintenance_data = maintenance_log_summary()
+    maintenance_entry_count = int(maintenance_data.get("entry_count", 0))
+    env_data = environmental_log_summary()
+    env_entry_count = int(env_data.get("entry_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -4655,6 +4683,12 @@ def validate_all() -> dict[str, object]:
         and network_entry_count >= 1
         and isinstance(sw_update_entry_count, int)
         and sw_update_entry_count >= 1
+        and isinstance(hw_fault_entry_count, int)
+        and hw_fault_entry_count >= 1
+        and isinstance(maintenance_entry_count, int)
+        and maintenance_entry_count >= 1
+        and isinstance(env_entry_count, int)
+        and env_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -4913,6 +4947,9 @@ def validate_all() -> dict[str, object]:
         "cooling_system_log_summary": cooling_data,
         "network_connectivity_log_summary": network_data,
         "software_update_log_summary": sw_update_data,
+        "hardware_fault_log_summary": hw_fault_data,
+        "maintenance_log_summary": maintenance_data,
+        "environmental_log_summary": env_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -7365,6 +7402,36 @@ def validation_summary() -> dict[str, object]:
         "software_update_deployed_count": (
             su_s2["deployed_count"]
             if isinstance(su_s2 := validation.get("software_update_log_summary"), dict)
+            else 0
+        ),
+        "hardware_fault_entry_count": (
+            hf_s["entry_count"]
+            if isinstance(hf_s := validation.get("hardware_fault_log_summary"), dict)
+            else 0
+        ),
+        "hardware_fault_detected_count": (
+            hf_s2["detected_count"]
+            if isinstance(hf_s2 := validation.get("hardware_fault_log_summary"), dict)
+            else 0
+        ),
+        "maintenance_entry_count": (
+            maint_s["entry_count"]
+            if isinstance(maint_s := validation.get("maintenance_log_summary"), dict)
+            else 0
+        ),
+        "maintenance_completed_count": (
+            maint_s2["completed_count"]
+            if isinstance(maint_s2 := validation.get("maintenance_log_summary"), dict)
+            else 0
+        ),
+        "environmental_entry_count": (
+            env_s["entry_count"]
+            if isinstance(env_s := validation.get("environmental_log_summary"), dict)
+            else 0
+        ),
+        "environmental_nominal_count": (
+            env_s2["nominal_count"]
+            if isinstance(env_s2 := validation.get("environmental_log_summary"), dict)
             else 0
         ),
         "labeled_candidate_count": (
@@ -9918,6 +9985,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     software_update_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    hardware_fault_parser = subparsers.add_parser(
+        "hardware-fault-summary",
+        help=(
+            "Summarize hardware fault log entries "
+            "(operational hardware fault provenance records only)."
+        ),
+    )
+    hardware_fault_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    maintenance_parser = subparsers.add_parser(
+        "maintenance-summary",
+        help=(
+            "Summarize maintenance log entries "
+            "(operational maintenance provenance records only)."
+        ),
+    )
+    maintenance_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    environmental_parser = subparsers.add_parser(
+        "environmental-summary",
+        help=(
+            "Summarize environmental log entries "
+            "(operational environmental monitoring provenance records only)."
+        ),
+    )
+    environmental_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

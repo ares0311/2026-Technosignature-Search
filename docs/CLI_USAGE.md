@@ -2676,3 +2676,51 @@ Output fields: `schema_version`, `disclaimer`, `entry_count`, `deployed_count`,
 Software update log entries are operational software and firmware update provenance records —
 a software update record does not modify candidate scores or pathway routing, does not
 authorize external submission, and does not constitute a detection claim.
+
+## `hardware-fault-summary`
+
+Print a summary of hardware fault log entries.
+
+```bash
+.venv/bin/techno-search hardware-fault-summary
+.venv/bin/techno-search hardware-fault-summary --fixture-path tests/fixtures/hardware_fault_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `detected_count`,
+`diagnosed_count`, `repaired_count`, `deferred_count`, `counts_by_kind`, `counts_by_status`.
+
+Hardware fault log entries are operational hardware fault provenance records —
+a hardware fault record does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+## `maintenance-summary`
+
+Print a summary of maintenance log entries.
+
+```bash
+.venv/bin/techno-search maintenance-summary
+.venv/bin/techno-search maintenance-summary --fixture-path tests/fixtures/maintenance_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `completed_count`,
+`in_progress_count`, `planned_count`, `deferred_count`, `counts_by_kind`, `counts_by_status`.
+
+Maintenance log entries are operational maintenance activity provenance records —
+a maintenance record does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+## `environmental-summary`
+
+Print a summary of environmental log entries.
+
+```bash
+.venv/bin/techno-search environmental-summary
+.venv/bin/techno-search environmental-summary --fixture-path tests/fixtures/environmental_log.json
+```
+
+Output fields: `schema_version`, `disclaimer`, `entry_count`, `nominal_count`,
+`advisory_count`, `warning_count`, `critical_count`, `counts_by_kind`, `counts_by_status`.
+
+Environmental log entries are operational environmental monitoring provenance records —
+an environmental reading does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.

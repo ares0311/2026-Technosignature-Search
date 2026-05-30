@@ -1140,3 +1140,23 @@ introduced.
 - [x] `validate-all` gates: `cooling_entry_count >= 1`, `network_entry_count >= 1`, `sw_update_entry_count >= 1`
 - [x] `validation-summary` fields: `cooling_system_entry_count`, `cooling_system_operating_count`, `network_connectivity_entry_count`, `network_connectivity_connected_count`, `software_update_entry_count`, `software_update_deployed_count`
 - [x] DECISION-089: Cooling System Log, Network Connectivity Log, And Software Update Log Complete Milestone 42
+
+# Milestone 43 — Hardware Fault Log, Maintenance Log, And Environmental Log
+
+- [x] `src/techno_search/hardware_fault_log.py` — operational provenance records for hardware fault events; fault_kinds: cpu_fault, memory_fault, disk_fault, network_fault, psu_fault; statuses: detected, diagnosed, repaired, deferred
+- [x] `schemas/hardware_fault_log.schema.json`
+- [x] `tests/fixtures/hardware_fault_log.json` — 5 entries (2 detected, 1 diagnosed, 1 repaired, 1 deferred)
+- [x] `tests/test_hardware_fault_log.py` — 22 tests
+- [x] `src/techno_search/maintenance_log.py` — operational provenance records for maintenance activities; maintenance_kinds: scheduled_maintenance, emergency_repair, calibration_service, firmware_service, inspection; statuses: planned, in_progress, completed, deferred
+- [x] `schemas/maintenance_log.schema.json`
+- [x] `tests/fixtures/maintenance_log.json` — 5 entries (2 completed, 1 in_progress, 1 planned, 1 deferred)
+- [x] `tests/test_maintenance_log.py` — 22 tests
+- [x] `src/techno_search/environmental_log.py` — operational provenance records for environmental monitoring readings; environment_kinds: temperature_reading, humidity_reading, pressure_reading, vibration_reading, electromagnetic_interference; statuses: nominal, advisory, warning, critical
+- [x] `schemas/environmental_log.schema.json`
+- [x] `tests/fixtures/environmental_log.json` — 5 entries (2 nominal, 1 advisory, 1 warning, 1 critical)
+- [x] `tests/test_environmental_log.py` — 22 tests
+- [x] `hardware_fault_log`, `maintenance_log`, `environmental_log` added to `SCHEMA_FILENAMES` (total schemas: 145)
+- [x] `techno-search hardware-fault-summary`, `techno-search maintenance-summary`, `techno-search environmental-summary` CLI commands
+- [x] `validate-all` gates: `hw_fault_entry_count >= 1`, `maintenance_entry_count >= 1`, `env_entry_count >= 1`
+- [x] `validation-summary` fields: `hardware_fault_entry_count`, `hardware_fault_detected_count`, `maintenance_entry_count`, `maintenance_completed_count`, `environmental_entry_count`, `environmental_nominal_count`
+- [x] DECISION-090: Hardware Fault Log, Maintenance Log, And Environmental Log Complete Milestone 43
