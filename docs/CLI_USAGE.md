@@ -2724,3 +2724,36 @@ Output fields: `schema_version`, `disclaimer`, `entry_count`, `nominal_count`,
 Environmental log entries are operational environmental monitoring provenance records —
 an environmental reading does not modify candidate scores or pathway routing, does not
 authorize external submission, and does not constitute a detection claim.
+
+## `techno-search access-log-summary`
+
+Summarize access log entries (operational facility and system access provenance records only).
+
+```bash
+techno-search access-log-summary
+techno-search access-log-summary --fixture-path tests/fixtures/access_log.json
+```
+
+Access log entries are operational provenance records. An access event does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.
+
+## `techno-search security-event-summary`
+
+Summarize security event log entries (operational security event provenance records only).
+
+```bash
+techno-search security-event-summary
+techno-search security-event-summary --fixture-path tests/fixtures/security_event_log.json
+```
+
+Security event log entries are operational provenance records. A security event does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.
+
+## `techno-search audit-trail-log-summary`
+
+Summarize audit trail log entries (operational audit trail provenance records only).
+
+```bash
+techno-search audit-trail-log-summary
+techno-search audit-trail-log-summary --fixture-path tests/fixtures/audit_trail_log.json
+```
+
+Audit trail log entries are operational provenance records. An audit event does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.

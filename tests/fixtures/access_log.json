@@ -1,0 +1,51 @@
+{
+  "schema_version": "access_log_v1",
+  "disclaimer": "Access log entries are operational provenance records — an access event does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.",
+  "entries": [
+    {
+      "entry_id": "access-001",
+      "timestamp_utc": "2026-05-01T08:00:00Z",
+      "access_kind": "facility_entry",
+      "status": "granted",
+      "actor_id": "operator-alice",
+      "resource_id": "control-room-main",
+      "notes": "Morning shift start, badge scan successful."
+    },
+    {
+      "entry_id": "access-002",
+      "timestamp_utc": "2026-05-01T08:15:00Z",
+      "access_kind": "system_login",
+      "status": "granted",
+      "actor_id": "operator-alice",
+      "resource_id": "pipeline-control-host",
+      "notes": "Workstation login for pipeline session."
+    },
+    {
+      "entry_id": "access-003",
+      "timestamp_utc": "2026-05-01T09:00:00Z",
+      "access_kind": "remote_access",
+      "status": "denied",
+      "actor_id": "operator-bob",
+      "resource_id": "data-archive-server",
+      "notes": "VPN credentials expired; access denied."
+    },
+    {
+      "entry_id": "access-004",
+      "timestamp_utc": "2026-05-01T17:30:00Z",
+      "access_kind": "system_logout",
+      "status": "expired",
+      "actor_id": "operator-alice",
+      "resource_id": "pipeline-control-host",
+      "notes": "Session timed out after inactivity threshold."
+    },
+    {
+      "entry_id": "access-005",
+      "timestamp_utc": "2026-05-02T10:00:00Z",
+      "access_kind": "facility_exit",
+      "status": "revoked",
+      "actor_id": "contractor-charlie",
+      "resource_id": "antenna-pad-north",
+      "notes": "Access badge revoked following end of maintenance contract."
+    }
+  ]
+}
