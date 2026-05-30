@@ -1200,3 +1200,23 @@ introduced.
 - [x] `validate-all` gates: `incident_response_entry_count >= 1`, `change_mgmt_entry_count >= 1`, `compliance_report_entry_count >= 1`
 - [x] `validation-summary` fields: `incident_response_entry_count`, `incident_response_resolved_count`, `change_management_entry_count`, `change_management_implemented_count`, `compliance_report_entry_count`, `compliance_report_passed_count`
 - [x] DECISION-092: Incident Response Log, Change Management Log, And Compliance Report Log Complete Milestone 45
+
+# Milestone 46 — Risk Assessment Log, Backup Recovery Log, And Capacity Planning Log
+
+- [x] `src/techno_search/risk_assessment_log.py` — operational provenance records for facility risk assessment events; risk_kinds: compliance_risk, cyber_risk, environmental_risk, operational_risk, physical_risk; statuses: accepted, assessed, identified, mitigated
+- [x] `schemas/risk_assessment_log.schema.json`
+- [x] `tests/fixtures/risk_assessment_log.json` — 5 entries (2 mitigated, 1 identified, 1 assessed, 1 accepted)
+- [x] `tests/test_risk_assessment_log.py` — 22 tests
+- [x] `src/techno_search/backup_recovery_log.py` — operational provenance records for backup and recovery events; backup_kinds: differential_backup, full_backup, incremental_backup, recovery_test, snapshot; statuses: completed, failed, in_progress, skipped
+- [x] `schemas/backup_recovery_log.schema.json`
+- [x] `tests/fixtures/backup_recovery_log.json` — 5 entries (3 completed, 1 failed, 1 skipped)
+- [x] `tests/test_backup_recovery_log.py` — 22 tests
+- [x] `src/techno_search/capacity_planning_log.py` — operational provenance records for capacity planning events; capacity_kinds: compute_capacity, equipment_capacity, network_capacity, personnel_capacity, storage_capacity; statuses: adequate, critical, planned_expansion, warning
+- [x] `schemas/capacity_planning_log.schema.json`
+- [x] `tests/fixtures/capacity_planning_log.json` — 5 entries (2 adequate, 1 warning, 1 critical, 1 planned_expansion)
+- [x] `tests/test_capacity_planning_log.py` — 22 tests
+- [x] `risk_assessment_log`, `backup_recovery_log`, `capacity_planning_log` added to `SCHEMA_FILENAMES` (total schemas: 154)
+- [x] `techno-search risk-assessment-summary`, `techno-search backup-recovery-summary`, `techno-search capacity-planning-summary` CLI commands
+- [x] `validate-all` gates: `risk_assessment_entry_count >= 1`, `backup_recovery_entry_count >= 1`, `capacity_planning_entry_count >= 1`
+- [x] `validation-summary` fields: `risk_assessment_entry_count`, `risk_assessment_mitigated_count`, `backup_recovery_entry_count`, `backup_recovery_completed_count`, `capacity_planning_entry_count`, `capacity_planning_adequate_count`
+- [x] DECISION-093: Risk Assessment Log, Backup Recovery Log, And Capacity Planning Log Complete Milestone 46

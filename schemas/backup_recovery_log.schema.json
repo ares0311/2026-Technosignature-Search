@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "backup_recovery_log.schema.json",
+  "title": "Backup Recovery Log",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "entries"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "backup_recovery_log_v1"},
+    "disclaimer": {"type": "string"},
+    "entries": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/BackupRecoveryEntry"}
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "BackupRecoveryEntry": {
+      "type": "object",
+      "required": ["entry_id", "backup_kind", "status", "actor_id", "resource_id", "timestamp_utc"],
+      "properties": {
+        "entry_id": {"type": "string"},
+        "backup_kind": {
+          "type": "string",
+          "enum": ["differential_backup", "full_backup", "incremental_backup", "recovery_test", "snapshot"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["completed", "failed", "in_progress", "skipped"]
+        },
+        "actor_id": {"type": "string"},
+        "resource_id": {"type": "string"},
+        "timestamp_utc": {"type": "string"},
+        "notes": {"oneOf": [{"type": "string"}, {"type": "null"}]}
+      },
+      "additionalProperties": false
+    }
+  }
+}
