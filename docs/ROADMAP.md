@@ -1220,3 +1220,23 @@ introduced.
 - [x] `validate-all` gates: `risk_assessment_entry_count >= 1`, `backup_recovery_entry_count >= 1`, `capacity_planning_entry_count >= 1`
 - [x] `validation-summary` fields: `risk_assessment_entry_count`, `risk_assessment_mitigated_count`, `backup_recovery_entry_count`, `backup_recovery_completed_count`, `capacity_planning_entry_count`, `capacity_planning_adequate_count`
 - [x] DECISION-093: Risk Assessment Log, Backup Recovery Log, And Capacity Planning Log Complete Milestone 46
+
+# Milestone 47 — Software Deployment Log, Performance Monitoring Log, And User Activity Log
+
+- [x] `src/techno_search/software_deployment_log.py` — operational provenance records for software deployment events; deployment_kinds: hotfix, major_release, minor_release, patch, rollback; statuses: completed, failed, in_progress, rolled_back
+- [x] `schemas/software_deployment_log.schema.json`
+- [x] `tests/fixtures/software_deployment_log.json` — 5 entries (2 completed, 1 in_progress, 1 failed, 1 rolled_back)
+- [x] `tests/test_software_deployment_log.py` — 22 tests
+- [x] `src/techno_search/performance_monitoring_log.py` — operational provenance records for performance monitoring events; performance_kinds: cpu_utilization, disk_io, memory_utilization, network_throughput, response_time; statuses: alert, critical, degraded, normal
+- [x] `schemas/performance_monitoring_log.schema.json`
+- [x] `tests/fixtures/performance_monitoring_log.json` — 5 entries (2 normal, 1 alert, 1 degraded, 1 critical)
+- [x] `tests/test_performance_monitoring_log.py` — 22 tests
+- [x] `src/techno_search/user_activity_log.py` — operational provenance records for user activity events; activity_kinds: admin_action, api_call, config_change, data_export, login; statuses: blocked, failed, succeeded, warning
+- [x] `schemas/user_activity_log.schema.json`
+- [x] `tests/fixtures/user_activity_log.json` — 5 entries (2 succeeded, 1 warning, 1 failed, 1 blocked)
+- [x] `tests/test_user_activity_log.py` — 22 tests
+- [x] `software_deployment_log`, `performance_monitoring_log`, `user_activity_log` added to `SCHEMA_FILENAMES` (total schemas: 157)
+- [x] `techno-search software-deployment-summary`, `techno-search performance-monitoring-summary`, `techno-search user-activity-summary` CLI commands
+- [x] `validate-all` gates: `software_deployment_entry_count >= 1`, `performance_monitoring_entry_count >= 1`, `user_activity_entry_count >= 1`
+- [x] `validation-summary` fields: `software_deployment_entry_count`, `software_deployment_completed_count`, `performance_monitoring_entry_count`, `performance_monitoring_normal_count`, `user_activity_entry_count`, `user_activity_succeeded_count`
+- [x] DECISION-094: Software Deployment Log, Performance Monitoring Log, And User Activity Log Complete Milestone 47

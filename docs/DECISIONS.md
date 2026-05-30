@@ -2275,3 +2275,17 @@ Three new operational log modules were added as part of Milestone 46.
 `capacity_planning_log` records operational provenance for capacity planning events (storage_capacity, compute_capacity, network_capacity, personnel_capacity, equipment_capacity). Capacity planning entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
 
 Schema count increased from 151 to 154. Consistency fixture updated: milestone 45→46, decision 92→93, schema_count 151→154.
+
+# DECISION-094: Software Deployment Log, Performance Monitoring Log, And User Activity Log Complete Milestone 47
+
+Date: 2026-05-30
+
+Three new operational log modules were added as part of Milestone 47.
+
+`software_deployment_log` records operational provenance for software deployment events (major_release, minor_release, patch, hotfix, rollback). Software deployment entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+`performance_monitoring_log` records operational provenance for performance monitoring events (cpu_utilization, memory_utilization, disk_io, network_throughput, response_time). Performance monitoring entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+`user_activity_log` records operational provenance for user activity events (login, api_call, config_change, data_export, admin_action). User activity entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+Schema count increased from 154 to 157. Consistency fixture updated: milestone 46→47, decision 93→94, schema_count 154→157.

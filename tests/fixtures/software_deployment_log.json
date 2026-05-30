@@ -1,0 +1,51 @@
+{
+  "schema_version": "software_deployment_log_v1",
+  "disclaimer": "Software deployment log entries are operational provenance records — a software deployment event does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.",
+  "entries": [
+    {
+      "entry_id": "deploy-001",
+      "timestamp_utc": "2026-01-06T10:00:00Z",
+      "deployment_kind": "major_release",
+      "status": "completed",
+      "actor_id": "operator-alice",
+      "resource_id": "pipeline-core-v2.0.0",
+      "notes": "Major pipeline release v2.0.0 deployed successfully; all post-deployment checks passed."
+    },
+    {
+      "entry_id": "deploy-002",
+      "timestamp_utc": "2026-01-08T14:30:00Z",
+      "deployment_kind": "patch",
+      "status": "completed",
+      "actor_id": "operator-bob",
+      "resource_id": "scoring-module-v2.0.1",
+      "notes": "Patch release for scoring module deployed; fixes edge case in candidate pathway routing."
+    },
+    {
+      "entry_id": "deploy-003",
+      "timestamp_utc": "2026-01-10T09:00:00Z",
+      "deployment_kind": "minor_release",
+      "status": "in_progress",
+      "actor_id": "operator-carol",
+      "resource_id": "data-ingest-v2.1.0",
+      "notes": "Minor release for data ingestion module currently deploying; integration tests running."
+    },
+    {
+      "entry_id": "deploy-004",
+      "timestamp_utc": "2026-01-11T16:00:00Z",
+      "deployment_kind": "hotfix",
+      "status": "failed",
+      "actor_id": "operator-alice",
+      "resource_id": "rfi-filter-v2.0.2",
+      "notes": "Hotfix deployment failed due to dependency conflict; rolled back to previous version."
+    },
+    {
+      "entry_id": "deploy-005",
+      "timestamp_utc": "2026-01-12T11:00:00Z",
+      "deployment_kind": "rollback",
+      "status": "rolled_back",
+      "actor_id": "operator-bob",
+      "resource_id": "rfi-filter-v2.0.1",
+      "notes": "Rollback to v2.0.1 completed after failed hotfix; system restored to stable state."
+    }
+  ]
+}

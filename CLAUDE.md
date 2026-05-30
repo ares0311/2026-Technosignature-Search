@@ -10,9 +10,9 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
-User requested implementation of Milestone 46 (risk assessment log, backup recovery log, capacity planning log).
+User requested implementation of Milestone 47 (software deployment log, performance monitoring log, user activity log).
 
-Current branch: `claude/milestone-46`.
+Current branch: `claude/milestone-47`.
 
 Overall status: all steps implemented, tested, and validated.
 
