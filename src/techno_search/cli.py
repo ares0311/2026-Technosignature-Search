@@ -91,6 +91,8 @@ from techno_search.candidate_triage import (
     triage_label_completeness_check,
     triage_summary,
 )
+from techno_search.change_management_log import change_management_summary
+from techno_search.compliance_report_log import compliance_report_summary
 from techno_search.config_version_history import config_version_history_summary
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.cooling_system_log import cooling_system_summary
@@ -110,6 +112,7 @@ from techno_search.feature_normalization import feature_normalization_summary
 from techno_search.follow_up_request import follow_up_request_summary
 from techno_search.frequency_channel_log import frequency_channel_log_summary
 from techno_search.hardware_fault_log import hardware_fault_summary
+from techno_search.incident_response_log import incident_response_summary
 from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
 from techno_search.instrument_configuration_log import instrument_configuration_summary
 from techno_search.instrument_log import instrument_log_summary
@@ -459,6 +462,9 @@ SCHEMA_FILENAMES = {
     "access_log": "access_log.schema.json",
     "security_event_log": "security_event_log.schema.json",
     "audit_trail_log": "audit_trail_log.schema.json",
+    "incident_response_log": "incident_response_log.schema.json",
+    "change_management_log": "change_management_log.schema.json",
+    "compliance_report_log": "compliance_report_log.schema.json",
 }
 
 
@@ -3267,6 +3273,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(atl_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "incident-response-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        ir_out = incident_response_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(ir_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "change-management-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        cm_out = change_management_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(cm_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "compliance-report-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        cr_out = compliance_report_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(cr_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -3926,6 +3950,15 @@ def validate_all() -> dict[str, object]:
     audit_trail_log_data = audit_trail_log_summary()
     audit_trail_log_entry_count = int(audit_trail_log_data.get("entry_count", 0))
     _audit_trail_log_recorded_count = int(audit_trail_log_data.get("recorded_count", 0))
+    incident_response_data = incident_response_summary()
+    incident_response_entry_count = int(incident_response_data.get("entry_count", 0))
+    _incident_response_resolved_count = int(incident_response_data.get("resolved_count", 0))
+    change_mgmt_data = change_management_summary()
+    change_mgmt_entry_count = int(change_mgmt_data.get("entry_count", 0))
+    _change_mgmt_implemented_count = int(change_mgmt_data.get("implemented_count", 0))
+    compliance_report_data = compliance_report_summary()
+    compliance_report_entry_count = int(compliance_report_data.get("entry_count", 0))
+    _compliance_report_passed_count = int(compliance_report_data.get("passed_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -4728,6 +4761,12 @@ def validate_all() -> dict[str, object]:
         and sec_event_entry_count >= 1
         and isinstance(audit_trail_log_entry_count, int)
         and audit_trail_log_entry_count >= 1
+        and isinstance(incident_response_entry_count, int)
+        and incident_response_entry_count >= 1
+        and isinstance(change_mgmt_entry_count, int)
+        and change_mgmt_entry_count >= 1
+        and isinstance(compliance_report_entry_count, int)
+        and compliance_report_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -4992,6 +5031,9 @@ def validate_all() -> dict[str, object]:
         "access_log_summary": access_data,
         "security_event_log_summary": sec_event_data,
         "audit_trail_log_summary": audit_trail_log_data,
+        "incident_response_log_summary": incident_response_data,
+        "change_management_log_summary": change_mgmt_data,
+        "compliance_report_log_summary": compliance_report_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -7504,6 +7546,36 @@ def validation_summary() -> dict[str, object]:
         "audit_trail_log_recorded_count": (
             atl_s2["recorded_count"]
             if isinstance(atl_s2 := validation.get("audit_trail_log_summary"), dict)
+            else 0
+        ),
+        "incident_response_entry_count": (
+            ir_s["entry_count"]
+            if isinstance(ir_s := validation.get("incident_response_log_summary"), dict)
+            else 0
+        ),
+        "incident_response_resolved_count": (
+            ir_s2["resolved_count"]
+            if isinstance(ir_s2 := validation.get("incident_response_log_summary"), dict)
+            else 0
+        ),
+        "change_management_entry_count": (
+            cm_s["entry_count"]
+            if isinstance(cm_s := validation.get("change_management_log_summary"), dict)
+            else 0
+        ),
+        "change_management_implemented_count": (
+            cm_s2["implemented_count"]
+            if isinstance(cm_s2 := validation.get("change_management_log_summary"), dict)
+            else 0
+        ),
+        "compliance_report_entry_count": (
+            cr_s["entry_count"]
+            if isinstance(cr_s := validation.get("compliance_report_log_summary"), dict)
+            else 0
+        ),
+        "compliance_report_passed_count": (
+            cr_s2["passed_count"]
+            if isinstance(cr_s2 := validation.get("compliance_report_log_summary"), dict)
             else 0
         ),
         "labeled_candidate_count": (
@@ -10123,6 +10195,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     audit_trail_log_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    incident_response_parser = subparsers.add_parser(
+        "incident-response-summary",
+        help=(
+            "Summarize incident response log entries "
+            "(operational incident response provenance records only)."
+        ),
+    )
+    incident_response_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    change_management_parser = subparsers.add_parser(
+        "change-management-summary",
+        help=(
+            "Summarize change management log entries "
+            "(operational change management provenance records only)."
+        ),
+    )
+    change_management_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    compliance_report_parser = subparsers.add_parser(
+        "compliance-report-summary",
+        help=(
+            "Summarize compliance report log entries "
+            "(operational compliance reporting provenance records only)."
+        ),
+    )
+    compliance_report_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

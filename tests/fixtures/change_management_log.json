@@ -1,0 +1,51 @@
+{
+  "schema_version": "change_management_log_v1",
+  "disclaimer": "Change management log entries are operational provenance records — a change management event does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.",
+  "entries": [
+    {
+      "entry_id": "change-001",
+      "timestamp_utc": "2026-01-05T09:00:00Z",
+      "change_kind": "approval_request",
+      "status": "requested",
+      "actor_id": "operator-alice",
+      "resource_id": "pipeline-config-v2",
+      "notes": "Request to update pipeline configuration to v2; pending change board approval."
+    },
+    {
+      "entry_id": "change-002",
+      "timestamp_utc": "2026-01-06T10:30:00Z",
+      "change_kind": "planned_change",
+      "status": "approved",
+      "actor_id": "operator-bob",
+      "resource_id": "pipeline-config-v2",
+      "notes": "Change board approved pipeline config update for scheduled maintenance window."
+    },
+    {
+      "entry_id": "change-003",
+      "timestamp_utc": "2026-01-07T02:00:00Z",
+      "change_kind": "planned_change",
+      "status": "implemented",
+      "actor_id": "operator-alice",
+      "resource_id": "pipeline-config-v2",
+      "notes": "Pipeline configuration updated during scheduled maintenance window; verification passed."
+    },
+    {
+      "entry_id": "change-004",
+      "timestamp_utc": "2026-01-08T14:15:00Z",
+      "change_kind": "emergency_change",
+      "status": "implemented",
+      "actor_id": "operator-carol",
+      "resource_id": "receiver-firmware-3.1.2",
+      "notes": "Emergency firmware patch applied to address critical receiver instability."
+    },
+    {
+      "entry_id": "change-005",
+      "timestamp_utc": "2026-01-09T16:00:00Z",
+      "change_kind": "rollback",
+      "status": "rolled_back",
+      "actor_id": "operator-bob",
+      "resource_id": "receiver-firmware-3.1.2",
+      "notes": "Firmware patch caused degraded sensitivity; rolled back to prior stable version."
+    }
+  ]
+}

@@ -2757,3 +2757,27 @@ techno-search audit-trail-log-summary --fixture-path tests/fixtures/audit_trail_
 ```
 
 Audit trail log entries are operational provenance records. An audit event does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.
+
+## `techno-search incident-response-summary`
+
+Summarize incident response log entries (operational incident response provenance records only).
+
+```
+techno-search incident-response-summary [--fixture-path PATH]
+```
+
+## `techno-search change-management-summary`
+
+Summarize change management log entries (operational change management provenance records only).
+
+```
+techno-search change-management-summary [--fixture-path PATH]
+```
+
+## `techno-search compliance-report-summary`
+
+Summarize compliance report log entries (operational compliance reporting provenance records only).
+
+```
+techno-search compliance-report-summary [--fixture-path PATH]
+```

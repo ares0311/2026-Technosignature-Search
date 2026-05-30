@@ -215,9 +215,9 @@ def test_cli_project_status_consistency_summary_outputs_drift_gates() -> None:
     assert exit_code == 0
     assert result["schema_version"] == "project_status_consistency_v1"
     assert result["ok"] is True
-    assert result["roadmap_latest_milestone"] == 44
-    assert result["decisions_latest_decision"] == 91
-    assert result["actual_schema_count"] == 148
+    assert result["roadmap_latest_milestone"] == 45
+    assert result["decisions_latest_decision"] == 92
+    assert result["actual_schema_count"] == 151
     assert result["rfi_database_admission_real_data_authorized_count"] == 0
     assert result["curated_dataset_admission_real_data_authorized_count"] == 0
 
@@ -508,6 +508,9 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "access_log",
         "security_event_log",
         "audit_trail_log",
+        "incident_response_log",
+        "change_management_log",
+        "compliance_report_log",
     }
     assert result["background_search_ledger"].endswith(
         "schemas/background_search_ledger.schema.json"
@@ -1667,12 +1670,12 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 148
+    assert result["schema_count"] == 151
     assert result["schemas_ok"] is True
     assert result["project_status_consistency_ok"] is True
-    assert result["project_status_latest_milestone"] == 44
-    assert result["project_status_latest_decision"] == 91
-    assert result["project_status_schema_count"] == 148
+    assert result["project_status_latest_milestone"] == 45
+    assert result["project_status_latest_decision"] == 92
+    assert result["project_status_schema_count"] == 151
     assert result["production_blocker_consistency_ok"] is True
     assert result["production_blocker_consistency_issue_count"] == 0
     assert result["production_blocker_tier1_blocker_count"] == 5

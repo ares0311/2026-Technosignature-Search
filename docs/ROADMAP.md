@@ -1180,3 +1180,23 @@ introduced.
 - [x] `validate-all` gates: `access_entry_count >= 1`, `sec_event_entry_count >= 1`, `audit_trail_log_entry_count >= 1`
 - [x] `validation-summary` fields: `access_log_entry_count`, `access_log_granted_count`, `security_event_entry_count`, `security_event_detected_count`, `audit_trail_log_entry_count`, `audit_trail_log_recorded_count`
 - [x] DECISION-091: Access Log, Security Event Log, And Audit Trail Log Complete Milestone 44
+
+# Milestone 45 — Incident Response Log, Change Management Log, And Compliance Report Log
+
+- [x] `src/techno_search/incident_response_log.py` — operational provenance records for facility incident response events; incident_kinds: containment, detection, eradication, lessons_learned, recovery; statuses: closed, contained, open, resolved
+- [x] `schemas/incident_response_log.schema.json`
+- [x] `tests/fixtures/incident_response_log.json` — 5 entries (2 open, 1 contained, 1 resolved, 1 closed)
+- [x] `tests/test_incident_response_log.py` — 22 tests
+- [x] `src/techno_search/change_management_log.py` — operational provenance records for structured change management events; change_kinds: approval_request, emergency_change, planned_change, rejection, rollback; statuses: approved, implemented, requested, rolled_back
+- [x] `schemas/change_management_log.schema.json`
+- [x] `tests/fixtures/change_management_log.json` — 5 entries (2 implemented, 1 requested, 1 approved, 1 rolled_back)
+- [x] `tests/test_change_management_log.py` — 22 tests
+- [x] `src/techno_search/compliance_report_log.py` — operational provenance records for compliance reporting events; report_kinds: certification_check, external_audit, internal_audit, policy_review, regulatory_report; statuses: failed, passed, pending, waived
+- [x] `schemas/compliance_report_log.schema.json`
+- [x] `tests/fixtures/compliance_report_log.json` — 5 entries (2 passed, 1 failed, 1 pending, 1 waived)
+- [x] `tests/test_compliance_report_log.py` — 22 tests
+- [x] `incident_response_log`, `change_management_log`, `compliance_report_log` added to `SCHEMA_FILENAMES` (total schemas: 151)
+- [x] `techno-search incident-response-summary`, `techno-search change-management-summary`, `techno-search compliance-report-summary` CLI commands
+- [x] `validate-all` gates: `incident_response_entry_count >= 1`, `change_mgmt_entry_count >= 1`, `compliance_report_entry_count >= 1`
+- [x] `validation-summary` fields: `incident_response_entry_count`, `incident_response_resolved_count`, `change_management_entry_count`, `change_management_implemented_count`, `compliance_report_entry_count`, `compliance_report_passed_count`
+- [x] DECISION-092: Incident Response Log, Change Management Log, And Compliance Report Log Complete Milestone 45

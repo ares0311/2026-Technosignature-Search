@@ -1,11 +1,11 @@
 {
   "schema_version": "project_status_consistency_v1",
   "expected_status": {
-    "latest_milestone_number": 44,
-    "latest_milestone_label": "Access Log, Security Event Log, And Audit Trail Log",
-    "latest_decision_number": 91,
-    "schema_count": 148,
+    "latest_milestone_number": 45,
+    "latest_milestone_label": "Incident Response Log, Change Management Log, And Compliance Report Log",
+    "latest_decision_number": 92,
+    "schema_count": 151,
     "require_zero_real_data_authorization": true,
-    "project_status_completed_phrase": "Access log, security event log, and audit trail log operational provenance records added"
+    "project_status_completed_phrase": "Incident response log, change management log, and compliance report log operational provenance records added"
   }
 }

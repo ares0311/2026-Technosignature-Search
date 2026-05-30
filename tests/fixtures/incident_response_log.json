@@ -1,0 +1,51 @@
+{
+  "schema_version": "incident_response_log_v1",
+  "disclaimer": "Incident response log entries are operational provenance records — an incident response event does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.",
+  "entries": [
+    {
+      "entry_id": "incident-001",
+      "timestamp_utc": "2026-01-10T08:15:00Z",
+      "incident_kind": "detection",
+      "status": "open",
+      "actor_id": "operator-alice",
+      "resource_id": "telescope-control-system",
+      "notes": "Anomalous login pattern detected on control system; investigation initiated."
+    },
+    {
+      "entry_id": "incident-002",
+      "timestamp_utc": "2026-01-10T09:00:00Z",
+      "incident_kind": "containment",
+      "status": "contained",
+      "actor_id": "operator-bob",
+      "resource_id": "network-segment-alpha",
+      "notes": "Affected network segment isolated pending full eradication."
+    },
+    {
+      "entry_id": "incident-003",
+      "timestamp_utc": "2026-01-11T11:30:00Z",
+      "incident_kind": "eradication",
+      "status": "resolved",
+      "actor_id": "operator-alice",
+      "resource_id": "telescope-control-system",
+      "notes": "Root cause identified and removed; system restored to known-good state."
+    },
+    {
+      "entry_id": "incident-004",
+      "timestamp_utc": "2026-01-12T14:00:00Z",
+      "incident_kind": "recovery",
+      "status": "open",
+      "actor_id": "operator-carol",
+      "resource_id": "data-processing-node",
+      "notes": "Post-incident recovery verification in progress."
+    },
+    {
+      "entry_id": "incident-005",
+      "timestamp_utc": "2026-01-15T16:45:00Z",
+      "incident_kind": "lessons_learned",
+      "status": "closed",
+      "actor_id": "operator-bob",
+      "resource_id": "incident-2026-001",
+      "notes": "Post-incident review completed; updated monitoring thresholds documented."
+    }
+  ]
+}

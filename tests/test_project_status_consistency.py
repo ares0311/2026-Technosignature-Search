@@ -86,9 +86,9 @@ def _write_project(
 def test_load_project_status_expectations_fixture() -> None:
     expected = load_project_status_expectations(FIXTURE_PATH)
 
-    assert expected["latest_milestone_number"] == 44
-    assert expected["latest_decision_number"] == 91
-    assert expected["schema_count"] == 148
+    assert expected["latest_milestone_number"] == 45
+    assert expected["latest_decision_number"] == 92
+    assert expected["schema_count"] == 151
 
 
 def test_project_status_consistency_custom_project_passes(tmp_path: Path) -> None:
@@ -135,6 +135,6 @@ def test_project_status_consistency_default_project_passes() -> None:
 
     assert summary["schema_version"] == "project_status_consistency_v1"
     assert summary["ok"] is True
-    assert summary["expected_latest_milestone"] == 44
-    assert summary["expected_latest_decision"] == 91
-    assert summary["expected_schema_count"] == 148
+    assert summary["expected_latest_milestone"] == 45
+    assert summary["expected_latest_decision"] == 92
+    assert summary["expected_schema_count"] == 151
