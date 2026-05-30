@@ -1,11 +1,11 @@
 {
   "schema_version": "project_status_consistency_v1",
   "expected_status": {
-    "latest_milestone_number": 45,
-    "latest_milestone_label": "Incident Response Log, Change Management Log, And Compliance Report Log",
-    "latest_decision_number": 92,
-    "schema_count": 151,
+    "latest_milestone_number": 46,
+    "latest_milestone_label": "Risk Assessment Log, Backup Recovery Log, And Capacity Planning Log",
+    "latest_decision_number": 93,
+    "schema_count": 154,
     "require_zero_real_data_authorization": true,
-    "project_status_completed_phrase": "Incident response log, change management log, and compliance report log operational provenance records added"
+    "project_status_completed_phrase": "Risk assessment log, backup recovery log, and capacity planning log operational provenance records added"
   }
 }

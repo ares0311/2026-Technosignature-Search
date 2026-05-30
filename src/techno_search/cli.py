@@ -39,6 +39,7 @@ from techno_search.background_search import (
     target_priority_summary,
     write_background_draft_follow_up_reports,
 )
+from techno_search.backup_recovery_log import backup_recovery_summary
 from techno_search.baseline_eval import (
     baseline_pathway_drift_summary,
     baseline_performance_history_summary,
@@ -91,6 +92,7 @@ from techno_search.candidate_triage import (
     triage_label_completeness_check,
     triage_summary,
 )
+from techno_search.capacity_planning_log import capacity_planning_summary
 from techno_search.change_management_log import change_management_summary
 from techno_search.compliance_report_log import compliance_report_summary
 from techno_search.config_version_history import config_version_history_summary
@@ -251,6 +253,7 @@ from techno_search.review_queue import (
 from techno_search.rfi_database import rfi_database_summary
 from techno_search.rfi_database_admission import rfi_database_admission_summary
 from techno_search.rfi_mitigation_log import rfi_mitigation_summary
+from techno_search.risk_assessment_log import risk_assessment_summary
 from techno_search.scan_log import scan_log_summary
 from techno_search.scheduling_conflict_log import scheduling_conflict_summary
 from techno_search.schemas import Candidate, Track, candidate_from_mapping
@@ -463,8 +466,11 @@ SCHEMA_FILENAMES = {
     "security_event_log": "security_event_log.schema.json",
     "audit_trail_log": "audit_trail_log.schema.json",
     "incident_response_log": "incident_response_log.schema.json",
+    "backup_recovery_log": "backup_recovery_log.schema.json",
+    "capacity_planning_log": "capacity_planning_log.schema.json",
     "change_management_log": "change_management_log.schema.json",
     "compliance_report_log": "compliance_report_log.schema.json",
+    "risk_assessment_log": "risk_assessment_log.schema.json",
 }
 
 
@@ -3291,6 +3297,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(cr_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "risk-assessment-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        ra_out = risk_assessment_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(ra_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "backup-recovery-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        br_out = backup_recovery_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(br_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "capacity-planning-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        cp_out = capacity_planning_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(cp_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -3959,6 +3983,15 @@ def validate_all() -> dict[str, object]:
     compliance_report_data = compliance_report_summary()
     compliance_report_entry_count = int(compliance_report_data.get("entry_count", 0))
     _compliance_report_passed_count = int(compliance_report_data.get("passed_count", 0))
+    risk_assessment_data = risk_assessment_summary()
+    risk_assessment_entry_count = int(risk_assessment_data.get("entry_count", 0))
+    _risk_assessment_mitigated_count = int(risk_assessment_data.get("mitigated_count", 0))
+    backup_recovery_data = backup_recovery_summary()
+    backup_recovery_entry_count = int(backup_recovery_data.get("entry_count", 0))
+    _backup_recovery_completed_count = int(backup_recovery_data.get("completed_count", 0))
+    capacity_planning_data = capacity_planning_summary()
+    capacity_planning_entry_count = int(capacity_planning_data.get("entry_count", 0))
+    _capacity_planning_adequate_count = int(capacity_planning_data.get("adequate_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -4767,6 +4800,12 @@ def validate_all() -> dict[str, object]:
         and change_mgmt_entry_count >= 1
         and isinstance(compliance_report_entry_count, int)
         and compliance_report_entry_count >= 1
+        and isinstance(risk_assessment_entry_count, int)
+        and risk_assessment_entry_count >= 1
+        and isinstance(backup_recovery_entry_count, int)
+        and backup_recovery_entry_count >= 1
+        and isinstance(capacity_planning_entry_count, int)
+        and capacity_planning_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -5034,6 +5073,9 @@ def validate_all() -> dict[str, object]:
         "incident_response_log_summary": incident_response_data,
         "change_management_log_summary": change_mgmt_data,
         "compliance_report_log_summary": compliance_report_data,
+        "risk_assessment_log_summary": risk_assessment_data,
+        "backup_recovery_log_summary": backup_recovery_data,
+        "capacity_planning_log_summary": capacity_planning_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -7576,6 +7618,36 @@ def validation_summary() -> dict[str, object]:
         "compliance_report_passed_count": (
             cr_s2["passed_count"]
             if isinstance(cr_s2 := validation.get("compliance_report_log_summary"), dict)
+            else 0
+        ),
+        "risk_assessment_entry_count": (
+            ra_s["entry_count"]
+            if isinstance(ra_s := validation.get("risk_assessment_log_summary"), dict)
+            else 0
+        ),
+        "risk_assessment_mitigated_count": (
+            ra_s2["mitigated_count"]
+            if isinstance(ra_s2 := validation.get("risk_assessment_log_summary"), dict)
+            else 0
+        ),
+        "backup_recovery_entry_count": (
+            br_s["entry_count"]
+            if isinstance(br_s := validation.get("backup_recovery_log_summary"), dict)
+            else 0
+        ),
+        "backup_recovery_completed_count": (
+            br_s2["completed_count"]
+            if isinstance(br_s2 := validation.get("backup_recovery_log_summary"), dict)
+            else 0
+        ),
+        "capacity_planning_entry_count": (
+            cp_s["entry_count"]
+            if isinstance(cp_s := validation.get("capacity_planning_log_summary"), dict)
+            else 0
+        ),
+        "capacity_planning_adequate_count": (
+            cp_s2["adequate_count"]
+            if isinstance(cp_s2 := validation.get("capacity_planning_log_summary"), dict)
             else 0
         ),
         "labeled_candidate_count": (
@@ -10228,6 +10300,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     compliance_report_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    risk_assessment_parser = subparsers.add_parser(
+        "risk-assessment-summary",
+        help=(
+            "Summarize risk assessment log entries "
+            "(operational risk assessment provenance records only)."
+        ),
+    )
+    risk_assessment_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    backup_recovery_parser = subparsers.add_parser(
+        "backup-recovery-summary",
+        help=(
+            "Summarize backup and recovery log entries "
+            "(operational backup and recovery provenance records only)."
+        ),
+    )
+    backup_recovery_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    capacity_planning_parser = subparsers.add_parser(
+        "capacity-planning-summary",
+        help=(
+            "Summarize capacity planning log entries "
+            "(operational capacity planning provenance records only)."
+        ),
+    )
+    capacity_planning_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

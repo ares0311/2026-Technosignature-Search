@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "capacity_planning_log.schema.json",
+  "title": "Capacity Planning Log",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "entries"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "capacity_planning_log_v1"},
+    "disclaimer": {"type": "string"},
+    "entries": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/CapacityPlanningEntry"}
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "CapacityPlanningEntry": {
+      "type": "object",
+      "required": ["entry_id", "capacity_kind", "status", "actor_id", "resource_id", "timestamp_utc"],
+      "properties": {
+        "entry_id": {"type": "string"},
+        "capacity_kind": {
+          "type": "string",
+          "enum": ["compute_capacity", "equipment_capacity", "network_capacity", "personnel_capacity", "storage_capacity"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["adequate", "critical", "planned_expansion", "warning"]
+        },
+        "actor_id": {"type": "string"},
+        "resource_id": {"type": "string"},
+        "timestamp_utc": {"type": "string"},
+        "notes": {"oneOf": [{"type": "string"}, {"type": "null"}]}
+      },
+      "additionalProperties": false
+    }
+  }
+}

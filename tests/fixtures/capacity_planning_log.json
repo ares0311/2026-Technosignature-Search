@@ -1,0 +1,51 @@
+{
+  "schema_version": "capacity_planning_log_v1",
+  "disclaimer": "Capacity planning log entries are operational provenance records — a capacity planning event does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.",
+  "entries": [
+    {
+      "entry_id": "capacity-001",
+      "timestamp_utc": "2026-01-03T09:00:00Z",
+      "capacity_kind": "storage_capacity",
+      "status": "adequate",
+      "actor_id": "operator-alice",
+      "resource_id": "observation-data-archive",
+      "notes": "Storage utilization at 62%; adequate headroom for current observation schedule."
+    },
+    {
+      "entry_id": "capacity-002",
+      "timestamp_utc": "2026-01-05T11:00:00Z",
+      "capacity_kind": "compute_capacity",
+      "status": "warning",
+      "actor_id": "operator-bob",
+      "resource_id": "pipeline-compute-cluster",
+      "notes": "Compute utilization reached 85% during peak processing; monitoring for further increases."
+    },
+    {
+      "entry_id": "capacity-003",
+      "timestamp_utc": "2026-01-07T14:30:00Z",
+      "capacity_kind": "network_capacity",
+      "status": "critical",
+      "actor_id": "operator-carol",
+      "resource_id": "telescope-data-uplink",
+      "notes": "Network bandwidth saturated during simultaneous multi-beam observation; immediate expansion required."
+    },
+    {
+      "entry_id": "capacity-004",
+      "timestamp_utc": "2026-01-09T10:00:00Z",
+      "capacity_kind": "personnel_capacity",
+      "status": "adequate",
+      "actor_id": "operator-alice",
+      "resource_id": "operations-team",
+      "notes": "Current staffing levels sufficient to cover all scheduled observation windows."
+    },
+    {
+      "entry_id": "capacity-005",
+      "timestamp_utc": "2026-01-11T15:00:00Z",
+      "capacity_kind": "equipment_capacity",
+      "status": "planned_expansion",
+      "actor_id": "operator-bob",
+      "resource_id": "receiver-array",
+      "notes": "Equipment expansion plan approved to add four additional receiver units by Q2 2026."
+    }
+  ]
+}

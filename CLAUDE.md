@@ -10,38 +10,37 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
-User requested implementation of Milestone 28 (target selection log, Doppler correction log, data archival log).
+User requested implementation of Milestone 46 (risk assessment log, backup recovery log, capacity planning log).
 
-Current branch: `claude/general-session-Bb2dZ`.
+Current branch: `claude/milestone-46`.
 
 Overall status: all steps implemented, tested, and validated.
 
 Added:
 
-- `src/techno_search/target_selection_log.py` — operational scheduling provenance records for target selection events; selection_kinds: priority_queue, manual_selection, automated_filter, watchlist_trigger, follow_up_request; statuses: selected, deferred, rejected, pending
-- `schemas/target_selection_log.schema.json`
-- `tests/fixtures/target_selection_log.json` — 5 entries (2 selected, 1 deferred, 1 rejected, 1 pending)
-- `tests/test_target_selection_log.py` — 22 tests
-- `src/techno_search/doppler_correction_log.py` — operational processing provenance records for Doppler/barycentric correction; correction_kinds: barycentric, topocentric, heliocentric, observatory_frame, rest_frame; statuses: applied, failed, not_applicable, flagged
-- `schemas/doppler_correction_log.schema.json`
-- `tests/fixtures/doppler_correction_log.json` — 5 entries (2 applied, 1 failed, 1 not_applicable, 1 flagged)
-- `tests/test_doppler_correction_log.py` — 22 tests
-- `src/techno_search/data_archival_log.py` — operational provenance records for observation data archival events; archival_kinds: raw_data, processed_data, candidate_packet, pipeline_artifact, calibration_data; statuses: archived, pending, failed, deleted
-- `schemas/data_archival_log.schema.json`
-- `tests/fixtures/data_archival_log.json` — 5 entries (2 archived, 1 pending, 1 failed, 1 deleted)
-- `tests/test_data_archival_log.py` — 22 tests
-- `target_selection_log`, `doppler_correction_log`, `data_archival_log` added to `SCHEMA_FILENAMES` (total schemas: 116)
-- `techno-search target-selection-summary`, `techno-search doppler-correction-summary`, `techno-search data-archival-summary` CLI commands
-- `validate-all` gates: `target_selection_entry_count >= 1`, `doppler_correction_entry_count >= 1`, `data_archival_entry_count >= 1`
-- `validation-summary` fields: `target_selection_entry_count`, `target_selection_selected_count`, `doppler_correction_entry_count`, `doppler_correction_applied_count`, `data_archival_entry_count`, `data_archival_archived_count`
-- DECISION-075: Target Selection Log, Doppler Correction Log, And Data Archival Log Complete Milestone 28
-- CI workflow updated to use `python -m pip`, `python -m pytest`, `python -m ruff`, `python -m mypy` for robustness
+- `src/techno_search/risk_assessment_log.py` — operational provenance records for facility risk assessment events; risk_kinds: compliance_risk, cyber_risk, environmental_risk, operational_risk, physical_risk; statuses: accepted, assessed, identified, mitigated
+- `schemas/risk_assessment_log.schema.json`
+- `tests/fixtures/risk_assessment_log.json` — 5 entries (2 mitigated, 1 identified, 1 assessed, 1 accepted)
+- `tests/test_risk_assessment_log.py` — 22 tests
+- `src/techno_search/backup_recovery_log.py` — operational provenance records for backup and recovery events; backup_kinds: differential_backup, full_backup, incremental_backup, recovery_test, snapshot; statuses: completed, failed, in_progress, skipped
+- `schemas/backup_recovery_log.schema.json`
+- `tests/fixtures/backup_recovery_log.json` — 5 entries (3 completed, 1 failed, 1 skipped)
+- `tests/test_backup_recovery_log.py` — 22 tests
+- `src/techno_search/capacity_planning_log.py` — operational provenance records for capacity planning events; capacity_kinds: compute_capacity, equipment_capacity, network_capacity, personnel_capacity, storage_capacity; statuses: adequate, critical, planned_expansion, warning
+- `schemas/capacity_planning_log.schema.json`
+- `tests/fixtures/capacity_planning_log.json` — 5 entries (2 adequate, 1 warning, 1 critical, 1 planned_expansion)
+- `tests/test_capacity_planning_log.py` — 22 tests
+- `risk_assessment_log`, `backup_recovery_log`, `capacity_planning_log` added to `SCHEMA_FILENAMES` (total schemas: 154)
+- `techno-search risk-assessment-summary`, `techno-search backup-recovery-summary`, `techno-search capacity-planning-summary` CLI commands
+- `validate-all` gates: `risk_assessment_entry_count >= 1`, `backup_recovery_entry_count >= 1`, `capacity_planning_entry_count >= 1`
+- `validation-summary` fields: `risk_assessment_entry_count`, `risk_assessment_mitigated_count`, `backup_recovery_entry_count`, `backup_recovery_completed_count`, `capacity_planning_entry_count`, `capacity_planning_adequate_count`
+- DECISION-093: Risk Assessment Log, Backup Recovery Log, And Capacity Planning Log Complete Milestone 46
 
 Scientific guardrail:
 
-- Target selection entries are operational scheduling provenance records — a selection does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim
-- Doppler correction entries are operational processing provenance records — a correction does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim
-- Data archival entries are operational provenance records — an archival record does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim
+- Risk assessment entries are operational provenance records — a risk assessment event does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim
+- Backup and recovery entries are operational provenance records — a backup or recovery event does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim
+- Capacity planning entries are operational provenance records — a capacity planning event does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim
 
 Validation passed:
 
@@ -55,14 +54,14 @@ git diff --check
 
 Result:
 
-- 2282 tests passed
+- 2967 tests passed
 - 7 tests skipped
 - Ruff passed
 - mypy passed
 - diff whitespace check passed
 - `validate-all` ok=True
 
-Merge status: committed on `claude/general-session-Bb2dZ`, pushed.
+Merge status: committed on `claude/milestone-46`, pushed.
 
 ---
 

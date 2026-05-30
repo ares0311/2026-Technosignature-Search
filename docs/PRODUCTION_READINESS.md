@@ -1,7 +1,7 @@
 # Production Readiness Assessment
 
 **Last updated:** 2026-05-30
-**Current milestone:** 45 (Incident Response Log, Change Management Log, And Compliance Report Log)
+**Current milestone:** 46 (Risk Assessment Log, Backup Recovery Log, And Capacity Planning Log)
 
 ---
 
@@ -20,7 +20,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Calibration fixture set (15 false-positive classes) | ✅ Complete |
 | Score regression + determinism checks | ✅ Complete |
 | Interpretable baseline classifier | ✅ Complete |
-| 151 JSON schema artifacts | ✅ Complete |
+| 154 JSON schema artifacts | ✅ Complete |
 | Local validation gate (`validate-all`) | ✅ Complete |
 | Provenance, audit trail, lifecycle tracking | ✅ Complete |
 | Operational log system (35 log types) | ✅ Complete |
@@ -43,7 +43,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Labeled candidate dataset v0 (10 synthetic entries) | ✅ Complete |
 | Scoring model evaluation against labeled dataset | ✅ Complete |
 | Live catalog clients (Gaia TAP, SIMBAD) with opt-in guard | ✅ Complete |
-| Operational log system (41 log types) | ✅ Complete |
+| Operational log system (44 log types) | ✅ Complete |
 
 ---
 

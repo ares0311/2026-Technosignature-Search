@@ -2261,3 +2261,17 @@ Three new operational log modules were added as part of Milestone 45.
 `compliance_report_log` records operational provenance for compliance reporting events (internal audits, external audits, certification checks, policy reviews, regulatory reports). Compliance report entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
 
 Schema count increased from 148 to 151. Consistency fixture updated: milestone 44→45, decision 91→92, schema_count 148→151.
+
+# DECISION-093: Risk Assessment Log, Backup Recovery Log, And Capacity Planning Log Complete Milestone 46
+
+Date: 2026-05-30
+
+Three new operational log modules were added as part of Milestone 46.
+
+`risk_assessment_log` records operational provenance for facility risk assessment events (cyber_risk, operational_risk, compliance_risk, physical_risk, environmental_risk). Risk assessment entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+`backup_recovery_log` records operational provenance for backup and recovery events (full_backup, incremental_backup, differential_backup, recovery_test, snapshot). Backup and recovery entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+`capacity_planning_log` records operational provenance for capacity planning events (storage_capacity, compute_capacity, network_capacity, personnel_capacity, equipment_capacity). Capacity planning entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+Schema count increased from 151 to 154. Consistency fixture updated: milestone 45→46, decision 92→93, schema_count 151→154.
