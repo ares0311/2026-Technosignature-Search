@@ -2205,3 +2205,17 @@ Three new operational log modules were added as part of Milestone 41.
 `power_log` records operational provenance for facility power system events (UPS events, mains failures, generator starts, load shedding, power restoration). Power entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
 
 Schema count increased from 136 to 139. Consistency fixture updated: milestone 40→41, decision 87→88, schema_count 136→139.
+
+# DECISION-089: Cooling System Log, Network Connectivity Log, And Software Update Log Complete Milestone 42
+
+Date: 2026-05-29
+
+Three new operational log modules were added as part of Milestone 42.
+
+`cooling_system_log` records operational provenance for cryogenic and cooling system events (cooldown starts/completions, warmup events, temperature alarms, helium refills). Cooling entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+`network_connectivity_log` records operational provenance for network infrastructure events (link up/down, latency spikes, packet loss events, VPN events). Network connectivity entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+`software_update_log` records operational provenance for software and firmware update events (pipeline updates, firmware updates, OS patches, driver updates, config deployments). Software update entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+Schema count increased from 139 to 142. Consistency fixture updated: milestone 41→42, decision 88→89, schema_count 139→142.

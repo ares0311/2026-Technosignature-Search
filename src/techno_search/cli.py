@@ -91,6 +91,7 @@ from techno_search.candidate_triage import (
 )
 from techno_search.config_version_history import config_version_history_summary
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
+from techno_search.cooling_system_log import cooling_system_summary
 from techno_search.cross_track import cross_track_summary
 from techno_search.curated_dataset_admission import curated_dataset_admission_summary
 from techno_search.curated_dataset_intake import curated_dataset_intake_summary
@@ -148,6 +149,7 @@ from techno_search.model_evaluation import model_evaluation_summary
 from techno_search.model_performance_history import model_performance_history_summary
 from techno_search.model_serving import model_serving_summary
 from techno_search.multi_epoch_summary import multi_epoch_summary
+from techno_search.network_connectivity_log import network_connectivity_summary
 from techno_search.noise_measurement_log import noise_measurement_log_summary
 from techno_search.observation_campaign import observation_campaign_summary
 from techno_search.observation_parameter_log import observation_parameter_log_summary
@@ -255,6 +257,7 @@ from techno_search.signal_registry import (
     signal_registry_summary,
     signal_registry_track_summary,
 )
+from techno_search.software_update_log import software_update_summary
 from techno_search.source_catalog_log import source_catalog_log_summary
 from techno_search.spectral_feature_log import spectral_feature_log_summary
 from techno_search.submission_readiness import submission_readiness_summary
@@ -441,6 +444,9 @@ SCHEMA_FILENAMES = {
     "antenna_pointing_log": "antenna_pointing_log.schema.json",
     "weather_log": "weather_log.schema.json",
     "power_log": "power_log.schema.json",
+    "cooling_system_log": "cooling_system_log.schema.json",
+    "network_connectivity_log": "network_connectivity_log.schema.json",
+    "software_update_log": "software_update_log.schema.json",
 }
 
 
@@ -3197,6 +3203,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(pl_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "cooling-system-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        cs_out = cooling_system_summary(fixture_path)
+        print(json.dumps(cs_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "network-connectivity-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        nc_out = network_connectivity_summary(fixture_path)
+        print(json.dumps(nc_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "software-update-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        su_out = software_update_summary(fixture_path)
+        print(json.dumps(su_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -3832,6 +3856,15 @@ def validate_all() -> dict[str, object]:
     power_data = power_log_summary()
     power_entry_count = int(power_data.get("entry_count", 0))
     _power_normal_count = int(power_data.get("normal_count", 0))
+    cooling_data = cooling_system_summary()
+    cooling_entry_count = int(cooling_data.get("entry_count", 0))
+    _cooling_operating_count = int(cooling_data.get("operating_count", 0))
+    network_data = network_connectivity_summary()
+    network_entry_count = int(network_data.get("entry_count", 0))
+    _network_connected_count = int(network_data.get("connected_count", 0))
+    sw_update_data = software_update_summary()
+    sw_update_entry_count = int(sw_update_data.get("entry_count", 0))
+    _sw_update_deployed_count = int(sw_update_data.get("deployed_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -4616,6 +4649,12 @@ def validate_all() -> dict[str, object]:
         and weather_entry_count >= 1
         and isinstance(power_entry_count, int)
         and power_entry_count >= 1
+        and isinstance(cooling_entry_count, int)
+        and cooling_entry_count >= 1
+        and isinstance(network_entry_count, int)
+        and network_entry_count >= 1
+        and isinstance(sw_update_entry_count, int)
+        and sw_update_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -4871,6 +4910,9 @@ def validate_all() -> dict[str, object]:
         "antenna_pointing_log_summary": antenna_pointing_data,
         "weather_log_summary": weather_data,
         "power_log_summary": power_data,
+        "cooling_system_log_summary": cooling_data,
+        "network_connectivity_log_summary": network_data,
+        "software_update_log_summary": sw_update_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -7293,6 +7335,36 @@ def validation_summary() -> dict[str, object]:
         "power_normal_count": (
             pl_s2["normal_count"]
             if isinstance(pl_s2 := validation.get("power_log_summary"), dict)
+            else 0
+        ),
+        "cooling_system_entry_count": (
+            cs_s["entry_count"]
+            if isinstance(cs_s := validation.get("cooling_system_log_summary"), dict)
+            else 0
+        ),
+        "cooling_system_operating_count": (
+            cs_s2["operating_count"]
+            if isinstance(cs_s2 := validation.get("cooling_system_log_summary"), dict)
+            else 0
+        ),
+        "network_connectivity_entry_count": (
+            nc_s["entry_count"]
+            if isinstance(nc_s := validation.get("network_connectivity_log_summary"), dict)
+            else 0
+        ),
+        "network_connectivity_connected_count": (
+            nc_s2["connected_count"]
+            if isinstance(nc_s2 := validation.get("network_connectivity_log_summary"), dict)
+            else 0
+        ),
+        "software_update_entry_count": (
+            su_s["entry_count"]
+            if isinstance(su_s := validation.get("software_update_log_summary"), dict)
+            else 0
+        ),
+        "software_update_deployed_count": (
+            su_s2["deployed_count"]
+            if isinstance(su_s2 := validation.get("software_update_log_summary"), dict)
             else 0
         ),
         "labeled_candidate_count": (
@@ -9813,6 +9885,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     power_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    cooling_system_parser = subparsers.add_parser(
+        "cooling-system-summary",
+        help=(
+            "Summarize cooling system log entries "
+            "(operational cryogenic and cooling system provenance records only)."
+        ),
+    )
+    cooling_system_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    network_connectivity_parser = subparsers.add_parser(
+        "network-connectivity-summary",
+        help=(
+            "Summarize network connectivity log entries "
+            "(operational network infrastructure provenance records only)."
+        ),
+    )
+    network_connectivity_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    software_update_parser = subparsers.add_parser(
+        "software-update-summary",
+        help=(
+            "Summarize software update log entries "
+            "(operational software and firmware update provenance records only)."
+        ),
+    )
+    software_update_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

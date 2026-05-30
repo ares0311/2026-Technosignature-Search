@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cooling_system_log.schema.json",
+  "title": "Cooling System Log",
+  "description": "Operational provenance records for telescope cooling system events.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "entries"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "cooling_system_log_v1"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/CoolingSystemEntry"
+      }
+    }
+  },
+  "$defs": {
+    "CoolingSystemEntry": {
+      "type": "object",
+      "required": [
+        "entry_id",
+        "cooling_kind",
+        "status",
+        "recorded_by",
+        "timestamp_utc"
+      ],
+      "properties": {
+        "entry_id": { "type": "string" },
+        "cooling_kind": {
+          "type": "string",
+          "enum": [
+            "cooldown_start",
+            "cooldown_complete",
+            "warmup_event",
+            "temperature_alarm",
+            "helium_refill"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["operating", "warning", "fault", "maintenance"]
+        },
+        "recorded_by": { "type": "string" },
+        "timestamp_utc": { "type": "string" },
+        "system_id": {
+          "oneOf": [{ "type": "string" }, { "type": "null" }]
+        },
+        "temperature_kelvin": {
+          "oneOf": [{ "type": "number" }, { "type": "null" }]
+        },
+        "notes": {
+          "oneOf": [{ "type": "string" }, { "type": "null" }]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

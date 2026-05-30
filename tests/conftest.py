@@ -5,7 +5,7 @@ import os
 
 import pytest
 
-from techno_search.log_store import init_sqlite_log_db
+from techno_search.log_store import default_sqlite_log_path, init_sqlite_log_db
 
 
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
@@ -23,4 +23,4 @@ def ensure_sqlite_log_initialized() -> None:
     """Ensure the top-level SQLite log is initialized before consistency tests run."""
     import contextlib
     with contextlib.suppress(Exception):
-        init_sqlite_log_db()
+        init_sqlite_log_db(default_sqlite_log_path())
