@@ -1160,3 +1160,23 @@ introduced.
 - [x] `validate-all` gates: `hw_fault_entry_count >= 1`, `maintenance_entry_count >= 1`, `env_entry_count >= 1`
 - [x] `validation-summary` fields: `hardware_fault_entry_count`, `hardware_fault_detected_count`, `maintenance_entry_count`, `maintenance_completed_count`, `environmental_entry_count`, `environmental_nominal_count`
 - [x] DECISION-090: Hardware Fault Log, Maintenance Log, And Environmental Log Complete Milestone 43
+
+# Milestone 44 — Access Log, Security Event Log, And Audit Trail Log
+
+- [x] `src/techno_search/access_log.py` — operational provenance records for facility and system access events; access_kinds: facility_entry, facility_exit, remote_access, system_login, system_logout; statuses: denied, expired, granted, revoked
+- [x] `schemas/access_log.schema.json`
+- [x] `tests/fixtures/access_log.json` — 5 entries (2 granted, 1 denied, 1 expired, 1 revoked)
+- [x] `tests/test_access_log.py` — 22 tests
+- [x] `src/techno_search/security_event_log.py` — operational provenance records for security events; event_kinds: credential_change, intrusion_attempt, physical_breach, policy_violation, unauthorized_access; statuses: detected, escalated, investigated, resolved
+- [x] `schemas/security_event_log.schema.json`
+- [x] `tests/fixtures/security_event_log.json` — 5 entries (2 detected, 1 investigated, 1 resolved, 1 escalated)
+- [x] `tests/test_security_event_log.py` — 22 tests
+- [x] `src/techno_search/audit_trail_log.py` — operational provenance records for audit trail events; audit_kinds: compliance_check, config_change, data_access, system_event, user_action; statuses: archived, flagged, recorded, reviewed
+- [x] `schemas/audit_trail_log.schema.json`
+- [x] `tests/fixtures/audit_trail_log.json` — 5 entries (2 recorded, 1 flagged, 1 reviewed, 1 archived)
+- [x] `tests/test_audit_trail_log.py` — 22 tests
+- [x] `access_log`, `security_event_log`, `audit_trail_log` added to `SCHEMA_FILENAMES` (total schemas: 148)
+- [x] `techno-search access-log-summary`, `techno-search security-event-summary`, `techno-search audit-trail-log-summary` CLI commands
+- [x] `validate-all` gates: `access_entry_count >= 1`, `sec_event_entry_count >= 1`, `audit_trail_log_entry_count >= 1`
+- [x] `validation-summary` fields: `access_log_entry_count`, `access_log_granted_count`, `security_event_entry_count`, `security_event_detected_count`, `audit_trail_log_entry_count`, `audit_trail_log_recorded_count`
+- [x] DECISION-091: Access Log, Security Event Log, And Audit Trail Log Complete Milestone 44

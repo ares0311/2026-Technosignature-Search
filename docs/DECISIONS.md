@@ -2233,3 +2233,17 @@ Three new operational log modules were added as part of Milestone 43.
 `environmental_log` records operational provenance for environmental monitoring readings (temperature, humidity, pressure, vibration, electromagnetic interference). Environmental entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
 
 Schema count increased from 142 to 145. Consistency fixture updated: milestone 42→43, decision 89→90, schema_count 142→145.
+
+# DECISION-091: Access Log, Security Event Log, And Audit Trail Log Complete Milestone 44
+
+Date: 2026-05-30
+
+Three new operational log modules were added as part of Milestone 44.
+
+`access_log` records operational provenance for facility and system access events (facility entry/exit, system login/logout, remote access). Access entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+`security_event_log` records operational provenance for security events (intrusion attempts, unauthorized access, policy violations, credential changes, physical breaches). Security event entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+`audit_trail_log` records operational provenance for audit trail events (config changes, data access, user actions, system events, compliance checks). Audit trail entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+Schema count increased from 145 to 148. Consistency fixture updated: milestone 43→44, decision 90→91, schema_count 145→148.

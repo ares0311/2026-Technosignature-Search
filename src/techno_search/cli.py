@@ -12,6 +12,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TextIO
 
+from techno_search.access_log import access_log_summary
 from techno_search.aggregate_blockers import aggregate_blockers_summary
 from techno_search.alert_resolution_log import alert_resolution_summary
 from techno_search.antenna_pointing_log import antenna_pointing_summary
@@ -20,6 +21,7 @@ from techno_search.artifact_cleanup import (
     apply_artifact_cleanup,
     plan_artifact_cleanup,
 )
+from techno_search.audit_trail_log import audit_trail_log_summary
 from techno_search.background_search import (
     BackgroundUserDecisionRecord,
     append_background_user_decision_record,
@@ -253,6 +255,7 @@ from techno_search.scoring import score_candidate
 from techno_search.scoring_audit_log import scoring_audit_log_summary
 from techno_search.scoring_config import scoring_config_summary
 from techno_search.scoring_threshold_audit import scoring_threshold_audit_summary
+from techno_search.security_event_log import security_event_summary
 from techno_search.sensitivity_config import sensitivity_config_summary
 from techno_search.session_log import session_log_summary
 from techno_search.signal_classification_log import signal_classification_summary
@@ -453,6 +456,9 @@ SCHEMA_FILENAMES = {
     "maintenance_log": "maintenance_log.schema.json",
     "network_connectivity_log": "network_connectivity_log.schema.json",
     "software_update_log": "software_update_log.schema.json",
+    "access_log": "access_log.schema.json",
+    "security_event_log": "security_event_log.schema.json",
+    "audit_trail_log": "audit_trail_log.schema.json",
 }
 
 
@@ -3243,6 +3249,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(env_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "access-log-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        access_out = access_log_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(access_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "security-event-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        sec_out = security_event_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(sec_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "audit-trail-log-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        atl_out = audit_trail_log_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(atl_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -3893,6 +3917,15 @@ def validate_all() -> dict[str, object]:
     maintenance_entry_count = int(maintenance_data.get("entry_count", 0))
     env_data = environmental_log_summary()
     env_entry_count = int(env_data.get("entry_count", 0))
+    access_data = access_log_summary()
+    access_entry_count = int(access_data.get("entry_count", 0))
+    _access_granted_count = int(access_data.get("granted_count", 0))
+    sec_event_data = security_event_summary()
+    sec_event_entry_count = int(sec_event_data.get("entry_count", 0))
+    _sec_event_detected_count = int(sec_event_data.get("detected_count", 0))
+    audit_trail_log_data = audit_trail_log_summary()
+    audit_trail_log_entry_count = int(audit_trail_log_data.get("entry_count", 0))
+    _audit_trail_log_recorded_count = int(audit_trail_log_data.get("recorded_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -4689,6 +4722,12 @@ def validate_all() -> dict[str, object]:
         and maintenance_entry_count >= 1
         and isinstance(env_entry_count, int)
         and env_entry_count >= 1
+        and isinstance(access_entry_count, int)
+        and access_entry_count >= 1
+        and isinstance(sec_event_entry_count, int)
+        and sec_event_entry_count >= 1
+        and isinstance(audit_trail_log_entry_count, int)
+        and audit_trail_log_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -4950,6 +4989,9 @@ def validate_all() -> dict[str, object]:
         "hardware_fault_log_summary": hw_fault_data,
         "maintenance_log_summary": maintenance_data,
         "environmental_log_summary": env_data,
+        "access_log_summary": access_data,
+        "security_event_log_summary": sec_event_data,
+        "audit_trail_log_summary": audit_trail_log_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -7432,6 +7474,36 @@ def validation_summary() -> dict[str, object]:
         "environmental_nominal_count": (
             env_s2["nominal_count"]
             if isinstance(env_s2 := validation.get("environmental_log_summary"), dict)
+            else 0
+        ),
+        "access_log_entry_count": (
+            al_s["entry_count"]
+            if isinstance(al_s := validation.get("access_log_summary"), dict)
+            else 0
+        ),
+        "access_log_granted_count": (
+            al_s2["granted_count"]
+            if isinstance(al_s2 := validation.get("access_log_summary"), dict)
+            else 0
+        ),
+        "security_event_entry_count": (
+            se_s["entry_count"]
+            if isinstance(se_s := validation.get("security_event_log_summary"), dict)
+            else 0
+        ),
+        "security_event_detected_count": (
+            se_s2["detected_count"]
+            if isinstance(se_s2 := validation.get("security_event_log_summary"), dict)
+            else 0
+        ),
+        "audit_trail_log_entry_count": (
+            atl_s["entry_count"]
+            if isinstance(atl_s := validation.get("audit_trail_log_summary"), dict)
+            else 0
+        ),
+        "audit_trail_log_recorded_count": (
+            atl_s2["recorded_count"]
+            if isinstance(atl_s2 := validation.get("audit_trail_log_summary"), dict)
             else 0
         ),
         "labeled_candidate_count": (
@@ -10018,6 +10090,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     environmental_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    access_log_parser = subparsers.add_parser(
+        "access-log-summary",
+        help=(
+            "Summarize access log entries "
+            "(operational facility and system access provenance records only)."
+        ),
+    )
+    access_log_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    security_event_parser = subparsers.add_parser(
+        "security-event-summary",
+        help=(
+            "Summarize security event log entries "
+            "(operational security event provenance records only)."
+        ),
+    )
+    security_event_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    audit_trail_log_parser = subparsers.add_parser(
+        "audit-trail-log-summary",
+        help=(
+            "Summarize audit trail log entries "
+            "(operational audit trail provenance records only)."
+        ),
+    )
+    audit_trail_log_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 
