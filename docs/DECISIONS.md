@@ -2219,3 +2219,17 @@ Three new operational log modules were added as part of Milestone 42.
 `software_update_log` records operational provenance for software and firmware update events (pipeline updates, firmware updates, OS patches, driver updates, config deployments). Software update entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
 
 Schema count increased from 139 to 142. Consistency fixture updated: milestone 41→42, decision 88→89, schema_count 139→142.
+
+# DECISION-090: Hardware Fault Log, Maintenance Log, And Environmental Log Complete Milestone 43
+
+Date: 2026-05-30
+
+Three new operational log modules were added as part of Milestone 43.
+
+`hardware_fault_log` records operational provenance for hardware fault events (CPU faults, memory faults, disk faults, network faults, PSU faults). Hardware fault entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+`maintenance_log` records operational provenance for maintenance activities (scheduled maintenance, emergency repairs, calibration services, firmware services, inspections). Maintenance entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+`environmental_log` records operational provenance for environmental monitoring readings (temperature, humidity, pressure, vibration, electromagnetic interference). Environmental entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+Schema count increased from 142 to 145. Consistency fixture updated: milestone 42→43, decision 89→90, schema_count 142→145.

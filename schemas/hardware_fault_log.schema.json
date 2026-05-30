@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hardware_fault_log.schema.json",
+  "title": "Hardware Fault Log",
+  "description": "Operational provenance records for hardware fault events.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "entries"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "hardware_fault_log_v1"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/HardwareFaultEntry"
+      }
+    }
+  },
+  "$defs": {
+    "HardwareFaultEntry": {
+      "type": "object",
+      "required": [
+        "entry_id",
+        "fault_kind",
+        "status",
+        "recorded_by",
+        "timestamp_utc"
+      ],
+      "properties": {
+        "entry_id": { "type": "string" },
+        "fault_kind": {
+          "type": "string",
+          "enum": [
+            "cpu_fault",
+            "memory_fault",
+            "disk_fault",
+            "network_fault",
+            "psu_fault"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["detected", "diagnosed", "repaired", "deferred"]
+        },
+        "recorded_by": { "type": "string" },
+        "timestamp_utc": { "type": "string" },
+        "component_id": {
+          "oneOf": [{ "type": "string" }, { "type": "null" }]
+        },
+        "notes": {
+          "oneOf": [{ "type": "string" }, { "type": "null" }]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

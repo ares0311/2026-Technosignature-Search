@@ -147,6 +147,9 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "weather_log.schema.json",
         "power_log.schema.json",
         "cooling_system_log.schema.json",
+        "environmental_log.schema.json",
+        "hardware_fault_log.schema.json",
+        "maintenance_log.schema.json",
         "network_connectivity_log.schema.json",
         "software_update_log.schema.json",
     }
