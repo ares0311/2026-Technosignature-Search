@@ -1,0 +1,51 @@
+{
+  "schema_version": "configuration_audit_log_v1",
+  "disclaimer": "Configuration audit log entries are operational provenance records — a configuration audit event does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.",
+  "entries": [
+    {
+      "entry_id": "cfgaud-001",
+      "audit_kind": "scheduled_audit",
+      "status": "compliant",
+      "actor_id": "audit-agent-01",
+      "resource_id": "pipeline-config-v3",
+      "timestamp_utc": "2026-05-31T00:00:00Z",
+      "notes": "Scheduled audit passed; pipeline configuration matches expected baseline."
+    },
+    {
+      "entry_id": "cfgaud-002",
+      "audit_kind": "baseline_check",
+      "status": "compliant",
+      "actor_id": "audit-agent-01",
+      "resource_id": "scoring-config-v2",
+      "timestamp_utc": "2026-05-31T01:00:00Z",
+      "notes": null
+    },
+    {
+      "entry_id": "cfgaud-003",
+      "audit_kind": "drift_detection",
+      "status": "drifted",
+      "actor_id": "audit-agent-02",
+      "resource_id": "telescope-control-config",
+      "timestamp_utc": "2026-05-31T02:00:00Z",
+      "notes": "Configuration drift detected; telescope control parameters differ from baseline."
+    },
+    {
+      "entry_id": "cfgaud-004",
+      "audit_kind": "compliance_scan",
+      "status": "failed",
+      "actor_id": "audit-agent-01",
+      "resource_id": "network-firewall-rules",
+      "timestamp_utc": "2026-05-31T03:00:00Z",
+      "notes": "Compliance scan failed; unable to retrieve current firewall rule state."
+    },
+    {
+      "entry_id": "cfgaud-005",
+      "audit_kind": "manual_audit",
+      "status": "inconclusive",
+      "actor_id": "operator-01",
+      "resource_id": "data-retention-policy",
+      "timestamp_utc": "2026-05-31T04:00:00Z",
+      "notes": "Manual audit inconclusive; policy documentation requires clarification."
+    }
+  ]
+}

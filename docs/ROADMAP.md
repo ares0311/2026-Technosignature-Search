@@ -1241,6 +1241,26 @@ introduced.
 - [x] `validation-summary` fields: `software_deployment_entry_count`, `software_deployment_completed_count`, `performance_monitoring_entry_count`, `performance_monitoring_normal_count`, `user_activity_entry_count`, `user_activity_succeeded_count`
 - [x] DECISION-094: Software Deployment Log, Performance Monitoring Log, And User Activity Log Complete Milestone 47
 
+# Milestone 49 — Firmware Update Log, Configuration Audit Log, And Event Correlation Log
+
+- [x] `src/techno_search/firmware_update_log.py` — operational provenance records for firmware lifecycle events; firmware_kinds: component_update, driver_update, firmware_rollback, hotfix_patch, scheduled_update; statuses: applied, failed, pending, rolled_back
+- [x] `schemas/firmware_update_log.schema.json`
+- [x] `tests/fixtures/firmware_update_log.json` — 5 entries (2 applied, 1 pending, 1 failed, 1 rolled_back)
+- [x] `tests/test_firmware_update_log.py` — 22 tests
+- [x] `src/techno_search/configuration_audit_log.py` — operational provenance records for configuration compliance audit events; audit_kinds: baseline_check, compliance_scan, drift_detection, manual_audit, scheduled_audit; statuses: compliant, drifted, failed, inconclusive
+- [x] `schemas/configuration_audit_log.schema.json`
+- [x] `tests/fixtures/configuration_audit_log.json` — 5 entries (2 compliant, 1 drifted, 1 failed, 1 inconclusive)
+- [x] `tests/test_configuration_audit_log.py` — 22 tests
+- [x] `src/techno_search/event_correlation_log.py` — operational provenance records for cross-system event correlation runs; correlation_kinds: alert_cluster, causal_chain, fault_event, observation_link, temporal_cluster; statuses: correlated, inconclusive, no_match, pending
+- [x] `schemas/event_correlation_log.schema.json`
+- [x] `tests/fixtures/event_correlation_log.json` — 5 entries (2 correlated, 1 inconclusive, 1 no_match, 1 pending)
+- [x] `tests/test_event_correlation_log.py` — 22 tests
+- [x] `firmware_update_log`, `configuration_audit_log`, `event_correlation_log` added to `SCHEMA_FILENAMES` (total schemas: 163)
+- [x] `techno-search firmware-update-summary`, `techno-search configuration-audit-summary`, `techno-search event-correlation-summary` CLI commands
+- [x] `validate-all` gates: `firmware_update_entry_count >= 1`, `configuration_audit_entry_count >= 1`, `event_correlation_entry_count >= 1`
+- [x] `validation-summary` fields: `firmware_update_entry_count`, `firmware_update_applied_count`, `configuration_audit_entry_count`, `configuration_audit_compliant_count`, `event_correlation_entry_count`, `event_correlation_correlated_count`
+- [x] DECISION-096: Firmware Update Log, Configuration Audit Log, And Event Correlation Log Complete Milestone 49
+
 # Milestone 48 — Health Check Log, License Management Log, And Storage Management Log
 
 - [x] `src/techno_search/health_check_log.py` — operational provenance records for system and service health check events; check_kinds: api_health, database_health, network_health, service_health, storage_health; statuses: degraded, failed, passed, timeout

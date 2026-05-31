@@ -2303,3 +2303,17 @@ Three new operational log modules were added as part of Milestone 48.
 `storage_management_log` records operational provenance for storage lifecycle events (allocation, cleanup, deallocation, migration, quota_change). Storage management entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
 
 Schema count increased from 157 to 160. Consistency fixture updated: milestone 47→48, decision 94→95, schema_count 157→160.
+
+# DECISION-096: Firmware Update Log, Configuration Audit Log, And Event Correlation Log Complete Milestone 49
+
+Date: 2026-05-31
+
+Three new operational log modules were added as part of Milestone 49.
+
+`firmware_update_log` records operational provenance for firmware lifecycle events (component_update, driver_update, firmware_rollback, hotfix_patch, scheduled_update). Firmware update entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+`configuration_audit_log` records operational provenance for configuration compliance audit events (baseline_check, compliance_scan, drift_detection, manual_audit, scheduled_audit). Configuration audit entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+`event_correlation_log` records operational provenance for cross-system event correlation runs (alert_cluster, causal_chain, fault_event, observation_link, temporal_cluster). Event correlation entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+Schema count increased from 160 to 163. Consistency fixture updated: milestone 48→49, decision 95→96, schema_count 160→163.

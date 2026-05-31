@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FirmwareUpdateLog",
+  "description": "Operational provenance records for firmware update and rollback events.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "entries"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "firmware_update_log_v1" },
+    "disclaimer": { "type": "string" },
+    "entries": { "type": "array", "items": { "$ref": "#/$defs/FirmwareUpdateEntry" } }
+  },
+  "$defs": {
+    "FirmwareUpdateEntry": {
+      "type": "object",
+      "required": ["entry_id", "firmware_kind", "status", "actor_id", "resource_id", "timestamp_utc"],
+      "properties": {
+        "entry_id": { "type": "string" },
+        "firmware_kind": {
+          "type": "string",
+          "enum": ["component_update", "driver_update", "firmware_rollback", "hotfix_patch", "scheduled_update"]
+        },
+        "status": { "type": "string", "enum": ["applied", "failed", "pending", "rolled_back"] },
+        "actor_id": { "type": "string" },
+        "resource_id": { "type": "string" },
+        "timestamp_utc": { "type": "string" },
+        "notes": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
