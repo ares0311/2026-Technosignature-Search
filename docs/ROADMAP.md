@@ -1240,3 +1240,23 @@ introduced.
 - [x] `validate-all` gates: `software_deployment_entry_count >= 1`, `performance_monitoring_entry_count >= 1`, `user_activity_entry_count >= 1`
 - [x] `validation-summary` fields: `software_deployment_entry_count`, `software_deployment_completed_count`, `performance_monitoring_entry_count`, `performance_monitoring_normal_count`, `user_activity_entry_count`, `user_activity_succeeded_count`
 - [x] DECISION-094: Software Deployment Log, Performance Monitoring Log, And User Activity Log Complete Milestone 47
+
+# Milestone 48 — Health Check Log, License Management Log, And Storage Management Log
+
+- [x] `src/techno_search/health_check_log.py` — operational provenance records for system and service health check events; check_kinds: api_health, database_health, network_health, service_health, storage_health; statuses: degraded, failed, passed, timeout
+- [x] `schemas/health_check_log.schema.json`
+- [x] `tests/fixtures/health_check_log.json` — 5 entries (2 passed, 1 degraded, 1 failed, 1 timeout)
+- [x] `tests/test_health_check_log.py` — 22 tests
+- [x] `src/techno_search/license_management_log.py` — operational provenance records for software license lifecycle events; license_kinds: activation, deactivation, expiry_warning, renewal, transfer; statuses: active, expired, failed, renewed
+- [x] `schemas/license_management_log.schema.json`
+- [x] `tests/fixtures/license_management_log.json` — 5 entries (2 active, 1 expired, 1 failed, 1 renewed)
+- [x] `tests/test_license_management_log.py` — 22 tests
+- [x] `src/techno_search/storage_management_log.py` — operational provenance records for storage lifecycle events; storage_kinds: allocation, cleanup, deallocation, migration, quota_change; statuses: completed, failed, in_progress, pending
+- [x] `schemas/storage_management_log.schema.json`
+- [x] `tests/fixtures/storage_management_log.json` — 5 entries (2 completed, 1 in_progress, 1 failed, 1 pending)
+- [x] `tests/test_storage_management_log.py` — 22 tests
+- [x] `health_check_log`, `license_management_log`, `storage_management_log` added to `SCHEMA_FILENAMES` (total schemas: 160)
+- [x] `techno-search health-check-summary`, `techno-search license-management-summary`, `techno-search storage-management-summary` CLI commands
+- [x] `validate-all` gates: `health_check_entry_count >= 1`, `license_management_entry_count >= 1`, `storage_management_entry_count >= 1`
+- [x] `validation-summary` fields: `health_check_entry_count`, `health_check_passed_count`, `license_management_entry_count`, `license_management_active_count`, `storage_management_entry_count`, `storage_management_completed_count`
+- [x] DECISION-095: Health Check Log, License Management Log, And Storage Management Log Complete Milestone 48

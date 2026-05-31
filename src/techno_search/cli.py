@@ -114,12 +114,14 @@ from techno_search.feature_normalization import feature_normalization_summary
 from techno_search.follow_up_request import follow_up_request_summary
 from techno_search.frequency_channel_log import frequency_channel_log_summary
 from techno_search.hardware_fault_log import hardware_fault_summary
+from techno_search.health_check_log import health_check_summary
 from techno_search.incident_response_log import incident_response_summary
 from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
 from techno_search.instrument_configuration_log import instrument_configuration_summary
 from techno_search.instrument_log import instrument_log_summary
 from techno_search.intake_queue_log import intake_queue_summary
 from techno_search.interference_environment_log import interference_environment_summary
+from techno_search.license_management_log import license_management_summary
 from techno_search.live_data import (
     CatalogCache,
     CatalogCachePolicy,
@@ -274,6 +276,7 @@ from techno_search.software_deployment_log import software_deployment_summary
 from techno_search.software_update_log import software_update_summary
 from techno_search.source_catalog_log import source_catalog_log_summary
 from techno_search.spectral_feature_log import spectral_feature_log_summary
+from techno_search.storage_management_log import storage_management_summary
 from techno_search.submission_readiness import submission_readiness_summary
 from techno_search.system_health_log import system_health_summary
 from techno_search.target_recalibration_summary import target_recalibration_summary
@@ -477,6 +480,9 @@ SCHEMA_FILENAMES = {
     "software_deployment_log": "software_deployment_log.schema.json",
     "performance_monitoring_log": "performance_monitoring_log.schema.json",
     "user_activity_log": "user_activity_log.schema.json",
+    "health_check_log": "health_check_log.schema.json",
+    "license_management_log": "license_management_log.schema.json",
+    "storage_management_log": "storage_management_log.schema.json",
 }
 
 
@@ -3339,6 +3345,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(ua_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "health-check-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        hc_out = health_check_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(hc_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "license-management-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        lm_out = license_management_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(lm_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "storage-management-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        stm_out = storage_management_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(stm_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -4025,6 +4049,15 @@ def validate_all() -> dict[str, object]:
     user_activity_data = user_activity_summary()
     user_activity_entry_count = int(user_activity_data.get("entry_count", 0))
     _user_activity_succeeded_count = int(user_activity_data.get("succeeded_count", 0))
+    health_check_data = health_check_summary()
+    health_check_entry_count = int(health_check_data.get("entry_count", 0))
+    _health_check_passed_count = int(health_check_data.get("passed_count", 0))
+    license_management_data = license_management_summary()
+    license_management_entry_count = int(license_management_data.get("entry_count", 0))
+    _license_management_active_count = int(license_management_data.get("active_count", 0))
+    storage_management_data = storage_management_summary()
+    storage_management_entry_count = int(storage_management_data.get("entry_count", 0))
+    _storage_management_completed_count = int(storage_management_data.get("completed_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -4845,6 +4878,12 @@ def validate_all() -> dict[str, object]:
         and performance_monitoring_entry_count >= 1
         and isinstance(user_activity_entry_count, int)
         and user_activity_entry_count >= 1
+        and isinstance(health_check_entry_count, int)
+        and health_check_entry_count >= 1
+        and isinstance(license_management_entry_count, int)
+        and license_management_entry_count >= 1
+        and isinstance(storage_management_entry_count, int)
+        and storage_management_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -5118,6 +5157,9 @@ def validate_all() -> dict[str, object]:
         "software_deployment_log_summary": software_deployment_data,
         "performance_monitoring_log_summary": performance_monitoring_data,
         "user_activity_log_summary": user_activity_data,
+        "health_check_log_summary": health_check_data,
+        "license_management_log_summary": license_management_data,
+        "storage_management_log_summary": storage_management_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -7720,6 +7762,36 @@ def validation_summary() -> dict[str, object]:
         "user_activity_succeeded_count": (
             ua_s2["succeeded_count"]
             if isinstance(ua_s2 := validation.get("user_activity_log_summary"), dict)
+            else 0
+        ),
+        "health_check_entry_count": (
+            hc_s["entry_count"]
+            if isinstance(hc_s := validation.get("health_check_log_summary"), dict)
+            else 0
+        ),
+        "health_check_passed_count": (
+            hc_s2["passed_count"]
+            if isinstance(hc_s2 := validation.get("health_check_log_summary"), dict)
+            else 0
+        ),
+        "license_management_entry_count": (
+            lm_s["entry_count"]
+            if isinstance(lm_s := validation.get("license_management_log_summary"), dict)
+            else 0
+        ),
+        "license_management_active_count": (
+            lm_s2["active_count"]
+            if isinstance(lm_s2 := validation.get("license_management_log_summary"), dict)
+            else 0
+        ),
+        "storage_management_entry_count": (
+            sm_s["entry_count"]
+            if isinstance(sm_s := validation.get("storage_management_log_summary"), dict)
+            else 0
+        ),
+        "storage_management_completed_count": (
+            sm_s2["completed_count"]
+            if isinstance(sm_s2 := validation.get("storage_management_log_summary"), dict)
             else 0
         ),
         "labeled_candidate_count": (
@@ -10438,6 +10510,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     user_activity_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    health_check_parser = subparsers.add_parser(
+        "health-check-summary",
+        help=(
+            "Summarize health check log entries "
+            "(operational system and service health check provenance records only)."
+        ),
+    )
+    health_check_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    license_management_parser = subparsers.add_parser(
+        "license-management-summary",
+        help=(
+            "Summarize license management log entries "
+            "(operational software license lifecycle provenance records only)."
+        ),
+    )
+    license_management_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    storage_management_parser = subparsers.add_parser(
+        "storage-management-summary",
+        help=(
+            "Summarize storage management log entries "
+            "(operational storage lifecycle provenance records only)."
+        ),
+    )
+    storage_management_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 
