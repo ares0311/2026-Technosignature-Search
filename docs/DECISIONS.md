@@ -2289,3 +2289,17 @@ Three new operational log modules were added as part of Milestone 47.
 `user_activity_log` records operational provenance for user activity events (login, api_call, config_change, data_export, admin_action). User activity entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
 
 Schema count increased from 154 to 157. Consistency fixture updated: milestone 46→47, decision 93→94, schema_count 154→157.
+
+# DECISION-095: Health Check Log, License Management Log, And Storage Management Log Complete Milestone 48
+
+Date: 2026-05-31
+
+Three new operational log modules were added as part of Milestone 48.
+
+`health_check_log` records operational provenance for system and service health check events (api_health, database_health, network_health, service_health, storage_health). Health check entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+`license_management_log` records operational provenance for software license lifecycle events (activation, deactivation, expiry_warning, renewal, transfer). License management entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+`storage_management_log` records operational provenance for storage lifecycle events (allocation, cleanup, deallocation, migration, quota_change). Storage management entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
+
+Schema count increased from 157 to 160. Consistency fixture updated: milestone 47→48, decision 94→95, schema_count 157→160.

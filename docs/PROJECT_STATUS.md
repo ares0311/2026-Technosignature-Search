@@ -424,3 +424,4 @@ tests/test_pathway.py
 - [x] Incident response log, change management log, and compliance report log operational provenance records added
 - [x] Risk assessment log, backup recovery log, and capacity planning log operational provenance records added
 - [x] Software deployment log, performance monitoring log, and user activity log operational provenance records added
+- [x] Health check log, license management log, and storage management log operational provenance records added

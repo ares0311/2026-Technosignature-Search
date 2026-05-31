@@ -10,9 +10,9 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
-User requested implementation of Milestone 47 (software deployment log, performance monitoring log, user activity log).
+User requested implementation of Milestone 48 (health check log, license management log, storage management log).
 
-Current branch: `claude/milestone-47`.
+Current branch: `claude/milestone-48`.
 
 Overall status: all steps implemented, tested, and validated.
 

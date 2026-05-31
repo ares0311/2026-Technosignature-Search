@@ -1,0 +1,51 @@
+{
+  "schema_version": "storage_management_log_v1",
+  "disclaimer": "Storage management log entries are operational provenance records — a storage management event does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.",
+  "entries": [
+    {
+      "entry_id": "store-001",
+      "storage_kind": "allocation",
+      "status": "completed",
+      "actor_id": "sysadmin-01",
+      "resource_id": "archive-volume-a",
+      "timestamp_utc": "2026-05-30T00:00:00Z",
+      "notes": "Allocated 2 TB for new archival volume."
+    },
+    {
+      "entry_id": "store-002",
+      "storage_kind": "cleanup",
+      "status": "completed",
+      "actor_id": "pipeline-agent-01",
+      "resource_id": "scratch-volume-b",
+      "timestamp_utc": "2026-05-30T01:00:00Z",
+      "notes": null
+    },
+    {
+      "entry_id": "store-003",
+      "storage_kind": "migration",
+      "status": "in_progress",
+      "actor_id": "sysadmin-02",
+      "resource_id": "catalog-volume-c",
+      "timestamp_utc": "2026-05-30T02:00:00Z",
+      "notes": "Migrating catalog volume to new storage array; estimated 4 hours."
+    },
+    {
+      "entry_id": "store-004",
+      "storage_kind": "quota_change",
+      "status": "failed",
+      "actor_id": "sysadmin-01",
+      "resource_id": "user-quota-group-d",
+      "timestamp_utc": "2026-05-30T03:00:00Z",
+      "notes": "Quota change failed; storage controller returned error."
+    },
+    {
+      "entry_id": "store-005",
+      "storage_kind": "deallocation",
+      "status": "pending",
+      "actor_id": "pipeline-agent-02",
+      "resource_id": "temp-volume-e",
+      "timestamp_utc": "2026-05-30T04:00:00Z",
+      "notes": "Deallocation scheduled pending confirmation of data transfer completion."
+    }
+  ]
+}
