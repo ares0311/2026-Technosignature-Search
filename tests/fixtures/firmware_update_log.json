@@ -1,0 +1,51 @@
+{
+  "schema_version": "firmware_update_log_v1",
+  "disclaimer": "Firmware update log entries are operational provenance records — a firmware update event does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.",
+  "entries": [
+    {
+      "entry_id": "fw-001",
+      "firmware_kind": "scheduled_update",
+      "status": "applied",
+      "actor_id": "sysadmin-01",
+      "resource_id": "receiver-frontend-unit-a",
+      "timestamp_utc": "2026-05-31T00:00:00Z",
+      "notes": "Scheduled firmware update applied to receiver frontend unit A."
+    },
+    {
+      "entry_id": "fw-002",
+      "firmware_kind": "component_update",
+      "status": "applied",
+      "actor_id": "sysadmin-02",
+      "resource_id": "digital-backend-fpga-01",
+      "timestamp_utc": "2026-05-31T01:00:00Z",
+      "notes": null
+    },
+    {
+      "entry_id": "fw-003",
+      "firmware_kind": "hotfix_patch",
+      "status": "pending",
+      "actor_id": "sysadmin-01",
+      "resource_id": "timing-module-b",
+      "timestamp_utc": "2026-05-31T02:00:00Z",
+      "notes": "Hotfix patch queued; awaiting maintenance window."
+    },
+    {
+      "entry_id": "fw-004",
+      "firmware_kind": "driver_update",
+      "status": "failed",
+      "actor_id": "sysadmin-02",
+      "resource_id": "network-switch-c",
+      "timestamp_utc": "2026-05-31T03:00:00Z",
+      "notes": "Driver update failed; incompatible firmware version detected."
+    },
+    {
+      "entry_id": "fw-005",
+      "firmware_kind": "firmware_rollback",
+      "status": "rolled_back",
+      "actor_id": "sysadmin-01",
+      "resource_id": "digital-backend-fpga-02",
+      "timestamp_utc": "2026-05-31T04:00:00Z",
+      "notes": "Rolled back to previous stable firmware after instability detected."
+    }
+  ]
+}

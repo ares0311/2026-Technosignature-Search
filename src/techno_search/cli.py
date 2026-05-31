@@ -96,6 +96,7 @@ from techno_search.capacity_planning_log import capacity_planning_summary
 from techno_search.change_management_log import change_management_summary
 from techno_search.compliance_report_log import compliance_report_summary
 from techno_search.config_version_history import config_version_history_summary
+from techno_search.configuration_audit_log import configuration_audit_summary
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.cooling_system_log import cooling_system_summary
 from techno_search.cross_track import cross_track_summary
@@ -109,8 +110,10 @@ from techno_search.doppler_correction_log import doppler_correction_summary
 from techno_search.environmental_log import environmental_log_summary
 from techno_search.epoch_plan import epoch_plan_summary
 from techno_search.escalation_log import escalation_log_summary
+from techno_search.event_correlation_log import event_correlation_summary
 from techno_search.feature_importance import feature_importance_summary
 from techno_search.feature_normalization import feature_normalization_summary
+from techno_search.firmware_update_log import firmware_update_summary
 from techno_search.follow_up_request import follow_up_request_summary
 from techno_search.frequency_channel_log import frequency_channel_log_summary
 from techno_search.hardware_fault_log import hardware_fault_summary
@@ -483,6 +486,9 @@ SCHEMA_FILENAMES = {
     "health_check_log": "health_check_log.schema.json",
     "license_management_log": "license_management_log.schema.json",
     "storage_management_log": "storage_management_log.schema.json",
+    "firmware_update_log": "firmware_update_log.schema.json",
+    "configuration_audit_log": "configuration_audit_log.schema.json",
+    "event_correlation_log": "event_correlation_log.schema.json",
 }
 
 
@@ -3363,6 +3369,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(stm_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "firmware-update-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        fu_out = firmware_update_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(fu_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "configuration-audit-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        cau_out = configuration_audit_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(cau_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "event-correlation-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        ecr_out = event_correlation_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(ecr_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -4058,6 +4082,15 @@ def validate_all() -> dict[str, object]:
     storage_management_data = storage_management_summary()
     storage_management_entry_count = int(storage_management_data.get("entry_count", 0))
     _storage_management_completed_count = int(storage_management_data.get("completed_count", 0))
+    firmware_update_data = firmware_update_summary()
+    firmware_update_entry_count = int(firmware_update_data.get("entry_count", 0))
+    _firmware_update_applied_count = int(firmware_update_data.get("applied_count", 0))
+    configuration_audit_data = configuration_audit_summary()
+    configuration_audit_entry_count = int(configuration_audit_data.get("entry_count", 0))
+    _configuration_audit_compliant_count = int(configuration_audit_data.get("compliant_count", 0))
+    event_correlation_data = event_correlation_summary()
+    event_correlation_entry_count = int(event_correlation_data.get("entry_count", 0))
+    _event_correlation_correlated_count = int(event_correlation_data.get("correlated_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -4884,6 +4917,12 @@ def validate_all() -> dict[str, object]:
         and license_management_entry_count >= 1
         and isinstance(storage_management_entry_count, int)
         and storage_management_entry_count >= 1
+        and isinstance(firmware_update_entry_count, int)
+        and firmware_update_entry_count >= 1
+        and isinstance(configuration_audit_entry_count, int)
+        and configuration_audit_entry_count >= 1
+        and isinstance(event_correlation_entry_count, int)
+        and event_correlation_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -5160,6 +5199,9 @@ def validate_all() -> dict[str, object]:
         "health_check_log_summary": health_check_data,
         "license_management_log_summary": license_management_data,
         "storage_management_log_summary": storage_management_data,
+        "firmware_update_log_summary": firmware_update_data,
+        "configuration_audit_log_summary": configuration_audit_data,
+        "event_correlation_log_summary": event_correlation_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -7792,6 +7834,36 @@ def validation_summary() -> dict[str, object]:
         "storage_management_completed_count": (
             sm_s2["completed_count"]
             if isinstance(sm_s2 := validation.get("storage_management_log_summary"), dict)
+            else 0
+        ),
+        "firmware_update_entry_count": (
+            fu_s["entry_count"]
+            if isinstance(fu_s := validation.get("firmware_update_log_summary"), dict)
+            else 0
+        ),
+        "firmware_update_applied_count": (
+            fu_s2["applied_count"]
+            if isinstance(fu_s2 := validation.get("firmware_update_log_summary"), dict)
+            else 0
+        ),
+        "configuration_audit_entry_count": (
+            ca_s["entry_count"]
+            if isinstance(ca_s := validation.get("configuration_audit_log_summary"), dict)
+            else 0
+        ),
+        "configuration_audit_compliant_count": (
+            ca_s2["compliant_count"]
+            if isinstance(ca_s2 := validation.get("configuration_audit_log_summary"), dict)
+            else 0
+        ),
+        "event_correlation_entry_count": (
+            ec_s["entry_count"]
+            if isinstance(ec_s := validation.get("event_correlation_log_summary"), dict)
+            else 0
+        ),
+        "event_correlation_correlated_count": (
+            ec_s2["correlated_count"]
+            if isinstance(ec_s2 := validation.get("event_correlation_log_summary"), dict)
             else 0
         ),
         "labeled_candidate_count": (
@@ -10543,6 +10615,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     storage_management_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    firmware_update_parser = subparsers.add_parser(
+        "firmware-update-summary",
+        help=(
+            "Summarize firmware update log entries "
+            "(operational firmware lifecycle provenance records only)."
+        ),
+    )
+    firmware_update_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    configuration_audit_parser = subparsers.add_parser(
+        "configuration-audit-summary",
+        help=(
+            "Summarize configuration audit log entries "
+            "(operational configuration compliance provenance records only)."
+        ),
+    )
+    configuration_audit_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    event_correlation_parser = subparsers.add_parser(
+        "event-correlation-summary",
+        help=(
+            "Summarize event correlation log entries "
+            "(operational cross-system event correlation provenance records only)."
+        ),
+    )
+    event_correlation_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

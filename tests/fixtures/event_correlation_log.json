@@ -1,0 +1,51 @@
+{
+  "schema_version": "event_correlation_log_v1",
+  "disclaimer": "Event correlation log entries are operational provenance records — an event correlation run does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.",
+  "entries": [
+    {
+      "entry_id": "evcor-001",
+      "correlation_kind": "alert_cluster",
+      "status": "correlated",
+      "actor_id": "correlation-agent-01",
+      "resource_id": "alert-group-2026-05-31-a",
+      "timestamp_utc": "2026-05-31T00:00:00Z",
+      "notes": "Three concurrent alerts correlated to shared network latency event."
+    },
+    {
+      "entry_id": "evcor-002",
+      "correlation_kind": "fault_event",
+      "status": "correlated",
+      "actor_id": "correlation-agent-01",
+      "resource_id": "hardware-fault-fpga-01",
+      "timestamp_utc": "2026-05-31T01:00:00Z",
+      "notes": null
+    },
+    {
+      "entry_id": "evcor-003",
+      "correlation_kind": "temporal_cluster",
+      "status": "inconclusive",
+      "actor_id": "correlation-agent-02",
+      "resource_id": "observation-window-2026-05-31",
+      "timestamp_utc": "2026-05-31T02:00:00Z",
+      "notes": "Temporal cluster analysis inconclusive; insufficient event density in window."
+    },
+    {
+      "entry_id": "evcor-004",
+      "correlation_kind": "causal_chain",
+      "status": "no_match",
+      "actor_id": "correlation-agent-01",
+      "resource_id": "pipeline-error-batch-b",
+      "timestamp_utc": "2026-05-31T03:00:00Z",
+      "notes": "No causal chain found linking pipeline errors to upstream events."
+    },
+    {
+      "entry_id": "evcor-005",
+      "correlation_kind": "observation_link",
+      "status": "pending",
+      "actor_id": "correlation-agent-02",
+      "resource_id": "scan-session-2026-05-31-c",
+      "timestamp_utc": "2026-05-31T04:00:00Z",
+      "notes": "Observation link correlation queued; awaiting scan completion data."
+    }
+  ]
+}
