@@ -2416,3 +2416,22 @@ reviewed adapter implementation is added deliberately.
 
 Schema count increased from 167 to 168. Consistency fixture updated: milestone
 53→54, decision 100→101, schema_count 167→168.
+
+# DECISION-102: Operational Log SQLite Inserts Must Remain Preview-Only Before Adapter Execution
+
+Date: 2026-06-02
+
+Before operational log SQLite adapters execute any insert statements, the
+project must keep a deterministic insert-preview gate that renders
+parameterized `INSERT` statements and bound values from row-preview records for
+review. The preview must preserve contract column order, table mappings,
+payload/value alignment, and disabled execution.
+
+The insert preview is a local planning artifact only. It must not execute SQL,
+insert rows, create tables, migrate fixture records, ingest real observation
+data, authorize live data access, authorize external submission, or constitute
+detections, discoveries, or external validation. Execution remains disabled
+until a future reviewed adapter implementation is added deliberately.
+
+Schema count increased from 168 to 169. Consistency fixture updated: milestone
+54→55, decision 101→102, schema_count 168→169.

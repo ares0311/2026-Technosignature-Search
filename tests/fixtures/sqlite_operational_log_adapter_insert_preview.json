@@ -1,0 +1,25 @@
+{
+  "schema_version": "sqlite_operational_log_adapter_insert_preview_v1",
+  "expected_preview": {
+    "expected_insert_count": 74,
+    "expected_phase_count": 5,
+    "required_columns": [
+      "log_id",
+      "phase_id",
+      "event_payload_json",
+      "recorded_at_utc",
+      "source_fixture_path",
+      "sqlite_policy",
+      "provenance_hash"
+    ],
+    "expected_bound_value_count": 7,
+    "parameter_placeholder": "?",
+    "require_row_preview_ok": true,
+    "require_table_names": true,
+    "require_bound_values": true,
+    "require_bound_value_count": true,
+    "require_parameterized_sql": true,
+    "forbid_inline_values": true,
+    "execution_allowed": false
+  }
+}

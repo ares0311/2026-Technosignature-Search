@@ -588,6 +588,7 @@ To inspect what the passive/background system has already searched, run:
 .venv/bin/techno-search sqlite-operational-log-adapter-contract-summary
 .venv/bin/techno-search sqlite-operational-log-adapter-ddl-preview-summary
 .venv/bin/techno-search sqlite-operational-log-adapter-row-preview-summary
+.venv/bin/techno-search sqlite-operational-log-adapter-insert-preview-summary
 .venv/bin/techno-search validate-sqlite-logs
 .venv/bin/techno-search scheduler-dry-run \
   --artifact-dir artifacts/background_scheduler_dry_run
@@ -830,6 +831,7 @@ In v0, the committed ledger fixture is summarized by:
 .venv/bin/techno-search sqlite-operational-log-adapter-contract-summary
 .venv/bin/techno-search sqlite-operational-log-adapter-ddl-preview-summary
 .venv/bin/techno-search sqlite-operational-log-adapter-row-preview-summary
+.venv/bin/techno-search sqlite-operational-log-adapter-insert-preview-summary
 .venv/bin/techno-search validate-sqlite-logs
 ```
 
@@ -922,6 +924,7 @@ Scientific quality gates:
 | Operational-log SQLite adapter contract drift | Future adapter tables must keep required provenance columns and non-mutating contracts visible before implementation | `sqlite-operational-log-adapter-contract-summary` |
 | Operational-log SQLite DDL preview drift | Future adapter SQL must remain deterministic, reviewable, and non-executing before implementation | `sqlite-operational-log-adapter-ddl-preview-summary` |
 | Operational-log SQLite row preview drift | Future adapter row payloads must preserve provenance and remain non-executing before implementation | `sqlite-operational-log-adapter-row-preview-summary` |
+| Operational-log SQLite insert preview drift | Future adapter inserts must stay parameterized, value-aligned, and non-executing before implementation | `sqlite-operational-log-adapter-insert-preview-summary` |
 | Lost provenance | Manifest and provenance summary validation | Report manifests and provenance summary CLI |
 | Misleading calibration | Synthetic-only disclaimers on reliability and PR summaries | Validation summary commands |
 | Premature non-synthetic calibration | Readiness review before curated dataset promotion | `validation-readiness-summary` |

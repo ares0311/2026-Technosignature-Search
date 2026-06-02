@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sqlite_operational_log_adapter_insert_preview.schema.json",
+  "title": "SQLite Operational Log Adapter Insert Preview",
+  "type": "object",
+  "required": ["schema_version", "expected_preview"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "sqlite_operational_log_adapter_insert_preview_v1"
+    },
+    "expected_preview": {
+      "type": "object",
+      "required": [
+        "expected_insert_count",
+        "expected_phase_count",
+        "required_columns",
+        "expected_bound_value_count",
+        "parameter_placeholder",
+        "require_row_preview_ok",
+        "require_table_names",
+        "require_bound_values",
+        "require_bound_value_count",
+        "require_parameterized_sql",
+        "forbid_inline_values",
+        "execution_allowed"
+      ],
+      "properties": {
+        "expected_insert_count": { "type": "integer", "minimum": 1 },
+        "expected_phase_count": { "type": "integer", "minimum": 1 },
+        "required_columns": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "expected_bound_value_count": { "type": "integer", "minimum": 1 },
+        "parameter_placeholder": { "type": "string", "const": "?" },
+        "require_row_preview_ok": { "type": "boolean" },
+        "require_table_names": { "type": "boolean" },
+        "require_bound_values": { "type": "boolean" },
+        "require_bound_value_count": { "type": "boolean" },
+        "require_parameterized_sql": { "type": "boolean" },
+        "forbid_inline_values": { "type": "boolean" },
+        "execution_allowed": { "type": "boolean", "const": false }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
