@@ -279,6 +279,15 @@ from techno_search.software_deployment_log import software_deployment_summary
 from techno_search.software_update_log import software_update_summary
 from techno_search.source_catalog_log import source_catalog_log_summary
 from techno_search.spectral_feature_log import spectral_feature_log_summary
+from techno_search.sqlite_operational_log_adapter_contract import (
+    sqlite_operational_log_adapter_contract_summary,
+)
+from techno_search.sqlite_operational_log_adapter_plan import (
+    sqlite_operational_log_adapter_plan_summary,
+)
+from techno_search.sqlite_operational_log_registry import (
+    sqlite_operational_log_registry_summary,
+)
 from techno_search.storage_management_log import storage_management_summary
 from techno_search.submission_readiness import submission_readiness_summary
 from techno_search.system_health_log import system_health_summary
@@ -369,6 +378,15 @@ SCHEMA_FILENAMES = {
     "project_status_consistency": "project_status_consistency.schema.json",
     "production_blocker_consistency": "production_blocker_consistency.schema.json",
     "real_data_admission_preflight": "real_data_admission_preflight.schema.json",
+    "sqlite_operational_log_registry": (
+        "sqlite_operational_log_registry.schema.json"
+    ),
+    "sqlite_operational_log_adapter_plan": (
+        "sqlite_operational_log_adapter_plan.schema.json"
+    ),
+    "sqlite_operational_log_adapter_contract": (
+        "sqlite_operational_log_adapter_contract.schema.json"
+    ),
     "candidate_alert_log": "candidate_alert_log.schema.json",
     "pipeline_replay_log": "pipeline_replay_log.schema.json",
     "scoring_threshold_audit": "scoring_threshold_audit.schema.json",
@@ -2664,6 +2682,52 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0 if preflight_summary["ok"] else 1
 
+    if args.command == "sqlite-operational-log-registry-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        registry_summary = sqlite_operational_log_registry_summary(
+            fixture_path,
+            schema_names=set(SCHEMA_FILENAMES),
+        )
+        print(
+            json.dumps(
+                registry_summary,
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0 if registry_summary["ok"] else 1
+
+    if args.command == "sqlite-operational-log-adapter-plan-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        adapter_plan_summary = sqlite_operational_log_adapter_plan_summary(
+            fixture_path,
+        )
+        print(
+            json.dumps(
+                adapter_plan_summary,
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0 if adapter_plan_summary["ok"] else 1
+
+    if args.command == "sqlite-operational-log-adapter-contract-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        adapter_contract_summary = sqlite_operational_log_adapter_contract_summary(
+            fixture_path,
+        )
+        print(
+            json.dumps(
+                adapter_contract_summary,
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0 if adapter_contract_summary["ok"] else 1
+
     if args.command == "operations-alert-review-consistency-summary":
         fixture_path = Path(args.fixture_path) if args.fixture_path else None
         consistency_summary = operations_alert_review_consistency_summary(fixture_path)
@@ -4194,6 +4258,28 @@ def validate_all() -> dict[str, object]:
     real_data_admission_preflight_ok = bool(
         real_data_admission_preflight.get("ok", False)
     )
+    sqlite_operational_log_registry = sqlite_operational_log_registry_summary(
+        schema_names=set(SCHEMA_FILENAMES)
+    )
+    sqlite_operational_log_registry_ok = bool(
+        sqlite_operational_log_registry.get("ok", False)
+    )
+    sqlite_operational_log_adapter_plan = (
+        sqlite_operational_log_adapter_plan_summary(
+            registry_summary=sqlite_operational_log_registry,
+        )
+    )
+    sqlite_operational_log_adapter_plan_ok = bool(
+        sqlite_operational_log_adapter_plan.get("ok", False)
+    )
+    sqlite_operational_log_adapter_contract = (
+        sqlite_operational_log_adapter_contract_summary(
+            adapter_plan_summary=sqlite_operational_log_adapter_plan,
+        )
+    )
+    sqlite_operational_log_adapter_contract_ok = bool(
+        sqlite_operational_log_adapter_contract.get("ok", False)
+    )
     operations_action_plan = operations_action_plan_summary(operations_readiness)
     operations_action_ids = [
         str(action["action_id"])
@@ -4752,6 +4838,9 @@ def validate_all() -> dict[str, object]:
         and project_status_consistency_ok
         and production_blocker_consistency_ok
         and real_data_admission_preflight_ok
+        and sqlite_operational_log_registry_ok
+        and sqlite_operational_log_adapter_plan_ok
+        and sqlite_operational_log_adapter_contract_ok
         and operations_alert_review_consistency_ok
         and isinstance(rescore_event_count, int)
         and rescore_event_count >= 1
@@ -5118,6 +5207,13 @@ def validate_all() -> dict[str, object]:
         "project_status_consistency_summary": project_status_consistency,
         "production_blocker_consistency_summary": production_blocker_consistency,
         "real_data_admission_preflight_summary": real_data_admission_preflight,
+        "sqlite_operational_log_registry_summary": sqlite_operational_log_registry,
+        "sqlite_operational_log_adapter_plan_summary": (
+            sqlite_operational_log_adapter_plan
+        ),
+        "sqlite_operational_log_adapter_contract_summary": (
+            sqlite_operational_log_adapter_contract
+        ),
         "operations_alert_review_consistency_summary": (
             operations_alert_review_consistency
         ),
@@ -5290,6 +5386,15 @@ def validation_summary() -> dict[str, object]:
     ]
     real_data_admission_preflight = validation[
         "real_data_admission_preflight_summary"
+    ]
+    sqlite_operational_log_registry = validation[
+        "sqlite_operational_log_registry_summary"
+    ]
+    sqlite_operational_log_adapter_plan = validation[
+        "sqlite_operational_log_adapter_plan_summary"
+    ]
+    sqlite_operational_log_adapter_contract = validation[
+        "sqlite_operational_log_adapter_contract_summary"
     ]
     operations_readiness = validation["operations_readiness_summary"]
     operations_action_plan = validation["operations_action_plan_summary"]
@@ -6979,6 +7084,108 @@ def validation_summary() -> dict[str, object]:
             real_data_admission_preflight["external_submission_authorized_total"]
             if isinstance(real_data_admission_preflight, dict)
             else 0
+        ),
+        "sqlite_operational_log_registry_ok": (
+            bool(sqlite_operational_log_registry["ok"])
+            if isinstance(sqlite_operational_log_registry, dict)
+            else False
+        ),
+        "sqlite_operational_log_registry_issue_count": (
+            sqlite_operational_log_registry["issue_count"]
+            if isinstance(sqlite_operational_log_registry, dict)
+            else 0
+        ),
+        "sqlite_operational_log_registered_count": (
+            sqlite_operational_log_registry["registered_log_count"]
+            if isinstance(sqlite_operational_log_registry, dict)
+            else 0
+        ),
+        "sqlite_operational_log_missing_cli_command_count": (
+            sqlite_operational_log_registry["missing_cli_command_count"]
+            if isinstance(sqlite_operational_log_registry, dict)
+            else 0
+        ),
+        "sqlite_operational_log_missing_sqlite_policy_count": (
+            sqlite_operational_log_registry["missing_sqlite_policy_count"]
+            if isinstance(sqlite_operational_log_registry, dict)
+            else 0
+        ),
+        "sqlite_operational_log_sqlite_required_before_production_count": (
+            sqlite_operational_log_registry[
+                "sqlite_required_before_production_count"
+            ]
+            if isinstance(sqlite_operational_log_registry, dict)
+            else 0
+        ),
+        "sqlite_operational_log_adapter_plan_ok": (
+            bool(sqlite_operational_log_adapter_plan["ok"])
+            if isinstance(sqlite_operational_log_adapter_plan, dict)
+            else False
+        ),
+        "sqlite_operational_log_adapter_plan_issue_count": (
+            sqlite_operational_log_adapter_plan["issue_count"]
+            if isinstance(sqlite_operational_log_adapter_plan, dict)
+            else 0
+        ),
+        "sqlite_operational_log_adapter_planned_count": (
+            sqlite_operational_log_adapter_plan["planned_log_count"]
+            if isinstance(sqlite_operational_log_adapter_plan, dict)
+            else 0
+        ),
+        "sqlite_operational_log_adapter_phase_count": (
+            sqlite_operational_log_adapter_plan["phase_count"]
+            if isinstance(sqlite_operational_log_adapter_plan, dict)
+            else 0
+        ),
+        "sqlite_operational_log_adapter_unassigned_count": (
+            sqlite_operational_log_adapter_plan["unassigned_log_count"]
+            if isinstance(sqlite_operational_log_adapter_plan, dict)
+            else 0
+        ),
+        "sqlite_operational_log_adapter_policy_mismatch_count": (
+            sqlite_operational_log_adapter_plan["sqlite_policy_mismatch_count"]
+            if isinstance(sqlite_operational_log_adapter_plan, dict)
+            else 0
+        ),
+        "sqlite_operational_log_adapter_mutation_allowed": (
+            bool(sqlite_operational_log_adapter_plan["mutation_allowed"])
+            if isinstance(sqlite_operational_log_adapter_plan, dict)
+            else True
+        ),
+        "sqlite_operational_log_adapter_contract_ok": (
+            bool(sqlite_operational_log_adapter_contract["ok"])
+            if isinstance(sqlite_operational_log_adapter_contract, dict)
+            else False
+        ),
+        "sqlite_operational_log_adapter_contract_issue_count": (
+            sqlite_operational_log_adapter_contract["issue_count"]
+            if isinstance(sqlite_operational_log_adapter_contract, dict)
+            else 0
+        ),
+        "sqlite_operational_log_adapter_contract_phase_count": (
+            sqlite_operational_log_adapter_contract["phase_contract_count"]
+            if isinstance(sqlite_operational_log_adapter_contract, dict)
+            else 0
+        ),
+        "sqlite_operational_log_adapter_contract_missing_table_count": (
+            sqlite_operational_log_adapter_contract["missing_table_plan_count"]
+            if isinstance(sqlite_operational_log_adapter_contract, dict)
+            else 0
+        ),
+        "sqlite_operational_log_adapter_contract_missing_column_count": (
+            sqlite_operational_log_adapter_contract["missing_required_column_count"]
+            if isinstance(sqlite_operational_log_adapter_contract, dict)
+            else 0
+        ),
+        "sqlite_operational_log_adapter_contract_phase_mismatch_count": (
+            sqlite_operational_log_adapter_contract["phase_count_mismatch_count"]
+            if isinstance(sqlite_operational_log_adapter_contract, dict)
+            else 0
+        ),
+        "sqlite_operational_log_adapter_contract_mutation_allowed": (
+            bool(sqlite_operational_log_adapter_contract["mutation_allowed"])
+            if isinstance(sqlite_operational_log_adapter_contract, dict)
+            else True
         ),
         "operations_alert_review_consistency_ok": (
             bool(oar_s["ok"])
@@ -9863,6 +10070,32 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     real_data_preflight_parser.add_argument(
         "--fixture-path", type=Path, help="Optional preflight fixture path override."
+    )
+
+    sqlite_registry_parser = subparsers.add_parser(
+        "sqlite-operational-log-registry-summary",
+        help="Summarize operational log registry and SQLite policy alignment.",
+    )
+    sqlite_registry_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional registry fixture path override."
+    )
+
+    sqlite_adapter_plan_parser = subparsers.add_parser(
+        "sqlite-operational-log-adapter-plan-summary",
+        help="Summarize non-destructive SQLite adapter phase planning for log families.",
+    )
+    sqlite_adapter_plan_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional adapter-plan fixture path override."
+    )
+
+    sqlite_adapter_contract_parser = subparsers.add_parser(
+        "sqlite-operational-log-adapter-contract-summary",
+        help="Summarize non-mutating SQLite adapter table and provenance contracts.",
+    )
+    sqlite_adapter_contract_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional adapter-contract fixture path override.",
     )
 
     alert_review_consistency_parser = subparsers.add_parser(

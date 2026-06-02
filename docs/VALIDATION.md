@@ -277,6 +277,9 @@ Review reviewed and needs-follow-up outcome logs:
 .venv/bin/techno-search sqlite-log-commit-guard
 .venv/bin/techno-search sqlite-log-consistency-summary \
   --db-path logs/techno_search.sqlite3
+.venv/bin/techno-search sqlite-operational-log-registry-summary
+.venv/bin/techno-search sqlite-operational-log-adapter-plan-summary
+.venv/bin/techno-search sqlite-operational-log-adapter-contract-summary
 .venv/bin/techno-search validate-sqlite-logs \
   --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search scheduler-dry-run \
@@ -522,6 +525,40 @@ The summary verifies database visibility, validation, integrity, migration
 state, weekly digest state, retention state, PRAGMA diagnostics, commit-guard
 state, run/outcome alignment, and disabled network/external authorization
 counts. It is a local workflow/provenance gate only.
+
+Check operational log registry consistency:
+
+```bash
+.venv/bin/techno-search sqlite-operational-log-registry-summary
+.venv/bin/techno-search sqlite-operational-log-registry-summary --fixture-path tests/fixtures/sqlite_operational_log_registry.json
+```
+
+The summary verifies that each operational log family has a module, JSON
+schema, fixture, CLI summary, `SCHEMA_FILENAMES` entry, and explicit
+top-level SQLite production policy. It does not migrate fixture logs or mutate
+SQLite databases.
+
+Check non-destructive operational log adapter planning:
+
+```bash
+.venv/bin/techno-search sqlite-operational-log-adapter-plan-summary
+.venv/bin/techno-search sqlite-operational-log-adapter-plan-summary --fixture-path tests/fixtures/sqlite_operational_log_adapter_plan.json
+```
+
+The summary maps registered operational log families to future SQLite adapter
+phases and verifies that every family remains planned, policy-aligned, and
+non-mutating.
+
+Check non-mutating operational log adapter contracts:
+
+```bash
+.venv/bin/techno-search sqlite-operational-log-adapter-contract-summary
+.venv/bin/techno-search sqlite-operational-log-adapter-contract-summary --fixture-path tests/fixtures/sqlite_operational_log_adapter_contract.json
+```
+
+The summary verifies planned phase-table names and required provenance columns
+for future SQLite adapters without creating tables, migrating fixture records,
+or mutating databases.
 
 ---
 

@@ -86,6 +86,24 @@ def test_top_level_sqlite_log_consistency_importable() -> None:
     )
 
 
+def test_sqlite_operational_log_registry_importable() -> None:
+    from techno_search.sqlite_operational_log_registry import (  # noqa: F401
+        sqlite_operational_log_registry_summary,
+    )
+
+
+def test_sqlite_operational_log_adapter_plan_importable() -> None:
+    from techno_search.sqlite_operational_log_adapter_plan import (  # noqa: F401
+        sqlite_operational_log_adapter_plan_summary,
+    )
+
+
+def test_sqlite_operational_log_adapter_contract_importable() -> None:
+    from techno_search.sqlite_operational_log_adapter_contract import (  # noqa: F401
+        sqlite_operational_log_adapter_contract_summary,
+    )
+
+
 def test_labeled_dataset_importable() -> None:
     from techno_search.labeled_dataset import labeled_dataset_summary  # noqa: F401
 

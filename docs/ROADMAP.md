@@ -1280,3 +1280,39 @@ introduced.
 - [x] `validate-all` gates: `health_check_entry_count >= 1`, `license_management_entry_count >= 1`, `storage_management_entry_count >= 1`
 - [x] `validation-summary` fields: `health_check_entry_count`, `health_check_passed_count`, `license_management_entry_count`, `license_management_active_count`, `storage_management_entry_count`, `storage_management_completed_count`
 - [x] DECISION-095: Health Check Log, License Management Log, And Storage Management Log Complete Milestone 48
+
+# Milestone 50 — SQLite Operational Log Registry Consistency
+
+- [x] `src/techno_search/sqlite_operational_log_registry.py` — registry consistency checks for operational log modules, schemas, fixtures, CLI summary commands, `SCHEMA_FILENAMES` keys, and explicit top-level SQLite production policy visibility
+- [x] `schemas/sqlite_operational_log_registry.schema.json`
+- [x] `tests/fixtures/sqlite_operational_log_registry.json` — expected registry for 74 operational log families with SQLite policy `top_level_sqlite_required_before_production`
+- [x] `tests/test_sqlite_operational_log_registry.py` — guardrail tests for missing modules, CLI commands, schema keys, and SQLite policy drift
+- [x] `techno-search sqlite-operational-log-registry-summary` CLI command
+- [x] `sqlite_operational_log_registry` added to `SCHEMA_FILENAMES` (total schemas: 164)
+- [x] `validate-all` gate: SQLite operational log registry check must pass
+- [x] `validation-summary` fields: `sqlite_operational_log_registry_ok`, `sqlite_operational_log_registered_count`, `sqlite_operational_log_missing_cli_command_count`, `sqlite_operational_log_missing_sqlite_policy_count`, `sqlite_operational_log_sqlite_required_before_production_count`
+- [x] DECISION-097: Operational Log Registry Must Keep SQLite Policy Visible
+
+# Milestone 51 — SQLite Operational Log Adapter Plan
+
+- [x] `src/techno_search/sqlite_operational_log_adapter_plan.py` — non-destructive SQLite adapter phase planning for all registry-backed operational log families
+- [x] `schemas/sqlite_operational_log_adapter_plan.schema.json`
+- [x] `tests/fixtures/sqlite_operational_log_adapter_plan.json` — expected five-phase adapter plan with zero mutation allowance
+- [x] `tests/test_sqlite_operational_log_adapter_plan.py` — guardrail tests for unassigned logs, policy mismatch, count drift, and mutation drift
+- [x] `techno-search sqlite-operational-log-adapter-plan-summary` CLI command
+- [x] `sqlite_operational_log_adapter_plan` added to `SCHEMA_FILENAMES` (total schemas: 165)
+- [x] `validate-all` gate: SQLite operational log adapter plan check must pass
+- [x] `validation-summary` fields: `sqlite_operational_log_adapter_plan_ok`, `sqlite_operational_log_adapter_planned_count`, `sqlite_operational_log_adapter_phase_count`, `sqlite_operational_log_adapter_unassigned_count`, `sqlite_operational_log_adapter_policy_mismatch_count`, `sqlite_operational_log_adapter_mutation_allowed`
+- [x] DECISION-098: Operational Log SQLite Migration Must Be Planned Before Adapters Mutate Databases
+
+# Milestone 52 — SQLite Operational Log Adapter Contract
+
+- [x] `src/techno_search/sqlite_operational_log_adapter_contract.py` — non-mutating SQLite adapter contract checks for planned phase tables, required provenance columns, phase counts, and disabled mutation
+- [x] `schemas/sqlite_operational_log_adapter_contract.schema.json`
+- [x] `tests/fixtures/sqlite_operational_log_adapter_contract.json` — expected five-table contract with required provenance columns and zero mutation allowance
+- [x] `tests/test_sqlite_operational_log_adapter_contract.py` — guardrail tests for adapter-plan drift, missing table plans, missing required columns, count mismatch, and mutation drift
+- [x] `techno-search sqlite-operational-log-adapter-contract-summary` CLI command
+- [x] `sqlite_operational_log_adapter_contract` added to `SCHEMA_FILENAMES` (total schemas: 166)
+- [x] `validate-all` gate: SQLite operational log adapter contract check must pass
+- [x] `validation-summary` fields: `sqlite_operational_log_adapter_contract_ok`, `sqlite_operational_log_adapter_contract_phase_count`, `sqlite_operational_log_adapter_contract_missing_table_count`, `sqlite_operational_log_adapter_contract_missing_column_count`, `sqlite_operational_log_adapter_contract_phase_mismatch_count`, `sqlite_operational_log_adapter_contract_mutation_allowed`
+- [x] DECISION-099: Operational Log SQLite Adapters Must Keep Non-Mutating Table Contracts Before Implementation

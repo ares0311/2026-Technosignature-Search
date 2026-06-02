@@ -426,3 +426,6 @@ tests/test_pathway.py
 - [x] Software deployment log, performance monitoring log, and user activity log operational provenance records added
 - [x] Health check log, license management log, and storage management log operational provenance records added
 - [x] Firmware update log, configuration audit log, and event correlation log operational provenance records added
+- [x] SQLite operational log registry consistency gate added
+- [x] SQLite operational log adapter plan gate added
+- [x] SQLite operational log adapter contract gate added

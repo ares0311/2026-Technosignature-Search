@@ -1,7 +1,7 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-05-31
-**Current milestone:** 49 (Firmware Update Log, Configuration Audit Log, And Event Correlation Log)
+**Last updated:** 2026-06-02
+**Current milestone:** 52 (SQLite Operational Log Adapter Contract)
 
 ---
 
@@ -20,7 +20,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Calibration fixture set (15 false-positive classes) | ✅ Complete |
 | Score regression + determinism checks | ✅ Complete |
 | Interpretable baseline classifier | ✅ Complete |
-| 163 JSON schema artifacts | ✅ Complete |
+| 166 JSON schema artifacts | ✅ Complete |
 | Local validation gate (`validate-all`) | ✅ Complete |
 | Provenance, audit trail, lifecycle tracking | ✅ Complete |
 | Operational log system (35 log types) | ✅ Complete |
@@ -40,6 +40,9 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Operations blocker-progress consistency gates | ✅ Complete |
 | Top-level SQLite log consistency gates | ✅ Complete |
 | Production blocker visibility consistency gates | ✅ Complete |
+| SQLite operational log registry consistency gate | ✅ Complete |
+| SQLite operational log adapter plan gate | ✅ Complete |
+| SQLite operational log adapter contract gate | ✅ Complete |
 | Labeled candidate dataset v0 (10 synthetic entries) | ✅ Complete |
 | Scoring model evaluation against labeled dataset | ✅ Complete |
 | Live catalog clients (Gaia TAP, SIMBAD) with opt-in guard | ✅ Complete |
@@ -109,4 +112,7 @@ assessment, DECISION-080 for the status-consistency gate, DECISION-081 for the
 alert/QC review consistency gate, DECISION-082 for the action-resolution
 staleness gate, DECISION-083 for the blocker-progress consistency gate,
 DECISION-084 for the top-level SQLite log consistency gate, and DECISION-085
-for the production blocker visibility consistency gate.
+for the production blocker visibility consistency gate, DECISION-097 for
+the SQLite operational log registry consistency gate, DECISION-098 for
+the SQLite operational log adapter plan gate, and DECISION-099 for the SQLite
+operational log adapter contract gate.

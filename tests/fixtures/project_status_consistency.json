@@ -1,11 +1,11 @@
 {
   "schema_version": "project_status_consistency_v1",
   "expected_status": {
-    "latest_milestone_number": 49,
-    "latest_milestone_label": "Firmware Update Log, Configuration Audit Log, And Event Correlation Log",
-    "latest_decision_number": 96,
-    "schema_count": 163,
+    "latest_milestone_number": 52,
+    "latest_milestone_label": "SQLite Operational Log Adapter Contract",
+    "latest_decision_number": 99,
+    "schema_count": 166,
     "require_zero_real_data_authorization": true,
-    "project_status_completed_phrase": "Firmware update log, configuration audit log, and event correlation log operational provenance records added"
+    "project_status_completed_phrase": "SQLite operational log adapter contract gate added"
   }
 }

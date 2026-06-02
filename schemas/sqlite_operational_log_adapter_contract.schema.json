@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sqlite_operational_log_adapter_contract.schema.json",
+  "title": "SQLite Operational Log Adapter Contract",
+  "type": "object",
+  "required": ["schema_version", "expected_contract"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "sqlite_operational_log_adapter_contract_v1"
+    },
+    "expected_contract": {
+      "type": "object",
+      "required": [
+        "expected_phase_count",
+        "expected_planned_log_count",
+        "required_phase_ids",
+        "required_columns",
+        "phase_contracts",
+        "mutation_allowed"
+      ],
+      "properties": {
+        "expected_phase_count": { "type": "integer", "minimum": 1 },
+        "expected_planned_log_count": { "type": "integer", "minimum": 1 },
+        "required_phase_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "required_columns": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "require_adapter_plan_ok": { "type": "boolean" },
+        "require_all_phase_tables": { "type": "boolean" },
+        "require_required_columns": { "type": "boolean" },
+        "require_phase_log_counts": { "type": "boolean" },
+        "mutation_allowed": { "type": "boolean", "const": false },
+        "phase_contracts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "phase_id",
+              "table_name",
+              "planned_log_count",
+              "required_columns"
+            ],
+            "properties": {
+              "phase_id": { "type": "string", "minLength": 1 },
+              "table_name": { "type": "string", "minLength": 1 },
+              "planned_log_count": { "type": "integer", "minimum": 0 },
+              "required_columns": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "type": "string", "minLength": 1 },
+                "uniqueItems": true
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

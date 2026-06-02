@@ -1,0 +1,100 @@
+{
+  "schema_version": "sqlite_operational_log_adapter_contract_v1",
+  "expected_contract": {
+    "expected_phase_count": 5,
+    "expected_planned_log_count": 74,
+    "required_phase_ids": [
+      "candidate_and_review",
+      "observation_and_signal",
+      "pipeline_and_modeling",
+      "infrastructure_and_facility",
+      "security_and_compliance"
+    ],
+    "required_columns": [
+      "log_id",
+      "phase_id",
+      "event_payload_json",
+      "recorded_at_utc",
+      "source_fixture_path",
+      "sqlite_policy",
+      "provenance_hash"
+    ],
+    "require_adapter_plan_ok": true,
+    "require_all_phase_tables": true,
+    "require_required_columns": true,
+    "require_phase_log_counts": true,
+    "mutation_allowed": false,
+    "phase_contracts": [
+      {
+        "phase_id": "candidate_and_review",
+        "table_name": "operational_log_candidate_and_review",
+        "planned_log_count": 14,
+        "required_columns": [
+          "log_id",
+          "phase_id",
+          "event_payload_json",
+          "recorded_at_utc",
+          "source_fixture_path",
+          "sqlite_policy",
+          "provenance_hash"
+        ]
+      },
+      {
+        "phase_id": "observation_and_signal",
+        "table_name": "operational_log_observation_and_signal",
+        "planned_log_count": 29,
+        "required_columns": [
+          "log_id",
+          "phase_id",
+          "event_payload_json",
+          "recorded_at_utc",
+          "source_fixture_path",
+          "sqlite_policy",
+          "provenance_hash"
+        ]
+      },
+      {
+        "phase_id": "pipeline_and_modeling",
+        "table_name": "operational_log_pipeline_and_modeling",
+        "planned_log_count": 6,
+        "required_columns": [
+          "log_id",
+          "phase_id",
+          "event_payload_json",
+          "recorded_at_utc",
+          "source_fixture_path",
+          "sqlite_policy",
+          "provenance_hash"
+        ]
+      },
+      {
+        "phase_id": "infrastructure_and_facility",
+        "table_name": "operational_log_infrastructure_and_facility",
+        "planned_log_count": 18,
+        "required_columns": [
+          "log_id",
+          "phase_id",
+          "event_payload_json",
+          "recorded_at_utc",
+          "source_fixture_path",
+          "sqlite_policy",
+          "provenance_hash"
+        ]
+      },
+      {
+        "phase_id": "security_and_compliance",
+        "table_name": "operational_log_security_and_compliance",
+        "planned_log_count": 7,
+        "required_columns": [
+          "log_id",
+          "phase_id",
+          "event_payload_json",
+          "recorded_at_utc",
+          "source_fixture_path",
+          "sqlite_policy",
+          "provenance_hash"
+        ]
+      }
+    ]
+  }
+}

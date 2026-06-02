@@ -2317,3 +2317,63 @@ Three new operational log modules were added as part of Milestone 49.
 `event_correlation_log` records operational provenance for cross-system event correlation runs (alert_cluster, causal_chain, fault_event, observation_link, temporal_cluster). Event correlation entries do not modify candidate scores or pathway routing, do not authorize external submission, and do not constitute detection claims.
 
 Schema count increased from 160 to 163. Consistency fixture updated: milestone 48→49, decision 95→96, schema_count 160→163.
+
+# DECISION-097: Operational Log Registry Must Keep SQLite Policy Visible
+
+Date: 2026-06-01
+
+Operational log families must remain auditable as the fixture-backed log
+surface grows. A registry consistency gate now checks that each operational log
+family has a module, JSON schema, fixture, CLI summary command,
+`SCHEMA_FILENAMES` entry, and explicit top-level SQLite production policy.
+
+The current registry covers 74 operational log families and marks them with
+`top_level_sqlite_required_before_production`. This does not migrate fixture
+logs into SQLite and does not treat fixture records as production operational
+state. It keeps the gap visible until a deliberate SQLite adapter or migration
+is implemented.
+
+Registry entries are local provenance guardrails only. They do not modify
+candidate scores or pathway routing, do not authorize live data access, do not
+authorize external submission, and do not constitute detection claims.
+
+Schema count increased from 163 to 164. Consistency fixture updated: milestone
+49→50, decision 96→97, schema_count 163→164.
+
+# DECISION-098: Operational Log SQLite Migration Must Be Planned Before Adapters Mutate Databases
+
+Date: 2026-06-01
+
+Before fixture-backed operational log families are migrated into top-level
+SQLite adapters, the project must maintain a non-destructive adapter plan that
+maps every registry-backed log family to a SQLite migration phase. The plan
+must cover candidate/review, observation/signal, pipeline/modeling,
+infrastructure/facility, and security/compliance log families.
+
+The adapter plan is a local consistency gate only. It must not mutate SQLite
+databases, migrate fixture records, ingest real observation data, authorize live
+data access, or authorize external submission. The plan keeps migration intent
+auditable while preserving the current fixture-backed test surface.
+
+Schema count increased from 164 to 165. Consistency fixture updated: milestone
+50→51, decision 97→98, schema_count 164→165.
+
+# DECISION-099: Operational Log SQLite Adapters Must Keep Non-Mutating Table Contracts Before Implementation
+
+Date: 2026-06-02
+
+Before fixture-backed operational log families receive SQLite adapter
+implementations, the project must maintain a non-mutating table contract that
+keeps adapter phase tables and required provenance columns explicit. The
+contract covers the same five phases as the adapter plan and requires
+provenance-oriented fields such as log ID, phase ID, payload JSON, recorded
+timestamp, source fixture path, SQLite policy, and provenance hash.
+
+The adapter contract is a local consistency gate only. It must not create
+SQLite tables, migrate fixture records, ingest real observation data, authorize
+live data access, authorize external submission, or constitute detections,
+discoveries, or external validation. Mutation remains disabled until a future
+reviewed adapter implementation is added deliberately.
+
+Schema count increased from 165 to 166. Consistency fixture updated: milestone
+51→52, decision 98→99, schema_count 165→166.

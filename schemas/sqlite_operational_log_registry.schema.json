@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/techno_search/sqlite_operational_log_registry.schema.json",
+  "title": "SQLite Operational Log Registry Summary",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "disclaimer",
+    "ok",
+    "issue_count",
+    "issues",
+    "expected_log_count",
+    "registered_log_count",
+    "module_file_count",
+    "schema_file_count",
+    "fixture_file_count",
+    "schema_key_count",
+    "cli_command_count",
+    "missing_module_count",
+    "missing_schema_count",
+    "missing_fixture_count",
+    "missing_schema_key_count",
+    "missing_cli_command_count",
+    "sqlite_policy_documented_count",
+    "missing_sqlite_policy_count",
+    "sqlite_backed_count",
+    "sqlite_required_before_production_count",
+    "records"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "sqlite_operational_log_registry_v1"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "issue_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "expected_log_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "registered_log_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "module_file_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "schema_file_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "fixture_file_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "schema_key_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "cli_command_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "missing_module_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "missing_schema_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "missing_fixture_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "missing_schema_key_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "missing_cli_command_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sqlite_policy_documented_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "missing_sqlite_policy_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sqlite_backed_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sqlite_required_before_production_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "log_id",
+          "module_path",
+          "schema_path",
+          "fixture_path",
+          "cli_command",
+          "sqlite_policy",
+          "sqlite_backed"
+        ],
+        "properties": {
+          "log_id": {
+            "type": "string"
+          },
+          "module_path": {
+            "type": "string"
+          },
+          "schema_path": {
+            "type": "string"
+          },
+          "fixture_path": {
+            "type": "string"
+          },
+          "cli_command": {
+            "type": "string"
+          },
+          "sqlite_policy": {
+            "type": "string"
+          },
+          "sqlite_backed": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

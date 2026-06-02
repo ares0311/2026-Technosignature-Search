@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/techno_search/sqlite_operational_log_adapter_plan.schema.json",
+  "title": "SQLite Operational Log Adapter Plan Summary",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "disclaimer",
+    "ok",
+    "issue_count",
+    "issues",
+    "expected_log_count",
+    "planned_log_count",
+    "phase_count",
+    "required_phase_count",
+    "missing_phase_count",
+    "unassigned_log_count",
+    "sqlite_policy_mismatch_count",
+    "mutation_allowed",
+    "by_phase",
+    "records"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "sqlite_operational_log_adapter_plan_v1"
+    },
+    "disclaimer": {
+      "type": "string"
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "issue_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "expected_log_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "planned_log_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "phase_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "required_phase_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "missing_phase_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "unassigned_log_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sqlite_policy_mismatch_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "mutation_allowed": {
+      "type": "boolean"
+    },
+    "by_phase": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "log_id",
+          "phase_id",
+          "sqlite_policy",
+          "mutation_allowed"
+        ],
+        "properties": {
+          "log_id": {
+            "type": "string"
+          },
+          "phase_id": {
+            "type": "string"
+          },
+          "sqlite_policy": {
+            "type": "string"
+          },
+          "mutation_allowed": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

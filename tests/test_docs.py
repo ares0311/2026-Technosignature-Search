@@ -108,6 +108,15 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     assert ".venv/bin/techno-search sqlite-log-vacuum" in readme
     assert ".venv/bin/techno-search sqlite-log-commit-guard" in readme
     assert ".venv/bin/techno-search sqlite-log-consistency-summary" in readme
+    assert ".venv/bin/techno-search sqlite-operational-log-registry-summary" in readme
+    assert (
+        ".venv/bin/techno-search sqlite-operational-log-adapter-plan-summary"
+        in readme
+    )
+    assert (
+        ".venv/bin/techno-search sqlite-operational-log-adapter-contract-summary"
+        in readme
+    )
     assert ".venv/bin/techno-search validate-sqlite-logs" in readme
     assert ".venv/bin/techno-search benchmark-run-append" in readme
     assert ".venv/bin/techno-search benchmark-run-compare" in readme
