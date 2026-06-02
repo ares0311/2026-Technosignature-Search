@@ -1328,3 +1328,15 @@ introduced.
 - [x] `validate-all` gate: SQLite operational log adapter DDL preview check must pass
 - [x] `validation-summary` fields: `sqlite_operational_log_adapter_ddl_preview_ok`, `sqlite_operational_log_adapter_ddl_statement_count`, `sqlite_operational_log_adapter_ddl_missing_clause_count`, `sqlite_operational_log_adapter_ddl_execution_allowed`
 - [x] DECISION-100: Operational Log SQLite DDL Must Remain Preview-Only Before Adapter Execution
+
+# Milestone 54 — SQLite Operational Log Adapter Row Preview
+
+- [x] `src/techno_search/sqlite_operational_log_adapter_row_preview.py` — preview-only SQLite row-payload renderer for future operational log adapter inserts
+- [x] `schemas/sqlite_operational_log_adapter_row_preview.schema.json`
+- [x] `tests/fixtures/sqlite_operational_log_adapter_row_preview.json` — expected row count, phase count, required row fields, JSON payload requirement, and zero execution allowance
+- [x] `tests/test_sqlite_operational_log_adapter_row_preview.py` — guardrail tests for contract drift, plan drift, row-count drift, missing fields, missing table mappings, and execution drift
+- [x] `techno-search sqlite-operational-log-adapter-row-preview-summary` CLI command
+- [x] `sqlite_operational_log_adapter_row_preview` added to `SCHEMA_FILENAMES` (total schemas: 168)
+- [x] `validate-all` gate: SQLite operational log adapter row preview check must pass
+- [x] `validation-summary` fields: `sqlite_operational_log_adapter_row_preview_ok`, `sqlite_operational_log_adapter_row_count`, `sqlite_operational_log_adapter_row_phase_count`, `sqlite_operational_log_adapter_row_missing_field_count`, `sqlite_operational_log_adapter_row_execution_allowed`
+- [x] DECISION-101: Operational Log SQLite Row Payloads Must Remain Preview-Only Before Adapter Execution

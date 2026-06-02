@@ -1,7 +1,7 @@
 # Production Readiness Assessment
 
 **Last updated:** 2026-06-02
-**Current milestone:** 53 (SQLite Operational Log Adapter DDL Preview)
+**Current milestone:** 54 (SQLite Operational Log Adapter Row Preview)
 
 ---
 
@@ -20,7 +20,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Calibration fixture set (15 false-positive classes) | ✅ Complete |
 | Score regression + determinism checks | ✅ Complete |
 | Interpretable baseline classifier | ✅ Complete |
-| 167 JSON schema artifacts | ✅ Complete |
+| 168 JSON schema artifacts | ✅ Complete |
 | Local validation gate (`validate-all`) | ✅ Complete |
 | Provenance, audit trail, lifecycle tracking | ✅ Complete |
 | Operational log system (35 log types) | ✅ Complete |
@@ -44,6 +44,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | SQLite operational log adapter plan gate | ✅ Complete |
 | SQLite operational log adapter contract gate | ✅ Complete |
 | SQLite operational log adapter DDL preview gate | ✅ Complete |
+| SQLite operational log adapter row preview gate | ✅ Complete |
 | Labeled candidate dataset v0 (10 synthetic entries) | ✅ Complete |
 | Scoring model evaluation against labeled dataset | ✅ Complete |
 | Live catalog clients (Gaia TAP, SIMBAD) with opt-in guard | ✅ Complete |
@@ -116,5 +117,6 @@ DECISION-084 for the top-level SQLite log consistency gate, and DECISION-085
 for the production blocker visibility consistency gate, DECISION-097 for
 the SQLite operational log registry consistency gate, DECISION-098 for
 the SQLite operational log adapter plan gate, DECISION-099 for the SQLite
-operational log adapter contract gate, and DECISION-100 for the SQLite
-operational log adapter DDL preview gate.
+operational log adapter contract gate, DECISION-100 for the SQLite operational
+log adapter DDL preview gate, and DECISION-101 for the SQLite operational log
+adapter row preview gate.

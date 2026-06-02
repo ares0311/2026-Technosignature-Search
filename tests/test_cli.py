@@ -215,9 +215,9 @@ def test_cli_project_status_consistency_summary_outputs_drift_gates() -> None:
     assert exit_code == 0
     assert result["schema_version"] == "project_status_consistency_v1"
     assert result["ok"] is True
-    assert result["roadmap_latest_milestone"] == 53
-    assert result["decisions_latest_decision"] == 100
-    assert result["actual_schema_count"] == 167
+    assert result["roadmap_latest_milestone"] == 54
+    assert result["decisions_latest_decision"] == 101
+    assert result["actual_schema_count"] == 168
     assert result["rfi_database_admission_real_data_authorized_count"] == 0
     assert result["curated_dataset_admission_real_data_authorized_count"] == 0
 
@@ -288,6 +288,23 @@ def test_cli_sqlite_operational_log_adapter_ddl_preview_outputs_sql() -> None:
     assert result["execution_allowed"] is False
     assert "CREATE TABLE IF NOT EXISTS" in result["ddl_statements"][0]
     assert "without executing SQL" in result["disclaimer"]
+
+
+def test_cli_sqlite_operational_log_adapter_row_preview_outputs_rows() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["sqlite-operational-log-adapter-row-preview-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "sqlite_operational_log_adapter_row_preview_v1"
+    assert result["ok"] is True
+    assert result["row_count"] == 74
+    assert result["phase_count"] == 5
+    assert result["missing_row_field_count"] == 0
+    assert result["execution_allowed"] is False
+    assert "event_payload_json" in result["records"][0]
+    assert "without inserting rows" in result["disclaimer"]
 
 
 def test_cli_production_blocker_consistency_summary_outputs_gate_counts() -> None:
@@ -562,6 +579,7 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "sqlite_operational_log_adapter_plan",
         "sqlite_operational_log_adapter_contract",
         "sqlite_operational_log_adapter_ddl_preview",
+        "sqlite_operational_log_adapter_row_preview",
         "data_transfer_log",
         "scheduling_conflict_log",
         "system_health_log",
@@ -1781,6 +1799,17 @@ def test_cli_validate_all_outputs_local_summary() -> None:
         ]
         is False
     )
+    assert result["sqlite_operational_log_adapter_row_preview_summary"]["ok"] is True
+    assert (
+        result["sqlite_operational_log_adapter_row_preview_summary"]["row_count"]
+        == 74
+    )
+    assert (
+        result["sqlite_operational_log_adapter_row_preview_summary"][
+            "execution_allowed"
+        ]
+        is False
+    )
     assert result["catalog_cache_validation"]["forbidden_roots"] == [
         "data",
         "cache",
@@ -1799,12 +1828,12 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 167
+    assert result["schema_count"] == 168
     assert result["schemas_ok"] is True
     assert result["project_status_consistency_ok"] is True
-    assert result["project_status_latest_milestone"] == 53
-    assert result["project_status_latest_decision"] == 100
-    assert result["project_status_schema_count"] == 167
+    assert result["project_status_latest_milestone"] == 54
+    assert result["project_status_latest_decision"] == 101
+    assert result["project_status_schema_count"] == 168
     assert result["production_blocker_consistency_ok"] is True
     assert result["production_blocker_consistency_issue_count"] == 0
     assert result["production_blocker_tier1_blocker_count"] == 5
@@ -1838,6 +1867,12 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["sqlite_operational_log_adapter_ddl_statement_count"] == 5
     assert result["sqlite_operational_log_adapter_ddl_missing_clause_count"] == 0
     assert result["sqlite_operational_log_adapter_ddl_execution_allowed"] is False
+    assert result["sqlite_operational_log_adapter_row_preview_ok"] is True
+    assert result["sqlite_operational_log_adapter_row_preview_issue_count"] == 0
+    assert result["sqlite_operational_log_adapter_row_count"] == 74
+    assert result["sqlite_operational_log_adapter_row_phase_count"] == 5
+    assert result["sqlite_operational_log_adapter_row_missing_field_count"] == 0
+    assert result["sqlite_operational_log_adapter_row_execution_allowed"] is False
     assert result["operations_alert_review_consistency_ok"] is True
     assert result["operations_alert_review_open_alert_count"] == 3
     assert result["operations_alert_review_critical_open_alert_count"] == 1

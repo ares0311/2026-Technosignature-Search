@@ -2396,3 +2396,23 @@ reviewed adapter implementation is added deliberately.
 
 Schema count increased from 166 to 167. Consistency fixture updated: milestone
 52→53, decision 99→100, schema_count 166→167.
+
+# DECISION-101: Operational Log SQLite Row Payloads Must Remain Preview-Only Before Adapter Execution
+
+Date: 2026-06-02
+
+Before operational log SQLite adapters insert any rows, the project must keep a
+deterministic row-payload preview gate that maps registry-backed operational log
+families into the planned adapter phase tables for review. Preview rows must
+include required provenance fields such as log ID, phase ID, payload JSON,
+recorded timestamp placeholder, source fixture path, SQLite policy, and
+provenance hash.
+
+The row preview is a local planning artifact only. It must not insert rows,
+create tables, migrate fixture records, ingest real observation data, authorize
+live data access, authorize external submission, or constitute detections,
+discoveries, or external validation. Execution remains disabled until a future
+reviewed adapter implementation is added deliberately.
+
+Schema count increased from 167 to 168. Consistency fixture updated: milestone
+53→54, decision 100→101, schema_count 167→168.

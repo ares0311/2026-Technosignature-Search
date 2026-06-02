@@ -933,6 +933,13 @@ from techno_search.sqlite_operational_log_adapter_plan import (
     load_sqlite_operational_log_adapter_plan_expectations,
     sqlite_operational_log_adapter_plan_summary,
 )
+from techno_search.sqlite_operational_log_adapter_row_preview import (
+    SQLITE_OPERATIONAL_LOG_ADAPTER_ROW_PREVIEW_DISCLAIMER,
+    SQLITE_OPERATIONAL_LOG_ADAPTER_ROW_PREVIEW_SCHEMA_VERSION,
+    SqliteOperationalLogAdapterRowPreviewRecord,
+    load_sqlite_operational_log_adapter_row_preview_expectations,
+    sqlite_operational_log_adapter_row_preview_summary,
+)
 from techno_search.sqlite_operational_log_registry import (
     SQLITE_OPERATIONAL_LOG_REGISTRY_DISCLAIMER,
     SQLITE_OPERATIONAL_LOG_REGISTRY_SCHEMA_VERSION,
@@ -1614,6 +1621,11 @@ __all__ = [
     "SqliteOperationalLogAdapterDdlPreviewRecord",
     "load_sqlite_operational_log_adapter_ddl_preview_expectations",
     "sqlite_operational_log_adapter_ddl_preview_summary",
+    "SQLITE_OPERATIONAL_LOG_ADAPTER_ROW_PREVIEW_DISCLAIMER",
+    "SQLITE_OPERATIONAL_LOG_ADAPTER_ROW_PREVIEW_SCHEMA_VERSION",
+    "SqliteOperationalLogAdapterRowPreviewRecord",
+    "load_sqlite_operational_log_adapter_row_preview_expectations",
+    "sqlite_operational_log_adapter_row_preview_summary",
     "SQLITE_OPERATIONAL_LOG_REGISTRY_DISCLAIMER",
     "SQLITE_OPERATIONAL_LOG_REGISTRY_SCHEMA_VERSION",
     "SQLITE_REQUIRED_POLICY",

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sqlite_operational_log_adapter_row_preview.schema.json",
+  "title": "SQLite Operational Log Adapter Row Preview",
+  "type": "object",
+  "required": ["schema_version", "expected_preview"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "sqlite_operational_log_adapter_row_preview_v1"
+    },
+    "expected_preview": {
+      "type": "object",
+      "required": [
+        "expected_row_count",
+        "expected_phase_count",
+        "required_row_fields",
+        "require_adapter_contract_ok",
+        "require_adapter_plan_ok",
+        "require_registry_ok",
+        "require_contract_columns",
+        "require_row_fields",
+        "require_json_payloads",
+        "execution_allowed"
+      ],
+      "properties": {
+        "expected_row_count": { "type": "integer", "minimum": 1 },
+        "expected_phase_count": { "type": "integer", "minimum": 1 },
+        "required_row_fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "require_adapter_contract_ok": { "type": "boolean" },
+        "require_adapter_plan_ok": { "type": "boolean" },
+        "require_registry_ok": { "type": "boolean" },
+        "require_contract_columns": { "type": "boolean" },
+        "require_row_fields": { "type": "boolean" },
+        "require_json_payloads": { "type": "boolean" },
+        "execution_allowed": { "type": "boolean", "const": false }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
