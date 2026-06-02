@@ -215,9 +215,9 @@ def test_cli_project_status_consistency_summary_outputs_drift_gates() -> None:
     assert exit_code == 0
     assert result["schema_version"] == "project_status_consistency_v1"
     assert result["ok"] is True
-    assert result["roadmap_latest_milestone"] == 55
-    assert result["decisions_latest_decision"] == 102
-    assert result["actual_schema_count"] == 169
+    assert result["roadmap_latest_milestone"] == 56
+    assert result["decisions_latest_decision"] == 103
+    assert result["actual_schema_count"] == 170
     assert result["rfi_database_admission_real_data_authorized_count"] == 0
     assert result["curated_dataset_admission_real_data_authorized_count"] == 0
 
@@ -327,6 +327,32 @@ def test_cli_sqlite_operational_log_adapter_insert_preview_outputs_inserts() -> 
     assert result["execution_allowed"] is False
     assert "VALUES (?, ?, ?, ?, ?, ?, ?)" in result["insert_statements"][0]
     assert "without executing SQL" in result["disclaimer"]
+
+
+def test_cli_sqlite_operational_log_adapter_execution_preview_outputs_plan() -> None:
+    stdout = StringIO()
+
+    exit_code = main(
+        ["sqlite-operational-log-adapter-execution-preview-summary"],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert (
+        result["schema_version"]
+        == "sqlite_operational_log_adapter_execution_preview_v1"
+    )
+    assert result["ok"] is True
+    assert result["insert_count"] == 74
+    assert result["phase_count"] == 5
+    assert result["operation_count"] == 84
+    assert result["missing_transaction_marker_count"] == 0
+    assert result["missing_phase_table_count"] == 0
+    assert result["execution_allowed"] is False
+    assert result["mutation_allowed"] is False
+    assert result["begin_statement"] == "BEGIN IMMEDIATE;"
+    assert "without opening databases" in result["disclaimer"]
 
 
 def test_cli_production_blocker_consistency_summary_outputs_gate_counts() -> None:
@@ -601,6 +627,7 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "sqlite_operational_log_adapter_plan",
         "sqlite_operational_log_adapter_contract",
         "sqlite_operational_log_adapter_ddl_preview",
+        "sqlite_operational_log_adapter_execution_preview",
         "sqlite_operational_log_adapter_insert_preview",
         "sqlite_operational_log_adapter_row_preview",
         "data_transfer_log",
@@ -1846,6 +1873,22 @@ def test_cli_validate_all_outputs_local_summary() -> None:
         ]
         is False
     )
+    assert (
+        result["sqlite_operational_log_adapter_execution_preview_summary"]["ok"]
+        is True
+    )
+    assert (
+        result["sqlite_operational_log_adapter_execution_preview_summary"][
+            "operation_count"
+        ]
+        == 84
+    )
+    assert (
+        result["sqlite_operational_log_adapter_execution_preview_summary"][
+            "mutation_allowed"
+        ]
+        is False
+    )
     assert result["catalog_cache_validation"]["forbidden_roots"] == [
         "data",
         "cache",
@@ -1864,12 +1907,12 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 169
+    assert result["schema_count"] == 170
     assert result["schemas_ok"] is True
     assert result["project_status_consistency_ok"] is True
-    assert result["project_status_latest_milestone"] == 55
-    assert result["project_status_latest_decision"] == 102
-    assert result["project_status_schema_count"] == 169
+    assert result["project_status_latest_milestone"] == 56
+    assert result["project_status_latest_decision"] == 103
+    assert result["project_status_schema_count"] == 170
     assert result["production_blocker_consistency_ok"] is True
     assert result["production_blocker_consistency_issue_count"] == 0
     assert result["production_blocker_tier1_blocker_count"] == 5
@@ -1915,6 +1958,12 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["sqlite_operational_log_adapter_insert_phase_count"] == 5
     assert result["sqlite_operational_log_adapter_insert_value_mismatch_count"] == 0
     assert result["sqlite_operational_log_adapter_insert_execution_allowed"] is False
+    assert result["sqlite_operational_log_adapter_execution_preview_ok"] is True
+    assert result["sqlite_operational_log_adapter_execution_preview_issue_count"] == 0
+    assert result["sqlite_operational_log_adapter_execution_operation_count"] == 84
+    assert result["sqlite_operational_log_adapter_execution_phase_count"] == 5
+    assert result["sqlite_operational_log_adapter_execution_allowed"] is False
+    assert result["sqlite_operational_log_adapter_execution_mutation_allowed"] is False
     assert result["operations_alert_review_consistency_ok"] is True
     assert result["operations_alert_review_open_alert_count"] == 3
     assert result["operations_alert_review_critical_open_alert_count"] == 1

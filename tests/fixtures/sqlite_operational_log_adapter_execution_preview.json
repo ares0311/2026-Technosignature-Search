@@ -1,0 +1,16 @@
+{
+  "schema_version": "sqlite_operational_log_adapter_execution_preview_v1",
+  "expected_preview": {
+    "expected_insert_count": 74,
+    "expected_phase_count": 5,
+    "expected_operation_count": 84,
+    "begin_statement": "BEGIN IMMEDIATE;",
+    "commit_statement": "COMMIT;",
+    "require_insert_preview_ok": true,
+    "require_transaction_markers": true,
+    "require_phase_tables": true,
+    "require_phase_inserts": true,
+    "execution_allowed": false,
+    "mutation_allowed": false
+  }
+}

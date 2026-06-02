@@ -2435,3 +2435,23 @@ until a future reviewed adapter implementation is added deliberately.
 
 Schema count increased from 168 to 169. Consistency fixture updated: milestone
 54→55, decision 101→102, schema_count 168→169.
+
+# DECISION-103: Operational Log SQLite Execution Ordering Must Remain Preview-Only Before Adapter Execution
+
+Date: 2026-06-02
+
+Before operational log SQLite adapters execute planned table creation or insert
+statements, the project must keep a deterministic execution-preview gate that
+renders transaction ordering around the insert-preview records for review. The
+preview must preserve phase grouping, transaction markers, insert counts,
+operation counts, disabled execution, and disabled mutation.
+
+The execution preview is a local planning artifact only. It must not open
+databases, execute SQL, insert rows, create tables, migrate fixture records,
+ingest real observation data, authorize live data access, authorize external
+submission, or constitute detections, discoveries, or external validation.
+Execution remains disabled until a future reviewed adapter implementation is
+added deliberately.
+
+Schema count increased from 169 to 170. Consistency fixture updated: milestone
+55→56, decision 102→103, schema_count 169→170.

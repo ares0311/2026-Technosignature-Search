@@ -1,11 +1,11 @@
 {
   "schema_version": "project_status_consistency_v1",
   "expected_status": {
-    "latest_milestone_number": 55,
-    "latest_milestone_label": "SQLite Operational Log Adapter Insert Preview",
-    "latest_decision_number": 102,
-    "schema_count": 169,
+    "latest_milestone_number": 56,
+    "latest_milestone_label": "SQLite Operational Log Adapter Execution Preview",
+    "latest_decision_number": 103,
+    "schema_count": 170,
     "require_zero_real_data_authorization": true,
-    "project_status_completed_phrase": "SQLite operational log adapter insert preview gate added"
+    "project_status_completed_phrase": "SQLite operational log adapter execution preview gate added"
   }
 }
