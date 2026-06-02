@@ -104,6 +104,12 @@ def test_sqlite_operational_log_adapter_contract_importable() -> None:
     )
 
 
+def test_sqlite_operational_log_adapter_ddl_preview_importable() -> None:
+    from techno_search.sqlite_operational_log_adapter_ddl_preview import (  # noqa: F401
+        sqlite_operational_log_adapter_ddl_preview_summary,
+    )
+
+
 def test_labeled_dataset_importable() -> None:
     from techno_search.labeled_dataset import labeled_dataset_summary  # noqa: F401
 

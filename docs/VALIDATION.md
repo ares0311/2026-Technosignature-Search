@@ -280,6 +280,7 @@ Review reviewed and needs-follow-up outcome logs:
 .venv/bin/techno-search sqlite-operational-log-registry-summary
 .venv/bin/techno-search sqlite-operational-log-adapter-plan-summary
 .venv/bin/techno-search sqlite-operational-log-adapter-contract-summary
+.venv/bin/techno-search sqlite-operational-log-adapter-ddl-preview-summary
 .venv/bin/techno-search validate-sqlite-logs \
   --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search scheduler-dry-run \
@@ -559,6 +560,17 @@ Check non-mutating operational log adapter contracts:
 The summary verifies planned phase-table names and required provenance columns
 for future SQLite adapters without creating tables, migrating fixture records,
 or mutating databases.
+
+Preview non-executing operational log adapter DDL:
+
+```bash
+.venv/bin/techno-search sqlite-operational-log-adapter-ddl-preview-summary
+.venv/bin/techno-search sqlite-operational-log-adapter-ddl-preview-summary --fixture-path tests/fixtures/sqlite_operational_log_adapter_ddl_preview.json
+```
+
+The preview renders deterministic `CREATE TABLE` SQL text from the adapter
+contract for review only. It does not execute SQL, create tables, migrate
+fixtures, or mutate databases.
 
 ---
 

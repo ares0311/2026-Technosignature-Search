@@ -2377,3 +2377,22 @@ reviewed adapter implementation is added deliberately.
 
 Schema count increased from 165 to 166. Consistency fixture updated: milestone
 51→52, decision 98→99, schema_count 165→166.
+
+# DECISION-100: Operational Log SQLite DDL Must Remain Preview-Only Before Adapter Execution
+
+Date: 2026-06-02
+
+Before operational log SQLite adapters execute any SQL, the project must keep a
+deterministic DDL preview gate that renders planned `CREATE TABLE` statements
+from the adapter contract for review. The preview must include the required
+provenance columns and must verify expected statement counts and required SQL
+clauses.
+
+The DDL preview is a local planning artifact only. It must not execute SQL,
+create tables, migrate fixture records, ingest real observation data, authorize
+live data access, authorize external submission, or constitute detections,
+discoveries, or external validation. Execution remains disabled until a future
+reviewed adapter implementation is added deliberately.
+
+Schema count increased from 166 to 167. Consistency fixture updated: milestone
+52→53, decision 99→100, schema_count 166→167.

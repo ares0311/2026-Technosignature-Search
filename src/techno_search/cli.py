@@ -282,6 +282,9 @@ from techno_search.spectral_feature_log import spectral_feature_log_summary
 from techno_search.sqlite_operational_log_adapter_contract import (
     sqlite_operational_log_adapter_contract_summary,
 )
+from techno_search.sqlite_operational_log_adapter_ddl_preview import (
+    sqlite_operational_log_adapter_ddl_preview_summary,
+)
 from techno_search.sqlite_operational_log_adapter_plan import (
     sqlite_operational_log_adapter_plan_summary,
 )
@@ -386,6 +389,9 @@ SCHEMA_FILENAMES = {
     ),
     "sqlite_operational_log_adapter_contract": (
         "sqlite_operational_log_adapter_contract.schema.json"
+    ),
+    "sqlite_operational_log_adapter_ddl_preview": (
+        "sqlite_operational_log_adapter_ddl_preview.schema.json"
     ),
     "candidate_alert_log": "candidate_alert_log.schema.json",
     "pipeline_replay_log": "pipeline_replay_log.schema.json",
@@ -2728,6 +2734,21 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0 if adapter_contract_summary["ok"] else 1
 
+    if args.command == "sqlite-operational-log-adapter-ddl-preview-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        ddl_preview_summary = sqlite_operational_log_adapter_ddl_preview_summary(
+            fixture_path,
+        )
+        print(
+            json.dumps(
+                ddl_preview_summary,
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0 if ddl_preview_summary["ok"] else 1
+
     if args.command == "operations-alert-review-consistency-summary":
         fixture_path = Path(args.fixture_path) if args.fixture_path else None
         consistency_summary = operations_alert_review_consistency_summary(fixture_path)
@@ -4280,6 +4301,14 @@ def validate_all() -> dict[str, object]:
     sqlite_operational_log_adapter_contract_ok = bool(
         sqlite_operational_log_adapter_contract.get("ok", False)
     )
+    sqlite_operational_log_adapter_ddl_preview = (
+        sqlite_operational_log_adapter_ddl_preview_summary(
+            adapter_contract_summary=sqlite_operational_log_adapter_contract,
+        )
+    )
+    sqlite_operational_log_adapter_ddl_preview_ok = bool(
+        sqlite_operational_log_adapter_ddl_preview.get("ok", False)
+    )
     operations_action_plan = operations_action_plan_summary(operations_readiness)
     operations_action_ids = [
         str(action["action_id"])
@@ -4841,6 +4870,7 @@ def validate_all() -> dict[str, object]:
         and sqlite_operational_log_registry_ok
         and sqlite_operational_log_adapter_plan_ok
         and sqlite_operational_log_adapter_contract_ok
+        and sqlite_operational_log_adapter_ddl_preview_ok
         and operations_alert_review_consistency_ok
         and isinstance(rescore_event_count, int)
         and rescore_event_count >= 1
@@ -5214,6 +5244,9 @@ def validate_all() -> dict[str, object]:
         "sqlite_operational_log_adapter_contract_summary": (
             sqlite_operational_log_adapter_contract
         ),
+        "sqlite_operational_log_adapter_ddl_preview_summary": (
+            sqlite_operational_log_adapter_ddl_preview
+        ),
         "operations_alert_review_consistency_summary": (
             operations_alert_review_consistency
         ),
@@ -5395,6 +5428,9 @@ def validation_summary() -> dict[str, object]:
     ]
     sqlite_operational_log_adapter_contract = validation[
         "sqlite_operational_log_adapter_contract_summary"
+    ]
+    sqlite_operational_log_adapter_ddl_preview = validation[
+        "sqlite_operational_log_adapter_ddl_preview_summary"
     ]
     operations_readiness = validation["operations_readiness_summary"]
     operations_action_plan = validation["operations_action_plan_summary"]
@@ -7185,6 +7221,31 @@ def validation_summary() -> dict[str, object]:
         "sqlite_operational_log_adapter_contract_mutation_allowed": (
             bool(sqlite_operational_log_adapter_contract["mutation_allowed"])
             if isinstance(sqlite_operational_log_adapter_contract, dict)
+            else True
+        ),
+        "sqlite_operational_log_adapter_ddl_preview_ok": (
+            bool(sqlite_operational_log_adapter_ddl_preview["ok"])
+            if isinstance(sqlite_operational_log_adapter_ddl_preview, dict)
+            else False
+        ),
+        "sqlite_operational_log_adapter_ddl_preview_issue_count": (
+            sqlite_operational_log_adapter_ddl_preview["issue_count"]
+            if isinstance(sqlite_operational_log_adapter_ddl_preview, dict)
+            else 0
+        ),
+        "sqlite_operational_log_adapter_ddl_statement_count": (
+            sqlite_operational_log_adapter_ddl_preview["ddl_statement_count"]
+            if isinstance(sqlite_operational_log_adapter_ddl_preview, dict)
+            else 0
+        ),
+        "sqlite_operational_log_adapter_ddl_missing_clause_count": (
+            sqlite_operational_log_adapter_ddl_preview["missing_clause_count"]
+            if isinstance(sqlite_operational_log_adapter_ddl_preview, dict)
+            else 0
+        ),
+        "sqlite_operational_log_adapter_ddl_execution_allowed": (
+            bool(sqlite_operational_log_adapter_ddl_preview["execution_allowed"])
+            if isinstance(sqlite_operational_log_adapter_ddl_preview, dict)
             else True
         ),
         "operations_alert_review_consistency_ok": (
@@ -10096,6 +10157,16 @@ def _build_parser() -> argparse.ArgumentParser:
         "--fixture-path",
         type=Path,
         help="Optional adapter-contract fixture path override.",
+    )
+
+    sqlite_adapter_ddl_parser = subparsers.add_parser(
+        "sqlite-operational-log-adapter-ddl-preview-summary",
+        help="Preview non-executing SQLite adapter DDL for operational log phases.",
+    )
+    sqlite_adapter_ddl_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional adapter-DDL-preview fixture path override.",
     )
 
     alert_review_consistency_parser = subparsers.add_parser(

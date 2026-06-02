@@ -1,0 +1,19 @@
+{
+  "schema_version": "sqlite_operational_log_adapter_ddl_preview_v1",
+  "expected_preview": {
+    "expected_statement_count": 5,
+    "required_clauses": [
+      "CREATE TABLE IF NOT EXISTS",
+      "log_id TEXT NOT NULL",
+      "phase_id TEXT NOT NULL",
+      "event_payload_json TEXT NOT NULL",
+      "recorded_at_utc TEXT NOT NULL",
+      "source_fixture_path TEXT NOT NULL",
+      "sqlite_policy TEXT NOT NULL",
+      "provenance_hash TEXT NOT NULL"
+    ],
+    "require_adapter_contract_ok": true,
+    "require_required_clauses": true,
+    "execution_allowed": false
+  }
+}

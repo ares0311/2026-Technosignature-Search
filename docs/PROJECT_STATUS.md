@@ -429,3 +429,4 @@ tests/test_pathway.py
 - [x] SQLite operational log registry consistency gate added
 - [x] SQLite operational log adapter plan gate added
 - [x] SQLite operational log adapter contract gate added
+- [x] SQLite operational log adapter DDL preview gate added
