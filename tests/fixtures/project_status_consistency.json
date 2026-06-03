@@ -1,11 +1,11 @@
 {
   "schema_version": "project_status_consistency_v1",
   "expected_status": {
-    "latest_milestone_number": 57,
-    "latest_milestone_label": "SQLite Operational Log Adapter Dry-Run Manifest",
-    "latest_decision_number": 104,
-    "schema_count": 171,
+    "latest_milestone_number": 58,
+    "latest_milestone_label": "SQLite Operational Log Adapter Readiness Preflight",
+    "latest_decision_number": 105,
+    "schema_count": 172,
     "require_zero_real_data_authorization": true,
-    "project_status_completed_phrase": "SQLite operational log adapter dry-run manifest gate added"
+    "project_status_completed_phrase": "SQLite operational log adapter readiness preflight gate added"
   }
 }

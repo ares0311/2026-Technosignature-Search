@@ -285,6 +285,7 @@ Review reviewed and needs-follow-up outcome logs:
 .venv/bin/techno-search sqlite-operational-log-adapter-insert-preview-summary
 .venv/bin/techno-search sqlite-operational-log-adapter-execution-preview-summary
 .venv/bin/techno-search sqlite-operational-log-adapter-dry-run-manifest-summary
+.venv/bin/techno-search sqlite-operational-log-adapter-readiness-preflight-summary
 .venv/bin/techno-search validate-sqlite-logs \
   --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search scheduler-dry-run \
@@ -620,6 +621,18 @@ The manifest reconciles deterministic DDL and execution previews for review
 only. It does not open databases, execute SQL, insert rows, create tables,
 migrate fixtures, mutate databases, authorize live data, or authorize external
 submission.
+
+Preview non-mutating operational log adapter readiness preflight:
+
+```bash
+.venv/bin/techno-search sqlite-operational-log-adapter-readiness-preflight-summary
+.venv/bin/techno-search sqlite-operational-log-adapter-readiness-preflight-summary --fixture-path tests/fixtures/sqlite_operational_log_adapter_readiness_preflight.json
+```
+
+The preflight reconciles registry, planning, contract, preview, and dry-run
+gates before any future adapter implementation. It does not open databases,
+execute SQL, insert rows, create tables, migrate fixtures, mutate databases,
+authorize live data, or authorize external submission.
 
 ---
 

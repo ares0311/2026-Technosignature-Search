@@ -591,6 +591,7 @@ To inspect what the passive/background system has already searched, run:
 .venv/bin/techno-search sqlite-operational-log-adapter-insert-preview-summary
 .venv/bin/techno-search sqlite-operational-log-adapter-execution-preview-summary
 .venv/bin/techno-search sqlite-operational-log-adapter-dry-run-manifest-summary
+.venv/bin/techno-search sqlite-operational-log-adapter-readiness-preflight-summary
 .venv/bin/techno-search validate-sqlite-logs
 .venv/bin/techno-search scheduler-dry-run \
   --artifact-dir artifacts/background_scheduler_dry_run
@@ -836,6 +837,7 @@ In v0, the committed ledger fixture is summarized by:
 .venv/bin/techno-search sqlite-operational-log-adapter-insert-preview-summary
 .venv/bin/techno-search sqlite-operational-log-adapter-execution-preview-summary
 .venv/bin/techno-search sqlite-operational-log-adapter-dry-run-manifest-summary
+.venv/bin/techno-search sqlite-operational-log-adapter-readiness-preflight-summary
 .venv/bin/techno-search validate-sqlite-logs
 ```
 
@@ -931,6 +933,7 @@ Scientific quality gates:
 | Operational-log SQLite insert preview drift | Future adapter inserts must stay parameterized, value-aligned, and non-executing before implementation | `sqlite-operational-log-adapter-insert-preview-summary` |
 | Operational-log SQLite execution preview drift | Future adapter execution ordering must stay transaction-scoped, reviewable, and non-executing before implementation | `sqlite-operational-log-adapter-execution-preview-summary` |
 | Operational-log SQLite dry-run manifest drift | Future adapter dry-run manifests must reconcile DDL and execution previews while keeping database opening, execution, mutation, live data, and external submission disabled | `sqlite-operational-log-adapter-dry-run-manifest-summary` |
+| Operational-log SQLite readiness preflight drift | Future adapter readiness must reconcile all registry, planning, preview, and dry-run gates before any database opening or mutation is allowed | `sqlite-operational-log-adapter-readiness-preflight-summary` |
 | Lost provenance | Manifest and provenance summary validation | Report manifests and provenance summary CLI |
 | Misleading calibration | Synthetic-only disclaimers on reliability and PR summaries | Validation summary commands |
 | Premature non-synthetic calibration | Readiness review before curated dataset promotion | `validation-readiness-summary` |

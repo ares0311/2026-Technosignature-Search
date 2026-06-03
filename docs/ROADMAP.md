@@ -1376,3 +1376,15 @@ introduced.
 - [x] `validate-all` gate: SQLite operational log adapter dry-run manifest check must pass
 - [x] `validation-summary` fields: `sqlite_operational_log_adapter_dry_run_manifest_ok`, `sqlite_operational_log_adapter_dry_run_manifest_status`, `sqlite_operational_log_adapter_dry_run_phase_count`, `sqlite_operational_log_adapter_dry_run_phase_mismatch_count`, `sqlite_operational_log_adapter_dry_run_database_open_allowed`, `sqlite_operational_log_adapter_dry_run_execution_allowed`, `sqlite_operational_log_adapter_dry_run_mutation_allowed`, `sqlite_operational_log_adapter_dry_run_live_data_authorized`, `sqlite_operational_log_adapter_dry_run_external_submission_authorized`
 - [x] DECISION-104: Operational Log SQLite Dry-Run Manifests Must Reconcile Previews Before Adapter Execution
+
+# Milestone 58 — SQLite Operational Log Adapter Readiness Preflight
+
+- [x] `src/techno_search/sqlite_operational_log_adapter_readiness_preflight.py` — non-mutating readiness preflight that reconciles registry, plan, contract, preview, and dry-run gates
+- [x] `schemas/sqlite_operational_log_adapter_readiness_preflight.schema.json`
+- [x] `tests/fixtures/sqlite_operational_log_adapter_readiness_preflight.json` — expected registry count, plan count, phase count, DDL count, row count, insert count, execution operation count, schema count, preflight-only status, and disabled database-open/execution/mutation/authorization flags
+- [x] `tests/test_sqlite_operational_log_adapter_readiness_preflight.py` — guardrail tests for upstream gate drift, count drift, dry-run status drift, preflight status drift, database-open drift, execution drift, mutation drift, live-data drift, and external-submission drift
+- [x] `techno-search sqlite-operational-log-adapter-readiness-preflight-summary` CLI command
+- [x] `sqlite_operational_log_adapter_readiness_preflight` added to `SCHEMA_FILENAMES` (total schemas: 172)
+- [x] `validate-all` gate: SQLite operational log adapter readiness preflight check must pass
+- [x] `validation-summary` fields: `sqlite_operational_log_adapter_readiness_preflight_ok`, `sqlite_operational_log_adapter_readiness_preflight_status`, `sqlite_operational_log_adapter_readiness_preflight_failed_gate_count`, `sqlite_operational_log_adapter_readiness_preflight_schema_count`, `sqlite_operational_log_adapter_readiness_preflight_database_open_allowed`, `sqlite_operational_log_adapter_readiness_preflight_execution_allowed`, `sqlite_operational_log_adapter_readiness_preflight_mutation_allowed`, `sqlite_operational_log_adapter_readiness_preflight_live_data_authorized`, `sqlite_operational_log_adapter_readiness_preflight_external_submission_authorized`
+- [x] DECISION-105: Operational Log SQLite Adapter Readiness Must Remain Preflight-Only Before Execution

@@ -954,6 +954,13 @@ from techno_search.sqlite_operational_log_adapter_plan import (
     load_sqlite_operational_log_adapter_plan_expectations,
     sqlite_operational_log_adapter_plan_summary,
 )
+from techno_search.sqlite_operational_log_adapter_readiness_preflight import (
+    SQLITE_OPERATIONAL_LOG_ADAPTER_READINESS_PREFLIGHT_DISCLAIMER,
+    SQLITE_OPERATIONAL_LOG_ADAPTER_READINESS_PREFLIGHT_SCHEMA_VERSION,
+    SqliteOperationalLogAdapterReadinessGate,
+    load_sqlite_operational_log_adapter_readiness_preflight_expectations,
+    sqlite_operational_log_adapter_readiness_preflight_summary,
+)
 from techno_search.sqlite_operational_log_adapter_row_preview import (
     SQLITE_OPERATIONAL_LOG_ADAPTER_ROW_PREVIEW_DISCLAIMER,
     SQLITE_OPERATIONAL_LOG_ADAPTER_ROW_PREVIEW_SCHEMA_VERSION,
@@ -1647,6 +1654,11 @@ __all__ = [
     "SqliteOperationalLogAdapterDryRunManifestEntry",
     "load_sqlite_operational_log_adapter_dry_run_manifest_expectations",
     "sqlite_operational_log_adapter_dry_run_manifest_summary",
+    "SQLITE_OPERATIONAL_LOG_ADAPTER_READINESS_PREFLIGHT_DISCLAIMER",
+    "SQLITE_OPERATIONAL_LOG_ADAPTER_READINESS_PREFLIGHT_SCHEMA_VERSION",
+    "SqliteOperationalLogAdapterReadinessGate",
+    "load_sqlite_operational_log_adapter_readiness_preflight_expectations",
+    "sqlite_operational_log_adapter_readiness_preflight_summary",
     "SQLITE_OPERATIONAL_LOG_ADAPTER_EXECUTION_PREVIEW_DISCLAIMER",
     "SQLITE_OPERATIONAL_LOG_ADAPTER_EXECUTION_PREVIEW_SCHEMA_VERSION",
     "SqliteOperationalLogAdapterExecutionPhasePreview",

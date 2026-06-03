@@ -139,6 +139,11 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
         "sqlite-operational-log-adapter-dry-run-manifest-summary"
         in readme
     )
+    assert (
+        ".venv/bin/techno-search "
+        "sqlite-operational-log-adapter-readiness-preflight-summary"
+        in readme
+    )
     assert ".venv/bin/techno-search validate-sqlite-logs" in readme
     assert ".venv/bin/techno-search benchmark-run-append" in readme
     assert ".venv/bin/techno-search benchmark-run-compare" in readme

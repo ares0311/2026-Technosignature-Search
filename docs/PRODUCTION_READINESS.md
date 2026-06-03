@@ -1,7 +1,7 @@
 # Production Readiness Assessment
 
 **Last updated:** 2026-06-02
-**Current milestone:** 57 (SQLite Operational Log Adapter Dry-Run Manifest)
+**Current milestone:** 58 (SQLite Operational Log Adapter Readiness Preflight)
 
 ---
 
@@ -20,7 +20,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Calibration fixture set (15 false-positive classes) | ✅ Complete |
 | Score regression + determinism checks | ✅ Complete |
 | Interpretable baseline classifier | ✅ Complete |
-| 171 JSON schema artifacts | ✅ Complete |
+| 172 JSON schema artifacts | ✅ Complete |
 | Local validation gate (`validate-all`) | ✅ Complete |
 | Provenance, audit trail, lifecycle tracking | ✅ Complete |
 | Operational log system (35 log types) | ✅ Complete |
@@ -48,6 +48,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | SQLite operational log adapter insert preview gate | ✅ Complete |
 | SQLite operational log adapter execution preview gate | ✅ Complete |
 | SQLite operational log adapter dry-run manifest gate | ✅ Complete |
+| SQLite operational log adapter readiness preflight gate | ✅ Complete |
 | Labeled candidate dataset v0 (10 synthetic entries) | ✅ Complete |
 | Scoring model evaluation against labeled dataset | ✅ Complete |
 | Live catalog clients (Gaia TAP, SIMBAD) with opt-in guard | ✅ Complete |
@@ -124,5 +125,6 @@ operational log adapter contract gate, DECISION-100 for the SQLite operational
 log adapter DDL preview gate, DECISION-101 for the SQLite operational log
 adapter row preview gate, DECISION-102 for the SQLite operational log adapter
 insert preview gate, DECISION-103 for the SQLite operational log adapter
-execution preview gate, and DECISION-104 for the SQLite operational log
-adapter dry-run manifest gate.
+execution preview gate, DECISION-104 for the SQLite operational log adapter
+dry-run manifest gate, and DECISION-105 for the SQLite operational log adapter
+readiness preflight gate.

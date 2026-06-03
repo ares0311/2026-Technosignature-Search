@@ -434,3 +434,4 @@ tests/test_pathway.py
 - [x] SQLite operational log adapter insert preview gate added
 - [x] SQLite operational log adapter execution preview gate added
 - [x] SQLite operational log adapter dry-run manifest gate added
+- [x] SQLite operational log adapter readiness preflight gate added

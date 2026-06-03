@@ -144,6 +144,7 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "sqlite_operational_log_adapter_dry_run_manifest.schema.json",
         "sqlite_operational_log_adapter_execution_preview.schema.json",
         "sqlite_operational_log_adapter_insert_preview.schema.json",
+        "sqlite_operational_log_adapter_readiness_preflight.schema.json",
         "sqlite_operational_log_adapter_row_preview.schema.json",
         "data_transfer_log.schema.json",
         "scheduling_conflict_log.schema.json",

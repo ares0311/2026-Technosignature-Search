@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SQLite Operational Log Adapter Readiness Preflight",
+  "type": "object",
+  "required": ["schema_version", "expected_preflight"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "sqlite_operational_log_adapter_readiness_preflight_v1"
+    },
+    "expected_preflight": {
+      "type": "object",
+      "required": [
+        "expected_registered_log_count",
+        "expected_planned_count",
+        "expected_phase_count",
+        "expected_ddl_statement_count",
+        "expected_row_count",
+        "expected_insert_count",
+        "expected_execution_operation_count",
+        "expected_schema_count",
+        "require_all_upstream_gates_ok",
+        "readiness_status",
+        "database_open_allowed",
+        "execution_allowed",
+        "mutation_allowed",
+        "live_data_authorized",
+        "external_submission_authorized"
+      ],
+      "properties": {
+        "expected_registered_log_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expected_planned_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expected_phase_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expected_ddl_statement_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expected_row_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expected_insert_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expected_execution_operation_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expected_schema_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "require_all_upstream_gates_ok": {
+          "type": "boolean"
+        },
+        "readiness_status": {
+          "type": "string",
+          "const": "preflight_only"
+        },
+        "database_open_allowed": {
+          "type": "boolean",
+          "const": false
+        },
+        "execution_allowed": {
+          "type": "boolean",
+          "const": false
+        },
+        "mutation_allowed": {
+          "type": "boolean",
+          "const": false
+        },
+        "live_data_authorized": {
+          "type": "boolean",
+          "const": false
+        },
+        "external_submission_authorized": {
+          "type": "boolean",
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

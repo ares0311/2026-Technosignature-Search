@@ -2477,3 +2477,27 @@ added deliberately.
 
 Schema count increased from 170 to 171. Consistency fixture updated: milestone
 56→57, decision 103→104, schema_count 170→171.
+
+# DECISION-105: Operational Log SQLite Adapter Readiness Must Remain Preflight-Only Before Execution
+
+Date: 2026-06-02
+
+Before operational log SQLite adapters open or mutate any database, the project
+must keep a deterministic readiness preflight that reconciles the registry,
+adapter plan, adapter contract, DDL preview, row preview, insert preview,
+execution preview, and dry-run manifest. The preflight must preserve registry
+counts, planned log counts, phase counts, DDL statement counts, row counts,
+insert counts, execution operation counts, schema counts, upstream gate
+failures, preflight-only status, disabled database opening, disabled SQL
+execution, disabled mutation, disabled live-data authorization, and disabled
+external submission authorization.
+
+The readiness preflight is a local planning artifact only. It must not open
+databases, execute SQL, insert rows, create tables, migrate fixture records,
+ingest real observation data, authorize live data access, authorize external
+submission, or constitute detections, discoveries, or external validation.
+Execution remains disabled until a future reviewed adapter implementation is
+added deliberately.
+
+Schema count increased from 171 to 172. Consistency fixture updated: milestone
+57→58, decision 104→105, schema_count 171→172.

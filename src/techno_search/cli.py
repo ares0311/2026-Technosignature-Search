@@ -297,6 +297,9 @@ from techno_search.sqlite_operational_log_adapter_insert_preview import (
 from techno_search.sqlite_operational_log_adapter_plan import (
     sqlite_operational_log_adapter_plan_summary,
 )
+from techno_search.sqlite_operational_log_adapter_readiness_preflight import (
+    sqlite_operational_log_adapter_readiness_preflight_summary,
+)
 from techno_search.sqlite_operational_log_adapter_row_preview import (
     sqlite_operational_log_adapter_row_preview_summary,
 )
@@ -413,6 +416,9 @@ SCHEMA_FILENAMES = {
     ),
     "sqlite_operational_log_adapter_insert_preview": (
         "sqlite_operational_log_adapter_insert_preview.schema.json"
+    ),
+    "sqlite_operational_log_adapter_readiness_preflight": (
+        "sqlite_operational_log_adapter_readiness_preflight.schema.json"
     ),
     "sqlite_operational_log_adapter_row_preview": (
         "sqlite_operational_log_adapter_row_preview.schema.json"
@@ -2837,6 +2843,23 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0 if dry_run_manifest_summary["ok"] else 1
 
+    if args.command == "sqlite-operational-log-adapter-readiness-preflight-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        readiness_preflight_summary = (
+            sqlite_operational_log_adapter_readiness_preflight_summary(
+                fixture_path,
+            )
+        )
+        print(
+            json.dumps(
+                readiness_preflight_summary,
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0 if readiness_preflight_summary["ok"] else 1
+
     if args.command == "operations-alert-review-consistency-summary":
         fixture_path = Path(args.fixture_path) if args.fixture_path else None
         consistency_summary = operations_alert_review_consistency_summary(fixture_path)
@@ -4432,6 +4455,22 @@ def validate_all() -> dict[str, object]:
     sqlite_operational_log_adapter_dry_run_manifest_ok = bool(
         sqlite_operational_log_adapter_dry_run_manifest.get("ok", False)
     )
+    sqlite_operational_log_adapter_readiness_preflight = (
+        sqlite_operational_log_adapter_readiness_preflight_summary(
+            registry_summary=sqlite_operational_log_registry,
+            adapter_plan_summary=sqlite_operational_log_adapter_plan,
+            adapter_contract_summary=sqlite_operational_log_adapter_contract,
+            ddl_preview_summary=sqlite_operational_log_adapter_ddl_preview,
+            row_preview_summary=sqlite_operational_log_adapter_row_preview,
+            insert_preview_summary=sqlite_operational_log_adapter_insert_preview,
+            execution_preview_summary=sqlite_operational_log_adapter_execution_preview,
+            dry_run_manifest_summary=sqlite_operational_log_adapter_dry_run_manifest,
+            schema_count=len(SCHEMA_FILENAMES),
+        )
+    )
+    sqlite_operational_log_adapter_readiness_preflight_ok = bool(
+        sqlite_operational_log_adapter_readiness_preflight.get("ok", False)
+    )
     operations_action_plan = operations_action_plan_summary(operations_readiness)
     operations_action_ids = [
         str(action["action_id"])
@@ -4998,6 +5037,7 @@ def validate_all() -> dict[str, object]:
         and sqlite_operational_log_adapter_insert_preview_ok
         and sqlite_operational_log_adapter_execution_preview_ok
         and sqlite_operational_log_adapter_dry_run_manifest_ok
+        and sqlite_operational_log_adapter_readiness_preflight_ok
         and operations_alert_review_consistency_ok
         and isinstance(rescore_event_count, int)
         and rescore_event_count >= 1
@@ -5386,6 +5426,9 @@ def validate_all() -> dict[str, object]:
         "sqlite_operational_log_adapter_dry_run_manifest_summary": (
             sqlite_operational_log_adapter_dry_run_manifest
         ),
+        "sqlite_operational_log_adapter_readiness_preflight_summary": (
+            sqlite_operational_log_adapter_readiness_preflight
+        ),
         "operations_alert_review_consistency_summary": (
             operations_alert_review_consistency
         ),
@@ -5582,6 +5625,9 @@ def validation_summary() -> dict[str, object]:
     ]
     sqlite_operational_log_adapter_dry_run_manifest = validation[
         "sqlite_operational_log_adapter_dry_run_manifest_summary"
+    ]
+    sqlite_operational_log_adapter_readiness_preflight = validation[
+        "sqlite_operational_log_adapter_readiness_preflight_summary"
     ]
     operations_readiness = validation["operations_readiness_summary"]
     operations_action_plan = validation["operations_action_plan_summary"]
@@ -7549,6 +7595,70 @@ def validation_summary() -> dict[str, object]:
                 ]
             )
             if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
+            else True
+        ),
+        "sqlite_operational_log_adapter_readiness_preflight_ok": (
+            bool(sqlite_operational_log_adapter_readiness_preflight["ok"])
+            if isinstance(sqlite_operational_log_adapter_readiness_preflight, dict)
+            else False
+        ),
+        "sqlite_operational_log_adapter_readiness_preflight_issue_count": (
+            sqlite_operational_log_adapter_readiness_preflight["issue_count"]
+            if isinstance(sqlite_operational_log_adapter_readiness_preflight, dict)
+            else 0
+        ),
+        "sqlite_operational_log_adapter_readiness_preflight_status": (
+            sqlite_operational_log_adapter_readiness_preflight["readiness_status"]
+            if isinstance(sqlite_operational_log_adapter_readiness_preflight, dict)
+            else "unknown"
+        ),
+        "sqlite_operational_log_adapter_readiness_preflight_failed_gate_count": (
+            sqlite_operational_log_adapter_readiness_preflight[
+                "upstream_gate_failure_count"
+            ]
+            if isinstance(sqlite_operational_log_adapter_readiness_preflight, dict)
+            else 0
+        ),
+        "sqlite_operational_log_adapter_readiness_preflight_schema_count": (
+            sqlite_operational_log_adapter_readiness_preflight["schema_count"]
+            if isinstance(sqlite_operational_log_adapter_readiness_preflight, dict)
+            else 0
+        ),
+        "sqlite_operational_log_adapter_readiness_preflight_database_open_allowed": (
+            bool(
+                sqlite_operational_log_adapter_readiness_preflight[
+                    "database_open_allowed"
+                ]
+            )
+            if isinstance(sqlite_operational_log_adapter_readiness_preflight, dict)
+            else True
+        ),
+        "sqlite_operational_log_adapter_readiness_preflight_execution_allowed": (
+            bool(sqlite_operational_log_adapter_readiness_preflight["execution_allowed"])
+            if isinstance(sqlite_operational_log_adapter_readiness_preflight, dict)
+            else True
+        ),
+        "sqlite_operational_log_adapter_readiness_preflight_mutation_allowed": (
+            bool(sqlite_operational_log_adapter_readiness_preflight["mutation_allowed"])
+            if isinstance(sqlite_operational_log_adapter_readiness_preflight, dict)
+            else True
+        ),
+        "sqlite_operational_log_adapter_readiness_preflight_live_data_authorized": (
+            bool(
+                sqlite_operational_log_adapter_readiness_preflight[
+                    "live_data_authorized"
+                ]
+            )
+            if isinstance(sqlite_operational_log_adapter_readiness_preflight, dict)
+            else True
+        ),
+        "sqlite_operational_log_adapter_readiness_preflight_external_submission_authorized": (
+            bool(
+                sqlite_operational_log_adapter_readiness_preflight[
+                    "external_submission_authorized"
+                ]
+            )
+            if isinstance(sqlite_operational_log_adapter_readiness_preflight, dict)
             else True
         ),
         "operations_alert_review_consistency_ok": (
@@ -10510,6 +10620,16 @@ def _build_parser() -> argparse.ArgumentParser:
         "--fixture-path",
         type=Path,
         help="Optional adapter-dry-run-manifest fixture path override.",
+    )
+
+    sqlite_adapter_readiness_parser = subparsers.add_parser(
+        "sqlite-operational-log-adapter-readiness-preflight-summary",
+        help="Summarize non-mutating SQLite adapter readiness preflight gates.",
+    )
+    sqlite_adapter_readiness_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional adapter-readiness-preflight fixture path override.",
     )
 
     alert_review_consistency_parser = subparsers.add_parser(
