@@ -1,0 +1,15 @@
+{
+  "schema_version": "mcp_bootstrap_consistency_v1",
+  "expected_mcp_bootstrap": {
+    "command": ".venv/bin/python",
+    "args_prefix": [
+      "-m",
+      "techno_search.mcp_servers"
+    ],
+    "servers": {
+      "technosignatures_project_files": "project_files",
+      "technosignatures_git_read": "git_read",
+      "techno_guard": "techno_guard"
+    }
+  }
+}

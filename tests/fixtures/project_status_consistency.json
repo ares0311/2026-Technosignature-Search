@@ -1,11 +1,11 @@
 {
   "schema_version": "project_status_consistency_v1",
   "expected_status": {
-    "latest_milestone_number": 60,
-    "latest_milestone_label": "Project-Scoped MCP Bootstrap",
-    "latest_decision_number": 107,
-    "schema_count": 173,
+    "latest_milestone_number": 61,
+    "latest_milestone_label": "MCP Bootstrap Consistency Gate",
+    "latest_decision_number": 108,
+    "schema_count": 174,
     "require_zero_real_data_authorization": true,
-    "project_status_completed_phrase": "Project-scoped MCP bootstrap configuration added"
+    "project_status_completed_phrase": "MCP bootstrap consistency gate added"
   }
 }

@@ -2544,3 +2544,21 @@ approval prompt before using the generated project configuration.
 
 Schema count remains 173. Consistency fixture updated: milestone 59→60,
 decision 106→107, schema_count remains 173.
+
+# DECISION-108: MCP Bootstrap Config Must Remain Guarded By Local Consistency Checks
+
+Date: 2026-06-03
+
+Project-scoped MCP configuration must be guarded by a local consistency summary
+that verifies `.mcp.json` and `.codex/config.toml` continue to expose only the
+expected project-files, read-only git, and fixed validation guard servers. The
+gate must verify `.venv/bin/python -m techno_search.mcp_servers` command use,
+expected server kinds, forbidden token patterns, and disabled arbitrary-shell,
+live-provider, and external-submission defaults.
+
+The MCP bootstrap consistency gate is a local configuration drift check only.
+It must not authorize live data access, external submission, candidate score
+changes, pathway changes, detections, discoveries, or external validation.
+
+Schema count increased from 173 to 174. Consistency fixture updated: milestone
+60→61, decision 107→108, schema_count 173→174.

@@ -1411,3 +1411,15 @@ introduced.
 - [x] MCP bootstrap keeps `.venv`, `.git`, caches, artifacts, top-level SQLite logs, and bulk data paths inaccessible through project file tools
 - [x] MCP bootstrap does not enable live provider access, external submission, candidate score changes, pathway changes, or report interpretation changes
 - [x] DECISION-107: Project-Scoped MCP Bootstrap Must Stay Conservative And Local
+
+# Milestone 61 — MCP Bootstrap Consistency Gate
+
+- [x] `src/techno_search/mcp_bootstrap_consistency.py` — local MCP config drift gate for `.mcp.json` and `.codex/config.toml`
+- [x] `schemas/mcp_bootstrap_consistency.schema.json`
+- [x] `tests/fixtures/mcp_bootstrap_consistency.json` — expected project-scoped server names, server kinds, command, and args prefix
+- [x] `tests/test_mcp_bootstrap_consistency.py` — guardrail tests for command drift, server-kind drift, forbidden token drift, arbitrary shell drift, live-provider drift, and external-submission drift
+- [x] `techno-search mcp-bootstrap-consistency-summary` CLI command
+- [x] `mcp_bootstrap_consistency` added to `SCHEMA_FILENAMES` (total schemas: 174)
+- [x] `validate-all` gate: MCP bootstrap consistency check must pass
+- [x] `validation-summary` fields: `mcp_bootstrap_consistency_ok`, `mcp_bootstrap_consistency_issue_count`, `mcp_bootstrap_claude_server_count`, `mcp_bootstrap_codex_server_count`, `mcp_bootstrap_forbidden_token_count`, `mcp_bootstrap_arbitrary_shell_enabled`, `mcp_bootstrap_live_provider_enabled`, `mcp_bootstrap_external_submission_enabled`
+- [x] DECISION-108: MCP Bootstrap Config Must Remain Guarded By Local Consistency Checks

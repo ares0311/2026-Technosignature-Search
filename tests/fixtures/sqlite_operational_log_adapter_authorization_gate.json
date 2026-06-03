@@ -2,8 +2,8 @@
   "schema_version": "sqlite_operational_log_adapter_authorization_gate_v1",
   "expected_gate": {
     "expected_readiness_failed_gate_count": 0,
-    "expected_readiness_schema_count": 173,
-    "expected_schema_count": 173,
+    "expected_readiness_schema_count": 174,
+    "expected_schema_count": 174,
     "require_readiness_preflight_ok": true,
     "authorization_status": "blocked_pending_explicit_operator_approval",
     "adapter_implementation_allowed": false,

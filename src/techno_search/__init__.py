@@ -446,6 +446,12 @@ from techno_search.interference_environment_log import (
     load_interference_environment_entries,
 )
 from techno_search.live_data import live_data_enabled, require_live_data_enabled
+from techno_search.mcp_bootstrap_consistency import (
+    MCP_BOOTSTRAP_CONSISTENCY_DISCLAIMER,
+    MCP_BOOTSTRAP_CONSISTENCY_SCHEMA_VERSION,
+    load_mcp_bootstrap_expectations,
+    mcp_bootstrap_consistency_summary,
+)
 from techno_search.ml_model_registry import (
     ALLOWED_MODEL_KINDS,
     ALLOWED_MODEL_STATUSES,
@@ -1628,6 +1634,10 @@ __all__ = [
     "PROJECT_STATUS_CONSISTENCY_SCHEMA_VERSION",
     "load_project_status_expectations",
     "project_status_consistency_summary",
+    "MCP_BOOTSTRAP_CONSISTENCY_DISCLAIMER",
+    "MCP_BOOTSTRAP_CONSISTENCY_SCHEMA_VERSION",
+    "load_mcp_bootstrap_expectations",
+    "mcp_bootstrap_consistency_summary",
     "PRODUCTION_BLOCKER_CONSISTENCY_DISCLAIMER",
     "PRODUCTION_BLOCKER_CONSISTENCY_SCHEMA_VERSION",
     "load_production_blocker_expectations",

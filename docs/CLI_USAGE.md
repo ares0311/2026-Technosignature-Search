@@ -676,7 +676,7 @@ Print a concise local health dashboard without network access:
 .venv/bin/techno-search validation-summary
 ```
 
-This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, calibration-by-track, false-positive class, validation-dataset, validation-readiness, curated dataset admission, project status consistency, benchmark-metadata, benchmark-run, score-regression, background target-priority, background ledger, background reviewed-workflow, reviewed outcome, needs-follow-up outcome, follow-up tests, report readiness, candidate extraction handoff, review-queue, consensus-label, consensus-export, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
+This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, calibration-by-track, false-positive class, validation-dataset, validation-readiness, curated dataset admission, project status consistency, MCP bootstrap consistency, benchmark-metadata, benchmark-run, score-regression, background target-priority, background ledger, background reviewed-workflow, reviewed outcome, needs-follow-up outcome, follow-up tests, report readiness, candidate extraction handoff, review-queue, consensus-label, consensus-export, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
 
 It also reports conservative draft follow-up report counts and user decision gate counts. These counts remain workflow diagnostics only; they are not submission approvals.
 
@@ -1618,6 +1618,22 @@ Summarize project status and production-readiness metadata drift checks.
 ```
 
 Output fields: `disclaimer`, `schema_version`, `ok`, `issue_count`, `issues`, expected/latest milestone and decision fields, schema-count fields, production-readiness metadata fields, and real-data authorization counts from the RFI and curated dataset admission gates. This is a documentation drift guard only; it does not ingest data, calibrate thresholds, authorize live access, or approve external submission.
+
+## `mcp-bootstrap-consistency-summary`
+
+Summarize project-scoped MCP bootstrap configuration drift checks.
+
+```bash
+.venv/bin/techno-search mcp-bootstrap-consistency-summary
+.venv/bin/techno-search mcp-bootstrap-consistency-summary --fixture-path tests/fixtures/mcp_bootstrap_consistency.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `ok`, `issue_count`, `issues`,
+Claude/Codex server counts, command mismatch counts, server-kind mismatch
+counts, forbidden token counts, and disabled arbitrary-shell, live-provider,
+and external-submission flags. This is a local configuration drift guard only;
+it does not authorize live data, external submission, candidate scoring
+changes, pathway changes, detections, or external validation.
 
 ## `production-blocker-consistency-summary`
 

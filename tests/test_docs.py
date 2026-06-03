@@ -155,6 +155,7 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     assert ".venv/bin/techno-search validation-readiness-summary" in readme
     assert ".venv/bin/techno-search curated-dataset-admission-summary" in readme
     assert ".venv/bin/techno-search project-status-consistency-summary" in readme
+    assert ".venv/bin/techno-search mcp-bootstrap-consistency-summary" in readme
     assert ".venv/bin/techno-search production-blocker-consistency-summary" in readme
     assert (
         ".venv/bin/techno-search operations-alert-review-consistency-summary"

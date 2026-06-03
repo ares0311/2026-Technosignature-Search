@@ -22,7 +22,7 @@ def _readiness(**overrides: object) -> dict[str, object]:
         "ok": True,
         "readiness_status": "preflight_only",
         "upstream_gate_failure_count": 0,
-        "schema_count": 173,
+        "schema_count": 174,
         "database_open_allowed": False,
         "execution_allowed": False,
         "mutation_allowed": False,
@@ -37,8 +37,8 @@ def _write_gate(
     path: Path,
     *,
     expected_readiness_failed_gate_count: int = 0,
-    expected_readiness_schema_count: int = 173,
-    expected_schema_count: int = 173,
+    expected_readiness_schema_count: int = 174,
+    expected_schema_count: int = 174,
     authorization_status: str = BLOCKED_AUTHORIZATION_STATUS,
     adapter_implementation_allowed: bool = False,
     database_open_allowed: bool = False,
@@ -89,8 +89,8 @@ def test_load_fixture_expectations() -> None:
         FIXTURE_PATH
     )
 
-    assert expected["expected_readiness_schema_count"] == 173
-    assert expected["expected_schema_count"] == 173
+    assert expected["expected_readiness_schema_count"] == 174
+    assert expected["expected_schema_count"] == 174
     assert expected["authorization_status"] == BLOCKED_AUTHORIZATION_STATUS
     assert expected["execution_allowed"] is False
 
@@ -105,8 +105,8 @@ def test_default_project_authorization_gate_passes() -> None:
     assert summary["ok"] is True
     assert summary["authorization_status"] == BLOCKED_AUTHORIZATION_STATUS
     assert summary["readiness_preflight_ok"] is True
-    assert summary["readiness_preflight_schema_count"] == 173
-    assert summary["schema_count"] == 173
+    assert summary["readiness_preflight_schema_count"] == 174
+    assert summary["schema_count"] == 174
     assert summary["adapter_implementation_allowed"] is False
     assert summary["database_open_allowed"] is False
     assert summary["execution_allowed"] is False
@@ -122,7 +122,7 @@ def test_custom_gate_passes(tmp_path: Path) -> None:
     summary = sqlite_operational_log_adapter_authorization_gate_summary(
         gate_path,
         readiness_preflight_summary=_readiness(),
-        schema_count=173,
+        schema_count=174,
     )
 
     assert summary["ok"] is True
@@ -134,7 +134,7 @@ def test_detects_failed_readiness_preflight(tmp_path: Path) -> None:
     summary = sqlite_operational_log_adapter_authorization_gate_summary(
         gate_path,
         readiness_preflight_summary=_readiness(ok=False),
-        schema_count=173,
+        schema_count=174,
     )
 
     assert summary["ok"] is False
@@ -152,13 +152,13 @@ def test_detects_readiness_count_mismatch(tmp_path: Path) -> None:
     summary = sqlite_operational_log_adapter_authorization_gate_summary(
         gate_path,
         readiness_preflight_summary=_readiness(),
-        schema_count=173,
+        schema_count=174,
     )
 
     assert summary["ok"] is False
     assert summary["readiness_preflight_failed_gate_count"] == 0
-    assert summary["readiness_preflight_schema_count"] == 173
-    assert summary["schema_count"] == 173
+    assert summary["readiness_preflight_schema_count"] == 174
+    assert summary["schema_count"] == 174
 
 
 def test_detects_non_blocked_authorization_status(tmp_path: Path) -> None:
@@ -167,7 +167,7 @@ def test_detects_non_blocked_authorization_status(tmp_path: Path) -> None:
     summary = sqlite_operational_log_adapter_authorization_gate_summary(
         gate_path,
         readiness_preflight_summary=_readiness(),
-        schema_count=173,
+        schema_count=174,
     )
 
     assert summary["ok"] is False
@@ -180,7 +180,7 @@ def test_detects_adapter_implementation_allowed(tmp_path: Path) -> None:
     summary = sqlite_operational_log_adapter_authorization_gate_summary(
         gate_path,
         readiness_preflight_summary=_readiness(),
-        schema_count=173,
+        schema_count=174,
     )
 
     assert summary["ok"] is False
@@ -193,7 +193,7 @@ def test_detects_database_open_allowed(tmp_path: Path) -> None:
     summary = sqlite_operational_log_adapter_authorization_gate_summary(
         gate_path,
         readiness_preflight_summary=_readiness(),
-        schema_count=173,
+        schema_count=174,
     )
 
     assert summary["ok"] is False
@@ -206,7 +206,7 @@ def test_detects_execution_allowed(tmp_path: Path) -> None:
     summary = sqlite_operational_log_adapter_authorization_gate_summary(
         gate_path,
         readiness_preflight_summary=_readiness(),
-        schema_count=173,
+        schema_count=174,
     )
 
     assert summary["ok"] is False
@@ -219,7 +219,7 @@ def test_detects_fixture_migration_allowed(tmp_path: Path) -> None:
     summary = sqlite_operational_log_adapter_authorization_gate_summary(
         gate_path,
         readiness_preflight_summary=_readiness(),
-        schema_count=173,
+        schema_count=174,
     )
 
     assert summary["ok"] is False
@@ -232,7 +232,7 @@ def test_detects_mutation_allowed(tmp_path: Path) -> None:
     summary = sqlite_operational_log_adapter_authorization_gate_summary(
         gate_path,
         readiness_preflight_summary=_readiness(),
-        schema_count=173,
+        schema_count=174,
     )
 
     assert summary["ok"] is False
@@ -245,7 +245,7 @@ def test_detects_live_data_authorized(tmp_path: Path) -> None:
     summary = sqlite_operational_log_adapter_authorization_gate_summary(
         gate_path,
         readiness_preflight_summary=_readiness(),
-        schema_count=173,
+        schema_count=174,
     )
 
     assert summary["ok"] is False
@@ -258,7 +258,7 @@ def test_detects_external_submission_authorized(tmp_path: Path) -> None:
     summary = sqlite_operational_log_adapter_authorization_gate_summary(
         gate_path,
         readiness_preflight_summary=_readiness(),
-        schema_count=173,
+        schema_count=174,
     )
 
     assert summary["ok"] is False
@@ -271,7 +271,7 @@ def test_detects_readiness_safety_flag_drift(tmp_path: Path) -> None:
     summary = sqlite_operational_log_adapter_authorization_gate_summary(
         gate_path,
         readiness_preflight_summary=_readiness(execution_allowed=True),
-        schema_count=173,
+        schema_count=174,
     )
 
     assert summary["ok"] is False

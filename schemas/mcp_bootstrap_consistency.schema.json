@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MCP Bootstrap Consistency Expectations",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "expected_mcp_bootstrap"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "mcp_bootstrap_consistency_v1"
+    },
+    "expected_mcp_bootstrap": {
+      "type": "object",
+      "required": [
+        "command",
+        "args_prefix",
+        "servers"
+      ],
+      "properties": {
+        "command": {
+          "const": ".venv/bin/python"
+        },
+        "args_prefix": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "-m"
+            },
+            {
+              "const": "techno_search.mcp_servers"
+            }
+          ],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "servers": {
+          "type": "object",
+          "required": [
+            "technosignatures_project_files",
+            "technosignatures_git_read",
+            "techno_guard"
+          ],
+          "properties": {
+            "technosignatures_project_files": {
+              "const": "project_files"
+            },
+            "technosignatures_git_read": {
+              "const": "git_read"
+            },
+            "techno_guard": {
+              "const": "techno_guard"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,7 +1,7 @@
 # Production Readiness Assessment
 
 **Last updated:** 2026-06-02
-**Current milestone:** 60 (Project-Scoped MCP Bootstrap)
+**Current milestone:** 61 (MCP Bootstrap Consistency Gate)
 
 ---
 
@@ -20,7 +20,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Calibration fixture set (15 false-positive classes) | ✅ Complete |
 | Score regression + determinism checks | ✅ Complete |
 | Interpretable baseline classifier | ✅ Complete |
-| 173 JSON schema artifacts | ✅ Complete |
+| 174 JSON schema artifacts | ✅ Complete |
 | Local validation gate (`validate-all`) | ✅ Complete |
 | Provenance, audit trail, lifecycle tracking | ✅ Complete |
 | Operational log system (35 log types) | ✅ Complete |
@@ -51,6 +51,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | SQLite operational log adapter readiness preflight gate | ✅ Complete |
 | SQLite operational log adapter authorization gate | ✅ Complete |
 | Project-scoped MCP bootstrap configuration | ✅ Complete |
+| MCP bootstrap consistency gate | ✅ Complete |
 | Labeled candidate dataset v0 (10 synthetic entries) | ✅ Complete |
 | Scoring model evaluation against labeled dataset | ✅ Complete |
 | Live catalog clients (Gaia TAP, SIMBAD) with opt-in guard | ✅ Complete |
@@ -130,5 +131,5 @@ insert preview gate, DECISION-103 for the SQLite operational log adapter
 execution preview gate, DECISION-104 for the SQLite operational log adapter
 dry-run manifest gate, DECISION-105 for the SQLite operational log adapter
 readiness preflight gate, DECISION-106 for the SQLite operational log
-adapter authorization gate, and DECISION-107 for the project-scoped MCP
-bootstrap.
+adapter authorization gate, DECISION-107 for the project-scoped MCP
+bootstrap, and DECISION-108 for the MCP bootstrap consistency gate.

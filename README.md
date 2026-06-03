@@ -454,6 +454,7 @@ Validate and run one local CSV input through the hardened ingestion path:
 .venv/bin/techno-search rfi-database-admission-summary
 .venv/bin/techno-search curated-dataset-admission-summary
 .venv/bin/techno-search project-status-consistency-summary
+.venv/bin/techno-search mcp-bootstrap-consistency-summary
 .venv/bin/techno-search production-blocker-consistency-summary
 .venv/bin/techno-search operations-alert-review-consistency-summary
 .venv/bin/techno-search operations-action-resolution-consistency-summary
@@ -922,6 +923,7 @@ Scientific quality gates:
 | Premature real RFI source admission | Proposed RFI source lists require admission records with zero real-data authorization by default | `rfi-database-admission-summary` |
 | Premature real labeled dataset admission | Proposed curated validation datasets require provenance, licensing, labeling-method, false-positive-baseline, and review gates | `curated-dataset-admission-summary` |
 | Stale readiness metadata | Production-readiness milestone, schema-count, decision, and authorization metadata must match validation gates | `project-status-consistency-summary` |
+| MCP bootstrap drift | Project MCP configs must remain repo-scoped, fixed-command, local-only, secret-free, and without arbitrary shell, live-provider, or external-submission defaults | `mcp-bootstrap-consistency-summary` |
 | Hidden production blocker drift | Tier 1 production blockers, admission blockers, operations readiness blockers, and disabled authorization counts must remain aligned | `production-blocker-consistency-summary` |
 | Alert/QC review drift | Open-alert, alert-resolution, QC, readiness, and authorization blocker visibility must remain aligned | `operations-alert-review-consistency-summary` |
 | Action-resolution staleness drift | Stale resolution records, current action-plan IDs, residual blockers, and disabled authorization counts must remain aligned | `operations-action-resolution-consistency-summary` |
