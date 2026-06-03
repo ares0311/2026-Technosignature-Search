@@ -1388,3 +1388,26 @@ introduced.
 - [x] `validate-all` gate: SQLite operational log adapter readiness preflight check must pass
 - [x] `validation-summary` fields: `sqlite_operational_log_adapter_readiness_preflight_ok`, `sqlite_operational_log_adapter_readiness_preflight_status`, `sqlite_operational_log_adapter_readiness_preflight_failed_gate_count`, `sqlite_operational_log_adapter_readiness_preflight_schema_count`, `sqlite_operational_log_adapter_readiness_preflight_database_open_allowed`, `sqlite_operational_log_adapter_readiness_preflight_execution_allowed`, `sqlite_operational_log_adapter_readiness_preflight_mutation_allowed`, `sqlite_operational_log_adapter_readiness_preflight_live_data_authorized`, `sqlite_operational_log_adapter_readiness_preflight_external_submission_authorized`
 - [x] DECISION-105: Operational Log SQLite Adapter Readiness Must Remain Preflight-Only Before Execution
+
+# Milestone 59 — SQLite Operational Log Adapter Authorization Gate
+
+- [x] `src/techno_search/sqlite_operational_log_adapter_authorization_gate.py` — disabled authorization gate that keeps future adapter implementation and execution blocked pending explicit approval
+- [x] `schemas/sqlite_operational_log_adapter_authorization_gate.schema.json`
+- [x] `tests/fixtures/sqlite_operational_log_adapter_authorization_gate.json` — expected readiness-preflight count alignment, authorization status, schema count, and disabled implementation/database-open/execution/fixture-migration/mutation/authorization flags
+- [x] `tests/test_sqlite_operational_log_adapter_authorization_gate.py` — guardrail tests for readiness-preflight drift, count drift, authorization status drift, adapter-implementation drift, database-open drift, execution drift, fixture-migration drift, mutation drift, live-data drift, external-submission drift, and upstream safety flag drift
+- [x] `techno-search sqlite-operational-log-adapter-authorization-gate-summary` CLI command
+- [x] `sqlite_operational_log_adapter_authorization_gate` added to `SCHEMA_FILENAMES` (total schemas: 173)
+- [x] `validate-all` gate: SQLite operational log adapter authorization gate check must pass
+- [x] `validation-summary` fields: `sqlite_operational_log_adapter_authorization_gate_ok`, `sqlite_operational_log_adapter_authorization_status`, `sqlite_operational_log_adapter_authorization_gate_schema_count`, `sqlite_operational_log_adapter_authorization_gate_adapter_implementation_allowed`, `sqlite_operational_log_adapter_authorization_gate_database_open_allowed`, `sqlite_operational_log_adapter_authorization_gate_execution_allowed`, `sqlite_operational_log_adapter_authorization_gate_fixture_migration_allowed`, `sqlite_operational_log_adapter_authorization_gate_mutation_allowed`, `sqlite_operational_log_adapter_authorization_gate_live_data_authorized`, `sqlite_operational_log_adapter_authorization_gate_external_submission_authorized`
+- [x] DECISION-106: Operational Log SQLite Adapter Authorization Must Remain Blocked Before Execution
+
+# Milestone 60 — Project-Scoped MCP Bootstrap
+
+- [x] `docs/Technosignatures_MCP_BOOTSTRAP.md` fully read and applied as the MCP rollout source of truth
+- [x] `.mcp.json` — project-scoped Claude Code MCP config with project files, read-only git inspection, and fixed validation guard servers
+- [x] `.codex/config.toml` — project-scoped Codex MCP config pointing to the same local stdio servers
+- [x] `src/techno_search/mcp_servers.py` — stdlib-only MCP stdio servers for repository file inspection, read-only git commands, and fixed `.venv` validation commands
+- [x] `tests/test_mcp_bootstrap.py` — guardrail tests for denied paths, fixed command allowlists, no arbitrary shell tools, no secrets, and no live-provider defaults
+- [x] MCP bootstrap keeps `.venv`, `.git`, caches, artifacts, top-level SQLite logs, and bulk data paths inaccessible through project file tools
+- [x] MCP bootstrap does not enable live provider access, external submission, candidate score changes, pathway changes, or report interpretation changes
+- [x] DECISION-107: Project-Scoped MCP Bootstrap Must Stay Conservative And Local

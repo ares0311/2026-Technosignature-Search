@@ -1,7 +1,7 @@
 # Production Readiness Assessment
 
 **Last updated:** 2026-06-02
-**Current milestone:** 58 (SQLite Operational Log Adapter Readiness Preflight)
+**Current milestone:** 60 (Project-Scoped MCP Bootstrap)
 
 ---
 
@@ -20,7 +20,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Calibration fixture set (15 false-positive classes) | ✅ Complete |
 | Score regression + determinism checks | ✅ Complete |
 | Interpretable baseline classifier | ✅ Complete |
-| 172 JSON schema artifacts | ✅ Complete |
+| 173 JSON schema artifacts | ✅ Complete |
 | Local validation gate (`validate-all`) | ✅ Complete |
 | Provenance, audit trail, lifecycle tracking | ✅ Complete |
 | Operational log system (35 log types) | ✅ Complete |
@@ -49,6 +49,8 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | SQLite operational log adapter execution preview gate | ✅ Complete |
 | SQLite operational log adapter dry-run manifest gate | ✅ Complete |
 | SQLite operational log adapter readiness preflight gate | ✅ Complete |
+| SQLite operational log adapter authorization gate | ✅ Complete |
+| Project-scoped MCP bootstrap configuration | ✅ Complete |
 | Labeled candidate dataset v0 (10 synthetic entries) | ✅ Complete |
 | Scoring model evaluation against labeled dataset | ✅ Complete |
 | Live catalog clients (Gaia TAP, SIMBAD) with opt-in guard | ✅ Complete |
@@ -126,5 +128,7 @@ log adapter DDL preview gate, DECISION-101 for the SQLite operational log
 adapter row preview gate, DECISION-102 for the SQLite operational log adapter
 insert preview gate, DECISION-103 for the SQLite operational log adapter
 execution preview gate, DECISION-104 for the SQLite operational log adapter
-dry-run manifest gate, and DECISION-105 for the SQLite operational log adapter
-readiness preflight gate.
+dry-run manifest gate, DECISION-105 for the SQLite operational log adapter
+readiness preflight gate, DECISION-106 for the SQLite operational log
+adapter authorization gate, and DECISION-107 for the project-scoped MCP
+bootstrap.

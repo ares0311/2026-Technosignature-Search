@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "technosignatures_project_files": {
+      "command": ".venv/bin/python",
+      "args": [
+        "-m",
+        "techno_search.mcp_servers",
+        "project_files"
+      ]
+    },
+    "technosignatures_git_read": {
+      "command": ".venv/bin/python",
+      "args": [
+        "-m",
+        "techno_search.mcp_servers",
+        "git_read"
+      ]
+    },
+    "techno_guard": {
+      "command": ".venv/bin/python",
+      "args": [
+        "-m",
+        "techno_search.mcp_servers",
+        "techno_guard"
+      ]
+    }
+  }
+}

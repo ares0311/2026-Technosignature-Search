@@ -215,9 +215,9 @@ def test_cli_project_status_consistency_summary_outputs_drift_gates() -> None:
     assert exit_code == 0
     assert result["schema_version"] == "project_status_consistency_v1"
     assert result["ok"] is True
-    assert result["roadmap_latest_milestone"] == 58
-    assert result["decisions_latest_decision"] == 105
-    assert result["actual_schema_count"] == 172
+    assert result["roadmap_latest_milestone"] == 60
+    assert result["decisions_latest_decision"] == 107
+    assert result["actual_schema_count"] == 173
     assert result["rfi_database_admission_real_data_authorized_count"] == 0
     assert result["curated_dataset_admission_real_data_authorized_count"] == 0
 
@@ -401,10 +401,41 @@ def test_cli_sqlite_operational_log_adapter_readiness_preflight_outputs_gate() -
     assert result["readiness_status"] == "preflight_only"
     assert result["registered_log_count"] == 74
     assert result["planned_count"] == 74
-    assert result["schema_count"] == 172
+    assert result["schema_count"] == 173
     assert result["upstream_gate_failure_count"] == 0
     assert result["database_open_allowed"] is False
     assert result["execution_allowed"] is False
+    assert result["mutation_allowed"] is False
+    assert result["live_data_authorized"] is False
+    assert result["external_submission_authorized"] is False
+
+
+def test_cli_sqlite_operational_log_adapter_authorization_gate_outputs_gate() -> None:
+    stdout = StringIO()
+
+    exit_code = main(
+        ["sqlite-operational-log-adapter-authorization-gate-summary"],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert (
+        result["schema_version"]
+        == "sqlite_operational_log_adapter_authorization_gate_v1"
+    )
+    assert result["ok"] is True
+    assert (
+        result["authorization_status"]
+        == "blocked_pending_explicit_operator_approval"
+    )
+    assert result["readiness_preflight_ok"] is True
+    assert result["readiness_preflight_schema_count"] == 173
+    assert result["schema_count"] == 173
+    assert result["adapter_implementation_allowed"] is False
+    assert result["database_open_allowed"] is False
+    assert result["execution_allowed"] is False
+    assert result["fixture_migration_allowed"] is False
     assert result["mutation_allowed"] is False
     assert result["live_data_authorized"] is False
     assert result["external_submission_authorized"] is False
@@ -681,6 +712,7 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "sqlite_operational_log_registry",
         "sqlite_operational_log_adapter_plan",
         "sqlite_operational_log_adapter_contract",
+        "sqlite_operational_log_adapter_authorization_gate",
         "sqlite_operational_log_adapter_ddl_preview",
         "sqlite_operational_log_adapter_dry_run_manifest",
         "sqlite_operational_log_adapter_execution_preview",
@@ -1975,6 +2007,16 @@ def test_cli_validate_all_outputs_local_summary() -> None:
         ]
         == 0
     )
+    assert (
+        result["sqlite_operational_log_adapter_authorization_gate_summary"]["ok"]
+        is True
+    )
+    assert (
+        result["sqlite_operational_log_adapter_authorization_gate_summary"][
+            "authorization_status"
+        ]
+        == "blocked_pending_explicit_operator_approval"
+    )
     assert result["catalog_cache_validation"]["forbidden_roots"] == [
         "data",
         "cache",
@@ -1993,12 +2035,12 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 172
+    assert result["schema_count"] == 173
     assert result["schemas_ok"] is True
     assert result["project_status_consistency_ok"] is True
-    assert result["project_status_latest_milestone"] == 58
-    assert result["project_status_latest_decision"] == 105
-    assert result["project_status_schema_count"] == 172
+    assert result["project_status_latest_milestone"] == 60
+    assert result["project_status_latest_decision"] == 107
+    assert result["project_status_schema_count"] == 173
     assert result["production_blocker_consistency_ok"] is True
     assert result["production_blocker_consistency_issue_count"] == 0
     assert result["production_blocker_tier1_blocker_count"] == 5
@@ -2091,7 +2133,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert (
         result["sqlite_operational_log_adapter_readiness_preflight_schema_count"]
-        == 172
+        == 173
     )
     assert (
         result[
@@ -2116,6 +2158,54 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert (
         result[
             "sqlite_operational_log_adapter_readiness_preflight_external_submission_authorized"
+        ]
+        is False
+    )
+    assert result["sqlite_operational_log_adapter_authorization_gate_ok"] is True
+    assert result["sqlite_operational_log_adapter_authorization_gate_issue_count"] == 0
+    assert (
+        result["sqlite_operational_log_adapter_authorization_status"]
+        == "blocked_pending_explicit_operator_approval"
+    )
+    assert (
+        result["sqlite_operational_log_adapter_authorization_gate_schema_count"]
+        == 173
+    )
+    assert (
+        result[
+            "sqlite_operational_log_adapter_authorization_gate_adapter_implementation_allowed"
+        ]
+        is False
+    )
+    assert (
+        result[
+            "sqlite_operational_log_adapter_authorization_gate_database_open_allowed"
+        ]
+        is False
+    )
+    assert (
+        result["sqlite_operational_log_adapter_authorization_gate_execution_allowed"]
+        is False
+    )
+    assert (
+        result[
+            "sqlite_operational_log_adapter_authorization_gate_fixture_migration_allowed"
+        ]
+        is False
+    )
+    assert (
+        result["sqlite_operational_log_adapter_authorization_gate_mutation_allowed"]
+        is False
+    )
+    assert (
+        result[
+            "sqlite_operational_log_adapter_authorization_gate_live_data_authorized"
+        ]
+        is False
+    )
+    assert (
+        result[
+            "sqlite_operational_log_adapter_authorization_gate_external_submission_authorized"
         ]
         is False
     )

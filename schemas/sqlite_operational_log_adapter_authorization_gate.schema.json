@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SQLite Operational Log Adapter Authorization Gate",
+  "type": "object",
+  "required": ["schema_version", "expected_gate"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "sqlite_operational_log_adapter_authorization_gate_v1"
+    },
+    "expected_gate": {
+      "type": "object",
+      "required": [
+        "expected_readiness_failed_gate_count",
+        "expected_readiness_schema_count",
+        "expected_schema_count",
+        "require_readiness_preflight_ok",
+        "authorization_status",
+        "adapter_implementation_allowed",
+        "database_open_allowed",
+        "execution_allowed",
+        "fixture_migration_allowed",
+        "mutation_allowed",
+        "live_data_authorized",
+        "external_submission_authorized"
+      ],
+      "properties": {
+        "expected_readiness_failed_gate_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expected_readiness_schema_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expected_schema_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "require_readiness_preflight_ok": {
+          "type": "boolean"
+        },
+        "authorization_status": {
+          "type": "string",
+          "const": "blocked_pending_explicit_operator_approval"
+        },
+        "adapter_implementation_allowed": {
+          "type": "boolean",
+          "const": false
+        },
+        "database_open_allowed": {
+          "type": "boolean",
+          "const": false
+        },
+        "execution_allowed": {
+          "type": "boolean",
+          "const": false
+        },
+        "fixture_migration_allowed": {
+          "type": "boolean",
+          "const": false
+        },
+        "mutation_allowed": {
+          "type": "boolean",
+          "const": false
+        },
+        "live_data_authorized": {
+          "type": "boolean",
+          "const": false
+        },
+        "external_submission_authorized": {
+          "type": "boolean",
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

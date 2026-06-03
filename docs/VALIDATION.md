@@ -286,6 +286,7 @@ Review reviewed and needs-follow-up outcome logs:
 .venv/bin/techno-search sqlite-operational-log-adapter-execution-preview-summary
 .venv/bin/techno-search sqlite-operational-log-adapter-dry-run-manifest-summary
 .venv/bin/techno-search sqlite-operational-log-adapter-readiness-preflight-summary
+.venv/bin/techno-search sqlite-operational-log-adapter-authorization-gate-summary
 .venv/bin/techno-search validate-sqlite-logs \
   --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search scheduler-dry-run \
@@ -633,6 +634,19 @@ The preflight reconciles registry, planning, contract, preview, and dry-run
 gates before any future adapter implementation. It does not open databases,
 execute SQL, insert rows, create tables, migrate fixtures, mutate databases,
 authorize live data, or authorize external submission.
+
+Preview disabled operational log adapter authorization gate:
+
+```bash
+.venv/bin/techno-search sqlite-operational-log-adapter-authorization-gate-summary
+.venv/bin/techno-search sqlite-operational-log-adapter-authorization-gate-summary --fixture-path tests/fixtures/sqlite_operational_log_adapter_authorization_gate.json
+```
+
+The authorization gate keeps adapter implementation, database opening, fixture
+migration, execution, mutation, live data, and external submission blocked
+pending explicit approval. It does not open databases, execute SQL, insert
+rows, create tables, migrate fixtures, mutate databases, authorize live data,
+or authorize external submission.
 
 ---
 

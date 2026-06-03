@@ -910,6 +910,13 @@ from techno_search.signal_registry import (
     signal_registry_summary,
     signal_registry_track_summary,
 )
+from techno_search.sqlite_operational_log_adapter_authorization_gate import (
+    BLOCKED_AUTHORIZATION_STATUS,
+    SQLITE_OPERATIONAL_LOG_ADAPTER_AUTHORIZATION_GATE_DISCLAIMER,
+    SQLITE_OPERATIONAL_LOG_ADAPTER_AUTHORIZATION_GATE_SCHEMA_VERSION,
+    load_sqlite_operational_log_adapter_authorization_gate_expectations,
+    sqlite_operational_log_adapter_authorization_gate_summary,
+)
 from techno_search.sqlite_operational_log_adapter_contract import (
     SQLITE_OPERATIONAL_LOG_ADAPTER_CONTRACT_DISCLAIMER,
     SQLITE_OPERATIONAL_LOG_ADAPTER_CONTRACT_SCHEMA_VERSION,
@@ -1644,6 +1651,11 @@ __all__ = [
     "SqliteOperationalLogAdapterContractRecord",
     "load_sqlite_operational_log_adapter_contract_expectations",
     "sqlite_operational_log_adapter_contract_summary",
+    "BLOCKED_AUTHORIZATION_STATUS",
+    "SQLITE_OPERATIONAL_LOG_ADAPTER_AUTHORIZATION_GATE_DISCLAIMER",
+    "SQLITE_OPERATIONAL_LOG_ADAPTER_AUTHORIZATION_GATE_SCHEMA_VERSION",
+    "load_sqlite_operational_log_adapter_authorization_gate_expectations",
+    "sqlite_operational_log_adapter_authorization_gate_summary",
     "SQLITE_OPERATIONAL_LOG_ADAPTER_DDL_PREVIEW_DISCLAIMER",
     "SQLITE_OPERATIONAL_LOG_ADAPTER_DDL_PREVIEW_SCHEMA_VERSION",
     "SqliteOperationalLogAdapterDdlPreviewRecord",

@@ -2501,3 +2501,46 @@ added deliberately.
 
 Schema count increased from 171 to 172. Consistency fixture updated: milestone
 57→58, decision 104→105, schema_count 171→172.
+
+# DECISION-106: Operational Log SQLite Adapter Authorization Must Remain Blocked Before Execution
+
+Date: 2026-06-03
+
+Before operational log SQLite adapters are implemented or allowed to open any
+database, the project must keep a deterministic authorization gate that consumes
+the readiness preflight and explicitly blocks adapter implementation, database
+opening, SQL execution, fixture migration, mutation, live-data authorization,
+and external submission authorization. The gate must preserve readiness
+preflight status, readiness gate failure counts, readiness schema counts,
+current schema counts, blocked authorization status, and disabled safety flags.
+
+The authorization gate is a local planning artifact only. It must not open
+databases, execute SQL, insert rows, create tables, migrate fixture records,
+ingest real observation data, authorize live data access, authorize external
+submission, or constitute detections, discoveries, or external validation.
+Execution remains disabled until a future reviewed adapter implementation is
+added deliberately with explicit operator approval.
+
+Schema count increased from 172 to 173. Consistency fixture updated: milestone
+58→59, decision 105→106, schema_count 172→173.
+
+# DECISION-107: Project-Scoped MCP Bootstrap Must Stay Conservative And Local
+
+Date: 2026-06-03
+
+Project-scoped MCP configuration must be derived from
+`docs/Technosignatures_MCP_BOOTSTRAP.md` and must remain limited to repository
+file inspection, read-only git inspection, and fixed `.venv` validation
+commands. The configured servers must not provide arbitrary shell execution,
+unrestricted filesystem access, live-provider access by default, credential
+exposure, large-data ingestion, external submission enablement, or public
+candidate claims.
+
+The bootstrap MCP servers are local engineering aids only. They do not change
+candidate scores, pathway rules, report interpretation, live-data
+authorization, external-submission authorization, or scientific readiness.
+Claude Code and Codex may still require a one-time project trust or MCP
+approval prompt before using the generated project configuration.
+
+Schema count remains 173. Consistency fixture updated: milestone 59→60,
+decision 106→107, schema_count remains 173.
