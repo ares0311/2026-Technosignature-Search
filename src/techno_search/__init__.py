@@ -452,6 +452,12 @@ from techno_search.mcp_bootstrap_consistency import (
     load_mcp_bootstrap_expectations,
     mcp_bootstrap_consistency_summary,
 )
+from techno_search.mcp_server_policy import (
+    MCP_SERVER_POLICY_DISCLAIMER,
+    MCP_SERVER_POLICY_SCHEMA_VERSION,
+    load_mcp_server_policy_expectations,
+    mcp_server_policy_summary,
+)
 from techno_search.ml_model_registry import (
     ALLOWED_MODEL_KINDS,
     ALLOWED_MODEL_STATUSES,
@@ -1638,6 +1644,10 @@ __all__ = [
     "MCP_BOOTSTRAP_CONSISTENCY_SCHEMA_VERSION",
     "load_mcp_bootstrap_expectations",
     "mcp_bootstrap_consistency_summary",
+    "MCP_SERVER_POLICY_DISCLAIMER",
+    "MCP_SERVER_POLICY_SCHEMA_VERSION",
+    "load_mcp_server_policy_expectations",
+    "mcp_server_policy_summary",
     "PRODUCTION_BLOCKER_CONSISTENCY_DISCLAIMER",
     "PRODUCTION_BLOCKER_CONSISTENCY_SCHEMA_VERSION",
     "load_production_blocker_expectations",

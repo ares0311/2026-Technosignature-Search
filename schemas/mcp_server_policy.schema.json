@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/techno_search/mcp_server_policy.schema.json",
+  "title": "MCP Server Policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "expected_mcp_server_policy"],
+  "properties": {
+    "schema_version": {
+      "const": "mcp_server_policy_v1"
+    },
+    "expected_mcp_server_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "server_kinds",
+        "project_files",
+        "git_read",
+        "techno_guard"
+      ],
+      "properties": {
+        "server_kinds": {
+          "type": "array",
+          "items": {
+            "enum": ["project_files", "git_read", "techno_guard"]
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "uniqueItems": true
+        },
+        "project_files": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tool_names",
+            "denied_path_parts",
+            "denied_relative_prefixes",
+            "read_max_bytes"
+          ],
+          "properties": {
+            "tool_names": {
+              "type": "array",
+              "items": {
+                "enum": ["list_project_files", "read_project_file"]
+              },
+              "minItems": 2,
+              "maxItems": 2,
+              "uniqueItems": true
+            },
+            "denied_path_parts": {
+              "type": "array",
+              "items": {"type": "string"},
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "denied_relative_prefixes": {
+              "type": "array",
+              "items": {"type": "string"},
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "read_max_bytes": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200000
+            }
+          }
+        },
+        "git_read": {
+          "$ref": "#/$defs/toolCommandPolicy"
+        },
+        "techno_guard": {
+          "allOf": [
+            {"$ref": "#/$defs/toolCommandPolicy"},
+            {
+              "type": "object",
+              "required": ["venv_required"],
+              "properties": {
+                "venv_required": {"const": true}
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "$defs": {
+    "toolCommandPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool_names", "commands"],
+      "properties": {
+        "tool_names": {
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "commands": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {"type": "string"},
+            "minItems": 1
+          },
+          "minProperties": 1
+        },
+        "venv_required": {"type": "boolean"}
+      }
+    }
+  }
+}

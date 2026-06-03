@@ -438,3 +438,4 @@ tests/test_pathway.py
 - [x] SQLite operational log adapter authorization gate added
 - [x] Project-scoped MCP bootstrap configuration added
 - [x] MCP bootstrap consistency gate added
+- [x] MCP server policy gate added

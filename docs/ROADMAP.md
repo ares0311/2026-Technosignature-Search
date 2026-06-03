@@ -1423,3 +1423,25 @@ introduced.
 - [x] `validate-all` gate: MCP bootstrap consistency check must pass
 - [x] `validation-summary` fields: `mcp_bootstrap_consistency_ok`, `mcp_bootstrap_consistency_issue_count`, `mcp_bootstrap_claude_server_count`, `mcp_bootstrap_codex_server_count`, `mcp_bootstrap_forbidden_token_count`, `mcp_bootstrap_arbitrary_shell_enabled`, `mcp_bootstrap_live_provider_enabled`, `mcp_bootstrap_external_submission_enabled`
 - [x] DECISION-108: MCP Bootstrap Config Must Remain Guarded By Local Consistency Checks
+
+# Milestone 62 — MCP Server Policy Gate
+
+**Status**: complete
+
+## Tasks
+
+- [x] MCP server policy fixture and JSON schema added
+- [x] `src/techno_search/mcp_server_policy.py` local implementation drift summary added
+- [x] `techno-search mcp-server-policy-summary` CLI command
+- [x] `mcp_server_policy` added to `SCHEMA_FILENAMES` (total schemas: 175)
+- [x] `validate-all` gate: MCP server policy check must pass
+- [x] `validation-summary` fields: `mcp_server_policy_ok`, `mcp_server_policy_issue_count`, `mcp_server_policy_git_read_command_count`, `mcp_server_policy_techno_guard_command_count`, `mcp_server_policy_forbidden_command_token_count`, `mcp_server_policy_mutating_git_command_count`, `mcp_server_policy_venv_enforced`, `mcp_server_policy_arbitrary_shell_enabled`, `mcp_server_policy_live_provider_enabled`, `mcp_server_policy_external_submission_enabled`
+- [x] DECISION-109: MCP Server Implementation Must Stay Allowlisted And Local
+
+## Done When
+
+- MCP server tool names remain allowlisted
+- Git inspection commands remain fixed and read-only
+- Local validation commands remain fixed and `.venv`-scoped
+- Private/cache/log/bulk-data paths remain denied
+- Arbitrary shell, live-provider, and external-submission defaults remain absent

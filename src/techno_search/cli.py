@@ -157,6 +157,7 @@ from techno_search.log_store import (
 )
 from techno_search.maintenance_log import maintenance_log_summary
 from techno_search.mcp_bootstrap_consistency import mcp_bootstrap_consistency_summary
+from techno_search.mcp_server_policy import mcp_server_policy_summary
 from techno_search.ml_model_registry import model_registry_summary
 from techno_search.ml_pipeline_diagnostics import ml_pipeline_diagnostics_summary
 from techno_search.ml_training_data import ml_training_data_summary
@@ -399,6 +400,7 @@ SCHEMA_FILENAMES = {
     "provenance_audit": "provenance_audit.schema.json",
     "project_status_consistency": "project_status_consistency.schema.json",
     "mcp_bootstrap_consistency": "mcp_bootstrap_consistency.schema.json",
+    "mcp_server_policy": "mcp_server_policy.schema.json",
     "production_blocker_consistency": "production_blocker_consistency.schema.json",
     "real_data_admission_preflight": "real_data_admission_preflight.schema.json",
     "sqlite_operational_log_registry": (
@@ -2713,6 +2715,19 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0 if consistency_summary["ok"] else 1
 
+    if args.command == "mcp-server-policy-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        policy_summary = mcp_server_policy_summary(fixture_path)
+        print(
+            json.dumps(
+                policy_summary,
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0 if policy_summary["ok"] else 1
+
     if args.command == "production-blocker-consistency-summary":
         fixture_path = Path(args.fixture_path) if args.fixture_path else None
         consistency_summary = production_blocker_consistency_summary(fixture_path)
@@ -4069,6 +4084,8 @@ def validate_all() -> dict[str, object]:
     project_status_consistency_ok = bool(project_status_consistency.get("ok", False))
     mcp_bootstrap_consistency = mcp_bootstrap_consistency_summary()
     mcp_bootstrap_consistency_ok = bool(mcp_bootstrap_consistency.get("ok", False))
+    mcp_server_policy = mcp_server_policy_summary()
+    mcp_server_policy_ok = bool(mcp_server_policy.get("ok", False))
     operations_alert_review_consistency = (
         operations_alert_review_consistency_summary()
     )
@@ -5077,6 +5094,7 @@ def validate_all() -> dict[str, object]:
         and curated_dataset_admission_real_authorized_count == 0
         and project_status_consistency_ok
         and mcp_bootstrap_consistency_ok
+        and mcp_server_policy_ok
         and production_blocker_consistency_ok
         and real_data_admission_preflight_ok
         and sqlite_operational_log_registry_ok
@@ -5454,6 +5472,7 @@ def validate_all() -> dict[str, object]:
         "curated_dataset_admission_summary": curated_dataset_admission_data,
         "project_status_consistency_summary": project_status_consistency,
         "mcp_bootstrap_consistency_summary": mcp_bootstrap_consistency,
+        "mcp_server_policy_summary": mcp_server_policy,
         "production_blocker_consistency_summary": production_blocker_consistency,
         "real_data_admission_preflight_summary": real_data_admission_preflight,
         "sqlite_operational_log_registry_summary": sqlite_operational_log_registry,
@@ -5688,6 +5707,7 @@ def validation_summary() -> dict[str, object]:
         "sqlite_operational_log_adapter_authorization_gate_summary"
     ]
     mcp_bootstrap_consistency = validation["mcp_bootstrap_consistency_summary"]
+    mcp_server_policy = validation["mcp_server_policy_summary"]
     operations_readiness = validation["operations_readiness_summary"]
     operations_action_plan = validation["operations_action_plan_summary"]
     operations_action_resolution = validation["operations_action_resolution_summary"]
@@ -7355,6 +7375,56 @@ def validation_summary() -> dict[str, object]:
         "mcp_bootstrap_external_submission_enabled": (
             bool(mcp_bootstrap_consistency["external_submission_enabled"])
             if isinstance(mcp_bootstrap_consistency, dict)
+            else False
+        ),
+        "mcp_server_policy_ok": (
+            bool(mcp_server_policy["ok"])
+            if isinstance(mcp_server_policy, dict)
+            else False
+        ),
+        "mcp_server_policy_issue_count": (
+            mcp_server_policy["issue_count"]
+            if isinstance(mcp_server_policy, dict)
+            else 0
+        ),
+        "mcp_server_policy_git_read_command_count": (
+            mcp_server_policy["git_read_command_count"]
+            if isinstance(mcp_server_policy, dict)
+            else 0
+        ),
+        "mcp_server_policy_techno_guard_command_count": (
+            mcp_server_policy["techno_guard_command_count"]
+            if isinstance(mcp_server_policy, dict)
+            else 0
+        ),
+        "mcp_server_policy_forbidden_command_token_count": (
+            mcp_server_policy["forbidden_command_token_count"]
+            if isinstance(mcp_server_policy, dict)
+            else 0
+        ),
+        "mcp_server_policy_mutating_git_command_count": (
+            mcp_server_policy["mutating_git_command_count"]
+            if isinstance(mcp_server_policy, dict)
+            else 0
+        ),
+        "mcp_server_policy_venv_enforced": (
+            bool(mcp_server_policy["venv_enforced"])
+            if isinstance(mcp_server_policy, dict)
+            else False
+        ),
+        "mcp_server_policy_arbitrary_shell_enabled": (
+            bool(mcp_server_policy["arbitrary_shell_enabled"])
+            if isinstance(mcp_server_policy, dict)
+            else False
+        ),
+        "mcp_server_policy_live_provider_enabled": (
+            bool(mcp_server_policy["live_provider_enabled"])
+            if isinstance(mcp_server_policy, dict)
+            else False
+        ),
+        "mcp_server_policy_external_submission_enabled": (
+            bool(mcp_server_policy["external_submission_enabled"])
+            if isinstance(mcp_server_policy, dict)
             else False
         ),
         "production_blocker_consistency_ok": (
@@ -10711,6 +10781,14 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize project-scoped MCP bootstrap configuration drift checks.",
     )
     mcp_bootstrap_consistency_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional expectation fixture path override."
+    )
+
+    mcp_server_policy_parser = subparsers.add_parser(
+        "mcp-server-policy-summary",
+        help="Summarize project-scoped MCP server implementation policy checks.",
+    )
+    mcp_server_policy_parser.add_argument(
         "--fixture-path", type=Path, help="Optional expectation fixture path override."
     )
 

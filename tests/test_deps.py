@@ -152,6 +152,12 @@ def test_mcp_bootstrap_consistency_importable() -> None:
     )
 
 
+def test_mcp_server_policy_importable() -> None:
+    from techno_search.mcp_server_policy import (  # noqa: F401
+        mcp_server_policy_summary,
+    )
+
+
 def test_labeled_dataset_importable() -> None:
     from techno_search.labeled_dataset import labeled_dataset_summary  # noqa: F401
 

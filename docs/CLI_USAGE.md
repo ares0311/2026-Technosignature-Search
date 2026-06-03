@@ -676,7 +676,7 @@ Print a concise local health dashboard without network access:
 .venv/bin/techno-search validation-summary
 ```
 
-This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, calibration-by-track, false-positive class, validation-dataset, validation-readiness, curated dataset admission, project status consistency, MCP bootstrap consistency, benchmark-metadata, benchmark-run, score-regression, background target-priority, background ledger, background reviewed-workflow, reviewed outcome, needs-follow-up outcome, follow-up tests, report readiness, candidate extraction handoff, review-queue, consensus-label, consensus-export, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
+This is a shorter view of `validate-all` for quick project status checks. It reports candidate, schema, calibration, calibration-by-track, false-positive class, validation-dataset, validation-readiness, curated dataset admission, project status consistency, MCP bootstrap consistency, MCP server policy, benchmark-metadata, benchmark-run, score-regression, background target-priority, background ledger, background reviewed-workflow, reviewed outcome, needs-follow-up outcome, follow-up tests, report readiness, candidate extraction handoff, review-queue, consensus-label, consensus-export, catalog-cache, and provider-normalization coverage plus the recommended full validation commands.
 
 It also reports conservative draft follow-up report counts and user decision gate counts. These counts remain workflow diagnostics only; they are not submission approvals.
 
@@ -1634,6 +1634,24 @@ counts, forbidden token counts, and disabled arbitrary-shell, live-provider,
 and external-submission flags. This is a local configuration drift guard only;
 it does not authorize live data, external submission, candidate scoring
 changes, pathway changes, detections, or external validation.
+
+## `mcp-server-policy-summary`
+
+Summarize project-scoped MCP server implementation policy checks.
+
+```bash
+.venv/bin/techno-search mcp-server-policy-summary
+.venv/bin/techno-search mcp-server-policy-summary --fixture-path tests/fixtures/mcp_server_policy.json
+```
+
+Output fields: `disclaimer`, `schema_version`, `ok`, `issue_count`,
+tool counts, fixed-command counts, denied path counts, read-size limits,
+forbidden command token counts, mutating git command counts, `.venv`
+enforcement, and disabled arbitrary-shell, live-provider, and
+external-submission flags. This is a local implementation drift guard only; it
+does not execute MCP commands, authorize live data, authorize external
+submission, change candidate scoring, change pathways, create detections,
+claim discoveries, or provide external validation.
 
 ## `production-blocker-consistency-summary`
 

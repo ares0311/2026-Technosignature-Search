@@ -1,0 +1,74 @@
+{
+  "schema_version": "mcp_server_policy_v1",
+  "expected_mcp_server_policy": {
+    "server_kinds": ["project_files", "git_read", "techno_guard"],
+    "project_files": {
+      "tool_names": ["list_project_files", "read_project_file"],
+      "denied_path_parts": [
+        ".claude",
+        ".env",
+        ".git",
+        ".mypy_cache",
+        ".pytest_cache",
+        ".ruff_cache",
+        ".venv",
+        "__pycache__",
+        "artifacts",
+        "cache",
+        "htmlcov",
+        "logs"
+      ],
+      "denied_relative_prefixes": [
+        "data/raw",
+        "data/interim",
+        "data/external",
+        "data/processed"
+      ],
+      "read_max_bytes": 200000
+    },
+    "git_read": {
+      "tool_names": ["git_read"],
+      "commands": {
+        "branch_current": ["git", "branch", "--show-current"],
+        "diff": ["git", "diff"],
+        "diff_staged": ["git", "diff", "--staged"],
+        "log_recent": ["git", "log", "--oneline", "--decorate", "-n", "20"],
+        "status_short_branch": ["git", "status", "--short", "--branch"]
+      }
+    },
+    "techno_guard": {
+      "tool_names": ["techno_guard"],
+      "venv_required": true,
+      "commands": {
+        "coverage": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "--cov=techno_search",
+          "--cov-report=term-missing"
+        ],
+        "help": [".venv/bin/techno-search", "--help"],
+        "mypy": [".venv/bin/mypy", "src"],
+        "operations_readiness": [
+          ".venv/bin/techno-search",
+          "operations-readiness-summary"
+        ],
+        "pytest": [".venv/bin/python", "-m", "pytest"],
+        "ruff": [".venv/bin/ruff", "check", "."],
+        "score_batch_bootstrap": [
+          ".venv/bin/techno-search",
+          "score-batch",
+          "examples/candidates",
+          "artifacts/mcp_bootstrap_batch_reports"
+        ],
+        "score_radio_clean": [
+          ".venv/bin/techno-search",
+          "score",
+          "examples/candidates/radio_clean_candidate.json"
+        ],
+        "validate_all": [".venv/bin/techno-search", "validate-all"],
+        "validation_summary": [".venv/bin/techno-search", "validation-summary"]
+      }
+    }
+  }
+}

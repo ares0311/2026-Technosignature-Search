@@ -2562,3 +2562,23 @@ changes, pathway changes, detections, discoveries, or external validation.
 
 Schema count increased from 173 to 174. Consistency fixture updated: milestone
 60→61, decision 107→108, schema_count 173→174.
+
+# DECISION-109: MCP Server Implementation Must Stay Allowlisted And Local
+
+Date: 2026-06-03
+
+Project-scoped MCP server implementation must remain guarded by a local policy
+summary that verifies the server code exposes only allowlisted project-file,
+read-only git, and fixed local validation tools. The gate must verify expected
+tool names, strict input schemas, denied repository paths, read-size limits,
+fixed read-only git commands, fixed `.venv` validation commands, local `.venv`
+enforcement, absent mutating git commands, absent forbidden command tokens,
+and disabled arbitrary-shell, live-provider, and external-submission defaults.
+
+The MCP server policy gate is a local implementation drift check only. It must
+not execute MCP commands, authorize live data access, authorize external
+submission, change candidate scores, change pathways, create detections, claim
+discoveries, or provide external validation.
+
+Schema count increased from 174 to 175. Consistency fixture updated: milestone
+61→62, decision 108→109, schema_count 174→175.

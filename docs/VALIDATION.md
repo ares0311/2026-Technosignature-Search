@@ -299,7 +299,7 @@ Review candidate-extraction handoff readiness:
 .venv/bin/techno-search candidate-extraction-handoff-summary
 ```
 
-`validate-all` and `validation-summary` include calibration-by-track, false-positive class, validation dataset, validation readiness, curated dataset admission, project status consistency, MCP bootstrap consistency, benchmark metadata, benchmark run-result metadata, background target-priority, background search ledger, background reviewed-workflow, reviewed outcome log, needs-follow-up outcome log, follow-up test results, report-readiness gates, conservative draft report summaries, persisted draft-report validation, user decision records, top-level SQLite log validation, SQLite integrity checks, SQLite migration checks, SQLite export checks, SQLite PRAGMA diagnostics, SQLite backup and retention checks, SQLite vacuum checks, generated SQLite commit-path guardrails, candidate extraction handoff, injection-recovery, reliability, precision-recall, human-review queue, consensus-label, and consensus-export coverage. Benchmark append and compare commands are local workflow helpers for ignored output paths. The reported calibration-by-track coverage, false-positive class coverage, validation dataset coverage, validation readiness counts, curated dataset admission counts, project status consistency counts, MCP bootstrap consistency counts, benchmark metadata, benchmark run-result metadata, benchmark deltas, target-priority ranking, background ledger counts, background reviewed-workflow counts, reviewed outcome counts, needs-follow-up counts, follow-up test counts, report-readiness counts, draft report counts, user decision counts, SQLite run and outcome counts, SQLite backup counts, candidate extraction handoff counts, recovery rate, false-alarm fraction, reliability errors, precision, recall, F1 score, review queue counts, consensus counts, and consensus export counts are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, per-track survey performance, classification performance estimates, discovery claims, external validation, detections, submission approvals, or scientific performance claims.
+`validate-all` and `validation-summary` include calibration-by-track, false-positive class, validation dataset, validation readiness, curated dataset admission, project status consistency, MCP bootstrap consistency, MCP server policy, benchmark metadata, benchmark run-result metadata, background target-priority, background search ledger, background reviewed-workflow, reviewed outcome log, needs-follow-up outcome log, follow-up test results, report-readiness gates, conservative draft report summaries, persisted draft-report validation, user decision records, top-level SQLite log validation, SQLite integrity checks, SQLite migration checks, SQLite export checks, SQLite PRAGMA diagnostics, SQLite backup and retention checks, SQLite vacuum checks, generated SQLite commit-path guardrails, candidate extraction handoff, injection-recovery, reliability, precision-recall, human-review queue, consensus-label, and consensus-export coverage. Benchmark append and compare commands are local workflow helpers for ignored output paths. The reported calibration-by-track coverage, false-positive class coverage, validation dataset coverage, validation readiness counts, curated dataset admission counts, project status consistency counts, MCP bootstrap consistency counts, MCP server policy counts, benchmark metadata, benchmark run-result metadata, benchmark deltas, target-priority ranking, background ledger counts, background reviewed-workflow counts, reviewed outcome counts, needs-follow-up counts, follow-up test counts, report-readiness counts, draft report counts, user decision counts, SQLite run and outcome counts, SQLite backup counts, candidate extraction handoff counts, recovery rate, false-alarm fraction, reliability errors, precision, recall, F1 score, review queue counts, consensus counts, and consensus export counts are synthetic development diagnostics only; they are not calibrated survey contamination, sensitivity, reliability, per-track survey performance, classification performance estimates, discovery claims, external validation, detections, submission approvals, or scientific performance claims.
 
 Route coverage now requires every `Pathway` enum value to appear in synthetic
 coverage fixtures. The `external_followup_candidate` fixture is enum coverage
@@ -1032,6 +1032,28 @@ and disabled arbitrary-shell, live-provider, and external-submission defaults.
 MCP bootstrap consistency records are local configuration drift guards only.
 They do not authorize live data access, external submission, candidate score
 changes, pathway changes, detections, discoveries, or external validation.
+
+## MCP Server Policy Gates
+
+Use `mcp-server-policy-summary` to inspect local MCP server implementation
+policy drift against the allowlisted tool and command contract:
+
+```bash
+.venv/bin/techno-search mcp-server-policy-summary
+.venv/bin/techno-search mcp-server-policy-summary --fixture-path tests/fixtures/mcp_server_policy.json
+```
+
+The summary verifies project-scoped MCP servers keep only expected tool names,
+fixed read-only git commands, fixed local validation commands, denied private
+and bulky repository paths, read-size limits, strict tool schemas, and local
+`.venv` enforcement. It also reports forbidden command tokens, mutating git
+commands, and disabled arbitrary-shell, live-provider, and external-submission
+flags. `validate-all` requires the policy check to pass.
+
+MCP server policy records are local implementation drift guards only. They do
+not execute MCP commands, authorize live data access, authorize external
+submission, change candidate scores, change pathways, create detections, claim
+discoveries, or provide external validation.
 
 ## Production Blocker Consistency Gates
 

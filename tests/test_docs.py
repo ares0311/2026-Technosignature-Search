@@ -156,6 +156,7 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     assert ".venv/bin/techno-search curated-dataset-admission-summary" in readme
     assert ".venv/bin/techno-search project-status-consistency-summary" in readme
     assert ".venv/bin/techno-search mcp-bootstrap-consistency-summary" in readme
+    assert ".venv/bin/techno-search mcp-server-policy-summary" in readme
     assert ".venv/bin/techno-search production-blocker-consistency-summary" in readme
     assert (
         ".venv/bin/techno-search operations-alert-review-consistency-summary"
@@ -287,6 +288,7 @@ def test_cli_docs_include_draft_report_and_decision_workflows() -> None:
     assert ".venv/bin/techno-search curated-dataset-admission-summary" in doc
     assert ".venv/bin/techno-search sqlite-log-consistency-summary" in doc
     assert ".venv/bin/techno-search project-status-consistency-summary" in doc
+    assert ".venv/bin/techno-search mcp-server-policy-summary" in doc
     assert (
         ".venv/bin/techno-search operations-alert-review-consistency-summary"
         in doc

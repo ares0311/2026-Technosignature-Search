@@ -215,9 +215,9 @@ def test_cli_project_status_consistency_summary_outputs_drift_gates() -> None:
     assert exit_code == 0
     assert result["schema_version"] == "project_status_consistency_v1"
     assert result["ok"] is True
-    assert result["roadmap_latest_milestone"] == 61
-    assert result["decisions_latest_decision"] == 108
-    assert result["actual_schema_count"] == 174
+    assert result["roadmap_latest_milestone"] == 62
+    assert result["decisions_latest_decision"] == 109
+    assert result["actual_schema_count"] == 175
     assert result["rfi_database_admission_real_data_authorized_count"] == 0
     assert result["curated_dataset_admission_real_data_authorized_count"] == 0
 
@@ -234,6 +234,26 @@ def test_cli_mcp_bootstrap_consistency_summary_outputs_gate_counts() -> None:
     assert result["claude_server_count"] == 3
     assert result["codex_server_count"] == 3
     assert result["forbidden_token_count"] == 0
+    assert result["arbitrary_shell_enabled"] is False
+    assert result["live_provider_enabled"] is False
+    assert result["external_submission_enabled"] is False
+
+
+def test_cli_mcp_server_policy_summary_outputs_gate_counts() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["mcp-server-policy-summary"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["schema_version"] == "mcp_server_policy_v1"
+    assert result["ok"] is True
+    assert result["server_kind_count"] == 3
+    assert result["git_read_command_count"] == 5
+    assert result["techno_guard_command_count"] == 10
+    assert result["forbidden_command_token_count"] == 0
+    assert result["mutating_git_command_count"] == 0
+    assert result["venv_enforced"] is True
     assert result["arbitrary_shell_enabled"] is False
     assert result["live_provider_enabled"] is False
     assert result["external_submission_enabled"] is False
@@ -418,7 +438,7 @@ def test_cli_sqlite_operational_log_adapter_readiness_preflight_outputs_gate() -
     assert result["readiness_status"] == "preflight_only"
     assert result["registered_log_count"] == 74
     assert result["planned_count"] == 74
-    assert result["schema_count"] == 174
+    assert result["schema_count"] == 175
     assert result["upstream_gate_failure_count"] == 0
     assert result["database_open_allowed"] is False
     assert result["execution_allowed"] is False
@@ -447,8 +467,8 @@ def test_cli_sqlite_operational_log_adapter_authorization_gate_outputs_gate() ->
         == "blocked_pending_explicit_operator_approval"
     )
     assert result["readiness_preflight_ok"] is True
-    assert result["readiness_preflight_schema_count"] == 174
-    assert result["schema_count"] == 174
+    assert result["readiness_preflight_schema_count"] == 175
+    assert result["schema_count"] == 175
     assert result["adapter_implementation_allowed"] is False
     assert result["database_open_allowed"] is False
     assert result["execution_allowed"] is False
@@ -699,6 +719,7 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "signal_classification_log",
         "project_status_consistency",
         "mcp_bootstrap_consistency",
+        "mcp_server_policy",
         "production_blocker_consistency",
         "operations_alert_review_consistency",
         "operations_action_resolution_consistency",
@@ -1888,6 +1909,10 @@ def test_cli_validate_all_outputs_local_summary() -> None:
     assert result["mcp_bootstrap_consistency_summary"]["ok"] is True
     assert result["mcp_bootstrap_consistency_summary"]["issue_count"] == 0
     assert result["mcp_bootstrap_consistency_summary"]["forbidden_token_count"] == 0
+    assert result["mcp_server_policy_summary"]["ok"] is True
+    assert result["mcp_server_policy_summary"]["issue_count"] == 0
+    assert result["mcp_server_policy_summary"]["forbidden_command_token_count"] == 0
+    assert result["mcp_server_policy_summary"]["mutating_git_command_count"] == 0
     assert result["production_blocker_consistency_summary"]["ok"] is True
     assert result["production_blocker_consistency_summary"]["issue_count"] == 0
     assert result["production_blocker_consistency_summary"][
@@ -2056,12 +2081,12 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 174
+    assert result["schema_count"] == 175
     assert result["schemas_ok"] is True
     assert result["project_status_consistency_ok"] is True
-    assert result["project_status_latest_milestone"] == 61
-    assert result["project_status_latest_decision"] == 108
-    assert result["project_status_schema_count"] == 174
+    assert result["project_status_latest_milestone"] == 62
+    assert result["project_status_latest_decision"] == 109
+    assert result["project_status_schema_count"] == 175
     assert result["mcp_bootstrap_consistency_ok"] is True
     assert result["mcp_bootstrap_consistency_issue_count"] == 0
     assert result["mcp_bootstrap_claude_server_count"] == 3
@@ -2070,6 +2095,16 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["mcp_bootstrap_arbitrary_shell_enabled"] is False
     assert result["mcp_bootstrap_live_provider_enabled"] is False
     assert result["mcp_bootstrap_external_submission_enabled"] is False
+    assert result["mcp_server_policy_ok"] is True
+    assert result["mcp_server_policy_issue_count"] == 0
+    assert result["mcp_server_policy_git_read_command_count"] == 5
+    assert result["mcp_server_policy_techno_guard_command_count"] == 10
+    assert result["mcp_server_policy_forbidden_command_token_count"] == 0
+    assert result["mcp_server_policy_mutating_git_command_count"] == 0
+    assert result["mcp_server_policy_venv_enforced"] is True
+    assert result["mcp_server_policy_arbitrary_shell_enabled"] is False
+    assert result["mcp_server_policy_live_provider_enabled"] is False
+    assert result["mcp_server_policy_external_submission_enabled"] is False
     assert result["production_blocker_consistency_ok"] is True
     assert result["production_blocker_consistency_issue_count"] == 0
     assert result["production_blocker_tier1_blocker_count"] == 5
@@ -2162,7 +2197,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert (
         result["sqlite_operational_log_adapter_readiness_preflight_schema_count"]
-        == 174
+        == 175
     )
     assert (
         result[
@@ -2198,7 +2233,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert (
         result["sqlite_operational_log_adapter_authorization_gate_schema_count"]
-        == 174
+        == 175
     )
     assert (
         result[

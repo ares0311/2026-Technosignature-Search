@@ -1,11 +1,11 @@
 {
   "schema_version": "project_status_consistency_v1",
   "expected_status": {
-    "latest_milestone_number": 61,
-    "latest_milestone_label": "MCP Bootstrap Consistency Gate",
-    "latest_decision_number": 108,
-    "schema_count": 174,
+    "latest_milestone_number": 62,
+    "latest_milestone_label": "MCP Server Policy Gate",
+    "latest_decision_number": 109,
+    "schema_count": 175,
     "require_zero_real_data_authorization": true,
-    "project_status_completed_phrase": "MCP bootstrap consistency gate added"
+    "project_status_completed_phrase": "MCP server policy gate added"
   }
 }
