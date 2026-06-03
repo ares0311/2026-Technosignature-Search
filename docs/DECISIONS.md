@@ -2455,3 +2455,25 @@ added deliberately.
 
 Schema count increased from 169 to 170. Consistency fixture updated: milestone
 55→56, decision 102→103, schema_count 169→170.
+
+# DECISION-104: Operational Log SQLite Dry-Run Manifests Must Reconcile Previews Before Adapter Execution
+
+Date: 2026-06-02
+
+Before operational log SQLite adapters open or mutate any database, the project
+must keep a deterministic dry-run manifest that reconciles the DDL preview and
+execution preview. The manifest must preserve DDL statement counts, insert
+counts, phase counts, execution operation counts, phase/table alignment,
+preview-only status, disabled database opening, disabled SQL execution,
+disabled mutation, disabled live-data authorization, and disabled external
+submission authorization.
+
+The dry-run manifest is a local planning artifact only. It must not open
+databases, execute SQL, insert rows, create tables, migrate fixture records,
+ingest real observation data, authorize live data access, authorize external
+submission, or constitute detections, discoveries, or external validation.
+Execution remains disabled until a future reviewed adapter implementation is
+added deliberately.
+
+Schema count increased from 170 to 171. Consistency fixture updated: milestone
+56→57, decision 103→104, schema_count 170→171.

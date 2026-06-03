@@ -215,9 +215,9 @@ def test_cli_project_status_consistency_summary_outputs_drift_gates() -> None:
     assert exit_code == 0
     assert result["schema_version"] == "project_status_consistency_v1"
     assert result["ok"] is True
-    assert result["roadmap_latest_milestone"] == 56
-    assert result["decisions_latest_decision"] == 103
-    assert result["actual_schema_count"] == 170
+    assert result["roadmap_latest_milestone"] == 57
+    assert result["decisions_latest_decision"] == 104
+    assert result["actual_schema_count"] == 171
     assert result["rfi_database_admission_real_data_authorized_count"] == 0
     assert result["curated_dataset_admission_real_data_authorized_count"] == 0
 
@@ -353,6 +353,34 @@ def test_cli_sqlite_operational_log_adapter_execution_preview_outputs_plan() -> 
     assert result["mutation_allowed"] is False
     assert result["begin_statement"] == "BEGIN IMMEDIATE;"
     assert "without opening databases" in result["disclaimer"]
+
+
+def test_cli_sqlite_operational_log_adapter_dry_run_manifest_outputs_manifest() -> None:
+    stdout = StringIO()
+
+    exit_code = main(
+        ["sqlite-operational-log-adapter-dry-run-manifest-summary"],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert (
+        result["schema_version"]
+        == "sqlite_operational_log_adapter_dry_run_manifest_v1"
+    )
+    assert result["ok"] is True
+    assert result["manifest_status"] == "preview_only"
+    assert result["ddl_statement_count"] == 5
+    assert result["insert_count"] == 74
+    assert result["phase_count"] == 5
+    assert result["execution_operation_count"] == 84
+    assert result["phase_alignment_mismatch_count"] == 0
+    assert result["database_open_allowed"] is False
+    assert result["execution_allowed"] is False
+    assert result["mutation_allowed"] is False
+    assert result["live_data_authorized"] is False
+    assert result["external_submission_authorized"] is False
 
 
 def test_cli_production_blocker_consistency_summary_outputs_gate_counts() -> None:
@@ -627,6 +655,7 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "sqlite_operational_log_adapter_plan",
         "sqlite_operational_log_adapter_contract",
         "sqlite_operational_log_adapter_ddl_preview",
+        "sqlite_operational_log_adapter_dry_run_manifest",
         "sqlite_operational_log_adapter_execution_preview",
         "sqlite_operational_log_adapter_insert_preview",
         "sqlite_operational_log_adapter_row_preview",
@@ -1889,6 +1918,19 @@ def test_cli_validate_all_outputs_local_summary() -> None:
         ]
         is False
     )
+    assert result["sqlite_operational_log_adapter_dry_run_manifest_summary"]["ok"] is True
+    assert (
+        result["sqlite_operational_log_adapter_dry_run_manifest_summary"][
+            "manifest_status"
+        ]
+        == "preview_only"
+    )
+    assert (
+        result["sqlite_operational_log_adapter_dry_run_manifest_summary"][
+            "phase_alignment_mismatch_count"
+        ]
+        == 0
+    )
     assert result["catalog_cache_validation"]["forbidden_roots"] == [
         "data",
         "cache",
@@ -1907,12 +1949,12 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 170
+    assert result["schema_count"] == 171
     assert result["schemas_ok"] is True
     assert result["project_status_consistency_ok"] is True
-    assert result["project_status_latest_milestone"] == 56
-    assert result["project_status_latest_decision"] == 103
-    assert result["project_status_schema_count"] == 170
+    assert result["project_status_latest_milestone"] == 57
+    assert result["project_status_latest_decision"] == 104
+    assert result["project_status_schema_count"] == 171
     assert result["production_blocker_consistency_ok"] is True
     assert result["production_blocker_consistency_issue_count"] == 0
     assert result["production_blocker_tier1_blocker_count"] == 5
@@ -1964,6 +2006,30 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["sqlite_operational_log_adapter_execution_phase_count"] == 5
     assert result["sqlite_operational_log_adapter_execution_allowed"] is False
     assert result["sqlite_operational_log_adapter_execution_mutation_allowed"] is False
+    assert result["sqlite_operational_log_adapter_dry_run_manifest_ok"] is True
+    assert result["sqlite_operational_log_adapter_dry_run_manifest_issue_count"] == 0
+    assert (
+        result["sqlite_operational_log_adapter_dry_run_manifest_status"]
+        == "preview_only"
+    )
+    assert result["sqlite_operational_log_adapter_dry_run_phase_count"] == 5
+    assert result["sqlite_operational_log_adapter_dry_run_phase_mismatch_count"] == 0
+    assert (
+        result["sqlite_operational_log_adapter_dry_run_database_open_allowed"]
+        is False
+    )
+    assert result["sqlite_operational_log_adapter_dry_run_execution_allowed"] is False
+    assert result["sqlite_operational_log_adapter_dry_run_mutation_allowed"] is False
+    assert (
+        result["sqlite_operational_log_adapter_dry_run_live_data_authorized"]
+        is False
+    )
+    assert (
+        result[
+            "sqlite_operational_log_adapter_dry_run_external_submission_authorized"
+        ]
+        is False
+    )
     assert result["operations_alert_review_consistency_ok"] is True
     assert result["operations_alert_review_open_alert_count"] == 3
     assert result["operations_alert_review_critical_open_alert_count"] == 1

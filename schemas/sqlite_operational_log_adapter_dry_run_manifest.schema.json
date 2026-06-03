@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SQLite Operational Log Adapter Dry-Run Manifest",
+  "type": "object",
+  "required": ["schema_version", "expected_manifest"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "sqlite_operational_log_adapter_dry_run_manifest_v1"
+    },
+    "expected_manifest": {
+      "type": "object",
+      "required": [
+        "expected_ddl_statement_count",
+        "expected_insert_count",
+        "expected_phase_count",
+        "expected_execution_operation_count",
+        "require_ddl_preview_ok",
+        "require_execution_preview_ok",
+        "require_phase_alignment",
+        "manifest_status",
+        "database_open_allowed",
+        "execution_allowed",
+        "mutation_allowed",
+        "live_data_authorized",
+        "external_submission_authorized"
+      ],
+      "properties": {
+        "expected_ddl_statement_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expected_insert_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expected_phase_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expected_execution_operation_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "require_ddl_preview_ok": {
+          "type": "boolean"
+        },
+        "require_execution_preview_ok": {
+          "type": "boolean"
+        },
+        "require_phase_alignment": {
+          "type": "boolean"
+        },
+        "manifest_status": {
+          "type": "string",
+          "const": "preview_only"
+        },
+        "database_open_allowed": {
+          "type": "boolean",
+          "const": false
+        },
+        "execution_allowed": {
+          "type": "boolean",
+          "const": false
+        },
+        "mutation_allowed": {
+          "type": "boolean",
+          "const": false
+        },
+        "live_data_authorized": {
+          "type": "boolean",
+          "const": false
+        },
+        "external_submission_authorized": {
+          "type": "boolean",
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

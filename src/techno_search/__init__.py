@@ -924,6 +924,13 @@ from techno_search.sqlite_operational_log_adapter_ddl_preview import (
     load_sqlite_operational_log_adapter_ddl_preview_expectations,
     sqlite_operational_log_adapter_ddl_preview_summary,
 )
+from techno_search.sqlite_operational_log_adapter_dry_run_manifest import (
+    SQLITE_OPERATIONAL_LOG_ADAPTER_DRY_RUN_MANIFEST_DISCLAIMER,
+    SQLITE_OPERATIONAL_LOG_ADAPTER_DRY_RUN_MANIFEST_SCHEMA_VERSION,
+    SqliteOperationalLogAdapterDryRunManifestEntry,
+    load_sqlite_operational_log_adapter_dry_run_manifest_expectations,
+    sqlite_operational_log_adapter_dry_run_manifest_summary,
+)
 from techno_search.sqlite_operational_log_adapter_execution_preview import (
     SQLITE_OPERATIONAL_LOG_ADAPTER_EXECUTION_PREVIEW_DISCLAIMER,
     SQLITE_OPERATIONAL_LOG_ADAPTER_EXECUTION_PREVIEW_SCHEMA_VERSION,
@@ -1635,6 +1642,11 @@ __all__ = [
     "SqliteOperationalLogAdapterDdlPreviewRecord",
     "load_sqlite_operational_log_adapter_ddl_preview_expectations",
     "sqlite_operational_log_adapter_ddl_preview_summary",
+    "SQLITE_OPERATIONAL_LOG_ADAPTER_DRY_RUN_MANIFEST_DISCLAIMER",
+    "SQLITE_OPERATIONAL_LOG_ADAPTER_DRY_RUN_MANIFEST_SCHEMA_VERSION",
+    "SqliteOperationalLogAdapterDryRunManifestEntry",
+    "load_sqlite_operational_log_adapter_dry_run_manifest_expectations",
+    "sqlite_operational_log_adapter_dry_run_manifest_summary",
     "SQLITE_OPERATIONAL_LOG_ADAPTER_EXECUTION_PREVIEW_DISCLAIMER",
     "SQLITE_OPERATIONAL_LOG_ADAPTER_EXECUTION_PREVIEW_SCHEMA_VERSION",
     "SqliteOperationalLogAdapterExecutionPhasePreview",

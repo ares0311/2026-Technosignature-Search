@@ -285,6 +285,9 @@ from techno_search.sqlite_operational_log_adapter_contract import (
 from techno_search.sqlite_operational_log_adapter_ddl_preview import (
     sqlite_operational_log_adapter_ddl_preview_summary,
 )
+from techno_search.sqlite_operational_log_adapter_dry_run_manifest import (
+    sqlite_operational_log_adapter_dry_run_manifest_summary,
+)
 from techno_search.sqlite_operational_log_adapter_execution_preview import (
     sqlite_operational_log_adapter_execution_preview_summary,
 )
@@ -401,6 +404,9 @@ SCHEMA_FILENAMES = {
     ),
     "sqlite_operational_log_adapter_ddl_preview": (
         "sqlite_operational_log_adapter_ddl_preview.schema.json"
+    ),
+    "sqlite_operational_log_adapter_dry_run_manifest": (
+        "sqlite_operational_log_adapter_dry_run_manifest.schema.json"
     ),
     "sqlite_operational_log_adapter_execution_preview": (
         "sqlite_operational_log_adapter_execution_preview.schema.json"
@@ -2814,6 +2820,23 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0 if execution_preview_summary["ok"] else 1
 
+    if args.command == "sqlite-operational-log-adapter-dry-run-manifest-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        dry_run_manifest_summary = (
+            sqlite_operational_log_adapter_dry_run_manifest_summary(
+                fixture_path,
+            )
+        )
+        print(
+            json.dumps(
+                dry_run_manifest_summary,
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0 if dry_run_manifest_summary["ok"] else 1
+
     if args.command == "operations-alert-review-consistency-summary":
         fixture_path = Path(args.fixture_path) if args.fixture_path else None
         consistency_summary = operations_alert_review_consistency_summary(fixture_path)
@@ -4400,6 +4423,15 @@ def validate_all() -> dict[str, object]:
     sqlite_operational_log_adapter_execution_preview_ok = bool(
         sqlite_operational_log_adapter_execution_preview.get("ok", False)
     )
+    sqlite_operational_log_adapter_dry_run_manifest = (
+        sqlite_operational_log_adapter_dry_run_manifest_summary(
+            ddl_preview_summary=sqlite_operational_log_adapter_ddl_preview,
+            execution_preview_summary=sqlite_operational_log_adapter_execution_preview,
+        )
+    )
+    sqlite_operational_log_adapter_dry_run_manifest_ok = bool(
+        sqlite_operational_log_adapter_dry_run_manifest.get("ok", False)
+    )
     operations_action_plan = operations_action_plan_summary(operations_readiness)
     operations_action_ids = [
         str(action["action_id"])
@@ -4965,6 +4997,7 @@ def validate_all() -> dict[str, object]:
         and sqlite_operational_log_adapter_row_preview_ok
         and sqlite_operational_log_adapter_insert_preview_ok
         and sqlite_operational_log_adapter_execution_preview_ok
+        and sqlite_operational_log_adapter_dry_run_manifest_ok
         and operations_alert_review_consistency_ok
         and isinstance(rescore_event_count, int)
         and rescore_event_count >= 1
@@ -5350,6 +5383,9 @@ def validate_all() -> dict[str, object]:
         "sqlite_operational_log_adapter_execution_preview_summary": (
             sqlite_operational_log_adapter_execution_preview
         ),
+        "sqlite_operational_log_adapter_dry_run_manifest_summary": (
+            sqlite_operational_log_adapter_dry_run_manifest
+        ),
         "operations_alert_review_consistency_summary": (
             operations_alert_review_consistency
         ),
@@ -5543,6 +5579,9 @@ def validation_summary() -> dict[str, object]:
     ]
     sqlite_operational_log_adapter_execution_preview = validation[
         "sqlite_operational_log_adapter_execution_preview_summary"
+    ]
+    sqlite_operational_log_adapter_dry_run_manifest = validation[
+        "sqlite_operational_log_adapter_dry_run_manifest_summary"
     ]
     operations_readiness = validation["operations_readiness_summary"]
     operations_action_plan = validation["operations_action_plan_summary"]
@@ -7450,6 +7489,66 @@ def validation_summary() -> dict[str, object]:
         "sqlite_operational_log_adapter_execution_mutation_allowed": (
             bool(sqlite_operational_log_adapter_execution_preview["mutation_allowed"])
             if isinstance(sqlite_operational_log_adapter_execution_preview, dict)
+            else True
+        ),
+        "sqlite_operational_log_adapter_dry_run_manifest_ok": (
+            bool(sqlite_operational_log_adapter_dry_run_manifest["ok"])
+            if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
+            else False
+        ),
+        "sqlite_operational_log_adapter_dry_run_manifest_issue_count": (
+            sqlite_operational_log_adapter_dry_run_manifest["issue_count"]
+            if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
+            else 0
+        ),
+        "sqlite_operational_log_adapter_dry_run_manifest_status": (
+            sqlite_operational_log_adapter_dry_run_manifest["manifest_status"]
+            if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
+            else "unknown"
+        ),
+        "sqlite_operational_log_adapter_dry_run_phase_count": (
+            sqlite_operational_log_adapter_dry_run_manifest["phase_count"]
+            if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
+            else 0
+        ),
+        "sqlite_operational_log_adapter_dry_run_phase_mismatch_count": (
+            sqlite_operational_log_adapter_dry_run_manifest[
+                "phase_alignment_mismatch_count"
+            ]
+            if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
+            else 0
+        ),
+        "sqlite_operational_log_adapter_dry_run_database_open_allowed": (
+            bool(
+                sqlite_operational_log_adapter_dry_run_manifest[
+                    "database_open_allowed"
+                ]
+            )
+            if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
+            else True
+        ),
+        "sqlite_operational_log_adapter_dry_run_execution_allowed": (
+            bool(sqlite_operational_log_adapter_dry_run_manifest["execution_allowed"])
+            if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
+            else True
+        ),
+        "sqlite_operational_log_adapter_dry_run_mutation_allowed": (
+            bool(sqlite_operational_log_adapter_dry_run_manifest["mutation_allowed"])
+            if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
+            else True
+        ),
+        "sqlite_operational_log_adapter_dry_run_live_data_authorized": (
+            bool(sqlite_operational_log_adapter_dry_run_manifest["live_data_authorized"])
+            if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
+            else True
+        ),
+        "sqlite_operational_log_adapter_dry_run_external_submission_authorized": (
+            bool(
+                sqlite_operational_log_adapter_dry_run_manifest[
+                    "external_submission_authorized"
+                ]
+            )
+            if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
             else True
         ),
         "operations_alert_review_consistency_ok": (
@@ -10401,6 +10500,16 @@ def _build_parser() -> argparse.ArgumentParser:
         "--fixture-path",
         type=Path,
         help="Optional adapter-execution-preview fixture path override.",
+    )
+
+    sqlite_adapter_dry_run_parser = subparsers.add_parser(
+        "sqlite-operational-log-adapter-dry-run-manifest-summary",
+        help="Preview non-executing SQLite adapter dry-run manifest alignment.",
+    )
+    sqlite_adapter_dry_run_parser.add_argument(
+        "--fixture-path",
+        type=Path,
+        help="Optional adapter-dry-run-manifest fixture path override.",
     )
 
     alert_review_consistency_parser = subparsers.add_parser(

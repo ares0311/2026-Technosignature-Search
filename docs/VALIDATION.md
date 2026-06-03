@@ -284,6 +284,7 @@ Review reviewed and needs-follow-up outcome logs:
 .venv/bin/techno-search sqlite-operational-log-adapter-row-preview-summary
 .venv/bin/techno-search sqlite-operational-log-adapter-insert-preview-summary
 .venv/bin/techno-search sqlite-operational-log-adapter-execution-preview-summary
+.venv/bin/techno-search sqlite-operational-log-adapter-dry-run-manifest-summary
 .venv/bin/techno-search validate-sqlite-logs \
   --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search scheduler-dry-run \
@@ -607,6 +608,18 @@ Preview non-executing operational log adapter execution ordering:
 The preview renders deterministic transaction ordering around insert-preview
 records for review only. It does not open databases, execute SQL, insert rows,
 create tables, migrate fixtures, or mutate databases.
+
+Preview non-executing operational log adapter dry-run manifest:
+
+```bash
+.venv/bin/techno-search sqlite-operational-log-adapter-dry-run-manifest-summary
+.venv/bin/techno-search sqlite-operational-log-adapter-dry-run-manifest-summary --fixture-path tests/fixtures/sqlite_operational_log_adapter_dry_run_manifest.json
+```
+
+The manifest reconciles deterministic DDL and execution previews for review
+only. It does not open databases, execute SQL, insert rows, create tables,
+migrate fixtures, mutate databases, authorize live data, or authorize external
+submission.
 
 ---
 
