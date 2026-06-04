@@ -15,6 +15,7 @@ from typing import TextIO
 from techno_search.access_control_log import access_control_summary
 from techno_search.access_log import access_log_summary
 from techno_search.aggregate_blockers import aggregate_blockers_summary
+from techno_search.alert_escalation_log import alert_escalation_summary
 from techno_search.alert_resolution_log import alert_resolution_summary
 from techno_search.antenna_pointing_log import antenna_pointing_summary
 from techno_search.archival_query_log import archival_query_summary
@@ -101,6 +102,7 @@ from techno_search.compliance_audit_log import compliance_audit_summary
 from techno_search.compliance_report_log import compliance_report_summary
 from techno_search.config_version_history import config_version_history_summary
 from techno_search.configuration_audit_log import configuration_audit_summary
+from techno_search.configuration_change_log import configuration_change_summary
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.cooling_system_log import cooling_system_summary
 from techno_search.cross_track import cross_track_summary
@@ -109,6 +111,7 @@ from techno_search.curated_dataset_intake import curated_dataset_intake_summary
 from techno_search.data_archival_log import data_archival_summary
 from techno_search.data_gap_log import data_gap_summary
 from techno_search.data_quality_log import data_quality_log_summary
+from techno_search.data_retention_log import data_retention_summary
 from techno_search.data_transfer_log import data_transfer_summary
 from techno_search.disaster_recovery_log import disaster_recovery_summary
 from techno_search.doppler_correction_log import doppler_correction_summary
@@ -579,6 +582,9 @@ SCHEMA_FILENAMES = {
     "network_monitoring_log": "network_monitoring_log.schema.json",
     "identity_management_log": "identity_management_log.schema.json",
     "certificate_management_log": "certificate_management_log.schema.json",
+    "alert_escalation_log": "alert_escalation_log.schema.json",
+    "configuration_change_log": "configuration_change_log.schema.json",
+    "data_retention_log": "data_retention_log.schema.json",
 }
 
 
@@ -3740,6 +3746,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(certm_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "alert-escalation-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        ae_out = alert_escalation_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(ae_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "configuration-change-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        cc_out = configuration_change_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(cc_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "data-retention-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        dr_ret_out = data_retention_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(dr_ret_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -4487,6 +4511,15 @@ def validate_all() -> dict[str, object]:
     certm_data = certificate_management_summary()
     certm_entry_count = int(certm_data.get("entry_count", 0))
     _certm_issued_count = int(certm_data.get("issued_count", 0))
+    ae_data = alert_escalation_summary()
+    ae_entry_count = int(ae_data.get("entry_count", 0))
+    _ae_resolved_count = int(ae_data.get("resolved_count", 0))
+    cc_data = configuration_change_summary()
+    cc_entry_count = int(cc_data.get("entry_count", 0))
+    _cc_applied_count = int(cc_data.get("applied_count", 0))
+    dr_ret_data = data_retention_summary()
+    dr_ret_entry_count = int(dr_ret_data.get("entry_count", 0))
+    _dr_ret_completed_count = int(dr_ret_data.get("completed_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -5449,6 +5482,12 @@ def validate_all() -> dict[str, object]:
         and im_entry_count >= 1
         and isinstance(certm_entry_count, int)
         and certm_entry_count >= 1
+        and isinstance(ae_entry_count, int)
+        and ae_entry_count >= 1
+        and isinstance(cc_entry_count, int)
+        and cc_entry_count >= 1
+        and isinstance(dr_ret_entry_count, int)
+        and dr_ret_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -5771,6 +5810,9 @@ def validate_all() -> dict[str, object]:
         "network_monitoring_log_summary": nm_data,
         "identity_management_log_summary": im_data,
         "certificate_management_log_summary": certm_data,
+        "alert_escalation_log_summary": ae_data,
+        "configuration_change_log_summary": cc_data,
+        "data_retention_log_summary": dr_ret_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -9107,6 +9149,36 @@ def validation_summary() -> dict[str, object]:
             if isinstance(certm_vs2 := validation.get("certificate_management_log_summary"), dict)
             else 0
         ),
+        "alert_escalation_entry_count": (
+            ae_vs["entry_count"]
+            if isinstance(ae_vs := validation.get("alert_escalation_log_summary"), dict)
+            else 0
+        ),
+        "alert_escalation_resolved_count": (
+            ae_vs2["resolved_count"]
+            if isinstance(ae_vs2 := validation.get("alert_escalation_log_summary"), dict)
+            else 0
+        ),
+        "configuration_change_entry_count": (
+            cc_vs["entry_count"]
+            if isinstance(cc_vs := validation.get("configuration_change_log_summary"), dict)
+            else 0
+        ),
+        "configuration_change_applied_count": (
+            cc_vs2["applied_count"]
+            if isinstance(cc_vs2 := validation.get("configuration_change_log_summary"), dict)
+            else 0
+        ),
+        "data_retention_entry_count": (
+            dr_ret_vs["entry_count"]
+            if isinstance(dr_ret_vs := validation.get("data_retention_log_summary"), dict)
+            else 0
+        ),
+        "data_retention_completed_count": (
+            dr_ret_vs2["completed_count"]
+            if isinstance(dr_ret_vs2 := validation.get("data_retention_log_summary"), dict)
+            else 0
+        ),
         "labeled_candidate_count": (
             lds_s["entry_count"]
             if isinstance(lds_s := validation.get("labeled_dataset_summary"), dict)
@@ -12144,6 +12216,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     certificate_management_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    alert_escalation_parser = subparsers.add_parser(
+        "alert-escalation-summary",
+        help=(
+            "Summarize alert escalation log entries "
+            "(operational alert escalation provenance records only)."
+        ),
+    )
+    alert_escalation_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    configuration_change_parser = subparsers.add_parser(
+        "configuration-change-summary",
+        help=(
+            "Summarize configuration change log entries "
+            "(operational configuration change provenance records only)."
+        ),
+    )
+    configuration_change_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    data_retention_parser = subparsers.add_parser(
+        "data-retention-summary",
+        help=(
+            "Summarize data retention log entries "
+            "(operational data retention provenance records only)."
+        ),
+    )
+    data_retention_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DataRetentionLog",
+  "type": "object",
+  "required": ["schema_version", "entries"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entry_id", "retention_kind", "status", "actor_id", "resource_id", "timestamp_utc", "notes"],
+        "properties": {
+          "entry_id": { "type": "string" },
+          "retention_kind": {
+            "type": "string",
+            "enum": ["archive_transfer", "deletion_scheduled", "policy_review", "retention_expired", "retention_extended"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["completed", "deferred", "failed", "pending"]
+          },
+          "actor_id": { "type": "string" },
+          "resource_id": { "type": "string" },
+          "timestamp_utc": { "type": "string" },
+          "notes": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

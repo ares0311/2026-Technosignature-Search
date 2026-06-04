@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AlertEscalationLog",
+  "type": "object",
+  "required": ["schema_version", "entries"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entry_id", "escalation_kind", "status", "actor_id", "resource_id", "timestamp_utc", "notes"],
+        "properties": {
+          "entry_id": { "type": "string" },
+          "escalation_kind": {
+            "type": "string",
+            "enum": ["automatic_escalation", "manual_escalation", "page_oncall", "reassignment", "resolution_escalation"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["acknowledged", "escalated", "resolved", "unacknowledged"]
+          },
+          "actor_id": { "type": "string" },
+          "resource_id": { "type": "string" },
+          "timestamp_utc": { "type": "string" },
+          "notes": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

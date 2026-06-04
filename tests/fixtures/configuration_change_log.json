@@ -1,0 +1,50 @@
+{
+  "schema_version": "configuration_change_log_v1",
+  "entries": [
+    {
+      "entry_id": "cfg-chg-001",
+      "change_kind": "parameter_update",
+      "status": "applied",
+      "actor_id": "operator-1",
+      "resource_id": "pipeline-config-v2",
+      "timestamp_utc": "2026-06-04T01:00:00Z",
+      "notes": "Updated integration time parameter for radio track."
+    },
+    {
+      "entry_id": "cfg-chg-002",
+      "change_kind": "profile_switch",
+      "status": "applied",
+      "actor_id": "operator-2",
+      "resource_id": "scoring-profile-infrared",
+      "timestamp_utc": "2026-06-04T02:00:00Z",
+      "notes": "Switched to infrared sensitivity profile for current observation window."
+    },
+    {
+      "entry_id": "cfg-chg-003",
+      "change_kind": "rollback",
+      "status": "reverted",
+      "actor_id": "operator-1",
+      "resource_id": "pipeline-config-v1",
+      "timestamp_utc": "2026-06-04T03:00:00Z",
+      "notes": "Rolled back to previous config after anomaly detection failure."
+    },
+    {
+      "entry_id": "cfg-chg-004",
+      "change_kind": "template_apply",
+      "status": "pending",
+      "actor_id": "operator-3",
+      "resource_id": "rfi-filter-template-v3",
+      "timestamp_utc": "2026-06-04T04:00:00Z",
+      "notes": "Applying updated RFI filter template pending operator review."
+    },
+    {
+      "entry_id": "cfg-chg-005",
+      "change_kind": "version_pin",
+      "status": "failed",
+      "actor_id": "operator-2",
+      "resource_id": "calibration-config-v4",
+      "timestamp_utc": "2026-06-04T05:00:00Z",
+      "notes": "Version pin failed due to config schema mismatch."
+    }
+  ]
+}

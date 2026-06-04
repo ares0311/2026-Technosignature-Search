@@ -2695,3 +2695,26 @@ detection claim.
 
 Schema count increased from 185 to 188. Consistency fixture updated: milestone
 66→67, decision 113→114, schema_count 185→188.
+
+# DECISION-115: Configuration Change Log, Data Retention Log, And Alert Escalation Log Complete Milestone 68
+
+Date: 2026-06-04
+
+Configuration change log, data retention log, and alert escalation log
+operational provenance records have been added as Milestone 68.
+
+Configuration change entries are operational provenance records — a
+configuration change event does not modify candidate scores or pathway
+routing, does not authorize external submission, and does not constitute a
+detection claim.
+
+Data retention entries are operational provenance records — a data retention
+event does not modify candidate scores or pathway routing, does not authorize
+external submission, and does not constitute a detection claim.
+
+Alert escalation entries are operational provenance records — an alert
+escalation event does not modify candidate scores or pathway routing, does
+not authorize external submission, and does not constitute a detection claim.
+
+Schema count increased from 188 to 191. Consistency fixture updated: milestone
+67→68, decision 114→115, schema_count 188→191.
