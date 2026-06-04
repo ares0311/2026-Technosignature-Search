@@ -1,5 +1,14 @@
 """Technosignature-interest candidate search tools."""
 
+from techno_search.access_control_log import (
+    ACCESS_CONTROL_LOG_DISCLAIMER,
+    ACCESS_CONTROL_LOG_SCHEMA_VERSION,
+    ALLOWED_ACCESS_CONTROL_KINDS,
+    ALLOWED_ACCESS_CONTROL_STATUSES,
+    AccessControlEntry,
+    access_control_summary,
+    load_access_control_entries,
+)
 from techno_search.aggregate_blockers import (
     AGGREGATE_BLOCKERS_DISCLAIMER,
     aggregate_blockers_summary,
@@ -281,6 +290,15 @@ from techno_search.candidate_triage import (
     triage_label_completeness_check,
     triage_summary,
 )
+from techno_search.change_management_log import (
+    ALLOWED_CHANGE_MANAGEMENT_KINDS,
+    ALLOWED_CHANGE_MANAGEMENT_STATUSES,
+    CHANGE_MANAGEMENT_LOG_DISCLAIMER,
+    CHANGE_MANAGEMENT_LOG_SCHEMA_VERSION,
+    ChangeManagementEntry,
+    change_management_summary,
+    load_change_management_entries,
+)
 from techno_search.config import TrackConfig, load_scoring_config, load_track_config
 from techno_search.config_version_history import (
     ALLOWED_CHANGE_KINDS,
@@ -400,6 +418,15 @@ from techno_search.follow_up_request import (
     FollowUpRequest,
     follow_up_request_summary,
     load_follow_up_requests,
+)
+from techno_search.incident_log import (
+    ALLOWED_INCIDENT_KINDS,
+    ALLOWED_INCIDENT_STATUSES,
+    INCIDENT_LOG_DISCLAIMER,
+    INCIDENT_LOG_SCHEMA_VERSION,
+    IncidentEntry,
+    incident_summary,
+    load_incident_entries,
 )
 from techno_search.injection_recovery import (
     INJECTION_RECOVERY_DISCLAIMER,
@@ -1745,6 +1772,13 @@ __all__ = [
     "load_sqlite_operational_log_registry",
     "load_sqlite_operational_log_registry_entries",
     "sqlite_operational_log_registry_summary",
+    "ACCESS_CONTROL_LOG_DISCLAIMER",
+    "ACCESS_CONTROL_LOG_SCHEMA_VERSION",
+    "ALLOWED_ACCESS_CONTROL_KINDS",
+    "ALLOWED_ACCESS_CONTROL_STATUSES",
+    "AccessControlEntry",
+    "access_control_summary",
+    "load_access_control_entries",
     "ALERT_RESOLUTION_DISCLAIMER",
     "ALERT_RESOLUTION_SCHEMA_VERSION",
     "ALLOWED_ALERT_RESOLUTION_KINDS",
@@ -1771,6 +1805,14 @@ __all__ = [
     "ScoringThresholdAuditEntry",
     "load_threshold_audit_entries",
     "scoring_threshold_audit_summary",
+
+    "ALLOWED_CHANGE_MANAGEMENT_KINDS",
+    "ALLOWED_CHANGE_MANAGEMENT_STATUSES",
+    "CHANGE_MANAGEMENT_LOG_DISCLAIMER",
+    "CHANGE_MANAGEMENT_LOG_SCHEMA_VERSION",
+    "ChangeManagementEntry",
+    "change_management_summary",
+    "load_change_management_entries",
     "ALLOWED_CHANGE_KINDS",
     "CONFIG_VERSION_HISTORY_DISCLAIMER",
     "CONFIG_VERSION_HISTORY_SCHEMA_VERSION",
@@ -1931,6 +1973,13 @@ __all__ = [
     "SystemHealthEntry",
     "load_system_health_entries",
     "system_health_summary",
+    "ALLOWED_INCIDENT_KINDS",
+    "ALLOWED_INCIDENT_STATUSES",
+    "INCIDENT_LOG_DISCLAIMER",
+    "INCIDENT_LOG_SCHEMA_VERSION",
+    "IncidentEntry",
+    "incident_summary",
+    "load_incident_entries",
     "ALLOWED_CONFIGURATION_KINDS",
     "ALLOWED_CONFIGURATION_STATUSES",
     "INSTRUMENT_CONFIGURATION_LOG_DISCLAIMER",

@@ -2604,3 +2604,25 @@ not authorize external submission, and does not constitute a detection claim.
 
 Schema count increased from 175 to 177. Consistency fixture updated: milestone
 62→63, decision 109→110, schema_count 175→177.
+
+# DECISION-111: Access Control Log, Change Management Log, And Incident Log Complete Milestone 64
+
+Date: 2026-06-04
+
+Access control log, change management log, and incident log operational
+provenance records have been added as Milestone 64.
+
+Access control entries are operational provenance records — an access control
+event does not modify candidate scores or pathway routing, does not authorize
+external submission, and does not constitute a detection claim.
+
+Change management entries are operational provenance records — a change
+management event does not modify candidate scores or pathway routing, does
+not authorize external submission, and does not constitute a detection claim.
+
+Incident entries are operational provenance records — an incident event does
+not modify candidate scores or pathway routing, does not authorize external
+submission, and does not constitute a detection claim.
+
+Schema count increased from 177 to 179. Consistency fixture updated: milestone
+63→64, decision 110→111, schema_count 177→179.

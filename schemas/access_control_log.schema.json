@@ -1,28 +1,28 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "ChangeManagementLog",
-  "description": "Operational provenance records for change management events.",
+  "title": "AccessControlLog",
+  "description": "Operational provenance records for access control events.",
   "type": "object",
   "required": ["schema_version", "entries"],
   "properties": {
     "schema_version": {
       "type": "string",
-      "const": "change_management_log_v1"
+      "const": "access_control_log_v1"
     },
     "entries": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["entry_id", "change_kind", "status", "actor_id", "resource_id", "timestamp_utc"],
+        "required": ["entry_id", "access_kind", "status", "actor_id", "resource_id", "timestamp_utc"],
         "properties": {
           "entry_id": {"type": "string"},
-          "change_kind": {
+          "access_kind": {
             "type": "string",
-            "enum": ["configuration_change", "emergency_change", "planned_change", "rollback", "service_change"]
+            "enum": ["access_grant", "access_revocation", "authentication_attempt", "authorization_check", "permission_change"]
           },
           "status": {
             "type": "string",
-            "enum": ["approved", "completed", "pending", "rejected"]
+            "enum": ["allowed", "blocked", "expired", "pending"]
           },
           "actor_id": {"type": "string"},
           "resource_id": {"type": "string"},

@@ -1477,3 +1477,35 @@ introduced.
 - Resource allocation entries are operational provenance records
 - No entry modifies candidate scores or pathway routing
 - No entry authorizes external submission or constitutes a detection claim
+
+# Milestone 64 — Access Control Log, Change Management Log, And Incident Log
+
+**Status**: complete
+
+## Tasks
+
+- [x] `src/techno_search/access_control_log.py` — operational provenance records for access control events; access_kinds: access_grant, access_revocation, authentication_attempt, authorization_check, permission_change; statuses: allowed, blocked, expired, pending
+- [x] `schemas/access_control_log.schema.json`
+- [x] `tests/fixtures/access_control_log.json` — 5 entries (2 allowed, 1 blocked, 1 expired, 1 pending)
+- [x] `tests/test_access_control_log.py` — 22 tests
+- [x] `src/techno_search/change_management_log.py` — operational provenance records for change management events; change_kinds: configuration_change, emergency_change, planned_change, rollback, service_change; statuses: approved, completed, pending, rejected
+- [x] `schemas/change_management_log.schema.json` (pre-existing)
+- [x] `tests/fixtures/change_management_log.json` — 5 entries (2 completed, 1 approved, 1 pending, 1 rejected)
+- [x] `tests/test_change_management_log.py` — 22 tests
+- [x] `src/techno_search/incident_log.py` — operational provenance records for incident events; incident_kinds: data_integrity_incident, hardware_incident, network_incident, security_incident, software_incident; statuses: closed, escalated, open, under_investigation
+- [x] `schemas/incident_log.schema.json`
+- [x] `tests/fixtures/incident_log.json` — 5 entries (2 closed, 1 open, 1 under_investigation, 1 escalated)
+- [x] `tests/test_incident_log.py` — 22 tests
+- [x] `access_control_log`, `incident_log` added to `SCHEMA_FILENAMES` (total schemas: 179)
+- [x] `techno-search access-control-summary`, `techno-search change-management-summary`, `techno-search incident-summary` CLI commands
+- [x] `validate-all` gates: `access_control_entry_count >= 1`, `change_mgmt_entry_count >= 1`, `incident_entry_count >= 1`
+- [x] `validation-summary` fields: `access_control_entry_count`, `access_control_allowed_count`, `incident_entry_count`, `incident_open_count`
+- [x] DECISION-111: Access Control Log, Change Management Log, And Incident Log Complete Milestone 64
+
+## Done When
+
+- Access control entries are operational provenance records
+- Change management entries are operational provenance records
+- Incident entries are operational provenance records
+- No entry modifies candidate scores or pathway routing
+- No entry authorizes external submission or constitutes a detection claim

@@ -12,6 +12,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TextIO
 
+from techno_search.access_control_log import access_control_summary
 from techno_search.access_log import access_log_summary
 from techno_search.aggregate_blockers import aggregate_blockers_summary
 from techno_search.alert_resolution_log import alert_resolution_summary
@@ -118,6 +119,7 @@ from techno_search.follow_up_request import follow_up_request_summary
 from techno_search.frequency_channel_log import frequency_channel_log_summary
 from techno_search.hardware_fault_log import hardware_fault_summary
 from techno_search.health_check_log import health_check_summary
+from techno_search.incident_log import incident_summary
 from techno_search.incident_response_log import incident_response_summary
 from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
 from techno_search.instrument_configuration_log import instrument_configuration_summary
@@ -557,6 +559,8 @@ SCHEMA_FILENAMES = {
     "event_correlation_log": "event_correlation_log.schema.json",
     "system_diagnostics_log": "system_diagnostics_log.schema.json",
     "resource_allocation_log": "resource_allocation_log.schema.json",
+    "access_control_log": "access_control_log.schema.json",
+    "incident_log": "incident_log.schema.json",
 }
 
 
@@ -3652,6 +3656,18 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(ra_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "access-control-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        ac_out = access_control_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(ac_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "incident-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        inc_out = incident_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(inc_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -4320,7 +4336,7 @@ def validate_all() -> dict[str, object]:
     _incident_response_resolved_count = int(incident_response_data.get("resolved_count", 0))
     change_mgmt_data = change_management_summary()
     change_mgmt_entry_count = int(change_mgmt_data.get("entry_count", 0))
-    _change_mgmt_implemented_count = int(change_mgmt_data.get("implemented_count", 0))
+    _change_mgmt_completed_count = int(change_mgmt_data.get("completed_count", 0))
     compliance_report_data = compliance_report_summary()
     compliance_report_entry_count = int(compliance_report_data.get("entry_count", 0))
     _compliance_report_passed_count = int(compliance_report_data.get("passed_count", 0))
@@ -4366,6 +4382,12 @@ def validate_all() -> dict[str, object]:
     resource_allocation_data = resource_allocation_summary()
     resource_allocation_entry_count = int(resource_allocation_data.get("entry_count", 0))
     _resource_allocation_allocated_count = int(resource_allocation_data.get("allocated_count", 0))
+    access_control_data = access_control_summary()
+    access_control_entry_count = int(access_control_data.get("entry_count", 0))
+    _access_control_allowed_count = int(access_control_data.get("allowed_count", 0))
+    incident_data = incident_summary()
+    incident_entry_count = int(incident_data.get("entry_count", 0))
+    _incident_open_count = int(incident_data.get("open_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -5304,6 +5326,12 @@ def validate_all() -> dict[str, object]:
         and system_diagnostics_entry_count >= 1
         and isinstance(resource_allocation_entry_count, int)
         and resource_allocation_entry_count >= 1
+        and isinstance(access_control_entry_count, int)
+        and access_control_entry_count >= 1
+        and isinstance(change_mgmt_entry_count, int)
+        and change_mgmt_entry_count >= 1
+        and isinstance(incident_entry_count, int)
+        and incident_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -5615,6 +5643,8 @@ def validate_all() -> dict[str, object]:
         "event_correlation_log_summary": event_correlation_data,
         "system_diagnostics_log_summary": system_diagnostics_data,
         "resource_allocation_log_summary": resource_allocation_data,
+        "access_control_log_summary": access_control_data,
+        "incident_log_summary": incident_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -8686,8 +8716,8 @@ def validation_summary() -> dict[str, object]:
             if isinstance(cm_s := validation.get("change_management_log_summary"), dict)
             else 0
         ),
-        "change_management_implemented_count": (
-            cm_s2["implemented_count"]
+        "change_management_completed_count": (
+            cm_s2["completed_count"]
             if isinstance(cm_s2 := validation.get("change_management_log_summary"), dict)
             else 0
         ),
@@ -8839,6 +8869,26 @@ def validation_summary() -> dict[str, object]:
         "resource_allocation_allocated_count": (
             ra_s2["allocated_count"]
             if isinstance(ra_s2 := validation.get("resource_allocation_log_summary"), dict)
+            else 0
+        ),
+        "access_control_entry_count": (
+            ac_s["entry_count"]
+            if isinstance(ac_s := validation.get("access_control_log_summary"), dict)
+            else 0
+        ),
+        "access_control_allowed_count": (
+            ac_s2["allowed_count"]
+            if isinstance(ac_s2 := validation.get("access_control_log_summary"), dict)
+            else 0
+        ),
+        "incident_entry_count": (
+            inc_s["entry_count"]
+            if isinstance(inc_s := validation.get("incident_log_summary"), dict)
+            else 0
+        ),
+        "incident_open_count": (
+            inc_s2["open_count"]
+            if isinstance(inc_s2 := validation.get("incident_log_summary"), dict)
             else 0
         ),
         "labeled_candidate_count": (
@@ -11757,6 +11807,28 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     resource_allocation_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    access_control_parser = subparsers.add_parser(
+        "access-control-summary",
+        help=(
+            "Summarize access control log entries "
+            "(operational access control provenance records only)."
+        ),
+    )
+    access_control_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    incident_parser = subparsers.add_parser(
+        "incident-summary",
+        help=(
+            "Summarize incident log entries "
+            "(operational incident provenance records only)."
+        ),
+    )
+    incident_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 
