@@ -1,11 +1,11 @@
 {
   "schema_version": "project_status_consistency_v1",
   "expected_status": {
-    "latest_milestone_number": 65,
-    "latest_milestone_label": "Patch Management Log, Vulnerability Scan Log, And Compliance Audit Log",
-    "latest_decision_number": 112,
-    "schema_count": 182,
+    "latest_milestone_number": 66,
+    "latest_milestone_label": "Disaster Recovery Log, Service Level Log, And Asset Management Log",
+    "latest_decision_number": 113,
+    "schema_count": 185,
     "require_zero_real_data_authorization": true,
-    "project_status_completed_phrase": "Patch management log, vulnerability scan log, and compliance audit log operational provenance records added"
+    "project_status_completed_phrase": "Disaster recovery log, service level log, and asset management log operational provenance records added"
   }
 }

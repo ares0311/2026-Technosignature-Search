@@ -2648,3 +2648,25 @@ authorize external submission, and does not constitute a detection claim.
 
 Schema count increased from 179 to 182. Consistency fixture updated: milestone
 64→65, decision 111→112, schema_count 179→182.
+
+# DECISION-113
+
+Date: 2026-06-04
+
+Disaster recovery log, service level log, and asset management log
+operational provenance records have been added as Milestone 66.
+
+Disaster recovery entries are operational provenance records — a disaster
+recovery event does not modify candidate scores or pathway routing, does
+not authorize external submission, and does not constitute a detection claim.
+
+Service level entries are operational provenance records — a service level
+event does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+Asset management entries are operational provenance records — an asset
+management event does not modify candidate scores or pathway routing, does
+not authorize external submission, and does not constitute a detection claim.
+
+Schema count increased from 182 to 185. Consistency fixture updated: milestone
+65→66, decision 112→113, schema_count 182→185.
