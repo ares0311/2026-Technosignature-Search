@@ -2626,3 +2626,25 @@ submission, and does not constitute a detection claim.
 
 Schema count increased from 177 to 179. Consistency fixture updated: milestone
 63→64, decision 110→111, schema_count 177→179.
+
+# DECISION-112: Patch Management Log, Vulnerability Scan Log, And Compliance Audit Log Complete Milestone 65
+
+Date: 2026-06-04
+
+Patch management log, vulnerability scan log, and compliance audit log
+operational provenance records have been added as Milestone 65.
+
+Patch management entries are operational provenance records — a patch
+management event does not modify candidate scores or pathway routing, does
+not authorize external submission, and does not constitute a detection claim.
+
+Vulnerability scan entries are operational provenance records — a vulnerability
+scan event does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+Compliance audit entries are operational provenance records — a compliance
+audit event does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+Schema count increased from 179 to 182. Consistency fixture updated: milestone
+64→65, decision 111→112, schema_count 179→182.

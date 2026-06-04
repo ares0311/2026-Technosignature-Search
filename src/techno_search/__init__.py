@@ -299,6 +299,15 @@ from techno_search.change_management_log import (
     change_management_summary,
     load_change_management_entries,
 )
+from techno_search.compliance_audit_log import (
+    ALLOWED_COMPLIANCE_AUDIT_KINDS,
+    ALLOWED_COMPLIANCE_AUDIT_STATUSES,
+    COMPLIANCE_AUDIT_LOG_DISCLAIMER,
+    COMPLIANCE_AUDIT_LOG_SCHEMA_VERSION,
+    ComplianceAuditEntry,
+    compliance_audit_summary,
+    load_compliance_audit_entries,
+)
 from techno_search.config import TrackConfig, load_scoring_config, load_track_config
 from techno_search.config_version_history import (
     ALLOWED_CHANGE_KINDS,
@@ -711,6 +720,15 @@ from techno_search.operator_performance import (
     OPERATOR_PERFORMANCE_DISCLAIMER,
     operator_performance_summary,
 )
+from techno_search.patch_management_log import (
+    ALLOWED_PATCH_MANAGEMENT_KINDS,
+    ALLOWED_PATCH_MANAGEMENT_STATUSES,
+    PATCH_MANAGEMENT_LOG_DISCLAIMER,
+    PATCH_MANAGEMENT_LOG_SCHEMA_VERSION,
+    PatchManagementEntry,
+    load_patch_management_entries,
+    patch_management_summary,
+)
 from techno_search.pathway import classify_pathway
 from techno_search.pipeline_audit_summary import (
     PIPELINE_AUDIT_DISCLAIMER,
@@ -1119,6 +1137,15 @@ from techno_search.validation_datasets import (
     validation_promotion_summary,
     validation_readiness_summary,
 )
+from techno_search.vulnerability_scan_log import (
+    ALLOWED_VULNERABILITY_SCAN_KINDS,
+    ALLOWED_VULNERABILITY_SCAN_STATUSES,
+    VULNERABILITY_SCAN_LOG_DISCLAIMER,
+    VULNERABILITY_SCAN_LOG_SCHEMA_VERSION,
+    VulnerabilityScanEntry,
+    load_vulnerability_scan_entries,
+    vulnerability_scan_summary,
+)
 from techno_search.weekly_review import (
     WEEKLY_REVIEW_DISCLAIMER,
     WEEKLY_REVIEW_SCHEMA_VERSION,
@@ -1454,6 +1481,13 @@ __all__ = [
     "validation_dataset_summary",
     "validation_promotion_summary",
     "validation_readiness_summary",
+    "ALLOWED_VULNERABILITY_SCAN_KINDS",
+    "ALLOWED_VULNERABILITY_SCAN_STATUSES",
+    "VULNERABILITY_SCAN_LOG_DISCLAIMER",
+    "VULNERABILITY_SCAN_LOG_SCHEMA_VERSION",
+    "VulnerabilityScanEntry",
+    "load_vulnerability_scan_entries",
+    "vulnerability_scan_summary",
     "verify_packet_against_manifest",
     "verify_report_directory",
     "write_candidate_reports",
@@ -1530,6 +1564,13 @@ __all__ = [
     "load_follow_up_requests",
     "OPERATOR_PERFORMANCE_DISCLAIMER",
     "operator_performance_summary",
+    "ALLOWED_PATCH_MANAGEMENT_KINDS",
+    "ALLOWED_PATCH_MANAGEMENT_STATUSES",
+    "PATCH_MANAGEMENT_LOG_DISCLAIMER",
+    "PATCH_MANAGEMENT_LOG_SCHEMA_VERSION",
+    "PatchManagementEntry",
+    "load_patch_management_entries",
+    "patch_management_summary",
     "ALLOWED_ACTION_CATEGORIES",
     "ALLOWED_ACTION_PRIORITIES",
     "ALLOWED_ACTION_STATUSES",
@@ -1813,6 +1854,13 @@ __all__ = [
     "ChangeManagementEntry",
     "change_management_summary",
     "load_change_management_entries",
+    "ALLOWED_COMPLIANCE_AUDIT_KINDS",
+    "ALLOWED_COMPLIANCE_AUDIT_STATUSES",
+    "COMPLIANCE_AUDIT_LOG_DISCLAIMER",
+    "COMPLIANCE_AUDIT_LOG_SCHEMA_VERSION",
+    "ComplianceAuditEntry",
+    "compliance_audit_summary",
+    "load_compliance_audit_entries",
     "ALLOWED_CHANGE_KINDS",
     "CONFIG_VERSION_HISTORY_DISCLAIMER",
     "CONFIG_VERSION_HISTORY_SCHEMA_VERSION",
