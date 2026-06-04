@@ -1445,3 +1445,35 @@ introduced.
 - Local validation commands remain fixed and `.venv`-scoped
 - Private/cache/log/bulk-data paths remain denied
 - Arbitrary shell, live-provider, and external-submission defaults remain absent
+
+# Milestone 63 — Data Transfer Log, System Diagnostics Log, And Resource Allocation Log
+
+**Status**: complete
+
+## Tasks
+
+- [x] `src/techno_search/data_transfer_log.py` — operational provenance records for data transfer and synchronization events; transfer_kinds: bulk_export, emergency_transfer, inbound_transfer, internal_sync, outbound_transfer; statuses: cancelled, completed, failed, in_progress
+- [x] `schemas/data_transfer_log.schema.json`
+- [x] `tests/fixtures/data_transfer_log.json` — 5 entries (2 completed, 1 in_progress, 1 failed, 1 cancelled)
+- [x] `tests/test_data_transfer_log.py` — 22 tests
+- [x] `src/techno_search/system_diagnostics_log.py` — operational provenance records for system diagnostic check events; diagnostics_kinds: hardware_check, network_check, performance_check, software_check, storage_check; statuses: failed, not_run, passed, warning
+- [x] `schemas/system_diagnostics_log.schema.json`
+- [x] `tests/fixtures/system_diagnostics_log.json` — 5 entries (2 passed, 1 warning, 1 failed, 1 not_run)
+- [x] `tests/test_system_diagnostics_log.py` — 22 tests
+- [x] `src/techno_search/resource_allocation_log.py` — operational provenance records for compute and facility resource allocation events; allocation_kinds: compute_allocation, memory_allocation, network_allocation, personnel_allocation, storage_allocation; statuses: allocated, deallocated, exhausted, pending
+- [x] `schemas/resource_allocation_log.schema.json`
+- [x] `tests/fixtures/resource_allocation_log.json` — 5 entries (2 allocated, 1 deallocated, 1 pending, 1 exhausted)
+- [x] `tests/test_resource_allocation_log.py` — 22 tests
+- [x] `system_diagnostics_log`, `resource_allocation_log` added to `SCHEMA_FILENAMES` (total schemas: 177)
+- [x] `techno-search system-diagnostics-summary`, `techno-search resource-allocation-summary` CLI commands
+- [x] `validate-all` gates: `system_diagnostics_entry_count >= 1`, `resource_allocation_entry_count >= 1`
+- [x] `validation-summary` fields: `system_diagnostics_entry_count`, `system_diagnostics_passed_count`, `resource_allocation_entry_count`, `resource_allocation_allocated_count`
+- [x] DECISION-110: Data Transfer Log, System Diagnostics Log, And Resource Allocation Log Complete Milestone 63
+
+## Done When
+
+- Data transfer entries are operational provenance records
+- System diagnostics entries are operational provenance records
+- Resource allocation entries are operational provenance records
+- No entry modifies candidate scores or pathway routing
+- No entry authorizes external submission or constitutes a detection claim

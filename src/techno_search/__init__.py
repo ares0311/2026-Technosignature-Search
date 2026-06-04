@@ -827,6 +827,15 @@ from techno_search.reproducibility import (
     verify_packet_against_manifest,
     verify_report_directory,
 )
+from techno_search.resource_allocation_log import (
+    ALLOWED_RESOURCE_ALLOCATION_KINDS,
+    ALLOWED_RESOURCE_ALLOCATION_STATUSES,
+    RESOURCE_ALLOCATION_LOG_DISCLAIMER,
+    RESOURCE_ALLOCATION_LOG_SCHEMA_VERSION,
+    ResourceAllocationEntry,
+    load_resource_allocation_entries,
+    resource_allocation_summary,
+)
 from techno_search.review_deadlines import (
     ALLOWED_DEADLINE_STATUSES,
     ALLOWED_DEADLINE_TYPES,
@@ -1004,6 +1013,15 @@ from techno_search.submission_readiness import (
     SubmissionReadinessRecord,
     load_submission_readiness_records,
     submission_readiness_summary,
+)
+from techno_search.system_diagnostics_log import (
+    ALLOWED_SYSTEM_DIAGNOSTICS_KINDS,
+    ALLOWED_SYSTEM_DIAGNOSTICS_STATUSES,
+    SYSTEM_DIAGNOSTICS_LOG_DISCLAIMER,
+    SYSTEM_DIAGNOSTICS_LOG_SCHEMA_VERSION,
+    SystemDiagnosticsEntry,
+    load_system_diagnostics_entries,
+    system_diagnostics_summary,
 )
 from techno_search.system_health_log import (
     ALLOWED_HEALTH_KINDS,
@@ -1462,6 +1480,20 @@ __all__ = [
     "EscalationEntry",
     "escalation_log_summary",
     "load_escalation_entries",
+    "ALLOWED_SYSTEM_DIAGNOSTICS_KINDS",
+    "ALLOWED_SYSTEM_DIAGNOSTICS_STATUSES",
+    "SYSTEM_DIAGNOSTICS_LOG_DISCLAIMER",
+    "SYSTEM_DIAGNOSTICS_LOG_SCHEMA_VERSION",
+    "SystemDiagnosticsEntry",
+    "load_system_diagnostics_entries",
+    "system_diagnostics_summary",
+    "ALLOWED_RESOURCE_ALLOCATION_KINDS",
+    "ALLOWED_RESOURCE_ALLOCATION_STATUSES",
+    "RESOURCE_ALLOCATION_LOG_DISCLAIMER",
+    "RESOURCE_ALLOCATION_LOG_SCHEMA_VERSION",
+    "ResourceAllocationEntry",
+    "load_resource_allocation_entries",
+    "resource_allocation_summary",
     "ALLOWED_REQUEST_PRIORITIES",
     "ALLOWED_REQUEST_STATUSES",
     "FOLLOW_UP_REQUEST_DISCLAIMER",

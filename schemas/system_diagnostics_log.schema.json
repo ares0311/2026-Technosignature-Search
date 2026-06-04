@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SystemDiagnosticsLog",
+  "description": "Operational provenance records for system diagnostic check events.",
+  "type": "object",
+  "required": ["schema_version", "disclaimer", "entries"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "system_diagnostics_log_v1" },
+    "disclaimer": { "type": "string" },
+    "entries": { "type": "array", "items": { "$ref": "#/$defs/SystemDiagnosticsEntry" } }
+  },
+  "$defs": {
+    "SystemDiagnosticsEntry": {
+      "type": "object",
+      "required": ["entry_id", "diagnostics_kind", "status", "actor_id", "resource_id", "timestamp_utc"],
+      "properties": {
+        "entry_id": { "type": "string" },
+        "diagnostics_kind": {
+          "type": "string",
+          "enum": ["hardware_check", "network_check", "performance_check", "software_check", "storage_check"]
+        },
+        "status": { "type": "string", "enum": ["failed", "not_run", "passed", "warning"] },
+        "actor_id": { "type": "string" },
+        "resource_id": { "type": "string" },
+        "timestamp_utc": { "type": "string" },
+        "notes": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

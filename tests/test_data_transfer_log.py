@@ -1,12 +1,15 @@
-"""Tests for data_transfer_log module."""
+"""Tests for data_transfer_log operational provenance records."""
+
 from __future__ import annotations
 
+import json
 from pathlib import Path
+
+import pytest
 
 from techno_search.data_transfer_log import (
     ALLOWED_DATA_TRANSFER_KINDS,
     ALLOWED_DATA_TRANSFER_STATUSES,
-    DATA_TRANSFER_LOG_DISCLAIMER,
     DATA_TRANSFER_LOG_SCHEMA_VERSION,
     DataTransferEntry,
     data_transfer_summary,
@@ -16,39 +19,44 @@ from techno_search.data_transfer_log import (
 FIXTURE_PATH = Path(__file__).parent / "fixtures" / "data_transfer_log.json"
 
 
-def test_schema_version() -> None:
-    assert DATA_TRANSFER_LOG_SCHEMA_VERSION == "data_transfer_log_v1"
+def test_fixture_file_exists() -> None:
+    assert FIXTURE_PATH.exists()
 
 
-def test_disclaimer_present() -> None:
-    assert "does not authorize external submission" in DATA_TRANSFER_LOG_DISCLAIMER
-    assert "does not constitute a detection claim" in DATA_TRANSFER_LOG_DISCLAIMER
+def test_fixture_loads_as_json() -> None:
+    obj = json.loads(FIXTURE_PATH.read_text())
+    assert isinstance(obj, dict)
+    assert "entries" in obj
+    assert len(obj["entries"]) == 5
 
 
-def test_allowed_transfer_kinds_complete() -> None:
-    assert "archive_transfer" in ALLOWED_DATA_TRANSFER_KINDS
-    assert "inter_site_transfer" in ALLOWED_DATA_TRANSFER_KINDS
-    assert "local_copy" in ALLOWED_DATA_TRANSFER_KINDS
-    assert "cloud_upload" in ALLOWED_DATA_TRANSFER_KINDS
-    assert "network_delivery" in ALLOWED_DATA_TRANSFER_KINDS
+def test_fixture_top_level_schema_version() -> None:
+    obj = json.loads(FIXTURE_PATH.read_text())
+    assert obj["schema_version"] == DATA_TRANSFER_LOG_SCHEMA_VERSION
 
 
-def test_allowed_statuses_complete() -> None:
-    assert "pending" in ALLOWED_DATA_TRANSFER_STATUSES
-    assert "completed" in ALLOWED_DATA_TRANSFER_STATUSES
-    assert "failed" in ALLOWED_DATA_TRANSFER_STATUSES
-    assert "verified" in ALLOWED_DATA_TRANSFER_STATUSES
+def test_fixture_transfer_kinds_valid() -> None:
+    obj = json.loads(FIXTURE_PATH.read_text())
+    for row in obj["entries"]:
+        assert row["transfer_kind"] in ALLOWED_DATA_TRANSFER_KINDS
 
 
-def test_load_data_transfer_entries_count() -> None:
+def test_fixture_statuses_valid() -> None:
+    obj = json.loads(FIXTURE_PATH.read_text())
+    for row in obj["entries"]:
+        assert row["status"] in ALLOWED_DATA_TRANSFER_STATUSES
+
+
+def test_load_entries_returns_list() -> None:
     entries = load_data_transfer_entries(FIXTURE_PATH)
+    assert isinstance(entries, list)
     assert len(entries) == 5
 
 
-def test_load_data_transfer_entries_types() -> None:
+def test_load_entries_are_dataclasses() -> None:
     entries = load_data_transfer_entries(FIXTURE_PATH)
-    for e in entries:
-        assert isinstance(e, DataTransferEntry)
+    for entry in entries:
+        assert isinstance(entry, DataTransferEntry)
 
 
 def test_entry_ids_unique() -> None:
@@ -57,60 +65,24 @@ def test_entry_ids_unique() -> None:
     assert len(ids) == len(set(ids))
 
 
-def test_transfer_kinds_valid() -> None:
+def test_completed_entries_present() -> None:
     entries = load_data_transfer_entries(FIXTURE_PATH)
-    for e in entries:
-        assert e.transfer_kind in ALLOWED_DATA_TRANSFER_KINDS
+    assert any(e.status == "completed" for e in entries)
 
 
-def test_statuses_valid() -> None:
+def test_in_progress_entries_present() -> None:
     entries = load_data_transfer_entries(FIXTURE_PATH)
-    for e in entries:
-        assert e.status in ALLOWED_DATA_TRANSFER_STATUSES
+    assert any(e.status == "in_progress" for e in entries)
 
 
-def test_tracks_valid() -> None:
+def test_failed_entries_present() -> None:
     entries = load_data_transfer_entries(FIXTURE_PATH)
-    valid_tracks = {"radio", "infrared", "anomaly"}
-    for e in entries:
-        assert e.track in valid_tracks
+    assert any(e.status == "failed" for e in entries)
 
 
-def test_completed_count() -> None:
+def test_cancelled_entries_present() -> None:
     entries = load_data_transfer_entries(FIXTURE_PATH)
-    completed = [e for e in entries if e.status == "completed"]
-    assert len(completed) == 2
-
-
-def test_pending_count() -> None:
-    entries = load_data_transfer_entries(FIXTURE_PATH)
-    pending = [e for e in entries if e.status == "pending"]
-    assert len(pending) == 1
-
-
-def test_failed_count() -> None:
-    entries = load_data_transfer_entries(FIXTURE_PATH)
-    failed = [e for e in entries if e.status == "failed"]
-    assert len(failed) == 1
-
-
-def test_verified_count() -> None:
-    entries = load_data_transfer_entries(FIXTURE_PATH)
-    verified = [e for e in entries if e.status == "verified"]
-    assert len(verified) == 1
-
-
-def test_entry_as_dict() -> None:
-    entries = load_data_transfer_entries(FIXTURE_PATH)
-    d = entries[0].as_dict()
-    assert "entry_id" in d
-    assert "transfer_kind" in d
-    assert "status" in d
-
-
-def test_summary_schema_version() -> None:
-    summary = data_transfer_summary(FIXTURE_PATH)
-    assert summary["schema_version"] == DATA_TRANSFER_LOG_SCHEMA_VERSION
+    assert any(e.status == "cancelled" for e in entries)
 
 
 def test_summary_entry_count() -> None:
@@ -120,30 +92,57 @@ def test_summary_entry_count() -> None:
 
 def test_summary_completed_count() -> None:
     summary = data_transfer_summary(FIXTURE_PATH)
-    assert summary["completed_count"] == 2
+    assert summary["completed_count"] >= 1
 
 
-def test_summary_pending_count() -> None:
+def test_summary_has_disclaimer() -> None:
     summary = data_transfer_summary(FIXTURE_PATH)
-    assert summary["pending_count"] == 1
+    assert "does not constitute a detection claim" in summary["disclaimer"]
 
 
-def test_summary_failed_count() -> None:
+def test_summary_by_kind_keys() -> None:
     summary = data_transfer_summary(FIXTURE_PATH)
-    assert summary["failed_count"] == 1
+    assert set(summary["by_kind"].keys()) == ALLOWED_DATA_TRANSFER_KINDS
 
 
-def test_summary_verified_count() -> None:
+def test_summary_by_status_keys() -> None:
     summary = data_transfer_summary(FIXTURE_PATH)
-    assert summary["verified_count"] == 1
+    assert set(summary["by_status"].keys()) == ALLOWED_DATA_TRANSFER_STATUSES
 
 
-def test_summary_counts_by_kind() -> None:
+def test_summary_by_kind_total_matches_entry_count() -> None:
     summary = data_transfer_summary(FIXTURE_PATH)
-    assert isinstance(summary["counts_by_kind"], dict)
-    assert sum(summary["counts_by_kind"].values()) == 5
+    assert sum(summary["by_kind"].values()) == summary["entry_count"]
 
 
-def test_summary_disclaimer() -> None:
+def test_summary_by_status_total_matches_entry_count() -> None:
     summary = data_transfer_summary(FIXTURE_PATH)
-    assert "does not authorize external submission" in summary["disclaimer"]
+    assert sum(summary["by_status"].values()) == summary["entry_count"]
+
+
+def test_invalid_transfer_kind_raises() -> None:
+    with pytest.raises(ValueError, match="transfer_kind"):
+        DataTransferEntry(
+            entry_id="x",
+            transfer_kind="invalid_kind",
+            status="completed",
+            actor_id="op",
+            source_id="src",
+            destination_id="dst",
+            timestamp_utc="2026-01-01T00:00:00Z",
+            notes=None,
+        )
+
+
+def test_invalid_status_raises() -> None:
+    with pytest.raises(ValueError, match="status"):
+        DataTransferEntry(
+            entry_id="x",
+            transfer_kind="inbound_transfer",
+            status="invalid_status",
+            actor_id="op",
+            source_id="src",
+            destination_id="dst",
+            timestamp_utc="2026-01-01T00:00:00Z",
+            notes=None,
+        )

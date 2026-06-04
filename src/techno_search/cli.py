@@ -252,6 +252,7 @@ from techno_search.reporting import (
     write_candidate_reports,
 )
 from techno_search.reproducibility import verify_report_directory
+from techno_search.resource_allocation_log import resource_allocation_summary
 from techno_search.review_deadlines import review_deadlines_summary
 from techno_search.review_queue import (
     consensus_export_summary,
@@ -313,6 +314,7 @@ from techno_search.sqlite_operational_log_registry import (
 )
 from techno_search.storage_management_log import storage_management_summary
 from techno_search.submission_readiness import submission_readiness_summary
+from techno_search.system_diagnostics_log import system_diagnostics_summary
 from techno_search.system_health_log import system_health_summary
 from techno_search.target_recalibration_summary import target_recalibration_summary
 from techno_search.target_selection_log import target_selection_summary
@@ -553,6 +555,8 @@ SCHEMA_FILENAMES = {
     "firmware_update_log": "firmware_update_log.schema.json",
     "configuration_audit_log": "configuration_audit_log.schema.json",
     "event_correlation_log": "event_correlation_log.schema.json",
+    "system_diagnostics_log": "system_diagnostics_log.schema.json",
+    "resource_allocation_log": "resource_allocation_log.schema.json",
 }
 
 
@@ -3636,6 +3640,18 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(ecr_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "system-diagnostics-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        sd_out = system_diagnostics_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(sd_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "resource-allocation-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        ra_out = resource_allocation_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(ra_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -4344,6 +4360,12 @@ def validate_all() -> dict[str, object]:
     event_correlation_data = event_correlation_summary()
     event_correlation_entry_count = int(event_correlation_data.get("entry_count", 0))
     _event_correlation_correlated_count = int(event_correlation_data.get("correlated_count", 0))
+    system_diagnostics_data = system_diagnostics_summary()
+    system_diagnostics_entry_count = int(system_diagnostics_data.get("entry_count", 0))
+    _system_diagnostics_passed_count = int(system_diagnostics_data.get("passed_count", 0))
+    resource_allocation_data = resource_allocation_summary()
+    resource_allocation_entry_count = int(resource_allocation_data.get("entry_count", 0))
+    _resource_allocation_allocated_count = int(resource_allocation_data.get("allocated_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -5278,6 +5300,10 @@ def validate_all() -> dict[str, object]:
         and configuration_audit_entry_count >= 1
         and isinstance(event_correlation_entry_count, int)
         and event_correlation_entry_count >= 1
+        and isinstance(system_diagnostics_entry_count, int)
+        and system_diagnostics_entry_count >= 1
+        and isinstance(resource_allocation_entry_count, int)
+        and resource_allocation_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -5587,6 +5613,8 @@ def validate_all() -> dict[str, object]:
         "firmware_update_log_summary": firmware_update_data,
         "configuration_audit_log_summary": configuration_audit_data,
         "event_correlation_log_summary": event_correlation_data,
+        "system_diagnostics_log_summary": system_diagnostics_data,
+        "resource_allocation_log_summary": resource_allocation_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -8793,6 +8821,26 @@ def validation_summary() -> dict[str, object]:
             if isinstance(ec_s2 := validation.get("event_correlation_log_summary"), dict)
             else 0
         ),
+        "system_diagnostics_entry_count": (
+            sd_s["entry_count"]
+            if isinstance(sd_s := validation.get("system_diagnostics_log_summary"), dict)
+            else 0
+        ),
+        "system_diagnostics_passed_count": (
+            sd_s2["passed_count"]
+            if isinstance(sd_s2 := validation.get("system_diagnostics_log_summary"), dict)
+            else 0
+        ),
+        "resource_allocation_entry_count": (
+            ra_s["entry_count"]
+            if isinstance(ra_s := validation.get("resource_allocation_log_summary"), dict)
+            else 0
+        ),
+        "resource_allocation_allocated_count": (
+            ra_s2["allocated_count"]
+            if isinstance(ra_s2 := validation.get("resource_allocation_log_summary"), dict)
+            else 0
+        ),
         "labeled_candidate_count": (
             lds_s["entry_count"]
             if isinstance(lds_s := validation.get("labeled_dataset_summary"), dict)
@@ -11687,6 +11735,28 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     event_correlation_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    system_diagnostics_parser = subparsers.add_parser(
+        "system-diagnostics-summary",
+        help=(
+            "Summarize system diagnostics log entries "
+            "(operational system diagnostic check provenance records only)."
+        ),
+    )
+    system_diagnostics_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    resource_allocation_parser = subparsers.add_parser(
+        "resource-allocation-summary",
+        help=(
+            "Summarize resource allocation log entries "
+            "(operational compute and facility resource allocation provenance records only)."
+        ),
+    )
+    resource_allocation_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 
