@@ -1522,3 +1522,18 @@ Total schemas: 182.
 - Compliance audit entries are operational provenance records
 - No entry modifies candidate scores or pathway routing
 - No entry authorizes external submission or constitutes a detection claim
+
+# Milestone 66 — Disaster Recovery Log, Service Level Log, And Asset Management Log
+
+Status: Complete
+
+Added disaster_recovery_log, service_level_log, asset_management_log.
+Total schemas: 185.
+
+## Done When
+
+- Disaster recovery entries are operational provenance records
+- Service level entries are operational provenance records
+- Asset management entries are operational provenance records
+- No entry modifies candidate scores or pathway routing
+- No entry authorizes external submission or constitutes a detection claim

@@ -22,6 +22,7 @@ from techno_search.artifact_cleanup import (
     apply_artifact_cleanup,
     plan_artifact_cleanup,
 )
+from techno_search.asset_management_log import asset_management_summary
 from techno_search.audit_trail_log import audit_trail_log_summary
 from techno_search.background_search import (
     BackgroundUserDecisionRecord,
@@ -108,6 +109,7 @@ from techno_search.data_archival_log import data_archival_summary
 from techno_search.data_gap_log import data_gap_summary
 from techno_search.data_quality_log import data_quality_log_summary
 from techno_search.data_transfer_log import data_transfer_summary
+from techno_search.disaster_recovery_log import disaster_recovery_summary
 from techno_search.doppler_correction_log import doppler_correction_summary
 from techno_search.environmental_log import environmental_log_summary
 from techno_search.epoch_plan import epoch_plan_summary
@@ -276,6 +278,7 @@ from techno_search.scoring_config import scoring_config_summary
 from techno_search.scoring_threshold_audit import scoring_threshold_audit_summary
 from techno_search.security_event_log import security_event_summary
 from techno_search.sensitivity_config import sensitivity_config_summary
+from techno_search.service_level_log import service_level_summary
 from techno_search.session_log import session_log_summary
 from techno_search.signal_classification_log import signal_classification_summary
 from techno_search.signal_registry import (
@@ -567,6 +570,9 @@ SCHEMA_FILENAMES = {
     "patch_management_log": "patch_management_log.schema.json",
     "vulnerability_scan_log": "vulnerability_scan_log.schema.json",
     "compliance_audit_log": "compliance_audit_log.schema.json",
+    "disaster_recovery_log": "disaster_recovery_log.schema.json",
+    "service_level_log": "service_level_log.schema.json",
+    "asset_management_log": "asset_management_log.schema.json",
 }
 
 
@@ -3692,6 +3698,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(caud_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "disaster-recovery-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        dr_out = disaster_recovery_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(dr_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "service-level-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        sl_out = service_level_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(sl_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "asset-management-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        am_out = asset_management_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(am_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -4421,6 +4445,15 @@ def validate_all() -> dict[str, object]:
     compliance_audit_data = compliance_audit_summary()
     compliance_audit_entry_count = int(compliance_audit_data.get("entry_count", 0))
     _compliance_audit_passed_count = int(compliance_audit_data.get("passed_count", 0))
+    dr_data = disaster_recovery_summary()
+    dr_entry_count = int(dr_data.get("entry_count", 0))
+    _dr_completed_count = int(dr_data.get("completed_count", 0))
+    sl_data = service_level_summary()
+    sl_entry_count = int(sl_data.get("entry_count", 0))
+    _sl_met_count = int(sl_data.get("met_count", 0))
+    am_data = asset_management_summary()
+    am_entry_count = int(am_data.get("entry_count", 0))
+    _am_active_count = int(am_data.get("active_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -5371,6 +5404,12 @@ def validate_all() -> dict[str, object]:
         and vuln_scan_entry_count >= 1
         and isinstance(compliance_audit_entry_count, int)
         and compliance_audit_entry_count >= 1
+        and isinstance(dr_entry_count, int)
+        and dr_entry_count >= 1
+        and isinstance(sl_entry_count, int)
+        and sl_entry_count >= 1
+        and isinstance(am_entry_count, int)
+        and am_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -5687,6 +5726,9 @@ def validate_all() -> dict[str, object]:
         "patch_management_log_summary": patch_mgmt_data,
         "vulnerability_scan_log_summary": vuln_scan_data,
         "compliance_audit_log_summary": compliance_audit_data,
+        "disaster_recovery_log_summary": dr_data,
+        "service_level_log_summary": sl_data,
+        "asset_management_log_summary": am_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -8963,6 +9005,36 @@ def validation_summary() -> dict[str, object]:
             if isinstance(caud_s2 := validation.get("compliance_audit_log_summary"), dict)
             else 0
         ),
+        "disaster_recovery_entry_count": (
+            dr_s["entry_count"]
+            if isinstance(dr_s := validation.get("disaster_recovery_log_summary"), dict)
+            else 0
+        ),
+        "disaster_recovery_completed_count": (
+            dr_s2["completed_count"]
+            if isinstance(dr_s2 := validation.get("disaster_recovery_log_summary"), dict)
+            else 0
+        ),
+        "service_level_entry_count": (
+            sl_s["entry_count"]
+            if isinstance(sl_s := validation.get("service_level_log_summary"), dict)
+            else 0
+        ),
+        "service_level_met_count": (
+            sl_s2["met_count"]
+            if isinstance(sl_s2 := validation.get("service_level_log_summary"), dict)
+            else 0
+        ),
+        "asset_management_entry_count": (
+            am_s["entry_count"]
+            if isinstance(am_s := validation.get("asset_management_log_summary"), dict)
+            else 0
+        ),
+        "asset_management_active_count": (
+            am_s2["active_count"]
+            if isinstance(am_s2 := validation.get("asset_management_log_summary"), dict)
+            else 0
+        ),
         "labeled_candidate_count": (
             lds_s["entry_count"]
             if isinstance(lds_s := validation.get("labeled_dataset_summary"), dict)
@@ -11934,6 +12006,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     compliance_audit_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    disaster_recovery_parser = subparsers.add_parser(
+        "disaster-recovery-summary",
+        help=(
+            "Summarize disaster recovery log entries "
+            "(operational disaster recovery provenance records only)."
+        ),
+    )
+    disaster_recovery_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    service_level_parser = subparsers.add_parser(
+        "service-level-summary",
+        help=(
+            "Summarize service level log entries "
+            "(operational service level provenance records only)."
+        ),
+    )
+    service_level_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    asset_management_parser = subparsers.add_parser(
+        "asset-management-summary",
+        help=(
+            "Summarize asset management log entries "
+            "(operational asset management provenance records only)."
+        ),
+    )
+    asset_management_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

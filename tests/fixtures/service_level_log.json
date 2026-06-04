@@ -1,0 +1,50 @@
+{
+  "schema_version": "service_level_log_v1",
+  "entries": [
+    {
+      "entry_id": "sl-001",
+      "level_kind": "availability_check",
+      "status": "met",
+      "actor_id": "operator-alpha",
+      "resource_id": "pipeline-runtime-v2",
+      "timestamp_utc": "2026-06-01T08:00:00Z",
+      "notes": "Availability check met; pipeline uptime within expected operational window."
+    },
+    {
+      "entry_id": "sl-002",
+      "level_kind": "latency_check",
+      "status": "met",
+      "actor_id": "operator-beta",
+      "resource_id": "scoring-module-v1",
+      "timestamp_utc": "2026-06-01T10:00:00Z",
+      "notes": "Latency check met; scoring module response time within acceptable bounds."
+    },
+    {
+      "entry_id": "sl-003",
+      "level_kind": "error_rate_check",
+      "status": "at_risk",
+      "actor_id": "operator-alpha",
+      "resource_id": "catalog-client-v3",
+      "timestamp_utc": "2026-06-01T14:00:00Z",
+      "notes": "Error rate at risk — catalog client errors elevated; live data access remains opt-in."
+    },
+    {
+      "entry_id": "sl-004",
+      "level_kind": "throughput_check",
+      "status": "missed",
+      "actor_id": "operator-gamma",
+      "resource_id": "data-ingestion-adapter",
+      "timestamp_utc": "2026-06-02T09:00:00Z",
+      "notes": "Throughput check missed — pipeline throughput below target; no real data ingestion authorized."
+    },
+    {
+      "entry_id": "sl-005",
+      "level_kind": "compliance_check",
+      "status": "not_applicable",
+      "actor_id": "admin-1",
+      "resource_id": "live-catalog-policy",
+      "timestamp_utc": "2026-06-02T11:00:00Z",
+      "notes": null
+    }
+  ]
+}
