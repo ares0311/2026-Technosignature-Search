@@ -1,0 +1,51 @@
+{
+  "schema_version": "resource_allocation_log_v1",
+  "disclaimer": "Resource allocation log entries are operational provenance records — a resource allocation event does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.",
+  "entries": [
+    {
+      "entry_id": "alloc-001",
+      "allocation_kind": "compute_allocation",
+      "status": "allocated",
+      "actor_id": "scheduler-01",
+      "resource_id": "processing-cluster-a",
+      "timestamp_utc": "2026-06-01T00:00:00Z",
+      "notes": "Compute nodes allocated for nightly pipeline run."
+    },
+    {
+      "entry_id": "alloc-002",
+      "allocation_kind": "storage_allocation",
+      "status": "allocated",
+      "actor_id": "scheduler-01",
+      "resource_id": "archive-node-b",
+      "timestamp_utc": "2026-06-01T01:00:00Z",
+      "notes": null
+    },
+    {
+      "entry_id": "alloc-003",
+      "allocation_kind": "memory_allocation",
+      "status": "deallocated",
+      "actor_id": "scheduler-02",
+      "resource_id": "processing-cluster-a",
+      "timestamp_utc": "2026-06-01T02:00:00Z",
+      "notes": "Memory released after pipeline stage completion."
+    },
+    {
+      "entry_id": "alloc-004",
+      "allocation_kind": "network_allocation",
+      "status": "pending",
+      "actor_id": "scheduler-01",
+      "resource_id": "network-switch-c",
+      "timestamp_utc": "2026-06-01T03:00:00Z",
+      "notes": "Network bandwidth reservation pending administrator approval."
+    },
+    {
+      "entry_id": "alloc-005",
+      "allocation_kind": "personnel_allocation",
+      "status": "exhausted",
+      "actor_id": "scheduler-02",
+      "resource_id": "on-call-roster",
+      "timestamp_utc": "2026-06-01T04:00:00Z",
+      "notes": "On-call roster capacity exhausted; escalation triggered."
+    }
+  ]
+}

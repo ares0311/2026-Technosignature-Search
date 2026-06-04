@@ -1,51 +1,50 @@
 {
   "schema_version": "change_management_log_v1",
-  "disclaimer": "Change management log entries are operational provenance records — a change management event does not modify candidate scores or pathway routing, does not authorize external submission, and does not constitute a detection claim.",
   "entries": [
     {
-      "entry_id": "change-001",
-      "timestamp_utc": "2026-01-05T09:00:00Z",
-      "change_kind": "approval_request",
-      "status": "requested",
-      "actor_id": "operator-alice",
-      "resource_id": "pipeline-config-v2",
-      "notes": "Request to update pipeline configuration to v2; pending change board approval."
-    },
-    {
-      "entry_id": "change-002",
-      "timestamp_utc": "2026-01-06T10:30:00Z",
+      "entry_id": "chg-001",
       "change_kind": "planned_change",
-      "status": "approved",
-      "actor_id": "operator-bob",
-      "resource_id": "pipeline-config-v2",
-      "notes": "Change board approved pipeline config update for scheduled maintenance window."
+      "status": "completed",
+      "actor_id": "operator-alpha",
+      "resource_id": "scoring-config-v1",
+      "timestamp_utc": "2026-06-01T08:00:00Z",
+      "notes": "Planned update to scoring config thresholds completed after review."
     },
     {
-      "entry_id": "change-003",
-      "timestamp_utc": "2026-01-07T02:00:00Z",
-      "change_kind": "planned_change",
-      "status": "implemented",
-      "actor_id": "operator-alice",
-      "resource_id": "pipeline-config-v2",
-      "notes": "Pipeline configuration updated during scheduled maintenance window; verification passed."
+      "entry_id": "chg-002",
+      "change_kind": "configuration_change",
+      "status": "completed",
+      "actor_id": "operator-beta",
+      "resource_id": "pipeline-runner",
+      "timestamp_utc": "2026-06-01T10:00:00Z",
+      "notes": null
     },
     {
-      "entry_id": "change-004",
-      "timestamp_utc": "2026-01-08T14:15:00Z",
+      "entry_id": "chg-003",
       "change_kind": "emergency_change",
-      "status": "implemented",
-      "actor_id": "operator-carol",
-      "resource_id": "receiver-firmware-3.1.2",
-      "notes": "Emergency firmware patch applied to address critical receiver instability."
+      "status": "approved",
+      "actor_id": "admin-1",
+      "resource_id": "rfi-database",
+      "timestamp_utc": "2026-06-01T14:30:00Z",
+      "notes": "Emergency change approved to patch RFI database inconsistency."
     },
     {
-      "entry_id": "change-005",
-      "timestamp_utc": "2026-01-09T16:00:00Z",
+      "entry_id": "chg-004",
+      "change_kind": "service_change",
+      "status": "pending",
+      "actor_id": "operator-gamma",
+      "resource_id": "catalog-cache-service",
+      "timestamp_utc": "2026-06-02T09:00:00Z",
+      "notes": "Service change pending scheduled maintenance window."
+    },
+    {
+      "entry_id": "chg-005",
       "change_kind": "rollback",
-      "status": "rolled_back",
-      "actor_id": "operator-bob",
-      "resource_id": "receiver-firmware-3.1.2",
-      "notes": "Firmware patch caused degraded sensitivity; rolled back to prior stable version."
+      "status": "rejected",
+      "actor_id": "operator-alpha",
+      "resource_id": "scoring-config-v0",
+      "timestamp_utc": "2026-06-02T13:00:00Z",
+      "notes": "Rollback request rejected — v0 config superseded by validated v1."
     }
   ]
 }

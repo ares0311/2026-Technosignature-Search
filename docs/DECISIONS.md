@@ -2582,3 +2582,69 @@ discoveries, or provide external validation.
 
 Schema count increased from 174 to 175. Consistency fixture updated: milestone
 61→62, decision 108→109, schema_count 174→175.
+
+# DECISION-110: Data Transfer Log, System Diagnostics Log, And Resource Allocation Log Complete Milestone 63
+
+Date: 2026-06-03
+
+Data transfer log, system diagnostics log, and resource allocation log
+operational provenance records have been added as Milestone 63.
+
+Data transfer entries are operational provenance records — a data transfer
+event does not modify candidate scores or pathway routing, does not authorize
+external submission, and does not constitute a detection claim.
+
+System diagnostics entries are operational provenance records — a system
+diagnostic event does not modify candidate scores or pathway routing, does
+not authorize external submission, and does not constitute a detection claim.
+
+Resource allocation entries are operational provenance records — a resource
+allocation event does not modify candidate scores or pathway routing, does
+not authorize external submission, and does not constitute a detection claim.
+
+Schema count increased from 175 to 177. Consistency fixture updated: milestone
+62→63, decision 109→110, schema_count 175→177.
+
+# DECISION-111: Access Control Log, Change Management Log, And Incident Log Complete Milestone 64
+
+Date: 2026-06-04
+
+Access control log, change management log, and incident log operational
+provenance records have been added as Milestone 64.
+
+Access control entries are operational provenance records — an access control
+event does not modify candidate scores or pathway routing, does not authorize
+external submission, and does not constitute a detection claim.
+
+Change management entries are operational provenance records — a change
+management event does not modify candidate scores or pathway routing, does
+not authorize external submission, and does not constitute a detection claim.
+
+Incident entries are operational provenance records — an incident event does
+not modify candidate scores or pathway routing, does not authorize external
+submission, and does not constitute a detection claim.
+
+Schema count increased from 177 to 179. Consistency fixture updated: milestone
+63→64, decision 110→111, schema_count 177→179.
+
+# DECISION-112: Patch Management Log, Vulnerability Scan Log, And Compliance Audit Log Complete Milestone 65
+
+Date: 2026-06-04
+
+Patch management log, vulnerability scan log, and compliance audit log
+operational provenance records have been added as Milestone 65.
+
+Patch management entries are operational provenance records — a patch
+management event does not modify candidate scores or pathway routing, does
+not authorize external submission, and does not constitute a detection claim.
+
+Vulnerability scan entries are operational provenance records — a vulnerability
+scan event does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+Compliance audit entries are operational provenance records — a compliance
+audit event does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+Schema count increased from 179 to 182. Consistency fixture updated: milestone
+64→65, decision 111→112, schema_count 179→182.

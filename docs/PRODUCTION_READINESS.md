@@ -1,7 +1,7 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-06-02
-**Current milestone:** 62 (MCP Server Policy Gate)
+**Last updated:** 2026-06-03
+**Current milestone:** 65 (Patch Management Log, Vulnerability Scan Log, And Compliance Audit Log)
 
 ---
 
@@ -20,10 +20,10 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Calibration fixture set (15 false-positive classes) | ✅ Complete |
 | Score regression + determinism checks | ✅ Complete |
 | Interpretable baseline classifier | ✅ Complete |
-| 175 JSON schema artifacts | ✅ Complete |
+| 182 JSON schema artifacts | ✅ Complete |
 | Local validation gate (`validate-all`) | ✅ Complete |
 | Provenance, audit trail, lifecycle tracking | ✅ Complete |
-| Operational log system (35 log types) | ✅ Complete |
+| Operational log system (62 log types) | ✅ Complete |
 | CI workflow (GitHub Actions) | ✅ Complete |
 | Real hit-table CSV reader (turboSETI format) | ✅ Complete |
 | Real Gaia+WISE catalog CSV reader (IRSA TAP format) | ✅ Complete |
@@ -56,7 +56,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Labeled candidate dataset v0 (10 synthetic entries) | ✅ Complete |
 | Scoring model evaluation against labeled dataset | ✅ Complete |
 | Live catalog clients (Gaia TAP, SIMBAD) with opt-in guard | ✅ Complete |
-| Operational log system (53 log types) | ✅ Complete |
+| Operational log system (62 log types) | ✅ Complete |
 
 ---
 
@@ -133,5 +133,9 @@ execution preview gate, DECISION-104 for the SQLite operational log adapter
 dry-run manifest gate, DECISION-105 for the SQLite operational log adapter
 readiness preflight gate, DECISION-106 for the SQLite operational log
 adapter authorization gate, DECISION-107 for the project-scoped MCP
-bootstrap, DECISION-108 for the MCP bootstrap consistency gate, and
-DECISION-109 for the MCP server policy gate.
+bootstrap, DECISION-108 for the MCP bootstrap consistency gate,
+DECISION-109 for the MCP server policy gate, DECISION-110 for the data
+transfer log, system diagnostics log, and resource allocation log,
+DECISION-111 for the access control log, change management log, and
+incident log, and DECISION-112 for the patch management log, vulnerability
+scan log, and compliance audit log.

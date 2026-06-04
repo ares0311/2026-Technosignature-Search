@@ -12,6 +12,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TextIO
 
+from techno_search.access_control_log import access_control_summary
 from techno_search.access_log import access_log_summary
 from techno_search.aggregate_blockers import aggregate_blockers_summary
 from techno_search.alert_resolution_log import alert_resolution_summary
@@ -94,6 +95,7 @@ from techno_search.candidate_triage import (
 )
 from techno_search.capacity_planning_log import capacity_planning_summary
 from techno_search.change_management_log import change_management_summary
+from techno_search.compliance_audit_log import compliance_audit_summary
 from techno_search.compliance_report_log import compliance_report_summary
 from techno_search.config_version_history import config_version_history_summary
 from techno_search.configuration_audit_log import configuration_audit_summary
@@ -118,6 +120,7 @@ from techno_search.follow_up_request import follow_up_request_summary
 from techno_search.frequency_channel_log import frequency_channel_log_summary
 from techno_search.hardware_fault_log import hardware_fault_summary
 from techno_search.health_check_log import health_check_summary
+from techno_search.incident_log import incident_summary
 from techno_search.incident_response_log import incident_response_summary
 from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
 from techno_search.instrument_configuration_log import instrument_configuration_summary
@@ -218,6 +221,7 @@ from techno_search.operator_assignment import operator_assignment_summary
 from techno_search.operator_escalation_log import operator_escalation_summary
 from techno_search.operator_handoff_template import operator_handoff_summary
 from techno_search.operator_performance import operator_performance_summary
+from techno_search.patch_management_log import patch_management_summary
 from techno_search.performance_monitoring_log import performance_monitoring_summary
 from techno_search.pipeline_audit_summary import pipeline_audit_summary
 from techno_search.pipeline_bottleneck import pipeline_bottleneck_summary
@@ -252,6 +256,7 @@ from techno_search.reporting import (
     write_candidate_reports,
 )
 from techno_search.reproducibility import verify_report_directory
+from techno_search.resource_allocation_log import resource_allocation_summary
 from techno_search.review_deadlines import review_deadlines_summary
 from techno_search.review_queue import (
     consensus_export_summary,
@@ -313,6 +318,7 @@ from techno_search.sqlite_operational_log_registry import (
 )
 from techno_search.storage_management_log import storage_management_summary
 from techno_search.submission_readiness import submission_readiness_summary
+from techno_search.system_diagnostics_log import system_diagnostics_summary
 from techno_search.system_health_log import system_health_summary
 from techno_search.target_recalibration_summary import target_recalibration_summary
 from techno_search.target_selection_log import target_selection_summary
@@ -335,6 +341,7 @@ from techno_search.validation_datasets import (
     validation_promotion_summary,
     validation_readiness_summary,
 )
+from techno_search.vulnerability_scan_log import vulnerability_scan_summary
 from techno_search.weather_log import weather_log_summary
 from techno_search.weekly_review import build_weekly_review_template, write_weekly_review_template
 from techno_search.workflow_state_log import workflow_state_summary
@@ -553,6 +560,13 @@ SCHEMA_FILENAMES = {
     "firmware_update_log": "firmware_update_log.schema.json",
     "configuration_audit_log": "configuration_audit_log.schema.json",
     "event_correlation_log": "event_correlation_log.schema.json",
+    "system_diagnostics_log": "system_diagnostics_log.schema.json",
+    "resource_allocation_log": "resource_allocation_log.schema.json",
+    "access_control_log": "access_control_log.schema.json",
+    "incident_log": "incident_log.schema.json",
+    "patch_management_log": "patch_management_log.schema.json",
+    "vulnerability_scan_log": "vulnerability_scan_log.schema.json",
+    "compliance_audit_log": "compliance_audit_log.schema.json",
 }
 
 
@@ -3636,6 +3650,48 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(ecr_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "system-diagnostics-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        sd_out = system_diagnostics_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(sd_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "resource-allocation-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        ra_out = resource_allocation_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(ra_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "access-control-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        ac_out = access_control_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(ac_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "incident-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        inc_out = incident_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(inc_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "patch-management-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        pm_out = patch_management_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(pm_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "vulnerability-scan-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        vs_out = vulnerability_scan_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(vs_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "compliance-audit-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        caud_out = compliance_audit_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(caud_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -4304,7 +4360,7 @@ def validate_all() -> dict[str, object]:
     _incident_response_resolved_count = int(incident_response_data.get("resolved_count", 0))
     change_mgmt_data = change_management_summary()
     change_mgmt_entry_count = int(change_mgmt_data.get("entry_count", 0))
-    _change_mgmt_implemented_count = int(change_mgmt_data.get("implemented_count", 0))
+    _change_mgmt_completed_count = int(change_mgmt_data.get("completed_count", 0))
     compliance_report_data = compliance_report_summary()
     compliance_report_entry_count = int(compliance_report_data.get("entry_count", 0))
     _compliance_report_passed_count = int(compliance_report_data.get("passed_count", 0))
@@ -4344,6 +4400,27 @@ def validate_all() -> dict[str, object]:
     event_correlation_data = event_correlation_summary()
     event_correlation_entry_count = int(event_correlation_data.get("entry_count", 0))
     _event_correlation_correlated_count = int(event_correlation_data.get("correlated_count", 0))
+    system_diagnostics_data = system_diagnostics_summary()
+    system_diagnostics_entry_count = int(system_diagnostics_data.get("entry_count", 0))
+    _system_diagnostics_passed_count = int(system_diagnostics_data.get("passed_count", 0))
+    resource_allocation_data = resource_allocation_summary()
+    resource_allocation_entry_count = int(resource_allocation_data.get("entry_count", 0))
+    _resource_allocation_allocated_count = int(resource_allocation_data.get("allocated_count", 0))
+    access_control_data = access_control_summary()
+    access_control_entry_count = int(access_control_data.get("entry_count", 0))
+    _access_control_allowed_count = int(access_control_data.get("allowed_count", 0))
+    incident_data = incident_summary()
+    incident_entry_count = int(incident_data.get("entry_count", 0))
+    _incident_open_count = int(incident_data.get("open_count", 0))
+    patch_mgmt_data = patch_management_summary()
+    patch_mgmt_entry_count = int(patch_mgmt_data.get("entry_count", 0))
+    _patch_mgmt_applied_count = int(patch_mgmt_data.get("applied_count", 0))
+    vuln_scan_data = vulnerability_scan_summary()
+    vuln_scan_entry_count = int(vuln_scan_data.get("entry_count", 0))
+    _vuln_scan_clean_count = int(vuln_scan_data.get("clean_count", 0))
+    compliance_audit_data = compliance_audit_summary()
+    compliance_audit_entry_count = int(compliance_audit_data.get("entry_count", 0))
+    _compliance_audit_passed_count = int(compliance_audit_data.get("passed_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -5278,6 +5355,22 @@ def validate_all() -> dict[str, object]:
         and configuration_audit_entry_count >= 1
         and isinstance(event_correlation_entry_count, int)
         and event_correlation_entry_count >= 1
+        and isinstance(system_diagnostics_entry_count, int)
+        and system_diagnostics_entry_count >= 1
+        and isinstance(resource_allocation_entry_count, int)
+        and resource_allocation_entry_count >= 1
+        and isinstance(access_control_entry_count, int)
+        and access_control_entry_count >= 1
+        and isinstance(change_mgmt_entry_count, int)
+        and change_mgmt_entry_count >= 1
+        and isinstance(incident_entry_count, int)
+        and incident_entry_count >= 1
+        and isinstance(patch_mgmt_entry_count, int)
+        and patch_mgmt_entry_count >= 1
+        and isinstance(vuln_scan_entry_count, int)
+        and vuln_scan_entry_count >= 1
+        and isinstance(compliance_audit_entry_count, int)
+        and compliance_audit_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -5587,6 +5680,13 @@ def validate_all() -> dict[str, object]:
         "firmware_update_log_summary": firmware_update_data,
         "configuration_audit_log_summary": configuration_audit_data,
         "event_correlation_log_summary": event_correlation_data,
+        "system_diagnostics_log_summary": system_diagnostics_data,
+        "resource_allocation_log_summary": resource_allocation_data,
+        "access_control_log_summary": access_control_data,
+        "incident_log_summary": incident_data,
+        "patch_management_log_summary": patch_mgmt_data,
+        "vulnerability_scan_log_summary": vuln_scan_data,
+        "compliance_audit_log_summary": compliance_audit_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -8658,8 +8758,8 @@ def validation_summary() -> dict[str, object]:
             if isinstance(cm_s := validation.get("change_management_log_summary"), dict)
             else 0
         ),
-        "change_management_implemented_count": (
-            cm_s2["implemented_count"]
+        "change_management_completed_count": (
+            cm_s2["completed_count"]
             if isinstance(cm_s2 := validation.get("change_management_log_summary"), dict)
             else 0
         ),
@@ -8791,6 +8891,76 @@ def validation_summary() -> dict[str, object]:
         "event_correlation_correlated_count": (
             ec_s2["correlated_count"]
             if isinstance(ec_s2 := validation.get("event_correlation_log_summary"), dict)
+            else 0
+        ),
+        "system_diagnostics_entry_count": (
+            sd_s["entry_count"]
+            if isinstance(sd_s := validation.get("system_diagnostics_log_summary"), dict)
+            else 0
+        ),
+        "system_diagnostics_passed_count": (
+            sd_s2["passed_count"]
+            if isinstance(sd_s2 := validation.get("system_diagnostics_log_summary"), dict)
+            else 0
+        ),
+        "resource_allocation_entry_count": (
+            ra_s["entry_count"]
+            if isinstance(ra_s := validation.get("resource_allocation_log_summary"), dict)
+            else 0
+        ),
+        "resource_allocation_allocated_count": (
+            ra_s2["allocated_count"]
+            if isinstance(ra_s2 := validation.get("resource_allocation_log_summary"), dict)
+            else 0
+        ),
+        "access_control_entry_count": (
+            ac_s["entry_count"]
+            if isinstance(ac_s := validation.get("access_control_log_summary"), dict)
+            else 0
+        ),
+        "access_control_allowed_count": (
+            ac_s2["allowed_count"]
+            if isinstance(ac_s2 := validation.get("access_control_log_summary"), dict)
+            else 0
+        ),
+        "incident_entry_count": (
+            inc_s["entry_count"]
+            if isinstance(inc_s := validation.get("incident_log_summary"), dict)
+            else 0
+        ),
+        "incident_open_count": (
+            inc_s2["open_count"]
+            if isinstance(inc_s2 := validation.get("incident_log_summary"), dict)
+            else 0
+        ),
+        "patch_management_entry_count": (
+            pm_s["entry_count"]
+            if isinstance(pm_s := validation.get("patch_management_log_summary"), dict)
+            else 0
+        ),
+        "patch_management_applied_count": (
+            pm_s2["applied_count"]
+            if isinstance(pm_s2 := validation.get("patch_management_log_summary"), dict)
+            else 0
+        ),
+        "vulnerability_scan_entry_count": (
+            vs_s["entry_count"]
+            if isinstance(vs_s := validation.get("vulnerability_scan_log_summary"), dict)
+            else 0
+        ),
+        "vulnerability_scan_clean_count": (
+            vs_s2["clean_count"]
+            if isinstance(vs_s2 := validation.get("vulnerability_scan_log_summary"), dict)
+            else 0
+        ),
+        "compliance_audit_entry_count": (
+            caud_s["entry_count"]
+            if isinstance(caud_s := validation.get("compliance_audit_log_summary"), dict)
+            else 0
+        ),
+        "compliance_audit_passed_count": (
+            caud_s2["passed_count"]
+            if isinstance(caud_s2 := validation.get("compliance_audit_log_summary"), dict)
             else 0
         ),
         "labeled_candidate_count": (
@@ -11687,6 +11857,83 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     event_correlation_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    system_diagnostics_parser = subparsers.add_parser(
+        "system-diagnostics-summary",
+        help=(
+            "Summarize system diagnostics log entries "
+            "(operational system diagnostic check provenance records only)."
+        ),
+    )
+    system_diagnostics_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    resource_allocation_parser = subparsers.add_parser(
+        "resource-allocation-summary",
+        help=(
+            "Summarize resource allocation log entries "
+            "(operational compute and facility resource allocation provenance records only)."
+        ),
+    )
+    resource_allocation_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    access_control_parser = subparsers.add_parser(
+        "access-control-summary",
+        help=(
+            "Summarize access control log entries "
+            "(operational access control provenance records only)."
+        ),
+    )
+    access_control_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    incident_parser = subparsers.add_parser(
+        "incident-summary",
+        help=(
+            "Summarize incident log entries "
+            "(operational incident provenance records only)."
+        ),
+    )
+    incident_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    patch_management_parser = subparsers.add_parser(
+        "patch-management-summary",
+        help=(
+            "Summarize patch management log entries "
+            "(operational patch management provenance records only)."
+        ),
+    )
+    patch_management_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    vulnerability_scan_parser = subparsers.add_parser(
+        "vulnerability-scan-summary",
+        help=(
+            "Summarize vulnerability scan log entries "
+            "(operational vulnerability scan provenance records only)."
+        ),
+    )
+    vulnerability_scan_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    compliance_audit_parser = subparsers.add_parser(
+        "compliance-audit-summary",
+        help=(
+            "Summarize compliance audit log entries "
+            "(operational compliance audit provenance records only)."
+        ),
+    )
+    compliance_audit_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

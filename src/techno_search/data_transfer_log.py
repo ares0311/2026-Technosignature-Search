@@ -1,4 +1,5 @@
-"""Operational provenance records for data transfer events."""
+"""Operational provenance records for data transfer and synchronization events."""
+
 from __future__ import annotations
 
 import json
@@ -9,26 +10,29 @@ from typing import Any
 DATA_TRANSFER_LOG_SCHEMA_VERSION = "data_transfer_log_v1"
 
 DATA_TRANSFER_LOG_DISCLAIMER = (
-    "Data transfer entries are operational provenance records — "
-    "a transfer record does not modify candidate scores or pathway routing, "
-    "does not authorize external submission, "
-    "and does not constitute a detection claim."
+    "Data transfer log entries are operational provenance records — "
+    "a data transfer event does not modify candidate scores or pathway routing, "
+    "does not authorize external submission, and does not constitute a detection claim."
 )
 
-ALLOWED_DATA_TRANSFER_KINDS = frozenset({
-    "archive_transfer",
-    "inter_site_transfer",
-    "local_copy",
-    "cloud_upload",
-    "network_delivery",
-})
+ALLOWED_DATA_TRANSFER_KINDS = frozenset(
+    {
+        "bulk_export",
+        "emergency_transfer",
+        "inbound_transfer",
+        "internal_sync",
+        "outbound_transfer",
+    }
+)
 
-ALLOWED_DATA_TRANSFER_STATUSES = frozenset({
-    "pending",
-    "completed",
-    "failed",
-    "verified",
-})
+ALLOWED_DATA_TRANSFER_STATUSES = frozenset(
+    {
+        "cancelled",
+        "completed",
+        "failed",
+        "in_progress",
+    }
+)
 
 
 def _default_data_transfer_log_path() -> Path:
@@ -40,77 +44,58 @@ def _default_data_transfer_log_path() -> Path:
     )
 
 
-@dataclass
+@dataclass(frozen=True)
 class DataTransferEntry:
     entry_id: str
-    candidate_id: str
-    track: str
     transfer_kind: str
     status: str
-    initiated_by: str
-    initiated_at: str
-    source_path: str | None = None
-    destination_path: str | None = None
-    bytes_transferred: int | None = None
-    notes: str | None = None
+    actor_id: str
+    source_id: str
+    destination_id: str
+    timestamp_utc: str
+    notes: str | None
 
-    def as_dict(self) -> dict[str, Any]:
-        return {
-            "entry_id": self.entry_id,
-            "candidate_id": self.candidate_id,
-            "track": self.track,
-            "transfer_kind": self.transfer_kind,
-            "status": self.status,
-            "initiated_by": self.initiated_by,
-            "initiated_at": self.initiated_at,
-            "source_path": self.source_path,
-            "destination_path": self.destination_path,
-            "bytes_transferred": self.bytes_transferred,
-            "notes": self.notes,
-        }
+    def __post_init__(self) -> None:
+        if self.transfer_kind not in ALLOWED_DATA_TRANSFER_KINDS:
+            raise ValueError(f"Invalid transfer_kind: {self.transfer_kind!r}")
+        if self.status not in ALLOWED_DATA_TRANSFER_STATUSES:
+            raise ValueError(f"Invalid status: {self.status!r}")
 
 
 def load_data_transfer_entries(
     path: Path | None = None,
 ) -> list[DataTransferEntry]:
     fpath = path or _default_data_transfer_log_path()
-    with open(fpath) as f:
-        data = json.load(f)
-    entries = []
-    for item in data.get("entries", []):
-        entries.append(DataTransferEntry(
-            entry_id=item["entry_id"],
-            candidate_id=item["candidate_id"],
-            track=item["track"],
-            transfer_kind=item["transfer_kind"],
-            status=item["status"],
-            initiated_by=item["initiated_by"],
-            initiated_at=item["initiated_at"],
-            source_path=item.get("source_path"),
-            destination_path=item.get("destination_path"),
-            bytes_transferred=item.get("bytes_transferred"),
-            notes=item.get("notes"),
-        ))
-    return entries
+    raw: dict[str, Any] = json.loads(fpath.read_text(encoding="utf-8"))
+    return [
+        DataTransferEntry(
+            entry_id=e["entry_id"],
+            transfer_kind=e["transfer_kind"],
+            status=e["status"],
+            actor_id=e["actor_id"],
+            source_id=e["source_id"],
+            destination_id=e["destination_id"],
+            timestamp_utc=e["timestamp_utc"],
+            notes=e.get("notes"),
+        )
+        for e in raw["entries"]
+    ]
 
 
 def data_transfer_summary(path: Path | None = None) -> dict[str, Any]:
     entries = load_data_transfer_entries(path)
-    by_kind: dict[str, int] = {}
-    by_track: dict[str, int] = {}
-    by_status: dict[str, int] = {}
-    for e in entries:
-        by_kind[e.transfer_kind] = by_kind.get(e.transfer_kind, 0) + 1
-        by_track[e.track] = by_track.get(e.track, 0) + 1
-        by_status[e.status] = by_status.get(e.status, 0) + 1
+    completed = sum(1 for e in entries if e.status == "completed")
     return {
         "schema_version": DATA_TRANSFER_LOG_SCHEMA_VERSION,
         "disclaimer": DATA_TRANSFER_LOG_DISCLAIMER,
         "entry_count": len(entries),
-        "completed_count": by_status.get("completed", 0),
-        "pending_count": by_status.get("pending", 0),
-        "failed_count": by_status.get("failed", 0),
-        "verified_count": by_status.get("verified", 0),
-        "counts_by_kind": by_kind,
-        "counts_by_track": by_track,
+        "completed_count": completed,
+        "by_kind": {
+            kind: sum(1 for e in entries if e.transfer_kind == kind)
+            for kind in sorted(ALLOWED_DATA_TRANSFER_KINDS)
+        },
+        "by_status": {
+            status: sum(1 for e in entries if e.status == status)
+            for status in sorted(ALLOWED_DATA_TRANSFER_STATUSES)
+        },
     }

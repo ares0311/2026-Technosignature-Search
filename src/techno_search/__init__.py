@@ -1,5 +1,14 @@
 """Technosignature-interest candidate search tools."""
 
+from techno_search.access_control_log import (
+    ACCESS_CONTROL_LOG_DISCLAIMER,
+    ACCESS_CONTROL_LOG_SCHEMA_VERSION,
+    ALLOWED_ACCESS_CONTROL_KINDS,
+    ALLOWED_ACCESS_CONTROL_STATUSES,
+    AccessControlEntry,
+    access_control_summary,
+    load_access_control_entries,
+)
 from techno_search.aggregate_blockers import (
     AGGREGATE_BLOCKERS_DISCLAIMER,
     aggregate_blockers_summary,
@@ -281,6 +290,24 @@ from techno_search.candidate_triage import (
     triage_label_completeness_check,
     triage_summary,
 )
+from techno_search.change_management_log import (
+    ALLOWED_CHANGE_MANAGEMENT_KINDS,
+    ALLOWED_CHANGE_MANAGEMENT_STATUSES,
+    CHANGE_MANAGEMENT_LOG_DISCLAIMER,
+    CHANGE_MANAGEMENT_LOG_SCHEMA_VERSION,
+    ChangeManagementEntry,
+    change_management_summary,
+    load_change_management_entries,
+)
+from techno_search.compliance_audit_log import (
+    ALLOWED_COMPLIANCE_AUDIT_KINDS,
+    ALLOWED_COMPLIANCE_AUDIT_STATUSES,
+    COMPLIANCE_AUDIT_LOG_DISCLAIMER,
+    COMPLIANCE_AUDIT_LOG_SCHEMA_VERSION,
+    ComplianceAuditEntry,
+    compliance_audit_summary,
+    load_compliance_audit_entries,
+)
 from techno_search.config import TrackConfig, load_scoring_config, load_track_config
 from techno_search.config_version_history import (
     ALLOWED_CHANGE_KINDS,
@@ -400,6 +427,15 @@ from techno_search.follow_up_request import (
     FollowUpRequest,
     follow_up_request_summary,
     load_follow_up_requests,
+)
+from techno_search.incident_log import (
+    ALLOWED_INCIDENT_KINDS,
+    ALLOWED_INCIDENT_STATUSES,
+    INCIDENT_LOG_DISCLAIMER,
+    INCIDENT_LOG_SCHEMA_VERSION,
+    IncidentEntry,
+    incident_summary,
+    load_incident_entries,
 )
 from techno_search.injection_recovery import (
     INJECTION_RECOVERY_DISCLAIMER,
@@ -684,6 +720,15 @@ from techno_search.operator_performance import (
     OPERATOR_PERFORMANCE_DISCLAIMER,
     operator_performance_summary,
 )
+from techno_search.patch_management_log import (
+    ALLOWED_PATCH_MANAGEMENT_KINDS,
+    ALLOWED_PATCH_MANAGEMENT_STATUSES,
+    PATCH_MANAGEMENT_LOG_DISCLAIMER,
+    PATCH_MANAGEMENT_LOG_SCHEMA_VERSION,
+    PatchManagementEntry,
+    load_patch_management_entries,
+    patch_management_summary,
+)
 from techno_search.pathway import classify_pathway
 from techno_search.pipeline_audit_summary import (
     PIPELINE_AUDIT_DISCLAIMER,
@@ -826,6 +871,15 @@ from techno_search.reproducibility import (
     REPRODUCIBILITY_VERIFICATION_SCHEMA_VERSION,
     verify_packet_against_manifest,
     verify_report_directory,
+)
+from techno_search.resource_allocation_log import (
+    ALLOWED_RESOURCE_ALLOCATION_KINDS,
+    ALLOWED_RESOURCE_ALLOCATION_STATUSES,
+    RESOURCE_ALLOCATION_LOG_DISCLAIMER,
+    RESOURCE_ALLOCATION_LOG_SCHEMA_VERSION,
+    ResourceAllocationEntry,
+    load_resource_allocation_entries,
+    resource_allocation_summary,
 )
 from techno_search.review_deadlines import (
     ALLOWED_DEADLINE_STATUSES,
@@ -1005,6 +1059,15 @@ from techno_search.submission_readiness import (
     load_submission_readiness_records,
     submission_readiness_summary,
 )
+from techno_search.system_diagnostics_log import (
+    ALLOWED_SYSTEM_DIAGNOSTICS_KINDS,
+    ALLOWED_SYSTEM_DIAGNOSTICS_STATUSES,
+    SYSTEM_DIAGNOSTICS_LOG_DISCLAIMER,
+    SYSTEM_DIAGNOSTICS_LOG_SCHEMA_VERSION,
+    SystemDiagnosticsEntry,
+    load_system_diagnostics_entries,
+    system_diagnostics_summary,
+)
 from techno_search.system_health_log import (
     ALLOWED_HEALTH_KINDS,
     ALLOWED_HEALTH_STATUSES,
@@ -1073,6 +1136,15 @@ from techno_search.validation_datasets import (
     validation_dataset_summary,
     validation_promotion_summary,
     validation_readiness_summary,
+)
+from techno_search.vulnerability_scan_log import (
+    ALLOWED_VULNERABILITY_SCAN_KINDS,
+    ALLOWED_VULNERABILITY_SCAN_STATUSES,
+    VULNERABILITY_SCAN_LOG_DISCLAIMER,
+    VULNERABILITY_SCAN_LOG_SCHEMA_VERSION,
+    VulnerabilityScanEntry,
+    load_vulnerability_scan_entries,
+    vulnerability_scan_summary,
 )
 from techno_search.weekly_review import (
     WEEKLY_REVIEW_DISCLAIMER,
@@ -1409,6 +1481,13 @@ __all__ = [
     "validation_dataset_summary",
     "validation_promotion_summary",
     "validation_readiness_summary",
+    "ALLOWED_VULNERABILITY_SCAN_KINDS",
+    "ALLOWED_VULNERABILITY_SCAN_STATUSES",
+    "VULNERABILITY_SCAN_LOG_DISCLAIMER",
+    "VULNERABILITY_SCAN_LOG_SCHEMA_VERSION",
+    "VulnerabilityScanEntry",
+    "load_vulnerability_scan_entries",
+    "vulnerability_scan_summary",
     "verify_packet_against_manifest",
     "verify_report_directory",
     "write_candidate_reports",
@@ -1462,6 +1541,20 @@ __all__ = [
     "EscalationEntry",
     "escalation_log_summary",
     "load_escalation_entries",
+    "ALLOWED_SYSTEM_DIAGNOSTICS_KINDS",
+    "ALLOWED_SYSTEM_DIAGNOSTICS_STATUSES",
+    "SYSTEM_DIAGNOSTICS_LOG_DISCLAIMER",
+    "SYSTEM_DIAGNOSTICS_LOG_SCHEMA_VERSION",
+    "SystemDiagnosticsEntry",
+    "load_system_diagnostics_entries",
+    "system_diagnostics_summary",
+    "ALLOWED_RESOURCE_ALLOCATION_KINDS",
+    "ALLOWED_RESOURCE_ALLOCATION_STATUSES",
+    "RESOURCE_ALLOCATION_LOG_DISCLAIMER",
+    "RESOURCE_ALLOCATION_LOG_SCHEMA_VERSION",
+    "ResourceAllocationEntry",
+    "load_resource_allocation_entries",
+    "resource_allocation_summary",
     "ALLOWED_REQUEST_PRIORITIES",
     "ALLOWED_REQUEST_STATUSES",
     "FOLLOW_UP_REQUEST_DISCLAIMER",
@@ -1471,6 +1564,13 @@ __all__ = [
     "load_follow_up_requests",
     "OPERATOR_PERFORMANCE_DISCLAIMER",
     "operator_performance_summary",
+    "ALLOWED_PATCH_MANAGEMENT_KINDS",
+    "ALLOWED_PATCH_MANAGEMENT_STATUSES",
+    "PATCH_MANAGEMENT_LOG_DISCLAIMER",
+    "PATCH_MANAGEMENT_LOG_SCHEMA_VERSION",
+    "PatchManagementEntry",
+    "load_patch_management_entries",
+    "patch_management_summary",
     "ALLOWED_ACTION_CATEGORIES",
     "ALLOWED_ACTION_PRIORITIES",
     "ALLOWED_ACTION_STATUSES",
@@ -1713,6 +1813,13 @@ __all__ = [
     "load_sqlite_operational_log_registry",
     "load_sqlite_operational_log_registry_entries",
     "sqlite_operational_log_registry_summary",
+    "ACCESS_CONTROL_LOG_DISCLAIMER",
+    "ACCESS_CONTROL_LOG_SCHEMA_VERSION",
+    "ALLOWED_ACCESS_CONTROL_KINDS",
+    "ALLOWED_ACCESS_CONTROL_STATUSES",
+    "AccessControlEntry",
+    "access_control_summary",
+    "load_access_control_entries",
     "ALERT_RESOLUTION_DISCLAIMER",
     "ALERT_RESOLUTION_SCHEMA_VERSION",
     "ALLOWED_ALERT_RESOLUTION_KINDS",
@@ -1739,6 +1846,21 @@ __all__ = [
     "ScoringThresholdAuditEntry",
     "load_threshold_audit_entries",
     "scoring_threshold_audit_summary",
+
+    "ALLOWED_CHANGE_MANAGEMENT_KINDS",
+    "ALLOWED_CHANGE_MANAGEMENT_STATUSES",
+    "CHANGE_MANAGEMENT_LOG_DISCLAIMER",
+    "CHANGE_MANAGEMENT_LOG_SCHEMA_VERSION",
+    "ChangeManagementEntry",
+    "change_management_summary",
+    "load_change_management_entries",
+    "ALLOWED_COMPLIANCE_AUDIT_KINDS",
+    "ALLOWED_COMPLIANCE_AUDIT_STATUSES",
+    "COMPLIANCE_AUDIT_LOG_DISCLAIMER",
+    "COMPLIANCE_AUDIT_LOG_SCHEMA_VERSION",
+    "ComplianceAuditEntry",
+    "compliance_audit_summary",
+    "load_compliance_audit_entries",
     "ALLOWED_CHANGE_KINDS",
     "CONFIG_VERSION_HISTORY_DISCLAIMER",
     "CONFIG_VERSION_HISTORY_SCHEMA_VERSION",
@@ -1899,6 +2021,13 @@ __all__ = [
     "SystemHealthEntry",
     "load_system_health_entries",
     "system_health_summary",
+    "ALLOWED_INCIDENT_KINDS",
+    "ALLOWED_INCIDENT_STATUSES",
+    "INCIDENT_LOG_DISCLAIMER",
+    "INCIDENT_LOG_SCHEMA_VERSION",
+    "IncidentEntry",
+    "incident_summary",
+    "load_incident_entries",
     "ALLOWED_CONFIGURATION_KINDS",
     "ALLOWED_CONFIGURATION_STATUSES",
     "INSTRUMENT_CONFIGURATION_LOG_DISCLAIMER",

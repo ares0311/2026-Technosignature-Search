@@ -1,11 +1,11 @@
 {
   "schema_version": "project_status_consistency_v1",
   "expected_status": {
-    "latest_milestone_number": 62,
-    "latest_milestone_label": "MCP Server Policy Gate",
-    "latest_decision_number": 109,
-    "schema_count": 175,
+    "latest_milestone_number": 65,
+    "latest_milestone_label": "Patch Management Log, Vulnerability Scan Log, And Compliance Audit Log",
+    "latest_decision_number": 112,
+    "schema_count": 182,
     "require_zero_real_data_authorization": true,
-    "project_status_completed_phrase": "MCP server policy gate added"
+    "project_status_completed_phrase": "Patch management log, vulnerability scan log, and compliance audit log operational provenance records added"
   }
 }

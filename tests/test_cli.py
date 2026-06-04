@@ -215,9 +215,9 @@ def test_cli_project_status_consistency_summary_outputs_drift_gates() -> None:
     assert exit_code == 0
     assert result["schema_version"] == "project_status_consistency_v1"
     assert result["ok"] is True
-    assert result["roadmap_latest_milestone"] == 62
-    assert result["decisions_latest_decision"] == 109
-    assert result["actual_schema_count"] == 175
+    assert result["roadmap_latest_milestone"] == 65
+    assert result["decisions_latest_decision"] == 112
+    assert result["actual_schema_count"] == 182
     assert result["rfi_database_admission_real_data_authorized_count"] == 0
     assert result["curated_dataset_admission_real_data_authorized_count"] == 0
 
@@ -438,7 +438,7 @@ def test_cli_sqlite_operational_log_adapter_readiness_preflight_outputs_gate() -
     assert result["readiness_status"] == "preflight_only"
     assert result["registered_log_count"] == 74
     assert result["planned_count"] == 74
-    assert result["schema_count"] == 175
+    assert result["schema_count"] == 182
     assert result["upstream_gate_failure_count"] == 0
     assert result["database_open_allowed"] is False
     assert result["execution_allowed"] is False
@@ -467,8 +467,8 @@ def test_cli_sqlite_operational_log_adapter_authorization_gate_outputs_gate() ->
         == "blocked_pending_explicit_operator_approval"
     )
     assert result["readiness_preflight_ok"] is True
-    assert result["readiness_preflight_schema_count"] == 175
-    assert result["schema_count"] == 175
+    assert result["readiness_preflight_schema_count"] == 182
+    assert result["schema_count"] == 182
     assert result["adapter_implementation_allowed"] is False
     assert result["database_open_allowed"] is False
     assert result["execution_allowed"] is False
@@ -791,6 +791,13 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "firmware_update_log",
         "configuration_audit_log",
         "event_correlation_log",
+        "system_diagnostics_log",
+        "resource_allocation_log",
+        "access_control_log",
+        "incident_log",
+        "patch_management_log",
+        "vulnerability_scan_log",
+        "compliance_audit_log",
     }
     assert result["background_search_ledger"].endswith(
         "schemas/background_search_ledger.schema.json"
@@ -2081,12 +2088,12 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 175
+    assert result["schema_count"] == 182
     assert result["schemas_ok"] is True
     assert result["project_status_consistency_ok"] is True
-    assert result["project_status_latest_milestone"] == 62
-    assert result["project_status_latest_decision"] == 109
-    assert result["project_status_schema_count"] == 175
+    assert result["project_status_latest_milestone"] == 65
+    assert result["project_status_latest_decision"] == 112
+    assert result["project_status_schema_count"] == 182
     assert result["mcp_bootstrap_consistency_ok"] is True
     assert result["mcp_bootstrap_consistency_issue_count"] == 0
     assert result["mcp_bootstrap_claude_server_count"] == 3
@@ -2197,7 +2204,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert (
         result["sqlite_operational_log_adapter_readiness_preflight_schema_count"]
-        == 175
+        == 182
     )
     assert (
         result[
@@ -2233,7 +2240,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert (
         result["sqlite_operational_log_adapter_authorization_gate_schema_count"]
-        == 175
+        == 182
     )
     assert (
         result[
