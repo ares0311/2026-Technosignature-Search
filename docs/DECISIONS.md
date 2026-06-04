@@ -2718,3 +2718,25 @@ not authorize external submission, and does not constitute a detection claim.
 
 Schema count increased from 188 to 191. Consistency fixture updated: milestone
 67→68, decision 114→115, schema_count 188→191.
+
+# DECISION-116: Service Request Log, Problem Management Log, And Release Management Log Complete Milestone 69
+
+Date: 2026-06-04
+
+Service request log, problem management log, and release management log
+operational provenance records have been added as Milestone 69.
+
+Service request entries are operational provenance records — a service request
+event does not modify candidate scores or pathway routing, does not authorize
+external submission, and does not constitute a detection claim.
+
+Problem management entries are operational provenance records — a problem
+management event does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+Release management entries are operational provenance records — a release
+management event does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+Schema count increased from 191 to 194. Consistency fixture updated: milestone
+68→69, decision 115→116, schema_count 191→194.

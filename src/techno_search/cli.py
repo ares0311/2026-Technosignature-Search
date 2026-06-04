@@ -247,6 +247,7 @@ from techno_search.pipeline_version_log import pipeline_version_summary
 from techno_search.plotting import plot_artifact_summary
 from techno_search.polarization_log import polarization_log_summary
 from techno_search.power_log import power_log_summary
+from techno_search.problem_management_log import problem_management_summary
 from techno_search.production_blocker_consistency import (
     production_blocker_consistency_summary,
 )
@@ -259,6 +260,7 @@ from techno_search.real_data_admission_preflight import (
     real_data_admission_preflight_summary,
 )
 from techno_search.receiver_health_log import receiver_health_summary
+from techno_search.release_management_log import release_management_summary
 from techno_search.reporting import (
     candidate_packet_json,
     write_candidate_reports,
@@ -285,6 +287,7 @@ from techno_search.scoring_threshold_audit import scoring_threshold_audit_summar
 from techno_search.security_event_log import security_event_summary
 from techno_search.sensitivity_config import sensitivity_config_summary
 from techno_search.service_level_log import service_level_summary
+from techno_search.service_request_log import service_request_summary
 from techno_search.session_log import session_log_summary
 from techno_search.signal_classification_log import signal_classification_summary
 from techno_search.signal_registry import (
@@ -585,6 +588,9 @@ SCHEMA_FILENAMES = {
     "alert_escalation_log": "alert_escalation_log.schema.json",
     "configuration_change_log": "configuration_change_log.schema.json",
     "data_retention_log": "data_retention_log.schema.json",
+    "problem_management_log": "problem_management_log.schema.json",
+    "release_management_log": "release_management_log.schema.json",
+    "service_request_log": "service_request_log.schema.json",
 }
 
 
@@ -3764,6 +3770,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(dr_ret_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "problem-management-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        pm_out = problem_management_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(pm_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "release-management-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        rm_out = release_management_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(rm_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "service-request-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        sr_out = service_request_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(sr_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -4520,6 +4544,15 @@ def validate_all() -> dict[str, object]:
     dr_ret_data = data_retention_summary()
     dr_ret_entry_count = int(dr_ret_data.get("entry_count", 0))
     _dr_ret_completed_count = int(dr_ret_data.get("completed_count", 0))
+    pm_data = problem_management_summary()
+    pm_entry_count = int(pm_data.get("entry_count", 0))
+    _pm_resolved_count = int(pm_data.get("resolved_count", 0))
+    rm_data = release_management_summary()
+    rm_entry_count = int(rm_data.get("entry_count", 0))
+    _rm_deployed_count = int(rm_data.get("deployed_count", 0))
+    sr_data = service_request_summary()
+    sr_entry_count = int(sr_data.get("entry_count", 0))
+    _sr_fulfilled_count = int(sr_data.get("fulfilled_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -5488,6 +5521,12 @@ def validate_all() -> dict[str, object]:
         and cc_entry_count >= 1
         and isinstance(dr_ret_entry_count, int)
         and dr_ret_entry_count >= 1
+        and isinstance(pm_entry_count, int)
+        and pm_entry_count >= 1
+        and isinstance(rm_entry_count, int)
+        and rm_entry_count >= 1
+        and isinstance(sr_entry_count, int)
+        and sr_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -5813,6 +5852,9 @@ def validate_all() -> dict[str, object]:
         "alert_escalation_log_summary": ae_data,
         "configuration_change_log_summary": cc_data,
         "data_retention_log_summary": dr_ret_data,
+        "problem_management_log_summary": pm_data,
+        "release_management_log_summary": rm_data,
+        "service_request_log_summary": sr_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -9179,6 +9221,36 @@ def validation_summary() -> dict[str, object]:
             if isinstance(dr_ret_vs2 := validation.get("data_retention_log_summary"), dict)
             else 0
         ),
+        "problem_management_entry_count": (
+            pm_vs["entry_count"]
+            if isinstance(pm_vs := validation.get("problem_management_log_summary"), dict)
+            else 0
+        ),
+        "problem_management_resolved_count": (
+            pm_vs2["resolved_count"]
+            if isinstance(pm_vs2 := validation.get("problem_management_log_summary"), dict)
+            else 0
+        ),
+        "release_management_entry_count": (
+            rm_vs["entry_count"]
+            if isinstance(rm_vs := validation.get("release_management_log_summary"), dict)
+            else 0
+        ),
+        "release_management_deployed_count": (
+            rm_vs2["deployed_count"]
+            if isinstance(rm_vs2 := validation.get("release_management_log_summary"), dict)
+            else 0
+        ),
+        "service_request_entry_count": (
+            sr_vs["entry_count"]
+            if isinstance(sr_vs := validation.get("service_request_log_summary"), dict)
+            else 0
+        ),
+        "service_request_fulfilled_count": (
+            sr_vs2["fulfilled_count"]
+            if isinstance(sr_vs2 := validation.get("service_request_log_summary"), dict)
+            else 0
+        ),
         "labeled_candidate_count": (
             lds_s["entry_count"]
             if isinstance(lds_s := validation.get("labeled_dataset_summary"), dict)
@@ -12249,6 +12321,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     data_retention_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    problem_management_parser = subparsers.add_parser(
+        "problem-management-summary",
+        help=(
+            "Summarize problem management log entries "
+            "(operational problem management provenance records only)."
+        ),
+    )
+    problem_management_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    release_management_parser = subparsers.add_parser(
+        "release-management-summary",
+        help=(
+            "Summarize release management log entries "
+            "(operational release management provenance records only)."
+        ),
+    )
+    release_management_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    service_request_parser = subparsers.add_parser(
+        "service-request-summary",
+        help=(
+            "Summarize service request log entries "
+            "(operational service request provenance records only)."
+        ),
+    )
+    service_request_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

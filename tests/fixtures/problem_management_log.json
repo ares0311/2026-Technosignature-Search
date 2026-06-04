@@ -1,0 +1,50 @@
+{
+  "schema_version": "problem_management_log_v1",
+  "entries": [
+    {
+      "entry_id": "prob-001",
+      "problem_kind": "infrastructure",
+      "status": "resolved",
+      "actor_id": "op-alice",
+      "resource_id": "network-switch-01",
+      "timestamp_utc": "2026-01-10T07:00:00Z",
+      "notes": "Network switch intermittent failure root cause identified and resolved."
+    },
+    {
+      "entry_id": "prob-002",
+      "problem_kind": "software",
+      "status": "resolved",
+      "actor_id": "op-bob",
+      "resource_id": "pipeline-runner-02",
+      "timestamp_utc": "2026-01-11T11:00:00Z",
+      "notes": "Memory leak in pipeline runner patched."
+    },
+    {
+      "entry_id": "prob-003",
+      "problem_kind": "hardware",
+      "status": "under_investigation",
+      "actor_id": "op-carol",
+      "resource_id": "disk-array-03",
+      "timestamp_utc": "2026-01-12T13:30:00Z",
+      "notes": "Periodic disk errors under investigation; no data loss."
+    },
+    {
+      "entry_id": "prob-004",
+      "problem_kind": "process",
+      "status": "identified",
+      "actor_id": "op-dave",
+      "resource_id": "data-ingest-04",
+      "timestamp_utc": "2026-01-13T09:00:00Z",
+      "notes": "Data ingestion workflow bottleneck identified."
+    },
+    {
+      "entry_id": "prob-005",
+      "problem_kind": "security",
+      "status": "closed",
+      "actor_id": "op-eve",
+      "resource_id": "auth-service-05",
+      "timestamp_utc": "2026-01-14T15:00:00Z",
+      "notes": "Expired credential issue closed after rotation."
+    }
+  ]
+}

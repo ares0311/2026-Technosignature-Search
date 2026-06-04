@@ -445,3 +445,4 @@ tests/test_pathway.py
 - [x] Disaster recovery log, service level log, and asset management log operational provenance records added
 - [x] Network monitoring log, identity management log, and certificate management log operational provenance records added
 - [x] Configuration change log, data retention log, and alert escalation log operational provenance records added
+- [x] Service request log, problem management log, and release management log operational provenance records added

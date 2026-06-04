@@ -1,0 +1,50 @@
+{
+  "schema_version": "release_management_log_v1",
+  "entries": [
+    {
+      "entry_id": "rel-001",
+      "release_kind": "minor_release",
+      "status": "deployed",
+      "actor_id": "op-alice",
+      "resource_id": "pipeline-v1.2.0",
+      "timestamp_utc": "2026-01-10T08:00:00Z",
+      "notes": "Minor release with improved RFI screening deployed."
+    },
+    {
+      "entry_id": "rel-002",
+      "release_kind": "patch_release",
+      "status": "deployed",
+      "actor_id": "op-bob",
+      "resource_id": "pipeline-v1.2.1",
+      "timestamp_utc": "2026-01-11T09:30:00Z",
+      "notes": "Patch release fixing edge case in candidate scoring."
+    },
+    {
+      "entry_id": "rel-003",
+      "release_kind": "major_release",
+      "status": "approved",
+      "actor_id": "op-carol",
+      "resource_id": "pipeline-v2.0.0",
+      "timestamp_utc": "2026-01-12T14:00:00Z",
+      "notes": "Major release approved; awaiting deployment window."
+    },
+    {
+      "entry_id": "rel-004",
+      "release_kind": "hotfix",
+      "status": "planned",
+      "actor_id": "op-dave",
+      "resource_id": "pipeline-v1.2.2",
+      "timestamp_utc": "2026-01-13T10:00:00Z",
+      "notes": "Hotfix planned for calibration config issue."
+    },
+    {
+      "entry_id": "rel-005",
+      "release_kind": "rollback",
+      "status": "rolled_back",
+      "actor_id": "op-eve",
+      "resource_id": "pipeline-v1.1.9",
+      "timestamp_utc": "2026-01-14T17:00:00Z",
+      "notes": "Rolled back to v1.1.9 after instability detected in staging."
+    }
+  ]
+}

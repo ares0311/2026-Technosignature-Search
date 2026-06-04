@@ -874,6 +874,14 @@ from techno_search.plotting import (
     plot_artifact_summary,
     write_synthetic_plot_artifacts,
 )
+from techno_search.problem_management_log import (
+    ALLOWED_PROBLEM_MANAGEMENT_KINDS,
+    ALLOWED_PROBLEM_MANAGEMENT_STATUSES,
+    PROBLEM_MANAGEMENT_LOG_SCHEMA_VERSION,
+    ProblemManagementEntry,
+    load_problem_management_entries,
+    problem_management_summary,
+)
 from techno_search.production_blocker_consistency import (
     PRODUCTION_BLOCKER_CONSISTENCY_DISCLAIMER,
     PRODUCTION_BLOCKER_CONSISTENCY_SCHEMA_VERSION,
@@ -924,6 +932,14 @@ from techno_search.receiver_health_log import (
     ReceiverHealthEntry,
     load_receiver_health_entries,
     receiver_health_summary,
+)
+from techno_search.release_management_log import (
+    ALLOWED_RELEASE_MANAGEMENT_KINDS,
+    ALLOWED_RELEASE_MANAGEMENT_STATUSES,
+    RELEASE_MANAGEMENT_LOG_SCHEMA_VERSION,
+    ReleaseManagementEntry,
+    load_release_management_entries,
+    release_management_summary,
 )
 from techno_search.reporting import (
     REQUIRED_DISCLAIMER,
@@ -1037,6 +1053,14 @@ from techno_search.service_level_log import (
     ServiceLevelEntry,
     load_service_level_entries,
     service_level_summary,
+)
+from techno_search.service_request_log import (
+    ALLOWED_SERVICE_REQUEST_KINDS,
+    ALLOWED_SERVICE_REQUEST_STATUSES,
+    SERVICE_REQUEST_LOG_SCHEMA_VERSION,
+    ServiceRequestEntry,
+    load_service_request_entries,
+    service_request_summary,
 )
 from techno_search.session_log import (
     ALLOWED_SESSION_OUTCOMES,
@@ -2187,4 +2211,22 @@ __all__ = [
     "DataRetentionEntry",
     "data_retention_summary",
     "load_data_retention_entries",
+    "ALLOWED_PROBLEM_MANAGEMENT_KINDS",
+    "ALLOWED_PROBLEM_MANAGEMENT_STATUSES",
+    "PROBLEM_MANAGEMENT_LOG_SCHEMA_VERSION",
+    "ProblemManagementEntry",
+    "load_problem_management_entries",
+    "problem_management_summary",
+    "ALLOWED_RELEASE_MANAGEMENT_KINDS",
+    "ALLOWED_RELEASE_MANAGEMENT_STATUSES",
+    "RELEASE_MANAGEMENT_LOG_SCHEMA_VERSION",
+    "ReleaseManagementEntry",
+    "load_release_management_entries",
+    "release_management_summary",
+    "ALLOWED_SERVICE_REQUEST_KINDS",
+    "ALLOWED_SERVICE_REQUEST_STATUSES",
+    "SERVICE_REQUEST_LOG_SCHEMA_VERSION",
+    "ServiceRequestEntry",
+    "load_service_request_entries",
+    "service_request_summary",
 ]
