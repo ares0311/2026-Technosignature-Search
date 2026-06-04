@@ -1,0 +1,50 @@
+{
+  "schema_version": "knowledge_management_log_v1",
+  "entries": [
+    {
+      "entry_id": "km-001",
+      "knowledge_kind": "how_to",
+      "status": "published",
+      "actor_id": "op-alice",
+      "resource_id": "kb-pipeline-setup-01",
+      "timestamp_utc": "2026-01-10T09:00:00Z",
+      "notes": "How-to guide for pipeline environment setup published."
+    },
+    {
+      "entry_id": "km-002",
+      "knowledge_kind": "troubleshooting_guide",
+      "status": "published",
+      "actor_id": "op-bob",
+      "resource_id": "kb-rfi-triage-02",
+      "timestamp_utc": "2026-01-11T10:00:00Z",
+      "notes": "Troubleshooting guide for RFI triage workflow."
+    },
+    {
+      "entry_id": "km-003",
+      "knowledge_kind": "known_error",
+      "status": "approved",
+      "actor_id": "op-carol",
+      "resource_id": "kb-known-error-03",
+      "timestamp_utc": "2026-01-12T11:00:00Z",
+      "notes": "Known error record for intermittent data ingestion failure."
+    },
+    {
+      "entry_id": "km-004",
+      "knowledge_kind": "faq",
+      "status": "draft",
+      "actor_id": "op-dave",
+      "resource_id": "kb-faq-04",
+      "timestamp_utc": "2026-01-13T14:00:00Z",
+      "notes": "FAQ article under review before publication."
+    },
+    {
+      "entry_id": "km-005",
+      "knowledge_kind": "reference_document",
+      "status": "retired",
+      "actor_id": "op-eve",
+      "resource_id": "kb-ref-05",
+      "timestamp_utc": "2026-01-14T16:00:00Z",
+      "notes": "Reference document retired after superseding version published."
+    }
+  ]
+}

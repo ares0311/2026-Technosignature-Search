@@ -351,6 +351,14 @@ from techno_search.configuration_change_log import (
     configuration_change_summary,
     load_configuration_change_entries,
 )
+from techno_search.contract_management_log import (
+    ALLOWED_CONTRACT_MANAGEMENT_KINDS,
+    ALLOWED_CONTRACT_MANAGEMENT_STATUSES,
+    CONTRACT_MANAGEMENT_LOG_SCHEMA_VERSION,
+    ContractManagementEntry,
+    contract_management_summary,
+    load_contract_management_entries,
+)
 from techno_search.cross_track import (
     CROSS_TRACK_REFERENCE_DISCLAIMER,
     CROSS_TRACK_REFERENCE_SCHEMA_VERSION,
@@ -540,6 +548,14 @@ from techno_search.interference_environment_log import (
     InterferenceEnvironmentEntry,
     interference_environment_summary,
     load_interference_environment_entries,
+)
+from techno_search.knowledge_management_log import (
+    ALLOWED_KNOWLEDGE_MANAGEMENT_KINDS,
+    ALLOWED_KNOWLEDGE_MANAGEMENT_STATUSES,
+    KNOWLEDGE_MANAGEMENT_LOG_SCHEMA_VERSION,
+    KnowledgeManagementEntry,
+    knowledge_management_summary,
+    load_knowledge_management_entries,
 )
 from techno_search.live_data import live_data_enabled, require_live_data_enabled
 from techno_search.mcp_bootstrap_consistency import (
@@ -1160,6 +1176,14 @@ from techno_search.submission_readiness import (
     SubmissionReadinessRecord,
     load_submission_readiness_records,
     submission_readiness_summary,
+)
+from techno_search.supplier_management_log import (
+    ALLOWED_SUPPLIER_MANAGEMENT_KINDS,
+    ALLOWED_SUPPLIER_MANAGEMENT_STATUSES,
+    SUPPLIER_MANAGEMENT_LOG_SCHEMA_VERSION,
+    SupplierManagementEntry,
+    load_supplier_management_entries,
+    supplier_management_summary,
 )
 from techno_search.system_diagnostics_log import (
     ALLOWED_SYSTEM_DIAGNOSTICS_KINDS,
@@ -2229,4 +2253,22 @@ __all__ = [
     "ServiceRequestEntry",
     "load_service_request_entries",
     "service_request_summary",
+    "ALLOWED_CONTRACT_MANAGEMENT_KINDS",
+    "ALLOWED_CONTRACT_MANAGEMENT_STATUSES",
+    "CONTRACT_MANAGEMENT_LOG_SCHEMA_VERSION",
+    "ContractManagementEntry",
+    "contract_management_summary",
+    "load_contract_management_entries",
+    "ALLOWED_KNOWLEDGE_MANAGEMENT_KINDS",
+    "ALLOWED_KNOWLEDGE_MANAGEMENT_STATUSES",
+    "KNOWLEDGE_MANAGEMENT_LOG_SCHEMA_VERSION",
+    "KnowledgeManagementEntry",
+    "knowledge_management_summary",
+    "load_knowledge_management_entries",
+    "ALLOWED_SUPPLIER_MANAGEMENT_KINDS",
+    "ALLOWED_SUPPLIER_MANAGEMENT_STATUSES",
+    "SUPPLIER_MANAGEMENT_LOG_SCHEMA_VERSION",
+    "SupplierManagementEntry",
+    "load_supplier_management_entries",
+    "supplier_management_summary",
 ]

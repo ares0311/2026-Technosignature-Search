@@ -2740,3 +2740,25 @@ authorize external submission, and does not constitute a detection claim.
 
 Schema count increased from 191 to 194. Consistency fixture updated: milestone
 68→69, decision 115→116, schema_count 191→194.
+
+# DECISION-117: Supplier Management Log, Contract Management Log, And Knowledge Management Log Complete Milestone 70
+
+Date: 2026-06-04
+
+Supplier management log, contract management log, and knowledge management log
+operational provenance records have been added as Milestone 70.
+
+Supplier management entries are operational provenance records — a supplier
+management event does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+Contract management entries are operational provenance records — a contract
+management event does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+Knowledge management entries are operational provenance records — a knowledge
+management event does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+Schema count increased from 194 to 197. Consistency fixture updated: milestone
+69→70, decision 116→117, schema_count 194→197.

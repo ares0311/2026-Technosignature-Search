@@ -104,6 +104,7 @@ from techno_search.config_version_history import config_version_history_summary
 from techno_search.configuration_audit_log import configuration_audit_summary
 from techno_search.configuration_change_log import configuration_change_summary
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
+from techno_search.contract_management_log import contract_management_summary
 from techno_search.cooling_system_log import cooling_system_summary
 from techno_search.cross_track import cross_track_summary
 from techno_search.curated_dataset_admission import curated_dataset_admission_summary
@@ -134,6 +135,7 @@ from techno_search.instrument_configuration_log import instrument_configuration_
 from techno_search.instrument_log import instrument_log_summary
 from techno_search.intake_queue_log import intake_queue_summary
 from techno_search.interference_environment_log import interference_environment_summary
+from techno_search.knowledge_management_log import knowledge_management_summary
 from techno_search.license_management_log import license_management_summary
 from techno_search.live_data import (
     CatalogCache,
@@ -330,6 +332,7 @@ from techno_search.sqlite_operational_log_registry import (
 )
 from techno_search.storage_management_log import storage_management_summary
 from techno_search.submission_readiness import submission_readiness_summary
+from techno_search.supplier_management_log import supplier_management_summary
 from techno_search.system_diagnostics_log import system_diagnostics_summary
 from techno_search.system_health_log import system_health_summary
 from techno_search.target_recalibration_summary import target_recalibration_summary
@@ -588,9 +591,12 @@ SCHEMA_FILENAMES = {
     "alert_escalation_log": "alert_escalation_log.schema.json",
     "configuration_change_log": "configuration_change_log.schema.json",
     "data_retention_log": "data_retention_log.schema.json",
+    "contract_management_log": "contract_management_log.schema.json",
+    "knowledge_management_log": "knowledge_management_log.schema.json",
     "problem_management_log": "problem_management_log.schema.json",
     "release_management_log": "release_management_log.schema.json",
     "service_request_log": "service_request_log.schema.json",
+    "supplier_management_log": "supplier_management_log.schema.json",
 }
 
 
@@ -3788,6 +3794,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(sr_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "contract-management-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        cm_out = contract_management_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(cm_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "knowledge-management-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        km_out = knowledge_management_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(km_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "supplier-management-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        supp_out = supplier_management_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(supp_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -4553,6 +4577,15 @@ def validate_all() -> dict[str, object]:
     sr_data = service_request_summary()
     sr_entry_count = int(sr_data.get("entry_count", 0))
     _sr_fulfilled_count = int(sr_data.get("fulfilled_count", 0))
+    cm_data = contract_management_summary()
+    cm_entry_count = int(cm_data.get("entry_count", 0))
+    _cm_active_count = int(cm_data.get("active_count", 0))
+    km_data = knowledge_management_summary()
+    km_entry_count = int(km_data.get("entry_count", 0))
+    _km_published_count = int(km_data.get("published_count", 0))
+    supp_data = supplier_management_summary()
+    supp_entry_count = int(supp_data.get("entry_count", 0))
+    _supp_active_count = int(supp_data.get("active_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -5527,6 +5560,12 @@ def validate_all() -> dict[str, object]:
         and rm_entry_count >= 1
         and isinstance(sr_entry_count, int)
         and sr_entry_count >= 1
+        and isinstance(cm_entry_count, int)
+        and cm_entry_count >= 1
+        and isinstance(km_entry_count, int)
+        and km_entry_count >= 1
+        and isinstance(supp_entry_count, int)
+        and supp_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -5852,9 +5891,12 @@ def validate_all() -> dict[str, object]:
         "alert_escalation_log_summary": ae_data,
         "configuration_change_log_summary": cc_data,
         "data_retention_log_summary": dr_ret_data,
+        "contract_management_log_summary": cm_data,
+        "knowledge_management_log_summary": km_data,
         "problem_management_log_summary": pm_data,
         "release_management_log_summary": rm_data,
         "service_request_log_summary": sr_data,
+        "supplier_management_log_summary": supp_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -9251,6 +9293,36 @@ def validation_summary() -> dict[str, object]:
             if isinstance(sr_vs2 := validation.get("service_request_log_summary"), dict)
             else 0
         ),
+        "contract_management_entry_count": (
+            cm_vs["entry_count"]
+            if isinstance(cm_vs := validation.get("contract_management_log_summary"), dict)
+            else 0
+        ),
+        "contract_management_active_count": (
+            cm_vs2["active_count"]
+            if isinstance(cm_vs2 := validation.get("contract_management_log_summary"), dict)
+            else 0
+        ),
+        "knowledge_management_entry_count": (
+            km_vs["entry_count"]
+            if isinstance(km_vs := validation.get("knowledge_management_log_summary"), dict)
+            else 0
+        ),
+        "knowledge_management_published_count": (
+            km_vs2["published_count"]
+            if isinstance(km_vs2 := validation.get("knowledge_management_log_summary"), dict)
+            else 0
+        ),
+        "supplier_management_entry_count": (
+            supp_vs["entry_count"]
+            if isinstance(supp_vs := validation.get("supplier_management_log_summary"), dict)
+            else 0
+        ),
+        "supplier_management_active_count": (
+            supp_vs2["active_count"]
+            if isinstance(supp_vs2 := validation.get("supplier_management_log_summary"), dict)
+            else 0
+        ),
         "labeled_candidate_count": (
             lds_s["entry_count"]
             if isinstance(lds_s := validation.get("labeled_dataset_summary"), dict)
@@ -12354,6 +12426,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     service_request_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    contract_management_parser = subparsers.add_parser(
+        "contract-management-summary",
+        help=(
+            "Summarize contract management log entries "
+            "(operational contract management provenance records only)."
+        ),
+    )
+    contract_management_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    knowledge_management_parser = subparsers.add_parser(
+        "knowledge-management-summary",
+        help=(
+            "Summarize knowledge management log entries "
+            "(operational knowledge management provenance records only)."
+        ),
+    )
+    knowledge_management_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    supplier_management_parser = subparsers.add_parser(
+        "supplier-management-summary",
+        help=(
+            "Summarize supplier management log entries "
+            "(operational supplier management provenance records only)."
+        ),
+    )
+    supplier_management_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

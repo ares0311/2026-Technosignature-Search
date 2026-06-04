@@ -446,3 +446,4 @@ tests/test_pathway.py
 - [x] Network monitoring log, identity management log, and certificate management log operational provenance records added
 - [x] Configuration change log, data retention log, and alert escalation log operational provenance records added
 - [x] Service request log, problem management log, and release management log operational provenance records added
+- [x] Supplier management log, contract management log, and knowledge management log operational provenance records added

@@ -1,0 +1,50 @@
+{
+  "schema_version": "supplier_management_log_v1",
+  "entries": [
+    {
+      "entry_id": "supp-001",
+      "supplier_kind": "hardware_vendor",
+      "status": "active",
+      "actor_id": "op-alice",
+      "resource_id": "vendor-compute-01",
+      "timestamp_utc": "2026-01-10T09:00:00Z",
+      "notes": "Hardware vendor supplying compute nodes; contract current."
+    },
+    {
+      "entry_id": "supp-002",
+      "supplier_kind": "software_vendor",
+      "status": "active",
+      "actor_id": "op-bob",
+      "resource_id": "vendor-sw-02",
+      "timestamp_utc": "2026-01-11T10:00:00Z",
+      "notes": "Software vendor providing analysis toolchain licenses."
+    },
+    {
+      "entry_id": "supp-003",
+      "supplier_kind": "service_provider",
+      "status": "inactive",
+      "actor_id": "op-carol",
+      "resource_id": "vendor-svc-03",
+      "timestamp_utc": "2026-01-12T11:00:00Z",
+      "notes": "Service provider contract lapsed; renewal under review."
+    },
+    {
+      "entry_id": "supp-004",
+      "supplier_kind": "contractor",
+      "status": "on_probation",
+      "actor_id": "op-dave",
+      "resource_id": "contractor-04",
+      "timestamp_utc": "2026-01-13T14:00:00Z",
+      "notes": "Contractor on probation pending performance review."
+    },
+    {
+      "entry_id": "supp-005",
+      "supplier_kind": "consultant",
+      "status": "terminated",
+      "actor_id": "op-eve",
+      "resource_id": "consultant-05",
+      "timestamp_utc": "2026-01-14T16:00:00Z",
+      "notes": "Consultant engagement terminated after project completion."
+    }
+  ]
+}
