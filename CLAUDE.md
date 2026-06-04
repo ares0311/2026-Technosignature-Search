@@ -10,9 +10,9 @@ Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
 
 ## Current Iteration
 
-User requested implementation of Milestone 48 (health check log, license management log, storage management log).
+User requested implementation of Milestone 67 (network monitoring log, identity management log, certificate management log).
 
-Current branch: `claude/milestone-48`.
+Current branch: `main` (direct push, same as Milestone 66).
 
 Overall status: all steps implemented, tested, and validated.
 
