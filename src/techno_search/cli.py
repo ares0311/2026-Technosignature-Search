@@ -95,6 +95,7 @@ from techno_search.candidate_triage import (
     triage_summary,
 )
 from techno_search.capacity_planning_log import capacity_planning_summary
+from techno_search.certificate_management_log import certificate_management_summary
 from techno_search.change_management_log import change_management_summary
 from techno_search.compliance_audit_log import compliance_audit_summary
 from techno_search.compliance_report_log import compliance_report_summary
@@ -122,6 +123,7 @@ from techno_search.follow_up_request import follow_up_request_summary
 from techno_search.frequency_channel_log import frequency_channel_log_summary
 from techno_search.hardware_fault_log import hardware_fault_summary
 from techno_search.health_check_log import health_check_summary
+from techno_search.identity_management_log import identity_management_summary
 from techno_search.incident_log import incident_summary
 from techno_search.incident_response_log import incident_response_summary
 from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
@@ -172,6 +174,7 @@ from techno_search.model_performance_history import model_performance_history_su
 from techno_search.model_serving import model_serving_summary
 from techno_search.multi_epoch_summary import multi_epoch_summary
 from techno_search.network_connectivity_log import network_connectivity_summary
+from techno_search.network_monitoring_log import network_monitoring_summary
 from techno_search.noise_measurement_log import noise_measurement_log_summary
 from techno_search.observation_campaign import observation_campaign_summary
 from techno_search.observation_parameter_log import observation_parameter_log_summary
@@ -573,6 +576,9 @@ SCHEMA_FILENAMES = {
     "disaster_recovery_log": "disaster_recovery_log.schema.json",
     "service_level_log": "service_level_log.schema.json",
     "asset_management_log": "asset_management_log.schema.json",
+    "network_monitoring_log": "network_monitoring_log.schema.json",
+    "identity_management_log": "identity_management_log.schema.json",
+    "certificate_management_log": "certificate_management_log.schema.json",
 }
 
 
@@ -3716,6 +3722,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(am_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "network-monitoring-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        nm_out = network_monitoring_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(nm_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "identity-management-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        im_out = identity_management_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(im_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "certificate-management-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        certm_out = certificate_management_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(certm_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -4454,6 +4478,15 @@ def validate_all() -> dict[str, object]:
     am_data = asset_management_summary()
     am_entry_count = int(am_data.get("entry_count", 0))
     _am_active_count = int(am_data.get("active_count", 0))
+    nm_data = network_monitoring_summary()
+    nm_entry_count = int(nm_data.get("entry_count", 0))
+    _nm_healthy_count = int(nm_data.get("healthy_count", 0))
+    im_data = identity_management_summary()
+    im_entry_count = int(im_data.get("entry_count", 0))
+    _im_active_count = int(im_data.get("active_count", 0))
+    certm_data = certificate_management_summary()
+    certm_entry_count = int(certm_data.get("entry_count", 0))
+    _certm_issued_count = int(certm_data.get("issued_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -5410,6 +5443,12 @@ def validate_all() -> dict[str, object]:
         and sl_entry_count >= 1
         and isinstance(am_entry_count, int)
         and am_entry_count >= 1
+        and isinstance(nm_entry_count, int)
+        and nm_entry_count >= 1
+        and isinstance(im_entry_count, int)
+        and im_entry_count >= 1
+        and isinstance(certm_entry_count, int)
+        and certm_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -5729,6 +5768,9 @@ def validate_all() -> dict[str, object]:
         "disaster_recovery_log_summary": dr_data,
         "service_level_log_summary": sl_data,
         "asset_management_log_summary": am_data,
+        "network_monitoring_log_summary": nm_data,
+        "identity_management_log_summary": im_data,
+        "certificate_management_log_summary": certm_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -9035,6 +9077,36 @@ def validation_summary() -> dict[str, object]:
             if isinstance(am_s2 := validation.get("asset_management_log_summary"), dict)
             else 0
         ),
+        "network_monitoring_entry_count": (
+            nm_vs["entry_count"]
+            if isinstance(nm_vs := validation.get("network_monitoring_log_summary"), dict)
+            else 0
+        ),
+        "network_monitoring_healthy_count": (
+            nm_vs2["healthy_count"]
+            if isinstance(nm_vs2 := validation.get("network_monitoring_log_summary"), dict)
+            else 0
+        ),
+        "identity_management_entry_count": (
+            im_vs["entry_count"]
+            if isinstance(im_vs := validation.get("identity_management_log_summary"), dict)
+            else 0
+        ),
+        "identity_management_active_count": (
+            im_vs2["active_count"]
+            if isinstance(im_vs2 := validation.get("identity_management_log_summary"), dict)
+            else 0
+        ),
+        "certificate_management_entry_count": (
+            certm_vs["entry_count"]
+            if isinstance(certm_vs := validation.get("certificate_management_log_summary"), dict)
+            else 0
+        ),
+        "certificate_management_issued_count": (
+            certm_vs2["issued_count"]
+            if isinstance(certm_vs2 := validation.get("certificate_management_log_summary"), dict)
+            else 0
+        ),
         "labeled_candidate_count": (
             lds_s["entry_count"]
             if isinstance(lds_s := validation.get("labeled_dataset_summary"), dict)
@@ -12039,6 +12111,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     asset_management_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    network_monitoring_parser = subparsers.add_parser(
+        "network-monitoring-summary",
+        help=(
+            "Summarize network monitoring log entries "
+            "(operational network monitoring provenance records only)."
+        ),
+    )
+    network_monitoring_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    identity_management_parser = subparsers.add_parser(
+        "identity-management-summary",
+        help=(
+            "Summarize identity management log entries "
+            "(operational identity management provenance records only)."
+        ),
+    )
+    identity_management_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    certificate_management_parser = subparsers.add_parser(
+        "certificate-management-summary",
+        help=(
+            "Summarize certificate management log entries "
+            "(operational certificate management provenance records only)."
+        ),
+    )
+    certificate_management_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

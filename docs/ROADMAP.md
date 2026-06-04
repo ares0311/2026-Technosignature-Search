@@ -1537,3 +1537,18 @@ Total schemas: 185.
 - Asset management entries are operational provenance records
 - No entry modifies candidate scores or pathway routing
 - No entry authorizes external submission or constitutes a detection claim
+
+---
+
+# Milestone 67 — Network Monitoring Log, Identity Management Log, And Certificate Management Log
+
+Added network_monitoring_log, identity_management_log, certificate_management_log.
+Total schemas: 188.
+
+## Done When
+
+- Network monitoring entries are operational provenance records
+- Identity management entries are operational provenance records
+- Certificate management entries are operational provenance records
+- No entry modifies candidate scores or pathway routing
+- No entry authorizes external submission or constitutes a detection claim

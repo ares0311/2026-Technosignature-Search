@@ -2670,3 +2670,28 @@ not authorize external submission, and does not constitute a detection claim.
 
 Schema count increased from 182 to 185. Consistency fixture updated: milestone
 65→66, decision 112→113, schema_count 182→185.
+
+---
+
+# DECISION-114
+
+Date: 2026-06-04
+
+Network monitoring log, identity management log, and certificate management
+log operational provenance records have been added as Milestone 67.
+
+Network monitoring entries are operational provenance records — a network
+monitoring event does not modify candidate scores or pathway routing, does
+not authorize external submission, and does not constitute a detection claim.
+
+Identity management entries are operational provenance records — an identity
+management event does not modify candidate scores or pathway routing, does
+not authorize external submission, and does not constitute a detection claim.
+
+Certificate management entries are operational provenance records — a
+certificate management event does not modify candidate scores or pathway
+routing, does not authorize external submission, and does not constitute a
+detection claim.
+
+Schema count increased from 185 to 188. Consistency fixture updated: milestone
+66→67, decision 113→114, schema_count 185→188.

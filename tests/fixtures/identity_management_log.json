@@ -1,0 +1,50 @@
+{
+  "schema_version": "identity_management_log_v1",
+  "entries": [
+    {
+      "entry_id": "im-001",
+      "identity_kind": "account_creation",
+      "status": "active",
+      "actor_id": "operator-alpha",
+      "resource_id": "pipeline-user-account-1",
+      "timestamp_utc": "2026-06-01T08:00:00Z",
+      "notes": "Operator account created for pipeline scoring access."
+    },
+    {
+      "entry_id": "im-002",
+      "identity_kind": "role_assignment",
+      "status": "active",
+      "actor_id": "operator-beta",
+      "resource_id": "pipeline-read-only-role",
+      "timestamp_utc": "2026-06-01T10:00:00Z",
+      "notes": "Read-only role assigned for audit access."
+    },
+    {
+      "entry_id": "im-003",
+      "identity_kind": "password_reset",
+      "status": "expired",
+      "actor_id": "operator-alpha",
+      "resource_id": "legacy-service-account",
+      "timestamp_utc": "2026-06-01T14:00:00Z",
+      "notes": "Password reset for legacy service account; account now expired."
+    },
+    {
+      "entry_id": "im-004",
+      "identity_kind": "privilege_change",
+      "status": "pending",
+      "actor_id": "operator-gamma",
+      "resource_id": "scoring-admin-role",
+      "timestamp_utc": "2026-06-02T09:00:00Z",
+      "notes": "Privilege change pending approval; no live data access granted."
+    },
+    {
+      "entry_id": "im-005",
+      "identity_kind": "account_deletion",
+      "status": "revoked",
+      "actor_id": "admin-1",
+      "resource_id": "decommissioned-user-7",
+      "timestamp_utc": "2026-06-02T11:00:00Z",
+      "notes": null
+    }
+  ]
+}

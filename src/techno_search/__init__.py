@@ -299,6 +299,15 @@ from techno_search.candidate_triage import (
     triage_label_completeness_check,
     triage_summary,
 )
+from techno_search.certificate_management_log import (
+    ALLOWED_CERTIFICATE_MANAGEMENT_KINDS,
+    ALLOWED_CERTIFICATE_MANAGEMENT_STATUSES,
+    CERTIFICATE_MANAGEMENT_LOG_DISCLAIMER,
+    CERTIFICATE_MANAGEMENT_LOG_SCHEMA_VERSION,
+    CertificateManagementEntry,
+    certificate_management_summary,
+    load_certificate_management_entries,
+)
 from techno_search.change_management_log import (
     ALLOWED_CHANGE_MANAGEMENT_KINDS,
     ALLOWED_CHANGE_MANAGEMENT_STATUSES,
@@ -446,6 +455,15 @@ from techno_search.follow_up_request import (
     follow_up_request_summary,
     load_follow_up_requests,
 )
+from techno_search.identity_management_log import (
+    ALLOWED_IDENTITY_MANAGEMENT_KINDS,
+    ALLOWED_IDENTITY_MANAGEMENT_STATUSES,
+    IDENTITY_MANAGEMENT_LOG_DISCLAIMER,
+    IDENTITY_MANAGEMENT_LOG_SCHEMA_VERSION,
+    IdentityManagementEntry,
+    identity_management_summary,
+    load_identity_management_entries,
+)
 from techno_search.incident_log import (
     ALLOWED_INCIDENT_KINDS,
     ALLOWED_INCIDENT_STATUSES,
@@ -568,6 +586,15 @@ from techno_search.multi_epoch_summary import (
     MultiEpochRecord,
     load_multi_epoch_records,
     multi_epoch_summary,
+)
+from techno_search.network_monitoring_log import (
+    ALLOWED_NETWORK_MONITORING_KINDS,
+    ALLOWED_NETWORK_MONITORING_STATUSES,
+    NETWORK_MONITORING_LOG_DISCLAIMER,
+    NETWORK_MONITORING_LOG_SCHEMA_VERSION,
+    NetworkMonitoringEntry,
+    load_network_monitoring_entries,
+    network_monitoring_summary,
 )
 from techno_search.observation_campaign import (
     ALLOWED_CAMPAIGN_STATUSES,
@@ -2097,4 +2124,25 @@ __all__ = [
     "AssetManagementEntry",
     "asset_management_summary",
     "load_asset_management_entries",
+    "ALLOWED_NETWORK_MONITORING_KINDS",
+    "ALLOWED_NETWORK_MONITORING_STATUSES",
+    "NETWORK_MONITORING_LOG_DISCLAIMER",
+    "NETWORK_MONITORING_LOG_SCHEMA_VERSION",
+    "NetworkMonitoringEntry",
+    "load_network_monitoring_entries",
+    "network_monitoring_summary",
+    "ALLOWED_IDENTITY_MANAGEMENT_KINDS",
+    "ALLOWED_IDENTITY_MANAGEMENT_STATUSES",
+    "IDENTITY_MANAGEMENT_LOG_DISCLAIMER",
+    "IDENTITY_MANAGEMENT_LOG_SCHEMA_VERSION",
+    "IdentityManagementEntry",
+    "identity_management_summary",
+    "load_identity_management_entries",
+    "ALLOWED_CERTIFICATE_MANAGEMENT_KINDS",
+    "ALLOWED_CERTIFICATE_MANAGEMENT_STATUSES",
+    "CERTIFICATE_MANAGEMENT_LOG_DISCLAIMER",
+    "CERTIFICATE_MANAGEMENT_LOG_SCHEMA_VERSION",
+    "CertificateManagementEntry",
+    "certificate_management_summary",
+    "load_certificate_management_entries",
 ]
