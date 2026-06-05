@@ -100,3 +100,30 @@ Do not commit:
 - Tests passing
 - Docs updated
 - No unsupported claims made
+
+---
+
+## Production Alignment — Primary Directive
+
+**The sole goal of this project is to reach live production as fast as possible.**
+
+Every planning session must begin by reading `docs/PRODUCTION_READINESS.md` and identifying the highest-priority unresolved Tier 1 or Tier 2 gap. All planned steps must move the system closer to that goal.
+
+### Rules for planning the next steps:
+
+1. **Always read `docs/PRODUCTION_READINESS.md` first.** Identify the top unresolved gap.
+2. **Plan steps that close that gap.** Engineering work that directly unblocks Tier 1 or Tier 2 items takes absolute priority.
+3. **Outside blockers belong in the plan.** If the next step requires real data, expert labeling, telescope access, or peer review, say so explicitly and include it as a named step — do not skip it or work around it.
+4. **Never manufacture busywork.** Do not add log modules, schemas, fixtures, or scaffolding unless it directly unblocks a Tier 1 or Tier 2 gap. If there are only 5 meaningful steps, plan 5 and ask what to do next.
+5. **Never repeat work already done.** Check `docs/PRODUCTION_READINESS.md` "What Is Complete" before proposing any step.
+6. **If the roadmap is exhausted, say so.** Ask the user what the next goal is rather than inventing more steps.
+
+### Tier 1 blockers (nothing ships without these):
+
+- Real observation data ingested
+- Real labeled dataset approved
+- Calibrated scoring thresholds derived from real noise distributions
+- Real site-specific RFI database approved
+- External peer review of pipeline logic and candidate reports
+
+Progress is only real if it closes one of these gaps or directly enables closing one.

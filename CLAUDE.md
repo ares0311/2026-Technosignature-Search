@@ -4,7 +4,9 @@
 
 Handoff and progress notes for Claude or other coding agents working in this repository.
 
-Read `AGENTS.md` first. The scientific guardrails there remain authoritative.
+Read `AGENTS.md` first. The scientific guardrails and **Production Alignment — Primary Directive** there are authoritative and override all other guidance.
+
+**The sole goal is to reach live production as fast as possible. Every session must start by reading `docs/PRODUCTION_READINESS.md` and planning steps that close the highest-priority Tier 1 or Tier 2 gap. Never manufacture busywork.**
 
 ---
 
