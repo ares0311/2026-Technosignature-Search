@@ -449,3 +449,4 @@ tests/test_pathway.py
 - [x] Supplier management log, contract management log, and knowledge management log operational provenance records added
 - [x] Training log, budget log, and audit finding log operational provenance records added
 - [x] Change request log, project milestone log, and vendor assessment log operational provenance records added
+- [x] Communication log, document management log, and procurement log operational provenance records added

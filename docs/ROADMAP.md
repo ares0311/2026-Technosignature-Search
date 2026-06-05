@@ -1592,3 +1592,11 @@ Total schemas: 188.
 - Vendor assessment log operational provenance records added
 - No entry modifies candidate scores or pathway routing
 - No entry authorizes external submission or constitutes a detection claim
+
+# Milestone 73 — Communication Log, Document Management Log, And Procurement Log
+
+- Communication log operational provenance records added
+- Document management log operational provenance records added
+- Procurement log operational provenance records added
+- No entry modifies candidate scores or pathway routing
+- No entry authorizes external submission or constitutes a detection claim

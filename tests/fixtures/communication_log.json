@@ -1,0 +1,44 @@
+{
+  "entries": [
+    {
+      "entry_id": "comm-001",
+      "communication_kind": "status_update",
+      "status": "delivered",
+      "sender_id": "sender-001",
+      "subject": "Weekly pipeline health report for all active tracks.",
+      "notes": "Delivered to all subscribed operators."
+    },
+    {
+      "entry_id": "comm-002",
+      "communication_kind": "email_notification",
+      "status": "delivered",
+      "sender_id": "sender-002",
+      "subject": "Candidate flagged for follow-up observation in radio track.",
+      "notes": "Notification sent to review team."
+    },
+    {
+      "entry_id": "comm-003",
+      "communication_kind": "escalation_notice",
+      "status": "sent",
+      "sender_id": "sender-001",
+      "subject": "Escalation notice for overdue candidate review deadline.",
+      "notes": "Sent to senior operator; awaiting acknowledgement."
+    },
+    {
+      "entry_id": "comm-004",
+      "communication_kind": "team_announcement",
+      "status": "draft",
+      "sender_id": "sender-003",
+      "subject": "Planned maintenance window for storage systems next week.",
+      "notes": "Draft pending final scheduling confirmation."
+    },
+    {
+      "entry_id": "comm-005",
+      "communication_kind": "broadcast",
+      "status": "failed",
+      "sender_id": "sender-002",
+      "subject": "System-wide alert for data ingestion service restart.",
+      "notes": "Failed due to mail server connectivity issue; retry scheduled."
+    }
+  ]
+}

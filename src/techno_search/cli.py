@@ -101,6 +101,7 @@ from techno_search.capacity_planning_log import capacity_planning_summary
 from techno_search.certificate_management_log import certificate_management_summary
 from techno_search.change_management_log import change_management_summary
 from techno_search.change_request_log import change_request_summary
+from techno_search.communication_log import communication_summary
 from techno_search.compliance_audit_log import compliance_audit_summary
 from techno_search.compliance_report_log import compliance_report_summary
 from techno_search.config_version_history import config_version_history_summary
@@ -118,6 +119,7 @@ from techno_search.data_quality_log import data_quality_log_summary
 from techno_search.data_retention_log import data_retention_summary
 from techno_search.data_transfer_log import data_transfer_summary
 from techno_search.disaster_recovery_log import disaster_recovery_summary
+from techno_search.document_management_log import document_management_summary
 from techno_search.doppler_correction_log import doppler_correction_summary
 from techno_search.environmental_log import environmental_log_summary
 from techno_search.epoch_plan import epoch_plan_summary
@@ -253,6 +255,7 @@ from techno_search.plotting import plot_artifact_summary
 from techno_search.polarization_log import polarization_log_summary
 from techno_search.power_log import power_log_summary
 from techno_search.problem_management_log import problem_management_summary
+from techno_search.procurement_log import procurement_summary
 from techno_search.production_blocker_consistency import (
     production_blocker_consistency_summary,
 )
@@ -609,6 +612,9 @@ SCHEMA_FILENAMES = {
     "change_request_log": "change_request_log.schema.json",
     "project_milestone_log": "project_milestone_log.schema.json",
     "vendor_assessment_log": "vendor_assessment_log.schema.json",
+    "communication_log": "communication_log.schema.json",
+    "document_management_log": "document_management_log.schema.json",
+    "procurement_log": "procurement_log.schema.json",
 }
 
 
@@ -3860,6 +3866,26 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(va_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "communication-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        comm_out = communication_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(comm_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "document-management-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        doc_mgmt_out = document_management_summary(
+            Path(fixture_path) if fixture_path else None
+        )
+        print(json.dumps(doc_mgmt_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "procurement-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        proc_out = procurement_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(proc_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -4652,6 +4678,15 @@ def validate_all() -> dict[str, object]:
     va_data = vendor_assessment_summary()
     va_entry_count = int(va_data.get("entry_count", 0))
     _va_completed_count = int(va_data.get("completed_count", 0))
+    comm_data = communication_summary()
+    comm_entry_count = int(comm_data.get("entry_count", 0))
+    _comm_delivered_count = int(comm_data.get("delivered_count", 0))
+    doc_mgmt_data = document_management_summary()
+    doc_mgmt_entry_count = int(doc_mgmt_data.get("entry_count", 0))
+    _doc_mgmt_active_count = int(doc_mgmt_data.get("active_count", 0))
+    proc_data = procurement_summary()
+    proc_entry_count = int(proc_data.get("entry_count", 0))
+    _proc_completed_count = int(proc_data.get("completed_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -5644,6 +5679,12 @@ def validate_all() -> dict[str, object]:
         and pml_entry_count >= 1
         and isinstance(va_entry_count, int)
         and va_entry_count >= 1
+        and isinstance(comm_entry_count, int)
+        and comm_entry_count >= 1
+        and isinstance(doc_mgmt_entry_count, int)
+        and doc_mgmt_entry_count >= 1
+        and isinstance(proc_entry_count, int)
+        and proc_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -5981,6 +6022,9 @@ def validate_all() -> dict[str, object]:
         "change_request_log_summary": cr_data,
         "project_milestone_log_summary": pml_data,
         "vendor_assessment_log_summary": va_data,
+        "communication_log_summary": comm_data,
+        "document_management_log_summary": doc_mgmt_data,
+        "procurement_log_summary": proc_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -9467,6 +9511,36 @@ def validation_summary() -> dict[str, object]:
             if isinstance(va_vs2 := validation.get("vendor_assessment_log_summary"), dict)
             else 0
         ),
+        "communication_entry_count": (
+            comm_vs["entry_count"]
+            if isinstance(comm_vs := validation.get("communication_log_summary"), dict)
+            else 0
+        ),
+        "communication_delivered_count": (
+            comm_vs2["delivered_count"]
+            if isinstance(comm_vs2 := validation.get("communication_log_summary"), dict)
+            else 0
+        ),
+        "document_management_entry_count": (
+            docm_vs["entry_count"]
+            if isinstance(docm_vs := validation.get("document_management_log_summary"), dict)
+            else 0
+        ),
+        "document_management_active_count": (
+            docm_vs2["active_count"]
+            if isinstance(docm_vs2 := validation.get("document_management_log_summary"), dict)
+            else 0
+        ),
+        "procurement_entry_count": (
+            proc_vs["entry_count"]
+            if isinstance(proc_vs := validation.get("procurement_log_summary"), dict)
+            else 0
+        ),
+        "procurement_completed_count": (
+            proc_vs2["completed_count"]
+            if isinstance(proc_vs2 := validation.get("procurement_log_summary"), dict)
+            else 0
+        ),
         "labeled_candidate_count": (
             lds_s["entry_count"]
             if isinstance(lds_s := validation.get("labeled_dataset_summary"), dict)
@@ -12669,6 +12743,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     vendor_assessment_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    communication_parser = subparsers.add_parser(
+        "communication-summary",
+        help=(
+            "Summarize communication log entries "
+            "(operational communication provenance records only)."
+        ),
+    )
+    communication_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    document_management_parser = subparsers.add_parser(
+        "document-management-summary",
+        help=(
+            "Summarize document management log entries "
+            "(operational document lifecycle provenance records only)."
+        ),
+    )
+    document_management_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    procurement_parser = subparsers.add_parser(
+        "procurement-summary",
+        help=(
+            "Summarize procurement log entries "
+            "(operational procurement provenance records only)."
+        ),
+    )
+    procurement_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

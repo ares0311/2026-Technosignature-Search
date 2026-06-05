@@ -2810,3 +2810,27 @@ authorize external submission, and does not constitute a detection claim.
 
 Schema count increased from 200 to 203. Consistency fixture updated: milestone
 71→72, decision 118→119, schema_count 200→203.
+
+---
+
+# DECISION-120: Communication Log, Document Management Log, And Procurement Log Complete Milestone 73
+
+Date: 2026-06-05
+
+Communication log, document management log, and procurement log operational
+provenance records have been added as Milestone 73.
+
+Communication entries are operational provenance records — a communication
+event does not modify candidate scores or pathway routing, does not authorize
+external submission, and does not constitute a detection claim.
+
+Document management entries are operational provenance records — a document
+management event does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+Procurement entries are operational provenance records — a procurement event
+does not modify candidate scores or pathway routing, does not authorize external
+submission, and does not constitute a detection claim.
+
+Schema count increased from 203 to 206. Consistency fixture updated: milestone
+72→73, decision 119→120, schema_count 203→206.

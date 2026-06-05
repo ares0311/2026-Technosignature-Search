@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CommunicationLog",
+  "description": "Operational provenance records for communication events.",
+  "type": "object",
+  "required": ["entries"],
+  "properties": {
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entry_id", "communication_kind", "status", "sender_id", "subject"],
+        "properties": {
+          "entry_id": {"type": "string"},
+          "communication_kind": {
+            "type": "string",
+            "enum": ["broadcast", "email_notification", "escalation_notice", "status_update", "team_announcement"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["delivered", "draft", "failed", "sent"]
+          },
+          "sender_id": {"type": "string"},
+          "subject": {"type": "string"},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

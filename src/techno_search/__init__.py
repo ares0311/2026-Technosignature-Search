@@ -349,6 +349,14 @@ from techno_search.change_request_log import (
     change_request_summary,
     load_change_request_entries,
 )
+from techno_search.communication_log import (
+    ALLOWED_COMMUNICATION_KINDS,
+    ALLOWED_COMMUNICATION_STATUSES,
+    COMMUNICATION_LOG_SCHEMA_VERSION,
+    CommunicationEntry,
+    communication_summary,
+    load_communication_entries,
+)
 from techno_search.compliance_audit_log import (
     ALLOWED_COMPLIANCE_AUDIT_KINDS,
     ALLOWED_COMPLIANCE_AUDIT_STATUSES,
@@ -460,6 +468,14 @@ from techno_search.disaster_recovery_log import (
     DisasterRecoveryEntry,
     disaster_recovery_summary,
     load_disaster_recovery_entries,
+)
+from techno_search.document_management_log import (
+    ALLOWED_DOCUMENT_MANAGEMENT_KINDS,
+    ALLOWED_DOCUMENT_MANAGEMENT_STATUSES,
+    DOCUMENT_MANAGEMENT_LOG_SCHEMA_VERSION,
+    DocumentManagementEntry,
+    document_management_summary,
+    load_document_management_entries,
 )
 from techno_search.doppler_correction_log import (
     ALLOWED_DOPPLER_CORRECTION_KINDS,
@@ -921,6 +937,14 @@ from techno_search.problem_management_log import (
     ProblemManagementEntry,
     load_problem_management_entries,
     problem_management_summary,
+)
+from techno_search.procurement_log import (
+    ALLOWED_PROCUREMENT_KINDS,
+    ALLOWED_PROCUREMENT_STATUSES,
+    PROCUREMENT_LOG_SCHEMA_VERSION,
+    ProcurementEntry,
+    load_procurement_entries,
+    procurement_summary,
 )
 from techno_search.production_blocker_consistency import (
     PRODUCTION_BLOCKER_CONSISTENCY_DISCLAIMER,
@@ -2355,4 +2379,22 @@ __all__ = [
     "VendorAssessmentEntry",
     "load_vendor_assessment_entries",
     "vendor_assessment_summary",
+    "ALLOWED_COMMUNICATION_KINDS",
+    "ALLOWED_COMMUNICATION_STATUSES",
+    "COMMUNICATION_LOG_SCHEMA_VERSION",
+    "CommunicationEntry",
+    "communication_summary",
+    "load_communication_entries",
+    "ALLOWED_DOCUMENT_MANAGEMENT_KINDS",
+    "ALLOWED_DOCUMENT_MANAGEMENT_STATUSES",
+    "DOCUMENT_MANAGEMENT_LOG_SCHEMA_VERSION",
+    "DocumentManagementEntry",
+    "document_management_summary",
+    "load_document_management_entries",
+    "ALLOWED_PROCUREMENT_KINDS",
+    "ALLOWED_PROCUREMENT_STATUSES",
+    "PROCUREMENT_LOG_SCHEMA_VERSION",
+    "ProcurementEntry",
+    "load_procurement_entries",
+    "procurement_summary",
 ]

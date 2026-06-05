@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProcurementLog",
+  "description": "Operational provenance records for procurement events.",
+  "type": "object",
+  "required": ["entries"],
+  "properties": {
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entry_id", "procurement_kind", "status", "requester_id", "description"],
+        "properties": {
+          "entry_id": {"type": "string"},
+          "procurement_kind": {
+            "type": "string",
+            "enum": ["contract_renewal", "emergency_procurement", "framework_order", "purchase_order", "requisition"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["approved", "cancelled", "completed", "pending"]
+          },
+          "requester_id": {"type": "string"},
+          "description": {"type": "string"},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

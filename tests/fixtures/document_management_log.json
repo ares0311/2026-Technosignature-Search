@@ -1,0 +1,44 @@
+{
+  "entries": [
+    {
+      "entry_id": "dm-001",
+      "document_kind": "creation",
+      "status": "active",
+      "document_id": "doc-001",
+      "description": "Candidate scoring methodology specification document created.",
+      "notes": "Version 1.0 published to shared repository."
+    },
+    {
+      "entry_id": "dm-002",
+      "document_kind": "approval",
+      "status": "active",
+      "document_id": "doc-002",
+      "description": "Data retention policy document approved by operations lead.",
+      "notes": "Effective immediately; replaces interim guidance."
+    },
+    {
+      "entry_id": "dm-003",
+      "document_kind": "review",
+      "status": "draft",
+      "document_id": "doc-003",
+      "description": "Observation scheduling procedure document under technical review.",
+      "notes": "Review comments pending from two team members."
+    },
+    {
+      "entry_id": "dm-004",
+      "document_kind": "revision",
+      "status": "superseded",
+      "document_id": "doc-004",
+      "description": "Pipeline configuration guide revised; previous version superseded.",
+      "notes": "Superseded by doc-004-v2 following infrastructure update."
+    },
+    {
+      "entry_id": "dm-005",
+      "document_kind": "archival",
+      "status": "archived",
+      "document_id": "doc-005",
+      "description": "Legacy calibration fixture documentation archived after migration.",
+      "notes": "Archived to cold storage; accessible for audit purposes."
+    }
+  ]
+}
