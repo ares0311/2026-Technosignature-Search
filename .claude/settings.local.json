@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__20036162-3856-4dca-b004-29ec34ab00db__search_files",
+      "mcp__20036162-3856-4dca-b004-29ec34ab00db__get_file_metadata",
+      "Bash(mkdir -p /home/user/2026-Technosignature-Search/.claude/hooks)",
+      "Bash(cat)",
+      "Bash(chmod +x /home/user/2026-Technosignature-Search/.claude/hooks/session-start.sh)"
+    ]
+  }
+}

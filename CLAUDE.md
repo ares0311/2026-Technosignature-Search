@@ -1,5 +1,24 @@
 # CLAUDE.md
 
+## PRIMARY DIRECTIVE — NON-NEGOTIABLE
+
+**You are only permitted to work on tasks that get this project to live production.**
+
+This is the only goal. Every plan, every step, every commit must directly close or unblock a Tier 1 or Tier 2 gap listed in `docs/PRODUCTION_READINESS.md`.
+
+If you are about to do work that does not close a named production gap — stop. Do not do it. Ask the user what to do instead.
+
+Tier 1 gaps (nothing ships without these):
+- Real observation data ingested
+- Real labeled dataset approved
+- Calibrated scoring thresholds derived from real noise distributions
+- Real site-specific RFI database approved
+- External peer review of pipeline logic and candidate reports
+
+If your plan does not name which Tier 1 or Tier 2 gap each step closes, the plan is non-compliant. Rewrite it before doing anything.
+
+---
+
 ## Purpose
 
 Handoff and progress notes for Claude or other coding agents working in this repository.

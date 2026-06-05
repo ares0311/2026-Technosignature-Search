@@ -34,4 +34,3 @@ logs/backups/
 .env.*
 *.key
 *.pem
-.claude/
