@@ -100,6 +100,7 @@ from techno_search.candidate_triage import (
 from techno_search.capacity_planning_log import capacity_planning_summary
 from techno_search.certificate_management_log import certificate_management_summary
 from techno_search.change_management_log import change_management_summary
+from techno_search.change_request_log import change_request_summary
 from techno_search.compliance_audit_log import compliance_audit_summary
 from techno_search.compliance_report_log import compliance_report_summary
 from techno_search.config_version_history import config_version_history_summary
@@ -255,6 +256,7 @@ from techno_search.problem_management_log import problem_management_summary
 from techno_search.production_blocker_consistency import (
     production_blocker_consistency_summary,
 )
+from techno_search.project_milestone_log import project_milestone_summary
 from techno_search.project_status_consistency import project_status_consistency_summary
 from techno_search.provenance import provenance_chain_validator
 from techno_search.provenance_audit import provenance_audit_summary
@@ -359,6 +361,7 @@ from techno_search.validation_datasets import (
     validation_promotion_summary,
     validation_readiness_summary,
 )
+from techno_search.vendor_assessment_log import vendor_assessment_summary
 from techno_search.vulnerability_scan_log import vulnerability_scan_summary
 from techno_search.weather_log import weather_log_summary
 from techno_search.weekly_review import build_weekly_review_template, write_weekly_review_template
@@ -603,6 +606,9 @@ SCHEMA_FILENAMES = {
     "service_request_log": "service_request_log.schema.json",
     "supplier_management_log": "supplier_management_log.schema.json",
     "training_log": "training_log.schema.json",
+    "change_request_log": "change_request_log.schema.json",
+    "project_milestone_log": "project_milestone_log.schema.json",
+    "vendor_assessment_log": "vendor_assessment_log.schema.json",
 }
 
 
@@ -3836,6 +3842,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(train_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "change-request-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        cr_out = change_request_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(cr_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "project-milestone-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        pm_out = project_milestone_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(pm_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "vendor-assessment-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        va_out = vendor_assessment_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(va_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -4619,6 +4643,15 @@ def validate_all() -> dict[str, object]:
     train_data = training_summary()
     train_entry_count = int(train_data.get("entry_count", 0))
     _train_completed_count = int(train_data.get("completed_count", 0))
+    cr_data = change_request_summary()
+    cr_entry_count = int(cr_data.get("entry_count", 0))
+    _cr_approved_count = int(cr_data.get("approved_count", 0))
+    pml_data = project_milestone_summary()
+    pml_entry_count = int(pml_data.get("entry_count", 0))
+    _pml_achieved_count = int(pml_data.get("achieved_count", 0))
+    va_data = vendor_assessment_summary()
+    va_entry_count = int(va_data.get("entry_count", 0))
+    _va_completed_count = int(va_data.get("completed_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -5605,6 +5638,12 @@ def validate_all() -> dict[str, object]:
         and budget_entry_count >= 1
         and isinstance(train_entry_count, int)
         and train_entry_count >= 1
+        and isinstance(cr_entry_count, int)
+        and cr_entry_count >= 1
+        and isinstance(pml_entry_count, int)
+        and pml_entry_count >= 1
+        and isinstance(va_entry_count, int)
+        and va_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -5939,6 +5978,9 @@ def validate_all() -> dict[str, object]:
         "audit_finding_log_summary": af_data,
         "budget_log_summary": budget_data,
         "training_log_summary": train_data,
+        "change_request_log_summary": cr_data,
+        "project_milestone_log_summary": pml_data,
+        "vendor_assessment_log_summary": va_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -9395,6 +9437,36 @@ def validation_summary() -> dict[str, object]:
             if isinstance(train_vs2 := validation.get("training_log_summary"), dict)
             else 0
         ),
+        "change_request_entry_count": (
+            cr_vs["entry_count"]
+            if isinstance(cr_vs := validation.get("change_request_log_summary"), dict)
+            else 0
+        ),
+        "change_request_approved_count": (
+            cr_vs2["approved_count"]
+            if isinstance(cr_vs2 := validation.get("change_request_log_summary"), dict)
+            else 0
+        ),
+        "project_milestone_entry_count": (
+            pml_vs["entry_count"]
+            if isinstance(pml_vs := validation.get("project_milestone_log_summary"), dict)
+            else 0
+        ),
+        "project_milestone_achieved_count": (
+            pml_vs2["achieved_count"]
+            if isinstance(pml_vs2 := validation.get("project_milestone_log_summary"), dict)
+            else 0
+        ),
+        "vendor_assessment_entry_count": (
+            va_vs["entry_count"]
+            if isinstance(va_vs := validation.get("vendor_assessment_log_summary"), dict)
+            else 0
+        ),
+        "vendor_assessment_completed_count": (
+            va_vs2["completed_count"]
+            if isinstance(va_vs2 := validation.get("vendor_assessment_log_summary"), dict)
+            else 0
+        ),
         "labeled_candidate_count": (
             lds_s["entry_count"]
             if isinstance(lds_s := validation.get("labeled_dataset_summary"), dict)
@@ -12564,6 +12636,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     training_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    change_request_parser = subparsers.add_parser(
+        "change-request-summary",
+        help=(
+            "Summarize change request log entries "
+            "(operational change request provenance records only)."
+        ),
+    )
+    change_request_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    project_milestone_parser = subparsers.add_parser(
+        "project-milestone-summary",
+        help=(
+            "Summarize project milestone log entries "
+            "(operational project milestone provenance records only)."
+        ),
+    )
+    project_milestone_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    vendor_assessment_parser = subparsers.add_parser(
+        "vendor-assessment-summary",
+        help=(
+            "Summarize vendor assessment log entries "
+            "(operational vendor assessment provenance records only)."
+        ),
+    )
+    vendor_assessment_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

@@ -341,6 +341,14 @@ from techno_search.change_management_log import (
     change_management_summary,
     load_change_management_entries,
 )
+from techno_search.change_request_log import (
+    ALLOWED_CHANGE_REQUEST_KINDS,
+    ALLOWED_CHANGE_REQUEST_STATUSES,
+    CHANGE_REQUEST_LOG_SCHEMA_VERSION,
+    ChangeRequestEntry,
+    change_request_summary,
+    load_change_request_entries,
+)
 from techno_search.compliance_audit_log import (
     ALLOWED_COMPLIANCE_AUDIT_KINDS,
     ALLOWED_COMPLIANCE_AUDIT_STATUSES,
@@ -920,6 +928,14 @@ from techno_search.production_blocker_consistency import (
     load_production_blocker_expectations,
     production_blocker_consistency_summary,
 )
+from techno_search.project_milestone_log import (
+    ALLOWED_PROJECT_MILESTONE_KINDS,
+    ALLOWED_PROJECT_MILESTONE_STATUSES,
+    PROJECT_MILESTONE_LOG_SCHEMA_VERSION,
+    ProjectMilestoneEntry,
+    load_project_milestone_entries,
+    project_milestone_summary,
+)
 from techno_search.project_status_consistency import (
     PROJECT_STATUS_CONSISTENCY_DISCLAIMER,
     PROJECT_STATUS_CONSISTENCY_SCHEMA_VERSION,
@@ -1286,6 +1302,14 @@ from techno_search.validation_datasets import (
     validation_dataset_summary,
     validation_promotion_summary,
     validation_readiness_summary,
+)
+from techno_search.vendor_assessment_log import (
+    ALLOWED_VENDOR_ASSESSMENT_KINDS,
+    ALLOWED_VENDOR_ASSESSMENT_STATUSES,
+    VENDOR_ASSESSMENT_LOG_SCHEMA_VERSION,
+    VendorAssessmentEntry,
+    load_vendor_assessment_entries,
+    vendor_assessment_summary,
 )
 from techno_search.vulnerability_scan_log import (
     ALLOWED_VULNERABILITY_SCAN_KINDS,
@@ -2313,4 +2337,22 @@ __all__ = [
     "TrainingEntry",
     "load_training_entries",
     "training_summary",
+    "ALLOWED_CHANGE_REQUEST_KINDS",
+    "ALLOWED_CHANGE_REQUEST_STATUSES",
+    "CHANGE_REQUEST_LOG_SCHEMA_VERSION",
+    "ChangeRequestEntry",
+    "change_request_summary",
+    "load_change_request_entries",
+    "ALLOWED_PROJECT_MILESTONE_KINDS",
+    "ALLOWED_PROJECT_MILESTONE_STATUSES",
+    "PROJECT_MILESTONE_LOG_SCHEMA_VERSION",
+    "ProjectMilestoneEntry",
+    "load_project_milestone_entries",
+    "project_milestone_summary",
+    "ALLOWED_VENDOR_ASSESSMENT_KINDS",
+    "ALLOWED_VENDOR_ASSESSMENT_STATUSES",
+    "VENDOR_ASSESSMENT_LOG_SCHEMA_VERSION",
+    "VendorAssessmentEntry",
+    "load_vendor_assessment_entries",
+    "vendor_assessment_summary",
 ]

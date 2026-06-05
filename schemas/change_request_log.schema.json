@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ChangeRequestLog",
+  "description": "Operational provenance records for change request events.",
+  "type": "object",
+  "required": ["entries"],
+  "properties": {
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entry_id", "change_kind", "status", "requestor_id", "description"],
+        "properties": {
+          "entry_id": {"type": "string"},
+          "change_kind": {
+            "type": "string",
+            "enum": ["emergency_change", "normal_change", "routine_change", "standard_change", "urgent_change"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["approved", "cancelled", "pending_review", "rejected"]
+          },
+          "requestor_id": {"type": "string"},
+          "description": {"type": "string"},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

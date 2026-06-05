@@ -2786,3 +2786,27 @@ external submission, and does not constitute a detection claim.
 
 Schema count increased from 197 to 200. Consistency fixture updated: milestone
 70→71, decision 117→118, schema_count 197→200.
+
+---
+
+# DECISION-119: Change Request Log, Project Milestone Log, And Vendor Assessment Log Complete Milestone 72
+
+Date: 2026-06-05
+
+Change request log, project milestone log, and vendor assessment log operational
+provenance records have been added as Milestone 72.
+
+Change request entries are operational provenance records — a change request
+event does not modify candidate scores or pathway routing, does not authorize
+external submission, and does not constitute a detection claim.
+
+Project milestone entries are operational provenance records — a project
+milestone event does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+Vendor assessment entries are operational provenance records — a vendor
+assessment event does not modify candidate scores or pathway routing, does not
+authorize external submission, and does not constitute a detection claim.
+
+Schema count increased from 200 to 203. Consistency fixture updated: milestone
+71→72, decision 118→119, schema_count 200→203.

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VendorAssessmentLog",
+  "description": "Operational provenance records for vendor assessment events.",
+  "type": "object",
+  "required": ["entries"],
+  "properties": {
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entry_id", "assessment_kind", "status", "vendor_id", "description"],
+        "properties": {
+          "entry_id": {"type": "string"},
+          "assessment_kind": {
+            "type": "string",
+            "enum": ["financial_review", "performance_review", "risk_review", "security_review", "technical_review"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["accepted", "completed", "in_progress", "rejected"]
+          },
+          "vendor_id": {"type": "string"},
+          "description": {"type": "string"},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

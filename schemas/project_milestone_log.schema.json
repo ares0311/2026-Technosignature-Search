@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProjectMilestoneLog",
+  "description": "Operational provenance records for project milestone events.",
+  "type": "object",
+  "required": ["entries"],
+  "properties": {
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entry_id", "milestone_kind", "status", "project_id", "description"],
+        "properties": {
+          "entry_id": {"type": "string"},
+          "milestone_kind": {
+            "type": "string",
+            "enum": ["checkpoint", "deliverable", "go_live", "phase_completion", "review_gate"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["achieved", "at_risk", "deferred", "missed"]
+          },
+          "project_id": {"type": "string"},
+          "description": {"type": "string"},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

@@ -1,11 +1,11 @@
 {
   "schema_version": "project_status_consistency_v1",
   "expected_status": {
-    "latest_milestone_number": 71,
-    "latest_milestone_label": "Training Log, Budget Log, And Audit Finding Log",
-    "latest_decision_number": 118,
-    "schema_count": 200,
+    "latest_milestone_number": 72,
+    "latest_milestone_label": "Change Request Log, Project Milestone Log, And Vendor Assessment Log",
+    "latest_decision_number": 119,
+    "schema_count": 203,
     "require_zero_real_data_authorization": true,
-    "project_status_completed_phrase": "Training log, budget log, and audit finding log operational provenance records added"
+    "project_status_completed_phrase": "Change request log, project milestone log, and vendor assessment log operational provenance records added"
   }
 }

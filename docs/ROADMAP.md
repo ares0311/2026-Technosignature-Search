@@ -1584,3 +1584,11 @@ Total schemas: 188.
 - Audit finding log operational provenance records added
 - No entry modifies candidate scores or pathway routing
 - No entry authorizes external submission or constitutes a detection claim
+
+# Milestone 72 — Change Request Log, Project Milestone Log, And Vendor Assessment Log
+
+- Change request log operational provenance records added
+- Project milestone log operational provenance records added
+- Vendor assessment log operational provenance records added
+- No entry modifies candidate scores or pathway routing
+- No entry authorizes external submission or constitutes a detection claim

@@ -207,6 +207,9 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "audit_finding_log.schema.json",
         "budget_log.schema.json",
         "training_log.schema.json",
+        "change_request_log.schema.json",
+        "project_milestone_log.schema.json",
+        "vendor_assessment_log.schema.json",
     }
     for path in schema_paths:
         schema = json.loads(path.read_text(encoding="utf-8"))

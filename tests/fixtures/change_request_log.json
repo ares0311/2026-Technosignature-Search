@@ -1,0 +1,44 @@
+{
+  "entries": [
+    {
+      "entry_id": "cr-001",
+      "change_kind": "normal_change",
+      "status": "approved",
+      "requestor_id": "req-001",
+      "description": "Update pipeline configuration for improved RFI filtering.",
+      "notes": "Reviewed by change advisory board."
+    },
+    {
+      "entry_id": "cr-002",
+      "change_kind": "emergency_change",
+      "status": "approved",
+      "requestor_id": "req-002",
+      "description": "Emergency patch for critical data loss vulnerability in archival system.",
+      "notes": "Fast-tracked through emergency CAB process."
+    },
+    {
+      "entry_id": "cr-003",
+      "change_kind": "routine_change",
+      "status": "pending_review",
+      "requestor_id": "req-003",
+      "description": "Scheduled maintenance window for storage array firmware update.",
+      "notes": "Awaiting final sign-off from operations team."
+    },
+    {
+      "entry_id": "cr-004",
+      "change_kind": "standard_change",
+      "status": "rejected",
+      "requestor_id": "req-004",
+      "description": "Proposed change to observation scheduling algorithm.",
+      "notes": "Rejected due to insufficient impact assessment documentation."
+    },
+    {
+      "entry_id": "cr-005",
+      "change_kind": "urgent_change",
+      "status": "cancelled",
+      "requestor_id": "req-005",
+      "description": "Urgent network reconfiguration to address connectivity degradation.",
+      "notes": "Cancelled after root cause resolved through alternative means."
+    }
+  ]
+}
