@@ -24,6 +24,7 @@ from techno_search.artifact_cleanup import (
     plan_artifact_cleanup,
 )
 from techno_search.asset_management_log import asset_management_summary
+from techno_search.audit_finding_log import audit_finding_summary
 from techno_search.audit_trail_log import audit_trail_log_summary
 from techno_search.background_search import (
     BackgroundUserDecisionRecord,
@@ -59,6 +60,7 @@ from techno_search.benchmark_metadata import (
     benchmark_run_result_comparison,
     benchmark_run_result_summary,
 )
+from techno_search.budget_log import budget_summary
 from techno_search.calibration import (
     calibration_track_summary,
     false_positive_class_summary,
@@ -344,6 +346,7 @@ from techno_search.top_level_sqlite_log_consistency import (
     top_level_sqlite_log_consistency_summary,
 )
 from techno_search.track_comparison import track_comparison_summary
+from techno_search.training_log import training_summary
 from techno_search.user_activity_log import user_activity_summary
 from techno_search.validation import (
     validate_candidate_file,
@@ -593,10 +596,13 @@ SCHEMA_FILENAMES = {
     "data_retention_log": "data_retention_log.schema.json",
     "contract_management_log": "contract_management_log.schema.json",
     "knowledge_management_log": "knowledge_management_log.schema.json",
+    "audit_finding_log": "audit_finding_log.schema.json",
+    "budget_log": "budget_log.schema.json",
     "problem_management_log": "problem_management_log.schema.json",
     "release_management_log": "release_management_log.schema.json",
     "service_request_log": "service_request_log.schema.json",
     "supplier_management_log": "supplier_management_log.schema.json",
+    "training_log": "training_log.schema.json",
 }
 
 
@@ -3812,6 +3818,24 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(supp_out, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "audit-finding-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        af_out = audit_finding_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(af_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "budget-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        budget_out = budget_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(budget_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "training-summary":
+        fixture_path = getattr(args, "fixture_path", None)
+        train_out = training_summary(Path(fixture_path) if fixture_path else None)
+        print(json.dumps(train_out, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "labeled-dataset-summary":
         from techno_search.labeled_dataset import labeled_dataset_summary
         fixture_path = getattr(args, "fixture_path", None)
@@ -4586,6 +4610,15 @@ def validate_all() -> dict[str, object]:
     supp_data = supplier_management_summary()
     supp_entry_count = int(supp_data.get("entry_count", 0))
     _supp_active_count = int(supp_data.get("active_count", 0))
+    af_data = audit_finding_summary()
+    af_entry_count = int(af_data.get("entry_count", 0))
+    _af_remediated_count = int(af_data.get("remediated_count", 0))
+    budget_data = budget_summary()
+    budget_entry_count = int(budget_data.get("entry_count", 0))
+    _budget_approved_count = int(budget_data.get("approved_count", 0))
+    train_data = training_summary()
+    train_entry_count = int(train_data.get("entry_count", 0))
+    _train_completed_count = int(train_data.get("completed_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
@@ -5566,6 +5599,12 @@ def validate_all() -> dict[str, object]:
         and km_entry_count >= 1
         and isinstance(supp_entry_count, int)
         and supp_entry_count >= 1
+        and isinstance(af_entry_count, int)
+        and af_entry_count >= 1
+        and isinstance(budget_entry_count, int)
+        and budget_entry_count >= 1
+        and isinstance(train_entry_count, int)
+        and train_entry_count >= 1
         and isinstance(labeled_entry_count, int)
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
@@ -5897,6 +5936,9 @@ def validate_all() -> dict[str, object]:
         "release_management_log_summary": rm_data,
         "service_request_log_summary": sr_data,
         "supplier_management_log_summary": supp_data,
+        "audit_finding_log_summary": af_data,
+        "budget_log_summary": budget_data,
+        "training_log_summary": train_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
         "operations_readiness_summary": operations_readiness,
@@ -9323,6 +9365,36 @@ def validation_summary() -> dict[str, object]:
             if isinstance(supp_vs2 := validation.get("supplier_management_log_summary"), dict)
             else 0
         ),
+        "audit_finding_entry_count": (
+            af_vs["entry_count"]
+            if isinstance(af_vs := validation.get("audit_finding_log_summary"), dict)
+            else 0
+        ),
+        "audit_finding_remediated_count": (
+            af_vs2["remediated_count"]
+            if isinstance(af_vs2 := validation.get("audit_finding_log_summary"), dict)
+            else 0
+        ),
+        "budget_entry_count": (
+            budget_vs["entry_count"]
+            if isinstance(budget_vs := validation.get("budget_log_summary"), dict)
+            else 0
+        ),
+        "budget_approved_count": (
+            budget_vs2["approved_count"]
+            if isinstance(budget_vs2 := validation.get("budget_log_summary"), dict)
+            else 0
+        ),
+        "training_entry_count": (
+            train_vs["entry_count"]
+            if isinstance(train_vs := validation.get("training_log_summary"), dict)
+            else 0
+        ),
+        "training_completed_count": (
+            train_vs2["completed_count"]
+            if isinstance(train_vs2 := validation.get("training_log_summary"), dict)
+            else 0
+        ),
         "labeled_candidate_count": (
             lds_s["entry_count"]
             if isinstance(lds_s := validation.get("labeled_dataset_summary"), dict)
@@ -12459,6 +12531,39 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     supplier_management_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    audit_finding_parser = subparsers.add_parser(
+        "audit-finding-summary",
+        help=(
+            "Summarize audit finding log entries "
+            "(operational audit finding provenance records only)."
+        ),
+    )
+    audit_finding_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    budget_parser = subparsers.add_parser(
+        "budget-summary",
+        help=(
+            "Summarize budget log entries "
+            "(operational budget allocation provenance records only)."
+        ),
+    )
+    budget_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    training_parser = subparsers.add_parser(
+        "training-summary",
+        help=(
+            "Summarize training log entries "
+            "(operational personnel training provenance records only)."
+        ),
+    )
+    training_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

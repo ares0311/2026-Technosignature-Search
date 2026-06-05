@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BudgetLog",
+  "description": "Operational provenance records for budget allocation and expenditure events.",
+  "type": "object",
+  "required": ["entries"],
+  "additionalProperties": false,
+  "properties": {
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entry_id", "budget_kind", "status", "cost_center", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "entry_id": {"type": "string"},
+          "budget_kind": {
+            "type": "string",
+            "enum": ["capital_expenditure", "contingency", "operational_expenditure", "project_budget", "travel_budget"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["allocated", "approved", "closed", "overspent"]
+          },
+          "cost_center": {"type": "string"},
+          "description": {"type": "string"},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

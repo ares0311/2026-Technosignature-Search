@@ -54,6 +54,14 @@ from techno_search.asset_management_log import (
     asset_management_summary,
     load_asset_management_entries,
 )
+from techno_search.audit_finding_log import (
+    ALLOWED_AUDIT_FINDING_KINDS,
+    ALLOWED_AUDIT_FINDING_STATUSES,
+    AUDIT_FINDING_LOG_SCHEMA_VERSION,
+    AuditFindingEntry,
+    audit_finding_summary,
+    load_audit_finding_entries,
+)
 from techno_search.background_search import (
     BACKGROUND_FOLLOW_UP_TEST_DISCLAIMER,
     BACKGROUND_FOLLOW_UP_TEST_SCHEMA_VERSION,
@@ -134,6 +142,14 @@ from techno_search.benchmark_metadata import (
     benchmark_run_result_summary,
     load_benchmark_commands,
     load_benchmark_run_results,
+)
+from techno_search.budget_log import (
+    ALLOWED_BUDGET_KINDS,
+    ALLOWED_BUDGET_STATUSES,
+    BUDGET_LOG_SCHEMA_VERSION,
+    BudgetEntry,
+    budget_summary,
+    load_budget_entries,
 )
 from techno_search.calibration import (
     CALIBRATION_TRACK_DISCLAIMER,
@@ -1246,6 +1262,14 @@ from techno_search.track_comparison import (
     TRACK_COMPARISON_DISCLAIMER,
     track_comparison_summary,
 )
+from techno_search.training_log import (
+    ALLOWED_TRAINING_KINDS,
+    ALLOWED_TRAINING_STATUSES,
+    TRAINING_LOG_SCHEMA_VERSION,
+    TrainingEntry,
+    load_training_entries,
+    training_summary,
+)
 from techno_search.validation_datasets import (
     VALIDATION_DATASET_DISCLAIMER,
     VALIDATION_DATASET_SCHEMA_VERSION,
@@ -2271,4 +2295,22 @@ __all__ = [
     "SupplierManagementEntry",
     "load_supplier_management_entries",
     "supplier_management_summary",
+    "ALLOWED_AUDIT_FINDING_KINDS",
+    "ALLOWED_AUDIT_FINDING_STATUSES",
+    "AUDIT_FINDING_LOG_SCHEMA_VERSION",
+    "AuditFindingEntry",
+    "audit_finding_summary",
+    "load_audit_finding_entries",
+    "ALLOWED_BUDGET_KINDS",
+    "ALLOWED_BUDGET_STATUSES",
+    "BUDGET_LOG_SCHEMA_VERSION",
+    "BudgetEntry",
+    "budget_summary",
+    "load_budget_entries",
+    "ALLOWED_TRAINING_KINDS",
+    "ALLOWED_TRAINING_STATUSES",
+    "TRAINING_LOG_SCHEMA_VERSION",
+    "TrainingEntry",
+    "load_training_entries",
+    "training_summary",
 ]

@@ -1576,3 +1576,11 @@ Total schemas: 188.
 - Knowledge management log operational provenance records added
 - No entry modifies candidate scores or pathway routing
 - No entry authorizes external submission or constitutes a detection claim
+
+# Milestone 71 — Training Log, Budget Log, And Audit Finding Log
+
+- Training log operational provenance records added
+- Budget log operational provenance records added
+- Audit finding log operational provenance records added
+- No entry modifies candidate scores or pathway routing
+- No entry authorizes external submission or constitutes a detection claim

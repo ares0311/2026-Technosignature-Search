@@ -1,0 +1,44 @@
+{
+  "entries": [
+    {
+      "entry_id": "af-001",
+      "finding_kind": "documentation_gap",
+      "status": "remediated",
+      "audit_ref": "audit-2026-001",
+      "description": "Observation procedure documentation incomplete for backend receivers",
+      "notes": "Updated documentation published and verified"
+    },
+    {
+      "entry_id": "af-002",
+      "finding_kind": "process_gap",
+      "status": "remediated",
+      "audit_ref": "audit-2026-001",
+      "description": "Change approval process not consistently followed for software updates",
+      "notes": "Process reinforced and checklist introduced"
+    },
+    {
+      "entry_id": "af-003",
+      "finding_kind": "configuration_issue",
+      "status": "open",
+      "audit_ref": "audit-2026-002",
+      "description": "Non-standard configuration detected on secondary data processing node",
+      "notes": "Investigation in progress"
+    },
+    {
+      "entry_id": "af-004",
+      "finding_kind": "security_finding",
+      "status": "accepted",
+      "audit_ref": "audit-2026-002",
+      "description": "Legacy access credential rotation interval exceeds policy",
+      "notes": "Risk accepted pending scheduled migration"
+    },
+    {
+      "entry_id": "af-005",
+      "finding_kind": "compliance_gap",
+      "status": "closed",
+      "audit_ref": "audit-2025-004",
+      "description": "Data retention schedule not aligned with institutional policy",
+      "notes": "Policy alignment completed and verified at follow-up audit"
+    }
+  ]
+}

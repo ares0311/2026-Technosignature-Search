@@ -2762,3 +2762,27 @@ authorize external submission, and does not constitute a detection claim.
 
 Schema count increased from 194 to 197. Consistency fixture updated: milestone
 69→70, decision 116→117, schema_count 194→197.
+
+---
+
+# DECISION-118: Training Log, Budget Log, And Audit Finding Log Complete Milestone 71
+
+Date: 2026-06-05
+
+Training log, budget log, and audit finding log operational provenance records
+have been added as Milestone 71.
+
+Training entries are operational provenance records — a training event does not
+modify candidate scores or pathway routing, does not authorize external
+submission, and does not constitute a detection claim.
+
+Budget entries are operational provenance records — a budget event does not
+modify candidate scores or pathway routing, does not authorize external
+submission, and does not constitute a detection claim.
+
+Audit finding entries are operational provenance records — an audit finding
+event does not modify candidate scores or pathway routing, does not authorize
+external submission, and does not constitute a detection claim.
+
+Schema count increased from 197 to 200. Consistency fixture updated: milestone
+70→71, decision 117→118, schema_count 197→200.
