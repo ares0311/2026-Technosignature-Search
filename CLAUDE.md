@@ -6,7 +6,23 @@ Handoff and progress notes for Claude or other coding agents working in this rep
 
 Read `AGENTS.md` first. The scientific guardrails and **Production Alignment — Primary Directive** there are authoritative and override all other guidance.
 
-**The sole goal is to reach live production as fast as possible. Every session must start by reading `docs/PRODUCTION_READINESS.md` and planning steps that close the highest-priority Tier 1 or Tier 2 gap. Never manufacture busywork.**
+## MANDATORY SESSION-START PROTOCOL
+
+At the start of every session, before planning or executing any steps, you must:
+
+1. Call `Read` on `AGENTS.md` — do not rely on memory or prior context.
+2. Call `Read` on `docs/PRODUCTION_READINESS.md` — do not rely on memory or prior context.
+
+These reads are non-negotiable. If you have not called `Read` on both files in this session, you are not permitted to plan or execute anything.
+
+After reading, your plan must:
+- Name the highest-priority unresolved Tier 1 gap from `docs/PRODUCTION_READINESS.md`
+- Show how each proposed step closes or directly unblocks that gap
+- Include outside blockers (real data, expert labeling, peer review) as explicit named steps
+- Never propose log modules, schemas, or scaffolding unless they directly unblock a named Tier 1 or Tier 2 gap
+- Never repeat work listed under "What Is Complete" in `docs/PRODUCTION_READINESS.md`
+
+If your plan does not reference specific gaps from `docs/PRODUCTION_READINESS.md` by name, it is non-compliant and must be rewritten before execution.
 
 ---
 
