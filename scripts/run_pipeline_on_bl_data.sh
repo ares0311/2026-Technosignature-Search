@@ -24,8 +24,10 @@ if [[ ! -f "$VENV_CLI" ]]; then
     exit 1
 fi
 
-DAT_FILES=("$BL_HITS_DIR"/*.dat 2>/dev/null || true)
-if [[ ${#DAT_FILES[@]} -eq 0 ]] || [[ ! -f "${DAT_FILES[0]}" ]]; then
+shopt -s nullglob
+DAT_FILES=("$BL_HITS_DIR"/*.dat)
+shopt -u nullglob
+if [[ ${#DAT_FILES[@]} -eq 0 ]]; then
     echo "ERROR: No .dat files found in $BL_HITS_DIR"
     echo "Run scripts/download_bl_hits.sh first."
     exit 1
