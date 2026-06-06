@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import os
+import ssl
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -1088,6 +1089,12 @@ def provider_response_metadata(response: Mapping[str, Any]) -> dict[str, object]
     return metadata
 
 
+def _ssl_context() -> ssl.SSLContext:
+    """Return an SSL context using certifi's CA bundle."""
+    import certifi  # noqa: PLC0415
+    return ssl.create_default_context(cafile=certifi.where())
+
+
 def http_post_bytes(
     url: str,
     payload: bytes,
@@ -1102,7 +1109,8 @@ def http_post_bytes(
         headers={"Content-Type": "application/x-www-form-urlencoded"},
         method="POST",
     )
-    with urlrequest.urlopen(post_request, timeout=timeout_seconds) as response:
+    ctx = _ssl_context()
+    with urlrequest.urlopen(post_request, timeout=timeout_seconds, context=ctx) as response:
         data = bytes(response.read(max_response_bytes + 1))
     if len(data) > max_response_bytes:
         msg = f"Provider response exceeded {max_response_bytes} bytes."
@@ -1117,7 +1125,7 @@ def http_get_bytes(
 ) -> bytes:
     """GET from a provider endpoint and return bounded response bytes."""
 
-    with urlrequest.urlopen(url, timeout=timeout_seconds) as response:
+    with urlrequest.urlopen(url, timeout=timeout_seconds, context=_ssl_context()) as response:
         data = bytes(response.read(max_response_bytes + 1))
     if len(data) > max_response_bytes:
         msg = f"Provider response exceeded {max_response_bytes} bytes."
