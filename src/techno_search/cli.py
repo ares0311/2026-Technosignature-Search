@@ -9795,7 +9795,7 @@ def validation_summary() -> dict[str, object]:
             else 0
         ),
         "synthetic_training_test_accuracy": (
-            syn_s3["test_accuracy"]
+            syn_s3.get("test_accuracy")
             if isinstance(syn_s3 := validation.get("synthetic_training_summary"), dict)
             else None
         ),
