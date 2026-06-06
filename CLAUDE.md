@@ -45,6 +45,30 @@ If your plan does not reference specific gaps from `docs/PRODUCTION_READINESS.md
 
 ---
 
+## macOS caffeinate Directive
+
+The user runs macOS (MacBook Pro M4 Max). **Every shell recipe given to the user
+for a long-running operation must be wrapped with `caffeinate -i`** to prevent
+sleep mid-run.
+
+Long-running operations that require caffeinate:
+- Any `bash scripts/download_*.sh` call
+- Any `bash scripts/run_pipeline*.sh` call
+- Full test-suite runs: `caffeinate -i .venv/bin/python -m pytest ...`
+- Any `python` invocation expected to run longer than ~30 seconds
+
+Correct form:
+```bash
+caffeinate -i bash scripts/download_bl_hits.sh
+caffeinate -i bash scripts/run_pipeline_on_bl_data.sh
+caffeinate -i .venv/bin/python -m pytest --tb=short -q
+```
+
+`caffeinate -i` prevents idle sleep for the lifetime of the child process.
+No sudo required. Safe to omit for fast runs (< 30 s).
+
+---
+
 ## Current Iteration
 
 User requested implementation of Milestone 67 (network monitoring log, identity management log, certificate management log).

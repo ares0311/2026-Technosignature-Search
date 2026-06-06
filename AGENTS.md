@@ -80,6 +80,29 @@ If dependencies are missing:
 - install them locally inside `.venv`
 - document additions in dependency files
 
+### macOS Sleep Prevention — caffeinate
+
+The user runs macOS (MacBook Pro M4 Max). Any long-running operation given to the
+user as a shell recipe **must** be wrapped with `caffeinate -i` to prevent the
+machine from sleeping mid-run.  This applies to:
+
+- Data downloads (`scripts/download_bl_hits.sh`, `scripts/download_rfi_catalog.sh`)
+- Pipeline runs over large hit directories (`scripts/run_pipeline_on_bl_data.sh`)
+- Full test suite runs (`pytest` with coverage)
+- Any `python` or `.venv/bin/python` call expected to run longer than ~30 seconds
+
+Correct form:
+
+```bash
+caffeinate -i bash scripts/download_bl_hits.sh
+caffeinate -i bash scripts/run_pipeline_on_bl_data.sh
+caffeinate -i .venv/bin/python -m pytest --tb=short -q
+```
+
+`caffeinate -i` holds an assertion that prevents idle sleep for the lifetime of
+the child process.  It does **not** prevent the display from dimming.  No sudo
+required.  Safe to omit for fast unit-test runs (< 30 s).
+
 ---
 
 ## Testing Requirements

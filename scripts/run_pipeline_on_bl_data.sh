@@ -5,7 +5,8 @@
 #   1. Run scripts/setup_data_dirs.sh
 #   2. Run scripts/download_bl_hits.sh (or manually place .dat files in ~/technosignature-data/bl_hits/)
 #
-# Run: bash scripts/run_pipeline_on_bl_data.sh
+# Run (macOS — use caffeinate to prevent sleep during long pipeline run):
+#   caffeinate -i bash scripts/run_pipeline_on_bl_data.sh
 
 set -euo pipefail
 

@@ -7,7 +7,8 @@
 # This script fetches the machine-readable GBT RFI table and converts it to
 # the rfi_database.json format expected by the techno-search pipeline.
 #
-# Run: bash scripts/download_rfi_catalog.sh
+# Run (macOS — use caffeinate to prevent sleep during download):
+#   caffeinate -i bash scripts/download_rfi_catalog.sh
 
 set -euo pipefail
 

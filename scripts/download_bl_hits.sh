@@ -4,10 +4,11 @@
 # Uses the BL Open Data Release via HTTP (no credentials required).
 # Downloads only small .dat files (KB-MB), not raw filterbank files (GB).
 #
-# Run: bash scripts/download_bl_hits.sh
+# Run (macOS — use caffeinate to prevent sleep during download):
+#   caffeinate -i bash scripts/download_bl_hits.sh
 #
 # To change the download directory:
-#   TECHNO_DATA_DIR=/some/other/path bash scripts/download_bl_hits.sh
+#   caffeinate -i env TECHNO_DATA_DIR=/some/other/path bash scripts/download_bl_hits.sh
 
 set -euo pipefail
 
