@@ -160,14 +160,45 @@ def _build_candidate(path: Path, track: Track, candidate_id: str) -> Candidate:
 
 
 def _build_radio_candidate(path: Path, candidate_id: str) -> Candidate:
-    from techno_search.radio.hit_table_reader import hit_table_to_radio_hit_dicts
+    from techno_search.catalog_crossmatch import catalog_crossmatch
+    from techno_search.radio.hit_table_reader import (  # noqa: E501
+        hit_table_to_radio_hit_dicts,
+        read_hit_table_csv,
+    )
     from techno_search.radio.prototype import build_radio_candidate
 
     rows = hit_table_to_radio_hit_dicts(path)
     if not rows:
         msg = f"No valid hits found in {path}"
         raise ValueError(msg)
-    return build_radio_candidate(candidate_id, rows)
+    candidate = build_radio_candidate(candidate_id, rows)
+
+    # Optional live catalog cross-match (requires TECHNO_SEARCH_ENABLE_LIVE_DATA=1)
+    raw_rows = read_hit_table_csv(path)
+    ra = next((r["ra_deg"] for r in raw_rows if r.get("ra_deg") is not None), None)
+    dec = next((r["dec_deg"] for r in raw_rows if r.get("dec_deg") is not None), None)
+    xmatch = catalog_crossmatch(ra, dec)
+    known_score = float(xmatch.get("known_object_score", 0.0))
+
+    # Inject cross-match score into features (only if the query actually ran)
+    if xmatch.get("query_attempted") and known_score > 0.0:
+        updated_features = dict(candidate.features)
+        updated_features["known_object_score"] = known_score
+        updated_features["catalog_crossmatch_provider"] = str(xmatch.get("provider", ""))
+        candidate = Candidate(
+            candidate_id=candidate.candidate_id,
+            track=candidate.track,
+            features=updated_features,
+            source_ids=candidate.source_ids,
+            provenance={
+                **candidate.provenance,
+                "catalog_crossmatch_provider": str(xmatch.get("provider", "")),
+                "catalog_crossmatch_match_count": int(xmatch.get("match_count", 0)),
+                "catalog_crossmatch_known_object_score": known_score,
+            },
+        )
+
+    return candidate
 
 
 def _build_infrared_candidate(path: Path, candidate_id: str) -> Candidate:

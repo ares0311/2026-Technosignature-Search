@@ -4096,6 +4096,16 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(pipeline_result.as_dict(), indent=2, sort_keys=True), file=out)
         return 0 if pipeline_result.ok else 1
 
+    if args.command == "noise-threshold-calibration":
+        from techno_search.noise_threshold_calibration import analyze_hit_directory
+
+        noise_cal_result: dict[str, Any] = analyze_hit_directory(
+            Path(args.hit_dir),
+            max_files=getattr(args, "max_files", 500),
+        )
+        print(json.dumps(noise_cal_result, indent=2, sort_keys=True), file=out)
+        return 0 if noise_cal_result.get("ok") else 1
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -13008,6 +13018,25 @@ def _build_parser() -> argparse.ArgumentParser:
     run_pipeline_parser.add_argument(
         "--candidate-id",
         help="Optional candidate ID override for generated reports.",
+    )
+
+    noise_cal_parser = subparsers.add_parser(
+        "noise-threshold-calibration",
+        help=(
+            "Analyze SNR/drift-rate distributions from a directory of turboSETI "
+            "hit tables and suggest scoring threshold candidates for expert review."
+        ),
+    )
+    noise_cal_parser.add_argument(
+        "hit_dir",
+        type=Path,
+        help="Directory containing .dat or .csv turboSETI hit table files.",
+    )
+    noise_cal_parser.add_argument(
+        "--max-files",
+        type=int,
+        default=500,
+        help="Maximum number of files to analyze (default: 500).",
     )
 
     return parser
