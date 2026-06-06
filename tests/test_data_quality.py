@@ -49,7 +49,11 @@ def test_validate_input_reports_bad_numeric_value(tmp_path: Path) -> None:
     )
     result = validate_input(bad, "radio")
     assert result.ok is False
-    assert any("Non-numeric" in issue for issue in result.issues)
+    # Non-numeric frequency causes normalization to skip the row → no valid hits
+    assert any(
+        "Non-numeric" in issue or "No valid hits" in issue or "normalized" in issue.lower()
+        for issue in result.issues
+    )
 
 
 def test_validate_input_reports_empty_anomaly_file(tmp_path: Path) -> None:

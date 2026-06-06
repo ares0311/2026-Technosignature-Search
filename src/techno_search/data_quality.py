@@ -70,8 +70,8 @@ def validate_input(path: Path, track: str) -> DataQualityResult:
         )
 
     suffix = path.suffix.lower()
-    if suffix not in {".csv", ".txt"}:
-        warnings.append(f"Unexpected file suffix '{suffix}'; expected .csv or .txt")
+    if suffix not in {".csv", ".txt", ".dat"}:
+        warnings.append(f"Unexpected file suffix '{suffix}'; expected .csv, .txt, or .dat")
 
     try:
         if track_lower == "radio":
@@ -109,34 +109,27 @@ def _read_csv_lines(path: Path) -> tuple[list[str], list[dict[str, str]]]:
 def _validate_radio(
     path: Path, issues: list[str], warnings: list[str]
 ) -> tuple[int, list[str], list[str]]:
-    _headers, rows = _read_csv_lines(path)
-    if not rows:
-        issues.append("No data rows found in radio hit table.")
+    # Use the full reader so .dat files (TAB-separated turboSETI format) work
+    from techno_search.radio.hit_table_reader import read_hit_table_csv
+
+    try:
+        normalized_rows = read_hit_table_csv(path)
+    except Exception as exc:  # noqa: BLE001
+        issues.append(f"Failed to parse radio hit table: {exc}")
         return 0, issues, warnings
 
-    # Required columns (accepting aliases)
-    freq_aliases = {"frequency", "freq", "frequency_mhz"}
-    snr_aliases = {"snr"}
-    drift_aliases = {"drift_rate", "drift_rate_hz_per_sec", "driftrate"}
+    if not normalized_rows:
+        issues.append("No valid hits found in radio hit table.")
+        return 0, issues, warnings
 
-    sample = {k.lower() for k in rows[0]}
-    if not sample & freq_aliases:
-        issues.append(f"Missing frequency column. Expected one of: {sorted(freq_aliases)}")
-    if not sample & snr_aliases:
-        issues.append(f"Missing SNR column. Expected one of: {sorted(snr_aliases)}")
-    if not sample & drift_aliases:
-        warnings.append(f"Missing drift rate column. Expected one of: {sorted(drift_aliases)}")
+    # Verify normalized rows have required keys
+    for row in normalized_rows[:3]:
+        if "frequency_hz" not in row or row["frequency_hz"] is None:
+            issues.append("Hit row missing frequency_hz after normalization.")
+        if "snr" not in row or row["snr"] is None:
+            issues.append("Hit row missing snr after normalization.")
 
-    # Check for parseable numeric values in first row
-    for row in rows[:3]:
-        for k, v in row.items():
-            if k.lower() in freq_aliases | snr_aliases and v:
-                try:
-                    float(v)
-                except ValueError:
-                    issues.append(f"Non-numeric value in column '{k}': '{v}'")
-
-    return len(rows), issues, warnings
+    return len(normalized_rows), issues, warnings
 
 
 def _validate_infrared(
