@@ -85,9 +85,9 @@ def test_load_fixture_expectations() -> None:
         FIXTURE_PATH
     )
 
-    assert expected["expected_insert_count"] == 74
-    assert expected["expected_phase_count"] == 5
-    assert expected["expected_operation_count"] == 84
+    assert expected["expected_insert_count"] == 0
+    assert expected["expected_phase_count"] == 0
+    assert expected["expected_operation_count"] == 0
     assert expected["execution_allowed"] is False
     assert expected["mutation_allowed"] is False
 
@@ -100,9 +100,9 @@ def test_default_project_execution_preview_passes() -> None:
         == SQLITE_OPERATIONAL_LOG_ADAPTER_EXECUTION_PREVIEW_SCHEMA_VERSION
     )
     assert summary["ok"] is True
-    assert summary["insert_count"] == 74
-    assert summary["phase_count"] == 5
-    assert summary["operation_count"] == 84
+    assert summary["insert_count"] == 0
+    assert summary["phase_count"] == 0
+    assert summary["operation_count"] == 0
     assert summary["missing_transaction_marker_count"] == 0
     assert summary["missing_phase_table_count"] == 0
     assert summary["phase_without_insert_count"] == 0

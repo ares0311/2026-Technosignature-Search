@@ -55,9 +55,9 @@ def test_blocker_followup_counts_current_review_actions(tmp_path) -> None:
         blocker_review_summary_data=review,
     )
 
-    assert result["action_count"] == 8
-    assert result["action_required_count"] == 7
-    assert result["operator_attention_required_count"] == 3
+    assert result["action_count"] == 7
+    assert result["action_required_count"] == 6
+    assert result["operator_attention_required_count"] == 2
     assert result["local_remediation_count"] == 2
     assert result["real_data_hold_count"] == 2
     assert result["verification_ready_count"] == 1
@@ -72,7 +72,7 @@ def test_blocker_followup_preserves_blockers_and_authorization_gates(tmp_path) -
         blocker_review_summary_data=review,
     )
 
-    assert result["residual_blocker_total"] == 29
+    assert result["residual_blocker_total"] == 26
     assert result["live_data_authorized_count"] == 0
     assert result["external_submission_authorized_count"] == 0
     assert result["all_external_authorization_disabled"] is True
@@ -98,12 +98,12 @@ def test_blocker_followup_prioritizes_open_items_before_real_data_holds(tmp_path
     )
 
     assert result["next_action_ids"][:3] == [
-        "ops-action-008",
-        "ops-action-005",
-        "ops-action-003",
+        "ops-action-007",
+        "ops-action-004",
+        "ops-action-006",
     ]
-    assert result["real_data_hold_action_ids"] == ["ops-action-007", "ops-action-006"]
-    assert result["verification_ready_action_ids"] == ["ops-action-004"]
+    assert result["real_data_hold_action_ids"] == ["ops-action-006", "ops-action-005"]
+    assert result["verification_ready_action_ids"] == ["ops-action-003"]
 
 
 def test_cli_operations_blocker_followup_summary_outputs_json(tmp_path) -> None:
@@ -125,5 +125,5 @@ def test_cli_operations_blocker_followup_summary_outputs_json(tmp_path) -> None:
     assert result.returncode == 0
     data = json.loads(result.stdout)
     assert data["schema_version"] == OPERATIONS_BLOCKER_FOLLOWUP_SCHEMA_VERSION
-    assert data["action_count"] == 8
+    assert data["action_count"] == 7
     assert data["all_external_authorization_disabled"] is True

@@ -1,9 +1,9 @@
 {
   "schema_version": "operations_alert_review_consistency_v1",
   "expected_review": {
-    "open_alert_count": 3,
-    "critical_open_alert_count": 1,
-    "alert_resolution_open_count": 1,
+    "open_alert_count": 0,
+    "critical_open_alert_count": 0,
+    "alert_resolution_open_count": 0,
     "qc_overall_health": "blocked",
     "operations_readiness_recommendation": "blocked_for_real_data",
     "require_open_alert_resolution_coverage": true,

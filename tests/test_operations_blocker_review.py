@@ -25,9 +25,9 @@ def _detail_summary(tmp_path):
 
 def test_load_blocker_review_records_returns_records() -> None:
     records = load_operations_blocker_review_records()
-    assert len(records) == 8
+    assert len(records) == 7
     assert {record.action_id for record in records} == {
-        f"ops-action-{idx:03d}" for idx in range(1, 9)
+        f"ops-action-{idx:03d}" for idx in range(1, 8)
     }
 
 
@@ -48,8 +48,8 @@ def test_blocker_review_statuses_are_allowed() -> None:
 def test_blocker_review_covers_current_detail_actions(tmp_path) -> None:
     detail = _detail_summary(tmp_path)
     result = operations_blocker_review_summary(blocker_detail_summary=detail)
-    assert result["expected_action_count"] == 8
-    assert result["covered_action_count"] == 8
+    assert result["expected_action_count"] == 7
+    assert result["covered_action_count"] == 7
     assert result["missing_action_count"] == 0
     assert result["stale_review_count"] == 0
     assert result["coverage_complete"] is True
@@ -61,7 +61,7 @@ def test_blocker_review_preserves_residual_blockers_and_zero_authorization(
 ) -> None:
     detail = _detail_summary(tmp_path)
     result = operations_blocker_review_summary(blocker_detail_summary=detail)
-    assert result["residual_blocker_total"] == 29
+    assert result["residual_blocker_total"] == 26
     assert result["live_data_authorized_count"] == 0
     assert result["external_submission_authorized_count"] == 0
     assert result["all_external_authorization_disabled"] is True
@@ -70,8 +70,8 @@ def test_blocker_review_preserves_residual_blockers_and_zero_authorization(
 def test_blocker_review_accounts_for_all_detail_evidence(tmp_path) -> None:
     detail = _detail_summary(tmp_path)
     result = operations_blocker_review_summary(blocker_detail_summary=detail)
-    assert result["detail_evidence_record_count"] == 32
-    assert result["reviewed_evidence_record_count"] == 32
+    assert result["detail_evidence_record_count"] == 26
+    assert result["reviewed_evidence_record_count"] == 26
     assert result["unreviewed_evidence_record_count"] == 0
     assert result["evidence_count_mismatch_count"] == 0
     assert result["all_detail_evidence_reviewed"] is True
@@ -84,7 +84,7 @@ def test_blocker_review_missing_expected_ids_are_reported(tmp_path) -> None:
         blocker_detail_summary=detail,
     )
     assert result["missing_action_ids"] == ["ops-action-999"]
-    assert result["stale_review_count"] == 7
+    assert result["stale_review_count"] == 6
     assert result["coverage_complete"] is False
 
 
@@ -106,5 +106,5 @@ def test_cli_operations_blocker_review_summary_outputs_json(tmp_path) -> None:
     assert result.returncode == 0
     data = json.loads(result.stdout)
     assert data["schema_version"] == OPERATIONS_BLOCKER_REVIEW_SCHEMA_VERSION
-    assert data["record_count"] == 8
+    assert data["record_count"] == 7
     assert data["all_detail_evidence_reviewed"] is True

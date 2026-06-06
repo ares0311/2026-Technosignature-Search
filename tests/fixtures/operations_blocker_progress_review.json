@@ -4,7 +4,7 @@
   "operations_blocker_progress_review_records": [
     {
       "review_id": "ops-progress-review-001",
-      "action_id": "ops-action-008",
+      "action_id": "ops-action-007",
       "progress_id": "ops-followup-progress-001",
       "category": "submission_provenance",
       "progress_status": "in_progress",
@@ -19,7 +19,7 @@
     },
     {
       "review_id": "ops-progress-review-002",
-      "action_id": "ops-action-005",
+      "action_id": "ops-action-004",
       "progress_id": "ops-followup-progress-002",
       "category": "pipeline_health",
       "progress_status": "in_progress",
@@ -33,23 +33,8 @@
       "notes": "No pathway or score mutation is implied."
     },
     {
-      "review_id": "ops-progress-review-003",
-      "action_id": "ops-action-003",
-      "progress_id": "ops-followup-progress-003",
-      "category": "alerts",
-      "progress_status": "not_started",
-      "review_status": "needs_operator_action",
-      "operator_id": "operator-beta",
-      "reviewed_utc": "2026-05-21T11:10:00Z",
-      "review_note": "Alert follow-up has not started and still needs local operator action on critical alert evidence.",
-      "residual_blocker_count": 3,
-      "live_data_authorized": false,
-      "external_submission_authorized": false,
-      "notes": "Open alert evidence remains blocking."
-    },
-    {
       "review_id": "ops-progress-review-004",
-      "action_id": "ops-action-007",
+      "action_id": "ops-action-006",
       "progress_id": "ops-followup-progress-004",
       "category": "curated_intake",
       "progress_status": "waiting_for_real_data",
@@ -64,7 +49,7 @@
     },
     {
       "review_id": "ops-progress-review-005",
-      "action_id": "ops-action-006",
+      "action_id": "ops-action-005",
       "progress_id": "ops-followup-progress-005",
       "category": "validation_readiness",
       "progress_status": "waiting_for_real_data",

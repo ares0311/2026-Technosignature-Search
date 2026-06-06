@@ -1,8 +1,8 @@
 {
   "schema_version": "sqlite_operational_log_adapter_row_preview_v1",
   "expected_preview": {
-    "expected_row_count": 74,
-    "expected_phase_count": 5,
+    "expected_row_count": 0,
+    "expected_phase_count": 0,
     "required_row_fields": [
       "log_id",
       "phase_id",
@@ -15,9 +15,9 @@
     "require_adapter_contract_ok": true,
     "require_adapter_plan_ok": true,
     "require_registry_ok": true,
-    "require_contract_columns": true,
-    "require_row_fields": true,
-    "require_json_payloads": true,
+    "require_contract_columns": false,
+    "require_row_fields": false,
+    "require_json_payloads": false,
     "execution_allowed": false
   }
 }

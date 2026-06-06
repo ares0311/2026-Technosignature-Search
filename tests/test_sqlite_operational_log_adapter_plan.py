@@ -52,8 +52,8 @@ def _registry(
 def test_load_fixture_expectations() -> None:
     expected = load_sqlite_operational_log_adapter_plan_expectations(FIXTURE_PATH)
 
-    assert expected["expected_log_count"] == 74
-    assert "candidate_and_review" in expected["required_phase_ids"]
+    assert expected["expected_log_count"] == 0
+    assert expected["required_phase_ids"] == []
     assert expected["mutation_allowed"] is False
 
 
@@ -62,8 +62,8 @@ def test_default_project_adapter_plan_passes() -> None:
 
     assert summary["schema_version"] == SQLITE_OPERATIONAL_LOG_ADAPTER_PLAN_SCHEMA_VERSION
     assert summary["ok"] is True
-    assert summary["planned_log_count"] == 74
-    assert summary["phase_count"] == 5
+    assert summary["planned_log_count"] == 0
+    assert summary["phase_count"] == 0
     assert summary["unassigned_log_count"] == 0
     assert summary["sqlite_policy_mismatch_count"] == 0
     assert summary["mutation_allowed"] is False

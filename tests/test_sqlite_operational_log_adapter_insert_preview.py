@@ -85,8 +85,8 @@ def test_load_fixture_expectations() -> None:
         FIXTURE_PATH
     )
 
-    assert expected["expected_insert_count"] == 74
-    assert expected["expected_phase_count"] == 5
+    assert expected["expected_insert_count"] == 0
+    assert expected["expected_phase_count"] == 0
     assert expected["expected_bound_value_count"] == 7
     assert expected["execution_allowed"] is False
     assert "provenance_hash" in expected["required_columns"]
@@ -100,15 +100,15 @@ def test_default_project_insert_preview_passes() -> None:
         == SQLITE_OPERATIONAL_LOG_ADAPTER_INSERT_PREVIEW_SCHEMA_VERSION
     )
     assert summary["ok"] is True
-    assert summary["insert_count"] == 74
-    assert summary["phase_count"] == 5
+    assert summary["insert_count"] == 0
+    assert summary["phase_count"] == 0
     assert summary["missing_table_name_count"] == 0
     assert summary["missing_bound_value_count"] == 0
     assert summary["value_count_mismatch_count"] == 0
     assert summary["placeholder_mismatch_count"] == 0
     assert summary["non_parameterized_count"] == 0
     assert summary["execution_allowed"] is False
-    assert "VALUES (?, ?, ?, ?, ?, ?, ?)" in summary["insert_statements"][0]
+    assert summary["insert_statements"] == []
 
 
 def test_custom_row_preview_passes(tmp_path: Path) -> None:

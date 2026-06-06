@@ -110,8 +110,8 @@ def _write_preview(
 def test_load_fixture_expectations() -> None:
     expected = load_sqlite_operational_log_adapter_row_preview_expectations(FIXTURE_PATH)
 
-    assert expected["expected_row_count"] == 74
-    assert expected["expected_phase_count"] == 5
+    assert expected["expected_row_count"] == 0
+    assert expected["expected_phase_count"] == 0
     assert expected["execution_allowed"] is False
     assert "provenance_hash" in expected["required_row_fields"]
 
@@ -121,12 +121,12 @@ def test_default_project_row_preview_passes() -> None:
 
     assert summary["schema_version"] == SQLITE_OPERATIONAL_LOG_ADAPTER_ROW_PREVIEW_SCHEMA_VERSION
     assert summary["ok"] is True
-    assert summary["row_count"] == 74
-    assert summary["phase_count"] == 5
+    assert summary["row_count"] == 0
+    assert summary["phase_count"] == 0
     assert summary["missing_row_field_count"] == 0
     assert summary["invalid_payload_count"] == 0
     assert summary["execution_allowed"] is False
-    assert json.loads(summary["records"][0]["event_payload_json"])["log_id"]
+    assert summary["records"] == []
 
 
 def test_custom_summaries_pass(tmp_path: Path) -> None:

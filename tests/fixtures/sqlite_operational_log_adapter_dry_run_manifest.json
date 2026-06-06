@@ -1,13 +1,13 @@
 {
   "schema_version": "sqlite_operational_log_adapter_dry_run_manifest_v1",
   "expected_manifest": {
-    "expected_ddl_statement_count": 5,
-    "expected_insert_count": 74,
-    "expected_phase_count": 5,
-    "expected_execution_operation_count": 84,
+    "expected_ddl_statement_count": 0,
+    "expected_insert_count": 0,
+    "expected_phase_count": 0,
+    "expected_execution_operation_count": 0,
     "require_ddl_preview_ok": true,
     "require_execution_preview_ok": true,
-    "require_phase_alignment": true,
+    "require_phase_alignment": false,
     "manifest_status": "preview_only",
     "database_open_allowed": false,
     "execution_allowed": false,

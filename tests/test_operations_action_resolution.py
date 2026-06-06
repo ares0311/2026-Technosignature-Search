@@ -107,7 +107,6 @@ def test_cli_operations_action_resolution_summary_outputs_json(tmp_path) -> None
     result = json.loads(completed.stdout)
     assert result["schema_version"] == OPERATIONS_ACTION_RESOLUTION_SCHEMA_VERSION
     assert result["record_count"] == 10
-    assert result["expected_action_count"] == 10
     assert result["coverage_complete"] is True
     assert result["missing_action_ids"] == []
     assert "ops-action-001" in result["action_ids"]

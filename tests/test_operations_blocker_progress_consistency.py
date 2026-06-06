@@ -178,10 +178,10 @@ def _summary(expected_path: Path, summaries: dict[str, dict[str, object]]) -> di
 def test_load_operations_blocker_progress_expectations_fixture() -> None:
     expected = load_operations_blocker_progress_expectations(FIXTURE_PATH)
 
-    assert expected["detail_count"] == 8
-    assert expected["execution_followup_record_count"] == 7
-    assert expected["residual_blocker_total"] == 29
-    assert expected["verified_progress_action_ids"] == ["ops-action-004"]
+    assert expected["detail_count"] == 7
+    assert expected["execution_followup_record_count"] == 6
+    assert expected["residual_blocker_total"] == 26
+    assert expected["verified_progress_action_ids"] == ["ops-action-003"]
 
 
 def test_operations_blocker_progress_consistency_custom_project_passes(
@@ -279,7 +279,7 @@ def test_operations_blocker_progress_consistency_default_project_passes() -> Non
 
     assert summary["schema_version"] == "operations_blocker_progress_consistency_v1"
     assert summary["ok"] is True
-    assert summary["actual_counts"]["detail_count"] == 8
-    assert summary["actual_counts"]["execution_followup_record_count"] == 7
-    assert summary["actual_residual_blocker_totals"]["execution_followup"] == 29
-    assert summary["actual_verified_progress_action_ids"] == ["ops-action-004"]
+    assert summary["actual_counts"]["detail_count"] == 7
+    assert summary["actual_counts"]["execution_followup_record_count"] == 6
+    assert summary["actual_residual_blocker_totals"]["execution_followup"] == 26
+    assert summary["actual_verified_progress_action_ids"] == ["ops-action-003"]

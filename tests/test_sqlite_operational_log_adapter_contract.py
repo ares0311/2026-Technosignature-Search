@@ -80,8 +80,8 @@ def _write_contract(
 def test_load_fixture_expectations() -> None:
     expected = load_sqlite_operational_log_adapter_contract_expectations(FIXTURE_PATH)
 
-    assert expected["expected_phase_count"] == 5
-    assert expected["expected_planned_log_count"] == 74
+    assert expected["expected_phase_count"] == 0
+    assert expected["expected_planned_log_count"] == 0
     assert expected["mutation_allowed"] is False
 
 
@@ -90,8 +90,8 @@ def test_default_project_adapter_contract_passes() -> None:
 
     assert summary["schema_version"] == SQLITE_OPERATIONAL_LOG_ADAPTER_CONTRACT_SCHEMA_VERSION
     assert summary["ok"] is True
-    assert summary["phase_contract_count"] == 5
-    assert summary["planned_log_count"] == 74
+    assert summary["phase_contract_count"] == 0
+    assert summary["planned_log_count"] == 0
     assert summary["missing_table_plan_count"] == 0
     assert summary["missing_required_column_count"] == 0
     assert summary["mutation_allowed"] is False

@@ -9,9 +9,9 @@
       "review_status": "acknowledged",
       "operator_id": "operator-alpha",
       "review_utc": "2026-05-20T09:30:00Z",
-      "evidence_record_count": 7,
-      "reviewed_evidence_record_count": 7,
-      "evidence_note": "QC detail bundle reviewed: open or critical flags, escalations, and overdue deadline remain visible for local operator follow-up.",
+      "evidence_record_count": 4,
+      "reviewed_evidence_record_count": 4,
+      "evidence_note": "QC detail bundle reviewed: open or critical flags and overdue deadline remain visible for local operator follow-up.",
       "residual_blocker_count": 1,
       "live_data_authorized": false,
       "external_submission_authorized": false,
@@ -33,23 +33,8 @@
       "notes": "No new operational load is authorized."
     },
     {
-      "review_id": "ops-blocker-review-003",
-      "action_id": "ops-action-003",
-      "category": "alerts",
-      "review_status": "open",
-      "operator_id": "operator-beta",
-      "review_utc": "2026-05-20T09:40:00Z",
-      "evidence_record_count": 3,
-      "reviewed_evidence_record_count": 3,
-      "evidence_note": "Three open alert records reviewed; one critical provenance inconsistency remains open.",
-      "residual_blocker_count": 3,
-      "live_data_authorized": false,
-      "external_submission_authorized": false,
-      "notes": "Alert review does not modify pathway routing or candidate scores."
-    },
-    {
       "review_id": "ops-blocker-review-004",
-      "action_id": "ops-action-004",
+      "action_id": "ops-action-003",
       "category": "review_deadlines",
       "review_status": "resolved",
       "operator_id": "operator-alpha",
@@ -64,7 +49,7 @@
     },
     {
       "review_id": "ops-blocker-review-005",
-      "action_id": "ops-action-005",
+      "action_id": "ops-action-004",
       "category": "pipeline_health",
       "review_status": "open",
       "operator_id": "operator-delta",
@@ -79,7 +64,7 @@
     },
     {
       "review_id": "ops-blocker-review-006",
-      "action_id": "ops-action-006",
+      "action_id": "ops-action-005",
       "category": "validation_readiness",
       "review_status": "blocked_for_real_data",
       "operator_id": "operator-alpha",
@@ -94,7 +79,7 @@
     },
     {
       "review_id": "ops-blocker-review-007",
-      "action_id": "ops-action-007",
+      "action_id": "ops-action-006",
       "category": "curated_intake",
       "review_status": "blocked_for_real_data",
       "operator_id": "operator-gamma",
@@ -109,7 +94,7 @@
     },
     {
       "review_id": "ops-blocker-review-008",
-      "action_id": "ops-action-008",
+      "action_id": "ops-action-007",
       "category": "submission_provenance",
       "review_status": "open",
       "operator_id": "operator-beta",

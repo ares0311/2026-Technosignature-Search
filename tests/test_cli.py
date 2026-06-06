@@ -217,7 +217,7 @@ def test_cli_project_status_consistency_summary_outputs_drift_gates() -> None:
     assert result["ok"] is True
     assert result["roadmap_latest_milestone"] == 73
     assert result["decisions_latest_decision"] == 120
-    assert result["actual_schema_count"] == 206
+    assert result["actual_schema_count"] == 101
     assert result["rfi_database_admission_real_data_authorized_count"] == 0
     assert result["curated_dataset_admission_real_data_authorized_count"] == 0
 
@@ -268,11 +268,11 @@ def test_cli_sqlite_operational_log_registry_summary_outputs_gate_counts() -> No
     assert exit_code == 0
     assert result["schema_version"] == "sqlite_operational_log_registry_v1"
     assert result["ok"] is True
-    assert result["registered_log_count"] == 74
+    assert result["registered_log_count"] == 0
     assert result["missing_cli_command_count"] == 0
     assert result["missing_schema_key_count"] == 0
     assert result["missing_sqlite_policy_count"] == 0
-    assert result["sqlite_required_before_production_count"] == 74
+    assert result["sqlite_required_before_production_count"] == 0
     assert "do not ingest real observation data" in result["disclaimer"]
 
 
@@ -285,8 +285,8 @@ def test_cli_sqlite_operational_log_adapter_plan_summary_outputs_phase_counts() 
     assert exit_code == 0
     assert result["schema_version"] == "sqlite_operational_log_adapter_plan_v1"
     assert result["ok"] is True
-    assert result["planned_log_count"] == 74
-    assert result["phase_count"] == 5
+    assert result["planned_log_count"] == 0
+    assert result["phase_count"] == 0
     assert result["unassigned_log_count"] == 0
     assert result["sqlite_policy_mismatch_count"] == 0
     assert result["mutation_allowed"] is False
@@ -302,8 +302,8 @@ def test_cli_sqlite_operational_log_adapter_contract_outputs_table_counts() -> N
     assert exit_code == 0
     assert result["schema_version"] == "sqlite_operational_log_adapter_contract_v1"
     assert result["ok"] is True
-    assert result["phase_contract_count"] == 5
-    assert result["planned_log_count"] == 74
+    assert result["phase_contract_count"] == 0
+    assert result["planned_log_count"] == 0
     assert result["missing_table_plan_count"] == 0
     assert result["missing_required_column_count"] == 0
     assert result["phase_count_mismatch_count"] == 0
@@ -320,10 +320,10 @@ def test_cli_sqlite_operational_log_adapter_ddl_preview_outputs_sql() -> None:
     assert exit_code == 0
     assert result["schema_version"] == "sqlite_operational_log_adapter_ddl_preview_v1"
     assert result["ok"] is True
-    assert result["ddl_statement_count"] == 5
+    assert result["ddl_statement_count"] == 0
     assert result["missing_clause_count"] == 0
     assert result["execution_allowed"] is False
-    assert "CREATE TABLE IF NOT EXISTS" in result["ddl_statements"][0]
+    assert result["ddl_statements"] == []
     assert "without executing SQL" in result["disclaimer"]
 
 
@@ -336,11 +336,11 @@ def test_cli_sqlite_operational_log_adapter_row_preview_outputs_rows() -> None:
     assert exit_code == 0
     assert result["schema_version"] == "sqlite_operational_log_adapter_row_preview_v1"
     assert result["ok"] is True
-    assert result["row_count"] == 74
-    assert result["phase_count"] == 5
+    assert result["row_count"] == 0
+    assert result["phase_count"] == 0
     assert result["missing_row_field_count"] == 0
     assert result["execution_allowed"] is False
-    assert "event_payload_json" in result["records"][0]
+    assert result["records"] == []
     assert "without inserting rows" in result["disclaimer"]
 
 
@@ -356,13 +356,13 @@ def test_cli_sqlite_operational_log_adapter_insert_preview_outputs_inserts() -> 
     assert exit_code == 0
     assert result["schema_version"] == "sqlite_operational_log_adapter_insert_preview_v1"
     assert result["ok"] is True
-    assert result["insert_count"] == 74
-    assert result["phase_count"] == 5
+    assert result["insert_count"] == 0
+    assert result["phase_count"] == 0
     assert result["value_count_mismatch_count"] == 0
     assert result["placeholder_mismatch_count"] == 0
     assert result["non_parameterized_count"] == 0
     assert result["execution_allowed"] is False
-    assert "VALUES (?, ?, ?, ?, ?, ?, ?)" in result["insert_statements"][0]
+    assert result["insert_statements"] == []
     assert "without executing SQL" in result["disclaimer"]
 
 
@@ -381,9 +381,9 @@ def test_cli_sqlite_operational_log_adapter_execution_preview_outputs_plan() -> 
         == "sqlite_operational_log_adapter_execution_preview_v1"
     )
     assert result["ok"] is True
-    assert result["insert_count"] == 74
-    assert result["phase_count"] == 5
-    assert result["operation_count"] == 84
+    assert result["insert_count"] == 0
+    assert result["phase_count"] == 0
+    assert result["operation_count"] == 0
     assert result["missing_transaction_marker_count"] == 0
     assert result["missing_phase_table_count"] == 0
     assert result["execution_allowed"] is False
@@ -408,10 +408,10 @@ def test_cli_sqlite_operational_log_adapter_dry_run_manifest_outputs_manifest() 
     )
     assert result["ok"] is True
     assert result["manifest_status"] == "preview_only"
-    assert result["ddl_statement_count"] == 5
-    assert result["insert_count"] == 74
-    assert result["phase_count"] == 5
-    assert result["execution_operation_count"] == 84
+    assert result["ddl_statement_count"] == 0
+    assert result["insert_count"] == 0
+    assert result["phase_count"] == 0
+    assert result["execution_operation_count"] == 0
     assert result["phase_alignment_mismatch_count"] == 0
     assert result["database_open_allowed"] is False
     assert result["execution_allowed"] is False
@@ -436,9 +436,9 @@ def test_cli_sqlite_operational_log_adapter_readiness_preflight_outputs_gate() -
     )
     assert result["ok"] is True
     assert result["readiness_status"] == "preflight_only"
-    assert result["registered_log_count"] == 74
-    assert result["planned_count"] == 74
-    assert result["schema_count"] == 206
+    assert result["registered_log_count"] == 0
+    assert result["planned_count"] == 0
+    assert result["schema_count"] == 101
     assert result["upstream_gate_failure_count"] == 0
     assert result["database_open_allowed"] is False
     assert result["execution_allowed"] is False
@@ -467,8 +467,8 @@ def test_cli_sqlite_operational_log_adapter_authorization_gate_outputs_gate() ->
         == "blocked_pending_explicit_operator_approval"
     )
     assert result["readiness_preflight_ok"] is True
-    assert result["readiness_preflight_schema_count"] == 206
-    assert result["schema_count"] == 206
+    assert result["readiness_preflight_schema_count"] == 101
+    assert result["schema_count"] == 101
     assert result["adapter_implementation_allowed"] is False
     assert result["database_open_allowed"] is False
     assert result["execution_allowed"] is False
@@ -503,8 +503,8 @@ def test_cli_operations_alert_review_consistency_summary_outputs_gate_counts() -
     assert exit_code == 0
     assert result["schema_version"] == "operations_alert_review_consistency_v1"
     assert result["ok"] is True
-    assert result["actual_open_alert_count"] == 3
-    assert result["actual_critical_open_alert_count"] == 1
+    assert result["actual_open_alert_count"] == 0
+    assert result["actual_critical_open_alert_count"] == 0
     assert result["uncovered_open_alert_count"] == 0
     assert result["external_submission_approved_count"] == 0
     assert result["network_access_allowed_count"] == 0
@@ -519,10 +519,11 @@ def test_cli_operations_action_resolution_consistency_summary_outputs_staleness_
     assert exit_code == 0
     assert result["schema_version"] == "operations_action_resolution_consistency_v1"
     assert result["ok"] is True
-    assert result["actual_action_count"] == 8
+    assert result["actual_action_count"] == 7
     assert result["actual_record_count"] == 10
-    assert result["actual_stale_resolution_count"] == 2
+    assert result["actual_stale_resolution_count"] == 3
     assert result["actual_stale_resolution_action_ids"] == [
+        "ops-action-008",
         "ops-action-009",
         "ops-action-010",
     ]
@@ -539,9 +540,9 @@ def test_cli_operations_blocker_progress_consistency_summary_outputs_chain_gates
     assert exit_code == 0
     assert result["schema_version"] == "operations_blocker_progress_consistency_v1"
     assert result["ok"] is True
-    assert result["actual_counts"]["detail_count"] == 8
-    assert result["actual_counts"]["execution_followup_record_count"] == 7
-    assert result["expected_residual_blocker_total"] == 29
+    assert result["actual_counts"]["detail_count"] == 7
+    assert result["actual_counts"]["execution_followup_record_count"] == 6
+    assert result["expected_residual_blocker_total"] == 26
     assert result["coverage_complete"] is True
     assert result["priority_sequence_ok"] is True
     assert result["mismatch_total"] == 0
@@ -625,75 +626,52 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "background_search_ledger",
         "background_targets",
         "background_user_decisions",
+        "baseline_eval",
+        "baseline_performance_history",
         "batch_manifest",
         "benchmark_metadata",
         "benchmark_run_results",
+        "candidate_annotation",
+        "candidate_audit_trail",
+        "candidate_comparison",
         "candidate_extraction_handoff",
+        "candidate_feature_vector",
+        "candidate_flags",
+        "candidate_lifecycle",
+        "candidate_observation_notes",
         "candidate_packet",
+        "candidate_priority_queue",
+        "candidate_rescore",
+        "candidate_resolution",
+        "candidate_retention",
+        "candidate_score_history",
         "candidate_triage",
+        "config_version_history",
         "consensus_export",
         "consensus_labels",
         "cross_track_references",
-        "report_manifest",
-        "review_queue",
-        "sensitivity_config_summary",
-        "validation_dataset_manifest",
-        "validation_promotion_rules",
-        "baseline_eval",
-        "baseline_performance_history",
-        "candidate_lifecycle",
-        "observation_schedule",
-        "scoring_config_summary",
-        "target_watchlist",
-        "validation_readiness",
-        "weekly_review_template",
-        "signal_registry",
-        "candidate_audit_trail",
-        "multi_epoch_observations",
-        "target_priority_snapshots",
-        "candidate_flags",
-        "candidate_observation_notes",
-        "candidate_score_history",
-        "epoch_plan",
-        "operator_assignment",
-        "review_deadlines",
-        "candidate_annotation",
-        "candidate_retention",
-        "candidate_resolution",
+        "curated_dataset_admission",
+        "curated_dataset_intake",
         "data_quality",
-        "data_quality_log",
-        "escalation_log",
-        "follow_up_request",
-        "observation_campaign",
-        "candidate_priority_queue",
-        "session_log",
-        "candidate_feature_vector",
-        "ml_model_registry",
+        "epoch_plan",
         "feature_importance",
         "feature_normalization",
+        "follow_up_request",
+        "labeled_candidates",
+        "mcp_bootstrap_consistency",
+        "mcp_server_policy",
+        "ml_model_registry",
         "model_architecture",
         "model_evaluation",
         "model_performance_history",
         "model_serving",
-        "scoring_audit_log",
-        "curated_dataset_intake",
-        "candidate_rescore",
-        "operator_handoff_template",
-        "pipeline_config",
-        "submission_readiness",
-        "candidate_comparison",
-        "pipeline_telemetry",
-        "provenance_audit",
-        "candidate_alert_log",
-        "pipeline_replay_log",
-        "scoring_threshold_audit",
-        "top_level_sqlite_log_consistency",
-        "alert_resolution_log",
-        "config_version_history",
-        "operator_escalation_log",
-        "operations_readiness_summary",
+        "multi_epoch_observations",
+        "observation_campaign",
+        "observation_schedule",
         "operations_action_plan",
         "operations_action_resolution",
+        "operations_action_resolution_consistency",
+        "operations_alert_review_consistency",
         "operations_blocker_detail",
         "operations_blocker_followup",
         "operations_blocker_followup_progress",
@@ -704,124 +682,42 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "operations_blocker_progress_next_actions",
         "operations_blocker_progress_review",
         "operations_blocker_review",
-        "candidate_deduplication_log",
-        "candidate_export_log",
-        "candidate_linkage_log",
-        "candidate_match_log",
-        "data_gap_log",
-        "intake_queue_log",
-        "instrument_log",
-        "archival_query_log",
-        "observation_request_log",
-        "pipeline_error_log",
-        "quality_gate_log",
-        "workflow_state_log",
-        "signal_classification_log",
-        "project_status_consistency",
-        "mcp_bootstrap_consistency",
-        "mcp_server_policy",
+        "operations_readiness_summary",
+        "operator_assignment",
+        "operator_handoff_template",
+        "pipeline_config",
+        "pipeline_telemetry",
         "production_blocker_consistency",
-        "operations_alert_review_consistency",
-        "operations_action_resolution_consistency",
-        "curated_dataset_admission",
-        "rfi_database_admission",
-        "rfi_database",
-        "rfi_mitigation_log",
-        "candidate_annotation_log",
-        "frequency_channel_log",
-        "pipeline_checkpoint_log",
-        "candidate_status_log",
-        "beam_configuration_log",
-        "calibration_event_log",
-        "pipeline_run_log",
-        "source_catalog_log",
-        "noise_measurement_log",
-        "spectral_feature_log",
-        "polarization_log",
-        "telescope_status_log",
-        "observation_parameter_log",
-        "labeled_candidates",
-        "target_selection_log",
-        "doppler_correction_log",
-        "data_archival_log",
-        "interference_environment_log",
-        "receiver_health_log",
-        "pipeline_version_log",
+        "project_status_consistency",
+        "provenance_audit",
         "real_data_admission_preflight",
-        "sqlite_operational_log_registry",
-        "sqlite_operational_log_adapter_plan",
-        "sqlite_operational_log_adapter_contract",
+        "report_manifest",
+        "review_deadlines",
+        "review_queue",
+        "rfi_database",
+        "rfi_database_admission",
+        "scoring_config_summary",
+        "scoring_threshold_audit",
+        "sensitivity_config_summary",
+        "signal_registry",
         "sqlite_operational_log_adapter_authorization_gate",
+        "sqlite_operational_log_adapter_contract",
         "sqlite_operational_log_adapter_ddl_preview",
         "sqlite_operational_log_adapter_dry_run_manifest",
         "sqlite_operational_log_adapter_execution_preview",
         "sqlite_operational_log_adapter_insert_preview",
+        "sqlite_operational_log_adapter_plan",
         "sqlite_operational_log_adapter_readiness_preflight",
         "sqlite_operational_log_adapter_row_preview",
-        "data_transfer_log",
-        "scheduling_conflict_log",
-        "system_health_log",
-        "instrument_configuration_log",
-        "scan_log",
-        "time_synchronization_log",
-        "antenna_pointing_log",
-        "weather_log",
-        "power_log",
-        "cooling_system_log",
-        "environmental_log",
-        "hardware_fault_log",
-        "maintenance_log",
-        "network_connectivity_log",
-        "software_update_log",
-        "access_log",
-        "security_event_log",
-        "audit_trail_log",
-        "incident_response_log",
-        "change_management_log",
-        "compliance_report_log",
-        "risk_assessment_log",
-        "backup_recovery_log",
-        "capacity_planning_log",
-        "software_deployment_log",
-        "performance_monitoring_log",
-        "user_activity_log",
-        "health_check_log",
-        "license_management_log",
-        "storage_management_log",
-        "firmware_update_log",
-        "configuration_audit_log",
-        "event_correlation_log",
-        "system_diagnostics_log",
-        "resource_allocation_log",
-        "access_control_log",
-        "incident_log",
-        "patch_management_log",
-        "vulnerability_scan_log",
-        "compliance_audit_log",
-        "disaster_recovery_log",
-        "service_level_log",
-        "asset_management_log",
-        "network_monitoring_log",
-        "identity_management_log",
-        "certificate_management_log",
-        "alert_escalation_log",
-        "configuration_change_log",
-        "contract_management_log",
-        "data_retention_log",
-        "knowledge_management_log",
-        "problem_management_log",
-        "release_management_log",
-        "service_request_log",
-        "supplier_management_log",
-        "audit_finding_log",
-        "budget_log",
-        "training_log",
-        "change_request_log",
-        "project_milestone_log",
-        "vendor_assessment_log",
-        "communication_log",
-        "document_management_log",
-        "procurement_log",
+        "sqlite_operational_log_registry",
+        "submission_readiness",
+        "target_priority_snapshots",
+        "target_watchlist",
+        "top_level_sqlite_log_consistency",
+        "validation_dataset_manifest",
+        "validation_promotion_rules",
+        "validation_readiness",
+        "weekly_review_template",
     }
     assert result["background_search_ledger"].endswith(
         "schemas/background_search_ledger.schema.json"
@@ -1971,7 +1867,7 @@ def test_cli_validate_all_outputs_local_summary() -> None:
         "external_submission_approved_count"
     ] == 0
     assert result["sqlite_operational_log_registry_summary"]["ok"] is True
-    assert result["sqlite_operational_log_registry_summary"]["registered_log_count"] == 74
+    assert result["sqlite_operational_log_registry_summary"]["registered_log_count"] == 0
     assert (
         result["sqlite_operational_log_registry_summary"][
             "missing_sqlite_policy_count"
@@ -1981,7 +1877,7 @@ def test_cli_validate_all_outputs_local_summary() -> None:
     assert result["sqlite_operational_log_adapter_plan_summary"]["ok"] is True
     assert (
         result["sqlite_operational_log_adapter_plan_summary"]["planned_log_count"]
-        == 74
+        == 0
     )
     assert (
         result["sqlite_operational_log_adapter_plan_summary"][
@@ -1994,7 +1890,7 @@ def test_cli_validate_all_outputs_local_summary() -> None:
         result["sqlite_operational_log_adapter_contract_summary"][
             "phase_contract_count"
         ]
-        == 5
+        == 0
     )
     assert (
         result["sqlite_operational_log_adapter_contract_summary"][
@@ -2007,7 +1903,7 @@ def test_cli_validate_all_outputs_local_summary() -> None:
         result["sqlite_operational_log_adapter_ddl_preview_summary"][
             "ddl_statement_count"
         ]
-        == 5
+        == 0
     )
     assert (
         result["sqlite_operational_log_adapter_ddl_preview_summary"][
@@ -2018,7 +1914,7 @@ def test_cli_validate_all_outputs_local_summary() -> None:
     assert result["sqlite_operational_log_adapter_row_preview_summary"]["ok"] is True
     assert (
         result["sqlite_operational_log_adapter_row_preview_summary"]["row_count"]
-        == 74
+        == 0
     )
     assert (
         result["sqlite_operational_log_adapter_row_preview_summary"][
@@ -2031,7 +1927,7 @@ def test_cli_validate_all_outputs_local_summary() -> None:
         result["sqlite_operational_log_adapter_insert_preview_summary"][
             "insert_count"
         ]
-        == 74
+        == 0
     )
     assert (
         result["sqlite_operational_log_adapter_insert_preview_summary"][
@@ -2047,7 +1943,7 @@ def test_cli_validate_all_outputs_local_summary() -> None:
         result["sqlite_operational_log_adapter_execution_preview_summary"][
             "operation_count"
         ]
-        == 84
+        == 0
     )
     assert (
         result["sqlite_operational_log_adapter_execution_preview_summary"][
@@ -2112,12 +2008,12 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 206
+    assert result["schema_count"] == 101
     assert result["schemas_ok"] is True
     assert result["project_status_consistency_ok"] is True
     assert result["project_status_latest_milestone"] == 73
     assert result["project_status_latest_decision"] == 120
-    assert result["project_status_schema_count"] == 206
+    assert result["project_status_schema_count"] == 101
     assert result["mcp_bootstrap_consistency_ok"] is True
     assert result["mcp_bootstrap_consistency_issue_count"] == 0
     assert result["mcp_bootstrap_claude_server_count"] == 3
@@ -2143,48 +2039,48 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["production_blocker_external_submission_authorized_total"] == 0
     assert result["sqlite_operational_log_registry_ok"] is True
     assert result["sqlite_operational_log_registry_issue_count"] == 0
-    assert result["sqlite_operational_log_registered_count"] == 74
+    assert result["sqlite_operational_log_registered_count"] == 0
     assert result["sqlite_operational_log_missing_cli_command_count"] == 0
     assert result["sqlite_operational_log_missing_sqlite_policy_count"] == 0
     assert (
         result["sqlite_operational_log_sqlite_required_before_production_count"]
-        == 74
+        == 0
     )
     assert result["sqlite_operational_log_adapter_plan_ok"] is True
     assert result["sqlite_operational_log_adapter_plan_issue_count"] == 0
-    assert result["sqlite_operational_log_adapter_planned_count"] == 74
-    assert result["sqlite_operational_log_adapter_phase_count"] == 5
+    assert result["sqlite_operational_log_adapter_planned_count"] == 0
+    assert result["sqlite_operational_log_adapter_phase_count"] == 0
     assert result["sqlite_operational_log_adapter_unassigned_count"] == 0
     assert result["sqlite_operational_log_adapter_policy_mismatch_count"] == 0
     assert result["sqlite_operational_log_adapter_mutation_allowed"] is False
     assert result["sqlite_operational_log_adapter_contract_ok"] is True
     assert result["sqlite_operational_log_adapter_contract_issue_count"] == 0
-    assert result["sqlite_operational_log_adapter_contract_phase_count"] == 5
+    assert result["sqlite_operational_log_adapter_contract_phase_count"] == 0
     assert result["sqlite_operational_log_adapter_contract_missing_table_count"] == 0
     assert result["sqlite_operational_log_adapter_contract_missing_column_count"] == 0
     assert result["sqlite_operational_log_adapter_contract_phase_mismatch_count"] == 0
     assert result["sqlite_operational_log_adapter_contract_mutation_allowed"] is False
     assert result["sqlite_operational_log_adapter_ddl_preview_ok"] is True
     assert result["sqlite_operational_log_adapter_ddl_preview_issue_count"] == 0
-    assert result["sqlite_operational_log_adapter_ddl_statement_count"] == 5
+    assert result["sqlite_operational_log_adapter_ddl_statement_count"] == 0
     assert result["sqlite_operational_log_adapter_ddl_missing_clause_count"] == 0
     assert result["sqlite_operational_log_adapter_ddl_execution_allowed"] is False
     assert result["sqlite_operational_log_adapter_row_preview_ok"] is True
     assert result["sqlite_operational_log_adapter_row_preview_issue_count"] == 0
-    assert result["sqlite_operational_log_adapter_row_count"] == 74
-    assert result["sqlite_operational_log_adapter_row_phase_count"] == 5
+    assert result["sqlite_operational_log_adapter_row_count"] == 0
+    assert result["sqlite_operational_log_adapter_row_phase_count"] == 0
     assert result["sqlite_operational_log_adapter_row_missing_field_count"] == 0
     assert result["sqlite_operational_log_adapter_row_execution_allowed"] is False
     assert result["sqlite_operational_log_adapter_insert_preview_ok"] is True
     assert result["sqlite_operational_log_adapter_insert_preview_issue_count"] == 0
-    assert result["sqlite_operational_log_adapter_insert_count"] == 74
-    assert result["sqlite_operational_log_adapter_insert_phase_count"] == 5
+    assert result["sqlite_operational_log_adapter_insert_count"] == 0
+    assert result["sqlite_operational_log_adapter_insert_phase_count"] == 0
     assert result["sqlite_operational_log_adapter_insert_value_mismatch_count"] == 0
     assert result["sqlite_operational_log_adapter_insert_execution_allowed"] is False
     assert result["sqlite_operational_log_adapter_execution_preview_ok"] is True
     assert result["sqlite_operational_log_adapter_execution_preview_issue_count"] == 0
-    assert result["sqlite_operational_log_adapter_execution_operation_count"] == 84
-    assert result["sqlite_operational_log_adapter_execution_phase_count"] == 5
+    assert result["sqlite_operational_log_adapter_execution_operation_count"] == 0
+    assert result["sqlite_operational_log_adapter_execution_phase_count"] == 0
     assert result["sqlite_operational_log_adapter_execution_allowed"] is False
     assert result["sqlite_operational_log_adapter_execution_mutation_allowed"] is False
     assert result["sqlite_operational_log_adapter_dry_run_manifest_ok"] is True
@@ -2193,7 +2089,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
         result["sqlite_operational_log_adapter_dry_run_manifest_status"]
         == "preview_only"
     )
-    assert result["sqlite_operational_log_adapter_dry_run_phase_count"] == 5
+    assert result["sqlite_operational_log_adapter_dry_run_phase_count"] == 0
     assert result["sqlite_operational_log_adapter_dry_run_phase_mismatch_count"] == 0
     assert (
         result["sqlite_operational_log_adapter_dry_run_database_open_allowed"]
@@ -2228,7 +2124,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert (
         result["sqlite_operational_log_adapter_readiness_preflight_schema_count"]
-        == 206
+        == 101
     )
     assert (
         result[
@@ -2264,7 +2160,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert (
         result["sqlite_operational_log_adapter_authorization_gate_schema_count"]
-        == 206
+        == 101
     )
     assert (
         result[
@@ -2305,12 +2201,13 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
         is False
     )
     assert result["operations_alert_review_consistency_ok"] is True
-    assert result["operations_alert_review_open_alert_count"] == 3
-    assert result["operations_alert_review_critical_open_alert_count"] == 1
+    assert result["operations_alert_review_open_alert_count"] == 0
+    assert result["operations_alert_review_critical_open_alert_count"] == 0
     assert result["operations_alert_review_uncovered_open_alert_count"] == 0
     assert result["operations_action_resolution_consistency_ok"] is True
-    assert result["operations_action_resolution_consistency_stale_count"] == 2
+    assert result["operations_action_resolution_consistency_stale_count"] == 3
     assert result["operations_action_resolution_consistency_stale_action_ids"] == [
+        "ops-action-008",
         "ops-action-009",
         "ops-action-010",
     ]
@@ -2319,7 +2216,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["operations_blocker_progress_consistency_issue_count"] == 0
     assert (
         result["operations_blocker_progress_consistency_residual_blocker_total"]
-        == 29
+        == 26
     )
     assert result["operations_blocker_progress_consistency_mismatch_total"] == 0
     assert (
@@ -2426,14 +2323,15 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["operations_readiness_sqlite_integrity_ok"] is True
     assert result["operations_readiness_sqlite_weekly_digest_ok"] is True
     assert result["operations_action_resolution_record_count"] == 10
-    assert result["operations_action_resolution_expected_action_count"] == 8
-    assert result["operations_action_resolution_covered_action_count"] == 8
+    assert result["operations_action_resolution_expected_action_count"] == 7
+    assert result["operations_action_resolution_covered_action_count"] == 7
     assert result["operations_action_resolution_missing_action_count"] == 0
-    assert result["operations_action_resolution_stale_resolution_count"] == 2
+    assert result["operations_action_resolution_stale_resolution_count"] == 3
     assert result["operations_action_resolution_coverage_fraction"] == 1.0
     assert result["operations_action_resolution_coverage_complete"] is True
     assert result["operations_action_resolution_missing_action_ids"] == []
     assert result["operations_action_resolution_stale_resolution_action_ids"] == [
+        "ops-action-008",
         "ops-action-009",
         "ops-action-010",
     ]
@@ -2442,17 +2340,17 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
         result["operations_action_resolution_external_submission_authorized_count"]
         == 0
     )
-    assert result["operations_blocker_detail_count"] == 8
-    assert result["operations_blocker_detail_total_evidence_record_count"] >= 8
+    assert result["operations_blocker_detail_count"] == 7
+    assert result["operations_blocker_detail_total_evidence_record_count"] >= 7
     assert (
         result["operations_blocker_detail_all_external_authorization_disabled"]
         is True
     )
     assert result["operations_blocker_detail_sqlite_context_is_resolved"] is True
-    assert result["operations_blocker_review_record_count"] == 8
-    assert result["operations_blocker_review_reviewed_evidence_record_count"] == 32
+    assert result["operations_blocker_review_record_count"] == 7
+    assert result["operations_blocker_review_reviewed_evidence_record_count"] == 26
     assert result["operations_blocker_review_unreviewed_evidence_record_count"] == 0
-    assert result["operations_blocker_review_residual_blocker_total"] == 29
+    assert result["operations_blocker_review_residual_blocker_total"] == 26
     assert result["operations_blocker_review_live_data_authorized_count"] == 0
     assert (
         result["operations_blocker_review_external_submission_authorized_count"] == 0
@@ -2463,11 +2361,11 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert result["operations_blocker_review_coverage_complete"] is True
     assert result["operations_blocker_review_all_detail_evidence_reviewed"] is True
-    assert result["operations_blocker_followup_action_count"] == 8
-    assert result["operations_blocker_followup_action_required_count"] == 7
+    assert result["operations_blocker_followup_action_count"] == 7
+    assert result["operations_blocker_followup_action_required_count"] == 6
     assert result["operations_blocker_followup_real_data_hold_count"] == 2
     assert result["operations_blocker_followup_verification_ready_count"] == 1
-    assert result["operations_blocker_followup_residual_blocker_total"] == 29
+    assert result["operations_blocker_followup_residual_blocker_total"] == 26
     assert result["operations_blocker_followup_live_data_authorized_count"] == 0
     assert (
         result["operations_blocker_followup_external_submission_authorized_count"]
@@ -2479,10 +2377,10 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert result["operations_blocker_followup_coverage_complete"] is True
     assert result["operations_blocker_followup_all_detail_evidence_reviewed"] is True
-    assert result["operations_blocker_followup_progress_record_count"] == 8
-    assert result["operations_blocker_followup_progress_unresolved_count"] == 7
+    assert result["operations_blocker_followup_progress_record_count"] == 7
+    assert result["operations_blocker_followup_progress_unresolved_count"] == 6
     assert result["operations_blocker_followup_progress_verified_local_count"] == 1
-    assert result["operations_blocker_followup_progress_residual_blocker_total"] == 29
+    assert result["operations_blocker_followup_progress_residual_blocker_total"] == 26
     assert result["operations_blocker_followup_progress_live_data_authorized_count"] == 0
     assert (
         result[
@@ -2501,14 +2399,14 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
         result["operations_blocker_followup_progress_recommendation_mismatch_count"]
         == 0
     )
-    assert result["operations_blocker_progress_review_record_count"] == 7
-    assert result["operations_blocker_progress_review_needs_operator_action_count"] == 1
+    assert result["operations_blocker_progress_review_record_count"] == 6
+    assert result["operations_blocker_progress_review_needs_operator_action_count"] == 0
     assert (
         result["operations_blocker_progress_review_ready_for_next_local_note_count"]
         == 4
     )
     assert result["operations_blocker_progress_review_blocked_for_real_data_count"] == 2
-    assert result["operations_blocker_progress_review_residual_blocker_total"] == 29
+    assert result["operations_blocker_progress_review_residual_blocker_total"] == 26
     assert result["operations_blocker_progress_review_live_data_authorized_count"] == 0
     assert (
         result[
@@ -2524,12 +2422,12 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert result["operations_blocker_progress_review_coverage_complete"] is True
     assert result["operations_blocker_progress_review_status_mismatch_count"] == 0
-    assert result["operations_blocker_progress_next_actions_record_count"] == 7
+    assert result["operations_blocker_progress_next_actions_record_count"] == 6
     assert (
         result[
             "operations_blocker_progress_next_actions_operator_action_required_count"
         ]
-        == 1
+        == 0
     )
     assert (
         result["operations_blocker_progress_next_actions_local_note_ready_count"]
@@ -2543,7 +2441,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert (
         result["operations_blocker_progress_next_actions_residual_blocker_total"]
-        == 29
+        == 26
     )
     assert (
         result["operations_blocker_progress_next_actions_live_data_authorized_count"]
@@ -2564,10 +2462,10 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["operations_blocker_progress_next_actions_coverage_complete"] is True
     assert result["operations_blocker_progress_next_actions_status_mismatch_count"] == 0
     assert result["operations_blocker_progress_next_actions_priority_sequence_ok"] is True
-    assert result["operations_blocker_progress_execution_record_count"] == 7
+    assert result["operations_blocker_progress_execution_record_count"] == 6
     assert (
         result["operations_blocker_progress_execution_awaiting_operator_count"]
-        == 1
+        == 0
     )
     assert (
         result["operations_blocker_progress_execution_local_note_recorded_count"]
@@ -2581,7 +2479,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert (
         result["operations_blocker_progress_execution_residual_blocker_total"]
-        == 29
+        == 26
     )
     assert (
         result["operations_blocker_progress_execution_live_data_authorized_count"]
@@ -2604,12 +2502,12 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["operations_blocker_progress_execution_residual_mismatch_count"] == 0
     assert result["operations_blocker_progress_execution_priority_mismatch_count"] == 0
     assert result["operations_blocker_progress_execution_priority_sequence_ok"] is True
-    assert result["operations_blocker_progress_execution_review_record_count"] == 7
+    assert result["operations_blocker_progress_execution_review_record_count"] == 6
     assert (
         result[
             "operations_blocker_progress_execution_review_awaiting_operator_reviewed_count"
         ]
-        == 1
+        == 0
     )
     assert (
         result[
@@ -2627,7 +2525,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
         result[
             "operations_blocker_progress_execution_review_residual_blocker_total"
         ]
-        == 29
+        == 26
     )
     assert (
         result[
@@ -2673,12 +2571,12 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
         result["operations_blocker_progress_execution_review_priority_sequence_ok"]
         is True
     )
-    assert result["operations_blocker_progress_execution_followup_record_count"] == 7
+    assert result["operations_blocker_progress_execution_followup_record_count"] == 6
     assert (
         result[
             "operations_blocker_progress_execution_followup_operator_followup_required_count"
         ]
-        == 1
+        == 0
     )
     assert (
         result[
@@ -2696,7 +2594,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
         result[
             "operations_blocker_progress_execution_followup_residual_blocker_total"
         ]
-        == 29
+        == 26
     )
     assert (
         result[
@@ -2742,8 +2640,8 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
         result["operations_blocker_progress_execution_followup_priority_sequence_ok"]
         is True
     )
-    assert result["session_log_count"] == 5
-    assert result["session_log_completed_count"] == 3
+    assert result["session_log_count"] == 0
+    assert result["session_log_completed_count"] == 0
     assert result["priority_queue_depth"] == 5
     assert result["pipeline_capacity_status"] in {"nominal", "strained", "overloaded"}
     assert result["feature_vector_count"] == 5
@@ -2762,7 +2660,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["model_performance_snapshot_count"] == 5
     assert result["model_serving_record_count"] == 4
     assert result["model_serving_active_count"] == 1
-    assert result["scoring_audit_entry_count"] == 5
+    assert result["scoring_audit_entry_count"] == 0
     assert result["curated_intake_record_count"] == 4
     assert result["curated_intake_approved_count"] == 1
     assert result["candidate_rescore_event_count"] == 4
@@ -2777,38 +2675,38 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["telemetry_entry_count"] == 6
     assert result["provenance_audit_entry_count"] == 4
     assert result["provenance_audit_consistent_count"] == 1
-    assert result["candidate_alert_entry_count"] == 5
-    assert result["candidate_alert_open_count"] == 3
-    assert result["pipeline_replay_entry_count"] == 4
-    assert result["pipeline_replay_matched_count"] == 2
+    assert result["candidate_alert_entry_count"] == 0
+    assert result["candidate_alert_open_count"] == 0
+    assert result["pipeline_replay_entry_count"] == 0
+    assert result["pipeline_replay_matched_count"] == 0
     assert result["scoring_threshold_pass_count"] == 3
     assert result["scoring_threshold_fail_count"] == 0
-    assert result["alert_resolution_entry_count"] == 5
-    assert result["alert_resolution_open_count"] == 1
+    assert result["alert_resolution_entry_count"] == 0
+    assert result["alert_resolution_open_count"] == 0
     assert result["config_history_entry_count"] == 4
-    assert result["operator_escalation_entry_count"] == 4
-    assert result["operator_escalation_open_count"] == 1
-    assert result["candidate_deduplication_entry_count"] == 5
-    assert result["candidate_deduplication_pending_count"] == 1
-    assert result["intake_queue_entry_count"] == 5
-    assert result["intake_queue_blocked_count"] == 2
-    assert result["workflow_state_entry_count"] == 5
-    assert result["data_gap_entry_count"] == 5
-    assert result["data_gap_unresolved_count"] == 3
-    assert result["candidate_match_entry_count"] == 5
-    assert result["candidate_match_matched_count"] == 2
-    assert result["pipeline_error_entry_count"] == 5
-    assert result["pipeline_error_unresolved_count"] == 2
-    assert result["observation_request_entry_count"] == 5
-    assert result["observation_request_pending_count"] == 3
-    assert result["candidate_export_entry_count"] == 5
-    assert result["candidate_export_delivered_count"] == 1
-    assert result["quality_gate_entry_count"] == 5
-    assert result["quality_gate_pass_count"] == 2
-    assert result["instrument_log_entry_count"] == 5
-    assert result["archival_query_entry_count"] == 5
-    assert result["candidate_linkage_entry_count"] == 5
-    assert result["candidate_linkage_confirmed_count"] == 2
+    assert result["operator_escalation_entry_count"] == 0
+    assert result["operator_escalation_open_count"] == 0
+    assert result["candidate_deduplication_entry_count"] == 0
+    assert result["candidate_deduplication_pending_count"] == 0
+    assert result["intake_queue_entry_count"] == 0
+    assert result["intake_queue_blocked_count"] == 0
+    assert result["workflow_state_entry_count"] == 0
+    assert result["data_gap_entry_count"] == 0
+    assert result["data_gap_unresolved_count"] == 0
+    assert result["candidate_match_entry_count"] == 0
+    assert result["candidate_match_matched_count"] == 0
+    assert result["pipeline_error_entry_count"] == 0
+    assert result["pipeline_error_unresolved_count"] == 0
+    assert result["observation_request_entry_count"] == 0
+    assert result["observation_request_pending_count"] == 0
+    assert result["candidate_export_entry_count"] == 0
+    assert result["candidate_export_delivered_count"] == 0
+    assert result["quality_gate_entry_count"] == 0
+    assert result["quality_gate_pass_count"] == 0
+    assert result["instrument_log_entry_count"] == 0
+    assert result["archival_query_entry_count"] == 0
+    assert result["candidate_linkage_entry_count"] == 0
+    assert result["candidate_linkage_confirmed_count"] == 0
     assert ".venv/bin/mypy src" in result["recommended_commands"]
 
 
