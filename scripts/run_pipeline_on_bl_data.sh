@@ -50,7 +50,7 @@ for DAT_FILE in "$BL_HITS_DIR"/*.dat; do
     mkdir -p "$OUT_DIR"
 
     if "$VENV_CLI" run-pipeline \
-        --input "$DAT_FILE" \
+        "$DAT_FILE" \
         --track radio \
         --output-dir "$OUT_DIR" 2>&1; then
         echo "  OK: output in $OUT_DIR"
