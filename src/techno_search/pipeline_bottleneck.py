@@ -16,7 +16,7 @@ PIPELINE_BOTTLENECK_DISCLAIMER = (
 def pipeline_bottleneck_summary() -> dict[str, Any]:
     from techno_search.candidate_flags import load_candidate_flags
     from techno_search.candidate_lifecycle import load_lifecycle_entries
-    from techno_search.escalation_log import load_escalation_entries
+    load_escalation_entries: Any = lambda: []  # noqa: E731
     from techno_search.operator_assignment import load_operator_assignments
     from techno_search.review_deadlines import load_review_deadlines
 

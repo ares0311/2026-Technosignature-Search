@@ -4,7 +4,7 @@
   "operations_blocker_followup_progress_records": [
     {
       "progress_id": "ops-followup-progress-001",
-      "action_id": "ops-action-008",
+      "action_id": "ops-action-007",
       "category": "submission_provenance",
       "recommendation": "operator_attention_required",
       "progress_status": "in_progress",
@@ -18,7 +18,7 @@
     },
     {
       "progress_id": "ops-followup-progress-002",
-      "action_id": "ops-action-005",
+      "action_id": "ops-action-004",
       "category": "pipeline_health",
       "recommendation": "operator_attention_required",
       "progress_status": "in_progress",
@@ -31,22 +31,8 @@
       "notes": "Progress does not modify candidate scores or pathway routing."
     },
     {
-      "progress_id": "ops-followup-progress-003",
-      "action_id": "ops-action-003",
-      "category": "alerts",
-      "recommendation": "operator_attention_required",
-      "progress_status": "not_started",
-      "operator_id": "operator-beta",
-      "progress_utc": "2026-05-21T10:10:00Z",
-      "evidence_note": "Open alerts remain queued for local review; critical alert evidence is still blocking.",
-      "residual_blocker_count": 3,
-      "live_data_authorized": false,
-      "external_submission_authorized": false,
-      "notes": "Open alert status remains visible."
-    },
-    {
       "progress_id": "ops-followup-progress-004",
-      "action_id": "ops-action-007",
+      "action_id": "ops-action-006",
       "category": "curated_intake",
       "recommendation": "hold_for_real_data_evidence",
       "progress_status": "waiting_for_real_data",
@@ -60,7 +46,7 @@
     },
     {
       "progress_id": "ops-followup-progress-005",
-      "action_id": "ops-action-006",
+      "action_id": "ops-action-005",
       "category": "validation_readiness",
       "recommendation": "hold_for_real_data_evidence",
       "progress_status": "waiting_for_real_data",
@@ -102,7 +88,7 @@
     },
     {
       "progress_id": "ops-followup-progress-008",
-      "action_id": "ops-action-004",
+      "action_id": "ops-action-003",
       "category": "review_deadlines",
       "recommendation": "verify_resolved_locally",
       "progress_status": "verified_local",

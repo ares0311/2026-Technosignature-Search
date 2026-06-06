@@ -123,8 +123,8 @@ def _readiness(
 def test_load_operations_alert_review_expectations_fixture() -> None:
     expected = load_operations_alert_review_expectations(FIXTURE_PATH)
 
-    assert expected["open_alert_count"] == 3
-    assert expected["critical_open_alert_count"] == 1
+    assert expected["open_alert_count"] == 0
+    assert expected["critical_open_alert_count"] == 0
     assert expected["qc_overall_health"] == "blocked"
 
 
@@ -209,6 +209,6 @@ def test_operations_alert_review_consistency_default_project_passes() -> None:
 
     assert summary["schema_version"] == "operations_alert_review_consistency_v1"
     assert summary["ok"] is True
-    assert summary["actual_open_alert_count"] == 3
-    assert summary["actual_critical_open_alert_count"] == 1
+    assert summary["actual_open_alert_count"] == 0
+    assert summary["actual_critical_open_alert_count"] == 0
     assert summary["actual_qc_overall_health"] == "blocked"

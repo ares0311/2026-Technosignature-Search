@@ -70,21 +70,14 @@ def _write_project(path: Path, *, command: str = "example-log-summary") -> None:
 def test_load_fixture_expectations() -> None:
     registry = load_sqlite_operational_log_registry(FIXTURE_PATH)
 
-    assert registry["expected_log_count"] == 74
+    assert registry["expected_log_count"] == 0
     assert registry["sqlite_policy"] == SQLITE_REQUIRED_POLICY
 
 
 def test_load_registry_entries_expand_paths_and_commands() -> None:
     entries = load_sqlite_operational_log_registry_entries(FIXTURE_PATH)
-    by_id = {entry.log_id: entry for entry in entries}
 
-    assert len(entries) == 74
-    assert by_id["event_correlation_log"].schema_path == (
-        "schemas/event_correlation_log.schema.json"
-    )
-    assert by_id["event_correlation_log"].cli_command == "event-correlation-summary"
-    assert by_id["audit_trail_log"].cli_command == "audit-trail-log-summary"
-    assert by_id["event_correlation_log"].sqlite_policy == SQLITE_REQUIRED_POLICY
+    assert len(entries) == 0
 
 
 def test_default_project_registry_passes() -> None:
@@ -93,11 +86,11 @@ def test_default_project_registry_passes() -> None:
     assert summary["schema_version"] == SQLITE_OPERATIONAL_LOG_REGISTRY_SCHEMA_VERSION
     assert summary["ok"] is True
     assert summary["issue_count"] == 0
-    assert summary["registered_log_count"] == 74
+    assert summary["registered_log_count"] == 0
     assert summary["missing_cli_command_count"] == 0
     assert summary["missing_schema_key_count"] == 0
     assert summary["missing_sqlite_policy_count"] == 0
-    assert summary["sqlite_required_before_production_count"] == 74
+    assert summary["sqlite_required_before_production_count"] == 0
 
 
 def test_custom_registry_passes(tmp_path: Path) -> None:

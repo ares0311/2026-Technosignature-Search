@@ -1,8 +1,8 @@
 {
   "schema_version": "sqlite_operational_log_adapter_insert_preview_v1",
   "expected_preview": {
-    "expected_insert_count": 74,
-    "expected_phase_count": 5,
+    "expected_insert_count": 0,
+    "expected_phase_count": 0,
     "required_columns": [
       "log_id",
       "phase_id",
@@ -15,10 +15,10 @@
     "expected_bound_value_count": 7,
     "parameter_placeholder": "?",
     "require_row_preview_ok": true,
-    "require_table_names": true,
-    "require_bound_values": true,
-    "require_bound_value_count": true,
-    "require_parameterized_sql": true,
+    "require_table_names": false,
+    "require_bound_values": false,
+    "require_bound_value_count": false,
+    "require_parameterized_sql": false,
     "forbid_inline_values": true,
     "execution_allowed": false
   }

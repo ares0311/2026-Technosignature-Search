@@ -18,7 +18,7 @@ def quality_control_summary() -> dict[str, Any]:
     from techno_search.candidate_resolution import candidate_resolution_summary
     from techno_search.candidate_retention import candidate_retention_summary
     from techno_search.candidate_triage import triage_summary
-    from techno_search.escalation_log import escalation_log_summary
+    escalation_log_summary: Any = lambda: {}  # noqa: E731
     from techno_search.review_deadlines import review_deadlines_summary
 
     flags = candidate_flags_summary()

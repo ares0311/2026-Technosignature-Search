@@ -3,23 +3,8 @@
   "disclaimer": "Operations blocker progress next-action records are local workflow tasks derived from unresolved progress-review records only. They preserve residual blockers, verified-local exclusions, and disabled authorization gates. Next actions do not clear blockers, authorize live data access, authorize external submission, or constitute detections, discoveries, or external validation.",
   "operations_blocker_progress_next_action_records": [
     {
-      "next_action_id": "ops-progress-next-001",
-      "action_id": "ops-action-003",
-      "review_id": "ops-progress-review-003",
-      "category": "alerts",
-      "review_status": "needs_operator_action",
-      "next_action_status": "operator_action_required",
-      "priority_rank": 1,
-      "operator_id": "operator-beta",
-      "action_note": "Open alert follow-up has not started; operator must record local alert evidence before any status change is considered.",
-      "residual_blocker_count": 3,
-      "live_data_authorized": false,
-      "external_submission_authorized": false,
-      "notes": "Critical alert evidence remains blocking."
-    },
-    {
       "next_action_id": "ops-progress-next-002",
-      "action_id": "ops-action-008",
+      "action_id": "ops-action-007",
       "review_id": "ops-progress-review-001",
       "category": "submission_provenance",
       "review_status": "ready_for_next_local_note",
@@ -34,7 +19,7 @@
     },
     {
       "next_action_id": "ops-progress-next-003",
-      "action_id": "ops-action-005",
+      "action_id": "ops-action-004",
       "review_id": "ops-progress-review-002",
       "category": "pipeline_health",
       "review_status": "ready_for_next_local_note",
@@ -79,7 +64,7 @@
     },
     {
       "next_action_id": "ops-progress-next-006",
-      "action_id": "ops-action-007",
+      "action_id": "ops-action-006",
       "review_id": "ops-progress-review-004",
       "category": "curated_intake",
       "review_status": "blocked_for_real_data",
@@ -94,7 +79,7 @@
     },
     {
       "next_action_id": "ops-progress-next-007",
-      "action_id": "ops-action-006",
+      "action_id": "ops-action-005",
       "review_id": "ops-progress-review-005",
       "category": "validation_readiness",
       "review_status": "blocked_for_real_data",

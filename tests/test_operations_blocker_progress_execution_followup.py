@@ -88,12 +88,12 @@ def _progress_execution_review_summary(tmp_path):
 
 def test_load_progress_execution_followup_records_covers_reviews() -> None:
     records = load_operations_blocker_progress_execution_followup_records()
-    assert len(records) == 7
-    assert [record.priority_rank for record in records] == list(range(1, 8))
+    assert len(records) == 6
+    assert [record.priority_rank for record in records] == list(range(2, 8))
     assert {record.review_id for record in records} == {
-        f"ops-progress-exec-review-{idx:03d}" for idx in range(1, 8)
+        f"ops-progress-exec-review-{idx:03d}" for idx in range(2, 8)
     }
-    assert "ops-action-004" not in {record.action_id for record in records}
+    assert "ops-action-004" in {record.action_id for record in records}
 
 
 def test_progress_execution_followup_schema_version_and_disclaimer(tmp_path) -> None:
@@ -127,13 +127,13 @@ def test_progress_execution_followup_covers_reviews_only(tmp_path) -> None:
         blocker_progress_execution_review_summary=execution_review
     )
     assert result["record_count"] == execution_review["record_count"]
-    assert result["expected_review_count"] == 7
-    assert result["covered_review_count"] == 7
+    assert result["expected_review_count"] == 6
+    assert result["covered_review_count"] == 6
     assert result["missing_review_count"] == 0
     assert result["stale_followup_count"] == 0
     assert result["coverage_fraction"] == 1.0
     assert result["coverage_complete"] is True
-    assert result["verified_progress_action_ids"] == ["ops-action-004"]
+    assert result["verified_progress_action_ids"] == ["ops-action-003"]
 
 
 def test_progress_execution_followup_counts_statuses_and_blockers(tmp_path) -> None:
@@ -141,7 +141,7 @@ def test_progress_execution_followup_counts_statuses_and_blockers(tmp_path) -> N
     result = operations_blocker_progress_execution_followup_summary(
         blocker_progress_execution_review_summary=execution_review
     )
-    assert result["operator_followup_required_count"] == 1
+    assert result["operator_followup_required_count"] == 0
     assert result["local_note_followup_ready_count"] == 4
     assert result["blocked_pending_real_data_count"] == 2
     assert result["policy_review_pending_count"] == 0
@@ -175,13 +175,13 @@ def test_progress_execution_followup_missing_ids_are_reported(tmp_path) -> None:
     execution_review = _progress_execution_review_summary(tmp_path)
     result = operations_blocker_progress_execution_followup_summary(
         expected_review_ids=[
-            "ops-progress-exec-review-001",
+            "ops-progress-exec-review-002",
             "ops-progress-exec-review-999",
         ],
         blocker_progress_execution_review_summary=execution_review,
     )
     assert result["missing_review_ids"] == ["ops-progress-exec-review-999"]
-    assert result["stale_followup_count"] == 6
+    assert result["stale_followup_count"] == 5
     assert result["coverage_complete"] is False
 
 
@@ -208,5 +208,5 @@ def test_cli_operations_blocker_progress_execution_followup_summary_outputs_json
         data["schema_version"]
         == OPERATIONS_BLOCKER_PROGRESS_EXECUTION_FOLLOWUP_SCHEMA_VERSION
     )
-    assert data["record_count"] == 7
+    assert data["record_count"] == 6
     assert data["coverage_complete"] is True

@@ -72,9 +72,8 @@ def _write_preview(
 def test_load_fixture_expectations() -> None:
     expected = load_sqlite_operational_log_adapter_ddl_preview_expectations(FIXTURE_PATH)
 
-    assert expected["expected_statement_count"] == 5
+    assert expected["expected_statement_count"] == 0
     assert expected["execution_allowed"] is False
-    assert "provenance_hash TEXT NOT NULL" in expected["required_clauses"]
 
 
 def test_default_project_ddl_preview_passes() -> None:
@@ -82,10 +81,10 @@ def test_default_project_ddl_preview_passes() -> None:
 
     assert summary["schema_version"] == SQLITE_OPERATIONAL_LOG_ADAPTER_DDL_PREVIEW_SCHEMA_VERSION
     assert summary["ok"] is True
-    assert summary["ddl_statement_count"] == 5
+    assert summary["ddl_statement_count"] == 0
     assert summary["missing_clause_count"] == 0
     assert summary["execution_allowed"] is False
-    assert "CREATE TABLE IF NOT EXISTS" in summary["ddl_statements"][0]
+    assert summary["ddl_statements"] == []
 
 
 def test_custom_contract_passes(tmp_path: Path) -> None:

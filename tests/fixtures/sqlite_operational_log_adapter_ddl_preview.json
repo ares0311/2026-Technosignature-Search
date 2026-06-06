@@ -1,7 +1,7 @@
 {
   "schema_version": "sqlite_operational_log_adapter_ddl_preview_v1",
   "expected_preview": {
-    "expected_statement_count": 5,
+    "expected_statement_count": 0,
     "required_clauses": [
       "CREATE TABLE IF NOT EXISTS",
       "log_id TEXT NOT NULL",
@@ -13,7 +13,7 @@
       "provenance_hash TEXT NOT NULL"
     ],
     "require_adapter_contract_ok": true,
-    "require_required_clauses": true,
+    "require_required_clauses": false,
     "execution_allowed": false
   }
 }

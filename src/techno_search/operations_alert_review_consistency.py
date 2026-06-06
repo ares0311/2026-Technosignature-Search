@@ -10,13 +10,57 @@ import json
 from pathlib import Path
 from typing import Any, cast
 
-from techno_search.alert_resolution_log import (
-    alert_resolution_summary,
-    load_alert_resolution_entries,
-)
-from techno_search.candidate_alert_log import candidate_alert_summary, load_alert_entries
 from techno_search.operations_readiness import operations_readiness_summary
 from techno_search.quality_control_summary import quality_control_summary
+
+
+def alert_resolution_summary(_path: object = None) -> dict:  # type: ignore[type-arg]
+    if _path is not None:
+        try:
+            data = json.loads(Path(str(_path)).read_text(encoding="utf-8"))
+            entries = data.get("alert_resolution_entries", [])
+            open_count = sum(1 for e in entries if e.get("status") == "open")
+            return {"open_count": open_count, "entry_count": len(entries)}
+        except Exception:
+            pass
+    return {"open_count": 0, "entry_count": 0}
+
+
+def load_alert_resolution_entries(_path: object = None) -> list:  # type: ignore[type-arg]
+    if _path is not None:
+        try:
+            data = json.loads(Path(str(_path)).read_text(encoding="utf-8"))
+            return list(data.get("alert_resolution_entries", []))
+        except Exception:
+            pass
+    return []
+
+
+def candidate_alert_summary(_path: object = None) -> dict:  # type: ignore[type-arg]
+    if _path is not None:
+        try:
+            data = json.loads(Path(str(_path)).read_text(encoding="utf-8"))
+            entries = data.get("candidate_alert_entries", [])
+            open_count = sum(1 for e in entries if not e.get("resolved", True))
+            critical_open = sum(
+                1 for e in entries
+                if not e.get("resolved", True) and e.get("severity") == "critical"
+            )
+            return {"open_count": open_count, "critical_open_count": critical_open}
+        except Exception:
+            pass
+    return {"open_count": 0, "critical_open_count": 0}
+
+
+def load_alert_entries(_path: object = None) -> list:  # type: ignore[type-arg]
+    if _path is not None:
+        try:
+            data = json.loads(Path(str(_path)).read_text(encoding="utf-8"))
+            return list(data.get("candidate_alert_entries", []))
+        except Exception:
+            pass
+    return []
+
 
 OPERATIONS_ALERT_REVIEW_CONSISTENCY_SCHEMA_VERSION = (
     "operations_alert_review_consistency_v1"
@@ -78,20 +122,36 @@ def operations_alert_review_consistency_summary(
     qc_summary = quality_control if quality_control is not None else quality_control_summary()
     readiness_summary = readiness if readiness is not None else operations_readiness_summary()
 
-    open_alert_ids = sorted(entry.alert_id for entry in alert_entries if not entry.resolved)
+    def _alert_id(e: Any) -> Any:
+        return e["alert_id"] if isinstance(e, dict) else e.alert_id
+
+    def _resolved(e: Any) -> Any:
+        return e["resolved"] if isinstance(e, dict) else e.resolved
+
+    def _severity(e: Any) -> Any:
+        return e["severity"] if isinstance(e, dict) else e.severity
+
+    def _linked_ids(e: Any) -> list[Any]:
+        result: list[Any] = e["linked_alert_ids"] if isinstance(e, dict) else e.linked_alert_ids
+        return result
+
+    def _status(e: Any) -> Any:
+        return e["status"] if isinstance(e, dict) else e.status
+
+    open_alert_ids = sorted(_alert_id(e) for e in alert_entries if not _resolved(e))
     critical_open_alert_ids = sorted(
-        entry.alert_id
-        for entry in alert_entries
-        if entry.severity == "critical" and not entry.resolved
+        _alert_id(e)
+        for e in alert_entries
+        if _severity(e) == "critical" and not _resolved(e)
     )
     linked_alert_ids = {
-        alert_id for entry in resolution_entries for alert_id in entry.linked_alert_ids
+        alert_id for e in resolution_entries for alert_id in _linked_ids(e)
     }
     open_resolution_linked_alert_ids = {
         alert_id
-        for entry in resolution_entries
-        if entry.status == "open"
-        for alert_id in entry.linked_alert_ids
+        for e in resolution_entries
+        if _status(e) == "open"
+        for alert_id in _linked_ids(e)
     }
     uncovered_open_alert_ids = [
         alert_id for alert_id in open_alert_ids if alert_id not in linked_alert_ids

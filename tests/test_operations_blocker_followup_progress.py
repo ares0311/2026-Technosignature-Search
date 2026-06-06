@@ -32,9 +32,9 @@ def _followup_summary(tmp_path):
 
 def test_load_blocker_followup_progress_records_returns_current_actions() -> None:
     records = load_operations_blocker_followup_progress_records()
-    assert len(records) == 8
+    assert len(records) == 7
     assert {record.action_id for record in records} == {
-        f"ops-action-{idx:03d}" for idx in range(1, 9)
+        f"ops-action-{idx:03d}" for idx in range(1, 8)
     }
 
 
@@ -59,8 +59,8 @@ def test_blocker_followup_progress_covers_current_followup_actions(tmp_path) -> 
     result = operations_blocker_followup_progress_summary(
         blocker_followup_summary=followup
     )
-    assert result["expected_action_count"] == 8
-    assert result["covered_action_count"] == 8
+    assert result["expected_action_count"] == 7
+    assert result["covered_action_count"] == 7
     assert result["missing_action_count"] == 0
     assert result["stale_progress_count"] == 0
     assert result["coverage_fraction"] == 1.0
@@ -72,13 +72,13 @@ def test_blocker_followup_progress_counts_status_and_blockers(tmp_path) -> None:
     result = operations_blocker_followup_progress_summary(
         blocker_followup_summary=followup
     )
-    assert result["record_count"] == 8
-    assert result["not_started_count"] == 1
+    assert result["record_count"] == 7
+    assert result["not_started_count"] == 0
     assert result["in_progress_count"] == 4
     assert result["waiting_for_real_data_count"] == 2
     assert result["verified_local_count"] == 1
-    assert result["unresolved_progress_count"] == 7
-    assert result["residual_blocker_total"] == 29
+    assert result["unresolved_progress_count"] == 6
+    assert result["residual_blocker_total"] == 26
 
 
 def test_blocker_followup_progress_preserves_authorization_gates(tmp_path) -> None:
@@ -107,7 +107,7 @@ def test_blocker_followup_progress_missing_ids_are_reported(tmp_path) -> None:
         blocker_followup_summary=followup,
     )
     assert result["missing_action_ids"] == ["ops-action-999"]
-    assert result["stale_progress_count"] == 7
+    assert result["stale_progress_count"] == 6
     assert result["coverage_complete"] is False
 
 
@@ -129,5 +129,5 @@ def test_cli_operations_blocker_followup_progress_summary_outputs_json(tmp_path)
     assert result.returncode == 0
     data = json.loads(result.stdout)
     assert data["schema_version"] == OPERATIONS_BLOCKER_FOLLOWUP_PROGRESS_SCHEMA_VERSION
-    assert data["record_count"] == 8
+    assert data["record_count"] == 7
     assert data["coverage_complete"] is True

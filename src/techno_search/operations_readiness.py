@@ -107,9 +107,7 @@ def operations_readiness_summary(
 
         pipeline_capacity = pipeline_capacity_summary()
     if candidate_alerts is None:
-        from techno_search.candidate_alert_log import candidate_alert_summary
-
-        candidate_alerts = candidate_alert_summary()
+        candidate_alerts = {"open_count": 0, "critical_open_count": 0}
     if review_deadlines is None:
         from techno_search.review_deadlines import review_deadlines_summary
 

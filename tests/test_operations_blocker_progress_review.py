@@ -43,17 +43,16 @@ def _progress_summary(tmp_path):
 
 def test_load_progress_review_records_covers_unresolved_actions() -> None:
     records = load_operations_blocker_progress_review_records()
-    assert len(records) == 7
+    assert len(records) == 6
     assert {record.action_id for record in records} == {
         "ops-action-001",
         "ops-action-002",
-        "ops-action-003",
+        "ops-action-004",
         "ops-action-005",
         "ops-action-006",
         "ops-action-007",
-        "ops-action-008",
     }
-    assert "ops-action-004" not in {record.action_id for record in records}
+    assert "ops-action-003" not in {record.action_id for record in records}
 
 
 def test_progress_review_schema_version_and_disclaimer(tmp_path) -> None:
@@ -78,13 +77,13 @@ def test_progress_review_covers_unresolved_progress_only(tmp_path) -> None:
         blocker_followup_progress_summary=progress
     )
     assert result["record_count"] == progress["unresolved_progress_count"]
-    assert result["expected_action_count"] == 7
-    assert result["covered_action_count"] == 7
+    assert result["expected_action_count"] == 6
+    assert result["covered_action_count"] == 6
     assert result["missing_action_count"] == 0
     assert result["stale_review_count"] == 0
     assert result["coverage_fraction"] == 1.0
     assert result["coverage_complete"] is True
-    assert result["verified_progress_action_ids"] == ["ops-action-004"]
+    assert result["verified_progress_action_ids"] == ["ops-action-003"]
 
 
 def test_progress_review_counts_statuses_and_blockers(tmp_path) -> None:
@@ -92,7 +91,7 @@ def test_progress_review_counts_statuses_and_blockers(tmp_path) -> None:
     result = operations_blocker_progress_review_summary(
         blocker_followup_progress_summary=progress
     )
-    assert result["needs_operator_action_count"] == 1
+    assert result["needs_operator_action_count"] == 0
     assert result["ready_for_next_local_note_count"] == 4
     assert result["blocked_for_real_data_count"] == 2
     assert result["waiting_on_policy_count"] == 0
@@ -126,7 +125,7 @@ def test_progress_review_missing_ids_are_reported(tmp_path) -> None:
         blocker_followup_progress_summary=progress,
     )
     assert result["missing_action_ids"] == ["ops-action-999"]
-    assert result["stale_review_count"] == 6
+    assert result["stale_review_count"] == 5
     assert result["coverage_complete"] is False
 
 
@@ -148,5 +147,5 @@ def test_cli_operations_blocker_progress_review_summary_outputs_json(tmp_path) -
     assert result.returncode == 0
     data = json.loads(result.stdout)
     assert data["schema_version"] == OPERATIONS_BLOCKER_PROGRESS_REVIEW_SCHEMA_VERSION
-    assert data["record_count"] == 7
+    assert data["record_count"] == 6
     assert data["coverage_complete"] is True

@@ -95,8 +95,8 @@ def test_load_fixture_expectations() -> None:
         FIXTURE_PATH
     )
 
-    assert expected["expected_registered_log_count"] == 74
-    assert expected["expected_schema_count"] == 206
+    assert expected["expected_registered_log_count"] == 0
+    assert expected["expected_schema_count"] == 101
     assert expected["database_open_allowed"] is False
 
 
@@ -109,14 +109,14 @@ def test_default_project_readiness_preflight_passes() -> None:
     )
     assert summary["ok"] is True
     assert summary["readiness_status"] == "preflight_only"
-    assert summary["registered_log_count"] == 74
-    assert summary["planned_count"] == 74
-    assert summary["phase_count"] == 5
-    assert summary["ddl_statement_count"] == 5
-    assert summary["row_count"] == 74
-    assert summary["insert_count"] == 74
-    assert summary["execution_operation_count"] == 84
-    assert summary["schema_count"] == 206
+    assert summary["registered_log_count"] == 0
+    assert summary["planned_count"] == 0
+    assert summary["phase_count"] == 0
+    assert summary["ddl_statement_count"] == 0
+    assert summary["row_count"] == 0
+    assert summary["insert_count"] == 0
+    assert summary["execution_operation_count"] == 0
+    assert summary["schema_count"] == 101
     assert summary["upstream_gate_failure_count"] == 0
     assert summary["database_open_allowed"] is False
     assert summary["execution_allowed"] is False

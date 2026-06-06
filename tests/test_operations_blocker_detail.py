@@ -34,9 +34,9 @@ def test_blocker_detail_matches_current_action_plan(tmp_path) -> None:
     db_path = tmp_path / "ops.sqlite3"
     init_sqlite_log_db(db_path)
     result = operations_blocker_detail_summary(sqlite_log_path=db_path)
-    assert result["action_count"] == 8
+    assert result["action_count"] == 7
     assert result["detail_count"] == result["action_count"]
-    assert result["total_evidence_record_count"] >= 8
+    assert result["total_evidence_record_count"] >= 7
     assert result["readiness_recommendation"] == "blocked_for_real_data"
     assert result["sqlite_context_is_resolved"] is True
 
@@ -56,7 +56,6 @@ def test_blocker_detail_expands_expected_categories(tmp_path) -> None:
     init_sqlite_log_db(db_path)
     result = operations_blocker_detail_summary(sqlite_log_path=db_path)
     assert result["categories_with_details"] == [
-        "alerts",
         "capacity",
         "curated_intake",
         "pipeline_health",
@@ -72,7 +71,6 @@ def test_blocker_detail_contains_source_records(tmp_path) -> None:
     init_sqlite_log_db(db_path)
     result = operations_blocker_detail_summary(sqlite_log_path=db_path)
     by_category = {detail["category"]: detail for detail in result["details"]}
-    assert by_category["alerts"]["evidence_records"]["open_alerts"]
     assert by_category["review_deadlines"]["evidence_records"][
         "overdue_or_pending_deadlines"
     ]
@@ -105,4 +103,4 @@ def test_cli_operations_blocker_detail_summary_outputs_json(tmp_path) -> None:
     assert result.returncode == 0
     data = json.loads(result.stdout)
     assert data["schema_version"] == OPERATIONS_BLOCKER_DETAIL_SCHEMA_VERSION
-    assert data["detail_count"] == 8
+    assert data["detail_count"] == 7

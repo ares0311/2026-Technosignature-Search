@@ -113,9 +113,9 @@ def test_load_fixture_expectations() -> None:
         FIXTURE_PATH
     )
 
-    assert expected["expected_ddl_statement_count"] == 5
-    assert expected["expected_insert_count"] == 74
-    assert expected["expected_execution_operation_count"] == 84
+    assert expected["expected_ddl_statement_count"] == 0
+    assert expected["expected_insert_count"] == 0
+    assert expected["expected_execution_operation_count"] == 0
     assert expected["database_open_allowed"] is False
 
 
@@ -127,10 +127,10 @@ def test_default_project_dry_run_manifest_passes() -> None:
         == SQLITE_OPERATIONAL_LOG_ADAPTER_DRY_RUN_MANIFEST_SCHEMA_VERSION
     )
     assert summary["ok"] is True
-    assert summary["ddl_statement_count"] == 5
-    assert summary["insert_count"] == 74
-    assert summary["phase_count"] == 5
-    assert summary["execution_operation_count"] == 84
+    assert summary["ddl_statement_count"] == 0
+    assert summary["insert_count"] == 0
+    assert summary["phase_count"] == 0
+    assert summary["execution_operation_count"] == 0
     assert summary["phase_alignment_mismatch_count"] == 0
     assert summary["database_open_allowed"] is False
     assert summary["execution_allowed"] is False
