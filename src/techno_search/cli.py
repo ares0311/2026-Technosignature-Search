@@ -795,6 +795,7 @@ SCHEMA_FILENAMES = {
     "rfi_database_admission": "rfi_database_admission.schema.json",
     "rfi_database": "rfi_database.schema.json",
     "labeled_candidates": "labeled_candidates.schema.json",
+    "labeled_candidates_synthetic_v1": "labeled_candidates_synthetic_v1.schema.json",
 }
 
 
@@ -4111,6 +4112,18 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(lm_result, indent=2, sort_keys=True), file=out)
         return 0 if lm_result.get("ok") else 1
 
+    if args.command == "synthetic-training-summary":
+        from techno_search.learned_scoring_model import (  # noqa: PLC0415
+            SYNTHETIC_DATASET_V1_PATH,
+            synthetic_v1_training_summary,
+        )
+
+        dataset_path_arg = getattr(args, "dataset_path", None)
+        ds_path = Path(dataset_path_arg) if dataset_path_arg else SYNTHETIC_DATASET_V1_PATH
+        synth_result: dict[str, Any] = synthetic_v1_training_summary(ds_path)
+        print(json.dumps(synth_result, indent=2, sort_keys=True), file=out)
+        return 0 if synth_result.get("ok") else 1
+
     if args.command == "noise-threshold-calibration":
         from techno_search.noise_threshold_calibration import analyze_hit_directory
 
@@ -4897,6 +4910,9 @@ def validate_all() -> dict[str, object]:
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
     from techno_search.baseline_eval import eval_against_labels as _eal
     label_eval_data = _eal()
+    from techno_search.learned_scoring_model import synthetic_v1_training_summary as _svts  # noqa: PLC0415, I001
+    synthetic_training_data = _svts()
+    synthetic_training_ok = synthetic_training_data.get("ok", False)
     label_eval_entry_count = int(label_eval_data.get("entry_count", 0))
     comparison_data = candidate_comparison_summary()
     comparison_count = int(comparison_data.get("record_count", 0))
@@ -5894,6 +5910,7 @@ def validate_all() -> dict[str, object]:
         and labeled_entry_count >= 1
         and isinstance(label_eval_entry_count, int)
         and label_eval_entry_count >= 1
+        and synthetic_training_ok is True
         and action_resolution_record_count >= 1
         and action_resolution_live_authorized_count == 0
         and action_resolution_external_authorized_count == 0
@@ -6232,6 +6249,7 @@ def validate_all() -> dict[str, object]:
         "procurement_log_summary": proc_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
+        "synthetic_training_summary": synthetic_training_data,
         "operations_readiness_summary": operations_readiness,
         "operations_action_plan_summary": operations_action_plan,
         "operations_action_resolution_summary": operations_action_resolution,
@@ -9766,6 +9784,21 @@ def validation_summary() -> dict[str, object]:
             if isinstance(eal_s2 := validation.get("eval_against_labels_summary"), dict)
             else 0.0
         ),
+        "synthetic_training_ok": (
+            syn_s["ok"]
+            if isinstance(syn_s := validation.get("synthetic_training_summary"), dict)
+            else False
+        ),
+        "synthetic_training_total_examples": (
+            (syn_s2.get("train_size", 0) + syn_s2.get("test_size", 0))
+            if isinstance(syn_s2 := validation.get("synthetic_training_summary"), dict)
+            else 0
+        ),
+        "synthetic_training_test_accuracy": (
+            syn_s3["test_accuracy"]
+            if isinstance(syn_s3 := validation.get("synthetic_training_summary"), dict)
+            else None
+        ),
         "recommended_commands": [
             ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
             ".venv/bin/ruff check .",
@@ -13047,6 +13080,23 @@ def _build_parser() -> argparse.ArgumentParser:
         "--labeled-dataset-path",
         type=Path,
         help="Path to labeled_candidates.json fixture (defaults to built-in fixture).",
+    )
+
+    synthetic_training_parser = subparsers.add_parser(
+        "synthetic-training-summary",
+        help=(
+            "Train logistic regression on the setigen synthetic v1 dataset "
+            "(Ma et al. 2023 methodology) and report test accuracy. "
+            "Synthetic data only — not a validated production model."
+        ),
+    )
+    synthetic_training_parser.add_argument(
+        "--dataset-path",
+        type=Path,
+        help=(
+            "Path to labeled_candidates_synthetic_v1.json "
+            "(defaults to built-in fixture)."
+        ),
     )
 
     peer_review_parser = subparsers.add_parser(

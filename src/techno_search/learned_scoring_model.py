@@ -100,9 +100,9 @@ def train_logistic_regression(
     returns a stub result with an explanation.
     """
     try:
-        from sklearn.linear_model import LogisticRegression  # type: ignore[import-not-found]
-        from sklearn.metrics import accuracy_score  # type: ignore[import-not-found]
-        from sklearn.preprocessing import StandardScaler  # type: ignore[import-not-found]
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.metrics import accuracy_score
+        from sklearn.preprocessing import StandardScaler
     except ImportError:
         return {
             "disclaimer": LEARNED_MODEL_DISCLAIMER,
@@ -201,3 +201,129 @@ def learned_model_summary(
         "error": result.get("error"),
         "warning": result.get("warning"),
     }
+
+
+# ---------------------------------------------------------------------------
+# Setigen synthetic v1 dataset training
+# Follows Ma et al. 2023 (Nature Astronomy) methodology.
+# ---------------------------------------------------------------------------
+
+import json as _json  # noqa: E402
+
+SYNTHETIC_DATASET_V1_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "tests" / "fixtures" / "labeled_candidates_synthetic_v1.json"
+)
+
+SYNTHETIC_DATASET_METHODOLOGY = (
+    "Follows Ma et al. 2023 (Nature Astronomy): synthetic signal injection "
+    "into realistic noise with known ground-truth labels via setigen "
+    "(Brzycki & Siemion 2022, ascl:2202.003). "
+    "600 examples across 4 classes (ETI-like/RFI/noise/known_object). "
+    "This is NOT equivalent to expert-labeled real observations."
+)
+
+SYNTHETIC_DATASET_DISCLAIMER = (
+    "LEARNED MODEL SCORES ARE NOT DETECTION PROBABILITIES. "
+    "Scores are local triage aids trained on synthetic data only. "
+    "No model output authorizes external submission or constitutes a detection claim. "
+    "Human expert review is required before any action."
+)
+
+_LABEL_MAP = {
+    "follow_up": 0,
+    "false_positive": 1,
+    "insufficient_evidence": 2,
+    "known_object": 3,
+}
+_LABEL_NAMES = ["follow_up", "false_positive", "insufficient_evidence", "known_object"]
+
+
+def _load_synthetic_v1(dataset_path: Path) -> tuple[list[list[float]], list[int]]:
+    if not dataset_path.exists():
+        raise FileNotFoundError(
+            f"Synthetic training dataset not found: {dataset_path}. "
+            "Run: python scripts/generate_synthetic_training_data.py"
+        )
+    with dataset_path.open() as fh:
+        data = _json.load(fh)
+    X: list[list[float]] = []
+    y: list[int] = []
+    for entry in data["entries"]:
+        features = entry["features"]
+        row = [float(features[col]) for col in FEATURE_COLUMNS]
+        X.append(row)
+        y.append(_LABEL_MAP[entry["label"]])
+    return X, y
+
+
+def train_on_synthetic_v1(
+    dataset_path: Path | None = None,
+    *,
+    test_fraction: float = 0.20,
+    max_iter: int = 1000,
+    random_state: int = 42,
+) -> dict[str, Any]:
+    """Train logistic regression on the synthetic v1 dataset; report test accuracy."""
+    try:
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.metrics import classification_report
+        from sklearn.model_selection import train_test_split
+    except ImportError as exc:
+        raise ImportError(
+            "scikit-learn is required. Install with: pip install 'scikit-learn>=1.4'"
+        ) from exc
+
+    path = dataset_path or SYNTHETIC_DATASET_V1_PATH
+    X, y = _load_synthetic_v1(path)
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=test_fraction, random_state=random_state, stratify=y,
+    )
+
+    clf = LogisticRegression(max_iter=max_iter, random_state=random_state)
+    clf.fit(X_train, y_train)
+
+    y_pred = clf.predict(X_test)
+    test_accuracy = float(
+        sum(a == b for a, b in zip(y_test, y_pred, strict=True)) / len(y_test)
+    )
+
+    report = classification_report(
+        y_test, y_pred, target_names=_LABEL_NAMES, output_dict=True
+    )
+
+    return {
+        "disclaimer": SYNTHETIC_DATASET_DISCLAIMER,
+        "methodology": SYNTHETIC_DATASET_METHODOLOGY,
+        "train_size": len(X_train),
+        "test_size": len(X_test),
+        "test_accuracy": round(test_accuracy, 4),
+        "classification_report": report,
+        "feature_columns": FEATURE_COLUMNS,
+        "label_names": _LABEL_NAMES,
+    }
+
+
+def synthetic_v1_training_summary(
+    dataset_path: Path | None = None,
+) -> dict[str, Any]:
+    """CLI-facing wrapper for train_on_synthetic_v1."""
+    path = dataset_path or SYNTHETIC_DATASET_V1_PATH
+    if not path.exists():
+        return {
+            "ok": False,
+            "disclaimer": SYNTHETIC_DATASET_DISCLAIMER,
+            "error": f"Dataset not found: {path}",
+            "methodology": SYNTHETIC_DATASET_METHODOLOGY,
+        }
+    try:
+        result = train_on_synthetic_v1(dataset_path=path)
+        return {"ok": True, "schema_version": "labeled_candidates_synthetic_v1", **result}
+    except Exception as exc:
+        return {
+            "ok": False,
+            "disclaimer": SYNTHETIC_DATASET_DISCLAIMER,
+            "error": str(exc),
+            "methodology": SYNTHETIC_DATASET_METHODOLOGY,
+        }

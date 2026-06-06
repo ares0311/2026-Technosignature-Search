@@ -1,5 +1,27 @@
 # AGENTS.md
 
+## GIT SYNC DIRECTIVES — NON-NEGOTIABLE
+
+Three rules that must be followed without exception to keep the user's local
+machine and GitHub in sync:
+
+1. **User's local machine always runs from `main`.** Every command given to the
+   user must begin with:
+   ```bash
+   git pull origin main
+   ```
+
+2. **Every feature branch must be pushed and merged to `main` via PR, and the
+   PR must be closed before starting new work.** Never leave commits stranded on
+   the feature branch without a merged PR.
+
+3. **All commands given to the user include `git pull origin main` at the top.**
+
+The agent always develops on `claude/general-session-Bb2dZ`. The user always
+stays on `main` and pulls after each PR is merged.
+
+---
+
 ## Purpose
 
 Instructions for AI coding agents working on the Technosignature Search repository.
