@@ -4096,6 +4096,21 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(pipeline_result.as_dict(), indent=2, sort_keys=True), file=out)
         return 0 if pipeline_result.ok else 1
 
+    if args.command == "generate-peer-review-package":
+        from techno_search.peer_review_package import generate_peer_review_package
+
+        pr_result: dict[str, Any] = generate_peer_review_package(Path(args.output_dir))
+        print(json.dumps(pr_result, indent=2, sort_keys=True), file=out)
+        return 0 if pr_result.get("ok") else 1
+
+    if args.command == "learned-model-summary":
+        from techno_search.learned_scoring_model import learned_model_summary
+
+        lm_path = getattr(args, "labeled_dataset_path", None)
+        lm_result: dict[str, Any] = learned_model_summary(lm_path)
+        print(json.dumps(lm_result, indent=2, sort_keys=True), file=out)
+        return 0 if lm_result.get("ok") else 1
+
     if args.command == "noise-threshold-calibration":
         from techno_search.noise_threshold_calibration import analyze_hit_directory
 
@@ -13018,6 +13033,33 @@ def _build_parser() -> argparse.ArgumentParser:
     run_pipeline_parser.add_argument(
         "--candidate-id",
         help="Optional candidate ID override for generated reports.",
+    )
+
+    learned_model_parser = subparsers.add_parser(
+        "learned-model-summary",
+        help=(
+            "Train a logistic regression on the labeled candidate dataset and "
+            "report training summary. Development scaffold only — requires "
+            "real labeled data for production use."
+        ),
+    )
+    learned_model_parser.add_argument(
+        "--labeled-dataset-path",
+        type=Path,
+        help="Path to labeled_candidates.json fixture (defaults to built-in fixture).",
+    )
+
+    peer_review_parser = subparsers.add_parser(
+        "generate-peer-review-package",
+        help=(
+            "Generate a structured peer review package with pipeline methodology "
+            "documentation and example candidate summaries for external scientific review."
+        ),
+    )
+    peer_review_parser.add_argument(
+        "output_dir",
+        type=Path,
+        help="Directory to write the peer review package into.",
     )
 
     noise_cal_parser = subparsers.add_parser(

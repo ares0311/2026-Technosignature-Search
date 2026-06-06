@@ -1,0 +1,58 @@
+{
+  "_comment": "TEMPLATE FOR EXPERT REVIEW — NOT YET ACTIVE. See docs/THRESHOLD_CALIBRATION.md.",
+  "_status": "pending_expert_review",
+  "_requires": [
+    "Real noise distribution analysis (techno-search noise-threshold-calibration)",
+    "Expert review of suggested thresholds",
+    "Operator approval and sign-off",
+    "Commit with review_status set to 'approved'"
+  ],
+  "description": "v1 scoring thresholds derived from real noise distributions. PENDING EXPERT REVIEW.",
+  "review_status": "pending_expert_review",
+  "reviewed_by": null,
+  "review_date": null,
+  "data_source": "Run: techno-search noise-threshold-calibration ~/technosignature-data/bl_hits/",
+  "pathway_thresholds": {
+    "_comment": "Replace these values with outputs from noise-threshold-calibration after expert review.",
+    "known_object_probability": 0.8,
+    "false_positive_probability": 0.8,
+    "minimum_signal_reality_for_review": "FILL_FROM_NOISE_ANALYSIS_P90_SNR",
+    "candidate_interest_probability": "FILL_FROM_NOISE_ANALYSIS_P95_SNR",
+    "candidate_max_false_positive_probability": 0.4,
+    "candidate_signal_reality": "FILL_FROM_NOISE_ANALYSIS_P99_SNR",
+    "candidate_review_readiness": 0.7
+  },
+  "snr_thresholds": {
+    "_comment": "Fill from noise-threshold-calibration snr_stats.percentiles output.",
+    "noise_floor_snr": "FILL_FROM_P90",
+    "follow_up_snr": "FILL_FROM_P95",
+    "high_interest_snr": "FILL_FROM_P99"
+  },
+  "drift_rate_thresholds": {
+    "_comment": "Fill from noise-threshold-calibration drift_stats.abs_p95 output.",
+    "max_rfi_like_drift_hz_s": "FILL_FROM_DRIFT_P95"
+  },
+  "local_performance_defaults": {
+    "cpu_heavy_workers": 12,
+    "light_io_workers": 16,
+    "memory_budget_gb": 48
+  },
+  "track_sensitivity": {
+    "_comment": "Adjust weights based on per-track false positive analysis.",
+    "radio": {
+      "signal_weight": 1.0,
+      "false_positive_weight": 1.0,
+      "provenance_weight": 1.0
+    },
+    "infrared": {
+      "signal_weight": 1.0,
+      "false_positive_weight": 1.0,
+      "provenance_weight": 1.0
+    },
+    "anomaly": {
+      "signal_weight": 1.0,
+      "false_positive_weight": 1.0,
+      "provenance_weight": 1.0
+    }
+  }
+}
