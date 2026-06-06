@@ -4,7 +4,7 @@
     "latest_milestone_number": 73,
     "latest_milestone_label": "Communication Log, Document Management Log, And Procurement Log",
     "latest_decision_number": 120,
-    "schema_count": 101,
+    "schema_count": 102,
     "require_zero_real_data_authorization": true,
     "project_status_completed_phrase": "Communication log, document management log, and procurement log operational provenance records added"
   }

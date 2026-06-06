@@ -31,9 +31,14 @@ science = [
     "scipy>=1.13",
     "astropy>=6.0",
     "pandas>=2.2",
+    "scikit-learn>=1.4",
 ]
 radio = [
     "blimpy>=2.1",
+]
+ml = [
+    "scikit-learn>=1.4",
+    "setigen>=2.7",
 ]
 
 [tool.setuptools.packages.find]
@@ -60,3 +65,7 @@ mypy_path = "src"
 strict = true
 warn_unused_ignores = true
 warn_return_any = true
+
+[[tool.mypy.overrides]]
+module = ["sklearn.*"]
+ignore_missing_imports = true

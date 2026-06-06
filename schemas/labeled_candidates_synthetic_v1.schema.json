@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Labeled Candidates Synthetic v1",
+  "description": "Synthetic labeled training dataset generated via setigen signal injection following Ma et al. 2023 (Nature Astronomy). Labels are simulation ground-truth only, not expert-labeled real observations.",
+  "type": "object",
+  "required": ["schema_version", "description", "entries", "label_counts", "methodology"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "labeled_candidates_synthetic_v1"
+    },
+    "description": {
+      "type": "string"
+    },
+    "methodology": {
+      "type": "string"
+    },
+    "total_entries": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "label_counts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["candidate_id", "track", "label", "labeled_by", "features"],
+        "properties": {
+          "candidate_id": {"type": "string"},
+          "track": {
+            "type": "string",
+            "enum": ["radio", "infrared", "anomaly"]
+          },
+          "label": {
+            "type": "string",
+            "enum": ["follow_up", "false_positive", "insufficient_evidence", "known_object"]
+          },
+          "labeled_by": {"type": "string"},
+          "features": {
+            "type": "object",
+            "required": [
+              "snr",
+              "drift_rate_hz_per_sec",
+              "on_target_presence_score",
+              "off_target_presence_score",
+              "rfi_band_overlap_score",
+              "frequency_persistence_score",
+              "nearby_target_recurrence_score",
+              "instrumental_artifact_score",
+              "metadata_completeness_score",
+              "data_quality_score",
+              "provenance_completeness_score"
+            ],
+            "properties": {
+              "snr": {"type": "number"},
+              "drift_rate_hz_per_sec": {"type": "number"},
+              "on_target_presence_score": {"type": "number", "minimum": 0, "maximum": 1},
+              "off_target_presence_score": {"type": "number", "minimum": 0, "maximum": 1},
+              "rfi_band_overlap_score": {"type": "number", "minimum": 0, "maximum": 1},
+              "frequency_persistence_score": {"type": "number", "minimum": 0, "maximum": 1},
+              "nearby_target_recurrence_score": {"type": "number", "minimum": 0, "maximum": 1},
+              "instrumental_artifact_score": {"type": "number", "minimum": 0, "maximum": 1},
+              "metadata_completeness_score": {"type": "number", "minimum": 0, "maximum": 1},
+              "data_quality_score": {"type": "number", "minimum": 0, "maximum": 1},
+              "provenance_completeness_score": {"type": "number", "minimum": 0, "maximum": 1}
+            }
+          }
+        }
+      }
+    }
+  }
+}
