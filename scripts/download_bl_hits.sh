@@ -164,28 +164,42 @@ for t in range(n_time):
 
 print(f"  Data shape: {data.shape} ({data.nbytes:,} bytes uncompressed)")
 
-# Write HDF5 in blimpy filterbank format
+# Write HDF5 in exact blimpy format.
+# CRITICAL: blimpy's H5Reader reads header from f['data'].attrs (the DATA
+# DATASET's attributes), NOT from the root group attributes.
+# Root group gets only CLASS/VERSION. Everything else goes on the dataset.
+# Source: blimpy/io/hdf_reader.py read_header iterates self.h5['data'].attrs
+# Source: blimpy/io/hdf_writer.py writes header via `dset.attrs[key] = val`
 with h5py.File(out_h5, "w") as f:
-    # Root-level header attributes (read by blimpy.Waterfall)
-    f.attrs["CLASS"]       = "FILTERBANK"
-    f.attrs["VERSION"]     = "1.0"
-    f.attrs["az_start"]    = np.float64(0.0)
-    f.attrs["data_type"]   = np.int64(1)
-    f.attrs["fch1"]        = np.float64(fch1)
-    f.attrs["foff"]        = np.float64(foff)
-    f.attrs["machine_id"]  = np.int64(20)    # GBT
-    f.attrs["nbits"]       = np.int64(32)
-    f.attrs["nchans"]      = np.int64(n_freq)
-    f.attrs["nifs"]        = np.int64(1)
-    f.attrs["source_name"] = "SYNTH_BL_TIER1"
-    f.attrs["telescope_id"]= np.int64(6)     # GBT
-    f.attrs["tsamp"]       = np.float64(tsamp)
-    f.attrs["tstart"]      = np.float64(tstart)
-    f.attrs["za_start"]    = np.float64(0.0)
-    f.attrs["src_raj"]     = np.float64(17.2112447222)   # hours (HHMMSS packed)
-    f.attrs["src_dej"]     = np.float64(12.4037816667)   # degrees
-    # Data: shape (n_time, n_ifs, n_chans) — same layout as blimpy HDF5
-    f.create_dataset("data", data=data, compression="lzf")
+    # Root: class metadata only
+    f.attrs["CLASS"]   = "FILTERBANK"
+    f.attrs["VERSION"] = "1.0"
+
+    # Data dataset — same shape as blimpy HDF5: (n_time, n_ifs, n_chans)
+    ds = f.create_dataset("data", data=data, compression="lzf")
+
+    # Dimension labels as bytes (blimpy writes b"time" etc.)
+    ds.dims[0].label = b"time"
+    ds.dims[1].label = b"feed_id"
+    ds.dims[2].label = b"frequency"
+
+    # ALL header fields on the DATASET attrs (blimpy reads here, not root)
+    ds.attrs["fch1"]         = np.float64(fch1)
+    ds.attrs["foff"]         = np.float64(foff)
+    ds.attrs["tsamp"]        = np.float64(tsamp)
+    ds.attrs["tstart"]       = np.float64(tstart)
+    ds.attrs["nchans"]       = np.int64(n_freq)
+    ds.attrs["nifs"]         = np.int64(1)
+    ds.attrs["nbits"]        = np.int64(32)
+    ds.attrs["data_type"]    = np.int64(1)
+    ds.attrs["machine_id"]   = np.int64(20)    # GBT
+    ds.attrs["telescope_id"] = np.int64(6)     # GBT
+    ds.attrs["source_name"]  = np.bytes_("SYNTH_BL_TIER1")
+    ds.attrs["rawdatafile"]  = np.bytes_("")
+    ds.attrs["az_start"]     = np.float64(0.0)
+    ds.attrs["za_start"]     = np.float64(0.0)
+    ds.attrs["src_raj"]      = np.float64(17.2112447222)
+    ds.attrs["src_dej"]      = np.float64(12.4037816667)
 
 size = os.path.getsize(out_h5)
 print(f"  Written: {out_h5} ({size:,} bytes)")
