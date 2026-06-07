@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# download_bl_hits.sh — download real turboSETI hit tables from BL open data archive
+# download_bl_hits.sh — download real turboSETI hit tables for pipeline testing
 #
-# Tries multiple sources in order:
-#   1. BL GBT L-band survey (blpd0.ssl.berkeley.edu) — requires curl -L for redirects
-#   2. turboSETI package test data (from installed package if available)
-#   3. Generates synthetic .dat files as a last resort for pipeline testing
+# Tries sources in order:
+#   1. BL GBT L-band survey open data (blpd0.ssl.berkeley.edu)
+#   2. turboSETI GitHub test fixtures via git-lfs (real-format .dat files)
+#   3. Synthetic .dat files (pipeline format testing only — does NOT close Tier 1 gap)
 #
 # Run (macOS — use caffeinate to prevent sleep):
 #   caffeinate -i bash scripts/download_bl_hits.sh
@@ -23,17 +23,16 @@ echo "Output directory: $BL_HITS_DIR"
 echo ""
 
 # -----------------------------------------------------------------------
-# Helper: check if a downloaded file looks like a valid turboSETI .dat
+# Helper: check if a file looks like a valid turboSETI .dat
 # -----------------------------------------------------------------------
 is_valid_dat() {
     local f="$1"
     local size
     size=$(wc -c < "$f" 2>/dev/null || echo 0)
-    # A valid .dat must be > 200 bytes and contain "# Source:" or "Top_Hit_#"
     if [[ $size -lt 200 ]]; then
         return 1
     fi
-    if grep -qE "(# Source:|Top_Hit_#|Drift_Rate)" "$f" 2>/dev/null; then
+    if grep -qE "(Top_Hit_#|Drift_Rate|# Source:)" "$f" 2>/dev/null; then
         return 0
     fi
     return 1
@@ -42,10 +41,8 @@ is_valid_dat() {
 DOWNLOAD_SUCCESS=0
 
 # -----------------------------------------------------------------------
-# Option 1 — BL GBT L-band survey open data
-# NOTE: Server may redirect HTTP→HTTPS; always use -L (follow redirects)
+# Option 1 — BL GBT L-band survey open data (blpd0.ssl.berkeley.edu)
 # -----------------------------------------------------------------------
-BL_BASE="http://blpd0.ssl.berkeley.edu/L_band_table"
 BL_TARGETS=(
     "HIP99427_hits.dat"
     "HIP17378_hits.dat"
@@ -54,93 +51,100 @@ BL_TARGETS=(
     "HIP74995_hits.dat"
 )
 
-echo "Attempting download from BL open data archive..."
-echo "(If this fails, see docs/BL_DATA_DOWNLOAD.md for manual instructions)"
-echo ""
+echo "--- Option 1: BL open data server ---"
+echo "Trying https://blpd0.ssl.berkeley.edu/L_band_table/ ..."
 
 for target in "${BL_TARGETS[@]}"; do
     dest="$BL_HITS_DIR/$target"
     # Try HTTPS first, then HTTP with redirect following
-    for url in "https://blpd0.ssl.berkeley.edu/L_band_table/$target" "$BL_BASE/$target"; do
-        if curl -L --max-time 30 --retry 2 --retry-delay 2 \
-                --fail --silent --show-error \
-                -o "$dest" "$url" 2>/dev/null; then
-            if is_valid_dat "$dest"; then
-                echo "  OK: $target ($(wc -c < "$dest") bytes)"
-                DOWNLOAD_SUCCESS=$((DOWNLOAD_SUCCESS + 1))
-                break
-            else
-                echo "  WARN: $target downloaded but looks invalid ($(wc -c < "$dest" 2>/dev/null || echo 0) bytes) — discarding"
-                rm -f "$dest"
-            fi
+    # Note: --fail exits non-zero on HTTP 4xx/5xx; errors shown (not suppressed)
+    if curl -L --max-time 30 --retry 2 --retry-delay 2 \
+            --fail --show-error \
+            -o "$dest" \
+            "https://blpd0.ssl.berkeley.edu/L_band_table/$target" 2>&1; then
+        if is_valid_dat "$dest"; then
+            echo "  OK: $target ($(wc -c < "$dest") bytes)"
+            DOWNLOAD_SUCCESS=$((DOWNLOAD_SUCCESS + 1))
+        else
+            echo "  WARN: $target invalid ($(wc -c < "$dest" 2>/dev/null || echo 0) bytes — likely redirect page)"
+            rm -f "$dest"
         fi
-    done
+    else
+        echo "  SKIP: $target (server error — see above)"
+        rm -f "$dest" 2>/dev/null || true
+    fi
 done
 
 if [[ $DOWNLOAD_SUCCESS -gt 0 ]]; then
     echo ""
-    echo "Downloaded $DOWNLOAD_SUCCESS real BL hit table(s) from open data archive."
-    echo "Run: bash scripts/run_pipeline_on_bl_data.sh"
+    echo "Downloaded $DOWNLOAD_SUCCESS real BL hit table(s) — Tier 1 gap partially addressed."
+    echo "Run: caffeinate -i bash scripts/run_pipeline_on_bl_data.sh"
     exit 0
 fi
 
 echo ""
-echo "BL server download failed or returned invalid data."
+echo "BL server download failed. Trying Option 2..."
 echo ""
 
 # -----------------------------------------------------------------------
-# Option 2 — turboSETI package test data (already installed in .venv)
-# These are real-format .dat files shipped with the turboSETI test suite.
+# Option 2 — turboSETI GitHub test fixtures via git-lfs
+# These are real GBT observation-derived test fixtures (blc1 = BL Compute node 1)
 # -----------------------------------------------------------------------
-echo "Looking for turboSETI package test data in .venv..."
-TURBO_SETI_DAT=$("$VENV_PYTHON" -c "
-import pathlib, sys
-pkg_dirs = [
-    pathlib.Path('$REPO_ROOT/.venv/lib'),
-]
-dat_files = []
-for d in pkg_dirs:
-    if d.exists():
-        # Search without importing turbo_seti (avoids blimpy pkg_resources issue)
-        dat_files = [f for f in d.rglob('*.dat')
-                     if 'turbo_seti' in str(f) or 'blc' in f.name.lower()]
-        if dat_files:
-            break
-for f in dat_files[:5]:
-    print(f)
-" 2>/dev/null || true)
+echo "--- Option 2: turboSETI GitHub test data (requires git-lfs) ---"
 
-if [[ -n "$TURBO_SETI_DAT" ]]; then
-    PKG_DAT_COUNT=0
-    while IFS= read -r src; do
-        name=$(basename "$src")
-        dest="$BL_HITS_DIR/$name"
-        if [[ -f "$src" ]] && is_valid_dat "$src"; then
-            cp "$src" "$dest"
-            echo "  OK: $name ($(wc -c < "$dest") bytes) [from installed package]"
-            PKG_DAT_COUNT=$((PKG_DAT_COUNT + 1))
+if ! command -v git-lfs &>/dev/null; then
+    echo "  git-lfs not installed. Install with: brew install git-lfs"
+    echo "  Then re-run this script."
+else
+    CLONE_DIR=$(mktemp -d)
+    echo "  Cloning turboSETI (shallow, test_data only) ..."
+    if git clone --depth=1 --filter=blob:none --sparse \
+            https://github.com/UCBerkeleySETI/turbo_seti \
+            "$CLONE_DIR" 2>&1; then
+        cd "$CLONE_DIR"
+        git sparse-checkout set tests/test_data 2>&1
+        git lfs pull --include="tests/test_data/*.dat" 2>&1 || true
+
+        DAT_COUNT=0
+        while IFS= read -r -d '' src; do
+            name=$(basename "$src")
+            dest="$BL_HITS_DIR/$name"
+            if is_valid_dat "$src"; then
+                cp "$src" "$dest"
+                echo "  OK: $name ($(wc -c < "$dest") bytes) [turboSETI test fixture]"
+                DAT_COUNT=$((DAT_COUNT + 1))
+            fi
+        done < <(find "$CLONE_DIR/tests/test_data" -name "*.dat" -print0 2>/dev/null)
+
+        cd "$REPO_ROOT"
+        rm -rf "$CLONE_DIR"
+
+        if [[ $DAT_COUNT -gt 0 ]]; then
+            echo ""
+            echo "Copied $DAT_COUNT .dat file(s) from turboSETI test fixtures."
+            echo "NOTE: These are GBT-derived test fixtures, useful for format/pipeline testing."
+            echo "      For a full Tier 1 gap closure, also download from the BL open data portal."
+            echo "Run: caffeinate -i bash scripts/run_pipeline_on_bl_data.sh"
+            exit 0
+        else
+            echo "  No valid .dat files found in turboSETI test data (LFS may not have resolved)."
         fi
-    done <<< "$TURBO_SETI_DAT"
-
-    if [[ $PKG_DAT_COUNT -gt 0 ]]; then
-        echo ""
-        echo "Copied $PKG_DAT_COUNT .dat file(s) from installed turboSETI package."
-        echo "NOTE: These are test fixtures from turboSETI, not from your telescope."
-        echo "      They are useful for format validation but do not close the real-data gap."
-        echo "Run: bash scripts/run_pipeline_on_bl_data.sh"
-        exit 0
+    else
+        echo "  git clone failed (network issue or repo moved)."
+        rm -rf "$CLONE_DIR" 2>/dev/null || true
     fi
 fi
 
-echo "No turboSETI package test data found."
+echo ""
+echo "All network sources failed. Trying Option 3 (manual instructions below)..."
 echo ""
 
 # -----------------------------------------------------------------------
-# Option 3 — Generate synthetic .dat files (pipeline testing only)
+# Option 3 — Synthetic files (pipeline format testing only)
 # -----------------------------------------------------------------------
-echo "Generating synthetic turboSETI .dat files for pipeline testing."
-echo "NOTE: These are synthetic — they do NOT constitute real observation data."
-echo "      See docs/BL_DATA_DOWNLOAD.md for how to obtain real data."
+echo "--- Option 3: Synthetic .dat files (pipeline format testing) ---"
+echo "NOTE: These do NOT constitute real observation data."
+echo "      See docs/BL_DATA_DOWNLOAD.md for manual download instructions."
 echo ""
 
 "$VENV_PYTHON" - "$BL_HITS_DIR" <<'PYEOF'
@@ -200,8 +204,17 @@ for source, mjd, ra, dec in TARGETS:
     print(f"  Created: {filename} ({n_hits} hits) [SYNTHETIC]")
 
 print("")
-print("Done. Run scripts/run_pipeline_on_bl_data.sh to process these files.")
+print("Run: caffeinate -i bash scripts/run_pipeline_on_bl_data.sh")
 print("")
-print("IMPORTANT: Real BL data must be downloaded manually.")
-print("See docs/BL_DATA_DOWNLOAD.md for instructions.")
+print("For real BL data, see docs/BL_DATA_DOWNLOAD.md")
 PYEOF
+
+echo ""
+echo "=== Manual download options ==="
+echo "1. Browser: https://seti.berkeley.edu/listen/data.html"
+echo "   Download .dat files to ~/technosignature-data/bl_hits/"
+echo ""
+echo "2. git-lfs (if not installed): brew install git-lfs"
+echo "   Then re-run this script."
+echo ""
+echo "3. See docs/BL_DATA_DOWNLOAD.md for full instructions."
