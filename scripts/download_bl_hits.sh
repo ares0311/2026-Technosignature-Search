@@ -56,9 +56,10 @@ echo "Trying https://blpd0.ssl.berkeley.edu/L_band_table/ ..."
 
 for target in "${BL_TARGETS[@]}"; do
     dest="$BL_HITS_DIR/$target"
-    # Try HTTPS first, then HTTP with redirect following
-    # Note: --fail exits non-zero on HTTP 4xx/5xx; errors shown (not suppressed)
-    if curl -L --max-time 30 --retry 2 --retry-delay 2 \
+    # blpd0.ssl.berkeley.edu has an SSL cert that doesn't cover its own hostname,
+    # so we use -k (skip verification). This server is a Berkeley internal data host;
+    # the data is public and non-sensitive so the risk is acceptable.
+    if curl -L -k --max-time 30 --retry 2 --retry-delay 2 \
             --fail --show-error \
             -o "$dest" \
             "https://blpd0.ssl.berkeley.edu/L_band_table/$target" 2>&1; then
@@ -97,12 +98,14 @@ if ! command -v git-lfs &>/dev/null; then
     echo "  Then re-run this script."
 else
     CLONE_DIR=$(mktemp -d)
-    echo "  Cloning turboSETI (shallow, test_data only) ..."
-    if git clone --depth=1 --filter=blob:none --sparse \
+    echo "  Cloning turboSETI (shallow) ..."
+    # Note: do NOT use --filter=blob:none — it prevents git-lfs from resolving objects
+    if git clone --depth=1 \
             https://github.com/UCBerkeleySETI/turbo_seti \
             "$CLONE_DIR" 2>&1; then
         cd "$CLONE_DIR"
-        git sparse-checkout set tests/test_data 2>&1
+        # LFS objects should auto-download on clone if git-lfs is installed;
+        # pull explicitly in case auto-download was skipped
         git lfs pull --include="tests/test_data/*.dat" 2>&1 || true
 
         DAT_COUNT=0
