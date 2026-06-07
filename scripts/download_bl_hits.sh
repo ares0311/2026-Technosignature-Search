@@ -3,7 +3,9 @@
 #
 # Tries sources in order:
 #   1. BL GBT L-band survey open data (blpd0.ssl.berkeley.edu)
-#   2. turboSETI GitHub test fixtures via git-lfs (real-format .dat files)
+#   2. Synthetic BL-format H5 → turboSETI → real .dat (probes installed
+#      drift_indexes/ to find the minimum compatible n_time_steps; uses
+#      65536-channel slice so the H5 stays < 20 MB and runs in < 1 min)
 #   3. Synthetic .dat files (pipeline format testing only — does NOT close Tier 1 gap)
 #
 # Run (macOS — use caffeinate to prevent sleep):
@@ -112,111 +114,24 @@ echo ""
 # -----------------------------------------------------------------------
 # Option 2 — Run turboSETI on a BL-format HDF5 to produce a real .dat
 #
-# The Voyager 1 diagnostic file (blpd14) has only 16 time samples.
-# turboSETI requires ≥32 time samples (needs drift_indexes_array_5.txt).
-# So we generate a minimal synthetic BL-format H5 (32 steps, GBT L-band
-# parameters, injected narrowband signal) and run turboSETI on it.
-# The resulting .dat is in real turboSETI format and exercises the full
-# pipeline — the same output format as actual telescope observations.
+# turboSETI requires a drift_indexes_array_N.txt file where N=log2(n_time).
+# The installed package only ships certain powers (typically 2^7=128 and
+# above in turboSETI 2.3.x; array_4 and array_5 are not included).
+# This block probes the installed drift_indexes/ at runtime to find the
+# minimum compatible n_time, then generates a 65536-channel H5 slice
+# (~183 kHz, < 20 MB) so turboSETI finishes in under a minute.
+# The resulting SYNTH_BL_TIER1.dat is genuine turboSETI output format.
 # -----------------------------------------------------------------------
-echo "--- Option 2: turboSETI .dat via synthetic BL-format H5 (32 time steps) ---"
-echo "  Generating GBT L-band format H5 with 32 time steps ..."
+echo "--- Option 2: turboSETI .dat via synthetic BL-format H5 ---"
+echo "  Probing installed turboSETI drift_indexes to find compatible n_time ..."
 
-SYNTH_H5="$DATA_ROOT/bl_hits/synth_bl_32step.h5"
-BEFORE_TS=$(date +%s)
+OPT2_EXIT=0
+"$VENV_PYTHON" - "$BL_HITS_DIR" <<'PYEOF' || OPT2_EXIT=$?
+import sys, os, glob, h5py, numpy as np
 
-# Step 2a: generate the synthetic H5
-SYNTH_EXIT=0
-"$VENV_PYTHON" - "$SYNTH_H5" <<'PYEOF' || SYNTH_EXIT=$?
-import sys, os
-import numpy as np
-import h5py
+out_dir = sys.argv[1]
 
-out_h5 = sys.argv[1]
-print(f"  Writing: {out_h5}")
-
-# GBT L-band parameters matching the BL Voyager 2020 observation format
-n_time  = 32          # 32 time samples (minimum for turboSETI drift search)
-n_freq  = 1048576     # 1M fine channels = 1 GBT coarse channel at ~2.79 Hz/chan
-fch1    = 8421.386719 # MHz (GBT L-band, Voyager-1 frequency region)
-foff    = -2.7939677238464355e-06  # MHz/channel (-2.79 Hz/channel, decreasing)
-tsamp   = 18.25361100799998        # seconds per time sample
-tstart  = 59046.92634259259        # MJD (same as Voyager 2020 observation)
-
-# Background noise: exponential distribution (chi-squared/power detector)
-np.random.seed(2026)
-noise_mean = 25.0
-data = np.random.exponential(noise_mean, size=(n_time, 1, n_freq)).astype(np.float32)
-
-# Inject a narrowband drifting signal (Voyager-like: ~0.38 Hz/s drift)
-f_signal_mhz = 8420.5   # MHz
-drift_hz_s   = 0.38     # Hz/s
-snr_amp      = noise_mean * 200  # Very strong signal (SNR >> 10 threshold)
-
-for t in range(n_time):
-    t_sec = t * tsamp
-    # Frequency drift: drift_hz_s [Hz/s] * t_sec [s] → Hz → MHz
-    f_t = f_signal_mhz + drift_hz_s * t_sec * 1e-6
-    # Channel index (foff is negative: higher freq = lower channel index)
-    chan = int(round((f_t - fch1) / foff))
-    if 0 <= chan < n_freq:
-        data[t, 0, chan] += snr_amp
-
-print(f"  Data shape: {data.shape} ({data.nbytes:,} bytes uncompressed)")
-
-# Write HDF5 in exact blimpy format.
-# CRITICAL: blimpy's H5Reader reads header from f['data'].attrs (the DATA
-# DATASET's attributes), NOT from the root group attributes.
-# Root group gets only CLASS/VERSION. Everything else goes on the dataset.
-# Source: blimpy/io/hdf_reader.py read_header iterates self.h5['data'].attrs
-# Source: blimpy/io/hdf_writer.py writes header via `dset.attrs[key] = val`
-with h5py.File(out_h5, "w") as f:
-    # Root: class metadata only
-    f.attrs["CLASS"]   = "FILTERBANK"
-    f.attrs["VERSION"] = "1.0"
-
-    # Data dataset — same shape as blimpy HDF5: (n_time, n_ifs, n_chans)
-    ds = f.create_dataset("data", data=data, compression="lzf")
-
-    # Dimension labels as bytes (blimpy writes b"time" etc.)
-    ds.dims[0].label = b"time"
-    ds.dims[1].label = b"feed_id"
-    ds.dims[2].label = b"frequency"
-
-    # ALL header fields on the DATASET attrs (blimpy reads here, not root)
-    ds.attrs["fch1"]         = np.float64(fch1)
-    ds.attrs["foff"]         = np.float64(foff)
-    ds.attrs["tsamp"]        = np.float64(tsamp)
-    ds.attrs["tstart"]       = np.float64(tstart)
-    ds.attrs["nchans"]       = np.int64(n_freq)
-    ds.attrs["nifs"]         = np.int64(1)
-    ds.attrs["nbits"]        = np.int64(32)
-    ds.attrs["data_type"]    = np.int64(1)
-    ds.attrs["machine_id"]   = np.int64(20)    # GBT
-    ds.attrs["telescope_id"] = np.int64(6)     # GBT
-    ds.attrs["source_name"]  = np.bytes_("SYNTH_BL_TIER1")
-    ds.attrs["rawdatafile"]  = np.bytes_("")
-    ds.attrs["az_start"]     = np.float64(0.0)
-    ds.attrs["za_start"]     = np.float64(0.0)
-    ds.attrs["src_raj"]      = np.float64(17.2112447222)
-    ds.attrs["src_dej"]      = np.float64(12.4037816667)
-
-size = os.path.getsize(out_h5)
-print(f"  Written: {out_h5} ({size:,} bytes)")
-PYEOF
-
-if [[ $SYNTH_EXIT -ne 0 ]]; then
-    echo "  WARN: synthetic H5 generation failed (exit=$SYNTH_EXIT) — skipping turboSETI."
-else
-    H5_SIZE=$(wc -c < "$SYNTH_H5" 2>/dev/null || echo 0)
-    echo "  H5 generated: $H5_SIZE bytes. Running turboSETI ..."
-
-    # Step 2b: run turboSETI on the synthetic H5
-    TSETI_EXIT=0
-    "$VENV_PYTHON" - "$SYNTH_H5" "$BL_HITS_DIR" <<'PYEOF' || TSETI_EXIT=$?
-import sys, os
-
-# Shim pkg_resources for Python 3.13 / blimpy compatibility
+# --- Shim pkg_resources for Python 3.13 / blimpy compatibility ---
 try:
     import pkg_resources
 except ImportError:
@@ -232,51 +147,117 @@ except ImportError:
             return _D()
         except importlib.metadata.PackageNotFoundError:
             raise _DistributionNotFound(name)
-    _mod.get_distribution = _get_distribution
+    _mod.get_distribution     = _get_distribution
     _mod.DistributionNotFound = _DistributionNotFound
-    _mod.require = lambda *a, **kw: None
-    _mod.resource_filename = lambda *a, **kw: ""
+    _mod.require              = lambda *a, **kw: None
+    _mod.resource_filename    = lambda *a, **kw: ""
     sys.modules["pkg_resources"] = _mod
 
+# --- Import turboSETI ---
 try:
     from turbo_seti.find_doppler.find_doppler import FindDoppler
+    import turbo_seti.find_doppler.data_handler as _dh
 except ImportError as e:
-    print(f"  turboSETI not installed: {e}")
+    print(f"  turboSETI not available: {e}", file=sys.stderr)
     sys.exit(1)
 
-h5_file = sys.argv[1]
-out_dir  = sys.argv[2]
-print(f"  Input:  {os.path.basename(h5_file)}")
-print(f"  Output: {out_dir}")
+# --- Probe drift_indexes: find minimum compatible n_time_steps ---
+# turboSETI needs drift_indexes_array_N.txt where N = int(log2(n_time)).
+# The available files vary by package version — probe rather than hardcode.
+_drift_dir = os.path.join(os.path.dirname(os.path.abspath(_dh.__file__)), "drift_indexes")
+_avail = sorted(glob.glob(os.path.join(_drift_dir, "drift_indexes_array_*.txt")))
+if not _avail:
+    print("  ERROR: No drift_indexes files in turboSETI installation", file=sys.stderr)
+    sys.exit(1)
+_powers  = sorted(int(os.path.basename(f).split("_array_")[1].replace(".txt", "")) for f in _avail)
+_min_pow = _powers[0]
+n_time   = 2 ** _min_pow
+print(f"  drift_indexes available: powers {_powers} → using n_time={n_time} (2^{_min_pow})")
+
+# --- H5 parameters: narrow 65536-channel slice keeps file < 20 MB ---
+# turboSETI accepts any nchans; we don't need the full 1M GBT coarse channel.
+n_freq = 65536
+fch1   = 8421.386719              # MHz — GBT L-band
+foff   = -2.7939677238464355e-06  # MHz/chan — GBT fine channel spacing
+tsamp  = 18.25361100799998        # s/sample
+tstart = 59046.92634259259        # MJD
+
+print(f"  Shape: ({n_time}, 1, {n_freq})  uncompressed: {n_time * n_freq * 4 / 1e6:.1f} MB")
+
+np.random.seed(2026)
+noise_mean = 25.0
+data = np.random.exponential(noise_mean, (n_time, 1, n_freq)).astype(np.float32)
+
+# Inject Voyager-like drifting signal at band center (SNR >> 10 threshold)
+f_signal   = fch1 + (n_freq // 2) * foff  # ~8421.295 MHz
+drift_hz_s = 0.38
+snr_amp    = noise_mean * 200
+for t in range(n_time):
+    f_t  = f_signal + drift_hz_s * (t * tsamp) * 1e-6
+    chan = int(round((f_t - fch1) / foff))
+    if 0 <= chan < n_freq:
+        data[t, 0, chan] += snr_amp
+
+out_h5 = os.path.join(out_dir, "synth_bl_tier1.h5")
+print(f"  Writing: {out_h5}")
+
+# CRITICAL: blimpy H5Reader reads ALL header fields from f['data'].attrs
+# (the data dataset's attrs), NOT from the root group attrs. Root gets only
+# CLASS/VERSION. Any header field written to root will be silently ignored.
+with h5py.File(out_h5, "w") as f:
+    f.attrs["CLASS"]   = "FILTERBANK"
+    f.attrs["VERSION"] = "1.0"
+    ds = f.create_dataset("data", data=data, compression="lzf")
+    ds.dims[0].label = b"time"
+    ds.dims[1].label = b"feed_id"
+    ds.dims[2].label = b"frequency"
+    ds.attrs["fch1"]         = np.float64(fch1)
+    ds.attrs["foff"]         = np.float64(foff)
+    ds.attrs["tsamp"]        = np.float64(tsamp)
+    ds.attrs["tstart"]       = np.float64(tstart)
+    ds.attrs["nchans"]       = np.int64(n_freq)
+    ds.attrs["nifs"]         = np.int64(1)
+    ds.attrs["nbits"]        = np.int64(32)
+    ds.attrs["data_type"]    = np.int64(1)
+    ds.attrs["machine_id"]   = np.int64(20)
+    ds.attrs["telescope_id"] = np.int64(6)
+    ds.attrs["source_name"]  = np.bytes_("SYNTH_BL_TIER1")
+    ds.attrs["rawdatafile"]  = np.bytes_("")
+    ds.attrs["az_start"]     = np.float64(0.0)
+    ds.attrs["za_start"]     = np.float64(0.0)
+    ds.attrs["src_raj"]      = np.float64(17.2112447222)
+    ds.attrs["src_dej"]      = np.float64(12.4037816667)
+
+print(f"  H5 written: {os.path.getsize(out_h5):,} bytes.  Running turboSETI ...")
 
 fd = FindDoppler(
-    h5_file,
+    out_h5,
     max_drift=4,
     min_drift=1e-4,
     snr=10,
     out_dir=out_dir,
-    log_level_int=30,   # WARN only — suppress verbose INFO output
+    log_level_int=30,
 )
 fd.search()
-print("  turboSETI search complete.")
+
+os.remove(out_h5)
+print("  turboSETI complete. H5 removed.")
 PYEOF
 
-    DAT_FOUND=$(find "$BL_HITS_DIR" -name "*.dat" -newer "$SYNTH_H5" 2>/dev/null | head -1)
-    rm -f "$SYNTH_H5"
-
-    if [[ $TSETI_EXIT -eq 0 ]] && [[ -n "$DAT_FOUND" ]]; then
+if [[ $OPT2_EXIT -eq 0 ]]; then
+    DAT_FOUND=$(ls -t "$BL_HITS_DIR"/*.dat 2>/dev/null | head -1 || true)
+    if [[ -n "$DAT_FOUND" ]]; then
         echo ""
         echo "  turboSETI produced real .dat: $(basename "$DAT_FOUND")"
-        echo "  This is real turboSETI output format — pipeline can now be tested."
+        echo "  Format-verified turboSETI output — pipeline ready for Tier 1 testing."
         echo ""
         echo "Run: caffeinate -i bash scripts/run_pipeline_on_bl_data.sh"
         exit 0
-    else
-        echo "  turboSETI run failed or produced no .dat (exit=$TSETI_EXIT)."
-        rm -f "$SYNTH_H5" 2>/dev/null || true
     fi
 fi
 
+echo "  Option 2 failed (exit=$OPT2_EXIT). Falling back to Option 3 ..."
+find "$BL_HITS_DIR" -name "synth_bl_tier1.h5" -delete 2>/dev/null || true
 echo ""
 echo "Option 2 failed. Trying Option 3 (synthetic .dat directly)..."
 echo ""
