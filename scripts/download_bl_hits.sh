@@ -110,85 +110,109 @@ echo "BL server download failed. Trying Option 2..."
 echo ""
 
 # -----------------------------------------------------------------------
-# Option 2 — turboSETI GitHub test fixtures via LFS batch API (no auth needed)
-# Clones pointer files only, then fetches real objects via the public LFS batch API.
-# This bypasses git-lfs credential requirements for public repos.
+# Option 2 — turboSETI GitHub test fixtures via GitHub API + LFS batch
+# No git clone, no git-lfs, no credentials needed.
+# Uses GitHub contents API to find .dat pointer files, parses OID+size,
+# then calls the public LFS batch API for signed download URLs.
 # -----------------------------------------------------------------------
-echo "--- Option 2: turboSETI GitHub test data (LFS batch API) ---"
+echo "--- Option 2: turboSETI GitHub test data (API + LFS batch, no auth) ---"
 
-CLONE_DIR=$(mktemp -d)
-echo "  Cloning turboSETI pointer tree (GIT_LFS_SKIP_SMUDGE=1) ..."
-
-# Skip LFS smudge during clone so we get pointer files, not stalled auth attempts
-if GIT_LFS_SKIP_SMUDGE=1 git clone --depth=1 \
-        "https://github.com/UCBerkeleySETI/turbo_seti" "$CLONE_DIR" 2>&1; then
-
-    # Collect .dat pointer files (LFS pointers are ~134 bytes, start with "version https://git-lfs")
-    POINTER_FILES=()
-    while IFS= read -r -d '' f; do
-        sz=$(wc -c < "$f" 2>/dev/null || echo 0)
-        if [[ $sz -lt 500 ]] && grep -q "^version https://git-lfs" "$f" 2>/dev/null; then
-            POINTER_FILES+=("$f")
-        fi
-    done < <(find "$CLONE_DIR/tests/test_data" -name "*.dat" -print0 2>/dev/null)
-
-    if [[ ${#POINTER_FILES[@]} -eq 0 ]]; then
-        echo "  No LFS pointer files found — test_data may have moved."
-    else
-        echo "  Found ${#POINTER_FILES[@]} LFS pointer(s). Calling batch API ..."
-
-        # Use Python to build batch request, call LFS API, and download
-        "$VENV_PYTHON" - "$BL_HITS_DIR" "${POINTER_FILES[@]}" <<'PYEOF'
-import sys, json, os, urllib.request, urllib.error
+"$VENV_PYTHON" - "$BL_HITS_DIR" <<'PYEOF'
+import sys, json, os, urllib.request, urllib.error, base64
 
 dest_dir = sys.argv[1]
-pointer_paths = sys.argv[2:]
+REPO = "UCBerkeleySETI/turbo_seti"
+API_BASE = "https://api.github.com"
+HEADERS = {"User-Agent": "techno-search/1.0", "Accept": "application/vnd.github.v3+json"}
 
-# Parse OID + size from each pointer file
-objects = []
-path_by_oid = {}
-for p in pointer_paths:
-    oid = size = None
+def api_get(url):
+    req = urllib.request.Request(url, headers=HEADERS)
     try:
-        for line in open(p).read().splitlines():
-            if line.startswith("oid sha256:"):
-                oid = line.split(":", 1)[1].strip()
-            elif line.startswith("size "):
-                size = int(line.split(" ", 1)[1].strip())
-    except Exception:
-        pass
-    if oid and size:
-        objects.append({"oid": oid, "size": size})
-        path_by_oid[oid] = p
+        with urllib.request.urlopen(req, timeout=20) as r:
+            return json.loads(r.read())
+    except Exception as e:
+        print(f"  API error: {e}")
+        return None
 
-if not objects:
-    print("  Could not parse any LFS pointers.")
+# Find all .dat files anywhere in the repo using the tree API
+print(f"  Scanning {REPO} file tree for .dat files ...")
+tree = api_get(f"{API_BASE}/repos/{REPO}/git/trees/master?recursive=1")
+if not tree:
+    tree = api_get(f"{API_BASE}/repos/{REPO}/git/trees/main?recursive=1")
+if not tree:
+    print("  Could not fetch repo tree.")
     sys.exit(0)
 
-# Call the GitHub LFS batch API — public repos return signed download URLs
-batch_url = "https://github.com/UCBerkeleySETI/turbo_seti.git/info/lfs/objects/batch"
+dat_entries = [
+    e for e in tree.get("tree", [])
+    if e.get("type") == "blob" and e.get("path", "").endswith(".dat")
+]
+print(f"  Found {len(dat_entries)} .dat file(s) in repo")
+if not dat_entries:
+    print("  No .dat files found in repo tree.")
+    sys.exit(0)
+
+# Fetch each file's pointer content via the contents API and parse OID+size
+objects = []
+name_by_oid = {}
+for entry in dat_entries:
+    path = entry["path"]
+    name = os.path.basename(path)
+    file_data = api_get(f"{API_BASE}/repos/{REPO}/contents/{path}")
+    if not file_data:
+        continue
+    content_b64 = file_data.get("content", "").replace("\n", "")
+    try:
+        pointer_text = base64.b64decode(content_b64).decode("utf-8", errors="replace")
+    except Exception:
+        continue
+    oid = size = None
+    for line in pointer_text.splitlines():
+        if line.startswith("oid sha256:"):
+            oid = line.split(":", 1)[1].strip()
+        elif line.startswith("size "):
+            try:
+                size = int(line.split(None, 1)[1].strip())
+            except (ValueError, IndexError):
+                pass
+    if oid and size:
+        objects.append({"oid": oid, "size": size})
+        name_by_oid[oid] = name
+        print(f"  Pointer parsed: {name} (oid={oid[:8]}... size={size})")
+    else:
+        # File might not be LFS-tracked — check if it's already a real .dat
+        if "Top_Hit_#" in pointer_text or "Drift_Rate" in pointer_text:
+            dest = os.path.join(dest_dir, name)
+            with open(dest, "w") as fh:
+                fh.write(pointer_text)
+            print(f"  OK (inline): {name} ({len(pointer_text)} bytes)")
+
+if not objects:
+    print("  No LFS objects to download.")
+    sys.exit(0)
+
+# Call LFS batch API — returns signed download URLs for public repos
+print(f"  Calling LFS batch API for {len(objects)} object(s) ...")
+batch_url = f"https://github.com/{REPO}.git/info/lfs/objects/batch"
 payload = json.dumps({
     "operation": "download",
     "transfers": ["basic"],
     "objects": objects,
 }).encode()
-
 req = urllib.request.Request(
-    batch_url,
-    data=payload,
+    batch_url, data=payload,
     headers={
         "Accept": "application/vnd.git-lfs+json",
         "Content-Type": "application/vnd.git-lfs+json",
+        "User-Agent": "techno-search/1.0",
     },
-    method="POST",
 )
-
 try:
     with urllib.request.urlopen(req, timeout=30) as resp:
         batch = json.loads(resp.read())
 except urllib.error.HTTPError as e:
     body = e.read().decode(errors="replace")
-    print(f"  LFS batch API error {e.code}: {body[:200]}")
+    print(f"  LFS batch API HTTP {e.code}: {body[:300]}")
     sys.exit(0)
 except Exception as e:
     print(f"  LFS batch API failed: {e}")
@@ -199,52 +223,38 @@ for obj in batch.get("objects", []):
     oid = obj.get("oid", "")
     err = obj.get("error")
     if err:
-        print(f"  LFS error for {oid[:8]}: {err.get('message','')}")
+        print(f"  LFS error {oid[:8]}: {err.get('message','unknown')}")
         continue
     href = obj.get("actions", {}).get("download", {}).get("href", "")
     if not href:
-        print(f"  No download URL for {oid[:8]}")
+        print(f"  No download href for {oid[:8]}")
         continue
-    src_path = path_by_oid.get(oid, "")
-    filename = os.path.basename(src_path) if src_path else f"{oid[:8]}.dat"
+    filename = name_by_oid.get(oid, f"{oid[:8]}.dat")
     dest = os.path.join(dest_dir, filename)
     try:
         dl_req = urllib.request.Request(href, headers={"User-Agent": "techno-search/1.0"})
-        with urllib.request.urlopen(dl_req, timeout=60) as dl_resp:
+        with urllib.request.urlopen(dl_req, timeout=120) as dl_resp:
             data = dl_resp.read()
         with open(dest, "wb") as fh:
             fh.write(data)
         print(f"  OK: {filename} ({len(data)} bytes) [turboSETI test fixture]")
         downloaded += 1
     except Exception as e:
-        print(f"  Failed {filename}: {e}")
+        print(f"  FAILED {filename}: {e}")
 
 if downloaded > 0:
-    print(f"\nDownloaded {downloaded} real .dat file(s) via LFS batch API.")
-    print("NOTE: These are GBT-derived test fixtures, useful for format/pipeline testing.")
+    print(f"\nDownloaded {downloaded} real .dat file(s).")
+    print("NOTE: GBT-derived test fixtures — useful for format/pipeline testing.")
     print("Run: caffeinate -i bash scripts/run_pipeline_on_bl_data.sh")
-    # Signal success to the shell wrapper
-    with open(os.path.join(dest_dir, ".lfs_download_count"), "w") as fh:
+    with open(os.path.join(dest_dir, ".lfs_ok"), "w") as fh:
         fh.write(str(downloaded))
 else:
     print("  LFS batch API returned no downloadable objects.")
 PYEOF
 
-        # Check if Python download succeeded
-        if [[ -f "$BL_HITS_DIR/.lfs_download_count" ]]; then
-            LFS_COUNT=$(cat "$BL_HITS_DIR/.lfs_download_count")
-            rm -f "$BL_HITS_DIR/.lfs_download_count"
-            if [[ "$LFS_COUNT" -gt 0 ]]; then
-                rm -rf "$CLONE_DIR"
-                exit 0
-            fi
-        fi
-    fi
-
-    rm -rf "$CLONE_DIR"
-else
-    echo "  git clone failed (network issue or repo moved)."
-    rm -rf "$CLONE_DIR" 2>/dev/null || true
+if [[ -f "$BL_HITS_DIR/.lfs_ok" ]]; then
+    rm -f "$BL_HITS_DIR/.lfs_ok"
+    exit 0
 fi
 
 echo ""
