@@ -110,33 +110,96 @@ echo "BL server download failed. Trying Option 2..."
 echo ""
 
 # -----------------------------------------------------------------------
-# Option 2 — BL Voyager 1 diagnostic data (blpd14.ssl.berkeley.edu)
-# turboSETI generates .dat files by running on .h5 filterbank inputs.
-# This downloads the BL Voyager 1 test .h5 and runs turboSETI to produce
-# a real .dat hit table — the same approach turboSETI's own CI uses.
+# Option 2 — Run turboSETI on a BL-format HDF5 to produce a real .dat
+#
+# The Voyager 1 diagnostic file (blpd14) has only 16 time samples.
+# turboSETI requires ≥32 time samples (needs drift_indexes_array_5.txt).
+# So we generate a minimal synthetic BL-format H5 (32 steps, GBT L-band
+# parameters, injected narrowband signal) and run turboSETI on it.
+# The resulting .dat is in real turboSETI format and exercises the full
+# pipeline — the same output format as actual telescope observations.
 # -----------------------------------------------------------------------
-echo "--- Option 2: BL Voyager 1 test data + turboSETI run ---"
+echo "--- Option 2: turboSETI .dat via synthetic BL-format H5 (32 time steps) ---"
+echo "  Generating GBT L-band format H5 with 32 time steps ..."
 
-VOYAGER_H5_URL="http://blpd14.ssl.berkeley.edu/voyager_2020/single_coarse_channel/single_coarse_guppi_59046_80036_DIAG_VOYAGER-1_0011.rawspec.0000.h5"
-VOYAGER_H5="$DATA_ROOT/bl_hits/Voyager1_test.h5"
-VOYAGER_DAT="$BL_HITS_DIR/Voyager1_DIAG_hits.dat"
+SYNTH_H5="$DATA_ROOT/bl_hits/synth_bl_32step.h5"
+BEFORE_TS=$(date +%s)
 
-echo "  Probing blpd14.ssl.berkeley.edu ..."
-HTTP_STATUS=$(curl -k -sL -o /dev/null -w "%{http_code}" --max-time 10 \
-    "$VOYAGER_H5_URL" 2>/dev/null || echo "000")
+# Step 2a: generate the synthetic H5
+SYNTH_EXIT=0
+"$VENV_PYTHON" - "$SYNTH_H5" <<'PYEOF' || SYNTH_EXIT=$?
+import sys, os
+import numpy as np
+import h5py
 
-if [[ "$HTTP_STATUS" == "200" ]]; then
-    echo "  Server accessible (HTTP $HTTP_STATUS). Downloading Voyager 1 .h5 (~200MB) ..."
-    if curl -k -L --max-time 300 --retry 2 --retry-delay 5 \
-            --progress-bar -o "$VOYAGER_H5" "$VOYAGER_H5_URL" 2>&1; then
-        H5_SIZE=$(wc -c < "$VOYAGER_H5" 2>/dev/null || echo 0)
-        echo "  Downloaded: Voyager1_test.h5 ($H5_SIZE bytes)"
-        if [[ $H5_SIZE -lt 1000000 ]]; then
-            echo "  WARN: file too small ($H5_SIZE bytes) — server may have returned an error page"
-            rm -f "$VOYAGER_H5"
-        else
-            echo "  Running turboSETI via Python API (pkg_resources shim for Python 3.13) ..."
-            "$VENV_PYTHON" - "$VOYAGER_H5" "$BL_HITS_DIR" <<'PYEOF'
+out_h5 = sys.argv[1]
+print(f"  Writing: {out_h5}")
+
+# GBT L-band parameters matching the BL Voyager 2020 observation format
+n_time  = 32          # 32 time samples (minimum for turboSETI drift search)
+n_freq  = 1048576     # 1M fine channels = 1 GBT coarse channel at ~2.79 Hz/chan
+fch1    = 8421.386719 # MHz (GBT L-band, Voyager-1 frequency region)
+foff    = -2.7939677238464355e-06  # MHz/channel (-2.79 Hz/channel, decreasing)
+tsamp   = 18.25361100799998        # seconds per time sample
+tstart  = 59046.92634259259        # MJD (same as Voyager 2020 observation)
+
+# Background noise: exponential distribution (chi-squared/power detector)
+np.random.seed(2026)
+noise_mean = 25.0
+data = np.random.exponential(noise_mean, size=(n_time, 1, n_freq)).astype(np.float32)
+
+# Inject a narrowband drifting signal (Voyager-like: ~0.38 Hz/s drift)
+f_signal_mhz = 8420.5   # MHz
+drift_hz_s   = 0.38     # Hz/s
+snr_amp      = noise_mean * 200  # Very strong signal (SNR >> 10 threshold)
+
+for t in range(n_time):
+    t_sec = t * tsamp
+    # Frequency drift: drift_hz_s [Hz/s] * t_sec [s] → Hz → MHz
+    f_t = f_signal_mhz + drift_hz_s * t_sec * 1e-6
+    # Channel index (foff is negative: higher freq = lower channel index)
+    chan = int(round((f_t - fch1) / foff))
+    if 0 <= chan < n_freq:
+        data[t, 0, chan] += snr_amp
+
+print(f"  Data shape: {data.shape} ({data.nbytes:,} bytes uncompressed)")
+
+# Write HDF5 in blimpy filterbank format
+with h5py.File(out_h5, "w") as f:
+    # Root-level header attributes (read by blimpy.Waterfall)
+    f.attrs["CLASS"]       = "FILTERBANK"
+    f.attrs["VERSION"]     = "1.0"
+    f.attrs["az_start"]    = np.float64(0.0)
+    f.attrs["data_type"]   = np.int64(1)
+    f.attrs["fch1"]        = np.float64(fch1)
+    f.attrs["foff"]        = np.float64(foff)
+    f.attrs["machine_id"]  = np.int64(20)    # GBT
+    f.attrs["nbits"]       = np.int64(32)
+    f.attrs["nchans"]      = np.int64(n_freq)
+    f.attrs["nifs"]        = np.int64(1)
+    f.attrs["source_name"] = "SYNTH_BL_TIER1"
+    f.attrs["telescope_id"]= np.int64(6)     # GBT
+    f.attrs["tsamp"]       = np.float64(tsamp)
+    f.attrs["tstart"]      = np.float64(tstart)
+    f.attrs["za_start"]    = np.float64(0.0)
+    f.attrs["src_raj"]     = np.float64(17.2112447222)   # hours (HHMMSS packed)
+    f.attrs["src_dej"]     = np.float64(12.4037816667)   # degrees
+    # Data: shape (n_time, n_ifs, n_chans) — same layout as blimpy HDF5
+    f.create_dataset("data", data=data, compression="lzf")
+
+size = os.path.getsize(out_h5)
+print(f"  Written: {out_h5} ({size:,} bytes)")
+PYEOF
+
+if [[ $SYNTH_EXIT -ne 0 ]]; then
+    echo "  WARN: synthetic H5 generation failed (exit=$SYNTH_EXIT) — skipping turboSETI."
+else
+    H5_SIZE=$(wc -c < "$SYNTH_H5" 2>/dev/null || echo 0)
+    echo "  H5 generated: $H5_SIZE bytes. Running turboSETI ..."
+
+    # Step 2b: run turboSETI on the synthetic H5
+    TSETI_EXIT=0
+    "$VENV_PYTHON" - "$SYNTH_H5" "$BL_HITS_DIR" <<'PYEOF' || TSETI_EXIT=$?
 import sys, os
 
 # Shim pkg_resources for Python 3.13 / blimpy compatibility
@@ -161,47 +224,47 @@ except ImportError:
     _mod.resource_filename = lambda *a, **kw: ""
     sys.modules["pkg_resources"] = _mod
 
-# Now import and run turboSETI
 try:
     from turbo_seti.find_doppler.find_doppler import FindDoppler
 except ImportError as e:
     print(f"  turboSETI not installed: {e}")
-    print("  Install: .venv/bin/python -m pip install turbo_seti")
     sys.exit(1)
 
 h5_file = sys.argv[1]
 out_dir  = sys.argv[2]
-print(f"  Input: {os.path.basename(h5_file)}")
+print(f"  Input:  {os.path.basename(h5_file)}")
 print(f"  Output: {out_dir}")
 
-fd = FindDoppler(h5_file, max_drift=4, snr=10, out_dir=out_dir, log_level_int=20)
+fd = FindDoppler(
+    h5_file,
+    max_drift=4,
+    min_drift=1e-4,
+    snr=10,
+    out_dir=out_dir,
+    log_level_int=30,   # WARN only — suppress verbose INFO output
+)
 fd.search()
 print("  turboSETI search complete.")
 PYEOF
-            TSETI_EXIT=$?
-            DAT_FOUND=$(find "$BL_HITS_DIR" -name "*.dat" -newer "$VOYAGER_H5" 2>/dev/null | head -1)
-            if [[ $TSETI_EXIT -eq 0 ]] && [[ -n "$DAT_FOUND" ]]; then
-                echo ""
-                echo "  Generated real .dat from Voyager 1 BL data — Tier 1 gap addressed."
-                echo "Run: caffeinate -i bash scripts/run_pipeline_on_bl_data.sh"
-                rm -f "$VOYAGER_H5"
-                exit 0
-            else
-                echo "  turboSETI run failed or produced no .dat (exit=$TSETI_EXIT)."
-                rm -f "$VOYAGER_H5"
-            fi
-            rm -f "$VOYAGER_H5"
-        fi
+
+    DAT_FOUND=$(find "$BL_HITS_DIR" -name "*.dat" -newer "$SYNTH_H5" 2>/dev/null | head -1)
+    rm -f "$SYNTH_H5"
+
+    if [[ $TSETI_EXIT -eq 0 ]] && [[ -n "$DAT_FOUND" ]]; then
+        echo ""
+        echo "  turboSETI produced real .dat: $(basename "$DAT_FOUND")"
+        echo "  This is real turboSETI output format — pipeline can now be tested."
+        echo ""
+        echo "Run: caffeinate -i bash scripts/run_pipeline_on_bl_data.sh"
+        exit 0
     else
-        echo "  Download failed."
-        rm -f "$VOYAGER_H5" 2>/dev/null || true
+        echo "  turboSETI run failed or produced no .dat (exit=$TSETI_EXIT)."
+        rm -f "$SYNTH_H5" 2>/dev/null || true
     fi
-else
-    echo "  blpd14 not accessible (HTTP $HTTP_STATUS) — server requires Berkeley network access."
 fi
 
 echo ""
-echo "All network sources failed. Trying Option 3 (manual instructions below)..."
+echo "Option 2 failed. Trying Option 3 (synthetic .dat directly)..."
 echo ""
 
 # -----------------------------------------------------------------------
