@@ -110,158 +110,58 @@ echo "BL server download failed. Trying Option 2..."
 echo ""
 
 # -----------------------------------------------------------------------
-# Option 2 — turboSETI GitHub test fixtures via GitHub API + LFS batch
-# No git clone, no git-lfs, no credentials needed.
-# Uses GitHub contents API to find .dat pointer files, parses OID+size,
-# then calls the public LFS batch API for signed download URLs.
+# Option 2 — BL Voyager 1 diagnostic data (blpd14.ssl.berkeley.edu)
+# turboSETI generates .dat files by running on .h5 filterbank inputs.
+# This downloads the BL Voyager 1 test .h5 and runs turboSETI to produce
+# a real .dat hit table — the same approach turboSETI's own CI uses.
 # -----------------------------------------------------------------------
-echo "--- Option 2: turboSETI GitHub test data (API + LFS batch, no auth) ---"
+echo "--- Option 2: BL Voyager 1 test data + turboSETI run ---"
 
-"$VENV_PYTHON" - "$BL_HITS_DIR" <<'PYEOF'
-import sys, json, os, urllib.request, urllib.error, base64, ssl
+VOYAGER_H5_URL="http://blpd14.ssl.berkeley.edu/voyager_2020/single_coarse_channel/single_coarse_guppi_59046_80036_DIAG_VOYAGER-1_0011.rawspec.0000.h5"
+VOYAGER_H5="$DATA_ROOT/bl_hits/Voyager1_test.h5"
+VOYAGER_DAT="$BL_HITS_DIR/Voyager1_DIAG_hits.dat"
 
-dest_dir = sys.argv[1]
-REPO = "UCBerkeleySETI/turbo_seti"
-API_BASE = "https://api.github.com"
-HEADERS = {"User-Agent": "techno-search/1.0", "Accept": "application/vnd.github.v3+json"}
+echo "  Probing blpd14.ssl.berkeley.edu ..."
+HTTP_STATUS=$(curl -k -sL -o /dev/null -w "%{http_code}" --max-time 10 \
+    "$VOYAGER_H5_URL" 2>/dev/null || echo "000")
 
-# Use certifi CA bundle if available (required on macOS Python 3.13)
-try:
-    import certifi
-    _ssl_ctx = ssl.create_default_context(cafile=certifi.where())
-except ImportError:
-    _ssl_ctx = ssl.create_default_context()
-
-def api_get(url):
-    req = urllib.request.Request(url, headers=HEADERS)
-    try:
-        with urllib.request.urlopen(req, timeout=20, context=_ssl_ctx) as r:
-            return json.loads(r.read())
-    except Exception as e:
-        print(f"  API error: {e}")
-        return None
-
-# Find all .dat files anywhere in the repo using the tree API
-print(f"  Scanning {REPO} file tree for .dat files ...")
-tree = api_get(f"{API_BASE}/repos/{REPO}/git/trees/master?recursive=1")
-if not tree:
-    tree = api_get(f"{API_BASE}/repos/{REPO}/git/trees/main?recursive=1")
-if not tree:
-    print("  Could not fetch repo tree.")
-    sys.exit(0)
-
-dat_entries = [
-    e for e in tree.get("tree", [])
-    if e.get("type") == "blob" and e.get("path", "").endswith(".dat")
-]
-print(f"  Found {len(dat_entries)} .dat file(s) in repo")
-if not dat_entries:
-    print("  No .dat files found in repo tree.")
-    sys.exit(0)
-
-# Fetch each file's pointer content via the contents API and parse OID+size
-objects = []
-name_by_oid = {}
-for entry in dat_entries:
-    path = entry["path"]
-    name = os.path.basename(path)
-    file_data = api_get(f"{API_BASE}/repos/{REPO}/contents/{path}")
-    if not file_data:
-        continue
-    content_b64 = file_data.get("content", "").replace("\n", "")
-    try:
-        pointer_text = base64.b64decode(content_b64).decode("utf-8", errors="replace")
-    except Exception:
-        continue
-    oid = size = None
-    for line in pointer_text.splitlines():
-        if line.startswith("oid sha256:"):
-            oid = line.split(":", 1)[1].strip()
-        elif line.startswith("size "):
-            try:
-                size = int(line.split(None, 1)[1].strip())
-            except (ValueError, IndexError):
-                pass
-    if oid and size:
-        objects.append({"oid": oid, "size": size})
-        name_by_oid[oid] = name
-        print(f"  Pointer parsed: {name} (oid={oid[:8]}... size={size})")
-    else:
-        # File might not be LFS-tracked — check if it's already a real .dat
-        if "Top_Hit_#" in pointer_text or "Drift_Rate" in pointer_text:
-            dest = os.path.join(dest_dir, name)
-            with open(dest, "w") as fh:
-                fh.write(pointer_text)
-            print(f"  OK (inline): {name} ({len(pointer_text)} bytes)")
-
-if not objects:
-    print("  No LFS objects to download.")
-    sys.exit(0)
-
-# Call LFS batch API — returns signed download URLs for public repos
-print(f"  Calling LFS batch API for {len(objects)} object(s) ...")
-batch_url = f"https://github.com/{REPO}.git/info/lfs/objects/batch"
-payload = json.dumps({
-    "operation": "download",
-    "transfers": ["basic"],
-    "objects": objects,
-}).encode()
-req = urllib.request.Request(
-    batch_url, data=payload,
-    headers={
-        "Accept": "application/vnd.git-lfs+json",
-        "Content-Type": "application/vnd.git-lfs+json",
-        "User-Agent": "techno-search/1.0",
-    },
-)
-try:
-    with urllib.request.urlopen(req, timeout=30, context=_ssl_ctx) as resp:
-        batch = json.loads(resp.read())
-except urllib.error.HTTPError as e:
-    body = e.read().decode(errors="replace")
-    print(f"  LFS batch API HTTP {e.code}: {body[:300]}")
-    sys.exit(0)
-except Exception as e:
-    print(f"  LFS batch API failed: {e}")
-    sys.exit(0)
-
-downloaded = 0
-for obj in batch.get("objects", []):
-    oid = obj.get("oid", "")
-    err = obj.get("error")
-    if err:
-        print(f"  LFS error {oid[:8]}: {err.get('message','unknown')}")
-        continue
-    href = obj.get("actions", {}).get("download", {}).get("href", "")
-    if not href:
-        print(f"  No download href for {oid[:8]}")
-        continue
-    filename = name_by_oid.get(oid, f"{oid[:8]}.dat")
-    dest = os.path.join(dest_dir, filename)
-    try:
-        dl_req = urllib.request.Request(href, headers={"User-Agent": "techno-search/1.0"})
-        with urllib.request.urlopen(dl_req, timeout=120, context=_ssl_ctx) as dl_resp:
-            data = dl_resp.read()
-        with open(dest, "wb") as fh:
-            fh.write(data)
-        print(f"  OK: {filename} ({len(data)} bytes) [turboSETI test fixture]")
-        downloaded += 1
-    except Exception as e:
-        print(f"  FAILED {filename}: {e}")
-
-if downloaded > 0:
-    print(f"\nDownloaded {downloaded} real .dat file(s).")
-    print("NOTE: GBT-derived test fixtures — useful for format/pipeline testing.")
-    print("Run: caffeinate -i bash scripts/run_pipeline_on_bl_data.sh")
-    with open(os.path.join(dest_dir, ".lfs_ok"), "w") as fh:
-        fh.write(str(downloaded))
-else:
-    print("  LFS batch API returned no downloadable objects.")
-PYEOF
-
-if [[ -f "$BL_HITS_DIR/.lfs_ok" ]]; then
-    rm -f "$BL_HITS_DIR/.lfs_ok"
-    exit 0
+if [[ "$HTTP_STATUS" == "200" ]]; then
+    echo "  Server accessible (HTTP $HTTP_STATUS). Downloading Voyager 1 .h5 (~200MB) ..."
+    if curl -k -L --max-time 300 --retry 2 --retry-delay 5 \
+            --progress-bar -o "$VOYAGER_H5" "$VOYAGER_H5_URL" 2>&1; then
+        H5_SIZE=$(wc -c < "$VOYAGER_H5" 2>/dev/null || echo 0)
+        echo "  Downloaded: Voyager1_test.h5 ($H5_SIZE bytes)"
+        if [[ $H5_SIZE -lt 1000000 ]]; then
+            echo "  WARN: file too small ($H5_SIZE bytes) — server may have returned an error page"
+            rm -f "$VOYAGER_H5"
+        else
+            echo "  Running turboSETI to generate .dat hit table ..."
+            if "$VENV_PYTHON" -m turbo_seti.find_event.find_doppler \
+                    "$VOYAGER_H5" \
+                    --out_dir "$BL_HITS_DIR" \
+                    --snr 10 \
+                    --max_drift 4 \
+                    --min_drift 0 \
+                    --coarse_chans 1 2>&1; then
+                if [[ -f "$VOYAGER_DAT" ]] || ls "$BL_HITS_DIR"/*.dat 1>/dev/null 2>&1; then
+                    echo ""
+                    echo "  Generated real .dat from Voyager 1 BL data — Tier 1 gap addressed."
+                    echo "Run: caffeinate -i bash scripts/run_pipeline_on_bl_data.sh"
+                    rm -f "$VOYAGER_H5"
+                    exit 0
+                fi
+            else
+                echo "  turboSETI run failed — may not be installed."
+                echo "  Install: .venv/bin/python -m pip install 'setuptools>=68' turbo_seti"
+            fi
+            rm -f "$VOYAGER_H5"
+        fi
+    else
+        echo "  Download failed."
+        rm -f "$VOYAGER_H5" 2>/dev/null || true
+    fi
+else
+    echo "  blpd14 not accessible (HTTP $HTTP_STATUS) — server requires Berkeley network access."
 fi
 
 echo ""
