@@ -52,26 +52,48 @@ BL_TARGETS=(
 )
 
 echo "--- Option 1: BL open data server ---"
-echo "Trying https://blpd0.ssl.berkeley.edu/L_band_table/ ..."
+echo "Probing https://blpd0.ssl.berkeley.edu/ for directory structure ..."
+echo "(Server has an SSL cert mismatch; using -k to bypass)"
+
+# Fetch the server root to discover what paths are available
+BL_ROOT_HTML=$(curl -k -sL --max-time 15 "https://blpd0.ssl.berkeley.edu/" 2>/dev/null || true)
+if [[ -n "$BL_ROOT_HTML" ]]; then
+    echo "  Server responded. Scanning for .dat file paths ..."
+    # Extract any href links ending in .dat from the directory listing
+    BL_DAT_PATHS=$(echo "$BL_ROOT_HTML" | grep -oE 'href="[^"]*\.dat"' | sed 's/href="//;s/"//' | head -10 || true)
+    if [[ -n "$BL_DAT_PATHS" ]]; then
+        echo "  Found .dat paths on server:"
+        echo "$BL_DAT_PATHS" | while read -r p; do echo "    $p"; done
+    else
+        # Try known subdirectory paths
+        for subdir in "L_band_table" "GBT" "GBT_L_band" "hits" "dat_files"; do
+            SUBDIR_HTML=$(curl -k -sL --max-time 10 "https://blpd0.ssl.berkeley.edu/$subdir/" 2>/dev/null || true)
+            if echo "$SUBDIR_HTML" | grep -q "\.dat"; then
+                echo "  Found .dat files under /$subdir/"
+                BL_BASE="https://blpd0.ssl.berkeley.edu/$subdir"
+                break
+            fi
+        done
+    fi
+else
+    echo "  Server did not respond."
+fi
 
 for target in "${BL_TARGETS[@]}"; do
     dest="$BL_HITS_DIR/$target"
-    # blpd0.ssl.berkeley.edu has an SSL cert that doesn't cover its own hostname,
-    # so we use -k (skip verification). This server is a Berkeley internal data host;
-    # the data is public and non-sensitive so the risk is acceptable.
     if curl -L -k --max-time 30 --retry 2 --retry-delay 2 \
             --fail --show-error \
             -o "$dest" \
-            "https://blpd0.ssl.berkeley.edu/L_band_table/$target" 2>&1; then
+            "${BL_BASE:-https://blpd0.ssl.berkeley.edu/L_band_table}/$target" 2>&1; then
         if is_valid_dat "$dest"; then
             echo "  OK: $target ($(wc -c < "$dest") bytes)"
             DOWNLOAD_SUCCESS=$((DOWNLOAD_SUCCESS + 1))
         else
-            echo "  WARN: $target invalid ($(wc -c < "$dest" 2>/dev/null || echo 0) bytes — likely redirect page)"
+            echo "  WARN: $target invalid ($(wc -c < "$dest" 2>/dev/null || echo 0) bytes)"
             rm -f "$dest"
         fi
     else
-        echo "  SKIP: $target (server error — see above)"
+        echo "  SKIP: $target (not found at current path)"
         rm -f "$dest" 2>/dev/null || true
     fi
 done
@@ -99,13 +121,19 @@ if ! command -v git-lfs &>/dev/null; then
 else
     CLONE_DIR=$(mktemp -d)
     echo "  Cloning turboSETI (shallow) ..."
+    # LFS objects on public GitHub repos require authentication.
+    # Use 'gh' CLI token if available (user already has GitHub auth configured).
+    CLONE_URL="https://github.com/UCBerkeleySETI/turbo_seti"
+    if command -v gh &>/dev/null; then
+        GH_TOKEN=$(gh auth token 2>/dev/null || true)
+        if [[ -n "$GH_TOKEN" ]]; then
+            CLONE_URL="https://oauth2:${GH_TOKEN}@github.com/UCBerkeleySETI/turbo_seti"
+            echo "  (using gh auth token for LFS access)"
+        fi
+    fi
     # Note: do NOT use --filter=blob:none — it prevents git-lfs from resolving objects
-    if git clone --depth=1 \
-            https://github.com/UCBerkeleySETI/turbo_seti \
-            "$CLONE_DIR" 2>&1; then
+    if git clone --depth=1 "$CLONE_URL" "$CLONE_DIR" 2>&1; then
         cd "$CLONE_DIR"
-        # LFS objects should auto-download on clone if git-lfs is installed;
-        # pull explicitly in case auto-download was skipped
         git lfs pull --include="tests/test_data/*.dat" 2>&1 || true
 
         DAT_COUNT=0
