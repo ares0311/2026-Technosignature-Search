@@ -114,16 +114,16 @@ echo ""
 # -----------------------------------------------------------------------
 # Option 2 — Run turboSETI on a BL-format HDF5 to produce a real .dat
 #
-# turboSETI requires a drift_indexes_array_N.txt file where N=log2(n_time).
-# The installed package only ships certain powers (typically 2^7=128 and
-# above in turboSETI 2.3.x; array_4 and array_5 are not included).
-# This block probes the installed drift_indexes/ at runtime to find the
-# minimum compatible n_time, then generates a 65536-channel H5 slice
-# (~183 kHz, < 20 MB) so turboSETI finishes in under a minute.
-# The resulting SYNTH_BL_TIER1.dat is genuine turboSETI output format.
+# turboSETI uses resource_filename('turbo_seti', 'drift_indexes/drift_indexes_array_N.txt')
+# to locate its index files.  The PyPI wheel for 2.3.x omits these files,
+# so this script downloads any missing ones from the GitHub repo
+# (array_2 through array_11 exist there), then uses the minimum
+# available power.  n_freq=65536 keeps the H5 under 10 MB so turboSETI
+# finishes in under a minute.  The resulting SYNTH_BL_TIER1.dat is
+# genuine turboSETI output — same format as actual telescope observations.
 # -----------------------------------------------------------------------
 echo "--- Option 2: turboSETI .dat via synthetic BL-format H5 ---"
-echo "  Probing installed turboSETI drift_indexes to find compatible n_time ..."
+echo "  Checking/fetching turboSETI drift_indexes files ..."
 
 OPT2_EXIT=0
 "$VENV_PYTHON" - "$BL_HITS_DIR" <<'PYEOF' || OPT2_EXIT=$?
@@ -155,24 +155,46 @@ except ImportError:
 
 # --- Import turboSETI ---
 try:
+    import turbo_seti as _ts
     from turbo_seti.find_doppler.find_doppler import FindDoppler
-    import turbo_seti.find_doppler.data_handler as _dh
 except ImportError as e:
     print(f"  turboSETI not available: {e}", file=sys.stderr)
     sys.exit(1)
 
-# --- Probe drift_indexes: find minimum compatible n_time_steps ---
-# turboSETI needs drift_indexes_array_N.txt where N = int(log2(n_time)).
-# The available files vary by package version — probe rather than hardcode.
-_drift_dir = os.path.join(os.path.dirname(os.path.abspath(_dh.__file__)), "drift_indexes")
+# --- Ensure drift_indexes files exist ---
+# turboSETI 2.3.x PyPI wheel omits the drift_indexes text files.
+# They live at turbo_seti/drift_indexes/ (package root, NOT find_doppler/).
+# Files array_2 through array_11 are in the GitHub repo — download if missing.
+_pkg_dir   = os.path.dirname(os.path.abspath(_ts.__file__))
+_drift_dir = os.path.join(_pkg_dir, "drift_indexes")
+os.makedirs(_drift_dir, exist_ok=True)
+
 _avail = sorted(glob.glob(os.path.join(_drift_dir, "drift_indexes_array_*.txt")))
 if not _avail:
-    print("  ERROR: No drift_indexes files in turboSETI installation", file=sys.stderr)
+    print("  drift_indexes files absent from PyPI wheel — downloading from GitHub ...")
+    import urllib.request
+    _base = ("https://raw.githubusercontent.com/UCBerkeleySETI/"
+             "turbo_seti/master/turbo_seti/drift_indexes")
+    for _pow in range(2, 12):  # array_2 through array_11
+        _fname = f"drift_indexes_array_{_pow}.txt"
+        _url   = f"{_base}/{_fname}"
+        _dest  = os.path.join(_drift_dir, _fname)
+        try:
+            urllib.request.urlretrieve(_url, _dest)
+            _avail.append(_dest)
+            print(f"    {_fname} ({os.path.getsize(_dest):,} bytes)")
+        except Exception as _e:
+            pass  # not all powers may exist on that branch
+    _avail = sorted(_avail)
+
+if not _avail:
+    print("  ERROR: cannot obtain drift_indexes files", file=sys.stderr)
     sys.exit(1)
+
 _powers  = sorted(int(os.path.basename(f).split("_array_")[1].replace(".txt", "")) for f in _avail)
 _min_pow = _powers[0]
 n_time   = 2 ** _min_pow
-print(f"  drift_indexes available: powers {_powers} → using n_time={n_time} (2^{_min_pow})")
+print(f"  drift_indexes ready: powers {_powers} → using n_time={n_time} (2^{_min_pow})")
 
 # --- H5 parameters: narrow 65536-channel slice keeps file < 20 MB ---
 # turboSETI accepts any nchans; we don't need the full 1M GBT coarse channel.
