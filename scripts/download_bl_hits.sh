@@ -118,17 +118,24 @@ echo ""
 echo "--- Option 2: turboSETI GitHub test data (API + LFS batch, no auth) ---"
 
 "$VENV_PYTHON" - "$BL_HITS_DIR" <<'PYEOF'
-import sys, json, os, urllib.request, urllib.error, base64
+import sys, json, os, urllib.request, urllib.error, base64, ssl
 
 dest_dir = sys.argv[1]
 REPO = "UCBerkeleySETI/turbo_seti"
 API_BASE = "https://api.github.com"
 HEADERS = {"User-Agent": "techno-search/1.0", "Accept": "application/vnd.github.v3+json"}
 
+# Use certifi CA bundle if available (required on macOS Python 3.13)
+try:
+    import certifi
+    _ssl_ctx = ssl.create_default_context(cafile=certifi.where())
+except ImportError:
+    _ssl_ctx = ssl.create_default_context()
+
 def api_get(url):
     req = urllib.request.Request(url, headers=HEADERS)
     try:
-        with urllib.request.urlopen(req, timeout=20) as r:
+        with urllib.request.urlopen(req, timeout=20, context=_ssl_ctx) as r:
             return json.loads(r.read())
     except Exception as e:
         print(f"  API error: {e}")
@@ -208,7 +215,7 @@ req = urllib.request.Request(
     },
 )
 try:
-    with urllib.request.urlopen(req, timeout=30) as resp:
+    with urllib.request.urlopen(req, timeout=30, context=_ssl_ctx) as resp:
         batch = json.loads(resp.read())
 except urllib.error.HTTPError as e:
     body = e.read().decode(errors="replace")
@@ -233,7 +240,7 @@ for obj in batch.get("objects", []):
     dest = os.path.join(dest_dir, filename)
     try:
         dl_req = urllib.request.Request(href, headers={"User-Agent": "techno-search/1.0"})
-        with urllib.request.urlopen(dl_req, timeout=120) as dl_resp:
+        with urllib.request.urlopen(dl_req, timeout=120, context=_ssl_ctx) as dl_resp:
             data = dl_resp.read()
         with open(dest, "wb") as fh:
             fh.write(data)
