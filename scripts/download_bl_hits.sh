@@ -124,12 +124,16 @@ else
     # LFS objects on public GitHub repos require authentication.
     # Use 'gh' CLI token if available (user already has GitHub auth configured).
     CLONE_URL="https://github.com/UCBerkeleySETI/turbo_seti"
-    if command -v gh &>/dev/null; then
+    # Try macOS keychain credentials first (works without gh CLI)
+    GH_TOKEN=$(printf "protocol=https\nhost=github.com\n\n" | git credential fill 2>/dev/null | grep '^password=' | cut -d= -f2- || true)
+    if [[ -z "$GH_TOKEN" ]] && command -v gh &>/dev/null; then
         GH_TOKEN=$(gh auth token 2>/dev/null || true)
-        if [[ -n "$GH_TOKEN" ]]; then
-            CLONE_URL="https://oauth2:${GH_TOKEN}@github.com/UCBerkeleySETI/turbo_seti"
-            echo "  (using gh auth token for LFS access)"
-        fi
+    fi
+    if [[ -n "$GH_TOKEN" ]]; then
+        CLONE_URL="https://x-access-token:${GH_TOKEN}@github.com/UCBerkeleySETI/turbo_seti"
+        echo "  (using keychain credentials for LFS access)"
+    else
+        echo "  (no credentials found; LFS objects may not resolve)"
     fi
     # Note: do NOT use --filter=blob:none — it prevents git-lfs from resolving objects
     if git clone --depth=1 "$CLONE_URL" "$CLONE_DIR" 2>&1; then
