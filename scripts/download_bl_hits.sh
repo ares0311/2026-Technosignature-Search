@@ -135,30 +135,60 @@ if [[ "$HTTP_STATUS" == "200" ]]; then
             echo "  WARN: file too small ($H5_SIZE bytes) — server may have returned an error page"
             rm -f "$VOYAGER_H5"
         else
-            echo "  Ensuring pkg_resources available (blimpy dependency) ..."
-            "$VENV_PYTHON" -m pip install "setuptools>=68" -q 2>&1 | grep -v "^$" || true
-            echo "  Running turboSETI to generate .dat hit table ..."
-            TSETI_BIN="$REPO_ROOT/.venv/bin/turboSETI"
-            if [[ ! -f "$TSETI_BIN" ]]; then
-                echo "  turboSETI not installed — installing ..."
-                "$VENV_PYTHON" -m pip install "setuptools>=68" "turbo_seti" -q 2>&1 | grep -v "^$" || true
-            fi
-            if "$TSETI_BIN" "$VOYAGER_H5" \
-                    -o "$BL_HITS_DIR" \
-                    -s 10 \
-                    -M 4 2>&1; then
-                DAT_FOUND=$(find "$BL_HITS_DIR" -name "*.dat" -newer "$VOYAGER_H5" 2>/dev/null | head -1)
-                if [[ -n "$DAT_FOUND" ]]; then
-                    echo ""
-                    echo "  Generated real .dat from Voyager 1 BL data — Tier 1 gap addressed."
-                    echo "Run: caffeinate -i bash scripts/run_pipeline_on_bl_data.sh"
-                    rm -f "$VOYAGER_H5"
-                    exit 0
-                else
-                    echo "  turboSETI ran but no .dat produced."
-                fi
+            echo "  Running turboSETI via Python API (pkg_resources shim for Python 3.13) ..."
+            "$VENV_PYTHON" - "$VOYAGER_H5" "$BL_HITS_DIR" <<'PYEOF'
+import sys, os
+
+# Shim pkg_resources for Python 3.13 / blimpy compatibility
+try:
+    import pkg_resources
+except ImportError:
+    import types, importlib.metadata
+    _mod = types.ModuleType("pkg_resources")
+    class _DistributionNotFound(Exception):
+        pass
+    def _get_distribution(name):
+        try:
+            d = importlib.metadata.distribution(name)
+            class _D:
+                version = d.metadata["Version"]
+            return _D()
+        except importlib.metadata.PackageNotFoundError:
+            raise _DistributionNotFound(name)
+    _mod.get_distribution = _get_distribution
+    _mod.DistributionNotFound = _DistributionNotFound
+    _mod.require = lambda *a, **kw: None
+    _mod.resource_filename = lambda *a, **kw: ""
+    sys.modules["pkg_resources"] = _mod
+
+# Now import and run turboSETI
+try:
+    from turbo_seti.find_doppler.find_doppler import FindDoppler
+except ImportError as e:
+    print(f"  turboSETI not installed: {e}")
+    print("  Install: .venv/bin/python -m pip install turbo_seti")
+    sys.exit(1)
+
+h5_file = sys.argv[1]
+out_dir  = sys.argv[2]
+print(f"  Input: {os.path.basename(h5_file)}")
+print(f"  Output: {out_dir}")
+
+fd = FindDoppler(h5_file, max_drift=4, snr=10, out_dir=out_dir, log_level_int=20)
+fd.search()
+print("  turboSETI search complete.")
+PYEOF
+            TSETI_EXIT=$?
+            DAT_FOUND=$(find "$BL_HITS_DIR" -name "*.dat" -newer "$VOYAGER_H5" 2>/dev/null | head -1)
+            if [[ $TSETI_EXIT -eq 0 ]] && [[ -n "$DAT_FOUND" ]]; then
+                echo ""
+                echo "  Generated real .dat from Voyager 1 BL data — Tier 1 gap addressed."
+                echo "Run: caffeinate -i bash scripts/run_pipeline_on_bl_data.sh"
+                rm -f "$VOYAGER_H5"
+                exit 0
             else
-                echo "  turboSETI run failed."
+                echo "  turboSETI run failed or produced no .dat (exit=$TSETI_EXIT)."
+                rm -f "$VOYAGER_H5"
             fi
             rm -f "$VOYAGER_H5"
         fi
