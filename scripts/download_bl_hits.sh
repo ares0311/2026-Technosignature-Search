@@ -135,24 +135,30 @@ if [[ "$HTTP_STATUS" == "200" ]]; then
             echo "  WARN: file too small ($H5_SIZE bytes) — server may have returned an error page"
             rm -f "$VOYAGER_H5"
         else
+            echo "  Ensuring pkg_resources available (blimpy dependency) ..."
+            "$VENV_PYTHON" -m pip install "setuptools>=68" -q 2>&1 | grep -v "^$" || true
             echo "  Running turboSETI to generate .dat hit table ..."
-            if "$VENV_PYTHON" -m turbo_seti.find_event.find_doppler \
-                    "$VOYAGER_H5" \
-                    --out_dir "$BL_HITS_DIR" \
-                    --snr 10 \
-                    --max_drift 4 \
-                    --min_drift 0 \
-                    --coarse_chans 1 2>&1; then
-                if [[ -f "$VOYAGER_DAT" ]] || ls "$BL_HITS_DIR"/*.dat 1>/dev/null 2>&1; then
+            TSETI_BIN="$REPO_ROOT/.venv/bin/turboSETI"
+            if [[ ! -f "$TSETI_BIN" ]]; then
+                echo "  turboSETI not installed — installing ..."
+                "$VENV_PYTHON" -m pip install "setuptools>=68" "turbo_seti" -q 2>&1 | grep -v "^$" || true
+            fi
+            if "$TSETI_BIN" "$VOYAGER_H5" \
+                    -o "$BL_HITS_DIR" \
+                    -s 10 \
+                    -M 4 2>&1; then
+                DAT_FOUND=$(find "$BL_HITS_DIR" -name "*.dat" -newer "$VOYAGER_H5" 2>/dev/null | head -1)
+                if [[ -n "$DAT_FOUND" ]]; then
                     echo ""
                     echo "  Generated real .dat from Voyager 1 BL data — Tier 1 gap addressed."
                     echo "Run: caffeinate -i bash scripts/run_pipeline_on_bl_data.sh"
                     rm -f "$VOYAGER_H5"
                     exit 0
+                else
+                    echo "  turboSETI ran but no .dat produced."
                 fi
             else
-                echo "  turboSETI run failed — may not be installed."
-                echo "  Install: .venv/bin/python -m pip install 'setuptools>=68' turbo_seti"
+                echo "  turboSETI run failed."
             fi
             rm -f "$VOYAGER_H5"
         fi
