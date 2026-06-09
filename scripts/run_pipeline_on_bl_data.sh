@@ -6,6 +6,7 @@
 #   2. Run scripts/download_bl_hits.sh (or manually place .dat files in ~/technosignature-data/bl_hits/)
 #
 # Run (macOS — use caffeinate to prevent sleep during long pipeline run):
+#   git pull origin main
 #   caffeinate -i bash scripts/run_pipeline_on_bl_data.sh
 
 set -euo pipefail
@@ -15,23 +16,33 @@ DATA_ROOT="${TECHNO_DATA_DIR:-$HOME/technosignature-data}"
 BL_HITS_DIR="$DATA_ROOT/bl_hits"
 PIPELINE_OUT="$DATA_ROOT/pipeline_out"
 
-VENV_PYTHON="$REPO_ROOT/.venv/bin/python"
 VENV_CLI="$REPO_ROOT/.venv/bin/techno-search"
+VENV_PYTHON="$REPO_ROOT/.venv/bin/python"
 
 if [[ ! -f "$VENV_CLI" ]]; then
     echo "ERROR: techno-search CLI not found at $VENV_CLI"
-    echo "Run: cd $REPO_ROOT && pip install -e ."
+    echo "Sync main, activate .venv, and install the project before retrying."
     exit 1
 fi
 
-shopt -s nullglob
-DAT_FILES=("$BL_HITS_DIR"/*.dat)
-shopt -u nullglob
-if [[ ${#DAT_FILES[@]} -eq 0 ]]; then
-    echo "ERROR: No .dat files found in $BL_HITS_DIR"
-    echo "Run scripts/download_bl_hits.sh first."
+AUDIT_JSON=$(
+    "$VENV_PYTHON" "$REPO_ROOT/scripts/audit_bl_observation_artifacts.py" \
+        "$BL_HITS_DIR" --require-approved
+) || {
+    echo "ERROR: No human-approved real observation hit tables are available."
+    echo "Synthetic, invalid, and unverified files are excluded from production runs."
+    echo "Review docs/REAL_OBSERVATION_INTAKE.md and complete Human Gate 1."
     exit 1
-fi
+}
+
+DAT_FILES=()
+while IFS= read -r approved_path; do
+    [[ -n "$approved_path" ]] && DAT_FILES+=("$approved_path")
+done < <(
+    printf '%s' "$AUDIT_JSON" |
+        "$VENV_PYTHON" -c \
+            'import json,sys; data=json.load(sys.stdin); print("\n".join(a["path"] for a in data["artifacts"] if a["approved_for_pipeline"]))'
+)
 
 echo "Running pipeline on BL hit tables in: $BL_HITS_DIR"
 echo "Output directory: $PIPELINE_OUT"
@@ -42,7 +53,7 @@ mkdir -p "$PIPELINE_OUT"
 SUCCESS=0
 FAILED=0
 
-for DAT_FILE in "$BL_HITS_DIR"/*.dat; do
+for DAT_FILE in "${DAT_FILES[@]}"; do
     BASENAME=$(basename "$DAT_FILE" .dat)
     OUT_DIR="$PIPELINE_OUT/$BASENAME"
 

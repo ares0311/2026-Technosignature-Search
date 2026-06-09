@@ -2834,3 +2834,37 @@ submission, and does not constitute a detection claim.
 
 Schema count increased from 203 to 206. Consistency fixture updated: milestone
 72→73, decision 119→120, schema_count 203→206.
+
+---
+
+# DECISION-121: Human Approval Gates Real Observation Pipeline Execution
+
+Date: 2026-06-09
+Status: accepted
+
+## Context
+
+The highest-priority Tier 1 blocker remains real observation data ingestion.
+The local data directory contains synthetic turboSETI fixtures, an invalid HTTP
+response saved as a `.dat` file, and structurally plausible Voyager artifacts
+without a complete acquisition and approval record. File-format validity alone
+cannot establish that an artifact is approved real telescope data.
+
+## Decision
+
+Require each production-path turboSETI hit table to have a sibling provenance
+sidecar with a matching SHA-256 hash, HTTPS archive URL, archive and instrument
+metadata, download timestamp, approved data-use and provenance reviews, and
+explicit human authorization for local real-data use.
+
+The BL pipeline runner rejects synthetic, invalid, unverified, or hash-mismatched
+artifacts. Synthetic generation remains available only through the explicit
+`TECHNO_ALLOW_SYNTHETIC_BL_FIXTURES=1` development override. TLS certificate
+verification may not be bypassed by the download script.
+
+## Consequences
+
+Synthetic outputs cannot be mistaken for Tier 1 evidence, and the first real
+pipeline run stops at a visible human partnership gate. This decision does not
+approve any current local artifact, close the real-observation blocker,
+authorize external submission, or constitute a detection claim.

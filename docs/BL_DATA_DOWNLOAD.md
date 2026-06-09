@@ -13,6 +13,8 @@ production blocker. See `docs/PRODUCTION_READINESS.md`.
 - **BL turboSETI hit tables** (`.dat` files) — pre-computed results from the
   turboSETI narrowband drift-rate search algorithm. These are small (KB–MB)
   and are the primary input to the radio scoring pipeline.
+- **A reviewed provenance sidecar** (`<filename>.provenance.json`) — required
+  before the production-path runner will process a hit table.
 - **No credentials required** — the BL Open Data Release is publicly accessible.
 - **No raw filterbank files** — raw `.fil` files are multi-GB per observation
   and are not needed for the current pipeline. Do not download them.
@@ -28,17 +30,21 @@ git pull origin main
 # 1. Create local data directories
 bash scripts/setup_data_dirs.sh
 
-# 2. Download hit tables (tries BL server first, then fallbacks)
+# 2. Attempt a TLS-verified download
 caffeinate -i bash scripts/download_bl_hits.sh
 
-# 3. Run the pipeline on the downloaded data
-caffeinate -i bash scripts/run_pipeline_on_bl_data.sh
+# 3. Audit classifications and approval state
+.venv/bin/python scripts/audit_bl_observation_artifacts.py \
+  ~/technosignature-data/bl_hits
 ```
 
-The script tries three sources in order:
-1. **BL GBT L-band survey** (real data, preferred) — `blpd0.ssl.berkeley.edu`
-2. **turboSETI package test data** (real format, if installed) — from `.venv`
-3. **Synthetic files** (pipeline testing only, does not close Tier 1 gap)
+The downloader probes the BL GBT L-band endpoint with TLS verification enabled.
+It does not treat a successful download as human approval. Synthetic generation
+is disabled by default and can be enabled only for format testing with
+`TECHNO_ALLOW_SYNTHETIC_BL_FIXTURES=1`; synthetic output never closes Tier 1.
+
+The pipeline runner remains blocked until Human Gate 1 in
+`docs/REAL_OBSERVATION_INTAKE.md` is complete.
 
 ---
 
@@ -50,6 +56,7 @@ The BL L-band survey results are hosted at the SSL Berkeley data server.
 **Always use HTTPS and `-L` to follow redirects:**
 
 ```bash
+git pull origin main
 mkdir -p ~/technosignature-data/bl_hits
 cd ~/technosignature-data/bl_hits
 
@@ -71,33 +78,11 @@ done
 - **Connection refused** — the BL server may be temporarily down. Try again
   in a few hours or use Option B.
 
-### Option B — BL GitHub Test Data (via pip, no browser needed)
+### Option B — Human-Reviewed Archive Selection
 
-The turboSETI package ships with real-format `.dat` test fixtures.
-After installing, they are available without importing the package:
-
-```bash
-# Install turboSETI (ignore pkg_resources error from blimpy)
-.venv/bin/python -m pip install "setuptools>=68" turbo_seti
-
-# Find .dat files in the installed package (bypasses blimpy import)
-.venv/bin/python - <<'PYEOF'
-import pathlib, shutil
-
-venv_lib = pathlib.Path(".venv/lib")
-dat_files = [
-    f for f in venv_lib.rglob("*.dat")
-    if "turbo_seti" in str(f).lower() or "blc" in f.name.lower()
-]
-print(f"Found {len(dat_files)} .dat file(s)")
-dest_dir = pathlib.Path.home() / "technosignature-data/bl_hits"
-dest_dir.mkdir(parents=True, exist_ok=True)
-for f in dat_files:
-    dst = dest_dir / f.name
-    shutil.copy(f, dst)
-    print(f"  Copied: {f.name}  ({dst.stat().st_size} bytes)")
-PYEOF
-```
+Use the official BL archive to select a specific observation record, preserve
+its exact URL and checksum, and complete Human Gate 1 before pipeline execution.
+Package test fixtures and synthetic HDF5 files are format tests only.
 
 ### Option C — BL Open Data Portal (Browser)
 
@@ -138,6 +123,7 @@ A real turboSETI `.dat` file looks like this:
 
 Quick validity check:
 ```bash
+git pull origin main
 # File should be > 500 bytes and contain header lines
 wc -c ~/technosignature-data/bl_hits/*.dat
 grep "# Source:" ~/technosignature-data/bl_hits/*.dat | head -5
@@ -153,11 +139,12 @@ If you installed `turbo_seti` and see `ModuleNotFoundError: No module named 'pkg
 this is a Python 3.13 compatibility issue with `blimpy`. Fix:
 
 ```bash
+git pull origin main
 .venv/bin/python -m pip install "setuptools>=68"
 ```
 
 This provides `pkg_resources`. The techno-search pipeline itself does NOT use
-`pkg_resources`; this only affects Option B above.
+`pkg_resources`; this affects optional turboSETI processing only.
 
 ---
 
@@ -187,8 +174,9 @@ Good starting targets from the BL GBT L-band survey (Enriquez et al. 2017):
 
 ## Next Steps After Download
 
-1. Run `caffeinate -i bash scripts/run_pipeline_on_bl_data.sh`
-2. Review output reports in `~/technosignature-data/pipeline_out/`
-3. Manually inspect any candidates with pathway `follow_up_target` or `human_review_queue`
-4. For threshold calibration, see `docs/THRESHOLD_CALIBRATION.md`
-5. See `docs/PRODUCTION_READINESS.md` for the next Tier 1 gap to address
+1. Complete Human Gate 1 in `docs/REAL_OBSERVATION_INTAKE.md`.
+2. Create the reviewed provenance sidecar with the exact artifact checksum.
+3. Run the guarded pipeline from an up-to-date local `main` checkout.
+4. Review reports for negative evidence, blocking issues, and provenance.
+5. Do not calibrate thresholds until real labels and site-specific RFI evidence
+   are approved.

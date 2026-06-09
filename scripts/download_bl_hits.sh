@@ -1,14 +1,11 @@
 #!/usr/bin/env bash
 # download_bl_hits.sh — download real turboSETI hit tables for pipeline testing
 #
-# Tries sources in order:
-#   1. BL GBT L-band survey open data (blpd0.ssl.berkeley.edu)
-#   2. Synthetic BL-format H5 → turboSETI → real .dat (probes installed
-#      drift_indexes/ to find the minimum compatible n_time_steps; uses
-#      65536-channel slice so the H5 stays < 20 MB and runs in < 1 min)
-#   3. Synthetic .dat files (pipeline format testing only — does NOT close Tier 1 gap)
+# Tries the BL GBT L-band survey endpoint. Synthetic fixtures are generated
+# only when TECHNO_ALLOW_SYNTHETIC_BL_FIXTURES=1 is explicitly set.
 #
 # Run (macOS — use caffeinate to prevent sleep):
+#   git pull origin main
 #   caffeinate -i bash scripts/download_bl_hits.sh
 
 set -euo pipefail
@@ -55,10 +52,10 @@ BL_TARGETS=(
 
 echo "--- Option 1: BL open data server ---"
 echo "Probing https://blpd0.ssl.berkeley.edu/ for directory structure ..."
-echo "(Server has an SSL cert mismatch; using -k to bypass)"
+echo "TLS certificate verification is required."
 
 # Fetch the server root to discover what paths are available
-BL_ROOT_HTML=$(curl -k -sL --max-time 15 "https://blpd0.ssl.berkeley.edu/" 2>/dev/null || true)
+BL_ROOT_HTML=$(curl -sL --max-time 15 "https://blpd0.ssl.berkeley.edu/" 2>/dev/null || true)
 if [[ -n "$BL_ROOT_HTML" ]]; then
     echo "  Server responded. Scanning for .dat file paths ..."
     # Extract any href links ending in .dat from the directory listing
@@ -69,7 +66,7 @@ if [[ -n "$BL_ROOT_HTML" ]]; then
     else
         # Try known subdirectory paths
         for subdir in "L_band_table" "GBT" "GBT_L_band" "hits" "dat_files"; do
-            SUBDIR_HTML=$(curl -k -sL --max-time 10 "https://blpd0.ssl.berkeley.edu/$subdir/" 2>/dev/null || true)
+            SUBDIR_HTML=$(curl -sL --max-time 10 "https://blpd0.ssl.berkeley.edu/$subdir/" 2>/dev/null || true)
             if echo "$SUBDIR_HTML" | grep -q "\.dat"; then
                 echo "  Found .dat files under /$subdir/"
                 BL_BASE="https://blpd0.ssl.berkeley.edu/$subdir"
@@ -83,7 +80,7 @@ fi
 
 for target in "${BL_TARGETS[@]}"; do
     dest="$BL_HITS_DIR/$target"
-    if curl -L -k --max-time 30 --retry 2 --retry-delay 2 \
+    if curl -L --max-time 30 --retry 2 --retry-delay 2 \
             --fail --show-error \
             -o "$dest" \
             "${BL_BASE:-https://blpd0.ssl.berkeley.edu/L_band_table}/$target" 2>&1; then
@@ -102,17 +99,26 @@ done
 
 if [[ $DOWNLOAD_SUCCESS -gt 0 ]]; then
     echo ""
-    echo "Downloaded $DOWNLOAD_SUCCESS real BL hit table(s) — Tier 1 gap partially addressed."
-    echo "Run: caffeinate -i bash scripts/run_pipeline_on_bl_data.sh"
+    echo "Downloaded $DOWNLOAD_SUCCESS plausible BL hit table(s)."
+    echo "Human provenance and data-use approval are still required before pipeline use."
+    echo "See docs/REAL_OBSERVATION_INTAKE.md."
     exit 0
 fi
 
+if [[ "${TECHNO_ALLOW_SYNTHETIC_BL_FIXTURES:-0}" != "1" ]]; then
+    echo ""
+    echo "No real hit tables were downloaded."
+    echo "Synthetic fallback is disabled because it cannot close Tier 1."
+    echo "See docs/REAL_OBSERVATION_INTAKE.md for Human Gate 1."
+    exit 2
+fi
+
 echo ""
-echo "BL server download failed. Trying Option 2..."
+echo "Synthetic fixture generation explicitly enabled."
 echo ""
 
 # -----------------------------------------------------------------------
-# Option 2 — Run turboSETI on a BL-format HDF5 to produce a real .dat
+# Option 2 — Run turboSETI on a synthetic BL-format HDF5
 #
 # turboSETI uses resource_filename('turbo_seti', 'drift_indexes/drift_indexes_array_N.txt')
 # to locate its index files.  The PyPI wheel for 2.3.x omits these files,
@@ -120,7 +126,7 @@ echo ""
 # (array_2 through array_11 exist there), then uses the minimum
 # available power.  n_freq=65536 keeps the H5 under 10 MB so turboSETI
 # finishes in under a minute.  The resulting SYNTH_BL_TIER1.dat is
-# genuine turboSETI output — same format as actual telescope observations.
+# genuine turboSETI-format output, but it is not telescope observation data.
 # -----------------------------------------------------------------------
 echo "--- Option 2: turboSETI .dat via synthetic BL-format H5 ---"
 echo "  Checking/fetching turboSETI drift_indexes files ..."
@@ -270,15 +276,15 @@ if [[ $OPT2_EXIT -eq 0 ]]; then
     DAT_FOUND=$(ls -t "$BL_HITS_DIR"/*.dat 2>/dev/null | head -1 || true)
     if [[ -n "$DAT_FOUND" ]]; then
         echo ""
-        echo "  turboSETI produced real .dat: $(basename "$DAT_FOUND")"
-        echo "  Format-verified turboSETI output — pipeline ready for Tier 1 testing."
+        echo "  turboSETI produced synthetic .dat: $(basename "$DAT_FOUND")"
+        echo "  Format compatibility verified; Tier 1 remains blocked."
         echo ""
-        echo "Run: caffeinate -i bash scripts/run_pipeline_on_bl_data.sh"
+        echo "Synthetic output is for format testing only; production execution remains blocked."
         exit 0
     fi
 fi
 
-echo "  Option 2 failed (exit=$OPT2_EXIT). Falling back to Option 3 ..."
+echo "  Option 2 failed (exit=$OPT2_EXIT). Falling back to synthetic Option 3 ..."
 find "$BL_HITS_DIR" -name "synth_bl_tier1.h5" -delete 2>/dev/null || true
 echo ""
 echo "Option 2 failed. Trying Option 3 (synthetic .dat directly)..."
@@ -349,7 +355,7 @@ for source, mjd, ra, dec in TARGETS:
     print(f"  Created: {filename} ({n_hits} hits) [SYNTHETIC]")
 
 print("")
-print("Run: caffeinate -i bash scripts/run_pipeline_on_bl_data.sh")
+print("Synthetic output is for format testing only; production execution remains blocked.")
 print("")
 print("For real BL data, see docs/BL_DATA_DOWNLOAD.md")
 PYEOF
@@ -359,7 +365,4 @@ echo "=== Manual download options ==="
 echo "1. Browser: https://seti.berkeley.edu/listen/data.html"
 echo "   Download .dat files to ~/technosignature-data/bl_hits/"
 echo ""
-echo "2. git-lfs (if not installed): brew install git-lfs"
-echo "   Then re-run this script."
-echo ""
-echo "3. See docs/BL_DATA_DOWNLOAD.md for full instructions."
+echo "2. See docs/BL_DATA_DOWNLOAD.md for the provenance and human-approval workflow."

@@ -340,9 +340,12 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Add real labeled dataset intake examples only when a curated dataset admission record has zero blockers and explicit approval for local real-data use.
-2. Replace or supplement the synthetic RFI database fixture only when an RFI database admission record has zero blockers and explicit approval for local real-data use.
-3. Calibrate scoring thresholds only after real labeled cases, site-specific RFI evidence, and peer-review feedback are available.
+1. Complete Human Gate 1 in `docs/REAL_OBSERVATION_INTAKE.md`: approve a
+   provenance-verifiable Breakthrough Listen observation set for local use.
+2. Ingest and run the approved real observation artifacts through the guarded
+   radio pipeline, preserving checksums, source metadata, and negative evidence.
+3. Begin real expert labeling only after the observation ingestion evidence is
+   reviewed and a curated dataset admission record has zero blockers.
 
 ---
 
