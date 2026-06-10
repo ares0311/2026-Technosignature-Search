@@ -10,8 +10,10 @@
 The pipeline is approximately **45–50% of the way to citizen-science
 production**. One official GBT cadence has completed provenance, ingestion,
 deterministic two-method labeling, and conservative local evaluation.
-Calibrated thresholds and permitted site-specific RFI evidence remain blocking.
-Expert review and external validation are not claimed.
+The calibration preflight now enforces physical units, provenance admission,
+source/derived deduplication, and stability gates. Calibrated thresholds and
+permitted site-specific RFI evidence remain blocking. Expert review and
+external validation are not claimed.
 
 ---
 
@@ -68,6 +70,8 @@ Expert review and external validation are not claimed.
 | Independent-method citizen-science label audit | ✅ Complete |
 | Public reproducibility review package | ✅ Complete |
 | Current scoring model evaluated against real labels (54.03% diagnostic agreement) | ✅ Complete |
+| Unit-safe, provenance-aware real-noise calibration preflight | ✅ Complete |
+| Cadence/target/epoch, dominance, bootstrap, and leave-one-cadence-out gates | ✅ Complete |
 | Operational log system (86 log types) | ✅ Complete |
 
 ---
@@ -78,7 +82,7 @@ Expert review and external validation are not claimed.
 
 | Gap | Effort estimate |
 |---|---|
-| **Calibrated scoring thresholds** — current thresholds are synthetic v0 defaults | Medium (requires sensitivity analysis against real noise distributions) |
+| **Calibrated scoring thresholds** — current thresholds are synthetic v0 defaults; the one-cadence corpus fails cadence, epoch, dominance, bootstrap, and leave-one-out gates | Medium (requires additional approved GBT cadences from other epochs) |
 | **Real site-specific RFI database** — synthetic guardrails and admission gates exist, but no permitted site-monitoring catalog has been approved | Medium |
 
 ### Tier 2 — Required for Research-Grade Use

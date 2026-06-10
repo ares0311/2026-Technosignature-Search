@@ -12,6 +12,12 @@ Current scoring config: `configs/scoring_v0.json` — synthetic defaults.
 v1 template: `configs/scoring_v1_template.json` — **requires multiple real
 cadences plus citizen-science reproducibility review**.
 
+The production command is provenance-aware and fail-closed. It accepts only
+checksum-matching real observation artifacts with approved data-use,
+provenance, and local-use reviews. Synthetic, invalid, unapproved, and tampered
+artifacts are excluded. A derived cadence CSV is also excluded when any of its
+source `.dat` files are selected, preventing duplicate rows.
+
 ---
 
 ## Step 1 — Download Real Hit Tables
@@ -45,6 +51,7 @@ Review the output JSON:
 
 ```json
 {
+  "calibration_ready": false,
   "snr_stats": {
     "percentiles": {
       "p90": 12.3,
@@ -53,13 +60,33 @@ Review the output JSON:
     }
   },
   "suggested_thresholds": {
-    "snr_noise_floor_estimate": 12.3,
-    "snr_follow_up_candidate": 18.7,
-    "snr_high_interest_candidate": 45.1,
-    "drift_rate_abs_p95_hz_s": 0.8
+    "snr_thresholds": {
+      "noise_floor_snr": 12.3,
+      "follow_up_snr": 18.7,
+      "high_interest_snr": 45.1
+    },
+    "drift_rate_thresholds": {
+      "max_rfi_like_drift_hz_s": 0.8
+    },
+    "pathway_probability_thresholds": {
+      "status": "not_derived_by_noise_distribution"
+    }
   }
 }
 ```
+
+Do not promote the suggested values unless `calibration_ready` is `true`.
+The acceptance report requires:
+
+- at least 3 independent cadences;
+- at least 3 targets and 2 observing epochs;
+- at least 100 admitted hits;
+- no cadence contributing more than 50% of admitted hits;
+- fixed-seed bootstrap relative span no greater than 50%;
+- leave-one-cadence-out relative threshold shift no greater than 25%.
+
+These are minimum admission gates, not evidence of a detection or calibrated
+survey sensitivity.
 
 ---
 
@@ -80,16 +107,17 @@ Before filling in `scoring_v1_template.json`, the project must:
 
 ---
 
-## Step 4 — Fill In `scoring_v1_template.json`
+## Step 4 — Fill Physical-Unit Thresholds
 
-Replace all `"FILL_FROM_*"` placeholders with actual values from Step 2:
+After every acceptance gate and the independent-method review pass, fill only
+the SNR and drift-rate sections:
 
 ```json
 {
   "pathway_thresholds": {
-    "minimum_signal_reality_for_review": 12.3,
-    "candidate_interest_probability": 18.7,
-    "candidate_signal_reality": 45.1
+    "minimum_signal_reality_for_review": 0.4,
+    "candidate_interest_probability": 0.6,
+    "candidate_signal_reality": 0.7
   },
   "snr_thresholds": {
     "noise_floor_snr": 12.3,
@@ -105,6 +133,10 @@ Replace all `"FILL_FROM_*"` placeholders with actual values from Step 2:
 }
 ```
 
+Every `pathway_thresholds` value is a dimensionless probability in `[0, 1]`.
+Never place SNR or drift-rate values in those fields. Changing pathway
+probabilities requires a separate evaluation against admitted real labels.
+
 ---
 
 ## Step 5 — Commit as `scoring_v1.json`
@@ -116,8 +148,9 @@ git pull origin main
 cp configs/scoring_v1_template.json configs/scoring_v1.json
 ```
 
-Fill all `FILL_FROM_*` values and set `review_status` to `approved`. The change
-must then follow the repository feature-branch and pull-request workflow.
+Fill the physical-unit values, preserve the separately reviewed probability
+values, and set `review_status` to `approved`. The change must then follow the
+repository feature-branch and pull-request workflow.
 
 ---
 
@@ -129,7 +162,17 @@ must then follow the repository feature-branch and pull-request workflow.
 ```
 
 Currently the pipeline defaults to `scoring_v0.json`. Once `scoring_v1.json`
-is approved, update `src/techno_search/scoring_config.py` to load it.
+is approved, update the active scoring configuration reference.
+
+---
+
+## Current Preflight Result
+
+The admitted HIP99427 corpus contains 6 source `.dat` files, 213 hits, 4
+targets, 1 cadence, and 1 epoch. The derived cadence CSV is correctly excluded.
+It is not calibration-ready because cadence count, epoch count, cadence
+dominance, bootstrap stability, and leave-one-cadence-out gates do not pass.
+Additional approved GBT cadences from other epochs are required.
 
 ---
 

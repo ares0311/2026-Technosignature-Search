@@ -4131,6 +4131,9 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         noise_cal_result: dict[str, Any] = analyze_hit_directory(
             Path(args.hit_dir),
             max_files=getattr(args, "max_files", 500),
+            require_approved_real_data=not getattr(
+                args, "allow_development_fixtures", False
+            ),
         )
         print(json.dumps(noise_cal_result, indent=2, sort_keys=True), file=out)
         return 0 if noise_cal_result.get("ok") else 1
@@ -13130,6 +13133,14 @@ def _build_parser() -> argparse.ArgumentParser:
         type=int,
         default=500,
         help="Maximum number of files to analyze (default: 500).",
+    )
+    noise_cal_parser.add_argument(
+        "--allow-development-fixtures",
+        action="store_true",
+        help=(
+            "Allow unapproved synthetic/development fixtures. Never use this "
+            "flag for production threshold calibration."
+        ),
     )
 
     return parser

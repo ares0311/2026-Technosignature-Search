@@ -345,16 +345,21 @@ The project will support three tracks from day one:
 - [x] 124 exact frequency/drift evidence groups labeled with primary and independent audit methods
 - [x] Real label set admitted for local evaluation with expert review and external validation explicitly unclaimed
 - [x] Current v0 scoring evaluated against real labels: 54.03% overall, 80.25% false-positive, 100% follow-up, and 0% insufficient-evidence routing agreement
+- [x] Probability thresholds protected against SNR/drift unit errors
+- [x] Real-noise calibration restricted to provenance-approved, checksum-matching observations
+- [x] Derived cadence CSV/source DAT deduplication added
+- [x] Cadence, target, epoch, dominance, bootstrap, and leave-one-cadence-out diagnostics added
+- [x] Current HIP99427 calibration preflight records the failed multi-cadence and multi-epoch gates
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions
 
-1. Expand the calibration sample across additional targets and epochs, ensuring
-   derived cadence tables do not duplicate their source hit tables.
-2. Acquire and approve a permitted site-specific GBT RFI reference suitable for
-   local comparison against the 213 cadence hits.
-3. Derive candidate thresholds from the expanded real noise distribution and
-   pass them through the documented two-method citizen-science review.
+1. Obtain operator approval for additional public GBT cadences from at least
+   two other observing sequences and one other epoch.
+2. Obtain operator approval for the storage/download budget and an official,
+   permitted GBT RFI reference source.
+3. Download, checksum, ingest, and independently review the approved additions;
+   threshold promotion remains blocked until every calibration gate passes.
 
 ---
 
