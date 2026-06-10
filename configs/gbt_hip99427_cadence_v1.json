@@ -1,0 +1,89 @@
+{
+  "schema_version": "gbt_observation_cadence_v1",
+  "cadence_id": "GBT_HIP99427_2016-12-30_ABACAD",
+  "target_name": "HIP99427",
+  "instrument": "Green Bank Telescope",
+  "receiver": "L band",
+  "source_archive": "Breakthrough Listen Open Data Archive",
+  "archive_search_url": "https://breakthroughinitiatives.org/opendatasearch",
+  "observation_summary_url": "https://seti.berkeley.edu/lband2017/onoff.php%3ffilename=HIP99427",
+  "data_use_url": "https://seti.berkeley.edu/lband2017/downloads.html",
+  "data_license": "CC BY 4.0",
+  "human_approval_status": "approved",
+  "approved_for_local_real_data": true,
+  "external_submission_authorized": false,
+  "analysis": {
+    "max_drift_hz_per_sec": 10.0,
+    "min_drift_hz_per_sec": 0.0001,
+    "snr_threshold": 10.0,
+    "resolution_note": "The .0002.h5 products have a measured 9.7960855 Hz/s drift-bin resolution. A 10 Hz/s ceiling includes one nonzero bin in each direction; this is an ingestion evidence run, not a calibrated threshold."
+  },
+  "scans": [
+    {
+      "sequence_index": 1,
+      "scan_role": "on",
+      "source_name": "HIP99427",
+      "utc_start": "2016-12-30T23:03:45Z",
+      "mjd": 57752.9609,
+      "filename": "spliced_blc0001020304050607_guppi_57752_83026_HIP99427_0033.gpuspec.0002.h5",
+      "size_bytes": 241777264,
+      "md5": "a6666bc6eca585cfb51e2cb034657f84",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_105/holding/spliced_blc0001020304050607_guppi_57752_83026_HIP99427_0033.gpuspec.0002.h5"
+    },
+    {
+      "sequence_index": 2,
+      "scan_role": "off",
+      "source_name": "HIP100670",
+      "utc_start": "2016-12-30T23:09:30Z",
+      "mjd": 57752.9649,
+      "filename": "spliced_blc0001020304050607_guppi_57752_83371_HIP100670_0034.gpuspec.0002.h5",
+      "size_bytes": 241520619,
+      "md5": "42a272e6d68d7e3cda7f122f3beb4354",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_105/holding/spliced_blc0001020304050607_guppi_57752_83371_HIP100670_0034.gpuspec.0002.h5"
+    },
+    {
+      "sequence_index": 3,
+      "scan_role": "on",
+      "source_name": "HIP99427",
+      "utc_start": "2016-12-30T23:15:15Z",
+      "mjd": 57752.9689,
+      "filename": "spliced_blc0001020304050607_guppi_57752_83716_HIP99427_0035.gpuspec.0002.h5",
+      "size_bytes": 242201764,
+      "md5": "c7f32695852827224c500b920f9823bd",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_105/holding/spliced_blc0001020304050607_guppi_57752_83716_HIP99427_0035.gpuspec.0002.h5"
+    },
+    {
+      "sequence_index": 4,
+      "scan_role": "off",
+      "source_name": "HIP99560",
+      "utc_start": "2016-12-30T23:21:05Z",
+      "mjd": 57752.973,
+      "filename": "spliced_blc0001020304050607_guppi_57752_84066_HIP99560_0036.gpuspec.0002.h5",
+      "size_bytes": 240562438,
+      "md5": "09f2eab265fa02f7420a34448de73f4b",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_105/holding/spliced_blc0001020304050607_guppi_57752_84066_HIP99560_0036.gpuspec.0002.h5"
+    },
+    {
+      "sequence_index": 5,
+      "scan_role": "on",
+      "source_name": "HIP99427",
+      "utc_start": "2016-12-30T23:26:55Z",
+      "mjd": 57752.977,
+      "filename": "spliced_blc0001020304050607_guppi_57752_84416_HIP99427_0037.gpuspec.0002.h5",
+      "size_bytes": 240733333,
+      "md5": "bef74cf86276c41fdde49377d6388ff3",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_105/holding/spliced_blc0001020304050607_guppi_57752_84416_HIP99427_0037.gpuspec.0002.h5"
+    },
+    {
+      "sequence_index": 6,
+      "scan_role": "off",
+      "source_name": "HIP99759",
+      "utc_start": "2016-12-30T23:32:46Z",
+      "mjd": 57752.9811,
+      "filename": "spliced_blc0001020304050607_guppi_57752_84766_HIP99759_0038.gpuspec.0002.h5",
+      "size_bytes": 242000136,
+      "md5": "eff7a90b189e813508dd764e8ba1b8e1",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_105/holding/spliced_blc0001020304050607_guppi_57752_84766_HIP99759_0038.gpuspec.0002.h5"
+    }
+  ]
+}

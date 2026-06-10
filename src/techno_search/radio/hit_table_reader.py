@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import csv
 import io
+import json
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +26,8 @@ from typing import Any
 _FREQ_ALIASES = ("Corrected_Frequency", "Frequency", "freq", "frequency_mhz", "Freq")
 _SNR_ALIASES = ("SNR", "snr", "Signal_to_Noise")
 _DRIFT_ALIASES = ("Drift_Rate", "drift_rate", "DriftRate", "drift_rate_hz_s")
+_SCAN_ROLE_ALIASES = ("scan_role", "Scan_Role")
+_TARGET_ALIASES = ("target_id", "Target_ID")
 
 # Metadata keys to extract from "#" header lines
 _META_KEYS = ("Source", "MJD", "RA", "DEC", "DELTAT", "DELTAF")
@@ -151,6 +154,8 @@ def _normalize_row(
     ra_str = raw.get("RA") or file_meta.get("RA")
     dec_str = raw.get("DEC") or file_meta.get("DEC")
     sefd_str = raw.get("SEFD") or raw.get("sefd")
+    scan_role = _resolve_col(raw, _SCAN_ROLE_ALIASES)
+    target_id = _resolve_col(raw, _TARGET_ALIASES)
 
     def _float_or_none(s: str | None) -> float | None:
         if not s:
@@ -169,6 +174,8 @@ def _normalize_row(
         "ra_deg": _float_or_none(ra_str),
         "dec_deg": _float_or_none(dec_str),
         "sefd": _float_or_none(sefd_str),
+        "scan_role": scan_role.lower() if scan_role else None,
+        "target_id": target_id,
     }
 
 
@@ -178,6 +185,7 @@ def hit_table_to_radio_hit_dicts(path: Path) -> list[dict[str, Any]]:
     Maps real column names to the RadioHit field names used by the prototype.
     """
     raw_rows = read_hit_table_csv(path)
+    artifact_context = _artifact_context(path)
     out = []
     for r in raw_rows:
         out.append({
@@ -185,7 +193,29 @@ def hit_table_to_radio_hit_dicts(path: Path) -> list[dict[str, Any]]:
             "snr": r["snr"],
             "drift_rate_hz_per_sec": r["drift_rate_hz_per_sec"],
             "bandwidth_hz": 2.79,   # turboSETI default channel width for L-band
-            "scan_role": "on",       # single-dish files default to on-source
-            "target_id": r.get("source_name") or "unknown",
+            "scan_role": r.get("scan_role") or artifact_context.get("scan_role") or "on",
+            "target_id": (
+                r.get("target_id")
+                or artifact_context.get("target_id")
+                or r.get("source_name")
+                or "unknown"
+            ),
         })
     return out
+
+
+def _artifact_context(path: Path) -> dict[str, str]:
+    sidecar = path.with_name(path.name + ".provenance.json")
+    if not sidecar.exists():
+        return {}
+    try:
+        payload = json.loads(sidecar.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    if not isinstance(payload, dict):
+        return {}
+    return {
+        key: str(payload[key])
+        for key in ("scan_role", "target_id")
+        if payload.get(key) is not None
+    }

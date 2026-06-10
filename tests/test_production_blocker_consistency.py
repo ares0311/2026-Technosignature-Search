@@ -19,13 +19,12 @@ def _write_expected(path: Path) -> Path:
                 "schema_version": "production_blocker_consistency_v1",
                 "expected_blockers": {
                     "required_tier1_blocker_phrases": [
-                        "Real observation data",
                         "Real labeled dataset",
                         "Calibrated scoring thresholds",
                         "Real site-specific RFI database",
                         "Peer review",
                     ],
-                    "min_tier1_blocker_count": 5,
+                    "min_tier1_blocker_count": 4,
                     "require_zero_real_data_authorization": True,
                     "require_zero_external_submission_authorization": True,
                     "require_admission_blockers_visible": True,
@@ -42,7 +41,6 @@ def _write_project(path: Path, *, omit_phrase: str | None = None) -> None:
     docs = path / "docs"
     docs.mkdir()
     phrases = [
-        "Real observation data",
         "Real labeled dataset",
         "Calibrated scoring thresholds",
         "Real site-specific RFI database",
@@ -106,8 +104,8 @@ def _readiness_summary(
 def test_load_production_blocker_expectations_fixture() -> None:
     expected = load_production_blocker_expectations(FIXTURE_PATH)
 
-    assert expected["min_tier1_blocker_count"] == 5
-    assert "Real observation data" in expected["required_tier1_blocker_phrases"]
+    assert expected["min_tier1_blocker_count"] == 4
+    assert "Real labeled dataset" in expected["required_tier1_blocker_phrases"]
 
 
 def test_production_blocker_consistency_custom_project_passes(tmp_path: Path) -> None:
@@ -124,7 +122,7 @@ def test_production_blocker_consistency_custom_project_passes(tmp_path: Path) ->
 
     assert summary["ok"] is True
     assert summary["issue_count"] == 0
-    assert summary["actual_tier1_blocker_count"] == 5
+    assert summary["actual_tier1_blocker_count"] == 4
     assert summary["real_data_authorized_total"] == 0
 
 
@@ -211,7 +209,7 @@ def test_production_blocker_consistency_default_project_passes() -> None:
 
     assert summary["schema_version"] == "production_blocker_consistency_v1"
     assert summary["ok"] is True
-    assert summary["actual_tier1_blocker_count"] == 5
+    assert summary["actual_tier1_blocker_count"] == 4
     assert summary["rfi_database_admission_blocked_count"] == 3
     assert summary["curated_dataset_admission_blocked_count"] == 3
     assert summary["real_data_authorized_total"] == 0

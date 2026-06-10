@@ -201,6 +201,8 @@ def test_radio_prototype_candidate_scores_better_than_rfi_candidate() -> None:
     clean_score = score_candidate(clean)
     rfi_score = score_candidate(rfi)
 
+    assert clean.features["off_target_presence_score"] == 0.0
+    assert rfi.features["off_target_presence_score"] == 1.0
     assert (
         clean_score.posterior[PosteriorClass.TECHNOSIGNATURE_INTEREST]
         > rfi_score.posterior[PosteriorClass.TECHNOSIGNATURE_INTEREST]

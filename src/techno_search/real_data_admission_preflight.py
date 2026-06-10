@@ -18,10 +18,10 @@ REAL_DATA_ADMISSION_PREFLIGHT_SCHEMA_VERSION = "real_data_admission_preflight_v1
 REAL_DATA_ADMISSION_PREFLIGHT_DISCLAIMER = (
     "Real-data admission preflight records are local readiness checks only. "
     "They expose required evidence, blockers, review status, and disabled "
-    "authorization state before any real observation data, real labels, "
-    "scoring calibration, site-specific RFI records, or peer-review evidence "
-    "can change local admission state. They do not ingest real observation "
-    "data, calibrate thresholds, clear blockers, authorize live data access, "
+    "authorization state as real observations, labels, scoring calibration, "
+    "site-specific RFI records, or peer-review evidence change local admission "
+    "state. They do not themselves ingest observation data, calibrate thresholds, "
+    "clear blockers, authorize live data access, "
     "authorize external submission, or constitute detections, discoveries, or "
     "external validation."
 )
@@ -142,8 +142,15 @@ def validate_real_data_admission_preflight_categories(
             issues.append(prefix + "current_evidence_count exceeds required evidence")
         if category.review_status.startswith("blocked_") and category.blocker_count <= 0:
             issues.append(prefix + "blocked review_status requires visible blockers")
+        if category.review_status == "ready_for_local_review" and category.blocker_count != 0:
+            issues.append(prefix + "ready_for_local_review requires zero blockers")
         if category.real_data_authorized and category.blocker_count != 0:
             issues.append(prefix + "real data authorization requires zero blockers")
+        if (
+            category.real_data_authorized
+            and category.current_evidence_count != len(category.required_evidence)
+        ):
+            issues.append(prefix + "real data authorization requires complete evidence")
         if category.live_data_authorized and not category.real_data_authorized:
             issues.append(prefix + "live data authorization requires real data authorization")
         if category.external_submission_authorized and not category.real_data_authorized:
@@ -198,7 +205,12 @@ def real_data_admission_preflight_summary(
     )
     expected_category_count = int(expected.get("category_count", 0))
     min_blocker_total = int(expected.get("min_blocker_total", 0))
-    require_zero_real_data = bool(expected.get("require_zero_real_data_authorization", True))
+    expected_real_data_total = int(
+        expected.get(
+            "expected_real_data_authorization_total",
+            0 if expected.get("require_zero_real_data_authorization", True) else -1,
+        )
+    )
     require_zero_live_data = bool(expected.get("require_zero_live_data_authorization", True))
     require_zero_external = bool(
         expected.get("require_zero_external_submission_authorization", True)
@@ -223,9 +235,10 @@ def real_data_admission_preflight_summary(
         issues.append(f"category count {category_count} != expected {expected_category_count}")
     if blocker_total < min_blocker_total:
         issues.append(f"blocker total {blocker_total} < minimum {min_blocker_total}")
-    if require_zero_real_data and real_data_authorized_total != 0:
+    if expected_real_data_total >= 0 and real_data_authorized_total != expected_real_data_total:
         issues.append(
-            f"real data authorization total {real_data_authorized_total} is nonzero"
+            "real data authorization total "
+            f"{real_data_authorized_total} != expected {expected_real_data_total}"
         )
     if require_zero_live_data and live_data_authorized_total != 0:
         issues.append(
@@ -240,9 +253,9 @@ def real_data_admission_preflight_summary(
         issues.append("RFI database admission blockers are not visible")
     if require_curated_blockers and curated_blocked_count <= 0:
         issues.append("curated dataset admission blockers are not visible")
-    if require_zero_real_data and rfi_real_data_authorized_count != 0:
+    if rfi_real_data_authorized_count != 0:
         issues.append("RFI database admission real-data authorization is nonzero")
-    if require_zero_real_data and curated_real_data_authorized_count != 0:
+    if curated_real_data_authorized_count != 0:
         issues.append("curated dataset admission real-data authorization is nonzero")
     if require_production_blocker_gate and not production_blocker_ok:
         issues.append("production blocker consistency gate is not ok")
@@ -262,6 +275,7 @@ def real_data_admission_preflight_summary(
         "blocker_total": blocker_total,
         "min_blocker_total": min_blocker_total,
         "real_data_authorized_total": real_data_authorized_total,
+        "expected_real_data_authorized_total": expected_real_data_total,
         "live_data_authorized_total": live_data_authorized_total,
         "external_submission_authorized_total": external_submission_authorized_total,
         "rfi_database_admission_blocked_count": rfi_blocked_count,

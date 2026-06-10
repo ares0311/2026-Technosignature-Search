@@ -148,13 +148,15 @@ def _methodology_summary(generated_at: str) -> dict[str, Any]:
             "survey_depth_mismatch",
             "variable_star",
         ],
-        "data_status": "synthetic only — no real telescope data ingested",
+        "data_status": (
+            "one checksum-verified GBT ABACAD cadence ingested for local evaluation; "
+            "labels and calibration remain synthetic"
+        ),
         "thresholds_status": "synthetic v0 defaults — not calibrated against real noise",
         "labeled_dataset_status": "10 synthetic entries — real labeled dataset required",
         "external_validation_status": "none — peer review required",
-        "production_readiness": "~20-25% (see docs/PRODUCTION_READINESS.md)",
+        "production_readiness": "~30-35% (see docs/PRODUCTION_READINESS.md)",
         "tier_1_gaps": [
-            "Real observation data not ingested",
             "Real labeled dataset not approved",
             "Scoring thresholds not calibrated against real noise",
             "Real RFI database not approved",

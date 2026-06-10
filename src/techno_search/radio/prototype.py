@@ -64,6 +64,7 @@ DEFAULT_RFI_BANDS_HZ: tuple[RfiBand, ...] = (
     RfiBand("gps_l2", 1_227_000_000.0, 1_228_000_000.0),
     RfiBand("aircraft_ads_b", 1_089_500_000.0, 1_090_500_000.0),
 )
+FREQUENCY_MATCH_TOLERANCE_HZ = 5.0
 
 
 def parse_hit_table(
@@ -101,14 +102,18 @@ def build_radio_candidate(
 
     defaults = _feature_defaults(track_config)
     hits = parse_hit_table(rows, track_config=track_config)
-    best_hit = _best_hit(hits)
     on_hits = [hit for hit in hits if hit.scan_role == "on"]
     off_hits = [hit for hit in hits if hit.scan_role == "off"]
+    best_hit = _best_hit(on_hits or hits)
+    matched_on_hits = _frequency_matched_hits(on_hits, best_hit)
+    matched_off_hits = _frequency_matched_hits(off_hits, best_hit)
 
-    max_on_snr = max((hit.snr for hit in on_hits), default=0.0)
-    max_off_snr = max((hit.snr for hit in off_hits), default=0.0)
+    max_on_snr = max((hit.snr for hit in matched_on_hits), default=0.0)
+    max_off_snr = max((hit.snr for hit in matched_off_hits), default=0.0)
     recurrence_targets = {
-        hit.target_id for hit in hits if hit.target_id != best_hit.target_id and hit.snr >= 8.0
+        hit.target_id
+        for hit in (*matched_on_hits, *matched_off_hits)
+        if hit.target_id != best_hit.target_id and hit.snr >= 8.0
     }
     rfi_database_features = _rfi_database_features(
         best_hit.frequency_hz,
@@ -189,12 +194,22 @@ def _best_hit(hits: Sequence[RadioHit]) -> RadioHit:
 
 
 def _frequency_persistence_score(hits: Sequence[RadioHit], best_hit: RadioHit) -> float:
-    near_frequency_hits = [
-        hit for hit in hits if abs(hit.frequency_hz - best_hit.frequency_hz) <= 5.0
-    ]
+    near_frequency_hits = _frequency_matched_hits(hits, best_hit)
     if len(hits) <= 1:
         return 0.0
     return _clamp((len(near_frequency_hits) - 1) / max(len(hits) - 1, 1))
+
+
+def _frequency_matched_hits(
+    hits: Sequence[RadioHit],
+    reference: RadioHit,
+) -> list[RadioHit]:
+    return [
+        hit
+        for hit in hits
+        if abs(hit.frequency_hz - reference.frequency_hz)
+        <= FREQUENCY_MATCH_TOLERANCE_HZ
+    ]
 
 
 def _metadata_completeness_score(hits: Sequence[RadioHit]) -> float:

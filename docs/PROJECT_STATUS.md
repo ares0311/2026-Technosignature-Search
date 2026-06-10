@@ -336,16 +336,21 @@ The project will support three tracks from day one:
 - [x] Cooling system log, network connectivity log, and software update log operational provenance records added
 - [x] Hardware fault log, maintenance log, and environmental log operational provenance records added
 - [x] Access log, security event log, and audit trail log operational provenance records added
+- [x] Official HIP99427 GBT ABACAD cadence downloaded and archive checksums verified
+- [x] Six real HDF5 scans processed through turboSETI with reviewed provenance sidecars
+- [x] Combined 213-row ON/OFF cadence passed validation and guarded pipeline execution
+- [x] Real cadence result conservatively routed `do_not_submit_false_positive`
+- [x] Frequency-matched OFF-target rejection guard corrected after real-data regression exposed unsafe promotion
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions
 
-1. Complete Human Gate 1 in `docs/REAL_OBSERVATION_INTAKE.md`: approve a
-   provenance-verifiable Breakthrough Listen observation set for local use.
-2. Ingest and run the approved real observation artifacts through the guarded
-   radio pipeline, preserving checksums, source metadata, and negative evidence.
-3. Begin real expert labeling only after the observation ingestion evidence is
-   reviewed and a curated dataset admission record has zero blockers.
+1. Obtain expert review of the HIP99427 cadence labels and false-positive
+   disposition, then create a curated dataset admission record with zero blockers.
+2. Acquire and approve a real site-specific GBT RFI reference suitable for
+   local comparison against the 213 cadence hits.
+3. Derive scoring thresholds from approved real labels and noise distributions,
+   then submit pipeline logic and candidate reports for external peer review.
 
 ---
 

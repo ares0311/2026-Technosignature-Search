@@ -92,6 +92,10 @@ def _radio_scores(candidate: Candidate) -> tuple[dict[PosteriorClass, float], Ev
     repeat = _score(f, "repeat_observation_score")
     known = _score(f, "known_object_score")
     metadata = _score(f, "metadata_completeness_score", default=0.5)
+    off_target_rejection = 1.0 if off_target >= 0.4 else 0.0
+    real_observation = str(candidate.provenance.get("classification", "")).startswith(
+        "derived_real_observation"
+    )
 
     raw_scores = _empty_scores()
     raw_scores[PosteriorClass.TECHNOSIGNATURE_INTEREST] += (
@@ -105,6 +109,7 @@ def _radio_scores(candidate: Candidate) -> tuple[dict[PosteriorClass, float], Ev
         + 0.90 * injection
         + 0.55 * repeat
         + 0.50 * metadata
+        - 8.00 * off_target_rejection
     )
     raw_scores[PosteriorClass.HUMAN_INTERFERENCE] += (
         1.70 * off_target
@@ -112,6 +117,7 @@ def _radio_scores(candidate: Candidate) -> tuple[dict[PosteriorClass, float], Ev
         + 1.15 * persistence
         + 1.00 * recurrence
         + 0.80 * zero_drift
+        + 5.00 * off_target_rejection
     )
     raw_scores[PosteriorClass.INSTRUMENTAL_ARTIFACT] += (
         1.60 * artifact + 0.65 * _score(f, "band_edge_score") + 0.75 * (1.0 - metadata)
@@ -135,6 +141,7 @@ def _radio_scores(candidate: Candidate) -> tuple[dict[PosteriorClass, float], Ev
         injection=injection,
         repeat=repeat,
         metadata=metadata,
+        real_observation=real_observation,
     )
     return raw_scores, evidence
 
@@ -356,12 +363,21 @@ def _radio_evidence(
     injection: float,
     repeat: float,
     metadata: float,
+    real_observation: bool,
 ) -> EvidenceSummary:
     positive: list[str] = []
     negative: list[str] = []
     blocking: list[str] = []
 
-    _append_if(positive, snr >= 0.6, "High synthetic SNR supports signal reality.")
+    _append_if(
+        positive,
+        snr >= 0.6,
+        (
+            "High SNR supports signal reality but does not establish source attribution."
+            if real_observation
+            else "High synthetic SNR supports signal reality."
+        ),
+    )
     _append_if(positive, bandwidth >= 0.7, "Signal morphology is narrowband.")
     _append_if(positive, drift >= 0.4, "Signal has nonzero Doppler drift.")
     _append_if(positive, on_target >= 0.7, "Signal appears in ON-target scans.")
@@ -386,6 +402,12 @@ def _radio_evidence(
     _append_if(negative, repeat < 0.7, "No strong repeat observation support is present.")
 
     _append_if(blocking, metadata < 0.5, "Observation metadata is incomplete.")
+    _append_if(
+        blocking,
+        off_target >= 0.4,
+        "OFF-target presence meets the rejection threshold; human interference "
+        "remains the default hypothesis.",
+    )
     _append_if(blocking, off_target > 0.2 and off_target < 0.4, "OFF-target evidence is ambiguous.")
 
     return EvidenceSummary(tuple(positive), tuple(negative), tuple(blocking))
