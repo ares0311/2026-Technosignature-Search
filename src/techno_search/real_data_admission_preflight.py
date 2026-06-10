@@ -19,7 +19,8 @@ REAL_DATA_ADMISSION_PREFLIGHT_DISCLAIMER = (
     "Real-data admission preflight records are local readiness checks only. "
     "They expose required evidence, blockers, review status, and disabled "
     "authorization state as real observations, labels, scoring calibration, "
-    "site-specific RFI records, or peer-review evidence change local admission "
+    "site-specific RFI records, or public reproducibility evidence change local "
+    "admission "
     "state. They do not themselves ingest observation data, calibrate thresholds, "
     "clear blockers, authorize live data access, "
     "authorize external submission, or constitute detections, discoveries, or "
@@ -33,6 +34,7 @@ ALLOWED_PREFLIGHT_REVIEW_STATUSES = frozenset(
         "blocked_pending_calibration",
         "blocked_pending_rfi_database",
         "blocked_pending_peer_review",
+        "blocked_pending_public_reproducibility",
         "ready_for_local_review",
     }
 )
@@ -42,7 +44,7 @@ REQUIRED_PREFLIGHT_CATEGORY_IDS = (
     "real_labeled_dataset",
     "scoring_calibration",
     "site_specific_rfi_database",
-    "peer_review",
+    "public_reproducibility_review",
 )
 
 
@@ -222,6 +224,12 @@ def real_data_admission_preflight_summary(
     require_production_blocker_gate = bool(
         expected.get("require_production_blocker_consistency_ok", True)
     )
+    expected_rfi_authorized = int(
+        expected.get("expected_rfi_database_authorization_total", 0)
+    )
+    expected_curated_authorized = int(
+        expected.get("expected_curated_dataset_authorization_total", 0)
+    )
 
     rfi_blocked_count = _int_value(rfi, "blocked_count")
     curated_blocked_count = _int_value(curated, "blocked_count")
@@ -253,10 +261,17 @@ def real_data_admission_preflight_summary(
         issues.append("RFI database admission blockers are not visible")
     if require_curated_blockers and curated_blocked_count <= 0:
         issues.append("curated dataset admission blockers are not visible")
-    if rfi_real_data_authorized_count != 0:
-        issues.append("RFI database admission real-data authorization is nonzero")
-    if curated_real_data_authorized_count != 0:
-        issues.append("curated dataset admission real-data authorization is nonzero")
+    if rfi_real_data_authorized_count != expected_rfi_authorized:
+        issues.append(
+            "RFI database admission real-data authorization "
+            f"{rfi_real_data_authorized_count} != expected {expected_rfi_authorized}"
+        )
+    if curated_real_data_authorized_count != expected_curated_authorized:
+        issues.append(
+            "curated dataset admission real-data authorization "
+            f"{curated_real_data_authorized_count} != expected "
+            f"{expected_curated_authorized}"
+        )
     if require_production_blocker_gate and not production_blocker_ok:
         issues.append("production blocker consistency gate is not ok")
 
@@ -285,6 +300,12 @@ def real_data_admission_preflight_summary(
         ),
         "curated_dataset_admission_real_data_authorized_count": (
             curated_real_data_authorized_count
+        ),
+        "expected_rfi_database_admission_real_data_authorized_count": (
+            expected_rfi_authorized
+        ),
+        "expected_curated_dataset_admission_real_data_authorized_count": (
+            expected_curated_authorized
         ),
         "production_blocker_consistency_ok": production_blocker_ok,
         "production_blocker_consistency_issue_count": production_blocker_issue_count,

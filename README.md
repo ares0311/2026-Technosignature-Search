@@ -103,7 +103,7 @@ The workflow follows the same broad pattern used in exoplanet vetting: detect an
 
 ## 📊 Current Status
 
-**Phase:** Initial v0 Implementation / Synthetic Scoring Core
+**Phase:** Citizen-Science Production Calibration
 
 - ✅ Repository initialized
 - ✅ Documentation system built
@@ -112,7 +112,10 @@ The workflow follows the same broad pattern used in exoplanet vetting: detect an
 - ✅ Candidate Markdown, JSON, manifest, and diagnostic artifact reporting implemented
 - ✅ Calibration, reliability, precision-recall, benchmark, and human-review fixtures added
 - ✅ Guarded live-provider interfaces added behind explicit opt-in
-- ⏳ Live-data workflows remain provenance-only unless explicitly enabled
+- ✅ One checksum-verified GBT cadence ingested and conservatively routed
+- ✅ 124 real cadence evidence groups labeled by two deterministic methods
+- ✅ Citizen-science reproducibility review and local real-label evaluation added
+- ⏳ Threshold calibration and a permitted site-specific RFI reference remain blocked
 
 👉 See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md)
 

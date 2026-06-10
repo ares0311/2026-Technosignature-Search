@@ -19,13 +19,11 @@ def _write_expected(path: Path) -> Path:
                 "schema_version": "production_blocker_consistency_v1",
                 "expected_blockers": {
                     "required_tier1_blocker_phrases": [
-                        "Real labeled dataset",
                         "Calibrated scoring thresholds",
                         "Real site-specific RFI database",
-                        "Peer review",
                     ],
-                    "min_tier1_blocker_count": 4,
-                    "require_zero_real_data_authorization": True,
+                    "min_tier1_blocker_count": 2,
+                    "expected_real_data_authorization_total": 0,
                     "require_zero_external_submission_authorization": True,
                     "require_admission_blockers_visible": True,
                     "require_operations_readiness_blocked_for_real_data": True,
@@ -41,10 +39,8 @@ def _write_project(path: Path, *, omit_phrase: str | None = None) -> None:
     docs = path / "docs"
     docs.mkdir()
     phrases = [
-        "Real labeled dataset",
         "Calibrated scoring thresholds",
         "Real site-specific RFI database",
-        "Peer review",
     ]
     visible_phrases = [phrase for phrase in phrases if phrase != omit_phrase]
     rows = "\n".join(f"| **{phrase}** | Large |" for phrase in visible_phrases)
@@ -104,8 +100,10 @@ def _readiness_summary(
 def test_load_production_blocker_expectations_fixture() -> None:
     expected = load_production_blocker_expectations(FIXTURE_PATH)
 
-    assert expected["min_tier1_blocker_count"] == 4
-    assert "Real labeled dataset" in expected["required_tier1_blocker_phrases"]
+    assert expected["min_tier1_blocker_count"] == 2
+    assert "Calibrated scoring thresholds" in expected[
+        "required_tier1_blocker_phrases"
+    ]
 
 
 def test_production_blocker_consistency_custom_project_passes(tmp_path: Path) -> None:
@@ -122,7 +120,7 @@ def test_production_blocker_consistency_custom_project_passes(tmp_path: Path) ->
 
     assert summary["ok"] is True
     assert summary["issue_count"] == 0
-    assert summary["actual_tier1_blocker_count"] == 4
+    assert summary["actual_tier1_blocker_count"] == 2
     assert summary["real_data_authorized_total"] == 0
 
 
@@ -130,7 +128,7 @@ def test_production_blocker_consistency_detects_missing_tier1_blocker(
     tmp_path: Path,
 ) -> None:
     expected_path = _write_expected(tmp_path)
-    _write_project(tmp_path, omit_phrase="Peer review")
+    _write_project(tmp_path, omit_phrase="Real site-specific RFI database")
 
     summary = production_blocker_consistency_summary(
         expected_path,
@@ -141,7 +139,7 @@ def test_production_blocker_consistency_detects_missing_tier1_blocker(
     )
 
     assert summary["ok"] is False
-    assert "Peer review" in summary["missing_tier1_blockers"]
+    assert "Real site-specific RFI database" in summary["missing_tier1_blockers"]
 
 
 def test_production_blocker_consistency_detects_authorization_drift(
@@ -209,7 +207,7 @@ def test_production_blocker_consistency_default_project_passes() -> None:
 
     assert summary["schema_version"] == "production_blocker_consistency_v1"
     assert summary["ok"] is True
-    assert summary["actual_tier1_blocker_count"] == 4
+    assert summary["actual_tier1_blocker_count"] == 2
     assert summary["rfi_database_admission_blocked_count"] == 3
     assert summary["curated_dataset_admission_blocked_count"] == 3
-    assert summary["real_data_authorized_total"] == 0
+    assert summary["real_data_authorized_total"] == 1

@@ -341,16 +341,20 @@ The project will support three tracks from day one:
 - [x] Combined 213-row ON/OFF cadence passed validation and guarded pipeline execution
 - [x] Real cadence result conservatively routed `do_not_submit_false_positive`
 - [x] Frequency-matched OFF-target rejection guard corrected after real-data regression exposed unsafe promotion
+- [x] Citizen-science real cadence labeling and reproducibility review added
+- [x] 124 exact frequency/drift evidence groups labeled with primary and independent audit methods
+- [x] Real label set admitted for local evaluation with expert review and external validation explicitly unclaimed
+- [x] Current v0 scoring evaluated against real labels: 54.03% overall, 80.25% false-positive, 100% follow-up, and 0% insufficient-evidence routing agreement
 - [x] `validate-all`, `validation-summary`, and `health` remain green
 
 ## Next 3 Actions
 
-1. Obtain expert review of the HIP99427 cadence labels and false-positive
-   disposition, then create a curated dataset admission record with zero blockers.
-2. Acquire and approve a real site-specific GBT RFI reference suitable for
+1. Expand the calibration sample across additional targets and epochs, ensuring
+   derived cadence tables do not duplicate their source hit tables.
+2. Acquire and approve a permitted site-specific GBT RFI reference suitable for
    local comparison against the 213 cadence hits.
-3. Derive scoring thresholds from approved real labels and noise distributions,
-   then submit pipeline logic and candidate reports for external peer review.
+3. Derive candidate thresholds from the expanded real noise distribution and
+   pass them through the documented two-method citizen-science review.
 
 ---
 

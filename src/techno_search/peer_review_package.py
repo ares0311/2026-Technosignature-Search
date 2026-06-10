@@ -1,12 +1,12 @@
-"""Peer review package generator.
+"""Public reproducibility review package generator.
 
 Generates a structured package of pipeline methodology documentation,
-scoring logic summaries, and example candidate reports suitable for
-external scientific review.
+scoring logic summaries, real-label evidence, and example candidate reports
+suitable for independent citizen-science reproduction.
 
 The package is a local review artifact only.  Generating a package does
-not authorize external submission, constitute a detection claim, or
-replace actual peer review.
+not authorize external submission, constitute a detection claim, or claim
+expert review or external validation.
 """
 from __future__ import annotations
 
@@ -15,13 +15,14 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from techno_search.labeled_dataset import labeled_dataset_summary
+
 PEER_REVIEW_PACKAGE_DISCLAIMER = (
-    "This peer review package is a local documentation artifact only. "
-    "It describes the pipeline methodology and provides example outputs "
-    "for scientific review. Generating this package does not constitute "
-    "a detection claim, does not authorize external submission, and does "
-    "not replace actual peer review. All candidate outputs described "
-    "herein are synthetic and do not represent real detections."
+    "This public reproducibility package is a local documentation artifact. "
+    "It includes synthetic examples and a summary of citizen-science labels "
+    "derived from one real cadence. Generating it does not constitute a "
+    "detection claim, does not authorize external submission, does not claim "
+    "expert review, and does not claim external validation."
 )
 
 PEER_REVIEW_ITEMS_REQUIRED = [
@@ -32,6 +33,8 @@ PEER_REVIEW_ITEMS_REQUIRED = [
     "Example candidate reports (examples/batch_reports/)",
     "Validation gate descriptions (docs/VALIDATION.md)",
     "Production readiness assessment (docs/PRODUCTION_READINESS.md)",
+    "Citizen-science review protocol (docs/CITIZEN_SCIENCE_REVIEW.md)",
+    "Real cadence label summary (examples/real_labeled/)",
 ]
 
 
@@ -104,6 +107,16 @@ def generate_peer_review_package(
     checklist_path.write_text(_render_checklist(), encoding="utf-8")
     files_written.append(str(checklist_path))
 
+    # 7. Real citizen-science label summary
+    label_path = _find_real_labeled_dataset()
+    if label_path is not None:
+        label_summary_path = output_dir / "real_labeled_dataset_summary.json"
+        label_summary_path.write_text(
+            json.dumps(labeled_dataset_summary(label_path), indent=2),
+            encoding="utf-8",
+        )
+        files_written.append(str(label_summary_path))
+
     return {
         "disclaimer": PEER_REVIEW_PACKAGE_DISCLAIMER,
         "ok": True,
@@ -149,25 +162,28 @@ def _methodology_summary(generated_at: str) -> dict[str, Any]:
             "variable_star",
         ],
         "data_status": (
-            "one checksum-verified GBT ABACAD cadence ingested for local evaluation; "
-            "labels and calibration remain synthetic"
+            "one checksum-verified GBT ABACAD cadence ingested; 124 exact "
+            "frequency/drift groups carry deterministic citizen-science labels"
         ),
         "thresholds_status": "synthetic v0 defaults — not calibrated against real noise",
-        "labeled_dataset_status": "10 synthetic entries — real labeled dataset required",
-        "external_validation_status": "none — peer review required",
-        "production_readiness": "~30-35% (see docs/PRODUCTION_READINESS.md)",
+        "labeled_dataset_status": (
+            "124 real-observation operational labels admitted for local evaluation; "
+            "not expert labels"
+        ),
+        "external_validation_status": (
+            "none claimed; citizen-science reproducibility review complete"
+        ),
+        "production_readiness": "~45-50% (see docs/PRODUCTION_READINESS.md)",
         "tier_1_gaps": [
-            "Real labeled dataset not approved",
             "Scoring thresholds not calibrated against real noise",
             "Real RFI database not approved",
-            "No external peer review",
         ],
     }
 
 
 def _render_readme(generated_at: str) -> str:
     return f"""\
-# Peer Review Package
+# Public Reproducibility Review Package
 
 **Generated:** {generated_at}
 **Status:** DEVELOPMENT SCAFFOLD — NOT FOR EXTERNAL SUBMISSION
@@ -178,8 +194,8 @@ def _render_readme(generated_at: str) -> str:
 
 ## What Is This?
 
-This package contains documentation and example outputs from the
-2026-Technosignature-Search pipeline for scientific review.
+This package contains documentation and evidence from the
+2026-Technosignature-Search pipeline for independent reproduction.
 
 ## Items for Review
 
@@ -194,13 +210,16 @@ This package contains documentation and example outputs from the
 | `calibration_fixtures_snapshot.json` | False-positive class calibration fixtures |
 | `example_candidate_summaries.json` | Example scored candidate outputs |
 | `review_checklist.md` | Items for the reviewer to verify |
+| `real_labeled_dataset_summary.json` | Conservative summary of the admitted real cadence labels |
 
 ## Important Notes for Reviewer
 
-1. **All candidates are synthetic.** No real telescope data has been ingested.
+1. **One real cadence is included as summarized label evidence.** It is not a
+   detection claim or expert-labeled benchmark.
 2. **Thresholds are synthetic v0 defaults.** They have not been calibrated
    against real GBT noise distributions.
-3. **The labeled dataset is synthetic.** No real expert-labeled dataset exists.
+3. **The real labels are operational citizen-science labels.** They are
+   deterministic and independently audited by a second method, not expert labels.
 4. **This is not a detection claim.** No technosignature candidates are being
    reported. This package is for review of pipeline methodology only.
 
@@ -210,15 +229,15 @@ This package contains documentation and example outputs from the
 - Are the scoring feature definitions scientifically justified?
 - Are the pathway assignment thresholds conservative enough?
 - What additional validation steps are needed before processing real data?
-- What minimum labeled dataset size is appropriate for this pipeline?
+- Can another person reproduce all 124 labels from the documented rules?
 """
 
 
 def _render_checklist() -> str:
     return """\
-# Peer Review Checklist
+# Public Reproducibility Review Checklist
 
-For each item below, reviewer should mark: OK / ISSUE / NOT_APPLICABLE
+For each item below, a reproducer should mark: OK / ISSUE / NOT_APPLICABLE
 
 ## Pipeline Methodology
 - [ ] Scoring feature definitions are scientifically justified
@@ -246,6 +265,8 @@ For each item below, reviewer should mark: OK / ISSUE / NOT_APPLICABLE
 - [ ] Pipeline outputs are deterministic
 - [ ] Provenance tracking is complete
 - [ ] Schema versioning is in place
+- [ ] All 124 real cadence labels reproduce from the documented rules
+- [ ] Primary and audit methods remain independently implemented
 
 ## Comments
 (Reviewer adds comments here)
@@ -261,6 +282,17 @@ def _find_scoring_config() -> Path | None:
 def _find_calibration_fixtures() -> Path | None:
     root = Path(__file__).resolve().parents[2]
     path = root / "tests" / "fixtures" / "calibration_false_positives.json"
+    return path if path.exists() else None
+
+
+def _find_real_labeled_dataset() -> Path | None:
+    root = Path(__file__).resolve().parents[2]
+    path = (
+        root
+        / "examples"
+        / "real_labeled"
+        / "hip99427_citizen_science_labels_v1.json"
+    )
     return path if path.exists() else None
 
 

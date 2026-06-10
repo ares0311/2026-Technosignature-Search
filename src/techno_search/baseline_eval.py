@@ -28,6 +28,12 @@ BASELINE_EVAL_DISCLAIMER = (
     "discoveries, or external validation. Accuracy metrics are computed against "
     "synthetic fixtures and have no statistical meaning for real observations."
 )
+REAL_LABEL_EVAL_DISCLAIMER = (
+    "Evaluation results compare the current uncalibrated scoring model against "
+    "citizen-science operational labels derived from real observations. They "
+    "are local diagnostics only, not expert validation, calibrated survey "
+    "performance, detections, discoveries, or external submission approval."
+)
 
 
 def _default_calibration_fixture_path() -> Path:
@@ -401,7 +407,10 @@ def eval_against_labels(
     Maps dataset labels to expected pathways and checks scoring model predictions.
     Results are local synthetic diagnostics only — not detection claims.
     """
-    from techno_search.labeled_dataset import load_labeled_candidates
+    from techno_search.labeled_dataset import (
+        labeled_dataset_summary,
+        load_labeled_candidates,
+    )
 
     path = labeled_dataset_path or _default_labeled_candidates_path()
     if not path.exists():
@@ -414,6 +423,7 @@ def eval_against_labels(
             "results": [],
         }
 
+    dataset_summary = labeled_dataset_summary(path)
     entries = load_labeled_candidates(path)
     results = []
     for entry in entries:
@@ -453,7 +463,17 @@ def eval_against_labels(
 
     return {
         "schema_version": "eval_against_labels_v0",
-        "disclaimer": BASELINE_EVAL_DISCLAIMER,
+        "disclaimer": (
+            REAL_LABEL_EVAL_DISCLAIMER
+            if int(dataset_summary["real_observation_label_count"]) > 0
+            else BASELINE_EVAL_DISCLAIMER
+        ),
+        "dataset_classification": dataset_summary["dataset_classification"],
+        "review_policy": dataset_summary["review_policy"],
+        "expert_review_claimed": dataset_summary["expert_review_claimed"],
+        "external_validation_claimed": dataset_summary[
+            "external_validation_claimed"
+        ],
         "entry_count": total,
         "correct_count": correct,
         "accuracy": round(accuracy, 4),

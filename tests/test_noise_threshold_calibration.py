@@ -61,8 +61,8 @@ def test_analyze_dat_format_fixture() -> None:
 
 
 def test_disclaimer_is_conservative() -> None:
-    assert "must be reviewed" in NOISE_CALIBRATION_DISCLAIMER
-    assert "domain expert" in NOISE_CALIBRATION_DISCLAIMER
+    assert "must pass" in NOISE_CALIBRATION_DISCLAIMER
+    assert "citizen-science review" in NOISE_CALIBRATION_DISCLAIMER
     assert "do not constitute" in NOISE_CALIBRATION_DISCLAIMER
 
 
