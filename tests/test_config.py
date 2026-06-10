@@ -1,7 +1,13 @@
+import json
+
 import pytest
 
 from techno_search.background_search import load_background_priority_config
-from techno_search.config import load_scoring_config, load_track_config
+from techno_search.config import (
+    default_scoring_config_path,
+    load_scoring_config,
+    load_track_config,
+)
 from techno_search.schemas import Track
 
 
@@ -45,3 +51,38 @@ def test_background_priority_config_is_versioned_and_local_only() -> None:
     assert config.weights["followup_value"] == 0.35
     assert config.passive_runner_requires_opt_in is True
     assert config.network_access_enabled is False
+
+
+def test_scoring_config_rejects_physical_units_in_probability_fields(
+    tmp_path,
+) -> None:
+    data = json.loads(default_scoring_config_path().read_text(encoding="utf-8"))
+    data["pathway_thresholds"]["candidate_signal_reality"] = 45.1
+    path = tmp_path / "invalid.json"
+    path.write_text(json.dumps(data), encoding="utf-8")
+
+    with pytest.raises(ValueError, match=r"probability in \[0, 1\]"):
+        load_scoring_config(path)
+
+
+def test_scoring_config_rejects_descending_snr_thresholds(tmp_path) -> None:
+    data = json.loads(default_scoring_config_path().read_text(encoding="utf-8"))
+    data["snr_thresholds"] = {
+        "noise_floor_snr": 20.0,
+        "follow_up_snr": 15.0,
+        "high_interest_snr": 40.0,
+    }
+    path = tmp_path / "invalid.json"
+    path.write_text(json.dumps(data), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="noise_floor <= follow_up <= high_interest"):
+        load_scoring_config(path)
+
+
+def test_scoring_v1_template_is_unit_safe() -> None:
+    template_path = (
+        default_scoring_config_path().parent / "scoring_v1_template.json"
+    )
+    config = load_scoring_config(template_path)
+
+    assert config.pathway_thresholds.candidate_signal_reality == 0.7

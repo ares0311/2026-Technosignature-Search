@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -53,11 +54,12 @@ def default_track_config_path(track: Track) -> Path:
 
 
 def load_scoring_config(path: Path | None = None) -> ScoringConfig:
-    """Load the v0 scoring configuration."""
+    """Load and validate a scoring configuration."""
 
     config_path = path or default_scoring_config_path()
     with config_path.open(encoding="utf-8") as handle:
         data = json.load(handle)
+    validate_scoring_config_data(data)
 
     return ScoringConfig(
         pathway_thresholds=_pathway_thresholds(data["pathway_thresholds"]),
@@ -65,6 +67,57 @@ def load_scoring_config(path: Path | None = None) -> ScoringConfig:
             data["local_performance_defaults"]
         ),
     )
+
+
+def validate_scoring_config_data(data: dict[str, Any]) -> None:
+    """Reject unit errors and invalid numeric bounds in scoring configuration."""
+    probability_fields = (
+        "known_object_probability",
+        "false_positive_probability",
+        "minimum_signal_reality_for_review",
+        "candidate_interest_probability",
+        "candidate_max_false_positive_probability",
+        "candidate_signal_reality",
+        "candidate_review_readiness",
+    )
+    pathway = data.get("pathway_thresholds")
+    if not isinstance(pathway, dict):
+        raise ValueError("pathway_thresholds must be a JSON object.")
+    for field_name in probability_fields:
+        value = _finite_float(pathway.get(field_name), field_name)
+        if not 0.0 <= value <= 1.0:
+            raise ValueError(
+                f"pathway_thresholds.{field_name} must be a probability in [0, 1]."
+            )
+
+    snr_thresholds = data.get("snr_thresholds")
+    if snr_thresholds is not None:
+        if not isinstance(snr_thresholds, dict):
+            raise ValueError("snr_thresholds must be a JSON object.")
+        snr_fields = ("noise_floor_snr", "follow_up_snr", "high_interest_snr")
+        present_values = [
+            _finite_float(snr_thresholds[field_name], field_name)
+            for field_name in snr_fields
+            if snr_thresholds.get(field_name) is not None
+        ]
+        if any(value < 0.0 for value in present_values):
+            raise ValueError("SNR thresholds must be non-negative.")
+        if len(present_values) == len(snr_fields) and present_values != sorted(
+            present_values
+        ):
+            raise ValueError(
+                "SNR thresholds must satisfy noise_floor <= follow_up <= high_interest."
+            )
+
+    drift_thresholds = data.get("drift_rate_thresholds")
+    if drift_thresholds is not None:
+        if not isinstance(drift_thresholds, dict):
+            raise ValueError("drift_rate_thresholds must be a JSON object.")
+        drift_value = drift_thresholds.get("max_rfi_like_drift_hz_s")
+        if drift_value is not None and _finite_float(
+            drift_value, "max_rfi_like_drift_hz_s"
+        ) < 0.0:
+            raise ValueError("Drift-rate thresholds must be non-negative.")
 
 
 def load_track_config(track: Track, path: Path | None = None) -> TrackConfig:
@@ -115,3 +168,13 @@ def _local_performance_defaults(data: dict[str, Any]) -> LocalPerformanceDefault
 
 def _float_mapping(data: dict[str, Any]) -> dict[str, float]:
     return {key: float(value) for key, value in data.items()}
+
+
+def _finite_float(value: Any, field_name: str) -> float:
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{field_name} must be numeric.") from exc
+    if not math.isfinite(parsed):
+        raise ValueError(f"{field_name} must be finite.")
+    return parsed
