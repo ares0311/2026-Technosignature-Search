@@ -16,9 +16,10 @@ CURATED_DATASET_ADMISSION_SCHEMA_VERSION = "curated_dataset_admission_v1"
 
 CURATED_DATASET_ADMISSION_DISCLAIMER = (
     "Curated dataset admission records are local readiness checks for proposed "
-    "validation datasets. They do not ingest real observation data, calibrate "
-    "scoring thresholds, authorize live data access, authorize external "
-    "submission, or constitute detections, discoveries, or external validation."
+    "validation datasets. Admission does not authorize unreviewed real observation "
+    "data, calibrate scoring thresholds, authorize live data access, authorize "
+    "external submission, or constitute detections, discoveries, or external "
+    "validation."
 )
 
 ALLOWED_CURATED_DATASET_ADMISSION_STATUSES = frozenset(
@@ -60,6 +61,9 @@ class CuratedDatasetAdmissionRecord:
     synthetic_fixture_only: bool
     blocker_count: int
     notes: str
+    review_policy: str = "external_expert_review"
+    independent_method_review_completed: bool = False
+    public_reproducibility_artifact: str = ""
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -80,6 +84,13 @@ class CuratedDatasetAdmissionRecord:
             "synthetic_fixture_only": self.synthetic_fixture_only,
             "blocker_count": self.blocker_count,
             "notes": self.notes,
+            "review_policy": self.review_policy,
+            "independent_method_review_completed": (
+                self.independent_method_review_completed
+            ),
+            "public_reproducibility_artifact": (
+                self.public_reproducibility_artifact
+            ),
         }
 
 
@@ -113,6 +124,15 @@ def load_curated_dataset_admission_records(
                 synthetic_fixture_only=bool(item.get("synthetic_fixture_only", True)),
                 blocker_count=int(item.get("blocker_count", 0)),
                 notes=str(item.get("notes", "")),
+                review_policy=str(
+                    item.get("review_policy", "external_expert_review")
+                ),
+                independent_method_review_completed=bool(
+                    item.get("independent_method_review_completed", False)
+                ),
+                public_reproducibility_artifact=str(
+                    item.get("public_reproducibility_artifact", "")
+                ),
             )
         )
     return records
@@ -124,12 +144,22 @@ def validate_curated_dataset_admission_records(
     issues: list[str] = []
     for record in records:
         prefix = f"{record.dataset_id}: "
+        authority_review_complete = (
+            record.external_review_required and record.external_review_completed
+        )
+        citizen_science_review_complete = (
+            record.review_policy == "citizen_science_reproducibility"
+            and record.independent_method_review_completed
+            and bool(record.public_reproducibility_artifact.strip())
+            and not record.external_review_required
+        )
+        review_complete = authority_review_complete or citizen_science_review_complete
         all_reviews_complete = (
             record.provenance_reviewed
             and record.license_reviewed
             and record.labeling_method_reviewed
             and record.false_positive_baseline_reviewed
-            and record.external_review_completed
+            and review_complete
         )
         if record.admission_status not in ALLOWED_CURATED_DATASET_ADMISSION_STATUSES:
             issues.append(prefix + f"unknown admission_status {record.admission_status!r}")
@@ -137,8 +167,22 @@ def validate_curated_dataset_admission_records(
             issues.append(prefix + "track is required")
         if record.admission_status == "synthetic_only" and not record.synthetic_fixture_only:
             issues.append(prefix + "synthetic_only status requires synthetic_fixture_only")
-        if not record.synthetic_fixture_only and not record.external_review_required:
-            issues.append(prefix + "non-synthetic admission requires external review")
+        if (
+            not record.synthetic_fixture_only
+            and not record.external_review_required
+            and record.review_policy != "citizen_science_reproducibility"
+        ):
+            issues.append(
+                prefix
+                + "non-synthetic admission requires external or citizen-science review"
+            )
+        if (
+            record.review_policy == "citizen_science_reproducibility"
+            and record.external_review_completed
+        ):
+            issues.append(
+                prefix + "citizen-science review cannot claim external review completion"
+            )
         if record.real_data_authorized and record.synthetic_fixture_only:
             issues.append(prefix + "real data cannot be authorized for synthetic-only records")
         if record.real_data_authorized and record.admission_status != "ready_for_local_fixture":
@@ -166,6 +210,7 @@ def curated_dataset_admission_summary(path: Path | None = None) -> dict[str, Any
     real_data_authorized_count = 0
     external_review_required_count = 0
     external_review_completed_count = 0
+    citizen_science_review_completed_count = 0
     total_blocker_count = 0
 
     for record in records:
@@ -187,6 +232,12 @@ def curated_dataset_admission_summary(path: Path | None = None) -> dict[str, Any
             external_review_required_count += 1
         if record.external_review_completed:
             external_review_completed_count += 1
+        if (
+            record.review_policy == "citizen_science_reproducibility"
+            and record.independent_method_review_completed
+            and record.public_reproducibility_artifact
+        ):
+            citizen_science_review_completed_count += 1
 
     return {
         "schema_version": CURATED_DATASET_ADMISSION_SCHEMA_VERSION,
@@ -198,6 +249,9 @@ def curated_dataset_admission_summary(path: Path | None = None) -> dict[str, Any
         "real_data_authorized_count": real_data_authorized_count,
         "external_review_required_count": external_review_required_count,
         "external_review_completed_count": external_review_completed_count,
+        "citizen_science_review_completed_count": (
+            citizen_science_review_completed_count
+        ),
         "total_blocker_count": total_blocker_count,
         "validation_ok": bool(validation["ok"]),
         "validation_issue_count": int(validation["issue_count"]),

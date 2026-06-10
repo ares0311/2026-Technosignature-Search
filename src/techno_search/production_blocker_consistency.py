@@ -16,7 +16,7 @@ PRODUCTION_BLOCKER_CONSISTENCY_SCHEMA_VERSION = (
 
 PRODUCTION_BLOCKER_CONSISTENCY_DISCLAIMER = (
     "Production blocker consistency checks are local readiness visibility "
-    "gates only. They keep real-data, calibration, RFI, peer-review, and "
+    "gates only. They keep real-data, calibration, RFI, reproducibility-review, and "
     "authorization blockers visible without ingesting real observation data, "
     "calibrating thresholds, clearing blockers, authorizing live data access, "
     "authorizing external submission, or constituting detections, discoveries, "
@@ -91,7 +91,12 @@ def production_blocker_consistency_summary(
     readiness_summary = readiness if readiness is not None else operations_readiness_summary()
 
     min_tier1_blocker_count = int(expected.get("min_tier1_blocker_count", 0))
-    require_zero_real_data = bool(expected.get("require_zero_real_data_authorization", True))
+    expected_real_data_authorized_total = int(
+        expected.get(
+            "expected_real_data_authorization_total",
+            0 if expected.get("require_zero_real_data_authorization", True) else -1,
+        )
+    )
     require_zero_external = bool(
         expected.get("require_zero_external_submission_authorization", True)
     )
@@ -140,9 +145,14 @@ def production_blocker_consistency_summary(
         issues.append("RFI database admission blockers are not visible")
     if require_admission_blockers and curated_blocked_count <= 0:
         issues.append("curated dataset admission blockers are not visible")
-    if require_zero_real_data and real_data_authorized_total != 0:
+    if (
+        expected_real_data_authorized_total >= 0
+        and real_data_authorized_total != expected_real_data_authorized_total
+    ):
         issues.append(
-            f"real-data authorization total {real_data_authorized_total} is nonzero"
+            "real-data authorization total "
+            f"{real_data_authorized_total} != expected "
+            f"{expected_real_data_authorized_total}"
         )
     if require_zero_external and external_submission_authorized_total != 0:
         issues.append(
@@ -179,6 +189,9 @@ def production_blocker_consistency_summary(
             curated_real_data_authorized_count
         ),
         "real_data_authorized_total": real_data_authorized_total,
+        "expected_real_data_authorized_total": (
+            expected_real_data_authorized_total
+        ),
         "external_submission_authorized_total": external_submission_authorized_total,
         "network_access_allowed_count": network_access_allowed_count,
         "operations_readiness_recommendation": operations_recommendation,

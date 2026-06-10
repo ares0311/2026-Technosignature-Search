@@ -23,7 +23,7 @@ def test_train_succeeds_on_fixture() -> None:
 def test_disclaimer_is_conservative() -> None:
     assert "local development scaffolds only" in LEARNED_MODEL_DISCLAIMER
     assert "does not authorize external submission" in LEARNED_MODEL_DISCLAIMER
-    assert "real labeled dataset" in LEARNED_MODEL_DISCLAIMER
+    assert "admitted real labels" in LEARNED_MODEL_DISCLAIMER
 
 
 def test_feature_columns_are_defined() -> None:

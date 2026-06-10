@@ -7,7 +7,11 @@
 
 ## Summary
 
-The pipeline is approximately **30–35% of the way to real production** for a research-grade technosignature search system. One official GBT cadence has completed local provenance, ingestion, and conservative false-positive routing. Real labels, calibrated thresholds, site-specific RFI evidence, and external peer review remain blocking.
+The pipeline is approximately **45–50% of the way to citizen-science
+production**. One official GBT cadence has completed provenance, ingestion,
+deterministic two-method labeling, and conservative local evaluation.
+Calibrated thresholds and permitted site-specific RFI evidence remain blocking.
+Expert review and external validation are not claimed.
 
 ---
 
@@ -20,7 +24,7 @@ The pipeline is approximately **30–35% of the way to real production** for a r
 | Calibration fixture set (15 false-positive classes) | ✅ Complete |
 | Score regression + determinism checks | ✅ Complete |
 | Interpretable baseline classifier | ✅ Complete |
-| 102 JSON schema artifacts | ✅ Complete |
+| 103 JSON schema artifacts | ✅ Complete |
 | Local validation gate (`validate-all`) | ✅ Complete |
 | Provenance, audit trail, lifecycle tracking | ✅ Complete |
 | Operational log system (86 log types) | ✅ Complete |
@@ -60,6 +64,10 @@ The pipeline is approximately **30–35% of the way to real production** for a r
 | Checksum-verified HIP99427 GBT ABACAD cadence ingestion | ✅ Complete |
 | Real turboSETI processing with explicit ON/OFF evidence | ✅ Complete |
 | Frequency-matched OFF-target rejection guard validated against real cadence data | ✅ Complete |
+| Real HIP99427 cadence label set (124 evidence groups) | ✅ Complete |
+| Independent-method citizen-science label audit | ✅ Complete |
+| Public reproducibility review package | ✅ Complete |
+| Current scoring model evaluated against real labels (54.03% diagnostic agreement) | ✅ Complete |
 | Operational log system (86 log types) | ✅ Complete |
 
 ---
@@ -70,10 +78,8 @@ The pipeline is approximately **30–35% of the way to real production** for a r
 
 | Gap | Effort estimate |
 |---|---|
-| **Real labeled dataset** — admission gates exist, but all committed labels are synthetic and no real labeled dataset has been approved | Medium (requires human expert labeling of real detections) |
 | **Calibrated scoring thresholds** — current thresholds are synthetic v0 defaults | Medium (requires sensitivity analysis against real noise distributions) |
 | **Real site-specific RFI database** — synthetic guardrails and admission gates exist, but no permitted site-monitoring catalog has been approved | Medium |
-| **Peer review** — no external scientific review of pipeline logic or candidate reports | Large |
 
 ### Tier 2 — Required for Research-Grade Use
 
@@ -83,6 +89,7 @@ The pipeline is approximately **30–35% of the way to real production** for a r
 | Multi-epoch observation support | Medium |
 | Known object catalog integration (SIMBAD cross-match) | Small (client exists) |
 | Learned scoring model (replace rule-based baseline) | Large |
+| Independent reproduction by another citizen scientist or clean environment | Small |
 
 ### Tier 3 — Production Hardening
 
@@ -91,14 +98,15 @@ The pipeline is approximately **30–35% of the way to real production** for a r
 | Parallelized batch processing | Small |
 | Database-backed candidate store (not file-based) | Medium |
 | Operator UI / review dashboard | Large |
-| External submission workflow | Large (requires institutional policy approval) |
+| External submission workflow | Large (outside current citizen-science production scope) |
 | Reproducibility verification across data releases | Medium |
+| Optional expert or institutional review | External opportunity, not assumed |
 
 ---
 
 ## Production Readiness Estimate
 
-- **Current state:** ~30–35%
+- **Current state:** ~45–50%
 - **After Tier 1 complete:** ~60%
 - **After Tier 2 complete:** ~80%
 - **After Tier 3 complete:** ~100%
@@ -109,11 +117,14 @@ The pipeline is approximately **30–35% of the way to real production** for a r
 
 Regardless of engineering readiness:
 
-1. No candidate report authorizes external submission without peer review.
+1. No candidate report authorizes external submission.
 2. No scoring result constitutes a detection claim.
 3. Pathway routing is a local scheduling aid, not a scientific verdict.
 4. All external catalog queries remain opt-in via `TECHNO_SEARCH_ENABLE_LIVE_DATA=1`.
-5. The pipeline is a provenance and triage tool — human expert review gates every step.
+5. The pipeline is a provenance and triage tool. Citizen-science production
+   decisions require deterministic rules, an independent-method audit,
+   published provenance, and visible abstentions or disagreements.
+6. Expert review and external validation remain unclaimed unless they actually occur.
 
 ---
 
@@ -142,5 +153,7 @@ DECISION-111 for the access control log, change management log, and
 incident log, and DECISION-112 for the patch management log, vulnerability
 scan log, and compliance audit log, and DECISION-113 for the disaster
 recovery log, service level log, and asset management log. DECISION-121 records
-the observation admission gate, and DECISION-122 records the first approved
-real GBT cadence ingestion and OFF-target rejection correction.
+the observation admission gate, DECISION-122 records the first approved
+real GBT cadence ingestion and OFF-target rejection correction, and
+DECISION-123 records the citizen-science reproducibility standard and first
+admitted real label set.

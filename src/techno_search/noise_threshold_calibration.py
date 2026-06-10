@@ -3,9 +3,10 @@
 Analyzes SNR and drift-rate distributions from a set of real or synthetic
 turboSETI hit tables to derive empirical scoring thresholds.
 
-IMPORTANT: outputs are provenance-only calibration aids.  Derived thresholds
-must be reviewed by a domain expert before being committed to scoring_v1.json.
-They do not constitute calibrated survey sensitivities or detection thresholds.
+IMPORTANT: outputs are provenance-only calibration aids. Derived thresholds
+must pass the project's citizen-science reproducibility review before being
+committed to scoring_v1.json. They do not constitute calibrated survey
+sensitivities or detection thresholds.
 """
 from __future__ import annotations
 
@@ -15,7 +16,7 @@ from typing import Any
 
 NOISE_CALIBRATION_DISCLAIMER = (
     "Noise distribution analysis outputs are local calibration aids only. "
-    "Derived thresholds must be reviewed and approved by a domain expert "
+    "Derived thresholds must pass independent-method citizen-science review "
     "before use in production scoring. They do not constitute calibrated "
     "survey sensitivities, detection thresholds, or validated scoring parameters."
 )
@@ -120,8 +121,8 @@ def _suggest_thresholds(
 ) -> dict[str, Any]:
     """Suggest scoring threshold candidates from empirical distributions.
 
-    These are SUGGESTIONS for expert review, not validated thresholds.
-    All outputs require domain-expert approval before use.
+    These are suggestions for reproducibility review, not validated thresholds.
+    All outputs require independent-method review before use.
     """
     p90 = _percentile(snr_sorted, 90.0)
     p95 = _percentile(snr_sorted, 95.0)
@@ -133,7 +134,7 @@ def _suggest_thresholds(
     return {
         "note": (
             "Suggested thresholds are empirical starting points only. "
-            "They must be reviewed and approved by a domain expert."
+            "They must pass independent-method citizen-science review."
         ),
         "snr_high_interest_candidate": p99,
         "snr_follow_up_candidate": p95,

@@ -16,7 +16,8 @@
         "latest_milestone_label",
         "latest_decision_number",
         "schema_count",
-        "require_zero_real_data_authorization",
+        "expected_rfi_real_data_authorization_total",
+        "expected_curated_real_data_authorization_total",
         "project_status_completed_phrase"
       ],
       "properties": {
@@ -24,7 +25,14 @@
         "latest_milestone_label": {"type": "string", "minLength": 1},
         "latest_decision_number": {"type": "integer", "minimum": 1},
         "schema_count": {"type": "integer", "minimum": 1},
-        "require_zero_real_data_authorization": {"type": "boolean"},
+        "expected_rfi_real_data_authorization_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expected_curated_real_data_authorization_total": {
+          "type": "integer",
+          "minimum": 0
+        },
         "project_status_completed_phrase": {"type": "string", "minLength": 1}
       },
       "additionalProperties": false

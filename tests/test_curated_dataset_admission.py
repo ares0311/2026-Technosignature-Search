@@ -17,7 +17,7 @@ FIXTURE_PATH = Path(__file__).parent / "fixtures" / "curated_dataset_admission.j
 def test_load_curated_dataset_admission_records_default_fixture() -> None:
     records = load_curated_dataset_admission_records()
 
-    assert len(records) == 4
+    assert len(records) == 5
     assert records[0].dataset_id == "curated-admit-synthetic-v0"
     assert records[0].synthetic_fixture_only is True
 
@@ -26,26 +26,27 @@ def test_curated_dataset_admission_summary_counts_gate_states() -> None:
     summary = curated_dataset_admission_summary()
 
     assert summary["schema_version"] == "curated_dataset_admission_v1"
-    assert summary["record_count"] == 4
+    assert summary["record_count"] == 5
     assert summary["blocked_count"] == 3
-    assert summary["ready_for_local_fixture_count"] == 0
+    assert summary["ready_for_local_fixture_count"] == 1
     assert summary["synthetic_only_count"] == 1
-    assert summary["real_data_authorized_count"] == 0
+    assert summary["real_data_authorized_count"] == 1
     assert summary["external_review_required_count"] == 3
+    assert summary["citizen_science_review_completed_count"] == 1
     assert summary["total_blocker_count"] == 9
     assert summary["validation_ok"] is True
     assert summary["by_track"] == {
         "anomaly": 1,
         "infrared": 1,
         "multi": 1,
-        "radio": 1,
+        "radio": 2,
     }
 
 
 def test_curated_dataset_admission_summary_has_conservative_disclaimer() -> None:
     summary = curated_dataset_admission_summary()
 
-    assert "do not ingest real observation data" in summary["disclaimer"]
+    assert "does not authorize unreviewed real observation data" in summary["disclaimer"]
     assert "calibrate scoring thresholds" in summary["disclaimer"]
 
 
@@ -73,7 +74,7 @@ def test_curated_dataset_admission_rejects_real_authorization_without_reviews(
     summary = curated_dataset_admission_summary(path)
 
     assert summary["validation_ok"] is False
-    assert summary["real_data_authorized_count"] == 1
+    assert summary["real_data_authorized_count"] == 2
     assert any(
         "requires ready_for_local_fixture" in issue
         for issue in summary["validation_issues"]
@@ -131,4 +132,4 @@ def test_curated_dataset_admission_custom_path_matches_default() -> None:
     records = load_curated_dataset_admission_records(FIXTURE_PATH)
     summary = curated_dataset_admission_summary(FIXTURE_PATH)
 
-    assert len(records) == summary["record_count"] == 4
+    assert len(records) == summary["record_count"] == 5

@@ -199,11 +199,11 @@ def test_cli_curated_dataset_admission_summary_outputs_gate_counts() -> None:
 
     assert exit_code == 0
     assert result["schema_version"] == "curated_dataset_admission_v1"
-    assert result["record_count"] == 4
+    assert result["record_count"] == 5
     assert result["blocked_count"] == 3
-    assert result["real_data_authorized_count"] == 0
+    assert result["real_data_authorized_count"] == 1
     assert result["validation_ok"] is True
-    assert "do not ingest real observation data" in result["disclaimer"]
+    assert "does not authorize unreviewed real observation data" in result["disclaimer"]
 
 
 def test_cli_project_status_consistency_summary_outputs_drift_gates() -> None:
@@ -216,10 +216,10 @@ def test_cli_project_status_consistency_summary_outputs_drift_gates() -> None:
     assert result["schema_version"] == "project_status_consistency_v1"
     assert result["ok"] is True
     assert result["roadmap_latest_milestone"] == 73
-    assert result["decisions_latest_decision"] == 122
-    assert result["actual_schema_count"] == 102
+    assert result["decisions_latest_decision"] == 123
+    assert result["actual_schema_count"] == 103
     assert result["rfi_database_admission_real_data_authorized_count"] == 0
-    assert result["curated_dataset_admission_real_data_authorized_count"] == 0
+    assert result["curated_dataset_admission_real_data_authorized_count"] == 1
 
 
 def test_cli_mcp_bootstrap_consistency_summary_outputs_gate_counts() -> None:
@@ -438,7 +438,7 @@ def test_cli_sqlite_operational_log_adapter_readiness_preflight_outputs_gate() -
     assert result["readiness_status"] == "preflight_only"
     assert result["registered_log_count"] == 0
     assert result["planned_count"] == 0
-    assert result["schema_count"] == 102
+    assert result["schema_count"] == 103
     assert result["upstream_gate_failure_count"] == 0
     assert result["database_open_allowed"] is False
     assert result["execution_allowed"] is False
@@ -467,8 +467,8 @@ def test_cli_sqlite_operational_log_adapter_authorization_gate_outputs_gate() ->
         == "blocked_pending_explicit_operator_approval"
     )
     assert result["readiness_preflight_ok"] is True
-    assert result["readiness_preflight_schema_count"] == 102
-    assert result["schema_count"] == 102
+    assert result["readiness_preflight_schema_count"] == 103
+    assert result["schema_count"] == 103
     assert result["adapter_implementation_allowed"] is False
     assert result["database_open_allowed"] is False
     assert result["execution_allowed"] is False
@@ -487,10 +487,10 @@ def test_cli_production_blocker_consistency_summary_outputs_gate_counts() -> Non
     assert exit_code == 0
     assert result["schema_version"] == "production_blocker_consistency_v1"
     assert result["ok"] is True
-    assert result["actual_tier1_blocker_count"] == 4
+    assert result["actual_tier1_blocker_count"] == 2
     assert result["rfi_database_admission_blocked_count"] == 3
     assert result["curated_dataset_admission_blocked_count"] == 3
-    assert result["real_data_authorized_total"] == 0
+    assert result["real_data_authorized_total"] == 1
     assert result["external_submission_authorized_total"] == 0
 
 
@@ -658,6 +658,7 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "feature_normalization",
         "follow_up_request",
         "labeled_candidates",
+        "labeled_candidates_citizen_science_v1",
         "labeled_candidates_synthetic_v1",
         "mcp_bootstrap_consistency",
         "mcp_server_policy",
@@ -1845,7 +1846,7 @@ def test_cli_validate_all_outputs_local_summary() -> None:
     assert result["production_blocker_consistency_summary"]["issue_count"] == 0
     assert result["production_blocker_consistency_summary"][
         "actual_tier1_blocker_count"
-    ] == 4
+    ] == 2
     assert result["top_level_sqlite_log_integrity_summary"]["ok"] is True
     assert result["top_level_sqlite_log_migration_summary"][
         "migration_required"
@@ -2009,12 +2010,12 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["ok"] is True
     assert result["candidate_count"] == 3
     assert result["report_validation_ok"] is True
-    assert result["schema_count"] == 102
+    assert result["schema_count"] == 103
     assert result["schemas_ok"] is True
     assert result["project_status_consistency_ok"] is True
     assert result["project_status_latest_milestone"] == 73
-    assert result["project_status_latest_decision"] == 122
-    assert result["project_status_schema_count"] == 102
+    assert result["project_status_latest_decision"] == 123
+    assert result["project_status_schema_count"] == 103
     assert result["mcp_bootstrap_consistency_ok"] is True
     assert result["mcp_bootstrap_consistency_issue_count"] == 0
     assert result["mcp_bootstrap_claude_server_count"] == 3
@@ -2035,8 +2036,8 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["mcp_server_policy_external_submission_enabled"] is False
     assert result["production_blocker_consistency_ok"] is True
     assert result["production_blocker_consistency_issue_count"] == 0
-    assert result["production_blocker_tier1_blocker_count"] == 4
-    assert result["production_blocker_real_data_authorized_total"] == 0
+    assert result["production_blocker_tier1_blocker_count"] == 2
+    assert result["production_blocker_real_data_authorized_total"] == 1
     assert result["production_blocker_external_submission_authorized_total"] == 0
     assert result["sqlite_operational_log_registry_ok"] is True
     assert result["sqlite_operational_log_registry_issue_count"] == 0
@@ -2125,7 +2126,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert (
         result["sqlite_operational_log_adapter_readiness_preflight_schema_count"]
-        == 102
+        == 103
     )
     assert (
         result[
@@ -2161,7 +2162,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert (
         result["sqlite_operational_log_adapter_authorization_gate_schema_count"]
-        == 102
+        == 103
     )
     assert (
         result[

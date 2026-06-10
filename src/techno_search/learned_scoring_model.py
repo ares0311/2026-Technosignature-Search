@@ -9,10 +9,10 @@ for external submission decisions or claimed as a scientific result.  It is
 a development scaffold only.
 
 Production use requires:
-  1. Real labeled dataset (not synthetic) approved by domain expert
+  1. Admitted real labeled datasets with reproducible review evidence
   2. Sufficient labeled examples (> 100 per class minimum)
   3. Independent train/validation/test splits
-  4. External peer review of the model and its use
+  4. Independent-method reproduction of the model and its use
 """
 from __future__ import annotations
 
@@ -24,7 +24,8 @@ LEARNED_MODEL_DISCLAIMER = (
     "A model trained on synthetic labeled data does not constitute a validated "
     "scoring model, does not authorize external submission, and does not "
     "constitute a detection claim or scientific result. "
-    "Real production use requires a real labeled dataset approved by a domain expert."
+    "Real production use requires admitted real labels and independent-method "
+    "citizen-science review."
 )
 
 # Labels that map to 'positive' (technosignature interest) class
@@ -177,9 +178,9 @@ def train_logistic_regression(
             "performance estimate. Real performance requires a held-out test set."
         ),
         "production_requirements": [
-            "Real labeled dataset (>100 examples per class) approved by domain expert",
+            "Admitted real labels (>100 examples per class) with reproducible review",
             "Independent train/validation/test splits",
-            "External peer review of model methodology",
+            "Independent-method reproduction of model methodology",
             "Operator approval before any use in candidate triage",
         ],
     }
@@ -227,7 +228,7 @@ SYNTHETIC_DATASET_DISCLAIMER = (
     "LEARNED MODEL SCORES ARE NOT DETECTION PROBABILITIES. "
     "Scores are local triage aids trained on synthetic data only. "
     "No model output authorizes external submission or constitutes a detection claim. "
-    "Human expert review is required before any action."
+    "Independent citizen-science review is required before any action."
 )
 
 _LABEL_MAP = {

@@ -22,16 +22,16 @@
       "label": "Real labeled dataset",
       "required_evidence": [
         "curated dataset admission record with zero blockers",
-        "labeling methodology review",
-        "expert-review evidence"
+        "deterministic labeling methodology review",
+        "independent-method audit artifact"
       ],
-      "current_evidence_count": 0,
-      "blocker_count": 3,
-      "review_status": "blocked_pending_labeled_dataset",
-      "real_data_authorized": false,
+      "current_evidence_count": 3,
+      "blocker_count": 0,
+      "review_status": "ready_for_local_review",
+      "real_data_authorized": true,
       "live_data_authorized": false,
       "external_submission_authorized": false,
-      "notes": "Committed labels remain synthetic."
+      "notes": "The 124-group HIP99427 citizen-science label set is admitted for local evaluation; expert review and external validation are not claimed."
     },
     {
       "category_id": "scoring_calibration",
@@ -66,26 +66,28 @@
       "notes": "No real site-monitoring catalog has been admitted."
     },
     {
-      "category_id": "peer_review",
-      "label": "Peer review",
+      "category_id": "public_reproducibility_review",
+      "label": "Public reproducibility review",
       "required_evidence": [
-        "external scientific review record",
-        "candidate-report review checklist",
-        "methodology review disposition"
+        "published citizen-science review protocol",
+        "committed independently audited label artifact",
+        "public repository reproducibility package"
       ],
-      "current_evidence_count": 0,
-      "blocker_count": 3,
-      "review_status": "blocked_pending_peer_review",
-      "real_data_authorized": false,
+      "current_evidence_count": 3,
+      "blocker_count": 0,
+      "review_status": "ready_for_local_review",
+      "real_data_authorized": true,
       "live_data_authorized": false,
       "external_submission_authorized": false,
-      "notes": "No external scientific review has approved production use."
+      "notes": "Citizen-science production review is complete and reproducible in the public repository. No expert review or external validation is claimed."
     }
   ],
   "expected_preflight": {
     "category_count": 5,
     "min_blocker_total": 5,
-    "expected_real_data_authorization_total": 1,
+    "expected_real_data_authorization_total": 3,
+    "expected_rfi_database_authorization_total": 0,
+    "expected_curated_dataset_authorization_total": 1,
     "require_zero_live_data_authorization": true,
     "require_zero_external_submission_authorization": true,
     "require_rfi_admission_blockers_visible": true,

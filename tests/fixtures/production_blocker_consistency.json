@@ -2,13 +2,11 @@
   "schema_version": "production_blocker_consistency_v1",
   "expected_blockers": {
     "required_tier1_blocker_phrases": [
-      "Real labeled dataset",
       "Calibrated scoring thresholds",
-      "Real site-specific RFI database",
-      "Peer review"
+      "Real site-specific RFI database"
     ],
-    "min_tier1_blocker_count": 4,
-    "require_zero_real_data_authorization": true,
+    "min_tier1_blocker_count": 2,
+    "expected_real_data_authorization_total": 1,
     "require_zero_external_submission_authorization": true,
     "require_admission_blockers_visible": true,
     "require_operations_readiness_blocked_for_real_data": true

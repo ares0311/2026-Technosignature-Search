@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Citizen-Science Real Observation Labels",
+  "description": "Conservative operational labels derived reproducibly from a real observation cadence without claiming expert or external validation.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "description",
+    "disclaimer",
+    "dataset_classification",
+    "review_policy",
+    "expert_review_claimed",
+    "external_validation_claimed",
+    "external_submission_authorized",
+    "source_provenance",
+    "grouping_method",
+    "review_summary",
+    "total_entries",
+    "label_counts",
+    "entries"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "labeled_candidates_citizen_science_v1"
+    },
+    "description": {"type": "string", "minLength": 1},
+    "disclaimer": {"type": "string", "minLength": 1},
+    "dataset_classification": {
+      "const": "real_observation_citizen_science_labels"
+    },
+    "review_policy": {
+      "const": "citizen_science_reproducibility_v1"
+    },
+    "expert_review_claimed": {"const": false},
+    "external_validation_claimed": {"const": false},
+    "external_submission_authorized": {"const": false},
+    "source_provenance": {
+      "type": "object",
+      "required": [
+        "source_dataset",
+        "source_csv_sha256",
+        "source_artifacts",
+        "data_license",
+        "data_use_url",
+        "external_submission_authorized"
+      ]
+    },
+    "grouping_method": {
+      "type": "object",
+      "required": ["unit", "pseudo_replication_prevented"],
+      "properties": {
+        "pseudo_replication_prevented": {"const": true}
+      }
+    },
+    "review_summary": {
+      "type": "object",
+      "required": [
+        "primary_method",
+        "audit_method",
+        "independent_method_review_completed",
+        "agreement_count",
+        "disagreement_count",
+        "disagreements_forced_to_insufficient_evidence"
+      ],
+      "properties": {
+        "independent_method_review_completed": {"const": true},
+        "agreement_count": {"type": "integer", "minimum": 1},
+        "disagreement_count": {"type": "integer", "minimum": 0},
+        "disagreements_forced_to_insufficient_evidence": {"const": true}
+      }
+    },
+    "total_entries": {"type": "integer", "minimum": 1},
+    "label_counts": {"type": "object"},
+    "false_positive_class_counts": {"type": "object"},
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "entry_id",
+          "candidate_id",
+          "track",
+          "label",
+          "label_confidence",
+          "labeled_by",
+          "labeled_at",
+          "primary_label",
+          "audit_label",
+          "review_agreement",
+          "evidence_group",
+          "candidate",
+          "notes"
+        ],
+        "properties": {
+          "track": {"const": "radio"},
+          "label": {
+            "enum": [
+              "false_positive",
+              "follow_up",
+              "insufficient_evidence",
+              "known_object"
+            ]
+          },
+          "label_confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "review_agreement": {"type": "boolean"},
+          "evidence_group": {
+            "type": "object",
+            "required": [
+              "frequency_hz",
+              "drift_rate_hz_per_sec",
+              "measurement_count",
+              "on_scan_count",
+              "off_scan_count",
+              "targets",
+              "source_artifacts"
+            ]
+          },
+          "candidate": {
+            "type": "object",
+            "required": [
+              "candidate_id",
+              "track",
+              "source_ids",
+              "features",
+              "provenance"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

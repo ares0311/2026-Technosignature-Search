@@ -2913,3 +2913,45 @@ external peer review.
 The corrected HIP99427 report routes `do_not_submit_false_positive` with human
 interference as the dominant hypothesis. This result does not authorize
 external submission and does not constitute a detection claim.
+
+---
+
+# DECISION-123: Citizen-Science Reproducibility Is The Production Review Standard
+
+Date: 2026-06-10
+Status: accepted
+
+## Context
+
+This is an independent citizen-science project without access to domain experts.
+Requiring expert approval as a production prerequisite would create a permanent,
+uncontrollable blocker and would encourage unsupported claims that review had
+occurred.
+
+The admitted HIP99427 cadence contains 213 turboSETI rows. Exact
+frequency/drift grouping produces 124 independent evidence groups suitable for
+conservative operational labels.
+
+## Decision
+
+Use deterministic, published citizen-science review for local production:
+
+1. A primary ON/OFF count rule assigns operational labels.
+2. A structurally independent six-position scan-signature method audits them.
+3. Disagreements and incomplete ON-only recurrence become
+   `insufficient_evidence`.
+4. Source hashes, license, methods, evidence, and limitations remain attached.
+5. Public reproducibility replaces assumed expert approval for local production.
+
+The resulting label set contains 81 false positives, 2 operational follow-up
+groups, and 41 insufficient-evidence groups. The two methods agree on all 124
+groups. Current v0 scoring agrees with 67 groups (54.03%), including 80.25% of
+false positives and both follow-up groups, but none of the insufficient-evidence
+routes. No thresholds are changed from this single cadence.
+
+## Consequences
+
+The Tier 1 real-labeled-dataset and citizen-science production-review gaps are
+closed. Calibrated thresholds and a permitted site-specific RFI database remain
+blocking. These labels are not expert labels, external validation, detections,
+discoveries, or authorization for external submission.

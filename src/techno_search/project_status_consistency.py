@@ -101,7 +101,18 @@ def project_status_consistency_summary(
     expected_decision = int(expected["latest_decision_number"])
     expected_schema_count = int(expected["schema_count"])
     expected_label = str(expected["latest_milestone_label"])
-    require_zero_real_data = bool(expected.get("require_zero_real_data_authorization", True))
+    expected_rfi_authorized = int(
+        expected.get(
+            "expected_rfi_real_data_authorization_total",
+            0 if expected.get("require_zero_real_data_authorization", True) else -1,
+        )
+    )
+    expected_curated_authorized = int(
+        expected.get(
+            "expected_curated_real_data_authorization_total",
+            0 if expected.get("require_zero_real_data_authorization", True) else -1,
+        )
+    )
     required_status_phrase = str(expected.get("project_status_completed_phrase", ""))
 
     issues: list[str] = []
@@ -142,10 +153,23 @@ def project_status_consistency_summary(
             "PROJECT_STATUS missing required completed phrase "
             f"{required_status_phrase!r}"
         )
-    if require_zero_real_data and rfi_real_data_authorized_count != 0:
-        issues.append("RFI database admission real-data authorization is nonzero")
-    if require_zero_real_data and curated_real_data_authorized_count != 0:
-        issues.append("curated dataset admission real-data authorization is nonzero")
+    if (
+        expected_rfi_authorized >= 0
+        and rfi_real_data_authorized_count != expected_rfi_authorized
+    ):
+        issues.append(
+            "RFI database admission real-data authorization "
+            f"{rfi_real_data_authorized_count} != expected {expected_rfi_authorized}"
+        )
+    if (
+        expected_curated_authorized >= 0
+        and curated_real_data_authorized_count != expected_curated_authorized
+    ):
+        issues.append(
+            "curated dataset admission real-data authorization "
+            f"{curated_real_data_authorized_count} != expected "
+            f"{expected_curated_authorized}"
+        )
 
     return {
         "schema_version": PROJECT_STATUS_CONSISTENCY_SCHEMA_VERSION,
@@ -167,6 +191,12 @@ def project_status_consistency_summary(
         ),
         "curated_dataset_admission_real_data_authorized_count": (
             curated_real_data_authorized_count
+        ),
+        "expected_rfi_database_admission_real_data_authorized_count": (
+            expected_rfi_authorized
+        ),
+        "expected_curated_dataset_admission_real_data_authorized_count": (
+            expected_curated_authorized
         ),
         "required_status_phrase_present": required_status_phrase_present,
     }

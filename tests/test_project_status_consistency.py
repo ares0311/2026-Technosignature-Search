@@ -24,7 +24,8 @@ def _write_expected(path: Path, *, schema_count: int = 2) -> Path:
                     ),
                     "latest_decision_number": 80,
                     "schema_count": schema_count,
-                    "require_zero_real_data_authorization": True,
+                    "expected_rfi_real_data_authorization_total": 0,
+                    "expected_curated_real_data_authorization_total": 1,
                     "project_status_completed_phrase": (
                         "Project status consistency gates added"
                     ),
@@ -87,8 +88,8 @@ def test_load_project_status_expectations_fixture() -> None:
     expected = load_project_status_expectations(FIXTURE_PATH)
 
     assert expected["latest_milestone_number"] == 73
-    assert expected["latest_decision_number"] == 122
-    assert expected["schema_count"] == 102
+    assert expected["latest_decision_number"] == 123
+    assert expected["schema_count"] == 103
 
 
 def test_project_status_consistency_custom_project_passes(tmp_path: Path) -> None:
@@ -102,7 +103,7 @@ def test_project_status_consistency_custom_project_passes(tmp_path: Path) -> Non
     assert summary["roadmap_latest_milestone"] == 33
     assert summary["actual_schema_count"] == 2
     assert summary["rfi_database_admission_real_data_authorized_count"] == 0
-    assert summary["curated_dataset_admission_real_data_authorized_count"] == 0
+    assert summary["curated_dataset_admission_real_data_authorized_count"] == 1
 
 
 def test_project_status_consistency_detects_stale_production_milestone(
@@ -136,5 +137,5 @@ def test_project_status_consistency_default_project_passes() -> None:
     assert summary["schema_version"] == "project_status_consistency_v1"
     assert summary["ok"] is True
     assert summary["expected_latest_milestone"] == 73
-    assert summary["expected_latest_decision"] == 122
-    assert summary["expected_schema_count"] == 102
+    assert summary["expected_latest_decision"] == 123
+    assert summary["expected_schema_count"] == 103

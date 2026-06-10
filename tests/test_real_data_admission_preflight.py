@@ -53,12 +53,17 @@ def _write_fixture(
                         "site_specific_rfi_database",
                         "blocked_pending_rfi_database",
                     ),
-                    _category("peer_review", "blocked_pending_peer_review"),
+                    _category(
+                        "public_reproducibility_review",
+                        "blocked_pending_public_reproducibility",
+                    ),
                 ],
                 "expected_preflight": {
                     "category_count": 5,
                     "min_blocker_total": 5,
                     "require_zero_real_data_authorization": True,
+                    "expected_rfi_database_authorization_total": 0,
+                    "expected_curated_dataset_authorization_total": 0,
                     "require_zero_live_data_authorization": True,
                     "require_zero_external_submission_authorization": True,
                     "require_rfi_admission_blockers_visible": True,
@@ -107,7 +112,7 @@ def test_load_real_data_admission_preflight_fixture() -> None:
     assert categories[0].real_data_authorized is True
     assert categories[0].blocker_count == 0
     assert expected["category_count"] == 5
-    assert expected["expected_real_data_authorization_total"] == 1
+    assert expected["expected_real_data_authorization_total"] == 3
 
 
 def test_real_data_admission_preflight_custom_fixture_passes(tmp_path: Path) -> None:
@@ -147,7 +152,9 @@ def test_real_data_admission_preflight_detects_missing_category(
     )
 
     assert summary["ok"] is False
-    assert any("peer_review" in issue for issue in summary["issues"])
+    assert any(
+        "public_reproducibility_review" in issue for issue in summary["issues"]
+    )
     assert summary["category_count"] == 4
 
 
@@ -159,7 +166,10 @@ def test_real_data_admission_preflight_detects_authorization_drift(
         _category("real_labeled_dataset", "blocked_pending_labeled_dataset"),
         _category("scoring_calibration", "blocked_pending_calibration"),
         _category("site_specific_rfi_database", "blocked_pending_rfi_database"),
-        _category("peer_review", "blocked_pending_peer_review"),
+        _category(
+            "public_reproducibility_review",
+            "blocked_pending_public_reproducibility",
+        ),
     ]
     categories[0]["real_data_authorized"] = True
     categories[1]["live_data_authorized"] = True
@@ -207,7 +217,10 @@ def test_real_data_admission_preflight_detects_evidence_count_drift(
         _category("real_labeled_dataset", "blocked_pending_labeled_dataset"),
         _category("scoring_calibration", "blocked_pending_calibration"),
         _category("site_specific_rfi_database", "blocked_pending_rfi_database"),
-        _category("peer_review", "blocked_pending_peer_review"),
+        _category(
+            "public_reproducibility_review",
+            "blocked_pending_public_reproducibility",
+        ),
     ]
     categories[0]["current_evidence_count"] = 3
     fixture_path = _write_fixture(tmp_path, categories=categories)
@@ -229,8 +242,8 @@ def test_real_data_admission_preflight_default_project_passes() -> None:
     assert summary["schema_version"] == "real_data_admission_preflight_v1"
     assert summary["ok"] is True
     assert summary["category_count"] == 5
-    assert summary["blocked_category_count"] == 4
-    assert summary["real_data_authorized_total"] == 1
-    assert summary["expected_real_data_authorized_total"] == 1
+    assert summary["blocked_category_count"] == 2
+    assert summary["real_data_authorized_total"] == 3
+    assert summary["expected_real_data_authorized_total"] == 3
     assert summary["live_data_authorized_total"] == 0
     assert summary["external_submission_authorized_total"] == 0

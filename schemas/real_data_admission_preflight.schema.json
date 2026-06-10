@@ -50,7 +50,9 @@
       "required": [
         "category_count",
         "min_blocker_total",
-        "require_zero_real_data_authorization",
+        "expected_real_data_authorization_total",
+        "expected_rfi_database_authorization_total",
+        "expected_curated_dataset_authorization_total",
         "require_zero_live_data_authorization",
         "require_zero_external_submission_authorization",
         "require_rfi_admission_blockers_visible",
@@ -60,7 +62,18 @@
       "properties": {
         "category_count": {"type": "integer", "minimum": 1},
         "min_blocker_total": {"type": "integer", "minimum": 0},
-        "require_zero_real_data_authorization": {"type": "boolean"},
+        "expected_real_data_authorization_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expected_rfi_database_authorization_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expected_curated_dataset_authorization_total": {
+          "type": "integer",
+          "minimum": 0
+        },
         "require_zero_live_data_authorization": {"type": "boolean"},
         "require_zero_external_submission_authorization": {"type": "boolean"},
         "require_rfi_admission_blockers_visible": {"type": "boolean"},

@@ -795,6 +795,7 @@ SCHEMA_FILENAMES = {
     "rfi_database_admission": "rfi_database_admission.schema.json",
     "rfi_database": "rfi_database.schema.json",
     "labeled_candidates": "labeled_candidates.schema.json",
+    "labeled_candidates_citizen_science_v1": "labeled_candidates_citizen_science_v1.schema.json",
     "labeled_candidates_synthetic_v1": "labeled_candidates_synthetic_v1.schema.json",
 }
 
@@ -5655,7 +5656,7 @@ def validate_all() -> dict[str, object]:
         and curated_dataset_admission_record_count >= 1
         and curated_dataset_admission_validation_ok
         and isinstance(curated_dataset_admission_real_authorized_count, int)
-        and curated_dataset_admission_real_authorized_count == 0
+        and curated_dataset_admission_real_authorized_count == 1
         and project_status_consistency_ok
         and mcp_bootstrap_consistency_ok
         and mcp_server_policy_ok
@@ -13102,8 +13103,8 @@ def _build_parser() -> argparse.ArgumentParser:
     peer_review_parser = subparsers.add_parser(
         "generate-peer-review-package",
         help=(
-            "Generate a structured peer review package with pipeline methodology "
-            "documentation and example candidate summaries for external scientific review."
+            "Generate a structured public reproducibility package with pipeline "
+            "methodology, label evidence, and example candidate summaries."
         ),
     )
     peer_review_parser.add_argument(
@@ -13116,7 +13117,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "noise-threshold-calibration",
         help=(
             "Analyze SNR/drift-rate distributions from a directory of turboSETI "
-            "hit tables and suggest scoring threshold candidates for expert review."
+            "hit tables and suggest candidates for citizen-science threshold review."
         ),
     )
     noise_cal_parser.add_argument(

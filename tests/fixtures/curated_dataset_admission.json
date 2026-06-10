@@ -15,7 +15,10 @@
       "real_data_authorized": false,
       "synthetic_fixture_only": true,
       "blocker_count": 0,
-      "notes": "Synthetic fixtures are approved for local regression use only."
+      "notes": "Synthetic fixtures are approved for local regression use only.",
+      "review_policy": "synthetic_ground_truth",
+      "independent_method_review_completed": true,
+      "public_reproducibility_artifact": "tests/fixtures/labeled_candidates.json"
     },
     {
       "dataset_id": "curated-admit-radio-provenance-blocked",
@@ -32,7 +35,10 @@
       "real_data_authorized": false,
       "synthetic_fixture_only": false,
       "blocker_count": 4,
-      "notes": "Blocked until provenance, licensing, labeling, and false-positive baseline evidence are reviewed."
+      "notes": "Blocked until provenance, licensing, labeling, and false-positive baseline evidence are reviewed.",
+      "review_policy": "external_expert_review",
+      "independent_method_review_completed": false,
+      "public_reproducibility_artifact": ""
     },
     {
       "dataset_id": "curated-admit-infrared-license-blocked",
@@ -49,7 +55,10 @@
       "real_data_authorized": false,
       "synthetic_fixture_only": false,
       "blocker_count": 3,
-      "notes": "Blocked until reuse permissions and labeling review are complete."
+      "notes": "Blocked until reuse permissions and labeling review are complete.",
+      "review_policy": "external_expert_review",
+      "independent_method_review_completed": false,
+      "public_reproducibility_artifact": ""
     },
     {
       "dataset_id": "curated-admit-anomaly-labeling-blocked",
@@ -66,7 +75,30 @@
       "real_data_authorized": false,
       "synthetic_fixture_only": false,
       "blocker_count": 2,
-      "notes": "Blocked until labeling methodology and external review are complete."
+      "notes": "Blocked until labeling methodology and external review are complete.",
+      "review_policy": "external_expert_review",
+      "independent_method_review_completed": false,
+      "public_reproducibility_artifact": ""
+    },
+    {
+      "dataset_id": "curated-admit-hip99427-citizen-science-v1",
+      "dataset_label": "HIP99427 GBT Cadence Citizen-Science Labels v1",
+      "track": "radio",
+      "dataset_kind": "curated_non_synthetic_false_positive_suite",
+      "admission_status": "ready_for_local_fixture",
+      "provenance_reviewed": true,
+      "license_reviewed": true,
+      "labeling_method_reviewed": true,
+      "false_positive_baseline_reviewed": true,
+      "external_review_required": false,
+      "external_review_completed": false,
+      "real_data_authorized": true,
+      "synthetic_fixture_only": false,
+      "blocker_count": 0,
+      "notes": "Approved for local evaluation under the citizen-science reproducibility protocol. This is not expert or external validation.",
+      "review_policy": "citizen_science_reproducibility",
+      "independent_method_review_completed": true,
+      "public_reproducibility_artifact": "examples/real_labeled/hip99427_citizen_science_labels_v1.json"
     }
   ]
 }

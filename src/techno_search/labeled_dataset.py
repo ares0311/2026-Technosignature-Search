@@ -7,10 +7,16 @@ from pathlib import Path
 from typing import Any
 
 LABELED_DATASET_SCHEMA_VERSION = "labeled_candidates_v1"
-LABELED_DATASET_DISCLAIMER = (
+SYNTHETIC_LABELED_DATASET_DISCLAIMER = (
     "Labeled candidate dataset entries are synthetic ground-truth annotations "
     "for local model evaluation only. Labels are not detection claims, do not "
     "authorize external submission, and do not constitute peer-reviewed evidence."
+)
+REAL_LABELED_DATASET_DISCLAIMER = (
+    "Labeled candidate entries are citizen-science operational annotations "
+    "derived from real observations for local model evaluation only. They are "
+    "not expert labels, external validation, detections, discoveries, or "
+    "authorization for external submission."
 )
 
 ALLOWED_LABELS = frozenset({
@@ -44,7 +50,7 @@ class LabeledCandidate:
 
 
 def load_labeled_candidates(path: Path) -> list[LabeledCandidate]:
-    data = json.loads(path.read_text())
+    data = json.loads(path.read_text(encoding="utf-8"))
     entries = data.get("entries", [])
     result = []
     for e in entries:
@@ -68,7 +74,10 @@ def labeled_dataset_summary(path: Path | None = None) -> dict[str, Any]:
         path = (
             Path(__file__).parent.parent.parent / "tests" / "fixtures" / "labeled_candidates.json"
         )
+    payload = json.loads(path.read_text(encoding="utf-8"))
     entries = load_labeled_candidates(path)
+    classification = str(payload.get("dataset_classification", "synthetic"))
+    is_real = classification.startswith("real_observation")
     counts_by_label: dict[str, int] = {}
     counts_by_track: dict[str, int] = {}
     fp_classes: dict[str, int] = {}
@@ -79,7 +88,24 @@ def labeled_dataset_summary(path: Path | None = None) -> dict[str, Any]:
             fp_classes[e.false_positive_class] = fp_classes.get(e.false_positive_class, 0) + 1
     return {
         "schema_version": LABELED_DATASET_SCHEMA_VERSION,
-        "disclaimer": LABELED_DATASET_DISCLAIMER,
+        "source_schema_version": str(
+            payload.get("schema_version", LABELED_DATASET_SCHEMA_VERSION)
+        ),
+        "disclaimer": (
+            REAL_LABELED_DATASET_DISCLAIMER
+            if is_real
+            else SYNTHETIC_LABELED_DATASET_DISCLAIMER
+        ),
+        "dataset_classification": classification,
+        "review_policy": str(payload.get("review_policy", "synthetic_ground_truth")),
+        "expert_review_claimed": bool(payload.get("expert_review_claimed", False)),
+        "external_validation_claimed": bool(
+            payload.get("external_validation_claimed", False)
+        ),
+        "external_submission_authorized": bool(
+            payload.get("external_submission_authorized", False)
+        ),
+        "real_observation_label_count": len(entries) if is_real else 0,
         "entry_count": len(entries),
         "false_positive_count": counts_by_label.get("false_positive", 0),
         "known_object_count": counts_by_label.get("known_object", 0),
@@ -88,4 +114,5 @@ def labeled_dataset_summary(path: Path | None = None) -> dict[str, Any]:
         "counts_by_label": counts_by_label,
         "counts_by_track": counts_by_track,
         "false_positive_classes": fp_classes,
+        "review_summary": payload.get("review_summary", {}),
     }
