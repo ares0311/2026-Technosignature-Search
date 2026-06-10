@@ -161,6 +161,7 @@ def _build_candidate(path: Path, track: Track, candidate_id: str) -> Candidate:
 
 def _build_radio_candidate(path: Path, candidate_id: str) -> Candidate:
     from techno_search.catalog_crossmatch import catalog_crossmatch
+    from techno_search.gbt_cadence import cadence_candidate_context
     from techno_search.radio.hit_table_reader import (  # noqa: E501
         hit_table_to_radio_hit_dicts,
         read_hit_table_csv,
@@ -171,7 +172,13 @@ def _build_radio_candidate(path: Path, candidate_id: str) -> Candidate:
     if not rows:
         msg = f"No valid hits found in {path}"
         raise ValueError(msg)
-    candidate = build_radio_candidate(candidate_id, rows)
+    source_ids, provenance = cadence_candidate_context(path)
+    candidate = build_radio_candidate(
+        candidate_id,
+        rows,
+        source_ids=source_ids,
+        provenance=provenance,
+    )
 
     # Optional live catalog cross-match (requires TECHNO_SEARCH_ENABLE_LIVE_DATA=1)
     raw_rows = read_hit_table_csv(path)

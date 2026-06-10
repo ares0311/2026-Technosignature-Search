@@ -9,13 +9,13 @@
         "data-use policy review",
         "provenance and instrument metadata review"
       ],
-      "current_evidence_count": 0,
-      "blocker_count": 3,
-      "review_status": "blocked_pending_observation_data",
-      "real_data_authorized": false,
+      "current_evidence_count": 3,
+      "blocker_count": 0,
+      "review_status": "ready_for_local_review",
+      "real_data_authorized": true,
       "live_data_authorized": false,
       "external_submission_authorized": false,
-      "notes": "No real observation data has been admitted."
+      "notes": "The checksum-verified HIP99427 GBT ABACAD cadence is approved for local processing; external submission remains disabled."
     },
     {
       "category_id": "real_labeled_dataset",
@@ -85,7 +85,7 @@
   "expected_preflight": {
     "category_count": 5,
     "min_blocker_total": 5,
-    "require_zero_real_data_authorization": true,
+    "expected_real_data_authorization_total": 1,
     "require_zero_live_data_authorization": true,
     "require_zero_external_submission_authorization": true,
     "require_rfi_admission_blockers_visible": true,

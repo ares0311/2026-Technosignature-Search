@@ -57,6 +57,39 @@ def test_clean_radio_candidate_scores_above_obvious_rfi() -> None:
     assert clean_score.evidence.negative_evidence
 
 
+def test_off_target_presence_blocks_high_snr_radio_promotion() -> None:
+    candidate = Candidate(
+        candidate_id="radio-real-cadence-rfi",
+        track=Track.RADIO,
+        features={
+            "snr": 148.0,
+            "bandwidth_hz": 2.79,
+            "drift_rate_hz_per_sec": 5.2,
+            "on_target_presence_score": 1.0,
+            "off_target_presence_score": 1.0,
+            "rfi_band_overlap_score": 0.0,
+            "frequency_persistence_score": 0.02,
+            "nearby_target_recurrence_score": 0.0,
+            "instrumental_artifact_score": 0.0,
+            "injection_recovery_score": 0.5,
+            "repeat_observation_score": 0.0,
+            "metadata_completeness_score": 1.0,
+            "data_quality_score": 1.0,
+            "provenance_completeness_score": 1.0,
+        },
+    )
+
+    scored = score_candidate(candidate)
+
+    assert (
+        scored.posterior[PosteriorClass.HUMAN_INTERFERENCE]
+        > scored.posterior[PosteriorClass.TECHNOSIGNATURE_INTEREST]
+    )
+    assert scored.scores.false_positive_probability >= 0.8
+    assert scored.recommended_pathway == Pathway.DO_NOT_SUBMIT_FALSE_POSITIVE
+    assert any("OFF-target presence" in issue for issue in scored.evidence.blocking_issues)
+
+
 def test_clean_infrared_excess_scores_above_blended_agn_like_source() -> None:
     clean = Candidate(
         candidate_id="ir-clean",

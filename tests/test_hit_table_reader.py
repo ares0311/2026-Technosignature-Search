@@ -1,6 +1,7 @@
 """Tests for real turboSETI hit-table reader (CSV and .dat formats)."""
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -148,3 +149,31 @@ def test_dat_feeds_parse_hit_table() -> None:
     hits = parse_hit_table(dicts)
     assert len(hits) == 5
     assert all(h.frequency_hz > 0 for h in hits)
+
+
+def test_csv_preserves_explicit_scan_role_and_target(tmp_path: Path) -> None:
+    path = tmp_path / "cadence.csv"
+    path.write_text(
+        "Corrected_Frequency,SNR,Drift_Rate,scan_role,target_id\n"
+        "1420.0,15.0,0.25,off,HIP99427\n",
+        encoding="utf-8",
+    )
+
+    rows = hit_table_to_radio_hit_dicts(path)
+
+    assert rows[0]["scan_role"] == "off"
+    assert rows[0]["target_id"] == "HIP99427"
+
+
+def test_dat_uses_scan_role_from_provenance_sidecar(tmp_path: Path) -> None:
+    path = tmp_path / "off_scan.dat"
+    path.write_text(FIXTURE_DAT.read_text(encoding="utf-8"), encoding="utf-8")
+    path.with_name(path.name + ".provenance.json").write_text(
+        json.dumps({"scan_role": "off", "target_id": "HIP99427"}),
+        encoding="utf-8",
+    )
+
+    rows = hit_table_to_radio_hit_dicts(path)
+
+    assert {row["scan_role"] for row in rows} == {"off"}
+    assert {row["target_id"] for row in rows} == {"HIP99427"}

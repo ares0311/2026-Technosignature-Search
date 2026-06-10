@@ -50,6 +50,31 @@ echo ""
 
 mkdir -p "$PIPELINE_OUT"
 
+CADENCE_MANIFEST="$REPO_ROOT/configs/gbt_hip99427_cadence_v1.json"
+CADENCE_ID=$(
+    "$VENV_PYTHON" -c \
+        'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["cadence_id"])' \
+        "$CADENCE_MANIFEST"
+)
+CADENCE_CSV="$BL_HITS_DIR/$CADENCE_ID.csv"
+
+if [[ -f "$CADENCE_CSV" ]]; then
+    "$VENV_PYTHON" -c \
+        'import sys; from pathlib import Path; from techno_search.gbt_cadence import cadence_candidate_context; cadence_candidate_context(Path(sys.argv[1]))' \
+        "$CADENCE_CSV"
+    CADENCE_OUT="$PIPELINE_OUT/$CADENCE_ID"
+    echo "--- Processing approved cadence: $CADENCE_ID ---"
+    mkdir -p "$CADENCE_OUT"
+    "$VENV_CLI" run-pipeline \
+        "$CADENCE_CSV" \
+        --track radio \
+        --output-dir "$CADENCE_OUT" \
+        --candidate-id "$CADENCE_ID"
+    echo ""
+    echo "Pipeline run complete: approved cadence report in $CADENCE_OUT"
+    exit 0
+fi
+
 SUCCESS=0
 FAILED=0
 

@@ -36,6 +36,8 @@ science = [
 ]
 radio = [
     "blimpy>=2.1",
+    "setuptools>=68,<81",
+    "turbo-seti==2.3.2",
 ]
 ml = [
     "scikit-learn>=1.4",

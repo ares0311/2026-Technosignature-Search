@@ -135,16 +135,20 @@ If a file is < 200 bytes or contains HTML, the download was redirected or failed
 
 ## pkg_resources Fix (Python 3.13)
 
-If you installed `turbo_seti` and see `ModuleNotFoundError: No module named 'pkg_resources'`,
-this is a Python 3.13 compatibility issue with `blimpy`. Fix:
+If a direct `turbo_seti` import reports
+`ModuleNotFoundError: No module named 'pkg_resources'`, install the project radio
+extra. BLIMPY 2.1.4 still needs the compatibility API removed from newer
+setuptools releases:
 
 ```bash
 git pull origin main
-.venv/bin/python -m pip install "setuptools>=68"
+.venv/bin/python -m pip install -e ".[radio]"
 ```
 
-This provides `pkg_resources`. The techno-search pipeline itself does NOT use
-`pkg_resources`; this affects optional turboSETI processing only.
+The radio extra pins a compatible setuptools range and the manifest-driven
+cadence intake also installs a narrow runtime shim. The techno-search pipeline
+itself does not use `pkg_resources`; this affects optional turboSETI processing
+only.
 
 ---
 

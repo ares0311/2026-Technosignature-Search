@@ -104,7 +104,10 @@ def test_load_real_data_admission_preflight_fixture() -> None:
 
     assert len(categories) == 5
     assert categories[0].category_id == "real_observation_data"
+    assert categories[0].real_data_authorized is True
+    assert categories[0].blocker_count == 0
     assert expected["category_count"] == 5
+    assert expected["expected_real_data_authorization_total"] == 1
 
 
 def test_real_data_admission_preflight_custom_fixture_passes(tmp_path: Path) -> None:
@@ -226,7 +229,8 @@ def test_real_data_admission_preflight_default_project_passes() -> None:
     assert summary["schema_version"] == "real_data_admission_preflight_v1"
     assert summary["ok"] is True
     assert summary["category_count"] == 5
-    assert summary["blocked_category_count"] == 5
-    assert summary["real_data_authorized_total"] == 0
+    assert summary["blocked_category_count"] == 4
+    assert summary["real_data_authorized_total"] == 1
+    assert summary["expected_real_data_authorized_total"] == 1
     assert summary["live_data_authorized_total"] == 0
     assert summary["external_submission_authorized_total"] == 0

@@ -52,8 +52,8 @@ def test_methodology_summary_has_tier1_gaps(tmp_path: Path) -> None:
     methodology = json.loads(
         (tmp_path / "methodology_summary.json").read_text(encoding="utf-8")
     )
-    assert len(methodology["tier_1_gaps"]) >= 5
-    assert "synthetic" in methodology["data_status"]
+    assert len(methodology["tier_1_gaps"]) == 4
+    assert "GBT ABACAD cadence" in methodology["data_status"]
 
 
 def test_result_lists_files_written(tmp_path: Path) -> None:

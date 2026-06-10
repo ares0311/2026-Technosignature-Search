@@ -1,13 +1,13 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-06-09
+**Last updated:** 2026-06-10
 **Current milestone:** 73 (Communication Log, Document Management Log, And Procurement Log)
 
 ---
 
 ## Summary
 
-The pipeline is approximately **20–25% of the way to real production** for a research-grade technosignature search system. The foundation is now in place; the remaining gap is almost entirely in real data, real models, and telescope access.
+The pipeline is approximately **30–35% of the way to real production** for a research-grade technosignature search system. One official GBT cadence has completed local provenance, ingestion, and conservative false-positive routing. Real labels, calibrated thresholds, site-specific RFI evidence, and external peer review remain blocking.
 
 ---
 
@@ -57,6 +57,9 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Scoring model evaluation against labeled dataset | ✅ Complete |
 | Live catalog clients (Gaia TAP, SIMBAD) with opt-in guard | ✅ Complete |
 | Real-observation artifact audit and human-approval gate | ✅ Complete |
+| Checksum-verified HIP99427 GBT ABACAD cadence ingestion | ✅ Complete |
+| Real turboSETI processing with explicit ON/OFF evidence | ✅ Complete |
+| Frequency-matched OFF-target rejection guard validated against real cadence data | ✅ Complete |
 | Operational log system (86 log types) | ✅ Complete |
 
 ---
@@ -67,7 +70,6 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 
 | Gap | Effort estimate |
 |---|---|
-| **Real observation data** — local candidates exist, but no telescope artifact has completed provenance, data-use, and human approval | Large (requires approved archive access and human authorization) |
 | **Real labeled dataset** — admission gates exist, but all committed labels are synthetic and no real labeled dataset has been approved | Medium (requires human expert labeling of real detections) |
 | **Calibrated scoring thresholds** — current thresholds are synthetic v0 defaults | Medium (requires sensitivity analysis against real noise distributions) |
 | **Real site-specific RFI database** — synthetic guardrails and admission gates exist, but no permitted site-monitoring catalog has been approved | Medium |
@@ -79,7 +81,6 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 |---|---|
 | Real Gaia/WISE cross-match queries at scale | Small (client exists, needs real queries) |
 | Multi-epoch observation support | Medium |
-| Real turboSETI file ingestion from BL archive | Medium (requires BL data policy compliance) |
 | Known object catalog integration (SIMBAD cross-match) | Small (client exists) |
 | Learned scoring model (replace rule-based baseline) | Large |
 
@@ -97,7 +98,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 
 ## Production Readiness Estimate
 
-- **Current state:** ~20–25%
+- **Current state:** ~30–35%
 - **After Tier 1 complete:** ~60%
 - **After Tier 2 complete:** ~80%
 - **After Tier 3 complete:** ~100%
@@ -140,4 +141,6 @@ transfer log, system diagnostics log, and resource allocation log,
 DECISION-111 for the access control log, change management log, and
 incident log, and DECISION-112 for the patch management log, vulnerability
 scan log, and compliance audit log, and DECISION-113 for the disaster
-recovery log, service level log, and asset management log.
+recovery log, service level log, and asset management log. DECISION-121 records
+the observation admission gate, and DECISION-122 records the first approved
+real GBT cadence ingestion and OFF-target rejection correction.

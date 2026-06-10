@@ -2868,3 +2868,48 @@ Synthetic outputs cannot be mistaken for Tier 1 evidence, and the first real
 pipeline run stops at a visible human partnership gate. This decision does not
 approve any current local artifact, close the real-observation blocker,
 authorize external submission, or constitute a detection claim.
+
+---
+
+# DECISION-122: First Real GBT Cadence Is Admitted And OFF-Target Evidence Blocks Promotion
+
+Date: 2026-06-10
+Status: accepted
+
+## Context
+
+Human Gate 1 approved an official GBT ON/OFF cadence for local processing. The
+HIP65352 archive summary was rejected because its published third comparison
+scan is non-contiguous. The HIP99427 sequence provides a contiguous ABACAD
+cadence with three target scans and three comparison targets.
+
+The six selected `.0002.h5` products total approximately 1.45 GB. Their
+9.7960855 Hz/s drift-bin resolution required a documented 10 Hz/s ingestion
+ceiling to include one nonzero bin in each direction. The run produced 213
+turboSETI rows: 110 ON and 103 OFF.
+
+The first uncorrected pipeline report promoted the cadence despite an
+OFF-target presence score of 1.0. That behavior violated the project's
+false-positive-first scientific rules.
+
+## Decision
+
+Admit the checksum-verified HIP99427 cadence for local real-data processing.
+Preserve archive MD5, local SHA-256, scan role, processing parameters, data-use
+review, human approval, and disabled external-submission state in provenance.
+
+Treat frequency-matched OFF-target presence at or above 0.4 as blocking
+evidence. Apply a strong human-interference likelihood and suppress
+technosignature-interest likelihood when the same signal population appears in
+comparison scans.
+
+## Consequences
+
+The Tier 1 gap **Real observation data ingested** is closed for local
+production-readiness accounting. Four Tier 1 blockers remain: approved real
+labels, calibrated thresholds, an approved site-specific RFI database, and
+external peer review.
+
+The corrected HIP99427 report routes `do_not_submit_false_positive` with human
+interference as the dominant hypothesis. This result does not authorize
+external submission and does not constitute a detection claim.
