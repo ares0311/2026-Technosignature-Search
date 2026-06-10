@@ -1,6 +1,6 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-06-03
+**Last updated:** 2026-06-09
 **Current milestone:** 73 (Communication Log, Document Management Log, And Procurement Log)
 
 ---
@@ -56,6 +56,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 | Labeled candidate dataset v0 (10 synthetic entries) | ✅ Complete |
 | Scoring model evaluation against labeled dataset | ✅ Complete |
 | Live catalog clients (Gaia TAP, SIMBAD) with opt-in guard | ✅ Complete |
+| Real-observation artifact audit and human-approval gate | ✅ Complete |
 | Operational log system (86 log types) | ✅ Complete |
 
 ---
@@ -66,7 +67,7 @@ The pipeline is approximately **20–25% of the way to real production** for a r
 
 | Gap | Effort estimate |
 |---|---|
-| **Real observation data** — no actual telescope data has been ingested | Large (requires telescope time or approved archive access) |
+| **Real observation data** — local candidates exist, but no telescope artifact has completed provenance, data-use, and human approval | Large (requires approved archive access and human authorization) |
 | **Real labeled dataset** — admission gates exist, but all committed labels are synthetic and no real labeled dataset has been approved | Medium (requires human expert labeling of real detections) |
 | **Calibrated scoring thresholds** — current thresholds are synthetic v0 defaults | Medium (requires sensitivity analysis against real noise distributions) |
 | **Real site-specific RFI database** — synthetic guardrails and admission gates exist, but no permitted site-monitoring catalog has been approved | Medium |
