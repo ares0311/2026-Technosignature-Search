@@ -55,11 +55,36 @@ Unique local identifiers such as serial number, hardware UUID, and provisioning 
 
 ---
 
+## Python Venv Rule — NON-NEGOTIABLE
+
+**Always invoke Python via `.venv/bin/python` (or `.venv/bin/techno-search`). Never use bare `python3` or `python`.**
+
+- The project venv is Python **3.14.3** (upgraded 2026-06-10, tested by project owner).
+- The system `python3` on this machine may be a different version and will NOT have project dependencies installed.
+- This applies in every context: shell scripts, Makefile targets, CI commands, agent tool calls, documentation examples.
+- Scripts must set `VENV="$REPO_ROOT/.venv/bin/python"` and use `"$VENV"` for every Python call — no exceptions.
+
+**Correct:**
+```bash
+.venv/bin/python -m pytest
+.venv/bin/techno-search validate-all
+VENV="$REPO_ROOT/.venv/bin/python"; "$VENV" -m pip install ...
+```
+
+**Wrong (do not use):**
+```bash
+python3 -m pytest          # system Python — wrong version, missing deps
+python script.py           # same problem
+/usr/bin/python3 ...       # same problem
+```
+
+---
+
 ## Optimization Guidance
 
 Use this system profile when choosing local defaults:
 
-- **Always use `.venv/bin/python` (or `.venv/bin/techno-search`) for all Python invocations. Never use system `python3`.** The system Python version may differ from the project venv (currently 3.14.3 after the 2026-06-10 upgrade).
+- Default CPU-bound worker pools should leave headroom for the OS and interactive use.
 - Default CPU-bound worker pools should leave headroom for the OS and interactive use.
 - Use up to 12 workers for CPU-heavy synthetic search, scoring calibration, or test parametrization unless benchmarks show a better value.
 - Use up to 16 workers only for light I/O-bound tasks or explicitly requested full-machine runs.

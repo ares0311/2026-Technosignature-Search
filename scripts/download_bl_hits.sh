@@ -67,7 +67,7 @@ try_download() {
   if curl "${extra_flags[@]}" --max-time 600 --retry 2 --retry-delay 10 \
           --progress-bar -L "$url" -o "$VOYAGER_H5" 2>&1; then
     # Verify it looks like an HDF5 file (starts with \x89HDF)
-    if python3 -c "import sys; d=open('$VOYAGER_H5','rb').read(4); sys.exit(0 if d==b'\\x89HDF' else 1)" 2>/dev/null; then
+    if "$VENV" -c "import sys; d=open('$VOYAGER_H5','rb').read(4); sys.exit(0 if d==b'\\x89HDF' else 1)" 2>/dev/null; then
       log "  Downloaded and verified as HDF5: $(du -sh "$VOYAGER_H5" | cut -f1)"
       return 0
     else
