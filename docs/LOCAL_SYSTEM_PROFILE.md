@@ -48,7 +48,7 @@ Unique local identifiers such as serial number, hardware UUID, and provisioning 
 | macOS | 26.4.1 |
 | Build | 25E253 |
 | Kernel | Darwin 25.4.0 |
-| Local virtual environment Python | Python 3.13.12 |
+| Local virtual environment Python | Python 3.14.3 (updated 2026-06-10) |
 | Python-reported CPU count | 16 |
 | Project filesystem free space at capture | 439 GiB available on a 926 GiB volume |
 | Power state at capture | AC power attached |
@@ -59,7 +59,7 @@ Unique local identifiers such as serial number, hardware UUID, and provisioning 
 
 Use this system profile when choosing local defaults:
 
-- Prefer local `.venv` execution for all Python commands.
+- **Always use `.venv/bin/python` (or `.venv/bin/techno-search`) for all Python invocations. Never use system `python3`.** The system Python version may differ from the project venv (currently 3.14.3 after the 2026-06-10 upgrade).
 - Default CPU-bound worker pools should leave headroom for the OS and interactive use.
 - Use up to 12 workers for CPU-heavy synthetic search, scoring calibration, or test parametrization unless benchmarks show a better value.
 - Use up to 16 workers only for light I/O-bound tasks or explicitly requested full-machine runs.
@@ -81,6 +81,15 @@ Local optimization must not reduce scientific reproducibility.
 - Benchmark results should record the hardware profile, command, input size, config version, and git commit.
 - Candidate outputs must preserve provenance independent of local hardware.
 - Performance shortcuts must not skip false-positive checks, negative evidence, blocking issues, or provenance capture.
+
+---
+
+## Python Version History
+
+| Date | Version | Notes |
+|---|---|---|
+| 2026-05-01 | 3.13.12 | Initial profile capture |
+| 2026-06-10 | 3.14.3 | Upgraded by project owner; tested turboSETI integration |
 
 ---
 
