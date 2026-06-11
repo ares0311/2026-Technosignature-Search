@@ -184,8 +184,8 @@ def test_cli_rfi_database_admission_summary_outputs_gate_counts() -> None:
 
     assert exit_code == 0
     assert result["schema_version"] == "rfi_database_admission_v1"
-    assert result["record_count"] == 4
-    assert result["blocked_count"] == 3
+    assert result["record_count"] == 5
+    assert result["blocked_count"] == 4
     assert result["real_data_authorized_count"] == 0
     assert result["validation_ok"] is True
     assert "do not ingest real monitoring data" in result["disclaimer"]
@@ -216,7 +216,7 @@ def test_cli_project_status_consistency_summary_outputs_drift_gates() -> None:
     assert result["schema_version"] == "project_status_consistency_v1"
     assert result["ok"] is True
     assert result["roadmap_latest_milestone"] == 73
-    assert result["decisions_latest_decision"] == 123
+    assert result["decisions_latest_decision"] == 124
     assert result["actual_schema_count"] == 103
     assert result["rfi_database_admission_real_data_authorized_count"] == 0
     assert result["curated_dataset_admission_real_data_authorized_count"] == 1
@@ -488,7 +488,7 @@ def test_cli_production_blocker_consistency_summary_outputs_gate_counts() -> Non
     assert result["schema_version"] == "production_blocker_consistency_v1"
     assert result["ok"] is True
     assert result["actual_tier1_blocker_count"] == 2
-    assert result["rfi_database_admission_blocked_count"] == 3
+    assert result["rfi_database_admission_blocked_count"] == 4
     assert result["curated_dataset_admission_blocked_count"] == 3
     assert result["real_data_authorized_total"] == 1
     assert result["external_submission_authorized_total"] == 0
@@ -2014,7 +2014,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["schemas_ok"] is True
     assert result["project_status_consistency_ok"] is True
     assert result["project_status_latest_milestone"] == 73
-    assert result["project_status_latest_decision"] == 123
+    assert result["project_status_latest_decision"] == 124
     assert result["project_status_schema_count"] == 103
     assert result["mcp_bootstrap_consistency_ok"] is True
     assert result["mcp_bootstrap_consistency_issue_count"] == 0

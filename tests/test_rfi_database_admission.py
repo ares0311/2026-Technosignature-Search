@@ -18,18 +18,18 @@ FIXTURE_PATH = Path(__file__).parent / "fixtures" / "rfi_database_admission.json
 
 def test_load_admission_records_returns_fixture_records() -> None:
     records = load_rfi_database_admission_records()
-    assert len(records) == 4
+    assert len(records) == 5
     assert records[0].source_id == "rfi-admit-synthetic-v0"
 
 
 def test_summary_counts_statuses_and_authorization() -> None:
     summary = rfi_database_admission_summary()
     assert summary["schema_version"] == RFI_DATABASE_ADMISSION_SCHEMA_VERSION
-    assert summary["record_count"] == 4
-    assert summary["blocked_count"] == 3
+    assert summary["record_count"] == 5
+    assert summary["blocked_count"] == 4
     assert summary["synthetic_only_count"] == 1
     assert summary["real_data_authorized_count"] == 0
-    assert summary["total_blocker_count"] == 7
+    assert summary["total_blocker_count"] == 9
 
 
 def test_summary_disclaimer_is_conservative() -> None:
@@ -77,5 +77,5 @@ def test_validation_rejects_synthetic_real_authorization_conflict(tmp_path: Path
 def test_custom_path_argument() -> None:
     records = load_rfi_database_admission_records(FIXTURE_PATH)
     summary = rfi_database_admission_summary(FIXTURE_PATH)
-    assert len(records) == 4
+    assert len(records) == 5
     assert summary["validation_ok"] is True

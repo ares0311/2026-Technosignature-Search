@@ -59,6 +59,21 @@
       "synthetic_fixture_only": false,
       "blocker_count": 1,
       "notes": "External review is still required before real RFI records may be admitted."
+    },
+    {
+      "source_id": "rfi-admit-gbt-provisional-v1",
+      "site_id": "gbt-provisional-v1",
+      "source_label": "GBT provisional RFI catalog v1 (ITU/FCC/ICAO public-documentation sources)",
+      "admission_status": "blocked_pending_review",
+      "provenance_reviewed": true,
+      "license_reviewed": true,
+      "monitoring_context_reviewed": false,
+      "external_review_required": true,
+      "external_review_completed": false,
+      "real_data_authorized": false,
+      "synthetic_fixture_only": false,
+      "blocker_count": 2,
+      "notes": "15-entry provisional catalog built from ITU Radio Regulations, IS-GPS-200L, GLONASS ICD v5.1, ICAO Annex 10, and FCC CFR 47. All entries marked active=false and review_status=provisional. Blocking: (1) site-monitoring-context review not completed — each entry must be verified against GBT's actual observed RFI environment, not just the regulatory allocation; (2) operator sign-off required before any entry may be set active=true in the pipeline. Catalog file: tests/fixtures/rfi_catalog/gbt_rfi_provisional_v1.json. Builder script: scripts/build_gbt_rfi_provisional_catalog.py."
     }
   ]
 }

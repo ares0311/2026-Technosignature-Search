@@ -1,6 +1,6 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-06-10
+**Last updated:** 2026-06-11
 **Current milestone:** 73 (Communication Log, Document Management Log, And Procurement Log)
 
 ---
@@ -75,6 +75,7 @@ external validation are not claimed.
 | Operational log system (86 log types) | ✅ Complete |
 | Resumable parallel BL data download scripts (16-thread, LFS + SSL) | ✅ Complete |
 | Voyager 1 GBT turboSETI test H5 downloaded and scored end-to-end (3 real hits, pipeline OK) | ✅ Complete |
+| GBT provisional RFI catalog (15 bands, ITU/GPS/ICAO/FCC citations, all inactive pending review) | ✅ Complete |
 
 ---
 
@@ -85,7 +86,7 @@ external validation are not claimed.
 | Gap | Effort estimate |
 |---|---|
 | **Calibrated scoring thresholds** — current thresholds are synthetic v0 defaults; the one-cadence corpus fails cadence, epoch, dominance, bootstrap, and leave-one-out gates | Medium (requires additional approved GBT cadences from other epochs) |
-| **Real site-specific RFI database** — synthetic guardrails and admission gates exist, but no permitted site-monitoring catalog has been approved | Medium |
+| **Real site-specific RFI database** — provisional 15-band catalog built from ITU/GPS/ICAO/FCC public sources; all entries inactive pending operator site-monitoring-context review and sign-off (`rfi-admit-gbt-provisional-v1`, `blocked_pending_review`, 2 blockers) | Medium — unblocked; operator review required |
 
 ### Tier 2 — Required for Research-Grade Use
 
@@ -162,4 +163,5 @@ recovery log, service level log, and asset management log. DECISION-121 records
 the observation admission gate, DECISION-122 records the first approved
 real GBT cadence ingestion and OFF-target rejection correction, and
 DECISION-123 records the citizen-science reproducibility standard and first
-admitted real label set.
+admitted real label set. DECISION-124 records the GBT provisional RFI catalog
+from public regulatory documentation.
