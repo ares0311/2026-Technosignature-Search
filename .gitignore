@@ -34,3 +34,4 @@ logs/backups/
 .env.*
 *.key
 *.pem
+.test_progress/
