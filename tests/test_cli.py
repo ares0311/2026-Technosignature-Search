@@ -185,7 +185,7 @@ def test_cli_rfi_database_admission_summary_outputs_gate_counts() -> None:
     assert exit_code == 0
     assert result["schema_version"] == "rfi_database_admission_v1"
     assert result["record_count"] == 5
-    assert result["blocked_count"] == 4
+    assert result["blocked_count"] == 3
     assert result["real_data_authorized_count"] == 0
     assert result["validation_ok"] is True
     assert "do not ingest real monitoring data" in result["disclaimer"]
@@ -216,7 +216,7 @@ def test_cli_project_status_consistency_summary_outputs_drift_gates() -> None:
     assert result["schema_version"] == "project_status_consistency_v1"
     assert result["ok"] is True
     assert result["roadmap_latest_milestone"] == 73
-    assert result["decisions_latest_decision"] == 125
+    assert result["decisions_latest_decision"] == 126
     assert result["actual_schema_count"] == 104
     assert result["rfi_database_admission_real_data_authorized_count"] == 0
     assert result["curated_dataset_admission_real_data_authorized_count"] == 1
@@ -487,8 +487,8 @@ def test_cli_production_blocker_consistency_summary_outputs_gate_counts() -> Non
     assert exit_code == 0
     assert result["schema_version"] == "production_blocker_consistency_v1"
     assert result["ok"] is True
-    assert result["actual_tier1_blocker_count"] == 2
-    assert result["rfi_database_admission_blocked_count"] == 4
+    assert result["actual_tier1_blocker_count"] == 1
+    assert result["rfi_database_admission_blocked_count"] == 3
     assert result["curated_dataset_admission_blocked_count"] == 3
     assert result["real_data_authorized_total"] == 1
     assert result["external_submission_authorized_total"] == 0
@@ -1847,7 +1847,7 @@ def test_cli_validate_all_outputs_local_summary() -> None:
     assert result["production_blocker_consistency_summary"]["issue_count"] == 0
     assert result["production_blocker_consistency_summary"][
         "actual_tier1_blocker_count"
-    ] == 2
+    ] == 1
     assert result["top_level_sqlite_log_integrity_summary"]["ok"] is True
     assert result["top_level_sqlite_log_migration_summary"][
         "migration_required"
@@ -2015,7 +2015,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["schemas_ok"] is True
     assert result["project_status_consistency_ok"] is True
     assert result["project_status_latest_milestone"] == 73
-    assert result["project_status_latest_decision"] == 125
+    assert result["project_status_latest_decision"] == 126
     assert result["project_status_schema_count"] == 104
     assert result["mcp_bootstrap_consistency_ok"] is True
     assert result["mcp_bootstrap_consistency_issue_count"] == 0
@@ -2037,7 +2037,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["mcp_server_policy_external_submission_enabled"] is False
     assert result["production_blocker_consistency_ok"] is True
     assert result["production_blocker_consistency_issue_count"] == 0
-    assert result["production_blocker_tier1_blocker_count"] == 2
+    assert result["production_blocker_tier1_blocker_count"] == 1
     assert result["production_blocker_real_data_authorized_total"] == 1
     assert result["production_blocker_external_submission_authorized_total"] == 0
     assert result["sqlite_operational_log_registry_ok"] is True

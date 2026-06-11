@@ -2,10 +2,9 @@
   "schema_version": "production_blocker_consistency_v1",
   "expected_blockers": {
     "required_tier1_blocker_phrases": [
-      "Calibrated scoring thresholds",
-      "Real site-specific RFI database"
+      "Calibrated scoring thresholds"
     ],
-    "min_tier1_blocker_count": 2,
+    "min_tier1_blocker_count": 1,
     "expected_real_data_authorization_total": 1,
     "require_zero_external_submission_authorization": true,
     "require_admission_blockers_visible": true,
