@@ -40,6 +40,19 @@ from collections.abc import Callable
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
+# SSL context (uses certifi CA bundle when available; falls back to default)
+# ---------------------------------------------------------------------------
+
+def _make_ssl_ctx() -> ssl.SSLContext:
+    try:
+        import certifi
+        return ssl.create_default_context(cafile=certifi.where())
+    except ImportError:
+        return ssl.create_default_context()
+
+_SSL_CTX = _make_ssl_ctx()
+
+# ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
 
@@ -242,14 +255,16 @@ GetFn = Callable[[str, dict[str, str] | None], bytes]
 def _default_head(url: str) -> dict[str, str]:
     """Issue HEAD request and return response headers (lower-cased keys)."""
     req = urllib.request.Request(url, method="HEAD")
-    with urllib.request.urlopen(req, timeout=DOWNLOAD_TIMEOUT) as resp:
+    ctx = None if url.startswith("http://") else _SSL_CTX
+    with urllib.request.urlopen(req, context=ctx, timeout=DOWNLOAD_TIMEOUT) as resp:
         return {k.lower(): v for k, v in resp.headers.items()}
 
 
 def _default_get(url: str, headers: dict[str, str] | None = None) -> bytes:
     """Issue GET request (with optional headers) and return body bytes."""
     req = urllib.request.Request(url, headers=headers or {})
-    with urllib.request.urlopen(req, timeout=DOWNLOAD_TIMEOUT) as resp:
+    ctx = None if url.startswith("http://") else _SSL_CTX
+    with urllib.request.urlopen(req, context=ctx, timeout=DOWNLOAD_TIMEOUT) as resp:
         return resp.read()
 
 
