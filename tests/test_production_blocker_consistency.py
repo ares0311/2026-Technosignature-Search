@@ -208,6 +208,6 @@ def test_production_blocker_consistency_default_project_passes() -> None:
     assert summary["schema_version"] == "production_blocker_consistency_v1"
     assert summary["ok"] is True
     assert summary["actual_tier1_blocker_count"] == 2
-    assert summary["rfi_database_admission_blocked_count"] == 3
+    assert summary["rfi_database_admission_blocked_count"] == 4
     assert summary["curated_dataset_admission_blocked_count"] == 3
     assert summary["real_data_authorized_total"] == 1

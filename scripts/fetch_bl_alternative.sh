@@ -34,12 +34,14 @@ log "=== fetch_bl_alternative.sh starting ==="
 log "Python: $("$VENV" --version 2>&1)"
 
 # ---------------------------------------------------------------------------
-# Idempotent: skip if a hit table already exists
+# Idempotent: skip only if THIS script's real output file already exists.
+# Synthetic fallback files (synthetic_*.dat) are intentionally ignored so
+# they never block a real-data download attempt.
 # ---------------------------------------------------------------------------
-EXISTING_DAT=$(find "$DATA_DIR" -name "*.dat" 2>/dev/null | head -1)
-if [[ -n "$EXISTING_DAT" ]]; then
-  log "Hit table already exists: $EXISTING_DAT"
-  log "Rows: $(grep -v '^#' "$EXISTING_DAT" | wc -l | tr -d ' ')"
+FINAL_DAT="$DATA_DIR/bl_turboSETI_test.dat"
+if [[ -f "$FINAL_DAT" ]]; then
+  log "Hit table already exists: $FINAL_DAT"
+  log "Rows: $(grep -v '^#' "$FINAL_DAT" | wc -l | tr -d ' ')"
   log "Delete it to re-run.  Exiting."
   exit 0
 fi
@@ -67,9 +69,8 @@ if "$VENV" "$BL_FETCH" download-h5 "$TSETI_H5" \
 
   log "Download succeeded.  Running turboSETI ..."
   if "$VENV" "$BL_FETCH" run-turboseti "$TSETI_H5" "$DATA_DIR"; then
-    FOUND_DAT=$(find "$DATA_DIR" -name "*.dat" | head -1)
+    FOUND_DAT=$(find "$DATA_DIR" -name "*.dat" ! -name "synthetic_*.dat" | head -1)
     if [[ -n "$FOUND_DAT" ]]; then
-      FINAL_DAT="$DATA_DIR/bl_turboSETI_test.dat"
       [[ "$FOUND_DAT" != "$FINAL_DAT" ]] && mv "$FOUND_DAT" "$FINAL_DAT"
       rm -f "$TSETI_H5"
       log ""

@@ -45,12 +45,14 @@ log "Checking / installing turbo-seti, blimpy, h5py, numpy ..."
 log "Package check passed."
 
 # ---------------------------------------------------------------------------
-# Idempotent: skip if a hit table already exists
+# Idempotent: skip only if THIS script's real output file already exists.
+# Synthetic fallback files (synthetic_*.dat) are intentionally ignored so
+# they never block a real-data download attempt.
 # ---------------------------------------------------------------------------
-EXISTING_DAT=$(find "$DATA_DIR" -name "*.dat" 2>/dev/null | head -1)
-if [[ -n "$EXISTING_DAT" ]]; then
-  log "Hit table already exists: $EXISTING_DAT"
-  log "Rows: $(grep -v '^#' "$EXISTING_DAT" | wc -l | tr -d ' ')"
+REAL_DAT="$DATA_DIR/voyager1_hits.dat"
+if [[ -f "$REAL_DAT" ]]; then
+  log "Hit table already exists: $REAL_DAT"
+  log "Rows: $(grep -v '^#' "$REAL_DAT" | wc -l | tr -d ' ')"
   log "Delete it to re-run.  Exiting."
   exit 0
 fi

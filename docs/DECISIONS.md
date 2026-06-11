@@ -2955,3 +2955,71 @@ The Tier 1 real-labeled-dataset and citizen-science production-review gaps are
 closed. Calibrated thresholds and a permitted site-specific RFI database remain
 blocking. These labels are not expert labels, external validation, detections,
 discoveries, or authorization for external submission.
+
+---
+
+# DECISION-124: GBT Provisional RFI Catalog Built From Public Regulatory Documentation
+
+Date: 2026-06-11
+Status: accepted
+
+## Context
+
+The Tier 1 gap "Real site-specific RFI database — synthetic guardrails and
+admission gates exist, but no permitted site-monitoring catalog has been
+approved" requires a real, site-specific RFI frequency list. No such catalog
+had been downloaded or parsed into the pipeline schema.
+
+## Options Considered
+
+1. Download HTML pages from NRAO GBT RFI web resources (fragile; format unknown).
+2. Build a provisional catalog from publicly-documented international frequency
+   allocations (ITU Radio Regulations, IS-GPS-200, GLONASS ICD, ICAO Annex 10,
+   FCC CFR Title 47) that are demonstrably relevant to GBT SETI work.
+3. Wait for an NRAO-published machine-readable CSV (URL uncertain; availability
+   unconfirmed).
+
+## Decision
+
+Build a provisional catalog (option 2) from 15 well-documented public sources.
+Each entry carries a full provenance citation to the relevant regulation or ICD.
+All entries are marked `active: false` and `review_status: "provisional"` until
+a human operator verifies each band against the actual GBT observed RFI
+environment. A corresponding admission record (`rfi-admit-gbt-provisional-v1`)
+is added to `tests/fixtures/rfi_database_admission.json` with
+`admission_status: "blocked_pending_review"` and `blocker_count: 2` (site
+monitoring context not yet verified; operator sign-off required).
+
+Covered bands (all inactive, provisional):
+
+- Cellular 700 MHz (FCC Part 27)
+- DME aircraft navigation 960–1215 MHz (ICAO Annex 10)
+- SSR Mode S interrogation 1030 MHz (ICAO Annex 10)
+- ADS-B transponders 1090 MHz (ICAO Annex 10)
+- GPS L5 1176 MHz (IS-GPS-200L)
+- L-band radar/EESS 1215–1300 MHz (ITU §5.329)
+- GPS L2 1228 MHz (IS-GPS-200L)
+- GLONASS L2 1243–1249 MHz (GLONASS ICD v5.1)
+- L-band MSS downlink 1525–1559 MHz (ITU §5.357A)
+- RNSS allocation 1559–1610 MHz (ITU §5.328A)
+- GPS L1 / Galileo E1 / BeiDou B1C 1575 MHz (IS-GPS-200L)
+- GLONASS L1 1598–1606 MHz (GLONASS ICD v5.1)
+- Iridium satellite 1616–1626.5 MHz (ITU Appendix 30B)
+- L-band MSS uplink 1626.5–1660.5 MHz (ITU §5.357A)
+- 2.4 GHz ISM / WiFi (FCC Part 15; confirmed at GBT)
+
+Files:
+- `scripts/build_gbt_rfi_provisional_catalog.py` — builder script
+- `tests/fixtures/rfi_catalog/gbt_rfi_provisional_v1.json` — provisional catalog
+- `tests/test_gbt_rfi_provisional_catalog.py` — 38 tests
+
+## Consequences
+
+The "Real site-specific RFI database" Tier 1 gap is partially unblocked.
+Tooling now exists to build and validate a real-data-sourced provisional
+catalog. The gap is not closed: two blockers remain (site monitoring context
+review and operator sign-off). The human approval gate is not bypassed —
+`real_data_authorized` remains `false` and all entries remain `active: false`
+until a human operator completes the review described in the admission record
+notes. No scoring thresholds change. No candidate report is affected. This is
+not a detection, discovery, or external validation.

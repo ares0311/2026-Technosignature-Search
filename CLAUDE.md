@@ -93,6 +93,48 @@ No sudo required. Safe to omit for fast runs (< 30 s).
 
 ## Current Iteration
 
+User requested real observation data download and pipeline execution (Tier 1 gap closure).
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: Voyager 1 GBT data downloaded, turboSETI hit table produced, pipeline scored end-to-end.
+
+Added / fixed:
+
+- `scripts/bl_fetch.py` — resumable parallel BL data fetch + turboSETI helper; 16-thread parallel download; Git LFS pointer resolution via GitHub Batch API; SSL bypass for blpd0 self-signed cert; certifi CA bundle for GitHub HTTPS URLs; injectable test functions for full offline test coverage
+- `scripts/fetch_bl_alternative.sh` — idempotency check fixed: checks for named output file only (`bl_turboSETI_test.dat`), `synthetic_*.dat` files never block re-runs
+- `scripts/download_bl_hits.sh` — same idempotency fix (`voyager1_hits.dat`)
+- `tests/test_bl_data_fetcher.py` — 61 tests (6 skipped: h5py not installed in CI); covers HDF5 detection, LFS pointer parse/resolve, SSL bypass, parallel chunked download, resume, idempotency, synthetic H5 build, pipeline runner
+- `docs/PRODUCTION_READINESS.md` — added Voyager 1 turboSETI test H5 download + pipeline result to "What Is Complete"
+
+Confirmed working end-to-end on user's machine:
+- Downloaded: `Voyager1.single_coarse.fine_res.h5` (50,549,227 bytes, `guppi_57650_67573_Voyager1_0002.0000.raw`)
+- turboSETI found: 3 hits (Voyager 1 X-band carrier signal)
+- Pipeline: `bl_turboSETI_test.dat` → `run_pipeline_on_bl_data.sh` → 1 OK, 0 failed, reports in `results/`
+
+Scientific guardrail:
+
+- Voyager 1 turboSETI hits are pipeline calibration data — they do not constitute a technosignature detection claim
+- Hit table is real-format GBT data, valid for scoring threshold calibration
+- No candidate report authorizes external submission
+
+Validation:
+
+```bash
+.venv/bin/python -m pytest tests/test_bl_data_fetcher.py -q
+# 61 passed, 6 skipped
+.venv/bin/ruff check scripts/bl_fetch.py
+# All checks passed
+bash -n scripts/fetch_bl_alternative.sh && bash -n scripts/download_bl_hits.sh
+# syntax OK
+```
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, PR #49 open.
+
+---
+
+## Previous Iteration (Milestone 67)
+
 User requested implementation of Milestone 67 (network monitoring log, identity management log, certificate management log).
 
 Current branch: `main` (direct push, same as Milestone 66).
