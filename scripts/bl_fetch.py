@@ -26,8 +26,11 @@ import concurrent.futures
 import glob
 import importlib.metadata
 import importlib.util
+import json
 import logging
 import os
+import re
+import ssl
 import subprocess
 import sys
 import types
@@ -78,6 +81,154 @@ def is_hdf5(path: str | Path) -> bool:
         return False
     with open(p, "rb") as fh:
         return fh.read(4) == HDF5_MAGIC
+
+
+def is_hdf5_bytes(data: bytes) -> bool:
+    """Return True if the first 4 bytes are the HDF5 magic signature."""
+    return len(data) >= 4 and data[:4] == HDF5_MAGIC
+
+
+# ---------------------------------------------------------------------------
+# Git LFS pointer resolution
+# ---------------------------------------------------------------------------
+
+_LFS_POINTER_PREFIX = b"version https://git-lfs.github.com/spec/v1"
+
+
+def _is_lfs_pointer(data: bytes) -> bool:
+    """Return True if data looks like a Git LFS pointer file."""
+    return data[:42] == _LFS_POINTER_PREFIX
+
+
+def _parse_lfs_pointer(data: bytes) -> tuple[str, int] | None:
+    """
+    Parse a Git LFS pointer and return (oid_hex, size_bytes).
+    Returns None if the pointer cannot be parsed.
+    """
+    text = data.decode("utf-8", errors="replace")
+    oid_m = re.search(r"oid sha256:([0-9a-f]{64})", text)
+    size_m = re.search(r"size (\d+)", text)
+    if not oid_m or not size_m:
+        return None
+    return oid_m.group(1), int(size_m.group(1))
+
+
+def _lfs_batch_href(
+    lfs_server: str,
+    oid: str,
+    size: int,
+    post_fn: Callable[[str, bytes, dict[str, str]], bytes] | None = None,
+) -> str | None:
+    """
+    POST to the GitHub LFS Batch API and return the CDN download URL.
+
+    lfs_server: e.g. "https://github.com/UCBerkeleySETI/turbo_seti.git"
+    Returns None on failure.
+    """
+    batch_url = f"{lfs_server}/info/lfs/objects/batch"
+    payload = json.dumps(
+        {"operation": "download", "objects": [{"oid": oid, "size": size}]}
+    ).encode()
+    req_headers = {
+        "Content-Type": "application/vnd.git-lfs+json",
+        "Accept": "application/vnd.git-lfs+json",
+    }
+
+    try:
+        if post_fn is not None:
+            body = post_fn(batch_url, payload, req_headers)
+        else:
+            req = urllib.request.Request(
+                batch_url, data=payload, headers=req_headers, method="POST"
+            )
+            with urllib.request.urlopen(req, timeout=DOWNLOAD_TIMEOUT) as resp:
+                body = resp.read()
+
+        resp_data = json.loads(body)
+        href = (
+            resp_data.get("objects", [{}])[0]
+            .get("actions", {})
+            .get("download", {})
+            .get("href")
+        )
+        return href if isinstance(href, str) else None
+    except Exception as exc:
+        log.debug("LFS batch API failed for %s: %s", batch_url, exc)
+        return None
+
+
+def _lfs_server_from_url(source_url: str) -> str | None:
+    """
+    Infer the LFS server URL from a GitHub raw content URL.
+
+    "https://github.com/OWNER/REPO/raw/..." → "https://github.com/OWNER/REPO.git"
+    "https://raw.githubusercontent.com/OWNER/REPO/..." → "https://github.com/OWNER/REPO.git"
+    "https://media.githubusercontent.com/media/OWNER/REPO/..." → "https://github.com/OWNER/REPO.git"
+    """
+    # media.githubusercontent.com has an extra /media/ prefix
+    m_media = re.search(
+        r"https://media\.githubusercontent\.com/media/([^/]+/[^/]+)/",
+        source_url,
+    )
+    if m_media:
+        return f"https://github.com/{m_media.group(1)}.git"
+
+    m = re.search(
+        r"https://(?:github\.com|raw\.githubusercontent\.com)/"
+        r"([^/]+/[^/]+?)(?:\.git)?(?:/(?:raw|blob|refs|master|main|[^/]+).*)?$",
+        source_url,
+    )
+    if m:
+        return f"https://github.com/{m.group(1)}.git"
+    return None
+
+
+def resolve_lfs_url(
+    lfs_data: bytes,
+    source_url: str,
+    post_fn: Callable[[str, bytes, dict[str, str]], bytes] | None = None,
+) -> str | None:
+    """
+    Given LFS pointer bytes and the URL they came from, return the CDN URL.
+    Returns None if resolution fails.
+    """
+    parsed = _parse_lfs_pointer(lfs_data)
+    if parsed is None:
+        log.warning("Could not parse LFS pointer.")
+        return None
+    oid, size = parsed
+
+    lfs_server = _lfs_server_from_url(source_url)
+    if lfs_server is None:
+        log.warning("Could not infer LFS server from URL: %s", source_url)
+        return None
+
+    log.info("  LFS pointer detected; querying Batch API for oid %s...", oid[:16])
+    href = _lfs_batch_href(lfs_server, oid, size, post_fn=post_fn)
+    if href:
+        log.info("  LFS CDN URL obtained.")
+    else:
+        log.warning("  LFS Batch API returned no download URL.")
+    return href
+
+
+# ---------------------------------------------------------------------------
+# SSL-unverified GET (for Berkeley blpd0 self-signed cert)
+# ---------------------------------------------------------------------------
+
+
+def _ssl_unverified_get(url: str, headers: dict[str, str] | None = None) -> bytes:
+    """
+    Issue GET with SSL certificate verification disabled.
+    Used only for blpd0.ssl.berkeley.edu which has a self-signed cert.
+    """
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+
+    req = urllib.request.Request(url, headers=headers or {})
+    with urllib.request.urlopen(req, context=ctx, timeout=DOWNLOAD_TIMEOUT) as resp:
+        return resp.read()
 
 
 # ---------------------------------------------------------------------------
@@ -277,16 +428,85 @@ def simple_download(
     return True
 
 
+def _try_download_single(
+    url: str,
+    dest: Path,
+    connections: int,
+    get_fn: GetFn | None,
+    head_fn: HeadFn | None,
+    post_fn: Callable[[str, bytes, dict[str, str]], bytes] | None = None,
+) -> bool:
+    """
+    Attempt to download url → dest as HDF5, handling:
+    - Git LFS pointer files: resolve via Batch API then parallel-download CDN URL
+    - Berkeley blpd0 self-signed cert: use SSL-unverified GET
+    - Normal parallel range download
+
+    Returns True if dest is valid HDF5.
+    """
+    if is_hdf5(dest):
+        return True
+
+    # Choose appropriate GET function
+    effective_get = get_fn
+    if effective_get is None and "blpd0.ssl.berkeley.edu" in url:
+        effective_get = _ssl_unverified_get
+
+    # Try parallel download first (probes for range support)
+    file_size, supports_range = probe_url(url, head_fn=head_fn)
+
+    if supports_range and file_size:
+        # Server supports range — parallel download directly
+        ok = parallel_download(
+            url, dest, connections=connections, get_fn=effective_get, head_fn=head_fn
+        )
+        if ok:
+            return True
+        # parallel_download may have assembled a non-HDF5 (LFS pointer assembled)
+        # Fall through to check the assembled content below
+
+    # Single-stream probe to check for LFS pointer or get the file
+    try:
+        fn = effective_get or _default_get
+        probe_data = fn(url, None)
+    except Exception as exc:
+        log.warning("  Probe GET failed: %s", exc)
+        return False
+
+    if is_hdf5_bytes(probe_data):
+        # Small file or server returned everything at once
+        part = dest.parent / f"{dest.name}.part"
+        part.write_bytes(probe_data)
+        part.rename(dest)
+        log.info("  Downloaded (single stream): %s (%s bytes)", dest.name, f"{len(probe_data):,}")
+        return True
+
+    if _is_lfs_pointer(probe_data):
+        real_url = resolve_lfs_url(probe_data, url, post_fn=post_fn)
+        if real_url:
+            log.info("  Downloading from LFS CDN: %s", real_url[:80])
+            return parallel_download(
+                real_url, dest, connections=connections, get_fn=get_fn, head_fn=head_fn
+            )
+        log.warning("  LFS resolution failed for: %s", url)
+        return False
+
+    log.warning("  Response is not HDF5 and not an LFS pointer (%d bytes).", len(probe_data))
+    return False
+
+
 def download_first_valid(
     urls: list[str],
     dest: Path,
     connections: int = DEFAULT_CONNECTIONS,
     get_fn: GetFn | None = None,
     head_fn: HeadFn | None = None,
+    post_fn: Callable[[str, bytes, dict[str, str]], bytes] | None = None,
 ) -> bool:
     """
     Try each url in order until dest is a valid HDF5.
     Resumable: existing chunks/part files from a previous attempt are reused.
+    Handles Git LFS pointer resolution and SSL-unverified connections.
     """
     if is_hdf5(dest):
         log.info("Already have valid HDF5: %s", dest)
@@ -294,7 +514,10 @@ def download_first_valid(
 
     for url in urls:
         log.info("Trying: %s", url)
-        ok = parallel_download(url, dest, connections=connections, get_fn=get_fn, head_fn=head_fn)
+        ok = _try_download_single(
+            url, dest, connections=connections,
+            get_fn=get_fn, head_fn=head_fn, post_fn=post_fn,
+        )
         if ok:
             return True
         log.warning("  URL did not yield valid HDF5; trying next.")

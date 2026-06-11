@@ -611,5 +611,334 @@ def test_bl_fetch_module_has_required_functions() -> None:
         "run_turboseti",
         "run_pipeline_parallel",
         "main",
+        "is_hdf5_bytes",
+        "_is_lfs_pointer",
+        "_parse_lfs_pointer",
+        "_lfs_batch_href",
+        "resolve_lfs_url",
+        "_try_download_single",
     ]:
         assert hasattr(bl_fetch, name), f"Missing function: {name}"
+
+
+# ---------------------------------------------------------------------------
+# is_hdf5_bytes
+# ---------------------------------------------------------------------------
+
+
+def test_is_hdf5_bytes_true() -> None:
+    assert bl_fetch.is_hdf5_bytes(_make_hdf5_bytes()) is True
+
+
+def test_is_hdf5_bytes_false_html() -> None:
+    assert bl_fetch.is_hdf5_bytes(_make_non_hdf5_bytes()) is False
+
+
+def test_is_hdf5_bytes_too_short() -> None:
+    assert bl_fetch.is_hdf5_bytes(b"\x89HD") is False
+
+
+def test_is_hdf5_bytes_empty() -> None:
+    assert bl_fetch.is_hdf5_bytes(b"") is False
+
+
+# ---------------------------------------------------------------------------
+# _is_lfs_pointer + _parse_lfs_pointer
+# ---------------------------------------------------------------------------
+
+_LFS_POINTER = (
+    b"version https://git-lfs.github.com/spec/v1\n"
+    b"oid sha256:abc123def456" + b"0" * 52 + b"\n"
+    b"size 98765432\n"
+)
+
+
+def test_is_lfs_pointer_true() -> None:
+    assert bl_fetch._is_lfs_pointer(_LFS_POINTER) is True
+
+
+def test_is_lfs_pointer_false_hdf5() -> None:
+    assert bl_fetch._is_lfs_pointer(_make_hdf5_bytes()) is False
+
+
+def test_is_lfs_pointer_false_html() -> None:
+    assert bl_fetch._is_lfs_pointer(_make_non_hdf5_bytes()) is False
+
+
+def test_parse_lfs_pointer_valid() -> None:
+    result = bl_fetch._parse_lfs_pointer(_LFS_POINTER)
+    assert result is not None
+    oid, size = result
+    assert len(oid) == 64
+    assert size == 98765432
+
+
+def test_parse_lfs_pointer_invalid_returns_none() -> None:
+    assert bl_fetch._parse_lfs_pointer(b"not a pointer") is None
+
+
+def test_parse_lfs_pointer_missing_size_returns_none() -> None:
+    data = b"version https://git-lfs.github.com/spec/v1\noid sha256:" + b"a" * 64 + b"\n"
+    assert bl_fetch._parse_lfs_pointer(data) is None
+
+
+# ---------------------------------------------------------------------------
+# _lfs_server_from_url
+# ---------------------------------------------------------------------------
+
+
+def test_lfs_server_from_github_raw() -> None:
+    url = "https://github.com/UCBerkeleySETI/turbo_seti/raw/master/tests/test_data/file.h5"
+    server = bl_fetch._lfs_server_from_url(url)
+    assert server == "https://github.com/UCBerkeleySETI/turbo_seti.git"
+
+
+def test_lfs_server_from_media_githubusercontent() -> None:
+    url = (
+        "https://media.githubusercontent.com/media/UCBerkeleySETI/turbo_seti"
+        "/master/tests/test_data/file.h5"
+    )
+    server = bl_fetch._lfs_server_from_url(url)
+    assert server == "https://github.com/UCBerkeleySETI/turbo_seti.git"
+
+
+def test_lfs_server_unrecognised_returns_none() -> None:
+    assert bl_fetch._lfs_server_from_url("http://example.com/file.h5") is None
+
+
+# ---------------------------------------------------------------------------
+# _lfs_batch_href
+# ---------------------------------------------------------------------------
+
+
+def test_lfs_batch_href_returns_cdn_url() -> None:
+    cdn_url = "https://objects.githubusercontent.com/github-production-release-asset/cdn/file.h5"
+
+    def _fake_post(url: str, payload: bytes, headers: dict) -> bytes:
+        import json
+        assert "lfs/objects/batch" in url
+        return json.dumps(
+            {"objects": [{"actions": {"download": {"href": cdn_url}}}]}
+        ).encode()
+
+    href = bl_fetch._lfs_batch_href(
+        "https://github.com/UCBerkeleySETI/turbo_seti.git",
+        "a" * 64,
+        12345678,
+        post_fn=_fake_post,
+    )
+    assert href == cdn_url
+
+
+def test_lfs_batch_href_returns_none_on_error() -> None:
+    def _bad_post(url: str, payload: bytes, headers: dict) -> bytes:
+        raise OSError("network unreachable")
+
+    href = bl_fetch._lfs_batch_href(
+        "https://github.com/UCBerkeleySETI/turbo_seti.git",
+        "a" * 64,
+        12345678,
+        post_fn=_bad_post,
+    )
+    assert href is None
+
+
+def test_lfs_batch_href_returns_none_on_missing_href() -> None:
+    import json
+
+    def _empty_post(url: str, payload: bytes, headers: dict) -> bytes:
+        return json.dumps({"objects": [{}]}).encode()
+
+    href = bl_fetch._lfs_batch_href(
+        "https://github.com/UCBerkeleySETI/turbo_seti.git",
+        "a" * 64,
+        12345678,
+        post_fn=_empty_post,
+    )
+    assert href is None
+
+
+# ---------------------------------------------------------------------------
+# resolve_lfs_url
+# ---------------------------------------------------------------------------
+
+
+def test_resolve_lfs_url_success() -> None:
+    cdn_url = "https://cdn.example.com/file.h5"
+    oid_hex = "a" * 64
+
+    pointer = (
+        b"version https://git-lfs.github.com/spec/v1\n"
+        + f"oid sha256:{oid_hex}\n".encode()
+        + b"size 12345678\n"
+    )
+
+    def _fake_post(url: str, payload: bytes, headers: dict) -> bytes:
+        import json
+        return json.dumps(
+            {"objects": [{"actions": {"download": {"href": cdn_url}}}]}
+        ).encode()
+
+    source_url = "https://github.com/UCBerkeleySETI/turbo_seti/raw/master/tests/file.h5"
+    result = bl_fetch.resolve_lfs_url(pointer, source_url, post_fn=_fake_post)
+    assert result == cdn_url
+
+
+def test_resolve_lfs_url_invalid_pointer_returns_none() -> None:
+    result = bl_fetch.resolve_lfs_url(b"not a pointer", "https://github.com/o/r/raw/main/f.h5")
+    assert result is None
+
+
+def test_resolve_lfs_url_unknown_server_returns_none() -> None:
+    oid_hex = "b" * 64
+    pointer = (
+        b"version https://git-lfs.github.com/spec/v1\n"
+        + f"oid sha256:{oid_hex}\n".encode()
+        + b"size 9999\n"
+    )
+    result = bl_fetch.resolve_lfs_url(pointer, "http://unknown.example.com/file.h5")
+    assert result is None
+
+
+# ---------------------------------------------------------------------------
+# _try_download_single — LFS flow
+# ---------------------------------------------------------------------------
+
+
+def test_try_download_single_resolves_lfs_and_downloads(tmp_path: Path) -> None:
+    dest = tmp_path / "out.h5"
+    hdf5_data = _make_hdf5_bytes()
+    oid_hex = "c" * 64
+    cdn_url = "https://cdn.example.com/file.h5"
+
+    lfs_pointer = (
+        b"version https://git-lfs.github.com/spec/v1\n"
+        + f"oid sha256:{oid_hex}\n".encode()
+        + f"size {len(hdf5_data)}\n".encode()
+    )
+
+    def _fake_head(url: str) -> dict:
+        if "cdn" in url:
+            return {"content-length": str(len(hdf5_data)), "accept-ranges": "bytes"}
+        # GitHub raw — does not report content-length for LFS pointers
+        return {}
+
+    def _fake_get(url: str, headers: dict | None) -> bytes:
+        if "cdn" in url:
+            if headers and "Range" in headers:
+                return hdf5_data  # chunk
+            return hdf5_data
+        # GitHub raw URL returns LFS pointer
+        return lfs_pointer
+
+    def _fake_post(url: str, payload: bytes, headers: dict) -> bytes:
+        import json
+        return json.dumps(
+            {"objects": [{"actions": {"download": {"href": cdn_url}}}]}
+        ).encode()
+
+    source_url = "https://github.com/UCBerkeleySETI/turbo_seti/raw/master/tests/file.h5"
+    ok = bl_fetch._try_download_single(
+        source_url, dest, connections=2,
+        get_fn=_fake_get, head_fn=_fake_head, post_fn=_fake_post,
+    )
+    assert ok is True
+    assert bl_fetch.is_hdf5(dest)
+
+
+def test_try_download_single_direct_hdf5(tmp_path: Path) -> None:
+    dest = tmp_path / "out.h5"
+    hdf5_data = _make_hdf5_bytes()
+
+    def _fake_head(url: str) -> dict:
+        return {}  # no range support
+
+    def _fake_get(url: str, headers: dict | None) -> bytes:
+        return hdf5_data
+
+    ok = bl_fetch._try_download_single(
+        "http://example.com/file.h5", dest, connections=1,
+        get_fn=_fake_get, head_fn=_fake_head,
+    )
+    assert ok is True
+    assert bl_fetch.is_hdf5(dest)
+
+
+def test_try_download_single_returns_false_on_non_hdf5_non_lfs(tmp_path: Path) -> None:
+    dest = tmp_path / "out.h5"
+
+    def _fake_head(url: str) -> dict:
+        return {}
+
+    def _fake_get(url: str, headers: dict | None) -> bytes:
+        return b"<html>Portal</html>"
+
+    ok = bl_fetch._try_download_single(
+        "http://example.com/file.h5", dest, connections=1,
+        get_fn=_fake_get, head_fn=_fake_head,
+    )
+    assert ok is False
+    assert not dest.exists()
+
+
+def test_try_download_single_skips_if_already_hdf5(tmp_path: Path) -> None:
+    dest = tmp_path / "out.h5"
+    dest.write_bytes(_make_hdf5_bytes())
+
+    called = [False]
+
+    def _fake_head(url: str) -> dict:
+        called[0] = True
+        return {}
+
+    ok = bl_fetch._try_download_single(
+        "http://example.com/file.h5", dest, connections=1,
+        get_fn=None, head_fn=_fake_head,
+    )
+    assert ok is True
+    assert not called[0]  # no network activity when file already valid
+
+
+# ---------------------------------------------------------------------------
+# download_first_valid — LFS integration
+# ---------------------------------------------------------------------------
+
+
+def test_download_first_valid_handles_lfs_pointer(tmp_path: Path) -> None:
+    dest = tmp_path / "voyager.h5"
+    hdf5_data = _make_hdf5_bytes()
+    oid_hex = "d" * 64
+    cdn_url = "https://cdn.example.com/voyager.h5"
+
+    lfs_pointer = (
+        b"version https://git-lfs.github.com/spec/v1\n"
+        + f"oid sha256:{oid_hex}\n".encode()
+        + f"size {len(hdf5_data)}\n".encode()
+    )
+
+    def _fake_head(url: str) -> dict:
+        if "cdn" in url:
+            return {"content-length": str(len(hdf5_data)), "accept-ranges": "bytes"}
+        return {}
+
+    def _fake_get(url: str, headers: dict | None) -> bytes:
+        if "cdn" in url:
+            return hdf5_data
+        return lfs_pointer
+
+    def _fake_post(url: str, payload: bytes, headers: dict) -> bytes:
+        import json
+        return json.dumps(
+            {"objects": [{"actions": {"download": {"href": cdn_url}}}]}
+        ).encode()
+
+    ok = bl_fetch.download_first_valid(
+        ["https://github.com/UCBerkeleySETI/turbo_seti/raw/master/tests/file.h5"],
+        dest,
+        connections=1,
+        get_fn=_fake_get,
+        head_fn=_fake_head,
+        post_fn=_fake_post,
+    )
+    assert ok is True
+    assert bl_fetch.is_hdf5(dest)
