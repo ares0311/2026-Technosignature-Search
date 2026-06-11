@@ -73,6 +73,8 @@ external validation are not claimed.
 | Unit-safe, provenance-aware real-noise calibration preflight | ✅ Complete |
 | Cadence/target/epoch, dominance, bootstrap, and leave-one-cadence-out gates | ✅ Complete |
 | Operational log system (86 log types) | ✅ Complete |
+| Resumable parallel BL data download scripts (16-thread, LFS + SSL) | ✅ Complete |
+| Voyager 1 GBT turboSETI test H5 downloaded and scored end-to-end (3 real hits, pipeline OK) | ✅ Complete |
 
 ---
 
