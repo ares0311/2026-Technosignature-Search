@@ -3023,3 +3023,45 @@ review and operator sign-off). The human approval gate is not bypassed —
 until a human operator completes the review described in the admission record
 notes. No scoring thresholds change. No candidate report is affected. This is
 not a detection, discovery, or external validation.
+
+---
+
+# DECISION-125: Calibration Corpus Admission Gate And Download Manifest
+
+**Date:** 2026-06-11
+**Status:** Accepted
+**Milestone:** Calibration corpus scaffolding (Tier 1 gap: calibrated scoring thresholds)
+
+## Context
+
+The "Calibrated scoring thresholds" Tier 1 gap requires a real-noise corpus
+of at least 3 cadences, 3 targets, 2 epochs, and 100 turboSETI hits passing
+all acceptance gates in `noise_threshold_calibration.py`. No such corpus exists
+yet. This decision creates the planning and admission scaffolding to assemble it.
+
+## Decision
+
+Add calibration corpus download manifest and admission gate:
+
+- `scripts/build_calibration_target_manifest.py` — BL archive target manifest
+  (5 targets: Voyager1 already ingested, HIP65803/HIP4436/HIP8102/HIP16537 queued)
+- `scripts/run_calibration_corpus_pipeline.sh` — end-to-end pipeline script:
+  H5 directory → turboSETI → provenance JSON sidecars → calibration gate check
+- `tests/fixtures/calibration_corpus_admission.json` — 5 admission records
+  (1 already_admitted, 4 blocked_pending_download)
+- `src/techno_search/calibration_corpus_admission.py` — admission module
+- `schemas/calibration_corpus_admission.schema.json` — JSON schema
+- `tests/test_calibration_corpus_admission.py` — tests
+- `docs/RFI_OPERATOR_REVIEW_PROTOCOL.md` — operator checklist for the
+  provisional GBT RFI catalog review (unblocks DECISION-124's 2 blockers)
+- `validate-all` gate: calibration_corpus_admission_record_count >= 1,
+  calibration_corpus_admission_safety_ok == True
+
+## Consequences
+
+Calibration corpus scaffolding is in place. The Tier 1 gap (calibrated scoring
+thresholds) is not closed: all 4 new targets remain blocked_pending_download.
+The gap closes only after the user downloads the H5 files, validates turboSETI
+output, writes provenance sidecars with human approval, and the calibration gate
+passes all 7 acceptance checks. No scoring thresholds change. No candidate report
+is affected. This is not a detection, discovery, or external validation.

@@ -1,0 +1,69 @@
+{
+  "calibration_corpus_admission_records": [
+    {
+      "corpus_id": "cal-corpus-voyager1-mjd57650",
+      "target_id": "Voyager1",
+      "source_label": "Voyager 1 GBT X-band calibration reference (already ingested)",
+      "admission_status": "already_admitted",
+      "h5_downloaded": true,
+      "turboseti_validated": true,
+      "provenance_reviewed": true,
+      "human_approval_status": "approved",
+      "real_data_authorized": false,
+      "blocker_count": 0,
+      "notes": "Voyager 1 X-band carrier (guppi_57650_67573_Voyager1_0002.0000.h5). Admitted as Tier 1 reference cadence. X-band only — not an L-band noise sample; used as pipeline calibration reference. Provenance approved in DECISION-122. real_data_authorized=false because authorization is tracked in observation_artifact provenance, not this record."
+    },
+    {
+      "corpus_id": "cal-corpus-hip65803-epoch1",
+      "target_id": "HIP65803",
+      "source_label": "HIP 65803 (70 Virginis) GBT L-band epoch 1 — pending download",
+      "admission_status": "blocked_pending_download",
+      "h5_downloaded": false,
+      "turboseti_validated": false,
+      "provenance_reviewed": false,
+      "human_approval_status": "pending",
+      "real_data_authorized": false,
+      "blocker_count": 3,
+      "notes": "BL GBT L-band survey target (Enriquez+2017 Table 1). Blocker 1: H5 file not yet downloaded (verify URL at http://blpd0.ssl.berkeley.edu/HIP65803/). Blocker 2: turboSETI output not validated. Blocker 3: provenance sidecar and human approval not yet completed."
+    },
+    {
+      "corpus_id": "cal-corpus-hip4436-epoch1",
+      "target_id": "HIP4436",
+      "source_label": "HIP 4436 GBT L-band — pending download",
+      "admission_status": "blocked_pending_download",
+      "h5_downloaded": false,
+      "turboseti_validated": false,
+      "provenance_reviewed": false,
+      "human_approval_status": "pending",
+      "real_data_authorized": false,
+      "blocker_count": 3,
+      "notes": "BL GBT L-band target (Price+2020). Blocker 1: H5 file not yet downloaded (verify URL at http://blpd0.ssl.berkeley.edu/HIP4436/). Blocker 2: turboSETI output not validated. Blocker 3: provenance sidecar and human approval not yet completed."
+    },
+    {
+      "corpus_id": "cal-corpus-hip8102-epoch1",
+      "target_id": "HIP8102",
+      "source_label": "HIP 8102 (tau Ceti) GBT L-band — pending download",
+      "admission_status": "blocked_pending_download",
+      "h5_downloaded": false,
+      "turboseti_validated": false,
+      "provenance_reviewed": false,
+      "human_approval_status": "pending",
+      "real_data_authorized": false,
+      "blocker_count": 3,
+      "notes": "BL GBT L-band target (Enriquez+2017). Blocker 1: H5 file not yet downloaded (try HIP8102 or tauCeti dir at http://blpd0.ssl.berkeley.edu/). Blocker 2: turboSETI output not validated. Blocker 3: provenance sidecar and human approval not yet completed."
+    },
+    {
+      "corpus_id": "cal-corpus-hip16537-epoch1",
+      "target_id": "HIP16537",
+      "source_label": "HIP 16537 (epsilon Eridani) GBT L-band — pending download",
+      "admission_status": "blocked_pending_download",
+      "h5_downloaded": false,
+      "turboseti_validated": false,
+      "provenance_reviewed": false,
+      "human_approval_status": "pending",
+      "real_data_authorized": false,
+      "blocker_count": 3,
+      "notes": "BL GBT L-band high-priority target (Enriquez+2017). Blocker 1: H5 file not yet downloaded (try HIP16537 or epsEri dir at http://blpd0.ssl.berkeley.edu/). Blocker 2: turboSETI output not validated. Blocker 3: provenance sidecar and human approval not yet completed."
+    }
+  ]
+}

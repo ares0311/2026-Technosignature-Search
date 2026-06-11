@@ -26,7 +26,7 @@ external validation are not claimed.
 | Calibration fixture set (15 false-positive classes) | ✅ Complete |
 | Score regression + determinism checks | ✅ Complete |
 | Interpretable baseline classifier | ✅ Complete |
-| 103 JSON schema artifacts | ✅ Complete |
+| 104 JSON schema artifacts | ✅ Complete |
 | Local validation gate (`validate-all`) | ✅ Complete |
 | Provenance, audit trail, lifecycle tracking | ✅ Complete |
 | Operational log system (86 log types) | ✅ Complete |
@@ -76,6 +76,7 @@ external validation are not claimed.
 | Resumable parallel BL data download scripts (16-thread, LFS + SSL) | ✅ Complete |
 | Voyager 1 GBT turboSETI test H5 downloaded and scored end-to-end (3 real hits, pipeline OK) | ✅ Complete |
 | GBT provisional RFI catalog (15 bands, ITU/GPS/ICAO/FCC citations, all inactive pending review) | ✅ Complete |
+| Calibration corpus download manifest (5 BL targets, admission gate, pipeline script, operator review protocol) | ✅ Complete |
 
 ---
 
@@ -164,4 +165,4 @@ the observation admission gate, DECISION-122 records the first approved
 real GBT cadence ingestion and OFF-target rejection correction, and
 DECISION-123 records the citizen-science reproducibility standard and first
 admitted real label set. DECISION-124 records the GBT provisional RFI catalog
-from public regulatory documentation.
+from public regulatory documentation. DECISION-125 records the calibration corpus admission gate and download manifest.
