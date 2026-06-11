@@ -797,6 +797,7 @@ SCHEMA_FILENAMES = {
     "labeled_candidates": "labeled_candidates.schema.json",
     "labeled_candidates_citizen_science_v1": "labeled_candidates_citizen_science_v1.schema.json",
     "labeled_candidates_synthetic_v1": "labeled_candidates_synthetic_v1.schema.json",
+    "calibration_corpus_admission": "calibration_corpus_admission.schema.json",
 }
 
 
@@ -3516,6 +3517,18 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(admission_summary, indent=2, sort_keys=True), file=out)
         return 0 if admission_summary["validation_ok"] else 1
 
+    if args.command == "calibration-corpus-admission-summary":
+        from techno_search.calibration_corpus_admission import (
+            calibration_corpus_admission_summary,
+        )
+
+        fixture_path_arg = getattr(args, "fixture_path", None)
+        cal_admission = calibration_corpus_admission_summary(
+            Path(fixture_path_arg) if fixture_path_arg else None
+        )
+        print(json.dumps(cal_admission, indent=2, sort_keys=True), file=out)
+        return 0 if cal_admission["ok"] else 1
+
     if args.command == "rfi-mitigation-summary":
         fixture_path = getattr(args, "fixture_path", None)
         print(
@@ -4626,6 +4639,15 @@ def validate_all() -> dict[str, object]:
     rfi_database_admission_real_authorized_count = int(
         rfi_database_admission_data.get("real_data_authorized_count", 0)
     )
+    from techno_search.calibration_corpus_admission import (
+        calibration_corpus_admission_summary as _cal_corpus_admission_summary,
+    )
+
+    cal_corpus_admission_data = _cal_corpus_admission_summary()
+    cal_corpus_admission_record_count = int(
+        cal_corpus_admission_data.get("record_count", 0)
+    )
+    cal_corpus_admission_safety_ok = bool(cal_corpus_admission_data.get("safety_ok", True))
     rfi_mitigation_data = rfi_mitigation_summary()
     rfi_mitigation_entry_count = int(rfi_mitigation_data.get("entry_count", 0))
     _rfi_mitigation_flagged_count = int(rfi_mitigation_data.get("flagged_count", 0))
@@ -5740,6 +5762,9 @@ def validate_all() -> dict[str, object]:
         and rfi_database_admission_validation_ok
         and isinstance(rfi_database_admission_real_authorized_count, int)
         and rfi_database_admission_real_authorized_count == 0
+        and isinstance(cal_corpus_admission_record_count, int)
+        and cal_corpus_admission_record_count >= 1
+        and cal_corpus_admission_safety_ok
         and isinstance(rfi_mitigation_entry_count, int)
         and rfi_mitigation_entry_count >= 0
         and isinstance(candidate_annotation_entry_count, int)
@@ -6167,6 +6192,7 @@ def validate_all() -> dict[str, object]:
         "signal_classification_summary": signal_classification_data,
         "rfi_database_summary": rfi_database_data,
         "rfi_database_admission_summary": rfi_database_admission_data,
+        "calibration_corpus_admission_summary": cal_corpus_admission_data,
         "rfi_mitigation_summary": rfi_mitigation_data,
         "candidate_annotation_log_summary": candidate_annotation_log_data,
         "frequency_channel_log_summary": frequency_channel_data,
@@ -8881,6 +8907,21 @@ def validation_summary() -> dict[str, object]:
             bool(rfia_s4["validation_ok"])
             if isinstance(rfia_s4 := validation.get("rfi_database_admission_summary"), dict)
             else False
+        ),
+        "calibration_corpus_admission_record_count": (
+            cca_s["record_count"]
+            if isinstance(cca_s := validation.get("calibration_corpus_admission_summary"), dict)
+            else 0
+        ),
+        "calibration_corpus_admission_blocked_count": (
+            cca_s2["blocked_count"]
+            if isinstance(cca_s2 := validation.get("calibration_corpus_admission_summary"), dict)
+            else 0
+        ),
+        "calibration_corpus_admission_safety_ok": (
+            bool(cca_s3["safety_ok"])
+            if isinstance(cca_s3 := validation.get("calibration_corpus_admission_summary"), dict)
+            else True
         ),
         "rfi_mitigation_entry_count": (
             rm_s["entry_count"]
@@ -12133,6 +12174,14 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize RFI database source admission gates (local readiness only).",
     )
     rfi_database_admission_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional fixture path override."
+    )
+
+    cal_corpus_admission_parser = subparsers.add_parser(
+        "calibration-corpus-admission-summary",
+        help="Summarize calibration corpus target admission gates (local readiness only).",
+    )
+    cal_corpus_admission_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

@@ -8,7 +8,7 @@
     "expected_row_count": 0,
     "expected_insert_count": 0,
     "expected_execution_operation_count": 0,
-    "expected_schema_count": 103,
+    "expected_schema_count": 104,
     "require_all_upstream_gates_ok": true,
     "readiness_status": "preflight_only",
     "database_open_allowed": false,

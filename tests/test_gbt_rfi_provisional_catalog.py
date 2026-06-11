@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -12,7 +13,7 @@ PROVISIONAL_CATALOG = (
 )
 ADMISSION_FIXTURE = REPO_ROOT / "tests" / "fixtures" / "rfi_database_admission.json"
 BUILDER_SCRIPT = REPO_ROOT / "scripts" / "build_gbt_rfi_provisional_catalog.py"
-PYTHON = REPO_ROOT / ".venv" / "bin" / "python"
+PYTHON = sys.executable
 
 
 # ---------------------------------------------------------------------------
@@ -26,7 +27,7 @@ def test_builder_script_exists() -> None:
 
 def test_builder_validate_only_exits_zero() -> None:
     result = subprocess.run(
-        [str(PYTHON), str(BUILDER_SCRIPT), "--validate-only"],
+        [PYTHON, str(BUILDER_SCRIPT), "--validate-only"],
         capture_output=True,
         text=True,
     )
@@ -37,7 +38,7 @@ def test_builder_validate_only_exits_zero() -> None:
 def test_builder_write_to_tmpdir(tmp_path: Path) -> None:
     outfile = tmp_path / "catalog_out.json"
     result = subprocess.run(
-        [str(PYTHON), str(BUILDER_SCRIPT), "--output", str(outfile)],
+        [PYTHON, str(BUILDER_SCRIPT), "--output", str(outfile)],
         capture_output=True,
         text=True,
     )
