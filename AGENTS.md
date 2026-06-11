@@ -113,15 +113,16 @@ blocked until genuinely independent external validation exists.
 
 ## Environment Rules
 
-- Always assume a local `.venv` environment
+- Always assume a local `.venv` environment — **Python 3.14.3** (upgraded 2026-06-10)
+- **NEVER invoke bare `python3` or `python`. Always use `.venv/bin/python` or `.venv/bin/techno-search` explicitly.** The system Python is a different version and lacks project dependencies. This rule applies in scripts, CLI examples, test commands, and every other context. See `docs/LOCAL_SYSTEM_PROFILE.md` §"Python Venv Rule".
 - Never commit `.venv/`
 - Do not rely on system Python packages
 - Install dependencies via project configuration (`requirements.txt` or `pyproject.toml`)
-- All tests must run inside the virtual environment
+- All tests must run inside the virtual environment: `.venv/bin/python -m pytest`
 - Use `docs/LOCAL_SYSTEM_PROFILE.md` for local performance defaults, while keeping worker counts, memory budgets, cache paths, and hardware acceleration configurable
 
 If dependencies are missing:
-- install them locally inside `.venv`
+- install them locally inside `.venv`: `.venv/bin/pip install <package>`
 - document additions in dependency files
 
 ### macOS Sleep Prevention — caffeinate

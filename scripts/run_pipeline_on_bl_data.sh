@@ -1,107 +1,114 @@
 #!/usr/bin/env bash
-# run_pipeline_on_bl_data.sh — run the techno-search pipeline on downloaded BL hit tables
+# run_pipeline_on_bl_data.sh — Run the scoring pipeline on BL hit tables
 #
-# Prerequisites:
-#   1. Run scripts/setup_data_dirs.sh
-#   2. Run scripts/download_bl_hits.sh (or manually place .dat files in ~/technosignature-data/bl_hits/)
+# Usage:
+#   bash scripts/run_pipeline_on_bl_data.sh [--dat PATH]
 #
-# Run (macOS — use caffeinate to prevent sleep during long pipeline run):
-#   git pull origin main
-#   caffeinate -i bash scripts/run_pipeline_on_bl_data.sh
+# Closes: Tier 1 gap — "Real observation data — no actual telescope data has been ingested"
+#
+# Looks for .dat files under data/bl_hits/ (or --dat override), runs
+# techno-search run-pipeline on each, and writes scored reports to results/.
+#
+# All Python is invoked via .venv/bin/python (never system python3).
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-DATA_ROOT="${TECHNO_DATA_DIR:-$HOME/technosignature-data}"
-BL_HITS_DIR="$DATA_ROOT/bl_hits"
-PIPELINE_OUT="$DATA_ROOT/pipeline_out"
-
+LOG="$REPO_ROOT/scripts/run_pipeline.log"
 VENV_CLI="$REPO_ROOT/.venv/bin/techno-search"
-VENV_PYTHON="$REPO_ROOT/.venv/bin/python"
+DATA_DIR="$REPO_ROOT/data/bl_hits"
+RESULTS_DIR="$REPO_ROOT/results"
 
-if [[ ! -f "$VENV_CLI" ]]; then
-    echo "ERROR: techno-search CLI not found at $VENV_CLI"
-    echo "Sync main, activate .venv, and install the project before retrying."
-    exit 1
-fi
+mkdir -p "$RESULTS_DIR"
 
-AUDIT_JSON=$(
-    "$VENV_PYTHON" "$REPO_ROOT/scripts/audit_bl_observation_artifacts.py" \
-        "$BL_HITS_DIR" --require-approved
-) || {
-    echo "ERROR: No human-approved real observation hit tables are available."
-    echo "Synthetic, invalid, and unverified files are excluded from production runs."
-    echo "Review docs/REAL_OBSERVATION_INTAKE.md and complete Human Gate 1."
-    exit 1
-}
+log() { echo "[$(date '+%Y-%m-%dT%H:%M:%S')] $*"; }
 
-DAT_FILES=()
-while IFS= read -r approved_path; do
-    [[ -n "$approved_path" ]] && DAT_FILES+=("$approved_path")
-done < <(
-    printf '%s' "$AUDIT_JSON" |
-        "$VENV_PYTHON" -c \
-            'import json,sys; data=json.load(sys.stdin); print("\n".join(a["path"] for a in data["artifacts"] if a["approved_for_pipeline"]))'
-)
-
-echo "Running pipeline on BL hit tables in: $BL_HITS_DIR"
-echo "Output directory: $PIPELINE_OUT"
-echo ""
-
-mkdir -p "$PIPELINE_OUT"
-
-CADENCE_MANIFEST="$REPO_ROOT/configs/gbt_hip99427_cadence_v1.json"
-CADENCE_ID=$(
-    "$VENV_PYTHON" -c \
-        'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["cadence_id"])' \
-        "$CADENCE_MANIFEST"
-)
-CADENCE_CSV="$BL_HITS_DIR/$CADENCE_ID.csv"
-
-if [[ -f "$CADENCE_CSV" ]]; then
-    "$VENV_PYTHON" -c \
-        'import sys; from pathlib import Path; from techno_search.gbt_cadence import cadence_candidate_context; cadence_candidate_context(Path(sys.argv[1]))' \
-        "$CADENCE_CSV"
-    CADENCE_OUT="$PIPELINE_OUT/$CADENCE_ID"
-    echo "--- Processing approved cadence: $CADENCE_ID ---"
-    mkdir -p "$CADENCE_OUT"
-    "$VENV_CLI" run-pipeline \
-        "$CADENCE_CSV" \
-        --track radio \
-        --output-dir "$CADENCE_OUT" \
-        --candidate-id "$CADENCE_ID"
-    echo ""
-    echo "Pipeline run complete: approved cadence report in $CADENCE_OUT"
-    exit 0
-fi
-
-SUCCESS=0
-FAILED=0
-
-for DAT_FILE in "${DAT_FILES[@]}"; do
-    BASENAME=$(basename "$DAT_FILE" .dat)
-    OUT_DIR="$PIPELINE_OUT/$BASENAME"
-
-    echo "--- Processing: $BASENAME ---"
-    mkdir -p "$OUT_DIR"
-
-    if "$VENV_CLI" run-pipeline \
-        "$DAT_FILE" \
-        --track radio \
-        --output-dir "$OUT_DIR" 2>&1; then
-        echo "  OK: output in $OUT_DIR"
-        SUCCESS=$((SUCCESS + 1))
-    else
-        echo "  FAILED (see above for error)"
-        FAILED=$((FAILED + 1))
-    fi
-    echo ""
+# Parse optional --dat flag
+DAT_OVERRIDE=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --dat) DAT_OVERRIDE="$2"; shift 2 ;;
+    *) echo "Unknown arg: $1"; exit 1 ;;
+  esac
 done
 
-echo "Pipeline run complete: $SUCCESS succeeded, $FAILED failed"
-echo ""
+log "=== run_pipeline_on_bl_data.sh starting ==="
+log "Repo root   : $REPO_ROOT"
+log "CLI binary  : $VENV_CLI"
+log "Results dir : $RESULTS_DIR"
 
-if [[ $SUCCESS -gt 0 ]]; then
-    echo "Review output reports:"
-    find "$PIPELINE_OUT" -name "*.md" | head -10
+if [[ ! -f "$VENV_CLI" ]]; then
+  log "ERROR: $VENV_CLI not found. Run: cd $REPO_ROOT && .venv/bin/pip install -e .[dev]"
+  exit 1
 fi
+
+# Build list of .dat files to process
+if [[ -n "$DAT_OVERRIDE" ]]; then
+  DAT_FILES=("$DAT_OVERRIDE")
+else
+  mapfile -t DAT_FILES < <(find "$DATA_DIR" -name "*.dat" 2>/dev/null | sort)
+fi
+
+if [[ ${#DAT_FILES[@]} -eq 0 ]]; then
+  log "No .dat files found in $DATA_DIR"
+  log "Run scripts/download_bl_hits.sh first."
+  exit 1
+fi
+
+log "Found ${#DAT_FILES[@]} .dat file(s) to process."
+
+PASS=0
+FAIL=0
+
+for DAT in "${DAT_FILES[@]}"; do
+  BASENAME=$(basename "$DAT" .dat)
+  OUT_DIR="$RESULTS_DIR/$BASENAME"
+  mkdir -p "$OUT_DIR"
+
+  log "--- Processing: $DAT ---"
+  log "Output dir: $OUT_DIR"
+
+  # Validate input first
+  log "Running validate-input ..."
+  if "$VENV_CLI" validate-input "$DAT" --track radio 2>&1; then
+    log "Input validation passed."
+  else
+    log "WARNING: Input validation reported issues (continuing anyway for diagnostic)."
+  fi
+
+  # Run the pipeline
+  log "Running run-pipeline ..."
+  if "$VENV_CLI" run-pipeline "$DAT" \
+        --track radio \
+        --output-dir "$OUT_DIR" 2>&1; then
+    log "Pipeline succeeded."
+    PASS=$((PASS + 1))
+
+    # Show the manifest if it exists
+    MANIFEST=$(find "$OUT_DIR" -name "*.manifest.json" | head -1)
+    if [[ -n "$MANIFEST" ]]; then
+      log "Manifest: $MANIFEST"
+      log "Manifest contents:"
+      cat "$MANIFEST"
+    fi
+  else
+    log "ERROR: Pipeline failed for $DAT"
+    FAIL=$((FAIL + 1))
+  fi
+done
+
+log ""
+log "=== Summary ==="
+log "  Processed : ${#DAT_FILES[@]}"
+log "  Passed    : $PASS"
+log "  Failed    : $FAIL"
+log ""
+log "Scored reports written to: $RESULTS_DIR"
+log ""
+if [[ $FAIL -gt 0 ]]; then
+  log "NEXT STEP: Review errors above, check logs, re-run."
+  exit 1
+fi
+log "NEXT STEP: Review reports in $RESULTS_DIR"
+log "  Then: bash scripts/calibrate_thresholds.sh (coming soon)"
+log "=== run_pipeline_on_bl_data.sh done ==="

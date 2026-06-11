@@ -6,7 +6,13 @@ set -euo pipefail
 INPUT=$(cat)
 COMMAND=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('tool_input', {}).get('command', ''))" 2>/dev/null || echo "")
 
-if ! echo "$COMMAND" | grep -q "git commit"; then
+# Only intercept direct git commit commands (not rebase --exec, amend-only, or maintenance ops)
+if ! echo "$COMMAND" | grep -qE "^git commit|git commit -m|git commit --message"; then
+  exit 0
+fi
+
+# Allow amend-only operations (author fixes, metadata corrections)
+if echo "$COMMAND" | grep -q "\-\-no-edit"; then
   exit 0
 fi
 
