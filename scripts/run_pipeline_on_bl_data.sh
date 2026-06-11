@@ -1,114 +1,74 @@
 #!/usr/bin/env bash
-# run_pipeline_on_bl_data.sh — Run the scoring pipeline on BL hit tables
+# run_pipeline_on_bl_data.sh — Run techno-search pipeline on all BL hit tables
 #
 # Usage:
-#   bash scripts/run_pipeline_on_bl_data.sh [--dat PATH]
+#   bash scripts/run_pipeline_on_bl_data.sh [--dat-dir PATH] [--workers N]
 #
 # Closes: Tier 1 gap — "Real observation data — no actual telescope data has been ingested"
 #
-# Looks for .dat files under data/bl_hits/ (or --dat override), runs
-# techno-search run-pipeline on each, and writes scored reports to results/.
+# Parallel processing:
+#   Runs up to 12 workers in parallel (M4 Max has 12 performance cores).
+#   Override with --workers N.
 #
-# All Python is invoked via .venv/bin/python (never system python3).
+# Resume / restart behaviour:
+#   Each .dat file is scored into its own subdirectory under results/.
+#   If that subdirectory already contains a *.manifest.json the file is skipped.
+#   Stop and restart at any time — already-completed files are never re-processed.
+#
+# All logic lives in scripts/bl_fetch.py (run-pipeline subcommand).
+# All Python is invoked via .venv/bin/python (Python 3.14.3, never system python3).
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-LOG="$REPO_ROOT/scripts/run_pipeline.log"
-VENV_CLI="$REPO_ROOT/.venv/bin/techno-search"
+VENV="$REPO_ROOT/.venv/bin/python"
+BL_FETCH="$REPO_ROOT/scripts/bl_fetch.py"
+TECHNO_SEARCH="$REPO_ROOT/.venv/bin/techno-search"
 DATA_DIR="$REPO_ROOT/data/bl_hits"
 RESULTS_DIR="$REPO_ROOT/results"
-
-mkdir -p "$RESULTS_DIR"
+WORKERS=12
 
 log() { echo "[$(date '+%Y-%m-%dT%H:%M:%S')] $*"; }
 
-# Parse optional --dat flag
-DAT_OVERRIDE=""
+# Parse optional flags
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --dat) DAT_OVERRIDE="$2"; shift 2 ;;
-    *) echo "Unknown arg: $1"; exit 1 ;;
+    --dat-dir)   DATA_DIR="$2";   shift 2 ;;
+    --workers)   WORKERS="$2";    shift 2 ;;
+    *) log "Unknown argument: $1"; exit 1 ;;
   esac
 done
 
 log "=== run_pipeline_on_bl_data.sh starting ==="
 log "Repo root   : $REPO_ROOT"
-log "CLI binary  : $VENV_CLI"
+log "Python      : $("$VENV" --version 2>&1)"
+log "Data dir    : $DATA_DIR"
 log "Results dir : $RESULTS_DIR"
+log "Workers     : $WORKERS (M4 Max has 12 performance cores)"
 
-if [[ ! -f "$VENV_CLI" ]]; then
-  log "ERROR: $VENV_CLI not found. Run: cd $REPO_ROOT && .venv/bin/pip install -e .[dev]"
+if [[ ! -f "$TECHNO_SEARCH" ]]; then
+  log "ERROR: $TECHNO_SEARCH not found."
+  log "Run: cd $REPO_ROOT && .venv/bin/pip install -e .[dev]"
   exit 1
 fi
 
-# Build list of .dat files to process
-if [[ -n "$DAT_OVERRIDE" ]]; then
-  DAT_FILES=("$DAT_OVERRIDE")
-else
-  mapfile -t DAT_FILES < <(find "$DATA_DIR" -name "*.dat" 2>/dev/null | sort)
-fi
-
-if [[ ${#DAT_FILES[@]} -eq 0 ]]; then
+DAT_COUNT=$(find "$DATA_DIR" -name "*.dat" 2>/dev/null | wc -l | tr -d ' ')
+if [[ "$DAT_COUNT" -eq 0 ]]; then
   log "No .dat files found in $DATA_DIR"
   log "Run scripts/download_bl_hits.sh first."
   exit 1
 fi
 
-log "Found ${#DAT_FILES[@]} .dat file(s) to process."
+log "Found $DAT_COUNT .dat file(s) — launching parallel pipeline ..."
 
-PASS=0
-FAIL=0
+"$VENV" "$BL_FETCH" run-pipeline \
+  "$DATA_DIR" \
+  "$RESULTS_DIR" \
+  --techno-search "$TECHNO_SEARCH" \
+  --workers "$WORKERS"
 
-for DAT in "${DAT_FILES[@]}"; do
-  BASENAME=$(basename "$DAT" .dat)
-  OUT_DIR="$RESULTS_DIR/$BASENAME"
-  mkdir -p "$OUT_DIR"
-
-  log "--- Processing: $DAT ---"
-  log "Output dir: $OUT_DIR"
-
-  # Validate input first
-  log "Running validate-input ..."
-  if "$VENV_CLI" validate-input "$DAT" --track radio 2>&1; then
-    log "Input validation passed."
-  else
-    log "WARNING: Input validation reported issues (continuing anyway for diagnostic)."
-  fi
-
-  # Run the pipeline
-  log "Running run-pipeline ..."
-  if "$VENV_CLI" run-pipeline "$DAT" \
-        --track radio \
-        --output-dir "$OUT_DIR" 2>&1; then
-    log "Pipeline succeeded."
-    PASS=$((PASS + 1))
-
-    # Show the manifest if it exists
-    MANIFEST=$(find "$OUT_DIR" -name "*.manifest.json" | head -1)
-    if [[ -n "$MANIFEST" ]]; then
-      log "Manifest: $MANIFEST"
-      log "Manifest contents:"
-      cat "$MANIFEST"
-    fi
-  else
-    log "ERROR: Pipeline failed for $DAT"
-    FAIL=$((FAIL + 1))
-  fi
-done
-
-log ""
-log "=== Summary ==="
-log "  Processed : ${#DAT_FILES[@]}"
-log "  Passed    : $PASS"
-log "  Failed    : $FAIL"
 log ""
 log "Scored reports written to: $RESULTS_DIR"
-log ""
-if [[ $FAIL -gt 0 ]]; then
-  log "NEXT STEP: Review errors above, check logs, re-run."
-  exit 1
-fi
 log "NEXT STEP: Review reports in $RESULTS_DIR"
 log "  Then: bash scripts/calibrate_thresholds.sh (coming soon)"
 log "=== run_pipeline_on_bl_data.sh done ==="
