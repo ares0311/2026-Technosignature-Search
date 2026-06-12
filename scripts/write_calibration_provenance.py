@@ -239,7 +239,7 @@ def main(argv: list[str] | None = None) -> int:
                 mjd = float(parts[1])
     if mjd is None and header_mjd_str:
         with contextlib.suppress(ValueError):
-            mjd = float(header_mjd_str)
+            mjd = float(header_mjd_str.split()[0])
 
     # Derive epoch_utc from MJD if not supplied
     epoch_utc = args.epoch_utc

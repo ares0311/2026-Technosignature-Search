@@ -52,31 +52,27 @@ The pipeline runner remains blocked until Human Gate 1 in
 
 ### Option A — BL Open Data Server (HTTPS, follow redirects)
 
-The BL L-band survey results are hosted at the SSL Berkeley data server.
-**Always use HTTPS and `-L` to follow redirects:**
+> **NOTE**: The `blpd0.ssl.berkeley.edu/L_band_table/` URL pattern was
+> incorrect. `blpd0.ssl.berkeley.edu` is a redirect-only page and does not
+> serve hit tables at that path. Use Options B–D below for real data access.
+>
+> If you already have `.dat` files from a prior BL download (e.g., from
+> `~/technosignature-data/bl_hits/`), you can use them directly with the
+> calibration scripts without re-downloading.
 
 ```bash
 git pull origin main
-mkdir -p ~/technosignature-data/bl_hits
-cd ~/technosignature-data/bl_hits
-
-# Download 5 targets from the GBT L-band survey
-for target in HIP99427 HIP17378 HIP45167 HIP65352 HIP74995; do
-    curl -L --max-time 60 --retry 3 \
-         -o "${target}_hits.dat" \
-         "https://blpd0.ssl.berkeley.edu/L_band_table/${target}_hits.dat"
-    size=$(wc -c < "${target}_hits.dat")
-    echo "$target: $size bytes"
-done
+# If you already have BL .dat files locally, copy them:
+mkdir -p data/calibration_corpus
+cp ~/technosignature-data/bl_hits/*.dat data/calibration_corpus/
+# Then create provenance sidecars (see "After Downloading" below)
 ```
 
 **Common problems:**
-- **153 bytes or less** — the server redirected or returned an error page.
-  Make sure you are using `https://` (not `http://`) and `-L` to follow redirects.
+- **blpd0 returns JavaScript redirect** — the root URL is a web portal, not
+  a data server. Use the BL Open Data Portal (Option C) to browse and download.
 - **SSL certificate error** — your Python venv may need certifi:
   `.venv/bin/python -m pip install certifi`
-- **Connection refused** — the BL server may be temporarily down. Try again
-  in a few hours or use Option B.
 
 ### Option B — Human-Reviewed Archive Selection
 
