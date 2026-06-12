@@ -1744,6 +1744,12 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(_health, indent=2, sort_keys=True), file=out)
         return 0 if _health["all_gates_pass"] else 1
 
+    if args.command == "review-dashboard":
+        from techno_search.review_dashboard import review_dashboard_summary
+        _dash = review_dashboard_summary()
+        print(json.dumps(_dash, indent=2, sort_keys=True), file=out)
+        return 1 if _dash.get("needs_attention") else 0
+
     if args.command == "operations-readiness-summary":
         _log_path = getattr(args, "sqlite_log_path", None)
         print(
@@ -4209,6 +4215,16 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(synth_result, indent=2, sort_keys=True), file=out)
         return 0 if synth_result.get("ok") else 1
 
+    if args.command == "real-labels-model-summary":
+        from techno_search.learned_scoring_model import (  # noqa: PLC0415
+            real_labels_model_summary as _rlms2,
+        )
+
+        rl_path_arg = getattr(args, "dataset_path", None)
+        rl_result: dict[str, Any] = _rlms2(Path(rl_path_arg) if rl_path_arg else None)
+        print(json.dumps(rl_result, indent=2, sort_keys=True), file=out)
+        return 0 if rl_result.get("ok") else 1
+
     if args.command == "noise-threshold-calibration":
         from techno_search.noise_threshold_calibration import analyze_hit_directory
 
@@ -5028,9 +5044,20 @@ def validate_all() -> dict[str, object]:
     real_label_accuracy_gate_ok = (
         real_label_accuracy is None or real_label_accuracy >= 0.70
     )
-    from techno_search.learned_scoring_model import synthetic_v1_training_summary as _svts  # noqa: PLC0415, I001
+    from techno_search.learned_scoring_model import (  # noqa: PLC0415, I001
+        real_labels_model_summary as _rlms,
+        synthetic_v1_training_summary as _svts,
+    )
     synthetic_training_data = _svts()
     synthetic_training_ok = synthetic_training_data.get("ok", False)
+    # Learned scoring model v1 on real HIP99427 labels (Tier 2 gap closure)
+    real_labels_model_data = _rlms()
+    real_labels_model_ok = bool(real_labels_model_data.get("ok", False))
+    _rl_cv_acc_raw = real_labels_model_data.get("cv_accuracy")
+    real_labels_model_cv_accuracy = (
+        float(_rl_cv_acc_raw) if isinstance(_rl_cv_acc_raw, (int, float)) else None
+    )
+    real_labels_model_trained = bool(real_labels_model_data.get("trained", False))
     label_eval_entry_count = int(label_eval_data.get("entry_count", 0))
     comparison_data = candidate_comparison_summary()
     comparison_count = int(comparison_data.get("record_count", 0))
@@ -5660,6 +5687,7 @@ def validate_all() -> dict[str, object]:
         and isinstance(baseline_total_cases, int)
         and baseline_total_cases >= 3
         and real_label_accuracy_gate_ok
+        and real_labels_model_trained
         and isinstance(baseline_drift_count, int)
         and baseline_drift_zero
         and isinstance(lifecycle_entry_count, int)
@@ -6375,6 +6403,9 @@ def validate_all() -> dict[str, object]:
         "real_label_accuracy": real_label_accuracy,
         "real_label_accuracy_gate_ok": real_label_accuracy_gate_ok,
         "real_label_entry_count": real_label_entry_count,
+        "learned_scoring_model_v1_ok": real_labels_model_ok,
+        "learned_scoring_model_v1_trained": real_labels_model_trained,
+        "learned_scoring_model_v1_cv_accuracy": real_labels_model_cv_accuracy,
         "synthetic_training_summary": synthetic_training_data,
         "operations_readiness_summary": operations_readiness,
         "operations_action_plan_summary": operations_action_plan,
@@ -9934,6 +9965,12 @@ def validation_summary() -> dict[str, object]:
         "real_label_entry_count": (
             validation.get("real_label_entry_count", 0)
         ),
+        "learned_scoring_model_v1_trained": validation.get(
+            "learned_scoring_model_v1_trained", False
+        ),
+        "learned_scoring_model_v1_cv_accuracy": validation.get(
+            "learned_scoring_model_v1_cv_accuracy"
+        ),
         "synthetic_training_ok": (
             syn_s["ok"]
             if isinstance(syn_s := validation.get("synthetic_training_summary"), dict)
@@ -11085,6 +11122,14 @@ def _build_parser() -> argparse.ArgumentParser:
         help=(
             "Concise project health dashboard combining key gate statuses. "
             "Returns exit 1 if any gate fails."
+        ),
+    )
+    subparsers.add_parser(
+        "review-dashboard",
+        help=(
+            "Operator review dashboard: open flags, overdue deadlines, "
+            "review queue depth, pipeline blockers, and real-label accuracy. "
+            "Returns exit 1 when any action items are pending."
         ),
     )
     ops_ready_parser = subparsers.add_parser(
@@ -13271,6 +13316,20 @@ def _build_parser() -> argparse.ArgumentParser:
             "Path to labeled_candidates_synthetic_v1.json "
             "(defaults to built-in fixture)."
         ),
+    )
+
+    real_labels_model_parser = subparsers.add_parser(
+        "real-labels-model-summary",
+        help=(
+            "Train logistic regression on 124 real HIP99427 citizen-science labels "
+            "(closes Tier 2: Learned scoring model). Reports 3-fold CV accuracy. "
+            "Local scheduling aid only — not a validated production model."
+        ),
+    )
+    real_labels_model_parser.add_argument(
+        "--dataset-path",
+        type=Path,
+        help="Path to real labels JSON (defaults to examples/real_labeled/hip99427_...).",
     )
 
     peer_review_parser = subparsers.add_parser(

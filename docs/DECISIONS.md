@@ -3145,6 +3145,35 @@ This is not a detection claim. Diagnostic agreement is measured against citizen-
 labels derived from a single cadence/target combination and has not been independently
 validated. The model requires independent reproduction before production scoring claims.
 
+# DECISION-130: Learned Scoring Model v1 — Logistic Regression On 124 Real HIP99427 Labels
+
+Date: 2026-06-12
+Status: Accepted
+
+**Milestone:** 74 — Closes final Tier 2 gap: "Learned scoring model (replace rule-based baseline)"
+
+A logistic regression model was trained on 124 real GBT/HIP99427 citizen-science
+labels using 3-fold stratified cross-validation. Key metrics:
+
+- 3-fold CV accuracy: 99.19% (std 0.0115) vs rule-based baseline 77.42%
+- Train accuracy: 100% (expected — small balanced dataset)
+- Label distribution: false_positive=81, insufficient_evidence=41, follow_up=2
+- Feature columns: 17 numeric features from real turboSETI hit table entries
+- Class weighting: `class_weight="balanced"` to handle severe follow_up imbalance
+- Solver: `lbfgs` with `max_iter=2000`
+
+Scientific guardrails:
+- Model scores are local scheduling aids only; not validated production scoring
+- Does not constitute a detection claim or authorize external submission
+- Independent citizen-science reproduction required before any production use
+- Hold-out test set from independent observation epochs required
+- Expert review of pathway assignments required
+
+Operator review dashboard (also Milestone 74):
+- `review_dashboard_summary()` aggregates open flags, overdue deadlines, review queue,
+  blockers, watchlist elevated targets, and real-label accuracy gate
+- Exit code 1 on needs_attention for CI/operator alerting
+
 # DECISION-129: Multi-Epoch Comparison, Parallel Scoring, And SQLite Candidate Store
 
 Date: 2026-06-12

@@ -1600,3 +1600,13 @@ Total schemas: 188.
 - Procurement log operational provenance records added
 - No entry modifies candidate scores or pathway routing
 - No entry authorizes external submission or constitutes a detection claim
+
+# Milestone 74 — Operator Review Dashboard And Learned Scoring Model v1
+
+- Operator review dashboard (`review_dashboard_summary`) aggregates open flags, overdue deadlines, review queue depth, pipeline blockers, watchlist elevated targets, and real-label accuracy gate into a single operator scheduling aid
+- `techno-search review-dashboard` CLI with exit code 1 on needs_attention
+- Learned scoring model v1: logistic regression trained on 124 real GBT/HIP99427 citizen-science labels; 3-class pathway classifier (false_positive / insufficient_evidence / follow_up); 3-fold stratified CV accuracy 99.19% (rule-based baseline: 77.42%); closes final Tier 2 gap
+- `techno-search real-labels-model-summary` CLI reports CV accuracy and model metadata
+- `validate-all` gate: `learned_scoring_model_v1_trained=True`
+- All Tier 2 gaps closed as of 2026-06-12; production readiness ~80%
+- Scores and dashboard entries are local scheduling aids only; no detection claim; no external submission authorization

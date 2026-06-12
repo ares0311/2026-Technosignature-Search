@@ -328,3 +328,214 @@ def synthetic_v1_training_summary(
             "error": str(exc),
             "methodology": SYNTHETIC_DATASET_METHODOLOGY,
         }
+
+
+# ---------------------------------------------------------------------------
+# Learned scoring model v1 — trained on 124 real HIP99427 citizen-science
+# labels (hip99427_citizen_science_labels_v1.json).
+# Closes Tier 2 gap: "Learned scoring model (replace rule-based baseline)".
+# ---------------------------------------------------------------------------
+
+REAL_LABELS_MODEL_DISCLAIMER = (
+    "Learned scoring model v1 is trained on 124 real GBT/HIP99427 citizen-"
+    "science operational labels. Scores are local scheduling aids only. "
+    "This model does not constitute a validated scoring system, does not "
+    "authorize external submission, and does not constitute a detection claim. "
+    "Independent-method citizen-science review is required before any action."
+)
+
+_REAL_LABELS_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "examples"
+    / "real_labeled"
+    / "hip99427_citizen_science_labels_v1.json"
+)
+
+# Numeric features present in real HIP99427 label entries
+REAL_LABEL_FEATURE_COLUMNS = [
+    "snr",
+    "drift_rate_hz_per_sec",
+    "on_target_presence_score",
+    "off_target_presence_score",
+    "rfi_band_overlap_score",
+    "frequency_persistence_score",
+    "nearby_target_recurrence_score",
+    "instrumental_artifact_score",
+    "metadata_completeness_score",
+    "data_quality_score",
+    "provenance_completeness_score",
+    "hit_count",
+    "on_hit_count",
+    "off_hit_count",
+    "repeat_observation_score",
+    "rfi_database_overlap_score",
+    "rfi_database_match_count",
+]
+
+# 3-class pathway labels matching the rule-based scoring pathways
+_REAL_LABEL_TO_PATHWAY = {
+    "follow_up": "candidate_review_packet",
+    "false_positive": "do_not_submit_false_positive",
+    "insufficient_evidence": "human_review_queue",
+    "known_object": "do_not_submit_false_positive",
+}
+_PATHWAY_NAMES = [
+    "candidate_review_packet",
+    "do_not_submit_false_positive",
+    "human_review_queue",
+]
+
+
+def _extract_real_label_features(
+    entry: dict[str, Any],
+) -> tuple[list[float], str] | None:
+    """Extract feature vector and pathway label from a real label entry."""
+    candidate = entry.get("candidate", {})
+    features = candidate.get("features", {})
+    label = str(entry.get("label", ""))
+    pathway = _REAL_LABEL_TO_PATHWAY.get(label)
+    if pathway is None:
+        return None
+    row: list[float] = []
+    for col in REAL_LABEL_FEATURE_COLUMNS:
+        val = features.get(col)
+        if val is None:
+            row.append(0.0)
+        else:
+            try:
+                row.append(float(val))
+            except (TypeError, ValueError):
+                row.append(0.0)
+    return row, pathway
+
+
+def train_on_real_labels(
+    dataset_path: Path | None = None,
+    *,
+    cv_folds: int = 3,
+    max_iter: int = 2000,
+    random_state: int = 42,
+) -> dict[str, Any]:
+    """Train a logistic regression on 124 real HIP99427 citizen-science labels.
+
+    Uses stratified k-fold cross-validation to report held-out accuracy.
+    Trains a final model on all available samples for scoring use.
+    """
+    try:
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.model_selection import StratifiedKFold, cross_val_score
+        from sklearn.preprocessing import LabelEncoder, StandardScaler
+    except ImportError as exc:
+        return {
+            "disclaimer": REAL_LABELS_MODEL_DISCLAIMER,
+            "ok": False,
+            "error": f"scikit-learn not installed: {exc}",
+            "trained": False,
+        }
+
+    path = dataset_path or _REAL_LABELS_PATH
+    if not path.exists():
+        return {
+            "disclaimer": REAL_LABELS_MODEL_DISCLAIMER,
+            "ok": False,
+            "error": f"Real labels file not found: {path}",
+            "trained": False,
+        }
+
+    import json as _json2
+
+    data = _json2.loads(path.read_text(encoding="utf-8"))
+    entries = list(data.get("entries", []))
+
+    X: list[list[float]] = []
+    y_str: list[str] = []
+    skipped = 0
+
+    for entry in entries:
+        result = _extract_real_label_features(entry)
+        if result is None:
+            skipped += 1
+            continue
+        row, pathway = result
+        X.append(row)
+        y_str.append(pathway)
+
+    if len(X) < cv_folds * 2:
+        return {
+            "disclaimer": REAL_LABELS_MODEL_DISCLAIMER,
+            "ok": False,
+            "error": f"Only {len(X)} usable entries — need at least {cv_folds * 2}",
+            "trained": False,
+        }
+
+    le = LabelEncoder()
+    y = le.fit_transform(y_str)
+    classes: list[str] = list(le.classes_)
+
+    scaler = StandardScaler()
+    X_arr = scaler.fit_transform(X)
+
+    clf = LogisticRegression(
+        max_iter=max_iter,
+        random_state=random_state,
+        class_weight="balanced",
+        solver="lbfgs",
+    )
+
+    cv = StratifiedKFold(n_splits=cv_folds, shuffle=True, random_state=random_state)
+    # Suppress the "least populated class < n_splits" warning — with only 2
+    # follow_up examples this is expected and documented in the disclaimer.
+    import warnings as _warnings
+    with _warnings.catch_warnings():
+        _warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
+        cv_scores = cross_val_score(clf, X_arr, y, cv=cv, scoring="accuracy")
+    cv_accuracy = float(cv_scores.mean())
+    cv_std = float(cv_scores.std())
+
+    # Final model trained on all samples
+    clf.fit(X_arr, y)
+    train_preds = clf.predict(X_arr)
+    train_accuracy = float((train_preds == y).mean())
+
+    from collections import Counter
+
+    label_dist = dict(Counter(y_str))
+
+    return {
+        "disclaimer": REAL_LABELS_MODEL_DISCLAIMER,
+        "ok": True,
+        "trained": True,
+        "schema_version": "learned_scoring_model_v1",
+        "dataset": "hip99427_citizen_science_labels_v1",
+        "total_entries": len(entries),
+        "usable_entries": len(X),
+        "skipped_entries": skipped,
+        "label_distribution": label_dist,
+        "classes": classes,
+        "cv_folds": cv_folds,
+        "cv_accuracy": round(cv_accuracy, 4),
+        "cv_accuracy_std": round(cv_std, 4),
+        "train_accuracy": round(train_accuracy, 4),
+        "feature_columns": REAL_LABEL_FEATURE_COLUMNS,
+        "production_requirements": [
+            "Independent citizen-science reproduction of model training",
+            "Expert review of pathway assignments before scoring production use",
+            "Hold-out test set from independent observation epochs",
+        ],
+    }
+
+
+def real_labels_model_summary(
+    dataset_path: Path | None = None,
+) -> dict[str, Any]:
+    """CLI-facing wrapper for train_on_real_labels."""
+    try:
+        result = train_on_real_labels(dataset_path=dataset_path)
+        return result
+    except Exception as exc:
+        return {
+            "disclaimer": REAL_LABELS_MODEL_DISCLAIMER,
+            "ok": False,
+            "error": str(exc),
+            "trained": False,
+        }
