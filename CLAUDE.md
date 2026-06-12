@@ -91,6 +91,39 @@ No sudo required. Safe to omit for fast runs (< 30 s).
 
 ---
 
+## VERBOSE OUTPUT + ETA DIRECTIVE — NON-NEGOTIABLE
+
+**Every command and script given to the user MUST produce visible terminal output
+so the user can confirm it is running and know how long is remaining.**
+
+Mandatory requirements for all long-running scripts and commands:
+
+1. **Shell scripts** (`bash scripts/*.sh`):
+   - Must use `set -x` OR print explicit `[INFO]` progress lines to stdout
+   - Must print file sizes on download completion: `echo "[OK] Downloaded: $(du -sh file) $file"`
+   - Must print step number and total: `echo "[Step 2/5] Running turboSETI..."`
+   - `curl` calls must use `--progress-bar` (not `-s`/`--silent`) for file downloads
+
+2. **Python scripts** (`.venv/bin/python scripts/*.py`):
+   - Must print `[START]` and `[DONE]` lines with timestamps for every major step
+   - For loops over multiple items must print `[N/M] Processing TARGET_NAME...`
+   - Must print elapsed time on completion: `elapsed = time.time() - t0; print(f"[DONE] {elapsed:.1f}s")`
+
+3. **turboSETI** calls must pass `-v` (verbose) or print wrapper output
+
+4. **ETA rules**:
+   - Downloads: `curl --progress-bar` shows live speed + ETA natively
+   - Multi-target loops: print `[N/M]` prefix so user sees progress
+   - Pipeline runs: print start time; user can estimate from Voyager1 benchmark
+
+5. **Never use `>/dev/null 2>&1` or `-s`/`--silent` in commands given to the user**
+   unless output is confirmed irrelevant AND a summary line is printed instead.
+
+Any script that runs silently without visible progress violates this directive
+and must be rewritten before being given to the user.
+
+---
+
 ## Current Iteration
 
 User requested real observation data download and pipeline execution (Tier 1 gap closure).

@@ -905,8 +905,8 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
 
     if args.command == "calibration-summary":
         fixtures = load_calibration_fixtures(args.fixture_path)
-        summary = summarize_calibration_fixtures(fixtures)
-        print(json.dumps(summary.as_dict(), indent=2, sort_keys=True), file=out)
+        cal_summary = summarize_calibration_fixtures(fixtures)
+        print(json.dumps(cal_summary.as_dict(), indent=2, sort_keys=True), file=out)
         return 0
 
     if args.command == "false-positive-summary":
@@ -1745,10 +1745,10 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         return 0 if _health["all_gates_pass"] else 1
 
     if args.command == "operations-readiness-summary":
-        db_path = getattr(args, "sqlite_log_path", None)
+        _log_path = getattr(args, "sqlite_log_path", None)
         print(
             json.dumps(
-                operations_readiness_summary(sqlite_log_path=db_path),
+                operations_readiness_summary(sqlite_log_path=_log_path),
                 indent=2,
                 sort_keys=True,
             ),
@@ -1757,8 +1757,8 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         return 0
 
     if args.command == "operations-action-plan-summary":
-        db_path = getattr(args, "sqlite_log_path", None)
-        ops_summary = operations_readiness_summary(sqlite_log_path=db_path)
+        _log_path = getattr(args, "sqlite_log_path", None)
+        ops_summary = operations_readiness_summary(sqlite_log_path=_log_path)
         print(
             json.dumps(
                 operations_action_plan_summary(ops_summary),
@@ -1771,8 +1771,8 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
 
     if args.command == "operations-action-resolution-summary":
         fixture_path = getattr(args, "fixture_path", None)
-        db_path = getattr(args, "sqlite_log_path", None)
-        ops_summary = operations_readiness_summary(sqlite_log_path=db_path)
+        _log_path = getattr(args, "sqlite_log_path", None)
+        ops_summary = operations_readiness_summary(sqlite_log_path=_log_path)
         ops_action_plan = operations_action_plan_summary(ops_summary)
         expected_action_ids = [
             str(action["action_id"])
@@ -1808,10 +1808,10 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         return 0 if consistency_summary["ok"] else 1
 
     if args.command == "operations-blocker-detail-summary":
-        db_path = getattr(args, "sqlite_log_path", None)
+        _log_path = getattr(args, "sqlite_log_path", None)
         print(
             json.dumps(
-                operations_blocker_detail_summary(sqlite_log_path=db_path),
+                operations_blocker_detail_summary(sqlite_log_path=_log_path),
                 indent=2,
                 sort_keys=True,
             ),
@@ -1821,8 +1821,8 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
 
     if args.command == "operations-blocker-review-summary":
         fixture_path = getattr(args, "fixture_path", None)
-        db_path = getattr(args, "sqlite_log_path", None)
-        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=db_path)
+        _log_path = getattr(args, "sqlite_log_path", None)
+        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=_log_path)
         expected_action_ids = [
             str(detail["action_id"])
             for detail in blocker_detail["details"]
@@ -1844,8 +1844,8 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
 
     if args.command == "operations-blocker-followup-summary":
         fixture_path = getattr(args, "fixture_path", None)
-        db_path = getattr(args, "sqlite_log_path", None)
-        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=db_path)
+        _log_path = getattr(args, "sqlite_log_path", None)
+        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=_log_path)
         expected_action_ids = [
             str(detail["action_id"])
             for detail in blocker_detail["details"]
@@ -1873,8 +1873,8 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
     if args.command == "operations-blocker-followup-progress-summary":
         fixture_path = getattr(args, "fixture_path", None)
         review_fixture_path = getattr(args, "review_fixture_path", None)
-        db_path = getattr(args, "sqlite_log_path", None)
-        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=db_path)
+        _log_path = getattr(args, "sqlite_log_path", None)
+        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=_log_path)
         expected_detail_action_ids = [
             str(detail["action_id"])
             for detail in blocker_detail["details"]
@@ -1913,8 +1913,8 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         fixture_path = getattr(args, "fixture_path", None)
         progress_fixture_path = getattr(args, "progress_fixture_path", None)
         review_fixture_path = getattr(args, "review_fixture_path", None)
-        db_path = getattr(args, "sqlite_log_path", None)
-        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=db_path)
+        _log_path = getattr(args, "sqlite_log_path", None)
+        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=_log_path)
         expected_detail_action_ids = [
             str(detail["action_id"])
             for detail in blocker_detail["details"]
@@ -1969,8 +1969,8 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         progress_fixture_path = getattr(args, "progress_fixture_path", None)
         review_fixture_path = getattr(args, "review_fixture_path", None)
-        db_path = getattr(args, "sqlite_log_path", None)
-        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=db_path)
+        _log_path = getattr(args, "sqlite_log_path", None)
+        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=_log_path)
         expected_detail_action_ids = [
             str(detail["action_id"])
             for detail in blocker_detail["details"]
@@ -2036,8 +2036,8 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         progress_fixture_path = getattr(args, "progress_fixture_path", None)
         review_fixture_path = getattr(args, "review_fixture_path", None)
-        db_path = getattr(args, "sqlite_log_path", None)
-        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=db_path)
+        _log_path = getattr(args, "sqlite_log_path", None)
+        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=_log_path)
         expected_detail_action_ids = [
             str(detail["action_id"])
             for detail in blocker_detail["details"]
@@ -2114,8 +2114,8 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         progress_fixture_path = getattr(args, "progress_fixture_path", None)
         review_fixture_path = getattr(args, "review_fixture_path", None)
-        db_path = getattr(args, "sqlite_log_path", None)
-        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=db_path)
+        _log_path = getattr(args, "sqlite_log_path", None)
+        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=_log_path)
         expected_detail_action_ids = [
             str(detail["action_id"])
             for detail in blocker_detail["details"]
@@ -2207,8 +2207,8 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         progress_fixture_path = getattr(args, "progress_fixture_path", None)
         review_fixture_path = getattr(args, "review_fixture_path", None)
-        db_path = getattr(args, "sqlite_log_path", None)
-        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=db_path)
+        _log_path = getattr(args, "sqlite_log_path", None)
+        blocker_detail = operations_blocker_detail_summary(sqlite_log_path=_log_path)
         expected_detail_action_ids = [
             str(detail["action_id"])
             for detail in blocker_detail["details"]
@@ -2312,8 +2312,8 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         return 0 if consistency_summary["ok"] else 1
 
     if args.command == "operations-readiness-digest":
-        db_path = getattr(args, "sqlite_log_path", None)
-        ops_summary = operations_readiness_summary(sqlite_log_path=db_path)
+        _log_path = getattr(args, "sqlite_log_path", None)
+        ops_summary = operations_readiness_summary(sqlite_log_path=_log_path)
         digest = operations_readiness_digest(ops_summary)
         if args.output_path is not None:
             args.output_path.parent.mkdir(parents=True, exist_ok=True)
