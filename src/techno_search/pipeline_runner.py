@@ -7,7 +7,7 @@ from typing import Any
 
 from techno_search.data_quality import DataQualityResult, validate_input
 from techno_search.reporting import ReportPaths, write_candidate_reports
-from techno_search.schemas import Candidate, Track
+from techno_search.schemas import Candidate, FeatureValue, Track
 from techno_search.scoring import score_candidate
 
 PIPELINE_RUN_DISCLAIMER = (
@@ -55,6 +55,7 @@ def run_pipeline(
     output_dir: Path,
     *,
     candidate_id: str | None = None,
+    epoch_dat_files: list[Path] | None = None,
 ) -> PipelineRunResult:
     """Run the full pipeline on a real input file.
 
@@ -62,6 +63,10 @@ def run_pipeline(
       - radio: turboSETI-format CSV hit table
       - infrared: Gaia+WISE cross-match CSV
       - anomaly: archival/catalog anomaly CSV feature table
+
+    ``epoch_dat_files`` (radio only): additional .dat files from separate
+    observation sessions.  When provided the multi-epoch persistence score is
+    injected into the candidate features before scoring.
 
     Returns a PipelineRunResult with report paths and pathway assignment.
     This is a provenance record only — results do not constitute a detection claim.
@@ -74,7 +79,9 @@ def run_pipeline(
         if not validation.ok:
             msg = "Input validation failed: " + "; ".join(validation.issues)
             raise ValueError(msg)
-        candidate = _build_candidate(input_path, track_enum, cid)
+        candidate = _build_candidate(
+            input_path, track_enum, cid, epoch_dat_files=epoch_dat_files
+        )
         scored = score_candidate(candidate)
         paths = write_candidate_reports(scored, output_dir)
         return PipelineRunResult(
@@ -151,15 +158,26 @@ def _error_result(
     )
 
 
-def _build_candidate(path: Path, track: Track, candidate_id: str) -> Candidate:
+def _build_candidate(
+    path: Path,
+    track: Track,
+    candidate_id: str,
+    *,
+    epoch_dat_files: list[Path] | None = None,
+) -> Candidate:
     if track == Track.RADIO:
-        return _build_radio_candidate(path, candidate_id)
+        return _build_radio_candidate(path, candidate_id, epoch_dat_files=epoch_dat_files)
     if track == Track.INFRARED:
         return _build_infrared_candidate(path, candidate_id)
     return _build_anomaly_candidate(path, candidate_id)
 
 
-def _build_radio_candidate(path: Path, candidate_id: str) -> Candidate:
+def _build_radio_candidate(
+    path: Path,
+    candidate_id: str,
+    *,
+    epoch_dat_files: list[Path] | None = None,
+) -> Candidate:
     from techno_search.catalog_crossmatch import catalog_crossmatch
     from techno_search.gbt_cadence import cadence_candidate_context
     from techno_search.radio.hit_table_reader import (  # noqa: E501
@@ -187,28 +205,59 @@ def _build_radio_candidate(path: Path, candidate_id: str) -> Candidate:
     xmatch = catalog_crossmatch(ra, dec)
     known_score = float(xmatch.get("known_object_score", 0.0))
 
-    # Inject cross-match score into features (only if the query actually ran)
-    if xmatch.get("query_attempted") and known_score > 0.0:
-        updated_features = dict(candidate.features)
-        updated_features["known_object_score"] = known_score
-        updated_features["catalog_crossmatch_provider"] = str(xmatch.get("provider", ""))
+    # Inject cross-match score into features when the query actually ran.
+    # SIMBAD-specific fields are always injected on a live query so that
+    # a zero-match result (no known object) is also recorded as evidence.
+    extra_features: dict[str, FeatureValue] = {}
+    extra_provenance: dict[str, FeatureValue] = {}
+    if xmatch.get("query_attempted"):
+        extra_features["known_object_score"] = known_score
+        extra_features["catalog_crossmatch_provider"] = str(xmatch.get("provider", ""))
+        extra_provenance["catalog_crossmatch_provider"] = str(xmatch.get("provider", ""))
+        extra_provenance["catalog_crossmatch_known_object_score"] = known_score
+        # SIMBAD-specific match details (closes Tier 2: SIMBAD cross-match)
+        simbad_count = int(xmatch.get("simbad_match_count", 0))
+        extra_features["simbad_match_count"] = simbad_count
+        extra_provenance["simbad_match_count"] = simbad_count
+        simbad_names: list[str] = list(xmatch.get("simbad_match_names") or [])
+        extra_provenance["simbad_match_names"] = ", ".join(simbad_names[:5]) or "none"
+        extra_features["simbad_known_object_score"] = (
+            0.9 if simbad_count == 1 else (1.0 if simbad_count > 1 else 0.0)
+        )
+        # Gaia-specific match details
+        gaia_count = int(xmatch.get("gaia_match_count", 0))
+        extra_features["gaia_match_count"] = gaia_count
+        extra_provenance["gaia_match_count"] = gaia_count
+
+    # Multi-epoch persistence injection (radio only, opt-in via epoch_dat_files)
+    if epoch_dat_files:
+        from techno_search.multi_epoch import compare_epochs
+
+        all_dat = [path, *epoch_dat_files]
+        me_result = compare_epochs(all_dat)
+        extra_features["multi_epoch_persistence_score"] = me_result.max_persistence_score
+        extra_features["multi_epoch_group_count"] = len(me_result.multi_epoch_groups)
+        extra_features["multi_epoch_epoch_count"] = me_result.epoch_count
+        extra_provenance["multi_epoch_epoch_count"] = me_result.epoch_count
+        extra_provenance["multi_epoch_group_count"] = len(me_result.multi_epoch_groups)
+        extra_provenance["multi_epoch_max_persistence_score"] = (
+            me_result.max_persistence_score
+        )
+
+    if extra_features:
         candidate = Candidate(
             candidate_id=candidate.candidate_id,
             track=candidate.track,
-            features=updated_features,
+            features={**candidate.features, **extra_features},
             source_ids=candidate.source_ids,
-            provenance={
-                **candidate.provenance,
-                "catalog_crossmatch_provider": str(xmatch.get("provider", "")),
-                "catalog_crossmatch_match_count": int(xmatch.get("match_count", 0)),
-                "catalog_crossmatch_known_object_score": known_score,
-            },
+            provenance={**candidate.provenance, **extra_provenance},
         )
 
     return candidate
 
 
 def _build_infrared_candidate(path: Path, candidate_id: str) -> Candidate:
+    from techno_search.catalog_crossmatch import catalog_crossmatch
     from techno_search.infrared.catalog_reader import catalog_rows_to_infrared_source_dicts
     from techno_search.infrared.prototype import build_infrared_candidate
 
@@ -216,7 +265,42 @@ def _build_infrared_candidate(path: Path, candidate_id: str) -> Candidate:
     if not rows:
         msg = f"No valid catalog rows found in {path}"
         raise ValueError(msg)
-    return build_infrared_candidate(candidate_id, rows[0])
+    candidate = build_infrared_candidate(candidate_id, rows[0])
+
+    # Optional live catalog cross-match (requires TECHNO_SEARCH_ENABLE_LIVE_DATA=1)
+    ra = rows[0].get("ra_deg")
+    dec = rows[0].get("dec_deg")
+    xmatch = catalog_crossmatch(ra, dec)
+    known_score = float(xmatch.get("known_object_score", 0.0))
+
+    extra_features: dict[str, FeatureValue] = {}
+    extra_provenance: dict[str, FeatureValue] = {}
+    if xmatch.get("query_attempted"):
+        extra_features["known_object_score"] = known_score
+        extra_features["catalog_crossmatch_provider"] = str(xmatch.get("provider", ""))
+        extra_provenance["catalog_crossmatch_provider"] = str(xmatch.get("provider", ""))
+        extra_provenance["catalog_crossmatch_known_object_score"] = known_score
+        simbad_count = int(xmatch.get("simbad_match_count", 0))
+        extra_features["simbad_match_count"] = simbad_count
+        extra_provenance["simbad_match_count"] = simbad_count
+        simbad_names: list[str] = list(xmatch.get("simbad_match_names") or [])
+        extra_provenance["simbad_match_names"] = ", ".join(simbad_names[:5]) or "none"
+        extra_features["simbad_known_object_score"] = (
+            0.9 if simbad_count == 1 else (1.0 if simbad_count > 1 else 0.0)
+        )
+        gaia_count = int(xmatch.get("gaia_match_count", 0))
+        extra_features["gaia_match_count"] = gaia_count
+        extra_provenance["gaia_match_count"] = gaia_count
+
+    if extra_features:
+        candidate = Candidate(
+            candidate_id=candidate.candidate_id,
+            track=candidate.track,
+            features={**candidate.features, **extra_features},
+            source_ids=candidate.source_ids,
+            provenance={**candidate.provenance, **extra_provenance},
+        )
+    return candidate
 
 
 def _build_anomaly_candidate(path: Path, candidate_id: str) -> Candidate:

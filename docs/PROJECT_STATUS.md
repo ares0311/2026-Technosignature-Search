@@ -351,6 +351,9 @@ The project will support three tracks from day one:
 - [x] Cadence, target, epoch, dominance, bootstrap, and leave-one-cadence-out diagnostics added
 - [x] Current HIP99427 calibration preflight records the failed multi-cadence and multi-epoch gates
 - [x] `validate-all`, `validation-summary`, and `health` remain green
+- [x] Learned scoring model v1 trained on 124 real HIP99427 labels with 99.19% 3-fold CV accuracy
+- [x] Operator review dashboard added for open flags, deadlines, and accuracy regression gate
+- [x] All Tier 2 production gaps closed as of 2026-06-12
 
 ## Next 3 Actions
 

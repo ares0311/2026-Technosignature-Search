@@ -1744,6 +1744,12 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(_health, indent=2, sort_keys=True), file=out)
         return 0 if _health["all_gates_pass"] else 1
 
+    if args.command == "review-dashboard":
+        from techno_search.review_dashboard import review_dashboard_summary
+        _dash = review_dashboard_summary()
+        print(json.dumps(_dash, indent=2, sort_keys=True), file=out)
+        return 1 if _dash.get("needs_attention") else 0
+
     if args.command == "operations-readiness-summary":
         _log_path = getattr(args, "sqlite_log_path", None)
         print(
@@ -4168,11 +4174,16 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
     if args.command == "run-pipeline":
         from techno_search.pipeline_runner import run_pipeline
 
+        _epoch_files: list[Path] | None = None
+        _raw_epoch = getattr(args, "epoch_files", None)
+        if _raw_epoch:
+            _epoch_files = [Path(p) for p in _raw_epoch]
         pipeline_result = run_pipeline(
             Path(args.input),
             args.track,
             Path(args.output_dir),
             candidate_id=getattr(args, "candidate_id", None),
+            epoch_dat_files=_epoch_files,
         )
         print(json.dumps(pipeline_result.as_dict(), indent=2, sort_keys=True), file=out)
         return 0 if pipeline_result.ok else 1
@@ -4203,6 +4214,16 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         synth_result: dict[str, Any] = synthetic_v1_training_summary(ds_path)
         print(json.dumps(synth_result, indent=2, sort_keys=True), file=out)
         return 0 if synth_result.get("ok") else 1
+
+    if args.command == "real-labels-model-summary":
+        from techno_search.learned_scoring_model import (  # noqa: PLC0415
+            real_labels_model_summary as _rlms2,
+        )
+
+        rl_path_arg = getattr(args, "dataset_path", None)
+        rl_result: dict[str, Any] = _rlms2(Path(rl_path_arg) if rl_path_arg else None)
+        print(json.dumps(rl_result, indent=2, sort_keys=True), file=out)
+        return 0 if rl_result.get("ok") else 1
 
     if args.command == "noise-threshold-calibration":
         from techno_search.noise_threshold_calibration import analyze_hit_directory
@@ -5009,9 +5030,34 @@ def validate_all() -> dict[str, object]:
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
     from techno_search.baseline_eval import eval_against_labels as _eal
     label_eval_data = _eal()
-    from techno_search.learned_scoring_model import synthetic_v1_training_summary as _svts  # noqa: PLC0415, I001
+    # Real-label scoring accuracy regression gate (Tier 2 gap closure)
+    _real_label_path = (
+        root / "examples" / "real_labeled" / "hip99427_citizen_science_labels_v1.json"
+    )
+    _real_label_eval = _eal(_real_label_path) if _real_label_path.exists() else {}
+    real_label_entry_count = int(_real_label_eval.get("entry_count", 0))
+    _real_acc_raw = _real_label_eval.get("accuracy")
+    real_label_accuracy = (
+        float(_real_acc_raw) if isinstance(_real_acc_raw, (int, float)) else None
+    )
+    # Gate: if real labels exist, accuracy must be >= 0.70 (headroom below 77.42%)
+    real_label_accuracy_gate_ok = (
+        real_label_accuracy is None or real_label_accuracy >= 0.70
+    )
+    from techno_search.learned_scoring_model import (  # noqa: PLC0415, I001
+        real_labels_model_summary as _rlms,
+        synthetic_v1_training_summary as _svts,
+    )
     synthetic_training_data = _svts()
     synthetic_training_ok = synthetic_training_data.get("ok", False)
+    # Learned scoring model v1 on real HIP99427 labels (Tier 2 gap closure)
+    real_labels_model_data = _rlms()
+    real_labels_model_ok = bool(real_labels_model_data.get("ok", False))
+    _rl_cv_acc_raw = real_labels_model_data.get("cv_accuracy")
+    real_labels_model_cv_accuracy = (
+        float(_rl_cv_acc_raw) if isinstance(_rl_cv_acc_raw, (int, float)) else None
+    )
+    real_labels_model_trained = bool(real_labels_model_data.get("trained", False))
     label_eval_entry_count = int(label_eval_data.get("entry_count", 0))
     comparison_data = candidate_comparison_summary()
     comparison_count = int(comparison_data.get("record_count", 0))
@@ -5640,6 +5686,8 @@ def validate_all() -> dict[str, object]:
         and baseline_pathway_accuracy >= 0.80
         and isinstance(baseline_total_cases, int)
         and baseline_total_cases >= 3
+        and real_label_accuracy_gate_ok
+        and real_labels_model_trained
         and isinstance(baseline_drift_count, int)
         and baseline_drift_zero
         and isinstance(lifecycle_entry_count, int)
@@ -6352,6 +6400,12 @@ def validate_all() -> dict[str, object]:
         "procurement_log_summary": proc_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
+        "real_label_accuracy": real_label_accuracy,
+        "real_label_accuracy_gate_ok": real_label_accuracy_gate_ok,
+        "real_label_entry_count": real_label_entry_count,
+        "learned_scoring_model_v1_ok": real_labels_model_ok,
+        "learned_scoring_model_v1_trained": real_labels_model_trained,
+        "learned_scoring_model_v1_cv_accuracy": real_labels_model_cv_accuracy,
         "synthetic_training_summary": synthetic_training_data,
         "operations_readiness_summary": operations_readiness,
         "operations_action_plan_summary": operations_action_plan,
@@ -9902,6 +9956,21 @@ def validation_summary() -> dict[str, object]:
             if isinstance(eal_s2 := validation.get("eval_against_labels_summary"), dict)
             else 0.0
         ),
+        "real_label_accuracy": (
+            validation.get("real_label_accuracy")
+        ),
+        "real_label_accuracy_gate_ok": (
+            validation.get("real_label_accuracy_gate_ok", True)
+        ),
+        "real_label_entry_count": (
+            validation.get("real_label_entry_count", 0)
+        ),
+        "learned_scoring_model_v1_trained": validation.get(
+            "learned_scoring_model_v1_trained", False
+        ),
+        "learned_scoring_model_v1_cv_accuracy": validation.get(
+            "learned_scoring_model_v1_cv_accuracy"
+        ),
         "synthetic_training_ok": (
             syn_s["ok"]
             if isinstance(syn_s := validation.get("synthetic_training_summary"), dict)
@@ -11053,6 +11122,14 @@ def _build_parser() -> argparse.ArgumentParser:
         help=(
             "Concise project health dashboard combining key gate statuses. "
             "Returns exit 1 if any gate fails."
+        ),
+    )
+    subparsers.add_parser(
+        "review-dashboard",
+        help=(
+            "Operator review dashboard: open flags, overdue deadlines, "
+            "review queue depth, pipeline blockers, and real-label accuracy. "
+            "Returns exit 1 when any action items are pending."
         ),
     )
     ops_ready_parser = subparsers.add_parser(
@@ -13199,6 +13276,16 @@ def _build_parser() -> argparse.ArgumentParser:
         "--candidate-id",
         help="Optional candidate ID override for generated reports.",
     )
+    run_pipeline_parser.add_argument(
+        "--epoch-files",
+        nargs="*",
+        metavar="DAT_FILE",
+        help=(
+            "Additional turboSETI .dat files from separate observation sessions "
+            "(radio track only). When provided, multi-epoch persistence scores are "
+            "injected into candidate features before scoring."
+        ),
+    )
 
     learned_model_parser = subparsers.add_parser(
         "learned-model-summary",
@@ -13229,6 +13316,20 @@ def _build_parser() -> argparse.ArgumentParser:
             "Path to labeled_candidates_synthetic_v1.json "
             "(defaults to built-in fixture)."
         ),
+    )
+
+    real_labels_model_parser = subparsers.add_parser(
+        "real-labels-model-summary",
+        help=(
+            "Train logistic regression on 124 real HIP99427 citizen-science labels "
+            "(closes Tier 2: Learned scoring model). Reports 3-fold CV accuracy. "
+            "Local scheduling aid only — not a validated production model."
+        ),
+    )
+    real_labels_model_parser.add_argument(
+        "--dataset-path",
+        type=Path,
+        help="Path to real labels JSON (defaults to examples/real_labeled/hip99427_...).",
     )
 
     peer_review_parser = subparsers.add_parser(
