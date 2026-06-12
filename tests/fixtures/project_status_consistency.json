@@ -3,7 +3,7 @@
   "expected_status": {
     "latest_milestone_number": 73,
     "latest_milestone_label": "Communication Log, Document Management Log, And Procurement Log",
-    "latest_decision_number": 126,
+    "latest_decision_number": 129,
     "schema_count": 104,
     "expected_rfi_real_data_authorization_total": 0,
     "expected_curated_real_data_authorization_total": 1,

@@ -833,8 +833,74 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             args.output_dir,
             prefix=args.prefix,
             include_plot_artifacts=not args.no_plot_artifacts,
+            workers=getattr(args, "workers", None),
         )
         print(str(manifest_path), file=out)
+        return 0
+
+    if args.command == "multi-epoch-compare":
+        from techno_search.multi_epoch import multi_epoch_summary as _compare_epochs_summary
+
+        dat_dir = Path(args.dat_dir)
+        dat_files = sorted(dat_dir.glob("*.dat"))
+        if not dat_files:
+            print(
+                json.dumps({"error": f"No .dat files found in {dat_dir}", "ok": False}),
+                file=out,
+            )
+            return 1
+        summary = _compare_epochs_summary(dat_files, freq_tolerance_hz=args.freq_tol_hz)
+        print(json.dumps(summary, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "candidate-store-init":
+        from techno_search.candidate_store import CandidateStore, default_store_path
+
+        db_path = Path(args.db_path) if args.db_path else default_store_path()
+        store = CandidateStore(db_path)
+        store.init_schema()
+        print(json.dumps({"ok": True, "db_path": str(db_path)}, indent=2), file=out)
+        return 0
+
+    if args.command == "candidate-store-summary":
+        from techno_search.candidate_store import CandidateStore, default_store_path
+
+        db_path = Path(args.db_path) if args.db_path else default_store_path()
+        if not db_path.exists():
+            _err = f"Store not found at {db_path}. Run candidate-store-init first."
+            print(json.dumps({"ok": False, "error": _err}), file=out)
+            return 1
+        store = CandidateStore(db_path)
+        print(json.dumps(store.summary(), indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "candidate-store-list":
+        from techno_search.candidate_store import CandidateStore, default_store_path
+
+        db_path = Path(args.db_path) if args.db_path else default_store_path()
+        if not db_path.exists():
+            _err = f"Store not found at {db_path}. Run candidate-store-init first."
+            print(json.dumps({"ok": False, "error": _err}), file=out)
+            return 1
+        store = CandidateStore(db_path)
+        pathway = getattr(args, "pathway", None)
+        track = getattr(args, "track", None)
+        if pathway:
+            entries = store.list_by_pathway(pathway)
+        elif track:
+            entries = store.list_by_track(track)
+        else:
+            entries = store.list_all()
+        limit = getattr(args, "limit", None) or 50
+        entries = entries[:limit]
+        print(
+            json.dumps(
+                {"entries": [e.as_dict() for e in entries], "count": len(entries)},
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
         return 0
 
     if args.command == "calibration-summary":
@@ -4169,24 +4235,32 @@ def score_batch(
     *,
     prefix: str = "",
     include_plot_artifacts: bool = True,
+    workers: int | None = None,
 ) -> Path:
     """Score all JSON candidate packets in a directory and write an aggregate manifest."""
+    from techno_search.scoring import score_candidates_parallel
 
     source_dir = Path(input_dir)
     destination = Path(output_dir)
     destination.mkdir(parents=True, exist_ok=True)
 
+    candidate_paths = sorted(source_dir.glob("*.json"))
+    candidates = [load_candidate_json(p) for p in candidate_paths]
+    scored_list = score_candidates_parallel(candidates, workers=workers)
+
     entries: list[dict[str, object]] = []
-    for candidate_path in sorted(source_dir.glob("*.json")):
-        candidate = load_candidate_json(candidate_path)
-        scored = score_candidate(candidate)
-        report_prefix = f"{prefix}{candidate.candidate_id}" if prefix else candidate.candidate_id
+    for scored in scored_list:
+        report_prefix = (
+            f"{prefix}{scored.candidate.candidate_id}" if prefix
+            else scored.candidate.candidate_id
+        )
         paths = write_candidate_reports(
             scored,
             destination,
             filename_prefix=report_prefix,
             include_plot_artifacts=include_plot_artifacts,
         )
+        candidate = scored.candidate
         entries.append(
             {
                 "candidate_id": candidate.candidate_id,
@@ -4195,7 +4269,6 @@ def score_batch(
                 "config_version": str(
                     candidate.provenance.get("config_version", DEFAULT_SCORING_CONFIG_VERSION)
                 ),
-                "input_path": str(candidate_path),
                 "markdown_path": str(paths.markdown_path),
                 "json_path": str(paths.json_path),
                 "manifest_path": str(paths.manifest_path),
@@ -10050,6 +10123,12 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Skip dependency-free synthetic SVG diagnostic artifacts.",
     )
+    batch_parser.add_argument(
+        "--workers",
+        type=int,
+        default=None,
+        help="Number of parallel workers for scoring (default: 1 = serial).",
+    )
     calibration_parser = subparsers.add_parser(
         "calibration-summary",
         help="Summarize synthetic calibration fixture coverage.",
@@ -13190,6 +13269,49 @@ def _build_parser() -> argparse.ArgumentParser:
             "Allow unapproved synthetic/development fixtures. Never use this "
             "flag for production threshold calibration."
         ),
+    )
+
+    multi_epoch_parser = subparsers.add_parser(
+        "multi-epoch-compare",
+        help="Compare turboSETI hit tables across multiple observation epochs.",
+    )
+    multi_epoch_parser.add_argument(
+        "dat_dir",
+        help="Directory containing .dat turboSETI hit-table files (one per epoch).",
+    )
+    multi_epoch_parser.add_argument(
+        "--freq-tol-hz",
+        type=float,
+        default=1000.0,
+        help="Frequency grouping tolerance in Hz (default: 1000).",
+    )
+
+    _db_path_help = (
+        "Path to the SQLite candidate store database "
+        "(default: $TECHNO_SEARCH_CANDIDATE_STORE_PATH or data/candidates.db)."
+    )
+
+    cs_init_parser = subparsers.add_parser(
+        "candidate-store-init",
+        help="Initialize the SQLite candidate store schema.",
+    )
+    cs_init_parser.add_argument("--db-path", default=None, help=_db_path_help)
+
+    cs_summary_parser = subparsers.add_parser(
+        "candidate-store-summary",
+        help="Print a summary of the candidate store.",
+    )
+    cs_summary_parser.add_argument("--db-path", default=None, help=_db_path_help)
+
+    cs_list_parser = subparsers.add_parser(
+        "candidate-store-list",
+        help="List scored candidates in the store.",
+    )
+    cs_list_parser.add_argument("--db-path", default=None, help=_db_path_help)
+    cs_list_parser.add_argument("--pathway", default=None, help="Filter by pathway.")
+    cs_list_parser.add_argument("--track", default=None, help="Filter by track.")
+    cs_list_parser.add_argument(
+        "--limit", type=int, default=50, help="Maximum number of entries to return (default: 50)."
     )
 
     return parser

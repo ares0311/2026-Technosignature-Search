@@ -1,64 +1,64 @@
 {
   "candidates": {
     "example-anomaly-clean": {
-      "posterior": {
-        "catalog_or_processing_error": 0.00188,
-        "human_interference": 0.00138,
-        "instrumental_artifact": 0.00136,
-        "known_object": 0.000757,
-        "natural_source": 0.001844,
-        "noise_or_low_confidence": 0.001333,
-        "technosignature_interest": 0.991446
-      },
+      "track": "anomaly",
       "recommended_pathway": "candidate_review_packet",
       "scores": {
         "false_positive_probability": 0.008554,
-        "followup_value": 0.989983,
+        "signal_reality_confidence": 0.980256,
         "novelty_score": 0.99812,
-        "review_readiness": 0.920064,
-        "signal_reality_confidence": 0.980256
+        "followup_value": 0.989983,
+        "review_readiness": 0.920064
       },
-      "track": "anomaly"
+      "posterior": {
+        "technosignature_interest": 0.991446,
+        "natural_source": 0.001844,
+        "human_interference": 0.00138,
+        "instrumental_artifact": 0.00136,
+        "catalog_or_processing_error": 0.00188,
+        "known_object": 0.000757,
+        "noise_or_low_confidence": 0.001333
+      }
     },
     "example-infrared-clean": {
-      "posterior": {
-        "catalog_or_processing_error": 0.003439,
-        "human_interference": 0.003105,
-        "instrumental_artifact": 0.003005,
-        "known_object": 0.001704,
-        "natural_source": 0.003331,
-        "noise_or_low_confidence": 0.00287,
-        "technosignature_interest": 0.982547
-      },
+      "track": "infrared",
       "recommended_pathway": "candidate_review_packet",
       "scores": {
         "false_positive_probability": 0.017453,
-        "followup_value": 0.98353,
+        "signal_reality_confidence": 0.975269,
         "novelty_score": 0.996561,
-        "review_readiness": 0.918817,
-        "signal_reality_confidence": 0.975269
+        "followup_value": 0.98353,
+        "review_readiness": 0.918817
       },
-      "track": "infrared"
+      "posterior": {
+        "technosignature_interest": 0.982547,
+        "natural_source": 0.003331,
+        "human_interference": 0.003105,
+        "instrumental_artifact": 0.003005,
+        "catalog_or_processing_error": 0.003439,
+        "known_object": 0.001704,
+        "noise_or_low_confidence": 0.00287
+      }
     },
     "example-radio-clean": {
-      "posterior": {
-        "catalog_or_processing_error": 0.001326,
-        "human_interference": 0.002576,
-        "instrumental_artifact": 0.001407,
-        "known_object": 0.000757,
-        "natural_source": 0.001603,
-        "noise_or_low_confidence": 0.001644,
-        "technosignature_interest": 0.990687
-      },
+      "track": "radio",
       "recommended_pathway": "candidate_review_packet",
       "scores": {
-        "false_positive_probability": 0.009313,
-        "followup_value": 0.990055,
-        "novelty_score": 0.997424,
-        "review_readiness": 0.927692,
-        "signal_reality_confidence": 0.982768
+        "false_positive_probability": 0.019022,
+        "signal_reality_confidence": 0.977265,
+        "novelty_score": 0.993626,
+        "followup_value": 0.982579,
+        "review_readiness": 0.926316
       },
-      "track": "radio"
+      "posterior": {
+        "technosignature_interest": 0.980978,
+        "natural_source": 0.00288,
+        "human_interference": 0.006374,
+        "instrumental_artifact": 0.002528,
+        "catalog_or_processing_error": 0.002382,
+        "known_object": 0.00136,
+        "noise_or_low_confidence": 0.003498
+      }
     }
   },
   "description": "Stable v0 score snapshots for synthetic example candidates."

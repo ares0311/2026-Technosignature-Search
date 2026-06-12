@@ -71,6 +71,7 @@ Expert review and external validation are not claimed.
 | Independent-method citizen-science label audit | ✅ Complete |
 | Public reproducibility review package | ✅ Complete |
 | Current scoring model evaluated against real labels (54.03% diagnostic agreement) | ✅ Complete |
+| **Scoring model v1 with calibrated SNR tiers and drift neutralization** — 77.42% diagnostic agreement (96/124); tiered SNR using noise_floor/follow_up/high_interest thresholds; drift artifact neutralized for real GBT data; NOISE boost for sub-noise-floor single-hit candidates | ✅ Complete |
 | Unit-safe, provenance-aware real-noise calibration preflight | ✅ Complete |
 | Cadence/target/epoch, dominance, bootstrap, and leave-one-cadence-out gates | ✅ Complete |
 | Operational log system (86 log types) | ✅ Complete |
@@ -80,6 +81,9 @@ Expert review and external validation are not claimed.
 | Calibration corpus download manifest (5 BL targets, admission gate, pipeline script, operator review protocol) | ✅ Complete |
 | GBT provisional RFI catalog operator sign-off (15 entries reviewed, admission gate cleared, ready_for_local_fixture) | ✅ Complete |
 | **Calibrated scoring thresholds from real GBT noise data** — calibration gate passed `calibration_ready: true`; 213 hits, 5 cadences, 5 targets, 2 epochs; noise_floor_snr=42.4, follow_up_snr=54.8, high_interest_snr=118.3 | ✅ Complete |
+| **Multi-epoch hit-table comparison** — `compare_epochs()` groups hits within frequency tolerance across .dat files; persistence scores; `multi-epoch-compare` CLI (DECISION-129) | ✅ Complete |
+| **Parallel candidate scoring** — `score_candidates_parallel()` with `ProcessPoolExecutor`; deterministic; falls back to serial for ≤1 candidate or workers=0/None (DECISION-129) | ✅ Complete |
+| **SQLite candidate store** — `CandidateStore` with init/insert/get/list/summary; `candidate-store-init/summary/list` CLI; local triage aid only (DECISION-129) | ✅ Complete |
 
 ---
 
@@ -167,3 +171,5 @@ DECISION-123 records the citizen-science reproducibility standard and first
 admitted real label set. DECISION-124 records the GBT provisional RFI catalog
 from public regulatory documentation. DECISION-125 records the calibration corpus admission gate and download manifest.
 DECISION-126 records the GBT provisional RFI catalog operator sign-off.
+DECISION-127 records the calibrated scoring configuration from real GBT noise data.
+DECISION-128 records scoring model v1 with calibrated SNR tiers and drift neutralization (77.42% diagnostic agreement).

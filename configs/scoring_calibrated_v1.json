@@ -1,0 +1,43 @@
+{
+  "description": "Calibrated scoring configuration derived from real GBT noise distributions (DECISION-128). SNR thresholds are calibration-gate outputs from 213 real hits across 5 cadences, 5 targets, 2 epochs. Not expert-validated detection thresholds. Requires independent citizen-science review before use in production scoring claims.",
+  "config_version": "scoring_calibrated_v1",
+  "pathway_thresholds": {
+    "known_object_probability": 0.8,
+    "false_positive_probability": 0.8,
+    "minimum_signal_reality_for_review": 0.4,
+    "candidate_interest_probability": 0.6,
+    "candidate_max_false_positive_probability": 0.4,
+    "candidate_signal_reality": 0.7,
+    "candidate_review_readiness": 0.7
+  },
+  "snr_thresholds": {
+    "noise_floor_snr": 42.4,
+    "follow_up_snr": 54.8,
+    "high_interest_snr": 118.3
+  },
+  "drift_rate_thresholds": {
+    "max_rfi_like_drift_hz_s": 5.21
+  },
+  "local_performance_defaults": {
+    "cpu_heavy_workers": 12,
+    "light_io_workers": 16,
+    "memory_budget_gb": 48
+  },
+  "track_sensitivity": {
+    "radio": {
+      "signal_weight": 1.0,
+      "false_positive_weight": 1.0,
+      "provenance_weight": 1.0
+    },
+    "infrared": {
+      "signal_weight": 1.0,
+      "false_positive_weight": 1.0,
+      "provenance_weight": 1.0
+    },
+    "anomaly": {
+      "signal_weight": 1.0,
+      "false_positive_weight": 1.0,
+      "provenance_weight": 1.0
+    }
+  }
+}
