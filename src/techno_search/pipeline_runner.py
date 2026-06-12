@@ -205,17 +205,29 @@ def _build_radio_candidate(
     xmatch = catalog_crossmatch(ra, dec)
     known_score = float(xmatch.get("known_object_score", 0.0))
 
-    # Inject cross-match score into features (only if the query actually ran)
+    # Inject cross-match score into features when the query actually ran.
+    # SIMBAD-specific fields are always injected on a live query so that
+    # a zero-match result (no known object) is also recorded as evidence.
     extra_features: dict[str, FeatureValue] = {}
     extra_provenance: dict[str, FeatureValue] = {}
-    if xmatch.get("query_attempted") and known_score > 0.0:
+    if xmatch.get("query_attempted"):
         extra_features["known_object_score"] = known_score
         extra_features["catalog_crossmatch_provider"] = str(xmatch.get("provider", ""))
         extra_provenance["catalog_crossmatch_provider"] = str(xmatch.get("provider", ""))
-        extra_provenance["catalog_crossmatch_match_count"] = int(
-            xmatch.get("match_count", 0)
-        )
         extra_provenance["catalog_crossmatch_known_object_score"] = known_score
+        # SIMBAD-specific match details (closes Tier 2: SIMBAD cross-match)
+        simbad_count = int(xmatch.get("simbad_match_count", 0))
+        extra_features["simbad_match_count"] = simbad_count
+        extra_provenance["simbad_match_count"] = simbad_count
+        simbad_names: list[str] = list(xmatch.get("simbad_match_names") or [])
+        extra_provenance["simbad_match_names"] = ", ".join(simbad_names[:5]) or "none"
+        extra_features["simbad_known_object_score"] = (
+            0.9 if simbad_count == 1 else (1.0 if simbad_count > 1 else 0.0)
+        )
+        # Gaia-specific match details
+        gaia_count = int(xmatch.get("gaia_match_count", 0))
+        extra_features["gaia_match_count"] = gaia_count
+        extra_provenance["gaia_match_count"] = gaia_count
 
     # Multi-epoch persistence injection (radio only, opt-in via epoch_dat_files)
     if epoch_dat_files:
