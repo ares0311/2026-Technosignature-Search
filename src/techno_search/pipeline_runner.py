@@ -257,6 +257,7 @@ def _build_radio_candidate(
 
 
 def _build_infrared_candidate(path: Path, candidate_id: str) -> Candidate:
+    from techno_search.catalog_crossmatch import catalog_crossmatch
     from techno_search.infrared.catalog_reader import catalog_rows_to_infrared_source_dicts
     from techno_search.infrared.prototype import build_infrared_candidate
 
@@ -264,7 +265,42 @@ def _build_infrared_candidate(path: Path, candidate_id: str) -> Candidate:
     if not rows:
         msg = f"No valid catalog rows found in {path}"
         raise ValueError(msg)
-    return build_infrared_candidate(candidate_id, rows[0])
+    candidate = build_infrared_candidate(candidate_id, rows[0])
+
+    # Optional live catalog cross-match (requires TECHNO_SEARCH_ENABLE_LIVE_DATA=1)
+    ra = rows[0].get("ra_deg")
+    dec = rows[0].get("dec_deg")
+    xmatch = catalog_crossmatch(ra, dec)
+    known_score = float(xmatch.get("known_object_score", 0.0))
+
+    extra_features: dict[str, FeatureValue] = {}
+    extra_provenance: dict[str, FeatureValue] = {}
+    if xmatch.get("query_attempted"):
+        extra_features["known_object_score"] = known_score
+        extra_features["catalog_crossmatch_provider"] = str(xmatch.get("provider", ""))
+        extra_provenance["catalog_crossmatch_provider"] = str(xmatch.get("provider", ""))
+        extra_provenance["catalog_crossmatch_known_object_score"] = known_score
+        simbad_count = int(xmatch.get("simbad_match_count", 0))
+        extra_features["simbad_match_count"] = simbad_count
+        extra_provenance["simbad_match_count"] = simbad_count
+        simbad_names: list[str] = list(xmatch.get("simbad_match_names") or [])
+        extra_provenance["simbad_match_names"] = ", ".join(simbad_names[:5]) or "none"
+        extra_features["simbad_known_object_score"] = (
+            0.9 if simbad_count == 1 else (1.0 if simbad_count > 1 else 0.0)
+        )
+        gaia_count = int(xmatch.get("gaia_match_count", 0))
+        extra_features["gaia_match_count"] = gaia_count
+        extra_provenance["gaia_match_count"] = gaia_count
+
+    if extra_features:
+        candidate = Candidate(
+            candidate_id=candidate.candidate_id,
+            track=candidate.track,
+            features={**candidate.features, **extra_features},
+            source_ids=candidate.source_ids,
+            provenance={**candidate.provenance, **extra_provenance},
+        )
+    return candidate
 
 
 def _build_anomaly_candidate(path: Path, candidate_id: str) -> Candidate:

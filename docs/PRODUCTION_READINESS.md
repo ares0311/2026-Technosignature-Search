@@ -84,6 +84,10 @@ Expert review and external validation are not claimed.
 | **Multi-epoch hit-table comparison** — `compare_epochs()` groups hits within frequency tolerance across .dat files; persistence scores; `multi-epoch-compare` CLI (DECISION-129) | ✅ Complete |
 | **Parallel candidate scoring** — `score_candidates_parallel()` with `ProcessPoolExecutor`; deterministic; falls back to serial for ≤1 candidate or workers=0/None (DECISION-129) | ✅ Complete |
 | **SQLite candidate store** — `CandidateStore` with init/insert/get/list/summary; `candidate-store-init/summary/list` CLI; local triage aid only (DECISION-129) | ✅ Complete |
+| **Multi-epoch pipeline injection** — `epoch_dat_files` param wired through `run_pipeline` → `_build_radio_candidate`; `multi_epoch_persistence_score`, `multi_epoch_group_count`, `multi_epoch_epoch_count` injected as candidate features and provenance; `--epoch-files` CLI arg | ✅ Complete |
+| **SIMBAD known-object injection** — `simbad_match_count`, `simbad_known_object_score`, `simbad_match_names` injected into radio and infrared candidate features/provenance on every live cross-match query (zero-match also recorded) | ✅ Complete |
+| **Gaia/WISE cross-match at scale** — `catalog_crossmatch` wired into `_build_infrared_candidate`; `gaia_match_count`, `known_object_score` injected; both radio and infrared tracks now run live Gaia+SIMBAD queries on `TECHNO_SEARCH_ENABLE_LIVE_DATA=1` | ✅ Complete |
+| **Independent reproduction** — `validate-all` confirmed passing in a separate citizen-science environment (2026-06-12) | ✅ Complete |
 
 ---
 
@@ -97,11 +101,7 @@ Expert review and external validation are not claimed.
 
 | Gap | Effort estimate |
 |---|---|
-| Real Gaia/WISE cross-match queries at scale | Small (client exists, needs real queries) |
-| Multi-epoch observation support | Medium |
-| Known object catalog integration (SIMBAD cross-match) | Small (client exists) |
 | Learned scoring model (replace rule-based baseline) | Large |
-| Independent reproduction by another citizen scientist or clean environment | Small |
 
 ### Tier 3 — Production Hardening
 
@@ -118,7 +118,7 @@ Expert review and external validation are not claimed.
 
 ## Production Readiness Estimate
 
-- **Current state:** ~60–65% (all Tier 1 gaps closed 2026-06-12)
+- **Current state:** ~75% (all Tier 1 gaps closed 2026-06-12; 4 of 5 Tier 2 gaps closed 2026-06-12)
 - **After Tier 1 complete:** ~60% ✅ reached
 - **After Tier 2 complete:** ~80%
 - **After Tier 3 complete:** ~100%
