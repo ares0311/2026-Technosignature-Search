@@ -4168,11 +4168,16 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
     if args.command == "run-pipeline":
         from techno_search.pipeline_runner import run_pipeline
 
+        _epoch_files: list[Path] | None = None
+        _raw_epoch = getattr(args, "epoch_files", None)
+        if _raw_epoch:
+            _epoch_files = [Path(p) for p in _raw_epoch]
         pipeline_result = run_pipeline(
             Path(args.input),
             args.track,
             Path(args.output_dir),
             candidate_id=getattr(args, "candidate_id", None),
+            epoch_dat_files=_epoch_files,
         )
         print(json.dumps(pipeline_result.as_dict(), indent=2, sort_keys=True), file=out)
         return 0 if pipeline_result.ok else 1
@@ -13198,6 +13203,16 @@ def _build_parser() -> argparse.ArgumentParser:
     run_pipeline_parser.add_argument(
         "--candidate-id",
         help="Optional candidate ID override for generated reports.",
+    )
+    run_pipeline_parser.add_argument(
+        "--epoch-files",
+        nargs="*",
+        metavar="DAT_FILE",
+        help=(
+            "Additional turboSETI .dat files from separate observation sessions "
+            "(radio track only). When provided, multi-epoch persistence scores are "
+            "injected into candidate features before scoring."
+        ),
     )
 
     learned_model_parser = subparsers.add_parser(
