@@ -1,4 +1,4 @@
-"""Interpretable v0 scoring for synthetic candidates."""
+"""Interpretable v0/v1 scoring for technosignature candidates."""
 
 from __future__ import annotations
 
@@ -6,7 +6,12 @@ import math
 from collections.abc import Iterable, Mapping
 from typing import Final
 
-from techno_search.config import load_scoring_config
+from techno_search.config import (
+    DriftRateThresholds,
+    ScoringConfig,
+    SnrThresholds,
+    load_scoring_config,
+)
 from techno_search.pathway import PathwayThresholds, classify_pathway
 from techno_search.schemas import (
     Candidate,
@@ -31,11 +36,22 @@ DictLike = Mapping[str, object]
 
 
 def score_candidate(
-    candidate: Candidate, thresholds: PathwayThresholds | None = None
+    candidate: Candidate,
+    thresholds: PathwayThresholds | None = None,
+    scoring_config: ScoringConfig | None = None,
 ) -> ScoredCandidate:
-    """Score a synthetic candidate and assign a conservative pathway."""
+    """Score a candidate and assign a conservative pathway.
 
-    raw_scores, evidence = _track_scores(candidate)
+    When scoring_calibrated_v1.json is present, calibrated SNR tiers and
+    drift-rate guardrails are applied automatically. Calibrated thresholds
+    are derived from real GBT noise distributions and are not claimed to
+    constitute expert-validated detection criteria.
+    """
+    config = scoring_config if scoring_config is not None else load_scoring_config()
+    snr_thresholds = config.snr_thresholds
+    drift_thresholds = config.drift_rate_thresholds
+
+    raw_scores, evidence = _track_scores(candidate, snr_thresholds, drift_thresholds)
     posterior = _softmax(
         {
             posterior_class: _LOG_PRIORS[posterior_class] + raw_scores[posterior_class]
@@ -46,7 +62,7 @@ def score_candidate(
     pathway = classify_pathway(
         posterior,
         scores,
-        thresholds or load_scoring_config().pathway_thresholds,
+        thresholds or config.pathway_thresholds,
     )
 
     return ScoredCandidate(
@@ -58,15 +74,22 @@ def score_candidate(
     )
 
 
-def score_candidates(candidates: Iterable[Candidate]) -> list[ScoredCandidate]:
+def score_candidates(
+    candidates: Iterable[Candidate],
+    scoring_config: ScoringConfig | None = None,
+) -> list[ScoredCandidate]:
     """Score candidates in input order."""
 
-    return [score_candidate(candidate) for candidate in candidates]
+    return [score_candidate(candidate, scoring_config=scoring_config) for candidate in candidates]
 
 
-def _track_scores(candidate: Candidate) -> tuple[dict[PosteriorClass, float], EvidenceSummary]:
+def _track_scores(
+    candidate: Candidate,
+    snr_thresholds: SnrThresholds | None = None,
+    drift_thresholds: DriftRateThresholds | None = None,
+) -> tuple[dict[PosteriorClass, float], EvidenceSummary]:
     if candidate.track == Track.RADIO:
-        return _radio_scores(candidate)
+        return _radio_scores(candidate, snr_thresholds, drift_thresholds)
     if candidate.track == Track.INFRARED:
         return _infrared_scores(candidate)
     if candidate.track == Track.ANOMALY:
@@ -75,12 +98,35 @@ def _track_scores(candidate: Candidate) -> tuple[dict[PosteriorClass, float], Ev
     raise ValueError(msg)
 
 
-def _radio_scores(candidate: Candidate) -> tuple[dict[PosteriorClass, float], EvidenceSummary]:
+def _radio_scores(
+    candidate: Candidate,
+    snr_thresholds: SnrThresholds | None = None,
+    drift_thresholds: DriftRateThresholds | None = None,
+) -> tuple[dict[PosteriorClass, float], EvidenceSummary]:
     f = candidate.features
-    snr = _scaled_positive_float(f, "snr", divisor=50.0)
+
+    # SNR scoring: calibrated tiered scoring when thresholds available,
+    # otherwise synthetic divisor-based scoring.
+    snr_raw = max(_float(f, "snr"), 0.0)
+    if snr_thresholds is not None:
+        snr = _tiered_snr_score(snr_raw, snr_thresholds)
+        below_noise_floor = snr_raw < snr_thresholds.noise_floor_snr
+    else:
+        snr = _clamp(snr_raw / 50.0)
+        below_noise_floor = False
+
     bandwidth = _narrowband_score(_float(f, "bandwidth_hz", default=10.0))
-    drift = _drift_score(_float(f, "drift_rate_hz_per_sec", default=0.0))
+
+    # Drift scoring: when drift_rate_thresholds is present (real data), the
+    # coarse-grid turboSETI artifact makes all hits share the same drift value,
+    # rendering it non-discriminating. Use zero contribution to avoid spurious
+    # technosignature boosts from this artifact.
+    if drift_thresholds is not None:
+        drift = 0.0
+    else:
+        drift = _drift_score(_float(f, "drift_rate_hz_per_sec", default=0.0))
     zero_drift = 1.0 - drift
+
     on_target = _score(f, "on_target_presence_score")
     off_target = _score(f, "off_target_presence_score")
     absent_off = 1.0 - off_target
@@ -128,6 +174,20 @@ def _radio_scores(candidate: Candidate) -> tuple[dict[PosteriorClass, float], Ev
     raw_scores[PosteriorClass.KNOWN_OBJECT] += 8.00 * known
     raw_scores[PosteriorClass.NATURAL_SOURCE] += 0.20
     raw_scores[PosteriorClass.CATALOG_OR_PROCESSING_ERROR] += 0.20 * (1.0 - metadata)
+
+    # Below-noise-floor, non-persistent, no-off-target boost:
+    # Real GBT hits that are below the calibrated noise floor, appear in no
+    # OFF-target scans, and show no frequency persistence across scan contexts
+    # lack the multi-scan confirmation required for candidate_review_packet
+    # routing. Boost NOISE_OR_LOW_CONFIDENCE to route these to human_review_queue.
+    if (
+        below_noise_floor
+        and snr_thresholds is not None
+        and persistence < 0.1
+        and off_target < 0.3
+    ):
+        noise_floor_fraction = snr_raw / snr_thresholds.noise_floor_snr
+        raw_scores[PosteriorClass.NOISE_OR_LOW_CONFIDENCE] += 4.0 * (1.0 - noise_floor_fraction)
 
     evidence = _radio_evidence(
         snr=snr,
@@ -330,6 +390,30 @@ def _float(features: DictLike, name: str, default: float = 0.0) -> float:
 
 def _scaled_positive_float(features: DictLike, name: str, divisor: float) -> float:
     return _clamp(max(_float(features, name), 0.0) / divisor)
+
+
+def _tiered_snr_score(snr_raw: float, thresholds: SnrThresholds) -> float:
+    """Tiered SNR score using calibrated noise-floor and signal thresholds.
+
+    Returns a [0, 1] score reflecting signal strength relative to the
+    calibrated noise floor. Sub-noise-floor hits receive scores in [0, 0.20];
+    follow-up range [0.20, 0.60]; high-interest range [0.60, 0.90]; above
+    high-interest asymptotes toward 1.0.
+
+    Derived from noise_threshold_calibration gate on real GBT data.
+    Not a calibrated survey sensitivity estimate.
+    """
+    nf = thresholds.noise_floor_snr
+    fu = thresholds.follow_up_snr
+    hi = thresholds.high_interest_snr
+
+    if snr_raw < nf:
+        return _clamp(snr_raw / nf * 0.20)
+    if snr_raw < fu:
+        return 0.20 + (snr_raw - nf) / (fu - nf) * 0.40
+    if snr_raw < hi:
+        return 0.60 + (snr_raw - fu) / (hi - fu) * 0.30
+    return min(1.0, 0.90 + (snr_raw - hi) / (2.0 * hi) * 0.10)
 
 
 def _narrowband_score(bandwidth_hz: float) -> float:

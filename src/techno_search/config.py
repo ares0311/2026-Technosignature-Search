@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -22,11 +22,33 @@ class LocalPerformanceDefaults:
 
 
 @dataclass(frozen=True)
+class SnrThresholds:
+    """Calibrated SNR tiers derived from real noise distributions.
+
+    Derived via noise_threshold_calibration gate on real GBT data.
+    Not calibrated survey sensitivity estimates.
+    """
+
+    noise_floor_snr: float
+    follow_up_snr: float
+    high_interest_snr: float
+
+
+@dataclass(frozen=True)
+class DriftRateThresholds:
+    """Calibrated drift-rate guardrail from real observation data."""
+
+    max_rfi_like_drift_hz_s: float
+
+
+@dataclass(frozen=True)
 class ScoringConfig:
     """Versioned scoring configuration."""
 
     pathway_thresholds: PathwayThresholds
     local_performance_defaults: LocalPerformanceDefaults
+    snr_thresholds: SnrThresholds | None = field(default=None)
+    drift_rate_thresholds: DriftRateThresholds | None = field(default=None)
 
 
 @dataclass(frozen=True)
@@ -42,7 +64,16 @@ class TrackConfig:
 
 
 def default_scoring_config_path() -> Path:
-    """Return the repository-local v0 scoring config path."""
+    """Return the best available scoring config path (calibrated > v0)."""
+
+    calibrated = Path(__file__).resolve().parents[2] / "configs" / "scoring_calibrated_v1.json"
+    if calibrated.exists():
+        return calibrated
+    return Path(__file__).resolve().parents[2] / "configs" / "scoring_v0.json"
+
+
+def v0_scoring_config_path() -> Path:
+    """Return the synthetic v0 scoring config path explicitly."""
 
     return Path(__file__).resolve().parents[2] / "configs" / "scoring_v0.json"
 
@@ -61,11 +92,19 @@ def load_scoring_config(path: Path | None = None) -> ScoringConfig:
         data = json.load(handle)
     validate_scoring_config_data(data)
 
+    snr_data = data.get("snr_thresholds")
+    snr_thresh = _snr_thresholds(snr_data) if _has_snr_values(snr_data) else None
+
+    drift_data = data.get("drift_rate_thresholds")
+    drift_thresh = _drift_rate_thresholds(drift_data) if _has_drift_values(drift_data) else None
+
     return ScoringConfig(
         pathway_thresholds=_pathway_thresholds(data["pathway_thresholds"]),
         local_performance_defaults=_local_performance_defaults(
             data["local_performance_defaults"]
         ),
+        snr_thresholds=snr_thresh,
+        drift_rate_thresholds=drift_thresh,
     )
 
 
@@ -163,6 +202,35 @@ def _local_performance_defaults(data: dict[str, Any]) -> LocalPerformanceDefault
         cpu_heavy_workers=int(data["cpu_heavy_workers"]),
         light_io_workers=int(data["light_io_workers"]),
         memory_budget_gb=int(data["memory_budget_gb"]),
+    )
+
+
+def _has_snr_values(data: dict[str, Any] | None) -> bool:
+    if not data:
+        return False
+    return all(
+        data.get(k) is not None
+        for k in ("noise_floor_snr", "follow_up_snr", "high_interest_snr")
+    )
+
+
+def _has_drift_values(data: dict[str, Any] | None) -> bool:
+    if not data:
+        return False
+    return data.get("max_rfi_like_drift_hz_s") is not None
+
+
+def _snr_thresholds(data: dict[str, Any]) -> SnrThresholds:
+    return SnrThresholds(
+        noise_floor_snr=float(data["noise_floor_snr"]),
+        follow_up_snr=float(data["follow_up_snr"]),
+        high_interest_snr=float(data["high_interest_snr"]),
+    )
+
+
+def _drift_rate_thresholds(data: dict[str, Any]) -> DriftRateThresholds:
+    return DriftRateThresholds(
+        max_rfi_like_drift_hz_s=float(data["max_rfi_like_drift_hz_s"]),
     )
 
 

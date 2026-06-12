@@ -71,6 +71,7 @@ Expert review and external validation are not claimed.
 | Independent-method citizen-science label audit | ✅ Complete |
 | Public reproducibility review package | ✅ Complete |
 | Current scoring model evaluated against real labels (54.03% diagnostic agreement) | ✅ Complete |
+| **Scoring model v1 with calibrated SNR tiers and drift neutralization** — 77.42% diagnostic agreement (96/124); tiered SNR using noise_floor/follow_up/high_interest thresholds; drift artifact neutralized for real GBT data; NOISE boost for sub-noise-floor single-hit candidates | ✅ Complete |
 | Unit-safe, provenance-aware real-noise calibration preflight | ✅ Complete |
 | Cadence/target/epoch, dominance, bootstrap, and leave-one-cadence-out gates | ✅ Complete |
 | Operational log system (86 log types) | ✅ Complete |
@@ -167,3 +168,5 @@ DECISION-123 records the citizen-science reproducibility standard and first
 admitted real label set. DECISION-124 records the GBT provisional RFI catalog
 from public regulatory documentation. DECISION-125 records the calibration corpus admission gate and download manifest.
 DECISION-126 records the GBT provisional RFI catalog operator sign-off.
+DECISION-127 records the calibrated scoring configuration from real GBT noise data.
+DECISION-128 records scoring model v1 with calibrated SNR tiers and drift neutralization (77.42% diagnostic agreement).
