@@ -26,10 +26,10 @@ def test_summary_counts_statuses_and_authorization() -> None:
     summary = rfi_database_admission_summary()
     assert summary["schema_version"] == RFI_DATABASE_ADMISSION_SCHEMA_VERSION
     assert summary["record_count"] == 5
-    assert summary["blocked_count"] == 4
+    assert summary["blocked_count"] == 3
     assert summary["synthetic_only_count"] == 1
     assert summary["real_data_authorized_count"] == 0
-    assert summary["total_blocker_count"] == 9
+    assert summary["total_blocker_count"] == 7
 
 
 def test_summary_disclaimer_is_conservative() -> None:

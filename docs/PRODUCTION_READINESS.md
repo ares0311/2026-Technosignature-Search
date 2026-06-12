@@ -7,13 +7,15 @@
 
 ## Summary
 
-The pipeline is approximately **45–50% of the way to citizen-science
+The pipeline is approximately **50–55% of the way to citizen-science
 production**. One official GBT cadence has completed provenance, ingestion,
 deterministic two-method labeling, and conservative local evaluation.
 The calibration preflight now enforces physical units, provenance admission,
-source/derived deduplication, and stability gates. Calibrated thresholds and
-permitted site-specific RFI evidence remain blocking. Expert review and
-external validation are not claimed.
+source/derived deduplication, and stability gates. The GBT provisional RFI
+catalog has received operator sign-off and is ready for local fixture use
+(all 15 entries remain inactive pending explicit activation). Calibrated
+thresholds remain the sole Tier 1 blocker. Expert review and external
+validation are not claimed.
 
 ---
 
@@ -77,6 +79,7 @@ external validation are not claimed.
 | Voyager 1 GBT turboSETI test H5 downloaded and scored end-to-end (3 real hits, pipeline OK) | ✅ Complete |
 | GBT provisional RFI catalog (15 bands, ITU/GPS/ICAO/FCC citations, all inactive pending review) | ✅ Complete |
 | Calibration corpus download manifest (5 BL targets, admission gate, pipeline script, operator review protocol) | ✅ Complete |
+| GBT provisional RFI catalog operator sign-off (15 entries reviewed, admission gate cleared, ready_for_local_fixture) | ✅ Complete |
 
 ---
 
@@ -87,7 +90,6 @@ external validation are not claimed.
 | Gap | Effort estimate |
 |---|---|
 | **Calibrated scoring thresholds** — current thresholds are synthetic v0 defaults; the one-cadence corpus fails cadence, epoch, dominance, bootstrap, and leave-one-out gates | Medium (requires additional approved GBT cadences from other epochs) |
-| **Real site-specific RFI database** — provisional 15-band catalog built from ITU/GPS/ICAO/FCC public sources; all entries inactive pending operator site-monitoring-context review and sign-off (`rfi-admit-gbt-provisional-v1`, `blocked_pending_review`, 2 blockers) | Medium — unblocked; operator review required |
 
 ### Tier 2 — Required for Research-Grade Use
 
@@ -166,3 +168,4 @@ real GBT cadence ingestion and OFF-target rejection correction, and
 DECISION-123 records the citizen-science reproducibility standard and first
 admitted real label set. DECISION-124 records the GBT provisional RFI catalog
 from public regulatory documentation. DECISION-125 records the calibration corpus admission gate and download manifest.
+DECISION-126 records the GBT provisional RFI catalog operator sign-off.

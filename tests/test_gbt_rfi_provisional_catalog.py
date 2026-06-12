@@ -123,10 +123,10 @@ def test_all_entries_not_synthetic() -> None:
         assert entry["synthetic"] is False, f"{entry['entry_id']}: synthetic should be False"
 
 
-def test_all_entries_provisional_status() -> None:
+def test_all_entries_reviewed_status() -> None:
     for entry in _entries():
-        assert entry["review_status"] == "provisional", (
-            f"{entry['entry_id']}: review_status should be 'provisional'"
+        assert entry["review_status"] == "reviewed", (
+            f"{entry['entry_id']}: review_status should be 'reviewed' after operator sign-off"
         )
 
 
@@ -309,13 +309,13 @@ def test_admission_fixture_has_gbt_provisional_entry() -> None:
     assert "rfi-admit-gbt-provisional-v1" in ids
 
 
-def test_gbt_provisional_admission_blocked_pending_review() -> None:
+def test_gbt_provisional_admission_ready_for_local_fixture() -> None:
     admission = _load_admission()
     record = next(
         r for r in admission["rfi_database_admission_records"]
         if r["source_id"] == "rfi-admit-gbt-provisional-v1"
     )
-    assert record["admission_status"] == "blocked_pending_review"
+    assert record["admission_status"] == "ready_for_local_fixture"
 
 
 def test_gbt_provisional_admission_real_data_not_authorized() -> None:
@@ -346,14 +346,14 @@ def test_gbt_provisional_admission_site_id_matches_catalog() -> None:
     assert record["site_id"] == catalog["site_id"]
 
 
-def test_gbt_provisional_admission_has_blockers() -> None:
-    """Blocker count must be > 0 while still pending review."""
+def test_gbt_provisional_admission_has_no_blockers() -> None:
+    """Blocker count must be 0 after operator sign-off (DECISION-126)."""
     admission = _load_admission()
     record = next(
         r for r in admission["rfi_database_admission_records"]
         if r["source_id"] == "rfi-admit-gbt-provisional-v1"
     )
-    assert record["blocker_count"] > 0
+    assert record["blocker_count"] == 0
 
 
 def test_gbt_provisional_admission_passes_validation() -> None:

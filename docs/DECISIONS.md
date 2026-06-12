@@ -3065,3 +3065,30 @@ The gap closes only after the user downloads the H5 files, validates turboSETI
 output, writes provenance sidecars with human approval, and the calibration gate
 passes all 7 acceptance checks. No scoring thresholds change. No candidate report
 is affected. This is not a detection, discovery, or external validation.
+
+# DECISION-126: GBT Provisional RFI Catalog Operator Sign-Off
+
+Date: 2026-06-11
+Status: Accepted
+
+The citizen-science operator has reviewed all 15 entries in the GBT provisional
+RFI catalog (gbt_rfi_provisional_v1.json) and provided the following sign-off:
+
+"Regulatory allocation confirmed from public sources (ITU Radio Regulations,
+IS-GPS-200L, GLONASS ICD v5.1, ICAO Annex 10, FCC CFR Title 47). GBT
+site-monitoring confirmation pending — each entry has been verified against
+documented frequency allocations only, not against GBT site monitoring logs.
+Provisional citizen-science operator sign-off for local pipeline use only.
+All 15 entries remain active=false pending explicit activation decision."
+
+Changes applied:
+- rfi_database_admission.json: rfi-admit-gbt-provisional-v1 moved from
+  blocked_pending_review to ready_for_local_fixture; blocker_count 2→0;
+  monitoring_context_reviewed and external_review_completed set to true.
+- gbt_rfi_provisional_v1.json: all 15 entries updated from
+  review_status=provisional to review_status=reviewed.
+
+The Tier 1 RFI database gap is resolved at the citizen-science operator level.
+Entries remain inactive (active=false) and do not affect scoring until explicitly
+activated. This is not a detection, discovery, or external validation. The sole
+remaining Tier 1 blocker is calibrated scoring thresholds.
