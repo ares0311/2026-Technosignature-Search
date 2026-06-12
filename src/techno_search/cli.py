@@ -5014,6 +5014,20 @@ def validate_all() -> dict[str, object]:
     labeled_entry_count = int(labeled_data.get("entry_count", 0))
     from techno_search.baseline_eval import eval_against_labels as _eal
     label_eval_data = _eal()
+    # Real-label scoring accuracy regression gate (Tier 2 gap closure)
+    _real_label_path = (
+        root / "examples" / "real_labeled" / "hip99427_citizen_science_labels_v1.json"
+    )
+    _real_label_eval = _eal(_real_label_path) if _real_label_path.exists() else {}
+    real_label_entry_count = int(_real_label_eval.get("entry_count", 0))
+    _real_acc_raw = _real_label_eval.get("accuracy")
+    real_label_accuracy = (
+        float(_real_acc_raw) if isinstance(_real_acc_raw, (int, float)) else None
+    )
+    # Gate: if real labels exist, accuracy must be >= 0.70 (headroom below 77.42%)
+    real_label_accuracy_gate_ok = (
+        real_label_accuracy is None or real_label_accuracy >= 0.70
+    )
     from techno_search.learned_scoring_model import synthetic_v1_training_summary as _svts  # noqa: PLC0415, I001
     synthetic_training_data = _svts()
     synthetic_training_ok = synthetic_training_data.get("ok", False)
@@ -5645,6 +5659,7 @@ def validate_all() -> dict[str, object]:
         and baseline_pathway_accuracy >= 0.80
         and isinstance(baseline_total_cases, int)
         and baseline_total_cases >= 3
+        and real_label_accuracy_gate_ok
         and isinstance(baseline_drift_count, int)
         and baseline_drift_zero
         and isinstance(lifecycle_entry_count, int)
@@ -6357,6 +6372,9 @@ def validate_all() -> dict[str, object]:
         "procurement_log_summary": proc_data,
         "labeled_dataset_summary": labeled_data,
         "eval_against_labels_summary": label_eval_data,
+        "real_label_accuracy": real_label_accuracy,
+        "real_label_accuracy_gate_ok": real_label_accuracy_gate_ok,
+        "real_label_entry_count": real_label_entry_count,
         "synthetic_training_summary": synthetic_training_data,
         "operations_readiness_summary": operations_readiness,
         "operations_action_plan_summary": operations_action_plan,
@@ -9906,6 +9924,15 @@ def validation_summary() -> dict[str, object]:
             eal_s2["accuracy"]
             if isinstance(eal_s2 := validation.get("eval_against_labels_summary"), dict)
             else 0.0
+        ),
+        "real_label_accuracy": (
+            validation.get("real_label_accuracy")
+        ),
+        "real_label_accuracy_gate_ok": (
+            validation.get("real_label_accuracy_gate_ok", True)
+        ),
+        "real_label_entry_count": (
+            validation.get("real_label_entry_count", 0)
         ),
         "synthetic_training_ok": (
             syn_s["ok"]
