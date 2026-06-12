@@ -251,7 +251,7 @@ if [[ "${DAT_COUNT}" -eq 0 && "${SKIP_TURBOSETI}" -eq 0 ]]; then
 fi
 
 set +e
-GATE_JSON=$(${TECHNO_SEARCH} noise-threshold-calibration "${OUT_DIR}" ${CAL_FLAGS} 2>&1)
+GATE_JSON=$("${TECHNO_SEARCH}" noise-threshold-calibration "${OUT_DIR}" ${CAL_FLAGS} 2>&1)
 GATE_EXIT=$?
 set -e
 
