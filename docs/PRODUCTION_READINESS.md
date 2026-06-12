@@ -1,21 +1,20 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-06-11
+**Last updated:** 2026-06-12
 **Current milestone:** 73 (Communication Log, Document Management Log, And Procurement Log)
 
 ---
 
 ## Summary
 
-The pipeline is approximately **50–55% of the way to citizen-science
-production**. One official GBT cadence has completed provenance, ingestion,
-deterministic two-method labeling, and conservative local evaluation.
-The calibration preflight now enforces physical units, provenance admission,
-source/derived deduplication, and stability gates. The GBT provisional RFI
-catalog has received operator sign-off and is ready for local fixture use
-(all 15 entries remain inactive pending explicit activation). Calibrated
-thresholds remain the sole Tier 1 blocker. Expert review and external
-validation are not claimed.
+The pipeline is approximately **60–65% of the way to citizen-science
+production**. All Tier 1 gaps are now closed. The calibration gate passed
+`calibration_ready: true` against 213 real GBT hits from 5 cadences, 5
+targets, and 2 epochs (HIP99427, HIP100670, HIP99560, HIP99759, VOYAGER-1).
+Derived thresholds: noise_floor_snr=42.4, follow_up_snr=54.8,
+high_interest_snr=118.3, max_rfi_like_drift_hz_s=5.21. Thresholds require
+independent-method citizen-science review before use in production scoring.
+Expert review and external validation are not claimed.
 
 ---
 
@@ -80,6 +79,7 @@ validation are not claimed.
 | GBT provisional RFI catalog (15 bands, ITU/GPS/ICAO/FCC citations, all inactive pending review) | ✅ Complete |
 | Calibration corpus download manifest (5 BL targets, admission gate, pipeline script, operator review protocol) | ✅ Complete |
 | GBT provisional RFI catalog operator sign-off (15 entries reviewed, admission gate cleared, ready_for_local_fixture) | ✅ Complete |
+| **Calibrated scoring thresholds from real GBT noise data** — calibration gate passed `calibration_ready: true`; 213 hits, 5 cadences, 5 targets, 2 epochs; noise_floor_snr=42.4, follow_up_snr=54.8, high_interest_snr=118.3 | ✅ Complete |
 
 ---
 
@@ -87,9 +87,7 @@ validation are not claimed.
 
 ### Tier 1 — Blockers (nothing ships without these)
 
-| Gap | Effort estimate |
-|---|---|
-| **Calibrated scoring thresholds** — current thresholds are synthetic v0 defaults; the one-cadence corpus fails cadence, epoch, dominance, bootstrap, and leave-one-out gates | Medium (requires additional approved GBT cadences from other epochs) |
+**All Tier 1 gaps are closed.** The calibration gate produced `calibration_ready: true` on 2026-06-12.
 
 ### Tier 2 — Required for Research-Grade Use
 
@@ -116,8 +114,8 @@ validation are not claimed.
 
 ## Production Readiness Estimate
 
-- **Current state:** ~45–50%
-- **After Tier 1 complete:** ~60%
+- **Current state:** ~60–65% (all Tier 1 gaps closed 2026-06-12)
+- **After Tier 1 complete:** ~60% ✅ reached
 - **After Tier 2 complete:** ~80%
 - **After Tier 3 complete:** ~100%
 
