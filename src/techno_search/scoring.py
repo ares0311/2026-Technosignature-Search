@@ -78,9 +78,37 @@ def score_candidates(
     candidates: Iterable[Candidate],
     scoring_config: ScoringConfig | None = None,
 ) -> list[ScoredCandidate]:
-    """Score candidates in input order."""
+    """Score candidates in input order (serial)."""
 
     return [score_candidate(candidate, scoring_config=scoring_config) for candidate in candidates]
+
+
+def _score_one(candidate: Candidate) -> ScoredCandidate:
+    """Worker function — must be module-level to be picklable."""
+    return score_candidate(candidate)
+
+
+def score_candidates_parallel(
+    candidates: Iterable[Candidate],
+    workers: int | None = None,
+    scoring_config: ScoringConfig | None = None,
+) -> list[ScoredCandidate]:
+    """Score candidates, optionally in parallel using multiple processes.
+
+    When workers is None or 1, uses serial scoring (identical to
+    score_candidates). When workers > 1, uses ProcessPoolExecutor.
+    The scoring config is reloaded inside each worker process from the
+    default config path, so calibrated thresholds apply automatically.
+    """
+    import concurrent.futures
+
+    candidate_list = list(candidates)
+    if not candidate_list:
+        return []
+    if workers is None or workers <= 1 or len(candidate_list) <= 1:
+        return score_candidates(candidate_list, scoring_config=scoring_config)
+    with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
+        return list(executor.map(_score_one, candidate_list))
 
 
 def _track_scores(

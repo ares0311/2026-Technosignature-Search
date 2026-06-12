@@ -3144,3 +3144,33 @@ is insufficient. These are not addressed in v1 to avoid over-fitting.
 This is not a detection claim. Diagnostic agreement is measured against citizen-science
 labels derived from a single cadence/target combination and has not been independently
 validated. The model requires independent reproduction before production scoring claims.
+
+# DECISION-129: Multi-Epoch Comparison, Parallel Scoring, And SQLite Candidate Store
+
+Date: 2026-06-12
+Status: Accepted
+
+**Milestone:** Tier 2/3 — infrastructure for multi-epoch analysis and pipeline efficiency
+
+Three new operational modules added:
+
+1. **multi_epoch.py**: Compares turboSETI hit tables across multiple observation epochs
+   (different .dat files from separate observing sessions). Groups hits within
+   configurable frequency tolerance; reports per-group persistence scores and
+   multi-epoch group counts. Scientific guardrail: multi-epoch persistence is an
+   evidence factor only; persistent signals may be persistent RFI. This module does
+   not constitute a detection claim.
+
+2. **score_candidates_parallel()**: Uses `ProcessPoolExecutor` to score multiple
+   candidates in parallel. Falls back to serial when workers=1/None or for single-element
+   lists (avoiding subprocess overhead). Module-level `_score_one()` function ensures
+   picklability across worker processes. Parallel results are deterministic and
+   identical to serial results.
+
+3. **candidate_store.py**: SQLite-backed local candidate store for scored candidates,
+   indexed by track, pathway, and signal_reality. Provides `CandidateStore` with
+   `init_schema()`, `insert()`, `get()`, `list_all()`, `list_by_pathway()`,
+   `list_by_track()`, and `summary()`. CLI commands: `candidate-store-init`,
+   `candidate-store-summary`, `candidate-store-list`. Scientific guardrail: candidate
+   store records are local triage and provenance records only; stored records do not
+   authorize external submission and do not constitute detection claims.

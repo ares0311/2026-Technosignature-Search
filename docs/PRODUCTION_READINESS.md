@@ -81,6 +81,9 @@ Expert review and external validation are not claimed.
 | Calibration corpus download manifest (5 BL targets, admission gate, pipeline script, operator review protocol) | ✅ Complete |
 | GBT provisional RFI catalog operator sign-off (15 entries reviewed, admission gate cleared, ready_for_local_fixture) | ✅ Complete |
 | **Calibrated scoring thresholds from real GBT noise data** — calibration gate passed `calibration_ready: true`; 213 hits, 5 cadences, 5 targets, 2 epochs; noise_floor_snr=42.4, follow_up_snr=54.8, high_interest_snr=118.3 | ✅ Complete |
+| **Multi-epoch hit-table comparison** — `compare_epochs()` groups hits within frequency tolerance across .dat files; persistence scores; `multi-epoch-compare` CLI (DECISION-129) | ✅ Complete |
+| **Parallel candidate scoring** — `score_candidates_parallel()` with `ProcessPoolExecutor`; deterministic; falls back to serial for ≤1 candidate or workers=0/None (DECISION-129) | ✅ Complete |
+| **SQLite candidate store** — `CandidateStore` with init/insert/get/list/summary; `candidate-store-init/summary/list` CLI; local triage aid only (DECISION-129) | ✅ Complete |
 
 ---
 
