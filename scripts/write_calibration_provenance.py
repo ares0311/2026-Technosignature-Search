@@ -63,6 +63,23 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def read_dat_headers(path: Path) -> dict[str, str]:
+    """Read # KEY: VALUE headers from a turboSETI .dat file."""
+    headers: dict[str, str] = {}
+    try:
+        with path.open("r", encoding="utf-8", errors="replace") as fh:
+            for line in fh:
+                line = line.rstrip()
+                if not line.startswith("#"):
+                    break
+                if ":" in line:
+                    key, _, value = line[1:].partition(":")
+                    headers[key.strip()] = value.strip()
+    except OSError:
+        pass
+    return headers
+
+
 def build_provenance(
     dat_path: Path,
     *,
@@ -198,16 +215,31 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR: .dat file not found: {dat_path}", file=sys.stderr)
         return 1
 
-    target_id = args.target_id or dat_path.stem
-    cadence_id = args.cadence_id or dat_path.stem
+    # Auto-read turboSETI header fields (# Source:, # MJD:, # RA:, # DEC:)
+    dat_headers = read_dat_headers(dat_path)
+    header_source = dat_headers.get("Source", "").strip()
+    header_mjd_str = dat_headers.get("MJD", "").strip()
 
-    # Extract MJD from filename if present (guppi_{MJD}_... convention)
+    # target_id: CLI arg > header Source > filename stem
+    target_id = args.target_id or header_source or dat_path.stem
+    # cadence_id: CLI arg > derive from target + survey tag
+    if args.cadence_id:
+        cadence_id = args.cadence_id
+    elif header_source:
+        cadence_id = f"{header_source}-lband-survey"
+    else:
+        cadence_id = dat_path.stem
+
+    # Extract MJD: CLI arg > guppi filename convention > header MJD
     mjd = args.observation_mjd
     if mjd is None:
         parts = dat_path.stem.split("_")
         if len(parts) >= 2 and parts[0].lower() in ("guppi",):
             with contextlib.suppress(ValueError):
                 mjd = float(parts[1])
+    if mjd is None and header_mjd_str:
+        with contextlib.suppress(ValueError):
+            mjd = float(header_mjd_str)
 
     # Derive epoch_utc from MJD if not supplied
     epoch_utc = args.epoch_utc
@@ -229,6 +261,12 @@ def main(argv: list[str] | None = None) -> int:
         epoch_utc = f"{year:04d}-{month:02d}-{day:02d}"
 
     source_url = args.source_url
+    # Auto-derive source_url for L_band_table files when not supplied
+    if not source_url and header_source:
+        source_url = (
+            f"https://blpd0.ssl.berkeley.edu/L_band_table/{header_source}_hits.dat"
+        )
+        print(f"[INFO] Auto-derived source_url from header: {source_url}")
     # Ensure HTTPS
     if source_url.startswith("http://"):
         source_url = "https://" + source_url[7:]
