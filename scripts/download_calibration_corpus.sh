@@ -19,8 +19,10 @@
 #   --help              Show this help
 #
 # Archive:
-#   https://blpd0.ssl.berkeley.edu/L_band_table/{TARGET}_hits.dat
-#   (Enriquez et al. 2017 GBT L-band survey, publicly accessible, no auth)
+#   blpd0.ssl.berkeley.edu is a web portal redirect, not a direct data server.
+#   The /L_band_table/ path returns HTTP 404. Use the BL Open Data Portal
+#   (https://seti.berkeley.edu/listen/data.html) to browse and download .dat files
+#   manually, then copy them to the --out-dir.
 #
 # After downloading:
 #   1. Create provenance sidecars (one per .dat):

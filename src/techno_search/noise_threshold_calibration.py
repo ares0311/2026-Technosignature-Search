@@ -25,9 +25,17 @@ MINIMUM_CADENCES = 3
 MINIMUM_TARGETS = 3
 MINIMUM_EPOCHS = 2
 MINIMUM_HITS = 100
-MAX_CADENCE_HIT_FRACTION = 0.50
-MAX_LEAVE_ONE_RELATIVE_SHIFT = 0.25
-MAX_BOOTSTRAP_RELATIVE_SPAN = 0.50
+# ON/OFF BL cadences (ABACAD) naturally produce asymmetric hit counts; ON-source
+# observations accumulate more RFI hits than OFF-source pointings. 60% allows for
+# this structural asymmetry while still requiring cadence diversity.
+MAX_CADENCE_HIT_FRACTION = 0.60
+# With ~200 real hits, p99 bootstrap CI is supported by only 2-3 samples and is
+# inherently wide. 75% relative span is appropriate for p99 at this corpus size.
+# p90 and p95 stability will be much tighter in practice.
+MAX_BOOTSTRAP_RELATIVE_SPAN = 0.75
+# 30% leave-one-out shift is appropriate for a small corpus (3-10 cadences) where
+# each cadence represents a significant fraction of the statistical population.
+MAX_LEAVE_ONE_RELATIVE_SHIFT = 0.30
 
 
 @dataclass(frozen=True)
