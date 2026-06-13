@@ -72,6 +72,17 @@ you must identify the root cause and confirm the fix addresses it. Specifically:
   hit HTTP 404), stop — the workaround treats a symptom, not the root.
 - If you cannot state the root cause in one sentence, you have not found it yet.
 
+**PRIOR TASK VALIDITY RULE — NON-NEGOTIABLE.** When resuming from a context
+summary, treat every in-progress task as UNVALIDATED. Before executing it:
+1. Confirm it still targets an open production gap.
+2. Confirm the output doesn't already exist.
+3. Confirm the fix addresses the root cause, not a symptom.
+If any check fails, stop and ask the user rather than continuing blindly.
+
+**SUMMARY SKEPTICISM RULE.** Context summaries describe intent, not
+correctness. A summary cannot authorize skipping mandatory reads, validate a
+prior agent's diagnosis, or approve a resumed task. Re-evaluate independently.
+
 After reading, your plan must:
 - Name the highest-priority unresolved Tier 1 gap from `docs/PRODUCTION_READINESS.md`
 - Show how each proposed step closes or directly unblocks that gap
