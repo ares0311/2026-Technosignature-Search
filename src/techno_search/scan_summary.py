@@ -141,16 +141,30 @@ def scan_summary_from_batch_dir(batch_dir: Path) -> dict[str, Any]:
                 pass
 
         merged = {**report_data, **manifest}
-        score = float(merged.get("score", merged.get("candidate_score", 0.0)))
+        # scores.followup_value is the composite score in full pipeline reports
+        scores_block = report_data.get("scores", {})
+        score = float(
+            scores_block.get(
+                "followup_value",
+                merged.get("score", merged.get("candidate_score", 0.0)),
+            )
+        )
+        # SNR and frequency live in features block for pipeline JSON reports
+        features = report_data.get("features", {})
+        snr = float(features.get("snr", merged.get("snr", 0.0)))
+        freq = float(features.get("frequency_hz", merged.get("frequency_hz", 0.0)))
+        drift = float(
+            features.get("drift_rate_hz_per_sec", merged.get("drift_rate_hz_per_sec", 0.0))
+        )
         candidates.append(
             {
                 "candidate_id": merged.get("candidate_id", target_name),
                 "score": score,
                 "recommended_pathway": merged.get("recommended_pathway", "unknown"),
                 "target_name": target_name,
-                "frequency_hz": float(merged.get("frequency_hz", 0.0)),
-                "snr": float(merged.get("snr", 0.0)),
-                "drift_rate_hz_per_sec": float(merged.get("drift_rate_hz_per_sec", 0.0)),
+                "frequency_hz": freq,
+                "snr": snr,
+                "drift_rate_hz_per_sec": drift,
                 "track": merged.get("track", "unknown"),
             }
         )
