@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 from techno_search.baseline_eval import eval_against_labels
@@ -52,7 +53,7 @@ class TestRealLabelAccuracyGate:
 
     def test_validate_all_includes_real_label_accuracy(self) -> None:
         proc = subprocess.run(
-            [".venv/bin/techno-search", "validate-all"],
+            [sys.executable, "-m", "techno_search.cli", "validate-all"],
             capture_output=True,
             text=True,
             cwd=Path(__file__).resolve().parents[1],
@@ -64,7 +65,7 @@ class TestRealLabelAccuracyGate:
 
     def test_validate_all_real_label_gate_passes(self) -> None:
         proc = subprocess.run(
-            [".venv/bin/techno-search", "validate-all"],
+            [sys.executable, "-m", "techno_search.cli", "validate-all"],
             capture_output=True,
             text=True,
             cwd=Path(__file__).resolve().parents[1],
@@ -75,7 +76,7 @@ class TestRealLabelAccuracyGate:
 
     def test_validate_all_real_label_accuracy_value(self) -> None:
         proc = subprocess.run(
-            [".venv/bin/techno-search", "validate-all"],
+            [sys.executable, "-m", "techno_search.cli", "validate-all"],
             capture_output=True,
             text=True,
             cwd=Path(__file__).resolve().parents[1],
@@ -86,7 +87,7 @@ class TestRealLabelAccuracyGate:
 
     def test_validation_summary_includes_real_label_fields(self) -> None:
         proc = subprocess.run(
-            [".venv/bin/techno-search", "validation-summary"],
+            [sys.executable, "-m", "techno_search.cli", "validation-summary"],
             capture_output=True,
             text=True,
             cwd=Path(__file__).resolve().parents[1],

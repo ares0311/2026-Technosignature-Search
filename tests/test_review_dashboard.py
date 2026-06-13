@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 from techno_search.review_dashboard import (
@@ -63,7 +64,7 @@ class TestReviewDashboard:
 
     def test_cli_command_returns_json(self) -> None:
         proc = subprocess.run(
-            [".venv/bin/techno-search", "review-dashboard"],
+            [sys.executable, "-m", "techno_search.cli", "review-dashboard"],
             capture_output=True,
             text=True,
             cwd=Path(__file__).resolve().parents[1],
@@ -74,7 +75,7 @@ class TestReviewDashboard:
 
     def test_cli_exit_code_reflects_needs_attention(self) -> None:
         proc = subprocess.run(
-            [".venv/bin/techno-search", "review-dashboard"],
+            [sys.executable, "-m", "techno_search.cli", "review-dashboard"],
             capture_output=True,
             text=True,
             cwd=Path(__file__).resolve().parents[1],

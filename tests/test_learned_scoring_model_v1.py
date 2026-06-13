@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 from techno_search.learned_scoring_model import (
@@ -123,7 +124,7 @@ class TestRealLabelsModelSummary:
 class TestRealLabelsModelCLI:
     def test_cli_returns_json(self) -> None:
         proc = subprocess.run(
-            [".venv/bin/techno-search", "real-labels-model-summary"],
+            [sys.executable, "-m", "techno_search.cli", "real-labels-model-summary"],
             capture_output=True,
             text=True,
             cwd=Path(__file__).resolve().parents[1],
@@ -135,7 +136,7 @@ class TestRealLabelsModelCLI:
 
     def test_cli_cv_accuracy_field(self) -> None:
         proc = subprocess.run(
-            [".venv/bin/techno-search", "real-labels-model-summary"],
+            [sys.executable, "-m", "techno_search.cli", "real-labels-model-summary"],
             capture_output=True,
             text=True,
             cwd=Path(__file__).resolve().parents[1],
@@ -146,7 +147,7 @@ class TestRealLabelsModelCLI:
 
     def test_validate_all_includes_learned_model_fields(self) -> None:
         proc = subprocess.run(
-            [".venv/bin/techno-search", "validate-all"],
+            [sys.executable, "-m", "techno_search.cli", "validate-all"],
             capture_output=True,
             text=True,
             cwd=Path(__file__).resolve().parents[1],
@@ -158,7 +159,7 @@ class TestRealLabelsModelCLI:
 
     def test_validate_all_gate_passes(self) -> None:
         proc = subprocess.run(
-            [".venv/bin/techno-search", "validate-all"],
+            [sys.executable, "-m", "techno_search.cli", "validate-all"],
             capture_output=True,
             text=True,
             cwd=Path(__file__).resolve().parents[1],
@@ -168,7 +169,7 @@ class TestRealLabelsModelCLI:
 
     def test_validation_summary_includes_learned_model(self) -> None:
         proc = subprocess.run(
-            [".venv/bin/techno-search", "validation-summary"],
+            [sys.executable, "-m", "techno_search.cli", "validation-summary"],
             capture_output=True,
             text=True,
             cwd=Path(__file__).resolve().parents[1],
