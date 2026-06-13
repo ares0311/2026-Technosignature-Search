@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DataReleaseSnapshot",
+  "description": "A data release snapshot capturing pathway assignments and score statistics for a named pipeline run. Used for reproducibility verification across pipeline versions and calibration updates. Pathway changes are local scheduling observations only.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "disclaimer",
+    "snapshot_id",
+    "data_release_label",
+    "pipeline_version",
+    "created_at_utc",
+    "candidate_count",
+    "pathway_distribution",
+    "track_distribution",
+    "pathway_assignment_hash",
+    "per_candidate"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "data_release_snapshot_v1"
+    },
+    "disclaimer": {
+      "type": "string",
+      "minLength": 10
+    },
+    "snapshot_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "data_release_label": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pipeline_version": {
+      "type": "string"
+    },
+    "created_at_utc": {
+      "type": "string"
+    },
+    "candidate_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "pathway_distribution": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "track_distribution": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "pathway_assignment_hash": {
+      "type": "string",
+      "minLength": 8
+    },
+    "per_candidate": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["candidate_id", "track", "recommended_pathway"],
+        "properties": {
+          "candidate_id": {"type": "string"},
+          "track": {"type": "string"},
+          "recommended_pathway": {"type": "string"}
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

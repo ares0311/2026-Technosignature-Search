@@ -1,12 +1,12 @@
 {
   "schema_version": "project_status_consistency_v1",
   "expected_status": {
-    "latest_milestone_number": 74,
-    "latest_milestone_label": "Learned Scoring Model v1 — Tier 2 Complete",
-    "latest_decision_number": 130,
-    "schema_count": 104,
+    "latest_milestone_number": 75,
+    "latest_milestone_label": "Reproducibility Verification Across Data Releases — Tier 3 Progress",
+    "latest_decision_number": 131,
+    "schema_count": 105,
     "expected_rfi_real_data_authorization_total": 0,
     "expected_curated_real_data_authorization_total": 1,
-    "project_status_completed_phrase": "Learned scoring model v1 trained on 124 real HIP99427 labels with 99.19% 3-fold CV accuracy"
+    "project_status_completed_phrase": "Data release snapshot v1 added with deterministic pathway assignment hash and cross-release comparison (105 schemas, Tier 3 gap closed)"
   }
 }

@@ -1601,6 +1601,17 @@ Total schemas: 188.
 - No entry modifies candidate scores or pathway routing
 - No entry authorizes external submission or constitutes a detection claim
 
+# Milestone 75 — Reproducibility Verification Across Data Releases
+
+- Data release snapshot module (`data_release_snapshot_summary`, `snapshot_from_batch_manifest`, `compare_snapshots`) captures pathway assignments and score statistics for named pipeline runs
+- Deterministic SHA-256 pathway assignment hash for cross-release comparison
+- `techno-search data-release-snapshot-summary` CLI reports snapshot count and cross-release pathway changes
+- `techno-search compare-data-releases <snap_a_id> <snap_b_id>` CLI compares two named releases
+- `schemas/data_release_snapshot.schema.json` (schema count: 105)
+- `validate-all` gate: `data_release_snapshot_count >= 1`
+- Closes Tier 3 gap: Reproducibility verification across data releases
+- Pathway changes across releases are scheduling observations only; no detection claim; no external submission authorization
+
 # Milestone 74 — Operator Review Dashboard And Learned Scoring Model v1
 
 - Operator review dashboard (`review_dashboard_summary`) aggregates open flags, overdue deadlines, review queue depth, pipeline blockers, watchlist elevated targets, and real-label accuracy gate into a single operator scheduling aid

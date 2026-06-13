@@ -354,6 +354,7 @@ The project will support three tracks from day one:
 - [x] Learned scoring model v1 trained on 124 real HIP99427 labels with 99.19% 3-fold CV accuracy
 - [x] Operator review dashboard added for open flags, deadlines, and accuracy regression gate
 - [x] All Tier 2 production gaps closed as of 2026-06-12
+- [x] Data release snapshot v1 added with deterministic pathway assignment hash and cross-release comparison (105 schemas, Tier 3 gap closed)
 
 ## Next 3 Actions
 
