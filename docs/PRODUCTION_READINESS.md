@@ -1,7 +1,7 @@
 # Production Readiness Assessment
 
 **Last updated:** 2026-06-13
-**Current milestone:** 75 (Reproducibility Verification Across Data Releases — Tier 3 Progress)
+**Current milestone:** 76 (Multi-Target Scan Orchestration — Tier 3 Production Hardening)
 
 ---
 
@@ -27,7 +27,7 @@ Expert review and external validation are not claimed.
 | Calibration fixture set (15 false-positive classes) | ✅ Complete |
 | Score regression + determinism checks | ✅ Complete |
 | Interpretable baseline classifier | ✅ Complete |
-| 105 JSON schema artifacts | ✅ Complete |
+| 109 JSON schema artifacts | ✅ Complete |
 | Local validation gate (`validate-all`) | ✅ Complete |
 | Provenance, audit trail, lifecycle tracking | ✅ Complete |
 | Operational log system (86 log types) | ✅ Complete |
@@ -91,6 +91,15 @@ Expert review and external validation are not claimed.
 | **Learned scoring model v1** — logistic regression trained on 124 real GBT/HIP99427 citizen-science labels; 3-class pathway classifier (false_positive / insufficient_evidence / follow_up); 3-fold stratified CV accuracy 99.19% (rule-based baseline: 77.42%); `real-labels-model-summary` CLI; `validate-all` gate: `learned_scoring_model_v1_trained=True`; closes final Tier 2 gap (DECISION-130) | ✅ Complete |
 | **Operator review dashboard** — `review_dashboard_summary()` aggregates open flags, overdue deadlines, review queue, blockers, watchlist elevated targets, and real-label accuracy gate into a single operator scheduling aid; `techno-search review-dashboard` CLI with exit code 1 on needs_attention; closes Tier 3 operator UI gap | ✅ Complete |
 | **Data release snapshot** — `data_release_snapshot_summary()`, `snapshot_from_batch_manifest()`, `compare_snapshots()`; deterministic SHA-256 pathway assignment hash; `data-release-snapshot-summary` and `compare-data-releases` CLI; 105 JSON schema artifacts; closes Tier 3 reproducibility gap (DECISION-131) | ✅ Complete |
+| **Multi-target scan orchestration** — `run_multi_target_scan()` with parallel scoring; per-target result tracking; `MultiTargetScanResult` dataclass; `scan-summary` CLI for ranked anomaly list across N targets (Milestone 76) | ✅ Complete |
+| **Cross-target RFI suppression** — `flag_cross_target_rfi()`; signals in ≥2 independent targets at same frequency (within 500 Hz default) flagged as likely terrestrial; `cross-target-rfi-summary` CLI | ✅ Complete |
+| **Candidate escalation gate** — `escalation_gate_check()` requiring `candidate_review_packet` + SNR ≥ 42.4; `create_escalation_record()` with SHA-256 reproduction checklist; `operator_cleared` and `external_review_authorized` always start False; `escalation-gate-check` CLI | ✅ Complete |
+| **Cross-store position deduplication** — `find_cross_store_matches()` and `cross_store_dedup_summary()` for radio+infrared corroboration by angular separation; 10 arcsec default tolerance | ✅ Complete |
+| **Gaia DR3 scan workflow** — `query_gaia_for_targets()` for batch sky queries; guarded behind `TECHNO_SEARCH_ENABLE_LIVE_DATA=1`; per-target JSON output; `load_targets_from_json()` for target list ingestion | ✅ Complete |
+| **Weekly automated scan schedule** — `.github/workflows/weekly_scan.yml`; runs Sunday 02:00 UTC; validate-all gate before scan; escalation check on results; commits scan summary to `results/scans/` | ✅ Complete |
+| **Calibration transfer protocol** — `docs/CALIBRATION_TRANSFER_PROTOCOL.md`; recalibration steps for new telescope/band; independent-method audit requirement documented | ✅ Complete |
+| **Production scan guide** — `docs/PRODUCTION_SCAN_GUIDE.md`; step-by-step operator instructions for multi-store anomaly scanning; escalation triage criteria | ✅ Complete |
+| **109 JSON schema artifacts** | ✅ Complete |
 
 ---
 
@@ -112,8 +121,8 @@ Expert review and external validation are not claimed.
 
 | Gap | Effort estimate |
 |---|---|
-| Parallelized batch processing | Small |
-| Database-backed candidate store (not file-based) | Medium |
+| Parallelized batch processing | ✅ Complete (Tier 3) |
+| Database-backed candidate store (not file-based) | ✅ Complete (Tier 3) |
 | Operator UI / review dashboard | ✅ Complete (Tier 3) |
 | External submission workflow | Large (outside current citizen-science production scope) |
 | Reproducibility verification across data releases | ✅ Complete (Tier 3) |

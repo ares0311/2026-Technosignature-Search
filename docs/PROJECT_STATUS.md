@@ -355,15 +355,19 @@ The project will support three tracks from day one:
 - [x] Operator review dashboard added for open flags, deadlines, and accuracy regression gate
 - [x] All Tier 2 production gaps closed as of 2026-06-12
 - [x] Data release snapshot v1 added with deterministic pathway assignment hash and cross-release comparison (105 schemas, Tier 3 gap closed)
+- [x] Multi-target scan orchestration, cross-target RFI suppression, anomaly ranking, candidate escalation gate (109 schemas, Milestone 76)
+- [x] Cross-store position deduplication (`cross_store_dedup`) for radio + infrared track corroboration
+- [x] Gaia DR3 scan workflow (`gaia_scan_workflow`) — guarded behind `TECHNO_SEARCH_ENABLE_LIVE_DATA=1`
+- [x] Weekly automated scan schedule (`.github/workflows/weekly_scan.yml`)
+- [x] Calibration transfer protocol documented (`docs/CALIBRATION_TRANSFER_PROTOCOL.md`)
+- [x] Production scan guide for citizen-science operators (`docs/PRODUCTION_SCAN_GUIDE.md`)
 
 ## Next 3 Actions
 
-1. Obtain operator approval for additional public GBT cadences from at least
-   two other observing sequences and one other epoch.
-2. Obtain operator approval for the storage/download budget and an official,
-   permitted GBT RFI reference source.
-3. Download, checksum, ingest, and independently review the approved additions;
-   threshold promotion remains blocked until every calibration gate passes.
+1. Download additional BL/GBT target hit tables (human task — see Task 4 in session plan).
+2. Run first multi-target scan with `techno-search scan-summary data/bl_hits/` across
+   ≥5 targets beyond HIP99427.
+3. Label 20-30 examples from new targets to validate learned model v1 generalization.
 
 ---
 

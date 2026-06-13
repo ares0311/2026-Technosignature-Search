@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2026-Technosignature-Search/schemas/scan_summary.schema.json",
+  "title": "ScanSummary",
+  "description": "Ranked summary of candidates from a multi-target scan. Rankings are scheduling aids only.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "disclaimer",
+    "total_candidates",
+    "follow_up_count",
+    "candidate_review_count",
+    "top_candidates",
+    "targets_scanned"
+  ],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "disclaimer": {"type": "string"},
+    "total_candidates": {"type": "integer", "minimum": 0},
+    "follow_up_count": {"type": "integer", "minimum": 0},
+    "candidate_review_count": {"type": "integer", "minimum": 0},
+    "top_candidates": {"type": "array"},
+    "targets_scanned": {"type": "integer", "minimum": 0}
+  },
+  "additionalProperties": true
+}

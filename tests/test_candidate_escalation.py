@@ -1,0 +1,131 @@
+"""Tests for candidate escalation gate (Task 9)."""
+from __future__ import annotations
+
+from techno_search.candidate_escalation import (
+    ESCALATION_DISCLAIMER,
+    ESCALATION_SCHEMA_VERSION,
+    ESCALATION_SNR_GATE,
+    create_escalation_record,
+    escalation_gate_check,
+    escalation_summary,
+)
+
+
+def _candidate(pathway: str, snr: float) -> dict:
+    return {
+        "candidate_id": f"cand-{snr:.0f}",
+        "recommended_pathway": pathway,
+        "snr": snr,
+        "frequency_hz": 1420e6,
+    }
+
+
+class TestEscalationGateCheck:
+    def test_passes_when_review_packet_and_snr_above_gate(self) -> None:
+        c = _candidate("candidate_review_packet", 50.0)
+        assert escalation_gate_check(c) is True
+
+    def test_fails_for_human_review_queue(self) -> None:
+        c = _candidate("human_review_queue", 100.0)
+        assert escalation_gate_check(c) is False
+
+    def test_fails_for_false_positive_pathway(self) -> None:
+        c = _candidate("do_not_submit_false_positive", 200.0)
+        assert escalation_gate_check(c) is False
+
+    def test_fails_when_snr_below_gate(self) -> None:
+        c = _candidate("candidate_review_packet", ESCALATION_SNR_GATE - 0.1)
+        assert escalation_gate_check(c) is False
+
+    def test_passes_at_exact_gate_snr(self) -> None:
+        c = _candidate("candidate_review_packet", ESCALATION_SNR_GATE)
+        assert escalation_gate_check(c) is True
+
+    def test_fails_missing_pathway(self) -> None:
+        c = {"candidate_id": "x", "snr": 100.0}
+        assert escalation_gate_check(c) is False
+
+    def test_gate_value_is_42_4(self) -> None:
+        assert ESCALATION_SNR_GATE == 42.4
+
+
+class TestCreateEscalationRecord:
+    def test_operator_cleared_defaults_false(self) -> None:
+        c = _candidate("candidate_review_packet", 60.0)
+        record = create_escalation_record(c, "HIP99427", "abc123", "scoring_v0")
+        assert record.operator_cleared is False
+
+    def test_external_review_authorized_defaults_false(self) -> None:
+        c = _candidate("candidate_review_packet", 60.0)
+        record = create_escalation_record(c, "HIP99427", "abc123", "scoring_v0")
+        assert record.external_review_authorized is False
+
+    def test_reproduction_checklist_non_empty(self) -> None:
+        c = _candidate("candidate_review_packet", 60.0)
+        record = create_escalation_record(c, "HIP99427", "sha256abc", "scoring_v0")
+        assert len(record.reproduction_checklist) >= 1
+        assert any("sha256abc" in item for item in record.reproduction_checklist)
+
+    def test_target_name_stored(self) -> None:
+        c = _candidate("candidate_review_packet", 60.0)
+        record = create_escalation_record(c, "HIP99427", "x", "scoring_v0")
+        assert record.target_name == "HIP99427"
+
+    def test_schema_version(self) -> None:
+        c = _candidate("candidate_review_packet", 60.0)
+        record = create_escalation_record(c, "T", "x", "v0")
+        assert record.schema_version == ESCALATION_SCHEMA_VERSION
+
+    def test_disclaimer(self) -> None:
+        c = _candidate("candidate_review_packet", 60.0)
+        record = create_escalation_record(c, "T", "x", "v0")
+        assert record.disclaimer == ESCALATION_DISCLAIMER
+        assert "detection claim" in record.disclaimer
+
+    def test_as_dict_serialisable(self) -> None:
+        import json
+        c = _candidate("candidate_review_packet", 60.0)
+        record = create_escalation_record(c, "T", "x", "v0")
+        json.dumps(record.as_dict())  # must not raise
+
+    def test_as_dict_has_required_fields(self) -> None:
+        c = _candidate("candidate_review_packet", 60.0)
+        record = create_escalation_record(c, "T", "x", "v0")
+        d = record.as_dict()
+        for field in (
+            "escalation_id",
+            "candidate_id",
+            "target_name",
+            "frequency_hz",
+            "snr",
+            "recommended_pathway",
+            "operator_cleared",
+            "external_review_authorized",
+            "reproduction_checklist",
+            "schema_version",
+            "disclaimer",
+        ):
+            assert field in d, f"missing field: {field}"
+
+
+class TestEscalationSummary:
+    def test_empty_list(self) -> None:
+        result = escalation_summary([])
+        assert result["total_count"] == 0
+        assert result["operator_cleared_count"] == 0
+        assert result["external_review_authorized_count"] == 0
+
+    def test_counts_cleared(self) -> None:
+        c = _candidate("candidate_review_packet", 60.0)
+        r1 = create_escalation_record(c, "T", "x", "v0")
+        r2 = create_escalation_record(c, "T", "x", "v0")
+        r1.operator_cleared = True
+        result = escalation_summary([r1, r2])
+        assert result["total_count"] == 2
+        assert result["operator_cleared_count"] == 1
+
+    def test_external_review_authorized_stays_zero(self) -> None:
+        c = _candidate("candidate_review_packet", 60.0)
+        records = [create_escalation_record(c, "T", "x", "v0") for _ in range(3)]
+        result = escalation_summary(records)
+        assert result["external_review_authorized_count"] == 0
