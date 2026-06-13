@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2026-Technosignature-Search/schemas/multi_target_scan.schema.json",
+  "title": "MultiTargetScan",
+  "description": "Aggregate result of a multi-target pipeline scan. Results are local scheduling aids only.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "disclaimer",
+    "targets_attempted",
+    "targets_succeeded",
+    "targets_failed",
+    "total_candidates",
+    "follow_up_count",
+    "candidate_review_count",
+    "target_results"
+  ],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "disclaimer": {"type": "string"},
+    "targets_attempted": {"type": "integer", "minimum": 0},
+    "targets_succeeded": {"type": "integer", "minimum": 0},
+    "targets_failed": {"type": "integer", "minimum": 0},
+    "total_candidates": {"type": "integer", "minimum": 0},
+    "follow_up_count": {"type": "integer", "minimum": 0},
+    "candidate_review_count": {"type": "integer", "minimum": 0},
+    "target_results": {"type": "array"}
+  },
+  "additionalProperties": true
+}

@@ -1,12 +1,12 @@
 {
   "schema_version": "project_status_consistency_v1",
   "expected_status": {
-    "latest_milestone_number": 75,
-    "latest_milestone_label": "Reproducibility Verification Across Data Releases — Tier 3 Progress",
+    "latest_milestone_number": 76,
+    "latest_milestone_label": "Multi-Target Scan Orchestration — Tier 3 Production Hardening",
     "latest_decision_number": 131,
-    "schema_count": 105,
+    "schema_count": 109,
     "expected_rfi_real_data_authorization_total": 0,
     "expected_curated_real_data_authorization_total": 1,
-    "project_status_completed_phrase": "Data release snapshot v1 added with deterministic pathway assignment hash and cross-release comparison (105 schemas, Tier 3 gap closed)"
+    "project_status_completed_phrase": "Multi-target scan orchestration, cross-target RFI suppression, anomaly ranking, candidate escalation gate (109 schemas, Milestone 76)"
   }
 }

@@ -799,6 +799,10 @@ SCHEMA_FILENAMES = {
     "labeled_candidates_synthetic_v1": "labeled_candidates_synthetic_v1.schema.json",
     "calibration_corpus_admission": "calibration_corpus_admission.schema.json",
     "data_release_snapshot": "data_release_snapshot.schema.json",
+    "multi_target_scan": "multi_target_scan.schema.json",
+    "scan_summary": "scan_summary.schema.json",
+    "candidate_escalation": "candidate_escalation.schema.json",
+    "cross_store_dedup": "cross_store_dedup.schema.json",
 }
 
 
@@ -1784,6 +1788,45 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         _dash = review_dashboard_summary()
         print(json.dumps(_dash, indent=2, sort_keys=True), file=out)
         return 1 if _dash.get("needs_attention") else 0
+
+    if args.command == "scan-summary":
+        from techno_search.scan_summary import scan_summary_from_batch_dir
+        _scan = scan_summary_from_batch_dir(Path(args.batch_dir))
+        print(json.dumps(_scan, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "cross-target-rfi-summary":
+        from techno_search.cross_target_rfi import cross_target_rfi_summary
+        _rfi = cross_target_rfi_summary([])
+        print(json.dumps(_rfi, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "escalation-gate-check":
+        import json as _json
+
+        from techno_search.candidate_escalation import escalation_gate_check
+        try:
+            _cdata = _json.loads(Path(args.candidate_file).read_text())
+        except (OSError, ValueError) as _exc:
+            print(
+                json.dumps({"ok": False, "error": str(_exc)}, indent=2),
+                file=out,
+            )
+            return 1
+        _required = escalation_gate_check(_cdata)
+        print(
+            json.dumps(
+                {
+                    "escalation_required": _required,
+                    "pathway": _cdata.get("recommended_pathway", "unknown"),
+                    "snr": _cdata.get("snr", 0.0),
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
 
     if args.command == "operations-readiness-summary":
         _log_path = getattr(args, "sqlite_log_path", None)
@@ -11176,6 +11219,38 @@ def _build_parser() -> argparse.ArgumentParser:
             "review queue depth, pipeline blockers, and real-label accuracy. "
             "Returns exit 1 when any action items are pending."
         ),
+    )
+    scan_summary_parser = subparsers.add_parser(
+        "scan-summary",
+        help=(
+            "Rank candidates from a multi-target scan by score. "
+            "Reads *manifest.json files from BATCH_DIR."
+        ),
+    )
+    scan_summary_parser.add_argument(
+        "batch_dir",
+        type=str,
+        help="Directory containing *manifest.json files from a batch scan.",
+    )
+    subparsers.add_parser(
+        "cross-target-rfi-summary",
+        help=(
+            "Summarise cross-target RFI suppression policy. "
+            "Signals in >=2 targets at the same frequency are flagged as RFI."
+        ),
+    )
+    escalation_parser = subparsers.add_parser(
+        "escalation-gate-check",
+        help=(
+            "Check whether a candidate JSON file passes the escalation gate "
+            "(candidate_review_packet pathway + SNR >= 42.4). "
+            "Returns escalation_required: true/false."
+        ),
+    )
+    escalation_parser.add_argument(
+        "candidate_file",
+        type=str,
+        help="Path to a candidate JSON file (e.g. a report manifest).",
     )
     ops_ready_parser = subparsers.add_parser(
         "operations-readiness-summary",

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2026-Technosignature-Search/schemas/candidate_escalation.schema.json",
+  "title": "CandidateEscalation",
+  "description": "Escalation record for a candidate. Records are operator scheduling aids only.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "disclaimer",
+    "escalation_id",
+    "candidate_id",
+    "target_name",
+    "frequency_hz",
+    "snr",
+    "recommended_pathway",
+    "multi_epoch_confirmed",
+    "cross_store_corroborated",
+    "reproduction_checklist",
+    "operator_cleared",
+    "external_review_authorized",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "disclaimer": {"type": "string"},
+    "escalation_id": {"type": "string"},
+    "candidate_id": {"type": "string"},
+    "target_name": {"type": "string"},
+    "frequency_hz": {"type": "number"},
+    "snr": {"type": "number"},
+    "recommended_pathway": {"type": "string"},
+    "multi_epoch_confirmed": {"type": "boolean"},
+    "cross_store_corroborated": {"type": "boolean"},
+    "reproduction_checklist": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "operator_cleared": {"type": "boolean"},
+    "external_review_authorized": {"type": "boolean"},
+    "created_at": {"type": "string"}
+  },
+  "additionalProperties": true
+}

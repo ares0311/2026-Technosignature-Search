@@ -1621,3 +1621,19 @@ Total schemas: 188.
 - `validate-all` gate: `learned_scoring_model_v1_trained=True`
 - All Tier 2 gaps closed as of 2026-06-12; production readiness ~80%
 - Scores and dashboard entries are local scheduling aids only; no detection claim; no external submission authorization
+
+# Milestone 76 — Multi-Target Scan Orchestration — Tier 3 Production Hardening
+
+- Multi-target scan orchestration (`run_multi_target_scan()`) runs pipeline across N target directories with parallel scoring; `MultiTargetScanResult` dataclass
+- Cross-target RFI suppression (`flag_cross_target_rfi()`) flags signals at same frequency (±500 Hz) appearing in ≥2 independent targets
+- Anomaly ranking report (`scan_summary()`, `scan_summary_from_batch_dir()`) ranks candidates by score descending across all targets
+- Candidate escalation gate (`escalation_gate_check()`) requires `candidate_review_packet` pathway AND SNR ≥ 42.4; `operator_cleared` and `external_review_authorized` always start False
+- Cross-store position deduplication (`find_cross_store_matches()`) uses great-circle angular separation (10 arcsec default) across radio+infrared tracks
+- Gaia DR3 scan workflow (`query_gaia_for_targets()`) guarded by `TECHNO_SEARCH_ENABLE_LIVE_DATA=1`
+- Weekly automated scan workflow (`.github/workflows/weekly_scan.yml`) — Sunday 02:00 UTC
+- Calibration transfer protocol (`docs/CALIBRATION_TRANSFER_PROTOCOL.md`) documents GBT-specific thresholds and 5-step recalibration for new telescopes
+- Production scan guide (`docs/PRODUCTION_SCAN_GUIDE.md`) and scan schedule (`docs/SCAN_SCHEDULE.md`)
+- `schemas/multi_target_scan.schema.json`, `schemas/scan_summary.schema.json`, `schemas/candidate_escalation.schema.json`, `schemas/cross_store_dedup.schema.json` (schema count: 109)
+- `validate-all` gates: multi-target scan schema paths present
+- Closes Tier 3 gaps: parallelized batch scanning, cross-target RFI suppression, automated scan scheduling
+- No result constitutes a detection claim; no submission authorized without peer review

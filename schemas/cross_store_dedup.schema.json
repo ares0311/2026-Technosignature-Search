@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cross_store_dedup.schema.json",
+  "title": "Cross-Store Candidate Deduplication",
+  "description": "Position matches across multiple data stores. Provenance record only.",
+  "type": "object",
+  "required": [
+    "total_candidates",
+    "stores_compared",
+    "store_names",
+    "cross_store_match_count",
+    "multi_track_corroboration_count",
+    "tolerance_arcsec",
+    "matches",
+    "schema_version",
+    "disclaimer"
+  ],
+  "properties": {
+    "total_candidates": {"type": "integer", "minimum": 0},
+    "stores_compared": {"type": "integer", "minimum": 0},
+    "store_names": {"type": "array", "items": {"type": "string"}},
+    "cross_store_match_count": {"type": "integer", "minimum": 0},
+    "multi_track_corroboration_count": {"type": "integer", "minimum": 0},
+    "tolerance_arcsec": {"type": "number", "exclusiveMinimum": 0},
+    "matches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "match_id", "candidate_id_a", "store_a", "candidate_id_b",
+          "store_b", "separation_arcsec", "tracks_matched",
+          "corroboration_note", "schema_version", "disclaimer"
+        ],
+        "properties": {
+          "match_id": {"type": "string"},
+          "candidate_id_a": {"type": "string"},
+          "store_a": {"type": "string"},
+          "candidate_id_b": {"type": "string"},
+          "store_b": {"type": "string"},
+          "separation_arcsec": {"type": "number", "minimum": 0},
+          "tracks_matched": {"type": "array", "items": {"type": "string"}},
+          "corroboration_note": {"type": "string"},
+          "schema_version": {"type": "string"},
+          "disclaimer": {"type": "string"}
+        }
+      }
+    },
+    "schema_version": {"type": "string", "const": "cross_store_dedup_v1"},
+    "disclaimer": {"type": "string"}
+  }
+}
