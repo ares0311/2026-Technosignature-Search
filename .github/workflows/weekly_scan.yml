@@ -18,6 +18,7 @@ permissions:
 env:
   TECHNO_SEARCH_ENABLE_LIVE_DATA: "0"
   PYTHONWARNINGS: default
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
   scan:
@@ -34,7 +35,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install package
-        run: pip install -e ".[dev]"
+        run: pip install -e ".[dev,science]"
 
       - name: Run validate-all (must pass before scanning)
         run: python -m techno_search.cli validate-all
