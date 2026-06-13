@@ -289,9 +289,11 @@ def cadence_candidate_context(path: Path) -> tuple[tuple[str, ...], dict[str, An
         return (), {}
     payload = json.loads(sidecar.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
-        raise ValueError("Cadence provenance sidecar must contain a JSON object.")
+        return (), {}
     if payload.get("schema_version") != CADENCE_DERIVATION_SCHEMA_VERSION:
-        raise ValueError("Cadence provenance sidecar has an unsupported schema_version.")
+        # Sidecar is an artifact-level provenance record (observation_artifact_provenance_v1),
+        # not a cadence derivation record. Ignore it gracefully — cadence context is optional.
+        return (), {}
     if payload.get("artifact_filename") != path.name:
         raise ValueError("Cadence provenance artifact_filename does not match the input.")
     if payload.get("sha256") != sha256_file(path):
