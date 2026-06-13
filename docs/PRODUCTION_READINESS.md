@@ -1,7 +1,7 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-06-12
-**Current milestone:** 74 (Learned Scoring Model v1 — Tier 2 Complete)
+**Last updated:** 2026-06-13
+**Current milestone:** 75 (Reproducibility Verification Across Data Releases — Tier 3 Progress)
 
 ---
 
@@ -27,7 +27,7 @@ Expert review and external validation are not claimed.
 | Calibration fixture set (15 false-positive classes) | ✅ Complete |
 | Score regression + determinism checks | ✅ Complete |
 | Interpretable baseline classifier | ✅ Complete |
-| 104 JSON schema artifacts | ✅ Complete |
+| 105 JSON schema artifacts | ✅ Complete |
 | Local validation gate (`validate-all`) | ✅ Complete |
 | Provenance, audit trail, lifecycle tracking | ✅ Complete |
 | Operational log system (86 log types) | ✅ Complete |
@@ -90,6 +90,7 @@ Expert review and external validation are not claimed.
 | **Independent reproduction** — `validate-all` confirmed passing in a separate citizen-science environment (2026-06-12) | ✅ Complete |
 | **Learned scoring model v1** — logistic regression trained on 124 real GBT/HIP99427 citizen-science labels; 3-class pathway classifier (false_positive / insufficient_evidence / follow_up); 3-fold stratified CV accuracy 99.19% (rule-based baseline: 77.42%); `real-labels-model-summary` CLI; `validate-all` gate: `learned_scoring_model_v1_trained=True`; closes final Tier 2 gap (DECISION-130) | ✅ Complete |
 | **Operator review dashboard** — `review_dashboard_summary()` aggregates open flags, overdue deadlines, review queue, blockers, watchlist elevated targets, and real-label accuracy gate into a single operator scheduling aid; `techno-search review-dashboard` CLI with exit code 1 on needs_attention; closes Tier 3 operator UI gap | ✅ Complete |
+| **Data release snapshot** — `data_release_snapshot_summary()`, `snapshot_from_batch_manifest()`, `compare_snapshots()`; deterministic SHA-256 pathway assignment hash; `data-release-snapshot-summary` and `compare-data-releases` CLI; 105 JSON schema artifacts; closes Tier 3 reproducibility gap (DECISION-131) | ✅ Complete |
 
 ---
 
@@ -115,7 +116,7 @@ Expert review and external validation are not claimed.
 | Database-backed candidate store (not file-based) | Medium |
 | Operator UI / review dashboard | ✅ Complete (Tier 3) |
 | External submission workflow | Large (outside current citizen-science production scope) |
-| Reproducibility verification across data releases | Medium |
+| Reproducibility verification across data releases | ✅ Complete (Tier 3) |
 | Optional expert or institutional review | External opportunity, not assumed |
 
 ---

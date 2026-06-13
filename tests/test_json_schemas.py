@@ -43,6 +43,7 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "curated_dataset_admission.schema.json",
         "curated_dataset_intake.schema.json",
         "data_quality.schema.json",
+        "data_release_snapshot.schema.json",
         "epoch_plan.schema.json",
         "feature_importance.schema.json",
         "feature_normalization.schema.json",

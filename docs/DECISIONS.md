@@ -3145,6 +3145,34 @@ This is not a detection claim. Diagnostic agreement is measured against citizen-
 labels derived from a single cadence/target combination and has not been independently
 validated. The model requires independent reproduction before production scoring claims.
 
+# DECISION-131: Data Release Snapshot — Reproducibility Verification Across Pipeline Versions
+
+Date: 2026-06-13
+Status: Accepted
+
+**Milestone:** 75 — Closes Tier 3 gap: "Reproducibility verification across data releases"
+
+## Context
+
+After deploying a new pipeline version or calibration update, operators need a way to confirm which candidates changed pathway and whether the change is expected. Without a snapshot mechanism, pathway drift between versions is invisible.
+
+## Decision
+
+Add a data release snapshot module that:
+- Captures named snapshots of batch pipeline results (pathway assignments per candidate, SHA-256 hash of sorted assignments, pathway and track distribution)
+- Provides `snapshot_from_batch_manifest()` to build a snapshot from an existing `batch_manifest.json`
+- Provides `compare_snapshots()` to identify pathway changes, new candidates, and removed candidates across two snapshots
+- Provides `data_release_snapshot_summary()` for sequential cross-release comparison across all fixture snapshots
+- Adds `techno-search data-release-snapshot-summary` and `techno-search compare-data-releases` CLI commands
+- Adds `schemas/data_release_snapshot.schema.json` (total schemas: 105)
+- Gates `validate-all` on `data_release_snapshot_count >= 1`
+
+## Scientific Guardrails
+
+- Pathway changes detected across releases are local scheduling observations only
+- Cross-release comparisons do not constitute detection claims, calibration approvals, or authorization for external submission
+- Pathway drift is reported but never auto-corrected; operator review is required
+
 # DECISION-130: Learned Scoring Model v1 — Logistic Regression On 124 Real HIP99427 Labels
 
 Date: 2026-06-12

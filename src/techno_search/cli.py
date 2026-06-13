@@ -798,6 +798,7 @@ SCHEMA_FILENAMES = {
     "labeled_candidates_citizen_science_v1": "labeled_candidates_citizen_science_v1.schema.json",
     "labeled_candidates_synthetic_v1": "labeled_candidates_synthetic_v1.schema.json",
     "calibration_corpus_admission": "calibration_corpus_admission.schema.json",
+    "data_release_snapshot": "data_release_snapshot.schema.json",
 }
 
 
@@ -903,6 +904,40 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "data-release-snapshot-summary":
+        from techno_search.data_release_snapshot import data_release_snapshot_summary
+
+        snap_path = Path(args.snapshot_path) if args.snapshot_path else None
+        result = data_release_snapshot_summary(snap_path)
+        print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "compare-data-releases":
+        from techno_search.data_release_snapshot import (
+            compare_snapshots,
+            load_data_release_snapshots,
+        )
+
+        snap_path = Path(args.snapshot_path) if args.snapshot_path else None
+        snapshots = load_data_release_snapshots(snap_path)
+        snap_by_id = {s.get("snapshot_id"): s for s in snapshots}
+        snap_a = snap_by_id.get(args.snapshot_a_id)
+        snap_b = snap_by_id.get(args.snapshot_b_id)
+        if snap_a is None or snap_b is None:
+            missing = [
+                sid
+                for sid in (args.snapshot_a_id, args.snapshot_b_id)
+                if snap_by_id.get(sid) is None
+            ]
+            print(
+                json.dumps({"ok": False, "error": f"Snapshot IDs not found: {missing}"}),
+                file=out,
+            )
+            return 1
+        result = compare_snapshots(snap_a, snap_b)
+        print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "calibration-summary":
         fixtures = load_calibration_fixtures(args.fixture_path)
         cal_summary = summarize_calibration_fixtures(fixtures)
@@ -932,14 +967,14 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         return 0
 
     if args.command == "validate-candidate":
-        result = validate_candidate_file(args.input)
-        print(json.dumps(result.as_dict(), indent=2, sort_keys=True), file=out)
-        return 0 if result.ok else 1
+        vresult = validate_candidate_file(args.input)
+        print(json.dumps(vresult.as_dict(), indent=2, sort_keys=True), file=out)
+        return 0 if vresult.ok else 1
 
     if args.command == "validate-reports":
-        result = validate_report_directory(args.report_dir)
-        print(json.dumps(result.as_dict(), indent=2, sort_keys=True), file=out)
-        return 0 if result.ok else 1
+        vresult = validate_report_directory(args.report_dir)
+        print(json.dumps(vresult.as_dict(), indent=2, sort_keys=True), file=out)
+        return 0 if vresult.ok else 1
 
     if args.command == "schema-paths":
         print(json.dumps(schema_paths(), indent=2, sort_keys=True), file=out)
@@ -1208,9 +1243,9 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         return 0
 
     if args.command == "validate-draft-reports":
-        result = validate_draft_report_directory(args.report_dir)
-        print(json.dumps(result.as_dict(), indent=2, sort_keys=True), file=out)
-        return 0 if result.ok else 1
+        vresult = validate_draft_report_directory(args.report_dir)
+        print(json.dumps(vresult.as_dict(), indent=2, sort_keys=True), file=out)
+        return 0 if vresult.ok else 1
 
     if args.command == "user-decision-summary":
         print(
@@ -1515,9 +1550,9 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         return 0 if consistency_result["ok"] else 1
 
     if args.command == "validate-sqlite-logs":
-        result = validate_sqlite_log_database(args.db_path)
-        print(json.dumps(result.as_dict(), indent=2, sort_keys=True), file=out)
-        return 0 if result.ok else 1
+        vresult = validate_sqlite_log_database(args.db_path)
+        print(json.dumps(vresult.as_dict(), indent=2, sort_keys=True), file=out)
+        return 0 if vresult.ok else 1
 
     if args.command == "scheduler-dry-run":
         print(
@@ -5058,6 +5093,11 @@ def validate_all() -> dict[str, object]:
         float(_rl_cv_acc_raw) if isinstance(_rl_cv_acc_raw, (int, float)) else None
     )
     real_labels_model_trained = bool(real_labels_model_data.get("trained", False))
+    from techno_search.data_release_snapshot import (  # noqa: PLC0415, I001
+        data_release_snapshot_summary as _drss,
+    )
+    data_release_snap_data = _drss()
+    data_release_snapshot_count = int(data_release_snap_data.get("snapshot_count", 0))
     label_eval_entry_count = int(label_eval_data.get("entry_count", 0))
     comparison_data = candidate_comparison_summary()
     comparison_count = int(comparison_data.get("record_count", 0))
@@ -5688,6 +5728,8 @@ def validate_all() -> dict[str, object]:
         and baseline_total_cases >= 3
         and real_label_accuracy_gate_ok
         and real_labels_model_trained
+        and isinstance(data_release_snapshot_count, int)
+        and data_release_snapshot_count >= 1
         and isinstance(baseline_drift_count, int)
         and baseline_drift_zero
         and isinstance(lifecycle_entry_count, int)
@@ -6406,6 +6448,8 @@ def validate_all() -> dict[str, object]:
         "learned_scoring_model_v1_ok": real_labels_model_ok,
         "learned_scoring_model_v1_trained": real_labels_model_trained,
         "learned_scoring_model_v1_cv_accuracy": real_labels_model_cv_accuracy,
+        "data_release_snapshot_count": data_release_snapshot_count,
+        "data_release_snapshot_summary": data_release_snap_data,
         "synthetic_training_summary": synthetic_training_data,
         "operations_readiness_summary": operations_readiness,
         "operations_action_plan_summary": operations_action_plan,
@@ -9971,6 +10015,7 @@ def validation_summary() -> dict[str, object]:
         "learned_scoring_model_v1_cv_accuracy": validation.get(
             "learned_scoring_model_v1_cv_accuracy"
         ),
+        "data_release_snapshot_count": validation.get("data_release_snapshot_count", 0),
         "synthetic_training_ok": (
             syn_s["ok"]
             if isinstance(syn_s := validation.get("synthetic_training_summary"), dict)
@@ -13413,6 +13458,34 @@ def _build_parser() -> argparse.ArgumentParser:
     cs_list_parser.add_argument("--track", default=None, help="Filter by track.")
     cs_list_parser.add_argument(
         "--limit", type=int, default=50, help="Maximum number of entries to return (default: 50)."
+    )
+
+    data_release_snapshot_parser = subparsers.add_parser(
+        "data-release-snapshot-summary",
+        help="Summarize data release snapshots and cross-release pathway changes.",
+    )
+    data_release_snapshot_parser.add_argument(
+        "--snapshot-path",
+        default=None,
+        help="Path to data_release_snapshots.json fixture.",
+    )
+
+    compare_releases_parser = subparsers.add_parser(
+        "compare-data-releases",
+        help="Compare two named data release snapshots and report pathway changes.",
+    )
+    compare_releases_parser.add_argument(
+        "snapshot_a_id",
+        help="Snapshot ID of the earlier release.",
+    )
+    compare_releases_parser.add_argument(
+        "snapshot_b_id",
+        help="Snapshot ID of the later release.",
+    )
+    compare_releases_parser.add_argument(
+        "--snapshot-path",
+        default=None,
+        help="Path to data_release_snapshots.json fixture.",
     )
 
     return parser
