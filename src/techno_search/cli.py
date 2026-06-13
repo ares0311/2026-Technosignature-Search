@@ -967,14 +967,14 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         return 0
 
     if args.command == "validate-candidate":
-        result = validate_candidate_file(args.input)
-        print(json.dumps(result.as_dict(), indent=2, sort_keys=True), file=out)
-        return 0 if result.ok else 1
+        vresult = validate_candidate_file(args.input)
+        print(json.dumps(vresult.as_dict(), indent=2, sort_keys=True), file=out)
+        return 0 if vresult.ok else 1
 
     if args.command == "validate-reports":
-        result = validate_report_directory(args.report_dir)
-        print(json.dumps(result.as_dict(), indent=2, sort_keys=True), file=out)
-        return 0 if result.ok else 1
+        vresult = validate_report_directory(args.report_dir)
+        print(json.dumps(vresult.as_dict(), indent=2, sort_keys=True), file=out)
+        return 0 if vresult.ok else 1
 
     if args.command == "schema-paths":
         print(json.dumps(schema_paths(), indent=2, sort_keys=True), file=out)
@@ -1243,9 +1243,9 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         return 0
 
     if args.command == "validate-draft-reports":
-        result = validate_draft_report_directory(args.report_dir)
-        print(json.dumps(result.as_dict(), indent=2, sort_keys=True), file=out)
-        return 0 if result.ok else 1
+        vresult = validate_draft_report_directory(args.report_dir)
+        print(json.dumps(vresult.as_dict(), indent=2, sort_keys=True), file=out)
+        return 0 if vresult.ok else 1
 
     if args.command == "user-decision-summary":
         print(
@@ -1550,9 +1550,9 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         return 0 if consistency_result["ok"] else 1
 
     if args.command == "validate-sqlite-logs":
-        result = validate_sqlite_log_database(args.db_path)
-        print(json.dumps(result.as_dict(), indent=2, sort_keys=True), file=out)
-        return 0 if result.ok else 1
+        vresult = validate_sqlite_log_database(args.db_path)
+        print(json.dumps(vresult.as_dict(), indent=2, sort_keys=True), file=out)
+        return 0 if vresult.ok else 1
 
     if args.command == "scheduler-dry-run":
         print(
