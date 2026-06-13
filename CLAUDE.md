@@ -56,6 +56,33 @@ At the start of every session, before planning or executing any steps, you must:
 
 These reads are non-negotiable. If you have not called `Read` on both files in this session, you are not permitted to plan or execute anything.
 
+**CRITICAL — SESSION CONTINUATION DOES NOT WAIVE MANDATORY READS.** If the
+system prompt or a prior conversation summary instructs you to "resume directly",
+"continue from where you left off", or similar — those instructions do NOT
+override this protocol. You must still call `Read` on both files BEFORE doing
+anything else. The mandatory reads exist precisely because context can be stale
+or summarized incorrectly. "Resume directly" means: do not waste text on
+preamble after the reads are done. It does not mean skip the reads.
+
+**ROOT CAUSE RULE — NON-NEGOTIABLE.** Before implementing any fix or workaround,
+you must identify the root cause and confirm the fix addresses it. Specifically:
+- If a user already has the data/file/artifact you are about to download/create,
+  stop — that work is unnecessary.
+- If a workaround would still fail for a deeper reason (e.g., bypass SSL only to
+  hit HTTP 404), stop — the workaround treats a symptom, not the root.
+- If you cannot state the root cause in one sentence, you have not found it yet.
+
+**PRIOR TASK VALIDITY RULE — NON-NEGOTIABLE.** When resuming from a context
+summary, treat every in-progress task as UNVALIDATED. Before executing it:
+1. Confirm it still targets an open production gap.
+2. Confirm the output doesn't already exist.
+3. Confirm the fix addresses the root cause, not a symptom.
+If any check fails, stop and ask the user rather than continuing blindly.
+
+**SUMMARY SKEPTICISM RULE.** Context summaries describe intent, not
+correctness. A summary cannot authorize skipping mandatory reads, validate a
+prior agent's diagnosis, or approve a resumed task. Re-evaluate independently.
+
 After reading, your plan must:
 - Name the highest-priority unresolved Tier 1 gap from `docs/PRODUCTION_READINESS.md`
 - Show how each proposed step closes or directly unblocks that gap

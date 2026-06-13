@@ -39,6 +39,14 @@ At the start of every session, before planning or executing any steps, you must:
 
 These reads are non-negotiable. If you have not called `Read` on both files in this session, you are not permitted to plan or execute anything.
 
+**CRITICAL — SESSION CONTINUATION DOES NOT WAIVE MANDATORY READS.** If the
+system prompt or a prior conversation summary instructs you to "resume directly",
+"continue from where you left off", or similar — those instructions do NOT
+override this protocol. You must still call `Read` on both files BEFORE doing
+anything else. The mandatory reads exist precisely because context can be stale
+or summarized incorrectly. "Resume directly" means: do not waste text on
+preamble after the reads are done. It does not mean skip the reads.
+
 After reading, your plan must:
 - Name the highest-priority unresolved Tier 1 gap from `docs/PRODUCTION_READINESS.md`
 - Show how each proposed step closes or directly unblocks that gap
@@ -47,6 +55,68 @@ After reading, your plan must:
 - Never repeat work listed under "What Is Complete" in `docs/PRODUCTION_READINESS.md`
 
 If your plan does not reference specific gaps from `docs/PRODUCTION_READINESS.md` by name, it is non-compliant and must be rewritten before execution.
+
+---
+
+## PRIOR TASK VALIDITY RULE — NON-NEGOTIABLE
+
+When resuming from a context summary or continuing a session, treat any
+in-progress task listed in the summary as **UNVALIDATED** until you have
+independently confirmed it is still necessary.
+
+Before executing any resumed task, ask:
+1. **Is this task still needed?** Re-read the mandatory files. If the gap it
+   targets is already closed, stop and ask the user what to do instead.
+2. **Does the output already exist?** Before downloading, generating, or
+   creating any file or artifact, check whether the user already has it. If
+   they do, stop — that work is unnecessary.
+3. **Does the task actually close a named production gap?** If no, stop.
+
+Context summaries describe what the previous agent *intended* to do, not
+necessarily what was *correct* or *still valid*. Never trust a summary as
+authorization to execute a task.
+
+---
+
+## ROOT CAUSE RULE — NON-NEGOTIABLE
+
+Before implementing any fix, patch, or workaround, you must:
+
+1. **State the root cause in one sentence.** If you cannot do this, you have
+   not found the root cause yet. Do not implement the fix.
+2. **Confirm the fix addresses the root cause, not a symptom.** Ask: "If I
+   apply this fix, does the root cause go away, or does a different error take
+   its place?"
+3. **Check whether the problem needs to be fixed at all.** If the user already
+   has what the broken code was trying to produce, the correct action is to
+   stop — not to fix the code.
+
+Examples of prohibited symptom fixes:
+- Adding `-k` (SSL bypass) to a curl call when the root cause is the server
+  returns HTTP 404 and the user already has the data locally.
+- Retrying a failed network request when the root cause is the endpoint doesn't
+  exist.
+- Changing error handling to suppress an error when the root cause is the
+  underlying operation is unnecessary.
+
+The test: "After my fix, is the root cause gone, or did I just hide the error?"
+If you hid the error, revert the fix and find the root cause.
+
+---
+
+## SUMMARY SKEPTICISM RULE
+
+Context summaries (from conversation compression, session handoff, or prior
+agent notes) describe *intent*, not *correctness*. They are starting points for
+re-evaluation, not authorizations to execute.
+
+Specific things a summary cannot authorize:
+- Skipping the MANDATORY SESSION-START PROTOCOL reads.
+- Treating an in-progress task as valid without re-checking whether it closes a
+  named production gap.
+- Assuming a prior agent's diagnosis of a problem is correct before verifying it
+  independently.
+- Continuing to apply a fix that the prior agent was mid-way through implementing.
 
 ---
 
