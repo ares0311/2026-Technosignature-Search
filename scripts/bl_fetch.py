@@ -735,7 +735,10 @@ def run_pipeline_parallel(
             timeout=300,
         )
         if result.returncode != 0:
-            log.error("  FAILED %s:\n%s", Path(dat).name, result.stderr[-500:])
+            # run-pipeline writes its JSON result (including the error field)
+            # to stdout, not stderr — log both so the root cause is visible.
+            diag = (result.stderr or result.stdout or "(no output)")[-1000:]
+            log.error("  FAILED %s:\n%s", Path(dat).name, diag)
         else:
             log.info("  OK: %s", Path(dat).name)
         return dat, result.returncode == 0

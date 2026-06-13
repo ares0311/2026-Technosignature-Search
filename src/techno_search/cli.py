@@ -1797,7 +1797,17 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
 
     if args.command == "cross-target-rfi-summary":
         from techno_search.cross_target_rfi import cross_target_rfi_summary
-        _rfi = cross_target_rfi_summary([])
+
+        _candidate_lists: list[list[dict[str, Any]]] = []
+        _results_dir = getattr(args, "results_dir", None)
+        if _results_dir:
+            from techno_search.scan_summary import load_candidates_from_batch_dir
+            _flat = load_candidates_from_batch_dir(Path(_results_dir))
+            _by_target: dict[str, list[dict[str, Any]]] = {}
+            for _c in _flat:
+                _by_target.setdefault(str(_c.get("target_name", "")), []).append(_c)
+            _candidate_lists = list(_by_target.values())
+        _rfi = cross_target_rfi_summary(_candidate_lists)
         print(json.dumps(_rfi, indent=2, sort_keys=True), file=out)
         return 0
 
@@ -11232,11 +11242,21 @@ def _build_parser() -> argparse.ArgumentParser:
         type=str,
         help="Directory containing *manifest.json files from a batch scan.",
     )
-    subparsers.add_parser(
+    _cross_rfi_parser = subparsers.add_parser(
         "cross-target-rfi-summary",
         help=(
             "Summarise cross-target RFI suppression policy. "
             "Signals in >=2 targets at the same frequency are flagged as RFI."
+        ),
+    )
+    _cross_rfi_parser.add_argument(
+        "--results-dir",
+        type=str,
+        default=None,
+        help=(
+            "Directory containing *manifest.json files from a batch scan. "
+            "When provided, loads real candidates grouped by target_name. "
+            "When omitted, returns policy metadata with empty candidate list."
         ),
     )
     escalation_parser = subparsers.add_parser(

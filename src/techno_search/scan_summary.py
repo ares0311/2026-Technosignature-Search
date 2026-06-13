@@ -84,20 +84,12 @@ def scan_summary(
     }
 
 
-def scan_summary_from_batch_dir(batch_dir: Path) -> dict[str, Any]:
-    """Build a scan summary from manifest JSON files in a results directory.
+def load_candidates_from_batch_dir(batch_dir: Path) -> list[dict[str, Any]]:
+    """Load candidates from manifest JSON files in a results directory.
 
-    Globs recursively for ``*manifest.json`` files under ``batch_dir``.
-    For each manifest the companion ``*.json`` report file (same stem minus
-    ``.manifest``) is loaded to obtain score, SNR, frequency, and drift-rate
-    fields, which are not present in the manifest itself.
-
-    Args:
-        batch_dir: Directory containing (possibly nested) ``*manifest.json``
-            files produced by ``run-pipeline`` or ``score-batch``.
-
-    Returns:
-        Result of ``scan_summary()`` over the extracted candidate list.
+    Same loading logic as ``scan_summary_from_batch_dir`` but returns the
+    flat candidate list rather than the ranked summary, so callers can
+    group or filter before summarising.
     """
     batch_path = Path(batch_dir)
     manifest_files = sorted(batch_path.glob("**/*manifest.json"))
@@ -110,8 +102,7 @@ def scan_summary_from_batch_dir(batch_dir: Path) -> dict[str, Any]:
         except (OSError, json.JSONDecodeError):
             continue
 
-        # Derive target name from parent directory or filename stem
-        stem = mf.stem  # e.g. "voyager1_hits.manifest"
+        stem = mf.stem
         if stem.endswith(".manifest"):
             target_name = stem[: -len(".manifest")]
         elif stem.endswith("_manifest"):
@@ -119,7 +110,6 @@ def scan_summary_from_batch_dir(batch_dir: Path) -> dict[str, Any]:
         else:
             target_name = mf.parent.name or stem
 
-        # Load companion scored JSON for score/SNR/frequency fields
         report_data: dict[str, Any] = {}
         json_path_str = manifest.get("json_path", "")
         if json_path_str:
@@ -131,7 +121,6 @@ def scan_summary_from_batch_dir(batch_dir: Path) -> dict[str, Any]:
                     report_data = json.load(fh)
             except (OSError, json.JSONDecodeError):
                 pass
-        # Fall back: companion file at same path but without .manifest
         if not report_data:
             companion = mf.parent / (target_name + ".json")
             try:
@@ -141,7 +130,6 @@ def scan_summary_from_batch_dir(batch_dir: Path) -> dict[str, Any]:
                 pass
 
         merged = {**report_data, **manifest}
-        # scores.followup_value is the composite score in full pipeline reports
         scores_block = report_data.get("scores", {})
         score = float(
             scores_block.get(
@@ -149,7 +137,6 @@ def scan_summary_from_batch_dir(batch_dir: Path) -> dict[str, Any]:
                 merged.get("score", merged.get("candidate_score", 0.0)),
             )
         )
-        # SNR and frequency live in features block for pipeline JSON reports
         features = report_data.get("features", {})
         snr = float(features.get("snr", merged.get("snr", 0.0)))
         freq = float(features.get("frequency_hz", merged.get("frequency_hz", 0.0)))
@@ -169,4 +156,9 @@ def scan_summary_from_batch_dir(batch_dir: Path) -> dict[str, Any]:
             }
         )
 
-    return scan_summary(candidates)
+    return candidates
+
+
+def scan_summary_from_batch_dir(batch_dir: Path) -> dict[str, Any]:
+    """Build a scan summary from manifest JSON files in a results directory."""
+    return scan_summary(load_candidates_from_batch_dir(batch_dir))
