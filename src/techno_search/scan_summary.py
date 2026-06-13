@@ -85,50 +85,73 @@ def scan_summary(
 
 
 def scan_summary_from_batch_dir(batch_dir: Path) -> dict[str, Any]:
-    """Build a scan summary from manifest JSON files in a batch directory.
+    """Build a scan summary from manifest JSON files in a results directory.
 
-    Reads all ``*manifest.json`` files directly under ``batch_dir`` (not
-    recursively). Each manifest contributes one candidate entry. The
-    target_name is derived from the manifest filename stem (stripping a
-    trailing ``_manifest`` suffix if present).
+    Globs recursively for ``*manifest.json`` files under ``batch_dir``.
+    For each manifest the companion ``*.json`` report file (same stem minus
+    ``.manifest``) is loaded to obtain score, SNR, frequency, and drift-rate
+    fields, which are not present in the manifest itself.
 
     Args:
-        batch_dir: Directory containing ``*manifest.json`` files.
+        batch_dir: Directory containing (possibly nested) ``*manifest.json``
+            files produced by ``run-pipeline`` or ``score-batch``.
 
     Returns:
         Result of ``scan_summary()`` over the extracted candidate list.
     """
     batch_path = Path(batch_dir)
-    manifest_files = sorted(batch_path.glob("*manifest.json"))
+    manifest_files = sorted(batch_path.glob("**/*manifest.json"))
 
     candidates: list[dict[str, Any]] = []
     for mf in manifest_files:
         try:
             with mf.open(encoding="utf-8") as fh:
-                data = json.load(fh)
+                manifest = json.load(fh)
         except (OSError, json.JSONDecodeError):
             continue
 
-        stem = mf.stem
-        target_name = stem[: -len("_manifest")] if stem.endswith("_manifest") else stem
+        # Derive target name from parent directory or filename stem
+        stem = mf.stem  # e.g. "voyager1_hits.manifest"
+        if stem.endswith(".manifest"):
+            target_name = stem[: -len(".manifest")]
+        elif stem.endswith("_manifest"):
+            target_name = stem[: -len("_manifest")]
+        else:
+            target_name = mf.parent.name or stem
 
-        score = float(
-            data.get("candidate_score", data.get("score", 0.0))
-        )
+        # Load companion scored JSON for score/SNR/frequency fields
+        report_data: dict[str, Any] = {}
+        json_path_str = manifest.get("json_path", "")
+        if json_path_str:
+            json_path = Path(json_path_str)
+            if not json_path.is_absolute():
+                json_path = mf.parent / json_path
+            try:
+                with json_path.open(encoding="utf-8") as fh:
+                    report_data = json.load(fh)
+            except (OSError, json.JSONDecodeError):
+                pass
+        # Fall back: companion file at same path but without .manifest
+        if not report_data:
+            companion = mf.parent / (target_name + ".json")
+            try:
+                with companion.open(encoding="utf-8") as fh:
+                    report_data = json.load(fh)
+            except (OSError, json.JSONDecodeError):
+                pass
+
+        merged = {**report_data, **manifest}
+        score = float(merged.get("score", merged.get("candidate_score", 0.0)))
         candidates.append(
             {
-                "candidate_id": data.get("candidate_id", stem),
+                "candidate_id": merged.get("candidate_id", target_name),
                 "score": score,
-                "recommended_pathway": data.get(
-                    "recommended_pathway", "unknown"
-                ),
+                "recommended_pathway": merged.get("recommended_pathway", "unknown"),
                 "target_name": target_name,
-                "frequency_hz": float(data.get("frequency_hz", 0.0)),
-                "snr": float(data.get("snr", 0.0)),
-                "drift_rate_hz_per_sec": float(
-                    data.get("drift_rate_hz_per_sec", 0.0)
-                ),
-                "track": data.get("track", "unknown"),
+                "frequency_hz": float(merged.get("frequency_hz", 0.0)),
+                "snr": float(merged.get("snr", 0.0)),
+                "drift_rate_hz_per_sec": float(merged.get("drift_rate_hz_per_sec", 0.0)),
+                "track": merged.get("track", "unknown"),
             }
         )
 
