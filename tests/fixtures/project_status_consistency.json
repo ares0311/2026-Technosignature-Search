@@ -1,12 +1,12 @@
 {
   "schema_version": "project_status_consistency_v1",
   "expected_status": {
-    "latest_milestone_number": 76,
-    "latest_milestone_label": "Multi-Target Scan Orchestration — Tier 3 Production Hardening",
-    "latest_decision_number": 131,
+    "latest_milestone_number": 77,
+    "latest_milestone_label": "Escalation Gate Hardening + External Submission Protocol — Tier 3 Production Hardening",
+    "latest_decision_number": 132,
     "schema_count": 109,
     "expected_rfi_real_data_authorization_total": 0,
     "expected_curated_real_data_authorization_total": 1,
-    "project_status_completed_phrase": "Multi-target scan orchestration, cross-target RFI suppression, anomaly ranking, candidate escalation gate (109 schemas, Milestone 76)"
+    "project_status_completed_phrase": "Escalation gate hardened, negative-result scan report, external submission protocol (109 schemas, Milestone 77)"
   }
 }

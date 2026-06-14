@@ -15,6 +15,7 @@ ESCALATION_DISCLAIMER = (
 )
 ESCALATION_SCHEMA_VERSION = "candidate_escalation_v1"
 ESCALATION_SNR_GATE = 42.4
+ESCALATION_MULTI_EPOCH_GATE = 0.0  # exclusive lower bound; must be > 0.0 to pass
 
 
 def _utc_now_iso() -> str:
@@ -99,6 +100,11 @@ def create_escalation_record(
         f"Config version: {pipeline_config_version}",
         "Verify: pathway matches candidate_review_packet",
         "Independent reviewer confirms SNR measurement",
+        (
+            "Verify multi-epoch persistence: run pipeline on both epoch .dat files "
+            "and confirm multi_epoch_persistence_score > 0 in the scored candidate. "
+            "Single-epoch candidates do not pass the escalation gate."
+        ),
     ]
 
     return CandidateEscalationRecord(
@@ -126,24 +132,68 @@ def _get_snr(candidate_dict: dict[str, Any]) -> float:
     return 0.0
 
 
-def escalation_gate_check(candidate_dict: dict[str, Any]) -> bool:
+def escalation_gate_check(candidate_dict: dict[str, Any]) -> dict[str, Any]:
     """Check whether a candidate passes the escalation gate.
 
-    Returns True only if:
+    Returns a structured dict with the result and the reason for pass/fail.
+    Passes only if ALL of:
     - ``recommended_pathway`` is ``"candidate_review_packet"``
     - SNR >= ESCALATION_SNR_GATE (42.4)
+    - multi_epoch_persistence_score > ESCALATION_MULTI_EPOCH_GATE (0.0)
 
     Args:
         candidate_dict: Scored candidate dict.
 
     Returns:
-        True if the candidate passes the escalation gate, False otherwise.
+        Dict with keys: ``passes`` (bool), ``reason`` (str), ``snr`` (float),
+        ``multi_epoch_persistence_score`` (float), ``pathway`` (str).
     """
     pathway = candidate_dict.get("recommended_pathway", "")
-    if pathway != "candidate_review_packet":
-        return False
     snr = _get_snr(candidate_dict)
-    return snr >= ESCALATION_SNR_GATE
+    multi_epoch_persistence_score = float(
+        candidate_dict.get("multi_epoch_persistence_score", 0.0)
+    )
+
+    if pathway != "candidate_review_packet":
+        return {
+            "passes": False,
+            "reason": (
+                f"pathway '{pathway}' is not 'candidate_review_packet'"
+            ),
+            "snr": snr,
+            "multi_epoch_persistence_score": multi_epoch_persistence_score,
+            "pathway": pathway,
+        }
+    if snr < ESCALATION_SNR_GATE:
+        return {
+            "passes": False,
+            "reason": (
+                f"SNR {snr:.2f} is below gate {ESCALATION_SNR_GATE}"
+            ),
+            "snr": snr,
+            "multi_epoch_persistence_score": multi_epoch_persistence_score,
+            "pathway": pathway,
+        }
+    if multi_epoch_persistence_score <= ESCALATION_MULTI_EPOCH_GATE:
+        return {
+            "passes": False,
+            "reason": (
+                "multi_epoch_persistence_score "
+                f"{multi_epoch_persistence_score} is not > "
+                f"{ESCALATION_MULTI_EPOCH_GATE}; "
+                "single-epoch candidates do not pass the escalation gate"
+            ),
+            "snr": snr,
+            "multi_epoch_persistence_score": multi_epoch_persistence_score,
+            "pathway": pathway,
+        }
+    return {
+        "passes": True,
+        "reason": "all gates passed",
+        "snr": snr,
+        "multi_epoch_persistence_score": multi_epoch_persistence_score,
+        "pathway": pathway,
+    }
 
 
 def escalation_summary(

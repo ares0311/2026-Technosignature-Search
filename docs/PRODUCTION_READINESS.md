@@ -1,14 +1,17 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-06-13
-**Current milestone:** 76 (Multi-Target Scan Orchestration — Tier 3 Production Hardening)
+**Last updated:** 2026-06-14
+**Current milestone:** 77 (Escalation Gate Hardening + External Submission Protocol — Tier 3 Production Hardening)
 
 ---
 
 ## Summary
 
-The pipeline is approximately **60–65% of the way to citizen-science
-production**. All Tier 1 gaps are now closed. The calibration gate passed
+The pipeline is approximately **90% of the way to citizen-science
+production**. All Tier 1 and Tier 2 gaps are closed. The remaining Tier 3
+items are: optional expert/institutional review (external opportunity, not
+assumed) and the HIP8102 cadence download + multi-target label expansion
+(human task, pending data download). The calibration gate passed
 `calibration_ready: true` against 213 real GBT hits from 5 cadences, 5
 targets, and 2 epochs (HIP99427, HIP100670, HIP99560, HIP99759, VOYAGER-1).
 Derived thresholds: noise_floor_snr=42.4, follow_up_snr=54.8,
@@ -100,6 +103,9 @@ Expert review and external validation are not claimed.
 | **Calibration transfer protocol** — `docs/CALIBRATION_TRANSFER_PROTOCOL.md`; recalibration steps for new telescope/band; independent-method audit requirement documented | ✅ Complete |
 | **Production scan guide** — `docs/PRODUCTION_SCAN_GUIDE.md`; step-by-step operator instructions for multi-store anomaly scanning; escalation triage criteria | ✅ Complete |
 | **109 JSON schema artifacts** | ✅ Complete |
+| **Hardened escalation gate** — `escalation_gate_check()` returns structured dict; adds `multi_epoch_persistence_score > 0` as third gate (single-epoch candidates cannot pass); `ESCALATION_MULTI_EPOCH_GATE` constant; `negative_result_summary()` for zero-gate scans; `negative-result-summary` CLI (Milestone 77) | ✅ Complete |
+| **External submission protocol** — `docs/EXTERNAL_SUBMISSION_PROTOCOL.md`; 7 preconditions (P1–P7) required before any external submission; all currently unmet; DECISION-132; closes Tier 3 external submission workflow gap | ✅ Complete |
+| **CHANGELOG.md** — engineering milestone history from v0.10 through current; follows Keep a Changelog format | ✅ Complete |
 
 ---
 
@@ -124,7 +130,7 @@ Expert review and external validation are not claimed.
 | Parallelized batch processing | ✅ Complete (Tier 3) |
 | Database-backed candidate store (not file-based) | ✅ Complete (Tier 3) |
 | Operator UI / review dashboard | ✅ Complete (Tier 3) |
-| External submission workflow | Large (outside current citizen-science production scope) |
+| External submission workflow | ✅ Complete (Tier 3) — protocol documented in `docs/EXTERNAL_SUBMISSION_PROTOCOL.md`; all preconditions currently unmet; DECISION-132 |
 | Reproducibility verification across data releases | ✅ Complete (Tier 3) |
 | Optional expert or institutional review | External opportunity, not assumed |
 
@@ -132,7 +138,7 @@ Expert review and external validation are not claimed.
 
 ## Production Readiness Estimate
 
-- **Current state:** ~80% (all Tier 1 and Tier 2 gaps closed 2026-06-12)
+- **Current state:** ~90% (all Tier 1 and Tier 2 gaps closed; Tier 3 nearly complete as of 2026-06-14)
 - **After Tier 1 complete:** ~60% ✅ reached
 - **After Tier 2 complete:** ~80% ✅ reached 2026-06-12
 - **After Tier 3 complete:** ~100%
