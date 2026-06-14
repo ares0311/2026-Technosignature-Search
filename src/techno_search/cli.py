@@ -4313,6 +4313,16 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(rl_result, indent=2, sort_keys=True), file=out)
         return 0 if rl_result.get("ok") else 1
 
+    if args.command == "combined-model-summary":
+        from techno_search.learned_scoring_model import (  # noqa: PLC0415
+            combined_model_summary as _cms,
+        )
+
+        cm_path_arg = getattr(args, "dataset_path", None)
+        cm_result: dict[str, Any] = _cms(Path(cm_path_arg) if cm_path_arg else None)
+        print(json.dumps(cm_result, indent=2, sort_keys=True), file=out)
+        return 0 if cm_result.get("ok") else 1
+
     if args.command == "noise-threshold-calibration":
         from techno_search.noise_threshold_calibration import analyze_hit_directory
 
@@ -13470,6 +13480,23 @@ def _build_parser() -> argparse.ArgumentParser:
         "--dataset-path",
         type=Path,
         help="Path to real labels JSON (defaults to examples/real_labeled/hip99427_...).",
+    )
+
+    combined_model_parser = subparsers.add_parser(
+        "combined-model-summary",
+        help=(
+            "Train logistic regression on a combined multi-target citizen-science label "
+            "dataset (closes KNOWN_LIMITATIONS #1: Single-target generalization gap). "
+            "Local scheduling aid only — not a validated production model."
+        ),
+    )
+    combined_model_parser.add_argument(
+        "--dataset-path",
+        type=Path,
+        help=(
+            "Path to combined label JSON "
+            "(defaults to examples/real_labeled/combined_citizen_science_labels_v1.json)."
+        ),
     )
 
     peer_review_parser = subparsers.add_parser(
