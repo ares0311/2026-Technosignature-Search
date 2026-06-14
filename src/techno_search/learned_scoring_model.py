@@ -539,3 +539,155 @@ def real_labels_model_summary(
             "error": str(exc),
             "trained": False,
         }
+
+
+# ---------------------------------------------------------------------------
+# Combined multi-target model — trained on merged label files from multiple
+# GBT ABACAD cadences.
+# Closes KNOWN_LIMITATIONS #1: Single-target generalization gap.
+# ---------------------------------------------------------------------------
+
+COMBINED_MODEL_DISCLAIMER = (
+    "Combined citizen-science model trained on merged label files from multiple "
+    "GBT ABACAD cadences. Scores are local scheduling aids only. This model "
+    "does not constitute a validated scoring system, does not authorize external "
+    "submission, and does not constitute a detection claim. Cross-target "
+    "generalization is improved but not independently validated."
+)
+
+_COMBINED_SCHEMA_VERSIONS = {
+    "labeled_candidates_citizen_science_v1",
+    "labeled_candidates_citizen_science_combined_v1",
+}
+
+_DEFAULT_COMBINED_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "examples" / "real_labeled"
+    / "combined_citizen_science_labels_v1.json"
+)
+
+
+def train_on_combined_labels(
+    dataset_path: Path | None = None,
+    *,
+    cv_folds: int = 3,
+    max_iter: int = 2000,
+    random_state: int = 42,
+) -> dict[str, Any]:
+    """Train logistic regression on a combined multi-target citizen-science label dataset."""
+    import json as _json3
+
+    path = dataset_path or _DEFAULT_COMBINED_PATH
+    if not path.exists():
+        return {
+            "ok": False,
+            "trained": False,
+            "error": f"dataset not found: {path}",
+            "schema_version": "learned_scoring_model_combined_v1",
+            "disclaimer": COMBINED_MODEL_DISCLAIMER,
+            "known_limitations_addressed": [
+                "KNOWN_LIMITATIONS #1: Single-target generalization gap — "
+                "combined model trained on multiple GBT ABACAD cadences."
+            ],
+        }
+    try:
+        data = _json3.loads(path.read_text(encoding="utf-8"))
+        schema = data.get("schema_version", "")
+        if schema not in _COMBINED_SCHEMA_VERSIONS:
+            return {
+                "ok": False,
+                "trained": False,
+                "error": f"unsupported schema_version: {schema!r}",
+                "schema_version": "learned_scoring_model_combined_v1",
+                "disclaimer": COMBINED_MODEL_DISCLAIMER,
+                "known_limitations_addressed": [
+                    "KNOWN_LIMITATIONS #1: Single-target generalization gap — "
+                    "combined model trained on multiple GBT ABACAD cadences."
+                ],
+            }
+        entries = data.get("entries", [])
+        source_datasets = data.get("source_datasets", [])
+
+        # Build feature matrix using the same extraction as real_labels_model_summary
+        X: list[list[float]] = []
+        y_str: list[str] = []
+        for entry in entries:
+            result = _extract_real_label_features(entry)
+            if result is None:
+                continue
+            row, pathway = result
+            X.append(row)
+            y_str.append(pathway)
+
+        if len(X) < cv_folds * 2:
+            cv_folds = max(2, len(X))
+
+        try:
+            from sklearn.linear_model import LogisticRegression
+            from sklearn.model_selection import cross_val_score
+            from sklearn.preprocessing import LabelEncoder, StandardScaler
+        except ImportError as exc:
+            return {
+                "ok": False,
+                "trained": False,
+                "error": f"scikit-learn not installed: {exc}",
+                "schema_version": "learned_scoring_model_combined_v1",
+                "disclaimer": COMBINED_MODEL_DISCLAIMER,
+                "known_limitations_addressed": [
+                    "KNOWN_LIMITATIONS #1: Single-target generalization gap — "
+                    "combined model trained on multiple GBT ABACAD cadences."
+                ],
+            }
+
+        le = LabelEncoder()
+        y = le.fit_transform(y_str)
+
+        scaler = StandardScaler()
+        X_arr = scaler.fit_transform(X)
+
+        clf = LogisticRegression(max_iter=max_iter, random_state=random_state)
+
+        import warnings as _warnings2
+        with _warnings2.catch_warnings():
+            _warnings2.filterwarnings("ignore", category=UserWarning, module="sklearn")
+            scores = cross_val_score(clf, X_arr, y, cv=cv_folds, scoring="accuracy")
+        cv_accuracy = float(scores.mean())
+
+        label_counts: dict[str, int] = {}
+        for e in entries:
+            lbl = str(e.get("label", e.get("audit_label", "unknown")))
+            label_counts[lbl] = label_counts.get(lbl, 0) + 1
+
+        return {
+            "ok": True,
+            "trained": True,
+            "schema_version": "learned_scoring_model_combined_v1",
+            "disclaimer": COMBINED_MODEL_DISCLAIMER,
+            "total_entries": len(entries),
+            "label_counts": label_counts,
+            "cv_folds": cv_folds,
+            "cv_accuracy": cv_accuracy,
+            "source_datasets": source_datasets,
+            "known_limitations_addressed": [
+                "KNOWN_LIMITATIONS #1: Single-target generalization gap — "
+                "combined model trained on multiple GBT ABACAD cadences."
+            ],
+            "external_submission_authorized": False,
+        }
+    except Exception as exc:
+        return {
+            "ok": False,
+            "trained": False,
+            "error": str(exc),
+            "schema_version": "learned_scoring_model_combined_v1",
+            "disclaimer": COMBINED_MODEL_DISCLAIMER,
+            "known_limitations_addressed": [
+                "KNOWN_LIMITATIONS #1: Single-target generalization gap — "
+                "combined model trained on multiple GBT ABACAD cadences."
+            ],
+        }
+
+
+def combined_model_summary(dataset_path: Path | None = None) -> dict[str, Any]:
+    """CLI-facing wrapper for train_on_combined_labels."""
+    return train_on_combined_labels(dataset_path=dataset_path)
