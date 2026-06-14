@@ -40,7 +40,10 @@ PYTHON="${REPO_ROOT}/.venv/bin/python"
 TECHNO_SEARCH="${REPO_ROOT}/.venv/bin/techno-search"
 
 BL_BASE="http://blpd0.ssl.berkeley.edu"
-BANK="blc07"  # Standard GBT BL bank
+# blc07 is the Cygnus-region campaign bank.  For targets not found there the
+# script will probe ALL_BANKS in order and use the first bank with H5 files.
+BANK="blc07"
+ALL_BANKS="blc07 blc0 blc1 blc2 blc3 blc4 blc5 blc6 blc20 blc21 blc22 blc23"
 
 # ---------------------------------------------------------------------------
 # Defaults
@@ -142,37 +145,45 @@ for i in "${!TARGET_LIST[@]}"; do
     STEP_NUM=$((i + 1))
     step "[${STEP_NUM}/${N_TARGETS}] Target: ${TARGET}"
 
-    DIR_URL="${BL_BASE}/${TARGET}/${BANK}/"
-    info "Listing archive directory: ${DIR_URL}"
+    # Try the default bank first; if empty probe ALL_BANKS in order
+    H5_FILES=""
+    ACTIVE_BANK=""
+    DIR_URL=""
+    for TRY_BANK in ${BANK} ${ALL_BANKS}; do
+        # Avoid re-trying the default bank if it equals the first ALL_BANKS entry
+        [[ -n "${ACTIVE_BANK}" ]] && [[ "${TRY_BANK}" == "${BANK}" ]] && continue
 
-    # Fetch directory listing and parse H5 filenames
-    LISTING=$(curl -s --max-time 20 "${DIR_URL}" 2>/dev/null || true)
-    if [[ -z "${LISTING}" ]]; then
-        warn "  No response from ${DIR_URL} — target may not exist or network issue"
-        FAIL_COUNT=$((FAIL_COUNT + 1))
-        continue
-    fi
+        CANDIDATE_URL="${BL_BASE}/${TARGET}/${TRY_BANK}/"
+        info "  Trying bank: ${TRY_BANK} — ${CANDIDATE_URL}"
+        LISTING=$(curl -s --max-time 15 "${CANDIDATE_URL}" 2>/dev/null || true)
+        [[ -z "${LISTING}" ]] && continue
 
-    # Extract H5 filenames from HTML directory listing
-    # BL Apache directory listings use: href="filename.h5"
-    H5_FILES=$(echo "${LISTING}" \
-        | grep -oE '"guppi_[0-9]+_[0-9]+_[^"]+\.h5"' \
-        | tr -d '"' \
-        | sort \
-        || true)
-
-    if [[ -z "${H5_FILES}" ]]; then
-        # Try alternative pattern (some listings use single-quotes or no quotes)
-        H5_FILES=$(echo "${LISTING}" \
-            | grep -oE 'guppi_[0-9]+_[0-9]+_[A-Za-z0-9_]+\.[0-9]+\.h5' \
+        # Extract H5 filenames from HTML directory listing
+        TRY_FILES=$(echo "${LISTING}" \
+            | grep -oE '"guppi_[0-9]+_[0-9]+_[^"]+\.h5"' \
+            | tr -d '"' \
             | sort \
             || true)
-    fi
+        if [[ -z "${TRY_FILES}" ]]; then
+            TRY_FILES=$(echo "${LISTING}" \
+                | grep -oE 'guppi_[0-9]+_[0-9]+_[A-Za-z0-9_]+\.[0-9]+\.h5' \
+                | sort \
+                || true)
+        fi
+
+        if [[ -n "${TRY_FILES}" ]]; then
+            H5_FILES="${TRY_FILES}"
+            ACTIVE_BANK="${TRY_BANK}"
+            DIR_URL="${CANDIDATE_URL}"
+            info "  Found H5 files in bank: ${TRY_BANK}"
+            break
+        fi
+    done
 
     if [[ -z "${H5_FILES}" ]]; then
-        warn "  No H5 files found at ${DIR_URL}"
-        warn "  Archive may require authentication or directory listing is disabled"
-        warn "  Try manually: curl '${DIR_URL}'"
+        warn "  No H5 files found for ${TARGET} in any probed bank"
+        warn "  Probed banks: ${BANK} ${ALL_BANKS}"
+        warn "  To inspect manually: curl '${BL_BASE}/${TARGET}/'"
         FAIL_COUNT=$((FAIL_COUNT + 1))
         continue
     fi
