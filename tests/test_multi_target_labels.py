@@ -207,12 +207,26 @@ class TestCombinedModelSummary:
         assert "external submission" in disc.lower()
 
 
+def _techno_search_cmd() -> list[str]:
+    """Return the techno-search command, preferring .venv then PATH then -m fallback."""
+    import shutil
+    import sys
+
+    venv_bin = REPO_ROOT / ".venv" / "bin" / "techno-search"
+    if venv_bin.exists():
+        return [str(venv_bin)]
+    on_path = shutil.which("techno-search")
+    if on_path:
+        return [on_path]
+    return [sys.executable, "-m", "techno_search.cli"]
+
+
 class TestCombinedModelCLI:
     def test_cli_combined_model_missing_file(self) -> None:
         import subprocess
 
         result = subprocess.run(
-            [".venv/bin/techno-search", "combined-model-summary",
+            [*_techno_search_cmd(), "combined-model-summary",
              "--dataset-path", "/nonexistent/path.json"],
             capture_output=True,
             text=True,
@@ -232,7 +246,7 @@ class TestCombinedModelCLI:
         combined_path.write_text(json.dumps(result, indent=2) + "\n")
 
         proc = subprocess.run(
-            [".venv/bin/techno-search", "combined-model-summary",
+            [*_techno_search_cmd(), "combined-model-summary",
              "--dataset-path", str(combined_path)],
             capture_output=True,
             text=True,
@@ -253,7 +267,7 @@ class TestCombinedModelCLI:
         combined_path.write_text(json.dumps(result, indent=2) + "\n")
 
         proc = subprocess.run(
-            [".venv/bin/techno-search", "combined-model-summary",
+            [*_techno_search_cmd(), "combined-model-summary",
              "--dataset-path", str(combined_path)],
             capture_output=True,
             text=True,
