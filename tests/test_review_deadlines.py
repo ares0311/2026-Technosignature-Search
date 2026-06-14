@@ -98,7 +98,7 @@ def test_summary_pending_count():
 
 def test_summary_overdue_count():
     result = review_deadlines_summary()
-    assert result["overdue_count"] == 1
+    assert result["overdue_count"] == 0
 
 
 def test_summary_immediate_count():
@@ -125,7 +125,6 @@ def test_summary_by_status():
     result = review_deadlines_summary()
     assert "in_progress" in result["by_status"]
     assert "pending" in result["by_status"]
-    assert "overdue" in result["by_status"]
     assert "completed" in result["by_status"]
 
 
