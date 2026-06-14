@@ -8,7 +8,8 @@ aids only — no result constitutes a detection claim.
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+import uuid
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +17,13 @@ MULTI_TARGET_SCAN_SCHEMA_VERSION = "multi_target_scan_v1"
 MULTI_TARGET_SCAN_DISCLAIMER = (
     "Multi-target scan results are local scheduling aids only. "
     "No result constitutes a detection claim or authorizes external submission."
+)
+NEGATIVE_RESULT_SUMMARY_SCHEMA_VERSION = "negative_result_summary_v1"
+NEGATIVE_RESULT_SUMMARY_DISCLAIMER = (
+    "Negative result summaries are operator scheduling aids only. "
+    "A negative result does not constitute evidence of absence of technosignatures "
+    "and does not authorize external submission or imply scientific confirmation. "
+    "This scan session found no candidates passing the escalation gate."
 )
 
 
@@ -30,6 +38,7 @@ class MultiTargetScanResult:
     follow_up_count: int
     candidate_review_count: int
     target_results: list[dict[str, Any]]
+    scan_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     schema_version: str = MULTI_TARGET_SCAN_SCHEMA_VERSION
     disclaimer: str = MULTI_TARGET_SCAN_DISCLAIMER
 
@@ -37,6 +46,7 @@ class MultiTargetScanResult:
         return {
             "schema_version": self.schema_version,
             "disclaimer": self.disclaimer,
+            "scan_id": self.scan_id,
             "targets_attempted": self.targets_attempted,
             "targets_succeeded": self.targets_succeeded,
             "targets_failed": self.targets_failed,

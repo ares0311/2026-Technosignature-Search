@@ -1823,13 +1823,18 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                 file=out,
             )
             return 1
-        _required = escalation_gate_check(_cdata)
+        _gate = escalation_gate_check(_cdata)
         print(
             json.dumps(
                 {
-                    "escalation_required": _required,
-                    "pathway": _cdata.get("recommended_pathway", "unknown"),
-                    "snr": _cdata.get("snr", 0.0),
+                    "escalation_required": _gate["passes"],
+                    "passes": _gate["passes"],
+                    "reason": _gate["reason"],
+                    "pathway": _gate["pathway"],
+                    "snr": _gate["snr"],
+                    "multi_epoch_persistence_score": _gate[
+                        "multi_epoch_persistence_score"
+                    ],
                 },
                 indent=2,
                 sort_keys=True,
