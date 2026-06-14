@@ -1637,3 +1637,12 @@ Total schemas: 188.
 - `validate-all` gates: multi-target scan schema paths present
 - Closes Tier 3 gaps: parallelized batch scanning, cross-target RFI suppression, automated scan scheduling
 - No result constitutes a detection claim; no submission authorized without peer review
+
+# Milestone 77 — Escalation Gate Hardening + External Submission Protocol — Tier 3 Production Hardening
+
+- Hardened escalation gate: `escalation_gate_check()` now returns structured dict; third gate `multi_epoch_persistence_score > 0` added; single-epoch candidates cannot pass; `ESCALATION_MULTI_EPOCH_GATE` constant
+- Negative-result scan report: `negative_result_summary()` for scans with 0 gate-passing candidates; `negative-result-summary` CLI; `scan_id` (UUID) in `MultiTargetScanResult`
+- External submission protocol: `docs/EXTERNAL_SUBMISSION_PROTOCOL.md`; 7 preconditions (P1–P7) required before any external submission; all currently unmet; DECISION-132
+- `CHANGELOG.md` — engineering milestone history from v0.10 through current; follows Keep a Changelog format
+- `docs/PRODUCTION_READINESS.md` updated to ~90%; Tier 3 external submission workflow gap now closed
+- No result constitutes a detection claim; no submission authorized without all P1–P6 preconditions met and operator sign-off

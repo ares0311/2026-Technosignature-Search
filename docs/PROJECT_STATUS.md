@@ -356,6 +356,7 @@ The project will support three tracks from day one:
 - [x] All Tier 2 production gaps closed as of 2026-06-12
 - [x] Data release snapshot v1 added with deterministic pathway assignment hash and cross-release comparison (105 schemas, Tier 3 gap closed)
 - [x] Multi-target scan orchestration, cross-target RFI suppression, anomaly ranking, candidate escalation gate (109 schemas, Milestone 76)
+- [x] Escalation gate hardened, negative-result scan report, external submission protocol (109 schemas, Milestone 77)
 - [x] Cross-store position deduplication (`cross_store_dedup`) for radio + infrared track corroboration
 - [x] Gaia DR3 scan workflow (`gaia_scan_workflow`) — guarded behind `TECHNO_SEARCH_ENABLE_LIVE_DATA=1`
 - [x] Weekly automated scan schedule (`.github/workflows/weekly_scan.yml`)

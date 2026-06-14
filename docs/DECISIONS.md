@@ -3234,7 +3234,7 @@ Three new operational modules added:
 
 ---
 
-## DECISION-132: External Submission Protocol
+# DECISION-132: External Submission Protocol
 
 **Date:** 2026-06-14
 **Status:** Active
