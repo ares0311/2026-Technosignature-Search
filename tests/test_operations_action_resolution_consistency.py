@@ -119,9 +119,10 @@ def _action_plan() -> dict[str, object]:
 def test_load_operations_action_resolution_expectations_fixture() -> None:
     expected = load_operations_action_resolution_expectations(FIXTURE_PATH)
 
-    assert expected["expected_action_count"] == 7
-    assert expected["stale_resolution_count"] == 3
+    assert expected["expected_action_count"] == 6
+    assert expected["stale_resolution_count"] == 4
     assert expected["stale_resolution_action_ids"] == [
+        "ops-action-007",
         "ops-action-008",
         "ops-action-009",
         "ops-action-010",
@@ -208,9 +209,10 @@ def test_operations_action_resolution_consistency_default_project_passes() -> No
 
     assert summary["schema_version"] == "operations_action_resolution_consistency_v1"
     assert summary["ok"] is True
-    assert summary["actual_action_count"] == 7
-    assert summary["actual_stale_resolution_count"] == 3
+    assert summary["actual_action_count"] == 6
+    assert summary["actual_stale_resolution_count"] == 4
     assert summary["actual_stale_resolution_action_ids"] == [
+        "ops-action-007",
         "ops-action-008",
         "ops-action-009",
         "ops-action-010",

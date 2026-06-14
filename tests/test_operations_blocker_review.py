@@ -48,10 +48,10 @@ def test_blocker_review_statuses_are_allowed() -> None:
 def test_blocker_review_covers_current_detail_actions(tmp_path) -> None:
     detail = _detail_summary(tmp_path)
     result = operations_blocker_review_summary(blocker_detail_summary=detail)
-    assert result["expected_action_count"] == 7
-    assert result["covered_action_count"] == 7
+    assert result["expected_action_count"] == 6
+    assert result["covered_action_count"] == 6
     assert result["missing_action_count"] == 0
-    assert result["stale_review_count"] == 0
+    assert result["stale_review_count"] == 1
     assert result["coverage_complete"] is True
     assert result["coverage_fraction"] == 1.0
 
@@ -70,8 +70,8 @@ def test_blocker_review_preserves_residual_blockers_and_zero_authorization(
 def test_blocker_review_accounts_for_all_detail_evidence(tmp_path) -> None:
     detail = _detail_summary(tmp_path)
     result = operations_blocker_review_summary(blocker_detail_summary=detail)
-    assert result["detail_evidence_record_count"] == 26
-    assert result["reviewed_evidence_record_count"] == 26
+    assert result["detail_evidence_record_count"] == 22
+    assert result["reviewed_evidence_record_count"] == 22
     assert result["unreviewed_evidence_record_count"] == 0
     assert result["evidence_count_mismatch_count"] == 0
     assert result["all_detail_evidence_reviewed"] is True

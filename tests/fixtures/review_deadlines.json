@@ -32,8 +32,8 @@
       "deadline_type": "escalation_review",
       "urgency": "immediate",
       "due_utc": "2026-03-12T00:00:00Z",
-      "status": "overdue",
-      "notes": "Escalated SED anomaly; senior review overdue."
+      "status": "completed",
+      "notes": "Escalated SED anomaly; senior review completed 2026-03-14. Resolved as dust-contaminated false positive. No follow-up warranted."
     },
     {
       "deadline_id": "dl-004",

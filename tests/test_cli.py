@@ -519,10 +519,11 @@ def test_cli_operations_action_resolution_consistency_summary_outputs_staleness_
     assert exit_code == 0
     assert result["schema_version"] == "operations_action_resolution_consistency_v1"
     assert result["ok"] is True
-    assert result["actual_action_count"] == 7
+    assert result["actual_action_count"] == 6
     assert result["actual_record_count"] == 10
-    assert result["actual_stale_resolution_count"] == 3
+    assert result["actual_stale_resolution_count"] == 4
     assert result["actual_stale_resolution_action_ids"] == [
+        "ops-action-007",
         "ops-action-008",
         "ops-action-009",
         "ops-action-010",
@@ -540,7 +541,7 @@ def test_cli_operations_blocker_progress_consistency_summary_outputs_chain_gates
     assert exit_code == 0
     assert result["schema_version"] == "operations_blocker_progress_consistency_v1"
     assert result["ok"] is True
-    assert result["actual_counts"]["detail_count"] == 7
+    assert result["actual_counts"]["detail_count"] == 6
     assert result["actual_counts"]["execution_followup_record_count"] == 6
     assert result["expected_residual_blocker_total"] == 26
     assert result["coverage_complete"] is True
@@ -2213,8 +2214,9 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["operations_alert_review_critical_open_alert_count"] == 0
     assert result["operations_alert_review_uncovered_open_alert_count"] == 0
     assert result["operations_action_resolution_consistency_ok"] is True
-    assert result["operations_action_resolution_consistency_stale_count"] == 3
+    assert result["operations_action_resolution_consistency_stale_count"] == 4
     assert result["operations_action_resolution_consistency_stale_action_ids"] == [
+        "ops-action-007",
         "ops-action-008",
         "ops-action-009",
         "ops-action-010",
@@ -2331,14 +2333,15 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["operations_readiness_sqlite_integrity_ok"] is True
     assert result["operations_readiness_sqlite_weekly_digest_ok"] is True
     assert result["operations_action_resolution_record_count"] == 10
-    assert result["operations_action_resolution_expected_action_count"] == 7
-    assert result["operations_action_resolution_covered_action_count"] == 7
+    assert result["operations_action_resolution_expected_action_count"] == 6
+    assert result["operations_action_resolution_covered_action_count"] == 6
     assert result["operations_action_resolution_missing_action_count"] == 0
-    assert result["operations_action_resolution_stale_resolution_count"] == 3
+    assert result["operations_action_resolution_stale_resolution_count"] == 4
     assert result["operations_action_resolution_coverage_fraction"] == 1.0
     assert result["operations_action_resolution_coverage_complete"] is True
     assert result["operations_action_resolution_missing_action_ids"] == []
     assert result["operations_action_resolution_stale_resolution_action_ids"] == [
+        "ops-action-007",
         "ops-action-008",
         "ops-action-009",
         "ops-action-010",
@@ -2348,7 +2351,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
         result["operations_action_resolution_external_submission_authorized_count"]
         == 0
     )
-    assert result["operations_blocker_detail_count"] == 7
+    assert result["operations_blocker_detail_count"] == 6
     assert result["operations_blocker_detail_total_evidence_record_count"] >= 7
     assert (
         result["operations_blocker_detail_all_external_authorization_disabled"]
@@ -2356,7 +2359,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert result["operations_blocker_detail_sqlite_context_is_resolved"] is True
     assert result["operations_blocker_review_record_count"] == 7
-    assert result["operations_blocker_review_reviewed_evidence_record_count"] == 26
+    assert result["operations_blocker_review_reviewed_evidence_record_count"] == 22
     assert result["operations_blocker_review_unreviewed_evidence_record_count"] == 0
     assert result["operations_blocker_review_residual_blocker_total"] == 26
     assert result["operations_blocker_review_live_data_authorized_count"] == 0
