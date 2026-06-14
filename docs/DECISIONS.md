@@ -3231,3 +3231,31 @@ Three new operational modules added:
    `candidate-store-summary`, `candidate-store-list`. Scientific guardrail: candidate
    store records are local triage and provenance records only; stored records do not
    authorize external submission and do not constitute detection claims.
+
+---
+
+## DECISION-132: External Submission Protocol
+
+**Date:** 2026-06-14
+**Status:** Active
+**Closes:** Tier 3 gap — External submission workflow
+
+External submission of a technosignature-interest candidate is blocked until
+all preconditions are satisfied:
+
+- P1: A formal `candidate_review_packet` exists with real telescope data
+- P2: Escalation gate passes (`escalation_gate_check()["passes"] == True`),
+  requiring pathway, SNR ≥ 42.4, and `multi_epoch_persistence_score > 0`
+- P3: Cross-target RFI suppression has not flagged the candidate
+- P4: Independent citizen-science reproduction of the candidate pipeline run
+- P5: Public reproducibility package posted with explicit non-detection disclaimer
+- P6: Human operator sets `operator_cleared: True` on the escalation record
+
+The protocol is documented in `docs/EXTERNAL_SUBMISSION_PROTOCOL.md`.
+
+As of 2026-06-14, all preconditions are unmet for all candidates.
+`external_review_authorized: False` on all escalation records.
+
+Scientific guardrail: This protocol is an operator scheduling aid. No step
+constitutes a detection claim, scientific confirmation, or authorization to
+submit without human approval of all preconditions.
