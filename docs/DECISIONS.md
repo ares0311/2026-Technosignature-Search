@@ -3259,3 +3259,56 @@ As of 2026-06-14, all preconditions are unmet for all candidates.
 Scientific guardrail: This protocol is an operator scheduling aid. No step
 constitutes a detection claim, scientific confirmation, or authorization to
 submit without human approval of all preconditions.
+
+---
+
+# DECISION-133: Model Generalisation Beyond Cygnus Campaign
+
+**Date:** 2026-06-15
+**Status:** Active
+**Closes:** Tier 3 gap — Model generalizability beyond single GBT Cygnus campaign
+
+The learned scoring model (v1, logistic regression) was trained exclusively on
+124 labels from GBT L-band observations of the Cygnus region (HIP99427 ABACAD
+cadence).  To make the pipeline production-ready for surveys beyond a single
+pointing and epoch, six generalisation capabilities are added:
+
+**Priority 1 — Extended BL corpus download:**
+`scripts/download_bl_extended_corpus.sh` downloads GBT turboSETI `.dat` files
+from non-Cygnus targets spanning multiple galactic latitudes and RA hours.
+These are calibration aids only; no hit constitutes a detection claim.
+
+**Priority 2 — MeerKAT BLUSE hit ingestion:**
+`scripts/ingest_meerkat_hits.py` downloads and normalises Sheikh et al. 2025
+MeerKAT BLUSE 2-million-hit dataset as a false-positive training corpus for
+the semi-supervised scorer.  Output stored in `data/meerkat_hits/` (not
+committed).
+
+**Priority 3 — Injection-recovery grid:**
+`scripts/setigen_injection_grid.py` uses setigen to inject synthetic signals
+into real GBT HDF5 files across a grid of (SNR, drift_rate, frequency) values,
+augmenting the `follow_up` class.
+
+**Priority 4 — Cross-band feature normalization:**
+`src/techno_search/radio/cross_band_features.py` implements
+`normalize_drift_rate()`, `relative_snr()`, `on_off_consistency_score()`, and
+`extract_cross_band_features()`.  Key invariant: dividing drift rate by centre
+frequency in GHz yields a telescope-agnostic physical quantity.
+
+**Priority 5 — GLOBULAR pre-filter:**
+`src/techno_search/globular_filter.py` adapts Jacobson-Bell et al. 2024
+(arxiv:2411.16556) using sklearn HDBSCAN on 13 morphological features.  Hits
+assigned to dense clusters are flagged as probable RFI.  ~93% FP reduction
+with zero labels needed.  Cluster labels are heuristic; they are not ground
+truth.
+
+**Priority 6 — Semi-supervised anomaly scorer:**
+`src/techno_search/semisupervised_scorer.py` implements `SemisupervisedScorer`
+using sklearn Pipeline (QuantileTransformer + PCA + IsolationForest).  Trained
+on an unlabeled RFI-dominated corpus; anomaly score is high for hits far from
+the learned normal manifold.
+
+Scientific guardrail: All outputs are local triage aids only.  Cluster labels,
+anomaly scores, and cross-band features do not constitute detection claims, do
+not authorize external submission, and require independent-method citizen-science
+review before use in production pathway routing.
