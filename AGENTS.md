@@ -78,6 +78,38 @@ authorization to execute a task.
 
 ---
 
+## FILE LOCATION RULE — NON-NEGOTIABLE
+
+Before asking the user where any file, directory, or data artifact is located,
+you must search the codebase first. File locations are documented in the code.
+
+**Required lookup sequence — in this order:**
+
+1. **Grep the scripts** for path variables:
+   `grep -r "OUT_DIR\|DATA_DIR\|REPO_ROOT" scripts/`
+   Shell scripts always declare output paths explicitly.
+2. **Grep the source** for path constants:
+   `grep -r "Path\|data_dir\|output_dir" src/techno_search/`
+3. **Check `docs/LOCAL_SYSTEM_PROFILE.md`** — local paths and directory
+   conventions are documented there.
+4. **Check `CLAUDE.md` and `AGENTS.md`** — prior iteration notes record where
+   artifacts were written.
+
+**Only after all four lookups fail** may you ask the user — and you must state
+which lookups you ran and what they returned.
+
+**Prohibited patterns:**
+- Suggesting `find ~/Library/...` or any path outside the project root without
+  first confirming a script writes there.
+- Assuming a CLI argument default without reading the script's actual default
+  value.
+- Using any `~`-based path unless a script explicitly sets that as its output
+  directory.
+
+The source of truth for where files are is the code, not memory or assumption.
+
+---
+
 ## ROOT CAUSE RULE — NON-NEGOTIABLE
 
 Before implementing any fix, patch, or workaround, you must:
