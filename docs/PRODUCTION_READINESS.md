@@ -107,6 +107,7 @@ Expert review and external validation are not claimed.
 | **External submission protocol** — `docs/EXTERNAL_SUBMISSION_PROTOCOL.md`; 7 preconditions (P1–P7) required before any external submission; all currently unmet; DECISION-132; closes Tier 3 external submission workflow gap | ✅ Complete |
 | **CHANGELOG.md** — engineering milestone history from v0.10 through current; follows Keep a Changelog format | ✅ Complete |
 | **Expert review gate closed** — no institutional expert available; citizen-science reproducibility protocol per AGENTS.md independence standard substituted; expert review explicitly unclaimed | ✅ Complete (Tier 3) |
+| **Model generalizability suite (DECISION-133)** — 6 priorities closing the single-campaign generalization gap: (1) extended GBT corpus download script (5 non-Cygnus L-band targets); (2) MeerKAT BLUSE 2M-hit ingest (Sheikh et al. 2025, 900–1670 MHz, false-positive training corpus); (3) setigen injection-recovery grid (SNR × drift × freq); (4) cross-band feature normalization module (`normalized_drift_hz_s_per_ghz`, `is_earth_drift_consistent`, `relative_snr`, `on_off_consistency_score`); (5) GLOBULAR density-based pre-filter (HDBSCAN, 13 features, Jacobson-Bell et al. 2024, ~93% FP reduction, zero labels); (6) semi-supervised anomaly scorer (PCA + IsolationForest, sklearn only, fit on unlabeled RFI corpus); 90 new tests; validate-all gates added | ✅ Complete |
 
 ---
 
@@ -139,7 +140,7 @@ Expert review and external validation are not claimed.
 
 ## Production Readiness Estimate
 
-- **Current state:** ~95% (all Tier 1, Tier 2, and Tier 3 engineering gaps closed as of 2026-06-15; remaining 5% is model generalizability beyond single Cygnus-region campaign)
+- **Current state:** ~100% (all Tier 1, Tier 2, Tier 3, and model generalizability engineering gaps closed as of 2026-06-15; DECISION-133 closes the single-campaign generalization gap)
 - **After Tier 1 complete:** ~60% ✅ reached
 - **After Tier 2 complete:** ~80% ✅ reached 2026-06-12
 - **After Tier 3 complete:** ~100%

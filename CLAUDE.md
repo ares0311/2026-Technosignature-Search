@@ -162,6 +162,55 @@ and must be rewritten before being given to the user.
 
 ## Current Iteration
 
+User requested implementation of all 6 model generalizability priorities (DECISION-133).
+
+Current branch: `claude/general-session-Bb2dZ`.
+
+Overall status: all 6 priorities implemented, tested, validated, and merged to `main` via PR #72.
+
+Added:
+
+- `scripts/download_bl_extended_corpus.sh` — downloads 5 non-Cygnus GBT L-band cadences (HIP17147, HIP39826, HIP66704, HIP74981, HIP82860) from BL open data HTTP mirror; `caffeinate -i` wrapper; `curl --progress-bar --continue-at - --retry 3`; output: `data/extended_corpus/<target_name>/<file>.dat`
+- `scripts/ingest_meerkat_hits.py` — downloads MeerKAT BLUSE turboSETI 2M-hit corpus (Sheikh et al. 2025) from Zenodo; ~90 MB gzipped JSON; 900–1670 MHz; normalizes via `MEERKAT_FIELD_MAP` to NDJSON; args: `--output-dir`, `--max-hits` (default 200000), `--dry-run`; output: `data/meerkat_hits/meerkat_normalised_<N>.ndjson`
+- `scripts/setigen_injection_grid.py` — SNR × drift_rate × freq_offset injection-recovery grid; injects synthetic narrowband signals into real GBT HDF5 files using setigen; recovers with turboSETI; writes `injection_grid_manifest.json`; args: `--h5-file`, `--output-dir`, `--snr-values`, `--drift-rates`, `--n-freq-offsets`, `--dry-run`; default SNRs: [20, 50, 100, 200, 500]; default drift rates: [-2, -0.5, 0, 0.5, 2] Hz/s
+- `src/techno_search/radio/cross_band_features.py` — telescope-agnostic frequency-normalized features; `EARTH_ACCELERATION_DRIFT_HZ_S_PER_GHZ = 0.44`; `RELATIVE_SNR_WINDOW_HZ = 10_000_000.0`; key functions: `normalize_drift_rate()`, `is_earth_drift_consistent()`, `compute_relative_snr_from_hits()`, `on_off_consistency_score()`, `extract_cross_band_features()`; `CrossBandFeatures` frozen dataclass; `cross_band_features_summary()` CLI helper; generalizes across GBT L/S/C/X bands and MeerKAT 900–1670 MHz
+- `src/techno_search/globular_filter.py` — HDBSCAN pre-filter adapted from Jacobson-Bell et al. 2024 (arxiv:2411.16556); 13 morphological features (`GLOBULAR_FEATURE_NAMES`); per-column min-max normalization; `DEFAULT_MIN_CLUSTER_SIZE = 5`, `DEFAULT_MIN_SAMPLES = 3`; cluster label ≥ 0 = probable RFI; label -1 = noise/candidate; ~93% FP reduction with zero hand-crafted labels; `GlobularResult` dataclass; key fix: `int(lbl)` and `bool(lbl >= 0)` casts to avoid numpy type leakage
+- `src/techno_search/semisupervised_scorer.py` — PCA + IsolationForest anomaly scorer (sklearn only, no GPU/PyTorch); 12 features (`SEMISUPERVISED_FEATURE_NAMES`); sklearn Pipeline: `QuantileTransformer → PCA(n_components=8) → IsolationForest(n_estimators=200, contamination=0.01)`; `anomaly_score = -decision_function()` so high = more anomalous; `SemisupervisedScorer.fit()`, `score_hit()`, `score_hits()`, `save()` (provenance JSON only, not model weights), `load()` classmethod; `semisupervised_scorer_summary()` CLI helper
+- `tests/test_cross_band_features.py` — 35 tests
+- `tests/test_globular_filter.py` — 25 tests
+- `tests/test_semisupervised_scorer.py` — 30 tests
+- CLI commands: `techno-search cross-band-features-summary`, `techno-search globular-filter-summary`, `techno-search semisupervised-scorer-summary`
+- `validate-all` gates: `cross_band_feat_count >= 4`, `globular_feature_count >= 13`, `semisup_feature_count >= 12`
+- `docs/DECISIONS.md` DECISION-133: Model Generalizability Suite
+- `docs/PRODUCTION_READINESS.md` updated to ~100% (generalizability gap closed)
+- `tests/fixtures/project_status_consistency.json` updated: `latest_decision_number` bumped from 132 → 133
+- `tests/test_cli.py` and `tests/test_project_status_consistency.py` hardcoded decision number assertions updated from 132 → 133
+
+Scientific guardrail:
+
+- Cross-band feature outputs are local triage aids — no normalized value constitutes a detection claim or authorizes external submission
+- GLOBULAR cluster labels are density-based heuristics — a hit labelled `rfi_cluster` is probably RFI but has not been independently verified; no label constitutes a detection claim or authorizes external submission
+- Semi-supervised anomaly scores are local triage aids — a high score indicates the hit is unusual relative to the training corpus; it does not constitute a detection claim or authorize external submission; independent-method citizen-science review required before any use in production pathway routing
+
+Validation passed:
+
+```bash
+.venv/bin/python -m pytest --tb=short -q
+# 2299 passed, 13 skipped
+.venv/bin/ruff check .
+# All checks passed
+.venv/bin/mypy src --no-error-summary
+# clean
+.venv/bin/techno-search validate-all
+# ok: True
+```
+
+Merge status: committed on `claude/general-session-Bb2dZ`, pushed, PR #72 merged to `main`.
+
+---
+
+## Previous Iteration
+
 User requested real observation data download and pipeline execution (Tier 1 gap closure).
 
 Current branch: `claude/general-session-Bb2dZ`.
