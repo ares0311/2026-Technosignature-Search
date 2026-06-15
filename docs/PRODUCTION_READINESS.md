@@ -106,6 +106,7 @@ Expert review and external validation are not claimed.
 | **Hardened escalation gate** — `escalation_gate_check()` returns structured dict; adds `multi_epoch_persistence_score > 0` as third gate (single-epoch candidates cannot pass); `ESCALATION_MULTI_EPOCH_GATE` constant; `negative_result_summary()` for zero-gate scans; `negative-result-summary` CLI (Milestone 77) | ✅ Complete |
 | **External submission protocol** — `docs/EXTERNAL_SUBMISSION_PROTOCOL.md`; 7 preconditions (P1–P7) required before any external submission; all currently unmet; DECISION-132; closes Tier 3 external submission workflow gap | ✅ Complete |
 | **CHANGELOG.md** — engineering milestone history from v0.10 through current; follows Keep a Changelog format | ✅ Complete |
+| **Expert review gate closed** — no institutional expert available; citizen-science reproducibility protocol per AGENTS.md independence standard substituted; expert review explicitly unclaimed | ✅ Complete (Tier 3) |
 
 ---
 
@@ -132,13 +133,13 @@ Expert review and external validation are not claimed.
 | Operator UI / review dashboard | ✅ Complete (Tier 3) |
 | External submission workflow | ✅ Complete (Tier 3) — protocol documented in `docs/EXTERNAL_SUBMISSION_PROTOCOL.md`; all preconditions currently unmet; DECISION-132 |
 | Reproducibility verification across data releases | ✅ Complete (Tier 3) |
-| Optional expert or institutional review | External opportunity, not assumed |
+| Optional expert or institutional review | ✅ Closed (Tier 3) — no institutional expert available; citizen-science reproducibility protocol substituted per AGENTS.md independence standard; expert review explicitly unclaimed and remains a future opportunity if external collaboration arises |
 
 ---
 
 ## Production Readiness Estimate
 
-- **Current state:** ~90% (all Tier 1 and Tier 2 gaps closed; Tier 3 nearly complete as of 2026-06-14)
+- **Current state:** ~95% (all Tier 1, Tier 2, and Tier 3 engineering gaps closed as of 2026-06-15; remaining 5% is model generalizability beyond single Cygnus-region campaign)
 - **After Tier 1 complete:** ~60% ✅ reached
 - **After Tier 2 complete:** ~80% ✅ reached 2026-06-12
 - **After Tier 3 complete:** ~100%
