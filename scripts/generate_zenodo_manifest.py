@@ -13,7 +13,8 @@ Usage:
   .venv/bin/python scripts/generate_zenodo_manifest.py [OPTIONS]
 
 Options:
-  --data-dir PATH   Path to local calibration data (default: data/calibration_corpus)
+  --data-dir PATH   Path to local calibration data
+                    (default: data/ — scans bl_hits/ and calibration_corpus/)
   --output PATH     Output manifest path (default: results/zenodo_manifest.json)
   --dry-run         Print manifest to stdout; do not write file
 
@@ -212,8 +213,8 @@ def main() -> None:
     parser.add_argument(
         "--data-dir",
         type=Path,
-        default=REPO_ROOT / "data" / "calibration_corpus",
-        help="Path to local calibration data directory",
+        default=REPO_ROOT / "data",
+        help="Path to local calibration data directory (scans recursively)",
     )
     parser.add_argument(
         "--output",
