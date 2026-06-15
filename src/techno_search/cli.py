@@ -942,6 +942,40 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(result, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "cross-band-features-summary":
+        from techno_search.radio.cross_band_features import cross_band_features_summary
+
+        result = cross_band_features_summary()
+        print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "globular-filter-summary":
+        from techno_search.globular_filter import (
+            GLOBULAR_FEATURE_NAMES,
+            GLOBULAR_FILTER_DISCLAIMER,
+            GLOBULAR_FILTER_VERSION,
+        )
+
+        result = {
+            "schema_version": GLOBULAR_FILTER_VERSION,
+            "disclaimer": GLOBULAR_FILTER_DISCLAIMER,
+            "feature_names": GLOBULAR_FEATURE_NAMES,
+            "feature_count": len(GLOBULAR_FEATURE_NAMES),
+            "note": (
+                "Apply the GLOBULAR filter to a hit table via "
+                "apply_globular_filter(hits) in techno_search.globular_filter."
+            ),
+        }
+        print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "semisupervised-scorer-summary":
+        from techno_search.semisupervised_scorer import semisupervised_scorer_summary
+
+        result = semisupervised_scorer_summary()
+        print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "calibration-summary":
         fixtures = load_calibration_fixtures(args.fixture_path)
         cal_summary = summarize_calibration_fixtures(fixtures)
@@ -5660,6 +5694,26 @@ def validate_all() -> dict[str, object]:
         operations_blocker_progress_consistency["ok"]
     )
 
+    # Priority 4: cross-band feature normalization provenance gate
+    from techno_search.radio.cross_band_features import (
+        cross_band_features_summary as _cbf_summary,
+    )
+    cross_band_feat_data = _cbf_summary()
+    cross_band_feat_count = int(cross_band_feat_data.get("feature_count", 0))
+
+    # Priority 5: GLOBULAR filter provenance gate
+    from techno_search.globular_filter import (  # noqa: PLC0415
+        GLOBULAR_FEATURE_NAMES as _GLOBULAR_FEAT_NAMES,
+    )
+    globular_feature_count = len(_GLOBULAR_FEAT_NAMES)
+
+    # Priority 6: semi-supervised scorer provenance gate
+    from techno_search.semisupervised_scorer import (
+        semisupervised_scorer_summary as _ss_summary,
+    )
+    semisup_data = _ss_summary()
+    semisup_feature_count = int(semisup_data.get("feature_count", 0))
+
     ok = (
         all(result["ok"] for result in candidate_results.values())
         and bool(report_result["ok"])
@@ -5676,6 +5730,12 @@ def validate_all() -> dict[str, object]:
         and false_positive_class_count >= 15
         and isinstance(provider_normalization_case_count, int)
         and provider_normalization_case_count >= 5
+        and isinstance(cross_band_feat_count, int)
+        and cross_band_feat_count >= 4
+        and isinstance(globular_feature_count, int)
+        and globular_feature_count >= 13
+        and isinstance(semisup_feature_count, int)
+        and semisup_feature_count >= 12
         and isinstance(injection_recovery_case_count, int)
         and injection_recovery_case_count >= 6
         and isinstance(reliability_bin_count, int)
@@ -6549,6 +6609,12 @@ def validate_all() -> dict[str, object]:
         "operations_blocker_progress_consistency_summary": (
             operations_blocker_progress_consistency
         ),
+        "cross_band_features_summary": cross_band_feat_data,
+        "globular_filter_summary": {
+            "feature_count": globular_feature_count,
+            "schema_version": "globular_filter_v1",
+        },
+        "semisupervised_scorer_summary": semisup_data,
     }
 
 
@@ -13613,6 +13679,30 @@ def _build_parser() -> argparse.ArgumentParser:
         "--snapshot-path",
         default=None,
         help="Path to data_release_snapshots.json fixture.",
+    )
+
+    subparsers.add_parser(
+        "cross-band-features-summary",
+        help=(
+            "Print cross-band feature normalization provenance summary "
+            "(normalize_drift_rate, relative_snr, on_off_consistency)."
+        ),
+    )
+
+    subparsers.add_parser(
+        "globular-filter-summary",
+        help=(
+            "Print GLOBULAR pre-filter provenance summary "
+            "(HDBSCAN density-based RFI cluster detection)."
+        ),
+    )
+
+    subparsers.add_parser(
+        "semisupervised-scorer-summary",
+        help=(
+            "Print semi-supervised anomaly scorer provenance summary "
+            "(PCA + IsolationForest; local triage aid only)."
+        ),
     )
 
     return parser
