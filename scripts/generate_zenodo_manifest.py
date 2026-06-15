@@ -13,7 +13,7 @@ Usage:
   .venv/bin/python scripts/generate_zenodo_manifest.py [OPTIONS]
 
 Options:
-  --data-dir PATH   Path to local calibration data (default: ~/technosignature-data)
+  --data-dir PATH   Path to local calibration data (default: data/calibration_corpus)
   --output PATH     Output manifest path (default: results/zenodo_manifest.json)
   --dry-run         Print manifest to stdout; do not write file
 
@@ -212,7 +212,7 @@ def main() -> None:
     parser.add_argument(
         "--data-dir",
         type=Path,
-        default=Path.home() / "technosignature-data",
+        default=REPO_ROOT / "data" / "calibration_corpus",
         help="Path to local calibration data directory",
     )
     parser.add_argument(
