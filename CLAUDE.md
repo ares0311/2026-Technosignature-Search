@@ -64,6 +64,15 @@ anything else. The mandatory reads exist precisely because context can be stale
 or summarized incorrectly. "Resume directly" means: do not waste text on
 preamble after the reads are done. It does not mean skip the reads.
 
+**FILE LOCATION RULE — NON-NEGOTIABLE.** Before asking the user where any
+file, directory, or data artifact is located, search the codebase first.
+Required sequence: (1) `grep -r "OUT_DIR\|DATA_DIR\|REPO_ROOT" scripts/`;
+(2) `grep -r "Path\|data_dir\|output_dir" src/techno_search/`;
+(3) check `docs/LOCAL_SYSTEM_PROFILE.md`; (4) check `CLAUDE.md`/`AGENTS.md`
+prior iteration notes. Only if all four fail may you ask — and you must state
+what you searched. Never suggest `~/Library/...` or any `~`-based path unless
+a script explicitly sets it as an output directory.
+
 **ROOT CAUSE RULE — NON-NEGOTIABLE.** Before implementing any fix or workaround,
 you must identify the root cause and confirm the fix addresses it. Specifically:
 - If a user already has the data/file/artifact you are about to download/create,
