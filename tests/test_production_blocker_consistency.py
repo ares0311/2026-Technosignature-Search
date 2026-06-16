@@ -100,10 +100,8 @@ def _readiness_summary(
 def test_load_production_blocker_expectations_fixture() -> None:
     expected = load_production_blocker_expectations(FIXTURE_PATH)
 
-    assert expected["min_tier1_blocker_count"] == 1
-    assert "Calibrated scoring thresholds" in expected[
-        "required_tier1_blocker_phrases"
-    ]
+    assert expected["min_tier1_blocker_count"] == 0
+    assert expected["required_tier1_blocker_phrases"] == []
 
 
 def test_production_blocker_consistency_custom_project_passes(tmp_path: Path) -> None:
@@ -207,7 +205,45 @@ def test_production_blocker_consistency_default_project_passes() -> None:
 
     assert summary["schema_version"] == "production_blocker_consistency_v1"
     assert summary["ok"] is True
-    assert summary["actual_tier1_blocker_count"] == 1
+    assert summary["actual_tier1_blocker_count"] == 0
+    assert summary["present_tier1_blockers"] == []
     assert summary["rfi_database_admission_blocked_count"] == 3
     assert summary["curated_dataset_admission_blocked_count"] == 3
     assert summary["real_data_authorized_total"] == 1
+
+
+def test_completed_capability_mentions_do_not_count_as_open_blockers(
+    tmp_path: Path,
+) -> None:
+    expected_path = _write_expected(tmp_path)
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    (docs / "PRODUCTION_READINESS.md").write_text(
+        "\n".join(
+            [
+                "# Production Readiness Assessment",
+                "",
+                "## What Is Complete",
+                "",
+                "| **Calibrated scoring thresholds** | Complete |",
+                "| **Real site-specific RFI database** | Complete |",
+                "",
+                "### Tier 1 — Blockers",
+                "",
+                "**All Tier 1 gaps are closed.**",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    summary = production_blocker_consistency_summary(
+        expected_path,
+        project_root=tmp_path,
+        rfi_admission=_rfi_summary(),
+        curated_admission=_curated_summary(),
+        readiness=_readiness_summary(),
+    )
+
+    assert summary["ok"] is False
+    assert summary["actual_tier1_blocker_count"] == 0
+    assert "Calibrated scoring thresholds" in summary["missing_tier1_blockers"]

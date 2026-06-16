@@ -58,6 +58,16 @@ def _phrase_present(text: str, phrase: str) -> bool:
     return _normalized_text(phrase) in _normalized_text(text)
 
 
+def _tier1_blocker_section(text: str) -> str:
+    marker = "### Tier 1"
+    start = text.find(marker)
+    if start < 0:
+        return ""
+    remainder = text[start:]
+    next_section = remainder.find("\n### ", len(marker))
+    return remainder if next_section < 0 else remainder[:next_section]
+
+
 def production_blocker_consistency_summary(
     expected_path: Path | None = None,
     *,
@@ -71,12 +81,13 @@ def production_blocker_consistency_summary(
     production_text = (root / "docs" / "PRODUCTION_READINESS.md").read_text(
         encoding="utf-8"
     )
+    tier1_text = _tier1_blocker_section(production_text)
 
     required_phrases = [
         str(phrase) for phrase in expected.get("required_tier1_blocker_phrases", [])
     ]
     present_phrases = [
-        phrase for phrase in required_phrases if _phrase_present(production_text, phrase)
+        phrase for phrase in required_phrases if _phrase_present(tier1_text, phrase)
     ]
     missing_phrases = [
         phrase for phrase in required_phrases if phrase not in present_phrases

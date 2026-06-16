@@ -63,7 +63,8 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     assert "[Using and Recalibrating the Model](#-using-and-recalibrating-the-model)" in readme
     assert "### Abstract" in readme
     assert "Technosignature searches require an analysis framework" in readme
-    assert "calibrated empirical likelihoods are not yet claimed" in readme
+    assert "calibrated GBT scoring thresholds" in readme
+    assert "external validation as blocked" in readme
     assert "candidate-evaluation and reproducibility system" in readme
     assert "Most apparent technosignature-like signals are false positives." in readme
     assert "### Research Questions" in readme

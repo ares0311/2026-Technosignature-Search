@@ -4,10 +4,10 @@
 Technosignature Search
 
 ## Status
-Initial v0 Implementation
+Citizen-science production deployment readiness
 
 ## Current Phase
-Initial v0 Implementation / Synthetic Scoring Core
+Production triage, deployment verification, and conservative operations
 
 ## Package Name
 `techno_search`
@@ -325,9 +325,9 @@ The project will support three tracks from day one:
 - [x] Top-level SQLite log consistency gates added so SQLite health, migration
       state, run/outcome alignment, retention, PRAGMAs, commit guard, and
       disabled authorization counts remain aligned
-- [x] Production blocker visibility consistency gates added so Tier 1
-      production blockers, admission blockers, operations readiness blockers,
-      and disabled authorization counts remain aligned
+- [x] Production blocker visibility consistency gates added so open Tier 1
+      readiness state, admission state, operations readiness state, and
+      disabled authorization counts remain aligned
 - [x] Data transfer log, scheduling conflict log, and system health log
       operational provenance records added
 - [x] Instrument configuration log, scan log, and time synchronization log
@@ -365,88 +365,67 @@ The project will support three tracks from day one:
 
 ## Next 3 Actions
 
-1. Download additional BL/GBT target hit tables (human task — see Task 4 in session plan).
-2. Run first multi-target scan with `techno-search scan-summary data/bl_hits/` across
-   ≥5 targets beyond HIP99427.
-3. Label 20-30 examples from new targets to validate learned model v1 generalization.
+1. Run the production-readiness validation gate from a clean checkout and preserve the command output as local operator evidence.
+2. Execute the first conservative production scan using `docs/PRODUCTION_SCAN_GUIDE.md`, with live data still opt-in and no external submission.
+3. Review negative-result and escalation outputs under `docs/EXTERNAL_SUBMISSION_PROTOCOL.md`; keep any submission or discovery-style claim blocked unless all protocol preconditions and independent external validation are satisfied.
 
 ---
 
 ## Next Milestone
 
-**Milestone 1 — Multi-Modal Scoring Core**
+**Milestone 78 — Citizen-Science Production Run Evidence**
 
-Status: initial v0 implemented.
+Status: ready to begin after clean validation.
 
 Input:
-- synthetic radio candidate
-- synthetic infrared candidate
-- synthetic archival anomaly candidate
+- reviewed local configuration
+- real observation hit tables or admitted local fixtures
+- production scan guide
 
 Output:
-- posterior-style probabilities
-- false-positive probability
-- candidate-interest score
-- recommended pathway
-- explanation
+- validation transcript
+- conservative scan summary
+- negative-result or escalation-gate record
+- provenance bundle with no external submission by default
 
 ---
 
 ## Current Risks
 
-- Scope creep across too many technosignature concepts
-- Weak false-positive handling
-- Overclaiming candidate significance
-- Large data files accidentally committed
-- Live network tests becoming flaky
-- Search tracks becoming inconsistent
+- Overclaiming candidate significance after engineering readiness
+- Large data files, caches, logs, or local scan outputs accidentally committed
+- Live network tests or provider availability becoming flaky
+- External submission attempted before protocol preconditions are met
+- Production evidence generated without preserved provenance
 
 ---
 
 ## Mitigations
 
-- Build scoring core first using synthetic examples.
-- Keep all outputs conservative.
-- Use config files for thresholds.
-- Mock external services in default tests.
-- Preserve provenance for every candidate.
-- Maintain separate specs for radio, infrared, and anomaly tracks.
+- Keep all outputs conservative and false-positive-first.
+- Keep live data opt-in and default tests non-networked.
+- Preserve provenance for every candidate, scan, and operator action.
+- Commit only review-safe methodology and fixture artifacts.
+- Keep external submission disabled unless the documented protocol is fully satisfied and explicitly authorized.
 
 ---
 
-## Definition of Development-Ready
+## Definition of Production-Run-Ready
 
-The project is ready for development when:
+The project is ready for a citizen-science production run when:
 
-- documentation files are committed
-- repo has `AGENTS.md` and `CONTRIBUTING.md`
-- package scaffold exists
-- tests directory exists
-- `pyproject.toml` exists
-- first implementation branch is created
-
----
-
-## Recommended First Branch
-
-```bash
-git checkout -b feature/multimodal-scoring-core
-```
-
-Note: the initial scoring core is currently implemented on the working branch.
+- `validate-all`, tests, lint, and type checks pass from a clean checkout
+- production-readiness docs and CLI summaries agree that Tier 1 and Tier 2 gaps are closed
+- live data remains opt-in and external submission remains disabled by default
+- candidate, negative-result, and escalation outputs preserve provenance and blocking issues
+- large data, caches, SQLite logs, and local result artifacts remain uncommitted
 
 ---
 
-## Recommended First Code Targets
+## Recommended Operator Branching
 
-```text
-src/techno_search/schemas.py
-src/techno_search/scoring.py
-src/techno_search/pathway.py
-
-tests/test_scoring.py
-tests/test_pathway.py
-```
+The user stays on `main` and pulls after each merged PR. Agents develop on
+`claude/general-session-Bb2dZ` and merge through a PR before starting new work.
 - [x] Incident response log, change management log, and compliance report log operational provenance records added
 - [x] Risk assessment log, backup recovery log, and capacity planning log operational provenance records added
 - [x] Software deployment log, performance monitoring log, and user activity log operational provenance records added

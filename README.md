@@ -39,7 +39,7 @@
 
 Technosignature searches require an analysis framework that is simultaneously sensitive to unusual signals and aggressively skeptical of their interpretation. Existing astronomical archives contain radio observations, infrared photometry, astrometric catalogs, and historical survey records that can be searched for candidate signals or anomalies, but the same archives also contain abundant terrestrial interference, instrumental artifacts, catalog ambiguities, natural astrophysical contaminants, and selection effects. This project develops a reproducible, multi-modal technosignature-interest candidate pipeline that treats those false-positive explanations as the default scientific hypothesis.
 
-The pipeline integrates three search tracks: narrowband or Doppler-drifting radio candidates, infrared-excess or waste-heat-interest catalog candidates, and archival/catalog anomalies such as missing, appearing, displaced, or strongly variable sources. Each track emits a normalized feature packet, preserves provenance, records positive and negative evidence, and routes the result through a shared Bayesian-style scoring and conservative pathway framework. The scoring layer evaluates multiple competing hypotheses, including natural sources, human interference, instrumental artifacts, catalog or processing errors, known objects, low-confidence noise, and technosignature-interest candidates. In the current v0 implementation, calibrated empirical likelihoods are not yet claimed; instead, interpretable log-score approximations and synthetic fixtures provide a transparent baseline for regression testing and future calibration.
+The pipeline integrates three search tracks: narrowband or Doppler-drifting radio candidates, infrared-excess or waste-heat-interest catalog candidates, and archival/catalog anomalies such as missing, appearing, displaced, or strongly variable sources. Each track emits a normalized feature packet, preserves provenance, records positive and negative evidence, and routes the result through a shared Bayesian-style scoring and conservative pathway framework. The scoring layer evaluates multiple competing hypotheses, including natural sources, human interference, instrumental artifacts, catalog or processing errors, known objects, low-confidence noise, and technosignature-interest candidates. The current implementation includes calibrated GBT scoring thresholds, a learned real-label triage model, and provisional GBT RFI fixtures for local review, while still treating scientific claims, external submission, and external validation as blocked until their documented preconditions are met.
 
 The methodological objective is not to identify confirmed technosignatures. It is to produce auditable review packets that make uncertainty explicit, expose blocking issues, retain false-positive evidence, and prioritize candidates for human review only when the available evidence justifies further attention. This makes the project a candidate-evaluation and reproducibility system rather than an announcement or discovery platform.
 
@@ -103,7 +103,7 @@ The workflow follows the same broad pattern used in exoplanet vetting: detect an
 
 ## 📊 Current Status
 
-**Phase:** Citizen-Science Production Calibration
+**Phase:** Citizen-Science Production Deployment Readiness
 
 - ✅ Repository initialized
 - ✅ Documentation system built
@@ -115,7 +115,10 @@ The workflow follows the same broad pattern used in exoplanet vetting: detect an
 - ✅ One checksum-verified GBT cadence ingested and conservatively routed
 - ✅ 124 real cadence evidence groups labeled by two deterministic methods
 - ✅ Citizen-science reproducibility review and local real-label evaluation added
-- ⏳ Threshold calibration and a permitted site-specific RFI reference remain blocked
+- ✅ Calibrated GBT scoring thresholds admitted for local scoring-config review
+- ✅ GBT provisional RFI catalog operator sign-off complete for local fixture use
+- ✅ Learned real-label scoring model and generalizability suite implemented
+- ⚠️ External submission and discovery-style claims remain blocked pending the external submission protocol and independent external validation
 
 👉 See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md)
 
@@ -929,7 +932,7 @@ Scientific quality gates:
 | Stale readiness metadata | Production-readiness milestone, schema-count, decision, and authorization metadata must match validation gates | `project-status-consistency-summary` |
 | MCP bootstrap drift | Project MCP configs must remain repo-scoped, fixed-command, local-only, secret-free, and without arbitrary shell, live-provider, or external-submission defaults | `mcp-bootstrap-consistency-summary` |
 | MCP server policy drift | Project MCP server implementation must keep allowlisted tools, fixed commands, denied paths, read-size limits, `.venv` enforcement, and no mutating git/live-provider/external-submission defaults | `mcp-server-policy-summary` |
-| Hidden production blocker drift | Tier 1 production blockers, admission blockers, operations readiness blockers, and disabled authorization counts must remain aligned | `production-blocker-consistency-summary` |
+| Hidden production blocker drift | Open Tier 1 readiness state, admission status, operations readiness state, and disabled authorization counts must remain aligned | `production-blocker-consistency-summary` |
 | Alert/QC review drift | Open-alert, alert-resolution, QC, readiness, and authorization blocker visibility must remain aligned | `operations-alert-review-consistency-summary` |
 | Action-resolution staleness drift | Stale resolution records, current action-plan IDs, residual blockers, and disabled authorization counts must remain aligned | `operations-action-resolution-consistency-summary` |
 | Blocker-progress chain drift | Blocker-detail, review, follow-up, progress, next-action, execution, execution-review, execution-follow-up, residual blockers, and disabled authorization counts must remain aligned | `operations-blocker-progress-consistency-summary` |
