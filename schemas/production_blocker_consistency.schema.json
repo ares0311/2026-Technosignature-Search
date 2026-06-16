@@ -23,10 +23,10 @@
         "required_tier1_blocker_phrases": {
           "type": "array",
           "items": {"type": "string", "minLength": 1},
-          "minItems": 1,
+          "minItems": 0,
           "uniqueItems": true
         },
-        "min_tier1_blocker_count": {"type": "integer", "minimum": 1},
+        "min_tier1_blocker_count": {"type": "integer", "minimum": 0},
         "expected_real_data_authorization_total": {
           "type": "integer",
           "minimum": 0

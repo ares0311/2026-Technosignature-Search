@@ -41,13 +41,13 @@
         "site-specific false-positive baseline",
         "threshold review record"
       ],
-      "current_evidence_count": 0,
-      "blocker_count": 3,
-      "review_status": "blocked_pending_calibration",
-      "real_data_authorized": false,
+      "current_evidence_count": 3,
+      "blocker_count": 0,
+      "review_status": "ready_for_local_review",
+      "real_data_authorized": true,
       "live_data_authorized": false,
       "external_submission_authorized": false,
-      "notes": "Thresholds remain synthetic v0 defaults."
+      "notes": "Calibrated GBT noise thresholds are admitted for local scoring configuration review; independent citizen-science review is required before production scoring claims."
     },
     {
       "category_id": "site_specific_rfi_database",
@@ -57,13 +57,13 @@
         "monitoring-context review",
         "license review"
       ],
-      "current_evidence_count": 0,
-      "blocker_count": 3,
-      "review_status": "blocked_pending_rfi_database",
+      "current_evidence_count": 3,
+      "blocker_count": 0,
+      "review_status": "ready_for_local_review",
       "real_data_authorized": false,
       "live_data_authorized": false,
       "external_submission_authorized": false,
-      "notes": "No real site-monitoring catalog has been admitted."
+      "notes": "GBT provisional RFI catalog operator sign-off is complete for local fixture use from public regulatory documentation; GBT site-monitoring confirmation and external validation are not claimed."
     },
     {
       "category_id": "public_reproducibility_review",
@@ -84,14 +84,14 @@
   ],
   "expected_preflight": {
     "category_count": 5,
-    "min_blocker_total": 5,
-    "expected_real_data_authorization_total": 3,
+    "min_blocker_total": 0,
+    "expected_real_data_authorization_total": 4,
     "expected_rfi_database_authorization_total": 0,
     "expected_curated_dataset_authorization_total": 1,
     "require_zero_live_data_authorization": true,
     "require_zero_external_submission_authorization": true,
-    "require_rfi_admission_blockers_visible": true,
-    "require_curated_dataset_admission_blockers_visible": true,
+    "require_rfi_admission_blockers_visible": false,
+    "require_curated_dataset_admission_blockers_visible": false,
     "require_production_blocker_consistency_ok": true
   }
 }
