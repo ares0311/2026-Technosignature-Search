@@ -374,6 +374,8 @@ The project will support three tracks from day one:
 - [x] AI hardening production blocker memorialized as DECISION-134 and Milestone 78
 - [x] Machine-readable AI hardening gate added so validation exposes open
       requirements, held-out evidence absence, and disabled production promotion
+- [x] AI hardening review protocol added for DECISION-134 held-out evidence,
+      independent-method review, and review-safe evidence bundles
 
 ## Next 3 Actions
 

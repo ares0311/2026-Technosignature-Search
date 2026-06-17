@@ -25,6 +25,7 @@ def _write_docs(root: Path, *, include_phrase: bool = True) -> None:
         "PROJECT_STATUS.md",
         "DECISIONS.md",
         "ROADMAP.md",
+        "AI_HARDENING_REVIEW_PROTOCOL.md",
     ):
         (docs / name).write_text(text, encoding="utf-8")
 
@@ -63,7 +64,7 @@ def test_ai_hardening_gate_detects_missing_document_visibility(tmp_path: Path) -
     summary = ai_hardening_gate_summary(gate_path, project_root=tmp_path)
 
     assert summary["ok"] is False
-    assert summary["missing_document_phrase_count"] == 8
+    assert summary["missing_document_phrase_count"] == 10
     assert any("visibility" in issue for issue in summary["issues"])
 
 
