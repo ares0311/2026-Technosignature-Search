@@ -1646,3 +1646,25 @@ Total schemas: 188.
 - `CHANGELOG.md` — engineering milestone history from v0.10 through current; follows Keep a Changelog format
 - `docs/PRODUCTION_READINESS.md` updated to ~90%; Tier 3 external submission workflow gap now closed
 - No result constitutes a detection claim; no submission authorized without all P1–P6 preconditions met and operator sign-off
+
+# Milestone 78 — AI Hardening Production Evidence Gate — Tier 3 Production Blocker
+
+- DECISION-134 opens the AI hardening production blocker.
+- Live production promotion of learned or AI-assisted pathway routing is blocked
+  until held-out real-data evidence exists outside the HIP99427 training
+  cadence.
+- Preferred evidence sources are DECISION-133 data paths:
+  `data/extended_corpus/`, `data/meerkat_hits/`, and `data/injection_grid/`.
+- Held-out evidence must be evaluated by at least two structurally independent
+  methods, such as rule-based scoring, learned logistic regression,
+  cross-target RFI suppression, GLOBULAR-style dense-cluster filtering, and
+  semi-supervised anomaly scoring.
+- Disagreements, abstentions, negative evidence, and blocking issues must be
+  preserved rather than forced into consensus.
+- A review-safe production-run evidence bundle must include validation
+  transcript, conservative scan summary, negative-result or escalation-gate
+  record, and provenance.
+- Learned or AI-assisted scores remain local scheduling aids until this gate is
+  explicitly closed.
+- No result constitutes a detection claim; no expert review, peer review,
+  external validation, or external submission is claimed.

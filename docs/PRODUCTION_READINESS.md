@@ -1,24 +1,25 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-06-14
-**Current milestone:** 77 (Escalation Gate Hardening + External Submission Protocol — Tier 3 Production Hardening)
+**Last updated:** 2026-06-17
+**Current milestone:** 78 (AI Hardening Production Evidence Gate — Tier 3 Production Blocker)
 
 ---
 
 ## Summary
 
-The pipeline is approximately **100% of the way to citizen-science engineering
-production readiness**. All Tier 1, Tier 2, Tier 3, and model generalizability
-engineering gaps are closed. Optional expert/institutional review remains a
-future external opportunity, not an assumed dependency. Additional cadence
-downloads and multi-target label expansion remain useful follow-on evidence
-tasks, not production blockers. The calibration gate passed
-`calibration_ready: true` against 213 real GBT hits from 5 cadences, 5
-targets, and 2 epochs (HIP99427, HIP100670, HIP99560, HIP99759, VOYAGER-1).
-Derived thresholds: noise_floor_snr=42.4, follow_up_snr=54.8,
-high_interest_snr=118.3, max_rfi_like_drift_hz_s=5.21. Thresholds require
-independent-method citizen-science review before use in production scoring.
-Expert review and external validation are not claimed.
+The pipeline has closed the documented Tier 1 and Tier 2 engineering blockers,
+but it is **not yet cleared for live production promotion** because a new Tier 3
+AI hardening production blocker is open. DECISION-134 requires held-out
+real-data evidence, independent-method citizen-science review, and production
+run evidence before the learned or AI-assisted scoring stack can be treated as
+production-promotable. Optional expert/institutional review remains a future
+external opportunity, not an assumed dependency. The calibration gate passed
+`calibration_ready: true` against 213 real GBT hits from 5 cadences, 5 targets,
+and 2 epochs (HIP99427, HIP100670, HIP99560, HIP99759, VOYAGER-1). Derived
+thresholds: noise_floor_snr=42.4, follow_up_snr=54.8, high_interest_snr=118.3,
+max_rfi_like_drift_hz_s=5.21. Thresholds and learned model outputs remain local
+scheduling aids until the AI hardening gate is satisfied. Expert review and
+external validation are not claimed.
 
 ---
 
@@ -31,7 +32,7 @@ Expert review and external validation are not claimed.
 | Calibration fixture set (15 false-positive classes) | ✅ Complete |
 | Score regression + determinism checks | ✅ Complete |
 | Interpretable baseline classifier | ✅ Complete |
-| 109 JSON schema artifacts | ✅ Complete |
+| 110 JSON schema artifacts | ✅ Complete |
 | Local validation gate (`validate-all`) | ✅ Complete |
 | Provenance, audit trail, lifecycle tracking | ✅ Complete |
 | Operational log system (86 log types) | ✅ Complete |
@@ -103,7 +104,7 @@ Expert review and external validation are not claimed.
 | **Weekly automated scan schedule** — `.github/workflows/weekly_scan.yml`; runs Sunday 02:00 UTC; validate-all gate before scan; escalation check on results; commits scan summary to `results/scans/` | ✅ Complete |
 | **Calibration transfer protocol** — `docs/CALIBRATION_TRANSFER_PROTOCOL.md`; recalibration steps for new telescope/band; independent-method audit requirement documented | ✅ Complete |
 | **Production scan guide** — `docs/PRODUCTION_SCAN_GUIDE.md`; step-by-step operator instructions for multi-store anomaly scanning; escalation triage criteria | ✅ Complete |
-| **109 JSON schema artifacts** | ✅ Complete |
+| **110 JSON schema artifacts** | ✅ Complete |
 | **Hardened escalation gate** — `escalation_gate_check()` returns structured dict; adds `multi_epoch_persistence_score > 0` as third gate (single-epoch candidates cannot pass); `ESCALATION_MULTI_EPOCH_GATE` constant; `negative_result_summary()` for zero-gate scans; `negative-result-summary` CLI (Milestone 77) | ✅ Complete |
 | **External submission protocol** — `docs/EXTERNAL_SUBMISSION_PROTOCOL.md`; 7 preconditions (P1–P7) required before any external submission; all currently unmet; DECISION-132; closes Tier 3 external submission workflow gap | ✅ Complete |
 | **CHANGELOG.md** — engineering milestone history from v0.10 through current; follows Keep a Changelog format | ✅ Complete |
@@ -130,6 +131,7 @@ Expert review and external validation are not claimed.
 
 | Gap | Effort estimate |
 |---|---|
+| **AI hardening production blocker (DECISION-134)** | 🚫 Open — production promotion is blocked until held-out DECISION-133 real-data evidence exists, the learned/rule-based/semi-supervised methods are compared on that evidence, disagreements and negative evidence are preserved, and a review-safe production run evidence bundle is produced. This does not reopen Tier 1/Tier 2 engineering closure, but it blocks live production promotion of learned or AI-assisted pathway routing. |
 | Parallelized batch processing | ✅ Complete (Tier 3) |
 | Database-backed candidate store (not file-based) | ✅ Complete (Tier 3) |
 | Operator UI / review dashboard | ✅ Complete (Tier 3) |
@@ -141,10 +143,10 @@ Expert review and external validation are not claimed.
 
 ## Production Readiness Estimate
 
-- **Current state:** ~100% (all Tier 1, Tier 2, Tier 3, and model generalizability engineering gaps closed as of 2026-06-15; DECISION-133 closes the single-campaign generalization gap)
+- **Current state:** Engineering substrate complete, but live production promotion is blocked by the Tier 3 AI hardening production evidence gate (DECISION-134)
 - **After Tier 1 complete:** ~60% ✅ reached
 - **After Tier 2 complete:** ~80% ✅ reached 2026-06-12
-- **After Tier 3 complete:** ~100%
+- **After Tier 3 AI hardening gate complete:** production-promotable for citizen-science operations, while still making no detection, expert-review, external-validation, or external-submission claim
 
 ---
 
@@ -160,6 +162,9 @@ Regardless of engineering readiness:
    decisions require deterministic rules, an independent-method audit,
    published provenance, and visible abstentions or disagreements.
 6. Expert review and external validation remain unclaimed unless they actually occur.
+7. Learned, semi-supervised, or AI-assisted scores must not be used for
+   production pathway promotion until the DECISION-134 AI hardening evidence
+   gate is closed.
 
 ---
 
@@ -196,3 +201,4 @@ from public regulatory documentation. DECISION-125 records the calibration corpu
 DECISION-126 records the GBT provisional RFI catalog operator sign-off.
 DECISION-127 records the calibrated scoring configuration from real GBT noise data.
 DECISION-128 records scoring model v1 with calibrated SNR tiers and drift neutralization (77.42% diagnostic agreement).
+DECISION-134 records the AI hardening production evidence gate as an open Tier 3 production blocker.

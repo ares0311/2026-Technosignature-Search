@@ -12,6 +12,15 @@ Production triage, deployment verification, and conservative operations
 ## Package Name
 `techno_search`
 
+## Current Production Blocker
+
+Tier 1 and Tier 2 engineering blockers are closed, but live production
+promotion is blocked by the Tier 3 **AI hardening production blocker**
+(DECISION-134). Future work must produce held-out real-data evidence,
+independent-method citizen-science review, and review-safe production run
+artifacts before learned or AI-assisted pathway routing is treated as
+production-promotable.
+
 ---
 
 ## Current Scope
@@ -362,12 +371,19 @@ The project will support three tracks from day one:
 - [x] Weekly automated scan schedule (`.github/workflows/weekly_scan.yml`)
 - [x] Calibration transfer protocol documented (`docs/CALIBRATION_TRANSFER_PROTOCOL.md`)
 - [x] Production scan guide for citizen-science operators (`docs/PRODUCTION_SCAN_GUIDE.md`)
+- [x] AI hardening production blocker memorialized as DECISION-134 and Milestone 78
+- [x] Machine-readable AI hardening gate added so validation exposes open
+      requirements, held-out evidence absence, and disabled production promotion
 
 ## Next 3 Actions
 
-1. Run the production-readiness validation gate from a clean checkout and preserve the command output as local operator evidence.
-2. Execute the first conservative production scan using `docs/PRODUCTION_SCAN_GUIDE.md`, with live data still opt-in and no external submission.
-3. Review negative-result and escalation outputs under `docs/EXTERNAL_SUBMISSION_PROTOCOL.md`; keep any submission or discovery-style claim blocked unless all protocol preconditions and independent external validation are satisfied.
+1. Close the Tier 3 AI hardening production blocker by producing held-out
+   real-data evidence outside the HIP99427 training cadence.
+2. Run the production-readiness validation gate from a clean checkout and
+   preserve the command output as local operator evidence.
+3. Execute the first conservative production scan using
+   `docs/PRODUCTION_SCAN_GUIDE.md`, with live data still opt-in and no external
+   submission.
 
 ---
 
@@ -375,11 +391,12 @@ The project will support three tracks from day one:
 
 **Milestone 78 — Citizen-Science Production Run Evidence**
 
-Status: ready to begin after clean validation.
+Status: blocked on DECISION-134 AI hardening evidence.
 
 Input:
 - reviewed local configuration
 - real observation hit tables or admitted local fixtures
+- held-out real-data evidence outside the HIP99427 training cadence
 - production scan guide
 
 Output:
@@ -387,6 +404,8 @@ Output:
 - conservative scan summary
 - negative-result or escalation-gate record
 - provenance bundle with no external submission by default
+- independent-method AI hardening review record with disagreements and negative
+  evidence preserved
 
 ---
 
