@@ -1,0 +1,39 @@
+[2026-06-11T05:53:33] === fetch_bl_alternative.sh starting ===
+[2026-06-11T05:53:33] Python: Python 3.14.3
+[2026-06-11T05:53:33] Checking / installing turbo-seti, blimpy, h5py, numpy ...
+[2026-06-11T05:53:36] Trying turboSETI GitHub test data (16 parallel connections, resumable) ...
+[2026-06-11T05:53:36] Trying: https://github.com/UCBerkeleySETI/turbo_seti/raw/master/tests/test_data/Voyager1.single_coarse.fine_res.h5
+[2026-06-11T05:53:37]   Probe GET failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1081)>
+[2026-06-11T05:53:37]   URL did not yield valid HDF5; trying next.
+[2026-06-11T05:53:37] Trying: https://media.githubusercontent.com/media/UCBerkeleySETI/turbo_seti/master/tests/test_data/Voyager1.single_coarse.fine_res.h5
+[2026-06-11T05:53:38]   Probe GET failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1081)>
+[2026-06-11T05:53:38]   URL did not yield valid HDF5; trying next.
+[2026-06-11T05:53:38] Trying: http://blpd0.ssl.berkeley.edu/Voyager_data/Voyager1.single_coarse.fine_res.h5
+[2026-06-11T05:53:40]   Parallel download: 50,549,227 bytes in 13 chunks (13 connections)
+[2026-06-11T05:53:53]   Download complete: tseti_test.h5 (50,549,227 bytes)
+[2026-06-11T05:53:53] SUCCESS: /Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Technosignatures/data/bl_hits/tseti_test.h5
+[2026-06-11T05:53:53] Download succeeded.  Running turboSETI ...
+
+turbo_seti version 2.3.2
+blimpy version 2.1.4
+h5py version 3.16.0
+hdf5plugin version 6.0.0
+HDF5 library version 2.0.0
+
+
+[2026-06-11T05:54:10] From blimpy, n_coarse_chan=1
+HDF5 header info: {'DIMENSION_LABELS': array(['frequency', 'feed_id', 'time'], dtype=object), 'az_start': np.float64(0.0), 'data_type': np.int64(1), 'fch1': np.float64(8421.386717353016), 'foff': np.float64(-2.7939677238464355e-06), 'ibeam': np.int64(1), 'machine_id': np.int64(20), 'nbeams': np.int64(1), 'nbits': np.int64(32), 'nchans': np.int64(1048576), 'nifs': np.int64(1), 'rawdatafile': 'guppi_57650_67573_Voyager1_0002.0000.raw', 'source_name': 'Voyager1', 'src_dej': <Angle 12.183 deg>, 'src_raj': <Angle 17.16777333 hourangle>, 'telescope_id': np.int64(6), 'tsamp': np.float64(18.253611008), 'tstart': np.float64(57650.78209490741), 'za_start': np.float64(0.0)}
+
+Starting ET search with parameters: datafile=/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Technosignatures/data/bl_hits/tseti_test.h5, max_drift=4, min_drift=0.0001, snr=10, out_dir=/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Technosignatures/data/bl_hits, coarse_chans=None, flagging=False, n_coarse_chan=1, kernels=None, gpu_id=0, gpu_backend=False, blank_dc=True, precision=1, append_output=False, log_level_int=30, obs_info={'pulsar': 0, 'pulsar_found': 0, 'pulsar_dm': 0.0, 'pulsar_snr': 0.0, 'pulsar_stats': array([0., 0., 0., 0., 0., 0.]), 'RFI_level': 0.0, 'Mean_SEFD': 0.0, 'psrflux_Sens': 0.0, 'SEFDs_val': [0.0], 'SEFDs_freq': [0.0], 'SEFDs_freq_up': [0.0]}
+
+Computed drift rate resolution: 0.010204255741040042
+
+[2026-06-11T05:54:14] 
+[2026-06-11T05:54:14] Hit table: /Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Technosignatures/data/bl_hits/bl_turboSETI_test.dat
+[2026-06-11T05:54:14] Rows     : 3
+[2026-06-11T05:54:14] 
+[2026-06-11T05:54:14] NOTE: turboSETI test H5 is a real-format file used in BL CI.
+[2026-06-11T05:54:14]       It is valid for pipeline calibration.
+[2026-06-11T05:54:14]       For full Tier 1 closure, obtain the full BL GBT Voyager 1 dataset.
+[2026-06-11T05:54:14] 
+[2026-06-11T05:54:14] NEXT STEP: bash scripts/run_pipeline_on_bl_data.sh

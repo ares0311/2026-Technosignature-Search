@@ -1,0 +1,16 @@
+[2026-06-13T11:28:30] === run_pipeline_on_bl_data.sh starting ===
+[2026-06-13T11:28:30] Repo root   : /Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Technosignatures
+[2026-06-13T11:28:30] Python      : Python 3.14.3
+[2026-06-13T11:28:30] Data dir    : data/bl_hits
+[2026-06-13T11:28:30] Results dir : /Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Technosignatures/results
+[2026-06-13T11:28:30] Workers     : 12 (M4 Max has 12 performance cores)
+[2026-06-13T11:28:30] Found 2 .dat file(s) — launching parallel pipeline ...
+[2026-06-13T11:28:30] Running pipeline on 2 file(s) with 12 workers ...
+[2026-06-13T11:28:30]   Skipping (manifest exists): bl_turboSETI_test.dat
+[2026-06-13T11:28:30]   Skipping (manifest exists): voyager1_hits.dat
+[2026-06-13T11:28:30] Done: 2 OK, 0 failed
+[2026-06-13T11:28:30] 
+[2026-06-13T11:28:30] Scored reports written to: /Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Technosignatures/results
+[2026-06-13T11:28:30] NEXT STEP: Review reports in /Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Technosignatures/results
+[2026-06-13T11:28:30]   Then: bash scripts/calibrate_thresholds.sh (coming soon)
+[2026-06-13T11:28:30] === run_pipeline_on_bl_data.sh done ===

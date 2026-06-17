@@ -1,0 +1,28 @@
+{
+  "candidate_review_count": 2,
+  "disclaimer": "Scan summary rankings are local scheduling aids only. Ranking reflects pipeline score, not astrophysical significance. No ranked candidate constitutes a detection claim.",
+  "follow_up_count": 2,
+  "schema_version": "scan_summary_v1",
+  "targets_scanned": 2,
+  "top_candidates": [
+    {
+      "candidate_id": "bl_turboSETI_test",
+      "frequency_hz": 8419297028.000001,
+      "pathway": "candidate_review_packet",
+      "rank": 1,
+      "score": 0.990508,
+      "snr": 245.709641,
+      "target_name": "bl_turboSETI_test"
+    },
+    {
+      "candidate_id": "voyager1_hits",
+      "frequency_hz": 8419297028.000001,
+      "pathway": "candidate_review_packet",
+      "rank": 2,
+      "score": 0.988819,
+      "snr": 245.709641,
+      "target_name": "voyager1_hits"
+    }
+  ],
+  "total_candidates": 2
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": "observation_artifact_provenance_v1",
+  "disclaimer": "This provenance sidecar is an admissibility record for local calibration corpus use only. It does not modify scoring thresholds, authorize external submission, or constitute a detection claim. Human approval is required before the calibration gate will admit this file.",
+  "artifact_filename": "spliced_blc0001020304050607_guppi_57752_84066_HIP99560_0036.gpuspec.0002.dat",
+  "sha256": "f4a90d546b23e5f1349178055f4a986a6469a9f7333f9339516d8077ba5119ed",
+  "classification": "real_observation",
+  "target_id": "HIP99560",
+  "cadence_id": "HIP99560-lband-survey",
+  "observation_utc_start": "2016-12-30",
+  "observation_mjd": 57752.97298611111,
+  "source_url": "https://blpd0.ssl.berkeley.edu/L_band_table/HIP99560_hits.dat",
+  "source_archive": "Breakthrough Listen Open Data Archive",
+  "instrument": "GBT L-band (1.1-1.9 GHz)",
+  "citation": "",
+  "downloaded_utc": "2026-06-12T09:46:41Z",
+  "operator_notes": "",
+  "data_use_review_status": "approved",
+  "provenance_review_status": "approved",
+  "human_approval_status": "approved",
+  "approved_for_local_real_data": true,
+  "external_submission_authorized": false
+}

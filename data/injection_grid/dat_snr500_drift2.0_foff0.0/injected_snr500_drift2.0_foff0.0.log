@@ -1,0 +1,21 @@
+
+turbo_seti version 2.3.2
+blimpy version 2.1.4
+h5py version 3.16.0
+hdf5plugin version 6.0.0
+HDF5 library version 2.0.0
+
+
+HDF5 header info: {'DIMENSION_LABELS': array(['frequency', 'feed_id', 'time'], dtype=object), 'az_start': np.float64(0.0), 'data_type': np.int64(1), 'fch1': np.float64(8421.386717353016), 'foff': np.float64(-2.7939677238464355e-06), 'ibeam': np.int64(1), 'machine_id': np.int64(20), 'nbeams': np.int64(1), 'nbits': np.int64(32), 'nchans': np.int64(1048576), 'nifs': np.int64(1), 'rawdatafile': 'guppi_57650_67573_Voyager1_0002.0000.raw', 'source_name': 'Voyager1', 'src_dej': <Angle 12.183 deg>, 'src_raj': <Angle 17.16777333 hourangle>, 'telescope_id': np.int64(6), 'tsamp': np.float64(18.253611008), 'tstart': np.float64(57650.78209490741), 'za_start': np.float64(0.0)}
+
+Starting ET search with parameters: datafile=data/injection_grid/injected_snr500_drift2.0_foff0.0.h5, max_drift=5.0, min_drift=1e-05, snr=10.0, out_dir=data/injection_grid/dat_snr500_drift2.0_foff0.0, coarse_chans=None, flagging=False, n_coarse_chan=1, kernels=None, gpu_id=0, gpu_backend=False, blank_dc=True, precision=1, append_output=False, log_level_int=20, obs_info={'pulsar': 0, 'pulsar_found': 0, 'pulsar_dm': 0.0, 'pulsar_snr': 0.0, 'pulsar_stats': array([0., 0., 0., 0., 0., 0.]), 'RFI_level': 0.0, 'Mean_SEFD': 0.0, 'psrflux_Sens': 0.0, 'SEFDs_val': [0.0], 'SEFDs_freq': [0.0], 'SEFDs_freq_up': [0.0]}
+
+Computed drift rate resolution: 0.010204255741040042
+
+Top hit found! SNR 30.618208, Drift Rate -0.397966, index 739933
+Top hit found! SNR 245.756882, Drift Rate -0.377557, index 747929
+Top hit found! SNR 31.226851, Drift Rate -0.397966, index 756037
+Top hit found! SNR 150.864059, Drift Rate 2.000034, index 1048575
+
+===== Search time: 0.05 minutes
+===== END OF LOG
