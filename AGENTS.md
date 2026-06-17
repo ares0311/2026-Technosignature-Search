@@ -22,6 +22,44 @@ stays on `main` and pulls after each PR is merged.
 
 ---
 
+## GIT ARTIFACT HYGIENE — NON-NEGOTIABLE
+
+The user's standard staging cadence is:
+
+```bash
+git add .
+```
+
+Therefore the repository must be safe under `git add .`. Agents are wrong if
+generated local artifacts, large science payloads, machine-specific inventories,
+SQLite logs, caches, or credentials can be staged by that command.
+
+Before committing artifact-policy, data-ingestion, logging, calibration,
+pipeline-output, or scan-output changes, agents must verify:
+
+1. `git add --dry-run .` does not reveal unintended generated artifacts.
+2. `.gitignore` covers the artifact classes produced by the changed scripts or
+   CLIs.
+3. Existing tiny test fixtures remain explicitly allowed when broad patterns are
+   added.
+4. Other agents can still understand the local artifact topology from files on
+   GitHub.
+
+The continuity rule is: **ignore the payloads, commit the map.** Raw or
+generated data belongs in ignored paths such as `data/`, `results/` outside the
+review-safe `results/scans/` subtree, `logs/`, `cache/`, or `artifacts/`.
+GitHub-visible continuity belongs in sanitized documentation, scripts,
+manifests, checksums, schemas, and tests. Do not commit machine-specific files
+that contain absolute local paths, hostnames, or local directory listings as the
+only way future agents learn where artifacts live.
+
+`docs/LOCAL_DATA_INVENTORY.md` is a sanitized, committed artifact map for agent
+continuity. Machine-specific inventory output from
+`scripts/create_data_inventory.sh` must be written to
+`docs/LOCAL_DATA_INVENTORY.local.md`, which is ignored.
+
+---
+
 ## Purpose
 
 Instructions for AI coding agents working on the Technosignature Search repository.

@@ -203,4 +203,4 @@ from public regulatory documentation. DECISION-125 records the calibration corpu
 DECISION-126 records the GBT provisional RFI catalog operator sign-off.
 DECISION-127 records the calibrated scoring configuration from real GBT noise data.
 DECISION-128 records scoring model v1 with calibrated SNR tiers and drift neutralization (77.42% diagnostic agreement).
-DECISION-134 records the AI hardening production evidence gate as an open Tier 3 production blocker. DECISION-135 records that DECISION-133 evidence paths must be populated before they receive review credit.
+DECISION-134 records the AI hardening production evidence gate as an open Tier 3 production blocker. DECISION-135 records that DECISION-133 evidence paths must be populated before they receive review credit. DECISION-136 records the policy to ignore generated payloads while committing sanitized GitHub-visible artifact maps.

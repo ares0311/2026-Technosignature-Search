@@ -21,6 +21,9 @@ Do not commit:
 - downloaded survey images
 - bulk catalog dumps
 - cache directories
+- local SQLite databases, journals, write-ahead logs, and raw log files
+- generated model arrays, serialized models, and temporary calibration products
+- machine-specific data inventories containing absolute local paths or hostnames
 - private credentials
 - API tokens
 - generated intermediate products
@@ -32,6 +35,33 @@ Future catalog cache metadata belongs under `cache/catalog_metadata/` by default
 Tiny live metadata fixtures under `tests/fixtures/live_metadata/` are allowed only when they contain normalized metadata and provenance summaries, not bulk provider data or candidate interpretation.
 
 Small synthetic fixtures are allowed.
+
+## GitHub-Visible Artifact Map
+
+Other coding agents can only see what is committed to GitHub. Do not solve that
+by committing local payloads. Preserve continuity by committing a sanitized
+artifact map instead.
+
+The committed map must explain:
+
+- expected ignored directories and filename patterns;
+- scripts or CLI commands that create each artifact class;
+- review-safe manifests, checksums, and sidecar expectations;
+- which artifacts are local-only and which small fixtures are intentionally
+  tracked;
+- scientific guardrails and any production blockers the artifacts support.
+
+The map must not include:
+
+- absolute user-machine paths;
+- hostnames or machine identifiers;
+- raw directory listings from local workstations;
+- large data, SQLite databases, logs, caches, or generated run outputs.
+
+`docs/LOCAL_DATA_INVENTORY.md` is the committed sanitized map. A machine-local
+snapshot may be generated for the current workstation as
+`docs/LOCAL_DATA_INVENTORY.local.md`; that local snapshot is ignored and must
+not be committed.
 
 ---
 
@@ -127,6 +157,17 @@ If large data is accidentally committed:
 3. purge from Git history if necessary
 4. update `.gitignore`
 5. document the issue in `docs/PROJECT_STATUS.md`
+
+Before any commit touching data acquisition, pipeline outputs, logs, or
+calibration artifacts, verify that the repository remains safe under the
+standard staging cadence:
+
+```bash
+git add --dry-run .
+```
+
+That dry run must not show generated payloads. If future agents need context,
+update the sanitized artifact map rather than committing local payloads.
 
 ---
 

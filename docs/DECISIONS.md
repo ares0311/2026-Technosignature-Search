@@ -3407,3 +3407,43 @@ counts and empty existing path counts. Production promotion remains blocked when
 only empty DECISION-133 directories or provisional local calibration holdouts
 exist. No candidate score, pathway, external submission authorization, or
 detection language changes.
+
+---
+
+# DECISION-136: Ignore Payloads, Commit Sanitized Artifact Maps
+
+**Date:** 2026-06-17
+**Status:** Accepted
+**Supports:** DECISION-134 — AI hardening production blocker
+
+## Context
+
+Future coding agents can only inspect what is committed to GitHub, but the
+project's production-hardening evidence streams produce large local data,
+SQLite logs, generated scan outputs, and machine-specific inventories that must
+not be committed. A prior accidental staging event showed that narrow ignore
+rules are not enough when the standard operator cadence is `git add .`.
+
+## Decision
+
+The repository must remain safe under `git add .` while still preserving
+GitHub-visible continuity for future agents:
+
+- large science payloads, generated run outputs, logs, local SQLite databases,
+  caches, model arrays, serialized models, and machine-specific inventories are
+  ignored by default;
+- tiny intentional fixtures remain explicitly allowed under `tests/fixtures/`;
+- `docs/LOCAL_DATA_INVENTORY.md` is a committed, sanitized artifact map rather
+  than a generated local directory listing;
+- `scripts/create_data_inventory.sh` writes machine-specific snapshots to
+  ignored `docs/LOCAL_DATA_INVENTORY.local.md`;
+- artifact-producing changes must be checked with `git add --dry-run .` before
+  commit.
+
+## Consequences
+
+Future agents should update committed maps, manifests, checksums, schemas,
+tests, and methodology docs when they need GitHub-visible context. They must not
+commit local payloads merely to make other agents aware that data exists. This
+preserves DECISION-134 reproducibility context without weakening data hygiene,
+scientific provenance, or conservative non-claim guardrails.

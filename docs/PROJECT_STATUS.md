@@ -378,6 +378,10 @@ The project will support three tracks from day one:
       independent-method review, and review-safe evidence bundles
 - [x] AI hardening evidence population accounting added so failed acquisition
       side effects cannot be mistaken for populated held-out evidence
+- [x] Git artifact hygiene hardened after accidental local artifact staging:
+      generated payloads remain ignored, `docs/LOCAL_DATA_INVENTORY.md` is now
+      a sanitized GitHub-visible artifact map, and machine-specific inventory
+      snapshots write to ignored `docs/LOCAL_DATA_INVENTORY.local.md`
 
 ## Next 3 Actions
 
@@ -417,6 +421,8 @@ Output:
 
 - Overclaiming candidate significance after engineering readiness
 - Large data files, caches, logs, or local scan outputs accidentally committed
+- GitHub-only agents losing artifact context if ignored payloads are not paired
+  with committed sanitized maps, manifests, checksums, and scripts
 - Live network tests or provider availability becoming flaky
 - External submission attempted before protocol preconditions are met
 - Production evidence generated without preserved provenance
@@ -429,6 +435,7 @@ Output:
 - Keep live data opt-in and default tests non-networked.
 - Preserve provenance for every candidate, scan, and operator action.
 - Commit only review-safe methodology and fixture artifacts.
+- Preserve GitHub-visible artifact maps while keeping payloads ignored.
 - Keep external submission disabled unless the documented protocol is fully satisfied and explicitly authorized.
 
 ---
