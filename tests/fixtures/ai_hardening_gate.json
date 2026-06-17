@@ -67,7 +67,8 @@
         "docs/PRODUCTION_READINESS.md",
         "docs/PROJECT_STATUS.md",
         "docs/DECISIONS.md",
-        "docs/ROADMAP.md"
+        "docs/ROADMAP.md",
+        "docs/AI_HARDENING_REVIEW_PROTOCOL.md"
       ]
     },
     {
@@ -76,7 +77,8 @@
         "docs/PRODUCTION_READINESS.md",
         "docs/PROJECT_STATUS.md",
         "docs/DECISIONS.md",
-        "docs/ROADMAP.md"
+        "docs/ROADMAP.md",
+        "docs/AI_HARDENING_REVIEW_PROTOCOL.md"
       ]
     }
   ]
