@@ -8367,9 +8367,39 @@ def validation_summary() -> dict[str, object]:
             if isinstance(ahg_s3 := validation.get("ai_hardening_gate_summary"), dict)
             else 0
         ),
-        "ai_hardening_production_promotion_allowed": (
-            bool(ahg_s4["production_promotion_allowed"])
+        "ai_hardening_existing_evidence_path_count": (
+            ahg_s4["existing_evidence_path_count"]
             if isinstance(ahg_s4 := validation.get("ai_hardening_gate_summary"), dict)
+            else 0
+        ),
+        "ai_hardening_populated_evidence_path_count": (
+            ahg_s5["populated_evidence_path_count"]
+            if isinstance(ahg_s5 := validation.get("ai_hardening_gate_summary"), dict)
+            else 0
+        ),
+        "ai_hardening_empty_existing_evidence_path_count": (
+            ahg_s6["empty_existing_evidence_path_count"]
+            if isinstance(ahg_s6 := validation.get("ai_hardening_gate_summary"), dict)
+            else 0
+        ),
+        "ai_hardening_total_evidence_file_count": (
+            ahg_s7["total_evidence_file_count"]
+            if isinstance(ahg_s7 := validation.get("ai_hardening_gate_summary"), dict)
+            else 0
+        ),
+        "ai_hardening_local_holdout_non_training_dat_file_count": (
+            ahg_s8["local_calibration_holdout_non_training_dat_file_count"]
+            if isinstance(ahg_s8 := validation.get("ai_hardening_gate_summary"), dict)
+            else 0
+        ),
+        "ai_hardening_local_holdout_gate_closure_ready": (
+            bool(ahg_s9["local_calibration_holdout_gate_closure_ready"])
+            if isinstance(ahg_s9 := validation.get("ai_hardening_gate_summary"), dict)
+            else False
+        ),
+        "ai_hardening_production_promotion_allowed": (
+            bool(ahg_s10["production_promotion_allowed"])
+            if isinstance(ahg_s10 := validation.get("ai_hardening_gate_summary"), dict)
             else False
         ),
         "mcp_bootstrap_consistency_ok": (

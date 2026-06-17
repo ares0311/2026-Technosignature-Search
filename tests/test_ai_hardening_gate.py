@@ -97,3 +97,55 @@ def test_ai_hardening_gate_detects_premature_closure(tmp_path: Path) -> None:
     assert summary["status"] == "closed"
     assert summary["open_blocking_requirement_count"] == 4
     assert any("closed with blocking" in issue for issue in summary["issues"])
+
+
+def test_ai_hardening_gate_distinguishes_empty_and_populated_evidence_paths(
+    tmp_path: Path,
+) -> None:
+    _write_docs(tmp_path)
+    gate_path = _write_gate(tmp_path)
+    empty_path = tmp_path / "data" / "extended_corpus"
+    populated_path = tmp_path / "data" / "meerkat_hits"
+    empty_path.mkdir(parents=True)
+    populated_path.mkdir(parents=True)
+    (populated_path / "hits.ndjson").write_text("{}", encoding="utf-8")
+
+    summary = ai_hardening_gate_summary(gate_path, project_root=tmp_path)
+
+    assert summary["existing_evidence_path_count"] == 2
+    assert summary["populated_evidence_path_count"] == 1
+    assert summary["empty_existing_evidence_path_count"] == 1
+    assert summary["total_evidence_file_count"] == 1
+    assert summary["evidence_file_counts"]["data/extended_corpus"] == 0
+    assert summary["evidence_file_counts"]["data/meerkat_hits"] == 1
+    assert summary["empty_existing_evidence_paths"] == ["data/extended_corpus"]
+
+
+def test_ai_hardening_gate_marks_local_calibration_holdout_as_provisional(
+    tmp_path: Path,
+) -> None:
+    _write_docs(tmp_path)
+    gate_path = _write_gate(tmp_path)
+    calibration_path = tmp_path / "data" / "calibration_corpus"
+    calibration_path.mkdir(parents=True)
+    (calibration_path / "spliced_HIP99427_0033.dat").write_text(
+        "training cadence", encoding="utf-8"
+    )
+    (calibration_path / "spliced_HIP100670_0034.dat").write_text(
+        "held out target", encoding="utf-8"
+    )
+    (calibration_path / "Voyager1_test.dat").write_text(
+        "voyager target", encoding="utf-8"
+    )
+
+    summary = ai_hardening_gate_summary(gate_path, project_root=tmp_path)
+
+    assert summary["local_calibration_holdout_exists"] is True
+    assert summary["local_calibration_holdout_dat_file_count"] == 3
+    assert summary["local_calibration_holdout_non_training_dat_file_count"] == 2
+    assert summary["local_calibration_holdout_non_training_targets"] == [
+        "HIP100670",
+        "VOYAGER-1",
+    ]
+    assert summary["local_calibration_holdout_provisional_only"] is True
+    assert summary["local_calibration_holdout_gate_closure_ready"] is False

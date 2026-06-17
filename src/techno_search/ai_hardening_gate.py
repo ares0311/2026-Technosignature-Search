@@ -52,6 +52,56 @@ def _path_exists(root: Path, path_text: str) -> bool:
     return candidate.exists()
 
 
+def _resolve_path(root: Path, path_text: str) -> Path:
+    path = Path(path_text)
+    return path if path.is_absolute() else root / path
+
+
+def _file_count(root: Path, path_text: str) -> int:
+    candidate = _resolve_path(root, path_text)
+    if not candidate.exists():
+        return 0
+    if candidate.is_file():
+        return 1
+    return sum(1 for item in candidate.rglob("*") if item.is_file())
+
+
+def _calibration_holdout_summary(root: Path) -> dict[str, Any]:
+    holdout_path = "data/calibration_corpus"
+    path = _resolve_path(root, holdout_path)
+    dat_files = sorted(path.glob("*.dat")) if path.exists() else []
+    non_training_files = [
+        item for item in dat_files if "HIP99427" not in item.name
+    ]
+    targets: set[str] = set()
+    for item in non_training_files:
+        parts = item.stem.split("_")
+        hip_parts = [part for part in parts if part.startswith("HIP")]
+        if hip_parts:
+            targets.update(hip_parts)
+        elif "Voyager1" in item.name:
+            targets.add("VOYAGER-1")
+
+    return {
+        "local_calibration_holdout_path": holdout_path,
+        "local_calibration_holdout_exists": path.exists(),
+        "local_calibration_holdout_dat_file_count": len(dat_files),
+        "local_calibration_holdout_non_training_dat_file_count": len(
+            non_training_files
+        ),
+        "local_calibration_holdout_non_training_targets": sorted(targets),
+        "local_calibration_holdout_provisional_only": bool(non_training_files),
+        "local_calibration_holdout_gate_closure_ready": False,
+        "local_calibration_holdout_limitation": (
+            "Local calibration-corpus DAT files can support provisional "
+            "held-out review because some files are outside HIP99427, but they "
+            "do not by themselves close DECISION-134 because they were already "
+            "used for calibration-threshold evidence and are not a populated "
+            "DECISION-133 evidence stream."
+        ),
+    }
+
+
 def ai_hardening_gate_summary(
     path: Path | None = None,
     *,
@@ -92,6 +142,17 @@ def ai_hardening_gate_summary(
     existing_evidence_paths = [
         item for item in evidence_paths if _path_exists(root, item)
     ]
+    evidence_file_counts = {
+        item: _file_count(root, item) for item in evidence_paths
+    }
+    populated_evidence_paths = [
+        item for item in evidence_paths if evidence_file_counts[item] > 0
+    ]
+    empty_existing_evidence_paths = [
+        item for item in existing_evidence_paths if evidence_file_counts[item] == 0
+    ]
+    total_evidence_file_count = sum(evidence_file_counts.values())
+    local_holdout = _calibration_holdout_summary(root)
 
     required_phrases = [
         cast(dict[str, Any], item)
@@ -155,9 +216,16 @@ def ai_hardening_gate_summary(
         ],
         "evidence_path_count": len(evidence_paths),
         "existing_evidence_path_count": len(existing_evidence_paths),
+        "populated_evidence_path_count": len(populated_evidence_paths),
+        "empty_existing_evidence_path_count": len(empty_existing_evidence_paths),
+        "total_evidence_file_count": total_evidence_file_count,
         "evidence_paths": evidence_paths,
         "existing_evidence_paths": existing_evidence_paths,
+        "populated_evidence_paths": populated_evidence_paths,
+        "empty_existing_evidence_paths": empty_existing_evidence_paths,
+        "evidence_file_counts": evidence_file_counts,
         "required_document_phrase_count": len(required_phrases),
         "missing_document_phrase_count": len(missing_document_phrases),
         "missing_document_phrases": missing_document_phrases,
+        **local_holdout,
     }
