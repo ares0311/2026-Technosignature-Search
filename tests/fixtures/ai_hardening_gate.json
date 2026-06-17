@@ -1,0 +1,83 @@
+{
+  "schema_version": "ai_hardening_gate_v1",
+  "gate_id": "decision-134-ai-hardening-production-evidence",
+  "status": "open",
+  "production_promotion_allowed": false,
+  "external_submission_allowed": false,
+  "detection_claimed": false,
+  "expert_review_claimed": false,
+  "independent_methods_required": 2,
+  "evidence_paths": [
+    "data/extended_corpus",
+    "data/meerkat_hits",
+    "data/injection_grid"
+  ],
+  "independent_methods": [
+    {
+      "method_id": "rule_based_scoring",
+      "recorded": false
+    },
+    {
+      "method_id": "learned_logistic_regression",
+      "recorded": false
+    },
+    {
+      "method_id": "cross_target_rfi_suppression",
+      "recorded": false
+    },
+    {
+      "method_id": "globular_dense_cluster_filter",
+      "recorded": false
+    },
+    {
+      "method_id": "semisupervised_anomaly_scorer",
+      "recorded": false
+    }
+  ],
+  "requirements": [
+    {
+      "requirement_id": "held_out_real_data",
+      "satisfied": false,
+      "blocking": true,
+      "description": "Held-out real-data evidence outside the HIP99427 training cadence must exist before production promotion."
+    },
+    {
+      "requirement_id": "independent_method_review",
+      "satisfied": false,
+      "blocking": true,
+      "description": "At least two structurally independent citizen-science review methods must be recorded."
+    },
+    {
+      "requirement_id": "preserved_disagreements_and_negative_evidence",
+      "satisfied": false,
+      "blocking": true,
+      "description": "Disagreements, abstentions, negative evidence, and blockers must be preserved in review-safe evidence."
+    },
+    {
+      "requirement_id": "production_run_evidence_bundle",
+      "satisfied": false,
+      "blocking": true,
+      "description": "A review-safe validation transcript, scan summary, gate record, and provenance bundle must exist."
+    }
+  ],
+  "required_document_phrases": [
+    {
+      "phrase": "AI hardening production blocker",
+      "docs": [
+        "docs/PRODUCTION_READINESS.md",
+        "docs/PROJECT_STATUS.md",
+        "docs/DECISIONS.md",
+        "docs/ROADMAP.md"
+      ]
+    },
+    {
+      "phrase": "DECISION-134",
+      "docs": [
+        "docs/PRODUCTION_READINESS.md",
+        "docs/PROJECT_STATUS.md",
+        "docs/DECISIONS.md",
+        "docs/ROADMAP.md"
+      ]
+    }
+  ]
+}

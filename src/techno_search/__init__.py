@@ -4,6 +4,12 @@ from techno_search.aggregate_blockers import (
     AGGREGATE_BLOCKERS_DISCLAIMER,
     aggregate_blockers_summary,
 )
+from techno_search.ai_hardening_gate import (
+    AI_HARDENING_GATE_DISCLAIMER,
+    AI_HARDENING_GATE_SCHEMA_VERSION,
+    ai_hardening_gate_summary,
+    load_ai_hardening_gate,
+)
 from techno_search.artifact_cleanup import (
     ARTIFACT_CLEANUP_DISCLAIMER,
     ARTIFACT_CLEANUP_SCHEMA_VERSION,
@@ -1369,6 +1375,10 @@ __all__ = [
     "PipelineTelemetryEntry",
     "load_telemetry_entries",
     "pipeline_telemetry_summary",
+    "AI_HARDENING_GATE_DISCLAIMER",
+    "AI_HARDENING_GATE_SCHEMA_VERSION",
+    "ai_hardening_gate_summary",
+    "load_ai_hardening_gate",
     "ALLOWED_AUDIT_VERDICTS",
     "PROVENANCE_AUDIT_DISCLAIMER",
     "PROVENANCE_AUDIT_SCHEMA_VERSION",

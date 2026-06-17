@@ -1,12 +1,12 @@
 {
   "schema_version": "project_status_consistency_v1",
   "expected_status": {
-    "latest_milestone_number": 77,
-    "latest_milestone_label": "Escalation Gate Hardening + External Submission Protocol — Tier 3 Production Hardening",
-    "latest_decision_number": 133,
-    "schema_count": 109,
+    "latest_milestone_number": 78,
+    "latest_milestone_label": "AI Hardening Production Evidence Gate — Tier 3 Production Blocker",
+    "latest_decision_number": 134,
+    "schema_count": 110,
     "expected_rfi_real_data_authorization_total": 0,
     "expected_curated_real_data_authorization_total": 1,
-    "project_status_completed_phrase": "Escalation gate hardened, negative-result scan report, external submission protocol (109 schemas, Milestone 77)"
+    "project_status_completed_phrase": "Tier 1 and Tier 2 engineering blockers are closed, but live production promotion is blocked"
   }
 }

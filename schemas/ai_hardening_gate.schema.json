@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AI Hardening Gate",
+  "description": "Machine-readable DECISION-134 production evidence gate for learned and AI-assisted pathway routing.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "gate_id",
+    "status",
+    "production_promotion_allowed",
+    "external_submission_allowed",
+    "detection_claimed",
+    "expert_review_claimed",
+    "independent_methods_required",
+    "evidence_paths",
+    "independent_methods",
+    "requirements",
+    "required_document_phrases"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "ai_hardening_gate_v1"
+    },
+    "gate_id": {"type": "string", "minLength": 1},
+    "status": {"type": "string", "enum": ["open", "closed"]},
+    "production_promotion_allowed": {"type": "boolean"},
+    "external_submission_allowed": {"type": "boolean"},
+    "detection_claimed": {"type": "boolean"},
+    "expert_review_claimed": {"type": "boolean"},
+    "independent_methods_required": {"type": "integer", "minimum": 1},
+    "evidence_paths": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "independent_methods": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["method_id", "recorded"],
+        "properties": {
+          "method_id": {"type": "string", "minLength": 1},
+          "recorded": {"type": "boolean"}
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["requirement_id", "satisfied", "blocking", "description"],
+        "properties": {
+          "requirement_id": {"type": "string", "minLength": 1},
+          "satisfied": {"type": "boolean"},
+          "blocking": {"type": "boolean"},
+          "description": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "required_document_phrases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["phrase", "docs"],
+        "properties": {
+          "phrase": {"type": "string", "minLength": 1},
+          "docs": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1},
+            "minItems": 1,
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    }
+  },
+  "additionalProperties": false
+}

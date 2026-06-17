@@ -7,6 +7,7 @@ def test_json_schema_files_are_parseable_and_named() -> None:
     schema_paths = sorted(schema_dir.glob("*.schema.json"))
 
     assert {path.name for path in schema_paths} == {
+        "ai_hardening_gate.schema.json",
         "background_draft_follow_up_reports.schema.json",
         "background_draft_report_manifest.schema.json",
         "background_follow_up_tests.schema.json",
@@ -207,6 +208,9 @@ def test_schema_required_fields_match_example_artifacts() -> None:
             encoding="utf-8"
         )
     )
+    ai_hardening_schema = json.loads(
+        Path("schemas/ai_hardening_gate.schema.json").read_text(encoding="utf-8")
+    )
     packet = json.loads(Path("examples/reports/example-radio-clean.json").read_text())
     manifest = json.loads(
         Path("examples/reports/example-radio-clean.manifest.json").read_text()
@@ -255,6 +259,9 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     validation_readiness = json.loads(
         Path("tests/fixtures/validation_readiness.json").read_text()
     )
+    ai_hardening_gate = json.loads(
+        Path("tests/fixtures/ai_hardening_gate.json").read_text()
+    )
 
     assert set(packet_schema["required"]) <= set(packet)
     assert set(manifest_schema["required"]) <= set(manifest)
@@ -276,6 +283,7 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     assert set(validation_dataset_schema["required"]) <= set(validation_dataset)
     assert set(validation_promotion_schema["required"]) <= set(validation_promotion)
     assert set(validation_readiness_schema["required"]) <= set(validation_readiness)
+    assert set(ai_hardening_schema["required"]) <= set(ai_hardening_gate)
     assert "schema_version" in packet_schema["required"]
     assert "schema_version" in manifest_schema["required"]
     assert "schema_version" in batch_schema["required"]

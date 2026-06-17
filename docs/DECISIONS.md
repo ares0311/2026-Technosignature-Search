@@ -3312,3 +3312,59 @@ Scientific guardrail: All outputs are local triage aids only.  Cluster labels,
 anomaly scores, and cross-band features do not constitute detection claims, do
 not authorize external submission, and require independent-method citizen-science
 review before use in production pathway routing.
+
+---
+
+# DECISION-134: AI Hardening Production Evidence Gate
+
+**Date:** 2026-06-17
+**Status:** Active
+**Opens:** Tier 3 gap — AI hardening production blocker
+
+The Tier 1 and Tier 2 engineering gates are closed, and DECISION-133 adds the
+generalization tooling needed to move beyond the original single-campaign GBT
+label set. However, tooling alone is not enough to promote the learned or
+AI-assisted scoring stack into live production operations. The project must
+first produce held-out, review-safe evidence that the model recognizes likely
+false positives and follow-up-worthy candidate signals outside the training
+cadence.
+
+## Decision
+
+Open a Tier 3 production blocker named **AI hardening production blocker**.
+Future agents must treat this blocker as unresolved until all of the following
+are true:
+
+- Held-out real-data evidence exists outside the HIP99427 training cadence,
+  preferably using DECISION-133 paths such as `data/extended_corpus/`,
+  `data/meerkat_hits/`, or `data/injection_grid/`.
+- The same held-out evidence is evaluated by at least two structurally
+  independent methods, such as rule-based scoring, learned logistic regression,
+  cross-target RFI suppression, GLOBULAR-style dense-cluster filtering, and
+  semi-supervised anomaly scoring.
+- Disagreements, abstentions, negative evidence, and blocking issues are
+  preserved rather than forced into consensus.
+- A production-run evidence bundle exists with clean validation output,
+  conservative scan summaries, negative-result or escalation-gate records,
+  provenance, and explicit non-detection language.
+- Large data, caches, SQLite logs, and local scan artifacts remain uncommitted;
+  only review-safe methodology and metadata may be committed.
+- External submission remains blocked by DECISION-132 unless all external
+  submission preconditions and explicit human authorization are satisfied.
+
+## Consequences
+
+- `docs/PRODUCTION_READINESS.md` must no longer describe all Tier 3 work as
+  closed while this gate is open.
+- DECISION-133 implementation remains complete, but its capabilities must now
+  be used to generate production evidence instead of being treated as sufficient
+  by themselves.
+- The learned model remains a local scheduling aid until this gate is closed.
+- Citizen-science independent-method review may substitute for unavailable
+  expert review, but it is not external expert validation or peer review.
+
+Scientific guardrail: This decision does not claim a detection, does not claim
+expert review, does not authorize external submission, and does not invalidate
+the existing Tier 1/Tier 2 engineering gates. It blocks production promotion of
+learned or AI-assisted pathway routing until held-out evidence and reproducible
+review artifacts exist.

@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, TextIO
 
 from techno_search.aggregate_blockers import aggregate_blockers_summary
+from techno_search.ai_hardening_gate import ai_hardening_gate_summary
 from techno_search.artifact_cleanup import (
     apply_artifact_cleanup,
     plan_artifact_cleanup,
@@ -694,6 +695,7 @@ def workflow_state_summary(_path: object = None) -> dict[str, Any]:
 
 
 SCHEMA_FILENAMES = {
+    "ai_hardening_gate": "ai_hardening_gate.schema.json",
     "background_draft_follow_up_reports": "background_draft_follow_up_reports.schema.json",
     "background_draft_report_manifest": "background_draft_report_manifest.schema.json",
     "background_follow_up_tests": "background_follow_up_tests.schema.json",
@@ -3185,6 +3187,19 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0 if consistency_summary["ok"] else 1
 
+    if args.command == "ai-hardening-gate-summary":
+        fixture_path = Path(args.fixture_path) if args.fixture_path else None
+        gate_summary = ai_hardening_gate_summary(fixture_path)
+        print(
+            json.dumps(
+                gate_summary,
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0 if gate_summary["ok"] else 1
+
     if args.command == "real-data-admission-preflight-summary":
         fixture_path = Path(args.fixture_path) if args.fixture_path else None
         preflight_summary = real_data_admission_preflight_summary(fixture_path)
@@ -4798,6 +4813,8 @@ def validate_all() -> dict[str, object]:
     )
     project_status_consistency = project_status_consistency_summary()
     project_status_consistency_ok = bool(project_status_consistency.get("ok", False))
+    ai_hardening_gate = ai_hardening_gate_summary()
+    ai_hardening_gate_ok = bool(ai_hardening_gate.get("ok", False))
     mcp_bootstrap_consistency = mcp_bootstrap_consistency_summary()
     mcp_bootstrap_consistency_ok = bool(mcp_bootstrap_consistency.get("ok", False))
     mcp_server_policy = mcp_server_policy_summary()
@@ -5974,6 +5991,7 @@ def validate_all() -> dict[str, object]:
         and isinstance(curated_dataset_admission_real_authorized_count, int)
         and curated_dataset_admission_real_authorized_count == 1
         and project_status_consistency_ok
+        and ai_hardening_gate_ok
         and mcp_bootstrap_consistency_ok
         and mcp_server_policy_ok
         and production_blocker_consistency_ok
@@ -6420,6 +6438,7 @@ def validate_all() -> dict[str, object]:
         "curated_dataset_intake_summary": intake_data,
         "curated_dataset_admission_summary": curated_dataset_admission_data,
         "project_status_consistency_summary": project_status_consistency,
+        "ai_hardening_gate_summary": ai_hardening_gate,
         "mcp_bootstrap_consistency_summary": mcp_bootstrap_consistency,
         "mcp_server_policy_summary": mcp_server_policy,
         "production_blocker_consistency_summary": production_blocker_consistency,
@@ -8332,6 +8351,26 @@ def validation_summary() -> dict[str, object]:
                 psc_s4 := validation.get("project_status_consistency_summary"), dict
             )
             else 0
+        ),
+        "ai_hardening_gate_ok": (
+            bool(ahg_s["ok"])
+            if isinstance(ahg_s := validation.get("ai_hardening_gate_summary"), dict)
+            else False
+        ),
+        "ai_hardening_gate_status": (
+            ahg_s2["status"]
+            if isinstance(ahg_s2 := validation.get("ai_hardening_gate_summary"), dict)
+            else "unknown"
+        ),
+        "ai_hardening_open_blocking_requirement_count": (
+            ahg_s3["open_blocking_requirement_count"]
+            if isinstance(ahg_s3 := validation.get("ai_hardening_gate_summary"), dict)
+            else 0
+        ),
+        "ai_hardening_production_promotion_allowed": (
+            bool(ahg_s4["production_promotion_allowed"])
+            if isinstance(ahg_s4 := validation.get("ai_hardening_gate_summary"), dict)
+            else False
         ),
         "mcp_bootstrap_consistency_ok": (
             bool(mcp_bootstrap_consistency["ok"])
@@ -12206,6 +12245,14 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     production_blocker_consistency_parser.add_argument(
         "--fixture-path", type=Path, help="Optional expectation fixture path override."
+    )
+
+    ai_hardening_gate_parser = subparsers.add_parser(
+        "ai-hardening-gate-summary",
+        help="Summarize DECISION-134 AI hardening production evidence gate.",
+    )
+    ai_hardening_gate_parser.add_argument(
+        "--fixture-path", type=Path, help="Optional gate fixture path override."
     )
 
     real_data_preflight_parser = subparsers.add_parser(
