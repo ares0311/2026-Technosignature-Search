@@ -88,13 +88,13 @@ def inject_signal(
         center_freq_mhz = frame.get_frequency(0) / 1e6
         inject_freq_mhz = center_freq_mhz + freq_offset_mhz
         frame.add_signal(
-            path=stg.paths.constant_path(
+            path=stg.constant_path(
                 f_start=inject_freq_mhz * 1e6,
                 drift_rate=drift_rate_hz_s,
             ),
-            t_profile=stg.t_profiles.constant_t_profile(level=frame.get_intensity(snr=snr)),
-            f_profile=stg.f_profiles.gaussian_f_profile(width=frame.df),
-            bp_profile=stg.bp_profiles.constant_bp_profile(level=1.0),
+            t_profile=stg.constant_t_profile(level=frame.get_intensity(snr=snr)),
+            f_profile=stg.gaussian_f_profile(width=frame.df),
+            bp_profile=stg.constant_bp_profile(level=1.0),
         )
         frame.save_h5(str(output_h5_path))
         return True
@@ -169,6 +169,15 @@ def main() -> None:
         "--dry-run",
         action="store_true",
         help="Print the injection grid without running injections",
+    )
+    parser.add_argument(
+        "--allow-zero-recovery",
+        action="store_true",
+        help=(
+            "Allow a completed run with zero recovered turboSETI hit tables. "
+            "By default, zero recovery exits nonzero to avoid treating failed "
+            "evidence generation as usable DECISION-133 evidence."
+        ),
     )
     args = parser.parse_args()
 
@@ -257,7 +266,9 @@ def main() -> None:
     manifest = {
         "schema_version": "injection_grid_manifest_v1",
         "disclaimer": INJECTION_DISCLAIMER,
-        "total_injections": len(results),
+        "total_injections": total,
+        "completed_injections": len(results),
+        "failed_injection_count": total - len(results),
         "recovered_count": sum(1 for r in results if r["recovered"]),
         "elapsed_seconds": elapsed,
         "grid": results,
@@ -270,6 +281,16 @@ def main() -> None:
     print(f"[INFO]  Manifest: {manifest_path}")
     print("")
     print(f"Scientific guardrail: {INJECTION_DISCLAIMER}")
+    if not results:
+        print("[ERROR] No injections completed; manifest is not usable evidence.")
+        sys.exit(1)
+    if recovered == 0 and not args.allow_zero_recovery:
+        print(
+            "[ERROR] No turboSETI hit tables were recovered; rerun only after "
+            "resolving the recovery failure, or pass --allow-zero-recovery for "
+            "an explicit diagnostic run."
+        )
+        sys.exit(1)
 
 
 if __name__ == "__main__":
