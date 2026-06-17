@@ -376,6 +376,8 @@ The project will support three tracks from day one:
       requirements, held-out evidence absence, and disabled production promotion
 - [x] AI hardening review protocol added for DECISION-134 held-out evidence,
       independent-method review, and review-safe evidence bundles
+- [x] AI hardening evidence population accounting added so failed acquisition
+      side effects cannot be mistaken for populated held-out evidence
 
 ## Next 3 Actions
 

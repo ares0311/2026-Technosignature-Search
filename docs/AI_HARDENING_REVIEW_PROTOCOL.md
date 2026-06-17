@@ -55,9 +55,19 @@ The AI hardening gate must report:
 - `external_submission_allowed: false`
 - `detection_claimed: false`
 - `expert_review_claimed: false`
+- `populated_evidence_path_count` greater than zero before any DECISION-133
+  path is treated as usable evidence
 
 If any of those safety fields differ, stop and fix the gate before running
 evidence generation.
+
+Path existence is not evidence. Failed acquisition attempts may create
+`data/extended_corpus/` or `data/meerkat_hits/` directories without usable
+files. Treat those as blockers until `ai-hardening-gate-summary` reports
+populated evidence paths and nonzero file counts. Local calibration-corpus
+`.dat` files outside HIP99427 may support provisional review, but they do not
+close DECISION-134 by themselves because they were already part of the
+calibration-threshold evidence base.
 
 ---
 

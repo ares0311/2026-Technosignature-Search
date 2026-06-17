@@ -111,6 +111,7 @@ external validation are not claimed.
 | **Expert review gate closed** — no institutional expert available; citizen-science reproducibility protocol per AGENTS.md independence standard substituted; expert review explicitly unclaimed | ✅ Complete (Tier 3) |
 | **Model generalizability suite (DECISION-133)** — 6 priorities closing the single-campaign generalization gap: (1) extended GBT corpus download script (5 non-Cygnus L-band targets); (2) MeerKAT BLUSE 2M-hit ingest (Sheikh et al. 2025, 900–1670 MHz, false-positive training corpus); (3) setigen injection-recovery grid (SNR × drift × freq); (4) cross-band feature normalization module (`normalized_drift_hz_s_per_ghz`, `is_earth_drift_consistent`, `relative_snr`, `on_off_consistency_score`); (5) GLOBULAR density-based pre-filter (HDBSCAN, 13 features, Jacobson-Bell et al. 2024, ~93% FP reduction, zero labels); (6) semi-supervised anomaly scorer (PCA + IsolationForest, sklearn only, fit on unlabeled RFI corpus); 90 new tests; validate-all gates added | ✅ Complete |
 | **AI hardening review protocol** — `docs/AI_HARDENING_REVIEW_PROTOCOL.md`; defines DECISION-134 held-out evidence streams, independent-method review requirements, review-safe evidence bundle contents, and non-claim guardrails | ✅ Complete |
+| **AI hardening evidence population accounting (DECISION-135)** — `ai-hardening-gate-summary` and `validation-summary` distinguish configured, existing, populated, and empty DECISION-133 evidence paths; provisional local calibration holdouts remain explicitly insufficient for gate closure | ✅ Complete |
 
 ---
 
@@ -202,4 +203,4 @@ from public regulatory documentation. DECISION-125 records the calibration corpu
 DECISION-126 records the GBT provisional RFI catalog operator sign-off.
 DECISION-127 records the calibrated scoring configuration from real GBT noise data.
 DECISION-128 records scoring model v1 with calibrated SNR tiers and drift neutralization (77.42% diagnostic agreement).
-DECISION-134 records the AI hardening production evidence gate as an open Tier 3 production blocker.
+DECISION-134 records the AI hardening production evidence gate as an open Tier 3 production blocker. DECISION-135 records that DECISION-133 evidence paths must be populated before they receive review credit.

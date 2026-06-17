@@ -3368,3 +3368,42 @@ expert review, does not authorize external submission, and does not invalidate
 the existing Tier 1/Tier 2 engineering gates. It blocks production promotion of
 learned or AI-assisted pathway routing until held-out evidence and reproducible
 review artifacts exist.
+
+---
+
+# DECISION-135: AI Hardening Evidence Paths Must Be Populated Before Review Credit
+
+**Date:** 2026-06-17
+**Status:** Accepted
+**Supports:** DECISION-134 — AI hardening production blocker
+
+## Context
+
+The DECISION-133 acquisition scripts write to `data/extended_corpus/`,
+`data/meerkat_hits/`, and `data/injection_grid/`. A failed acquisition can still
+create one of those directories. Counting path existence alone would therefore
+make production-readiness summaries look more advanced than the evidence
+actually supports.
+
+## Decision
+
+The AI hardening gate summary must distinguish:
+
+- configured DECISION-133 evidence paths;
+- paths that merely exist on disk;
+- paths that contain at least one file;
+- empty existing paths created by failed or incomplete acquisition attempts;
+- provisional local calibration-corpus `.dat` files outside HIP99427.
+
+Local calibration-corpus files outside HIP99427 may support provisional
+citizen-science review, but they do not close DECISION-134 by themselves because
+they were already part of calibration-threshold work and are not a populated
+DECISION-133 evidence stream.
+
+## Consequences
+
+`ai-hardening-gate-summary` and `validation-summary` expose populated evidence
+counts and empty existing path counts. Production promotion remains blocked when
+only empty DECISION-133 directories or provisional local calibration holdouts
+exist. No candidate score, pathway, external submission authorization, or
+detection language changes.
