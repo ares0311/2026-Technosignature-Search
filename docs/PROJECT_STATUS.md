@@ -386,6 +386,9 @@ The project will support three tracks from day one:
       tensor-heavy evaluation should use the M4 Max GPU through tested
       acceleration backends when available, while CPU-heavy work should use
       bounded multiprocessing or multithreading with reproducible fallbacks
+- [x] Extended-corpus acquisition hardened for DECISION-134: the downloader now
+      discovers current Breakthrough Open Data HDF5 links and fails closed when
+      it produces zero held-out evidence files
 
 ## Next 3 Actions
 

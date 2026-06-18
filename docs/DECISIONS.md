@@ -3492,3 +3492,41 @@ assumptions into scientific logic, thresholds, candidate scores, or claims. GPU
 and parallel acceleration must preserve deterministic tests, provenance,
 false-positive-first review, negative evidence, no-submission defaults, and CPU
 fallback paths when GPU support is unavailable.
+
+---
+
+# DECISION-138: Extended Corpus Acquisition Must Use Current BL Discovery And Fail Closed
+
+**Date:** 2026-06-18
+**Status:** Accepted
+**Supports:** DECISION-134 — AI hardening production blocker
+
+## Context
+
+The DECISION-133 extended-corpus downloader previously encoded direct
+`blpd0.ssl.berkeley.edu` `.dat` URLs. Those URLs no longer resolve from the
+current local environment, while the official Breakthrough Open Data search
+page exposes current `bldata.berkeley.edu` HDF5 download links for the same
+held-out target family. The stale downloader also completed with exit code 0
+after downloading zero files, which could leave empty directories that look
+like progress but are not DECISION-134 evidence.
+
+## Decision
+
+The extended-corpus acquisition path must:
+
+- discover current GBT HDF5 download URLs from the official Breakthrough Open
+  Data search page instead of relying on stale hard-coded `blpd0` paths;
+- store raw HDF5 inputs and any derived hit tables only under ignored
+  `data/extended_corpus/` paths;
+- emit visible progress and conservative scientific guardrails;
+- exit nonzero when no held-out evidence file is downloaded or reused;
+- keep empty target directories from receiving DECISION-134 review credit.
+
+## Consequences
+
+Future agents should treat zero-download runs as blockers, not partial
+successes. Review-safe manifests, checksums, summaries, and tests may be
+committed, but raw HDF5 files, derived hit tables, logs, caches, and local scan
+outputs remain ignored payloads. This decision does not claim a detection,
+expert review, external validation, or external-submission authorization.
