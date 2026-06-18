@@ -838,6 +838,7 @@ def _run_prod_scan(args: object) -> int:  # noqa: C901
     Scientific guardrail: output lines are local triage aids only — no
     result constitutes a detection claim or authorizes external submission.
     """
+    import argparse as _argparse
     import json as _json
     import signal as _signal
 
@@ -855,7 +856,6 @@ def _run_prod_scan(args: object) -> int:  # noqa: C901
         scan_spinner,
     )
 
-    import argparse as _argparse
     ns = args if isinstance(args, _argparse.Namespace) else _argparse.Namespace(**vars(args))
     input_dir = Path(ns.input_dir)
     output_dir = Path(ns.output_dir)
