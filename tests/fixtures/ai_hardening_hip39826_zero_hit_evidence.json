@@ -1,0 +1,95 @@
+{
+  "schema_version": "ai_hardening_evidence_bundle_v1",
+  "gate_id": "decision-134-ai-hardening-production-evidence",
+  "decision": "DECISION-134",
+  "evidence_id": "decision134-hip39826-zero-hit-heldout-v1",
+  "evidence_date_utc": "2026-06-18",
+  "source_target": "HIP39826",
+  "evidence_stream": "data/extended_corpus",
+  "training_cadence_overlap": false,
+  "raw_payload_committed": false,
+  "detection_claimed": false,
+  "expert_review_claimed": false,
+  "external_validation_claimed": false,
+  "external_submission_allowed": false,
+  "production_promotion_allowed": false,
+  "raw_artifacts": [
+    {
+      "relative_path": "data/extended_corpus/HIP39826/spliced_blc0001020304050607_guppi_57829_11159_HIP39826_0032.gpuspec.0002.h5",
+      "artifact_type": "hdf5",
+      "size_bytes": 269075535,
+      "sha256": "573ef260d2a6d620dbfd7a80958a65edc5d8f8fb1d95b70868612b9b1f41b47c",
+      "source_url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_26/holding/spliced_blc0001020304050607_guppi_57829_11159_HIP39826_0032.gpuspec.0002.h5",
+      "committed": false
+    },
+    {
+      "relative_path": "data/extended_corpus/HIP39826/spliced_blc0001020304050607_guppi_57829_11159_HIP39826_0032.gpuspec.0002.dat",
+      "artifact_type": "turboseti_dat",
+      "size_bytes": 603,
+      "sha256": "aa7783b143919efd81a82e0ab4d429f0951c40b7c9b2884018ff57839257dc35",
+      "committed": false
+    },
+    {
+      "relative_path": "data/extended_corpus/HIP39826/spliced_blc0001020304050607_guppi_57829_11159_HIP39826_0032.gpuspec.0002.log",
+      "artifact_type": "turboseti_log",
+      "size_bytes": 1438,
+      "sha256": "75e894db5fe45b94d8441f70a6f7b442fa0658194ee6eef3b0677ebc6361efe7",
+      "committed": false
+    }
+  ],
+  "turboseti_run": {
+    "tool": "turbo_seti",
+    "tool_version": "2.3.2",
+    "blimpy_version": "2.1.4",
+    "h5py_version": "3.16.0",
+    "max_drift_rate_hz_s": 4.0,
+    "min_drift_rate_hz_s": 0.0001,
+    "snr_threshold": 10.0,
+    "obs_length_seconds": 299.573969,
+    "frequency_start_mhz": 2802.83203125,
+    "frequency_delta_hz": -2861.022949,
+    "valid_hit_count": 0,
+    "negative_evidence": [
+      "turboSETI completed on held-out HIP39826 HDF5 without valid hits at SNR >= 10",
+      "radio input validation would refuse candidate scoring because the hit table has zero valid rows"
+    ]
+  },
+  "method_reviews": [
+    {
+      "method_id": "rule_based_scoring",
+      "status": "abstained",
+      "reason": "No valid hit rows were present for candidate feature extraction.",
+      "negative_evidence_preserved": true
+    },
+    {
+      "method_id": "learned_logistic_regression",
+      "status": "abstained",
+      "reason": "No candidate feature vector can be produced from a zero-hit held-out table.",
+      "negative_evidence_preserved": true
+    },
+    {
+      "method_id": "cross_target_rfi_suppression",
+      "status": "abstained",
+      "reason": "The second populated target still has no valid hit frequencies to compare across targets.",
+      "negative_evidence_preserved": true
+    },
+    {
+      "method_id": "globular_dense_cluster_filter",
+      "status": "abstained",
+      "reason": "No hit morphology rows exist for density clustering.",
+      "negative_evidence_preserved": true
+    },
+    {
+      "method_id": "semisupervised_anomaly_scorer",
+      "status": "abstained",
+      "reason": "No hit feature rows exist for scoring; scorer summary also reports no fitted training corpus.",
+      "negative_evidence_preserved": true
+    }
+  ],
+  "open_blockers_after_run": [
+    "Need at least one held-out DECISION-133 evidence stream with valid hit rows or an injection-recovery stream before independent candidate-level method comparison can close.",
+    "Need a production evidence bundle containing method outputs, disagreements, abstentions, and negative evidence from the same held-out evidence.",
+    "A third extended-corpus target or the setigen injection grid needs explicit operator approval before expansion beyond the second bounded attempt."
+  ],
+  "conclusion": "This second bounded run strengthens DECISION-134 negative evidence by showing HIP39826 also produces zero valid turboSETI hit rows at the configured threshold. It does not close DECISION-134 because independent candidate-level method comparison still lacks valid held-out hit rows."
+}

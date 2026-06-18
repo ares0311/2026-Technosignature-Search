@@ -18,12 +18,12 @@ external opportunity, not an assumed dependency. The calibration gate passed
 and 2 epochs (HIP99427, HIP100670, HIP99560, HIP99759, VOYAGER-1). Derived
 thresholds: noise_floor_snr=42.4, follow_up_snr=54.8, high_interest_snr=118.3,
 max_rfi_like_drift_hz_s=5.21. Thresholds and learned model outputs remain local
-scheduling aids until the AI hardening gate is satisfied. A first bounded
-held-out HIP17147 GBT HDF5 has been admitted into `data/extended_corpus` and
-preserved as zero-hit negative evidence, but it does not close DECISION-134
-because candidate-level independent-method comparison still needs valid
-held-out hit rows or injection-recovery rows. Expert review and external
-validation are not claimed.
+scheduling aids until the AI hardening gate is satisfied. Two bounded held-out
+GBT HDF5 records, HIP17147 and HIP39826, have been admitted into
+`data/extended_corpus` and preserved as zero-hit negative evidence, but they do
+not close DECISION-134 because candidate-level independent-method comparison
+still needs valid held-out hit rows or injection-recovery rows. Expert review
+and external validation are not claimed.
 
 ---
 
@@ -118,6 +118,7 @@ validation are not claimed.
 | **AI hardening evidence population accounting (DECISION-135)** — `ai-hardening-gate-summary` and `validation-summary` distinguish configured, existing, populated, and empty DECISION-133 evidence paths; provisional local calibration holdouts remain explicitly insufficient for gate closure | ✅ Complete |
 | **Extended-corpus acquisition fail-closed hardening (DECISION-138)** — `scripts/download_bl_extended_corpus.sh` discovers current Breakthrough Open Data HDF5 links and exits nonzero when it produces zero held-out evidence files; this supports DECISION-134 but does not by itself close it | ✅ Complete |
 | **First DECISION-134 held-out evidence population** — HIP17147 GBT HDF5 acquired from current BL Open Data, validated as HDF5, processed with turboSETI, and preserved as review-safe zero-hit negative evidence with checksums and method abstentions; this supports DECISION-134 but does not close it because no valid hit rows were available for independent candidate-level method comparison | ✅ Complete |
+| **Second DECISION-134 bounded held-out evidence attempt** — HIP39826 GBT HDF5 acquired from current BL Open Data, validated as HDF5, processed with turboSETI, and preserved as review-safe zero-hit negative evidence with checksums and method abstentions; this supports DECISION-134 but does not close it because no valid hit rows were available for independent candidate-level method comparison | ✅ Complete |
 
 ---
 

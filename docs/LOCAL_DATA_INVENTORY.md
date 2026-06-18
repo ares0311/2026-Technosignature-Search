@@ -78,6 +78,12 @@ Current committed review-safe DECISION-134 evidence map:
 - `docs/ai_hardening_evidence/HIP17147_ZERO_HIT_EVIDENCE.md` summarizes the
   same evidence for future agents. Raw HDF5, `.dat`, and `.log` payloads remain
   ignored local artifacts.
+- `tests/fixtures/ai_hardening_hip39826_zero_hit_evidence.json` records the
+  second bounded HIP39826 `data/extended_corpus` HDF5 acquisition, checksums,
+  zero-hit turboSETI result, method abstentions, and remaining blockers.
+- `docs/ai_hardening_evidence/HIP39826_ZERO_HIT_EVIDENCE.md` summarizes the
+  second bounded attempt. Raw HDF5, `.dat`, and `.log` payloads remain ignored
+  local artifacts.
 
 ## Local Inventory Snapshot
 
