@@ -22,6 +22,44 @@ stays on `main` and pulls after each PR is merged.
 
 ---
 
+## GIT ARTIFACT HYGIENE — NON-NEGOTIABLE
+
+The user's standard staging cadence is:
+
+```bash
+git add .
+```
+
+Therefore the repository must be safe under `git add .`. Agents are wrong if
+generated local artifacts, large science payloads, machine-specific inventories,
+SQLite logs, caches, or credentials can be staged by that command.
+
+Before committing artifact-policy, data-ingestion, logging, calibration,
+pipeline-output, or scan-output changes, agents must verify:
+
+1. `git add --dry-run .` does not reveal unintended generated artifacts.
+2. `.gitignore` covers the artifact classes produced by the changed scripts or
+   CLIs.
+3. Existing tiny test fixtures remain explicitly allowed when broad patterns are
+   added.
+4. Other agents can still understand the local artifact topology from files on
+   GitHub.
+
+The continuity rule is: **ignore the payloads, commit the map.** Raw or
+generated data belongs in ignored paths such as `data/`, `results/` outside the
+review-safe `results/scans/` subtree, `logs/`, `cache/`, or `artifacts/`.
+GitHub-visible continuity belongs in sanitized documentation, scripts,
+manifests, checksums, schemas, and tests. Do not commit machine-specific files
+that contain absolute local paths, hostnames, or local directory listings as the
+only way future agents learn where artifacts live.
+
+`docs/LOCAL_DATA_INVENTORY.md` is a sanitized, committed artifact map for agent
+continuity. Machine-specific inventory output from
+`scripts/create_data_inventory.sh` must be written to
+`docs/LOCAL_DATA_INVENTORY.local.md`, which is ignored.
+
+---
+
 ## Purpose
 
 Instructions for AI coding agents working on the Technosignature Search repository.
@@ -226,6 +264,52 @@ blocked until genuinely independent external validation exists.
 If dependencies are missing:
 - install them locally inside `.venv`: `.venv/bin/pip install <package>`
 - document additions in dependency files
+
+## Local Performance Optimization — Non-Negotiable
+
+Project code and run plans must be optimized for the user's local workstation
+by default while remaining configurable and reproducible on smaller systems.
+Read `docs/SYSTEM_PROFILE.md` when it exists locally for the detailed current
+machine profile, and read the committed `docs/LOCAL_SYSTEM_PROFILE.md` for the
+GitHub-visible sanitized profile.
+
+Default local target:
+
+- MacBook Pro M4 Max
+- 16 CPU cores: 12 performance, 4 efficiency
+- 40-core Apple GPU / Metal support
+- 64 GB unified memory
+- Python `.venv` runtime documented in `docs/LOCAL_SYSTEM_PROFILE.md`
+
+Rules:
+
+1. AI training, learned-model evaluation, embedding generation, tensor-heavy
+   inference, and large numerical experiments must prefer GPU acceleration on
+   this machine when a tested backend is available, such as Apple Metal/MPS,
+   MLX, or another project-approved accelerator. If GPU acceleration is
+   unavailable or unsupported for the chosen library, agents must document the
+   fallback and keep the run reproducible on CPU.
+2. CPU-bound batch work should use bounded multiprocessing or multithreading by
+   default. Start with up to 12 workers for CPU-heavy local jobs, leaving
+   headroom for macOS and interactive tools. Use up to 16 workers only for
+   explicitly requested full-machine runs or light I/O-bound tasks after
+   checking bottlenecks.
+3. I/O-bound live-provider or catalog work should use conservative concurrency,
+   usually 4 to 6 workers, because service limits and disk throughput can
+   dominate.
+4. Avoid oversubscription. When using process pools with NumPy/SciPy/sklearn or
+   other native numerical libraries, set native thread counts to 1 per process
+   unless profiling shows a better configuration.
+5. Keep routine peak memory targets below 48 GB unless the user explicitly
+   approves a larger run. Prefer chunking, streaming, memory mapping,
+   checkpointing, and resumable batches over monolithic in-memory jobs.
+6. Performance-sensitive code must expose worker counts, batch sizes, memory
+   ceilings, cache paths, and accelerator choices through config, CLI options,
+   or documented runtime defaults. Do not hard-code this workstation into
+   scientific logic, thresholds, candidate scores, or claims.
+7. GPU or parallel acceleration must not change scientific guardrails. Preserve
+   false-positive checks, negative evidence, provenance, deterministic tests,
+   conservative language, and no-submission defaults.
 
 ### macOS Sleep Prevention — caffeinate
 

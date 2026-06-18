@@ -3407,3 +3407,88 @@ counts and empty existing path counts. Production promotion remains blocked when
 only empty DECISION-133 directories or provisional local calibration holdouts
 exist. No candidate score, pathway, external submission authorization, or
 detection language changes.
+
+---
+
+# DECISION-136: Ignore Payloads, Commit Sanitized Artifact Maps
+
+**Date:** 2026-06-17
+**Status:** Accepted
+**Supports:** DECISION-134 — AI hardening production blocker
+
+## Context
+
+Future coding agents can only inspect what is committed to GitHub, but the
+project's production-hardening evidence streams produce large local data,
+SQLite logs, generated scan outputs, and machine-specific inventories that must
+not be committed. A prior accidental staging event showed that narrow ignore
+rules are not enough when the standard operator cadence is `git add .`.
+
+## Decision
+
+The repository must remain safe under `git add .` while still preserving
+GitHub-visible continuity for future agents:
+
+- large science payloads, generated run outputs, logs, local SQLite databases,
+  caches, model arrays, serialized models, and machine-specific inventories are
+  ignored by default;
+- tiny intentional fixtures remain explicitly allowed under `tests/fixtures/`;
+- `docs/LOCAL_DATA_INVENTORY.md` is a committed, sanitized artifact map rather
+  than a generated local directory listing;
+- `scripts/create_data_inventory.sh` writes machine-specific snapshots to
+  ignored `docs/LOCAL_DATA_INVENTORY.local.md`;
+- artifact-producing changes must be checked with `git add --dry-run .` before
+  commit.
+
+## Consequences
+
+Future agents should update committed maps, manifests, checksums, schemas,
+tests, and methodology docs when they need GitHub-visible context. They must not
+commit local payloads merely to make other agents aware that data exists. This
+preserves DECISION-134 reproducibility context without weakening data hygiene,
+scientific provenance, or conservative non-claim guardrails.
+
+---
+
+# DECISION-137: Optimize Local Execution For M4 Max With GPU-First AI Training
+
+**Date:** 2026-06-17
+**Status:** Accepted
+**Supports:** DECISION-134 — AI hardening production blocker
+
+## Context
+
+The project is now producing AI hardening evidence, learned-model comparisons,
+semi-supervised anomaly scores, injection-recovery grids, and production-run
+evidence bundles. These workloads are computationally expensive and should use
+the user's local workstation efficiently. The local machine profile records a
+MacBook Pro M4 Max with 16 CPU cores, a 40-core Apple GPU, Metal support, and
+64 GB unified memory.
+
+## Decision
+
+Future agents must optimize code and run plans for the local workstation by
+default:
+
+- AI training, learned-model evaluation, embedding generation, tensor-heavy
+  inference, and large numerical experiments should prefer a tested GPU backend
+  on this machine, such as Apple Metal/MPS, MLX, or another project-approved
+  accelerator.
+- CPU-heavy batch workloads should use bounded multiprocessing or
+  multithreading, starting with up to 12 workers unless profiling supports a
+  different value.
+- I/O-bound catalog, provider, or disk-heavy workflows should start with
+  conservative concurrency, usually 4 to 6 workers.
+- Process-level parallelism must avoid native-library oversubscription by
+  bounding NumPy/SciPy/sklearn thread counts when needed.
+- Worker counts, accelerator choices, memory ceilings, batch sizes, and cache
+  paths must stay configurable and documented.
+
+## Consequences
+
+Local production-hardening work should run faster and make better use of the
+M4 Max GPU/CPU resources. This decision does not permit hard-coding hardware
+assumptions into scientific logic, thresholds, candidate scores, or claims. GPU
+and parallel acceleration must preserve deterministic tests, provenance,
+false-positive-first review, negative evidence, no-submission defaults, and CPU
+fallback paths when GPU support is unavailable.

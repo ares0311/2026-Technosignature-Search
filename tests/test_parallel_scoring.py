@@ -93,6 +93,23 @@ class TestParallelVsSerial:
         results = score_candidates_parallel(candidates, workers=0)
         assert len(results) == 3
 
+    def test_process_pool_setup_failure_falls_back_to_serial(self, monkeypatch):
+        import concurrent.futures
+
+        class FailingExecutor:
+            def __init__(self, *args, **kwargs):
+                raise PermissionError("semaphore probe denied")
+
+        monkeypatch.setattr(concurrent.futures, "ProcessPoolExecutor", FailingExecutor)
+
+        candidates = self._example_candidates()
+        serial = score_candidates_parallel(candidates, workers=1)
+        fallback = score_candidates_parallel(candidates, workers=2)
+
+        assert [s.recommended_pathway for s in fallback] == [
+            s.recommended_pathway for s in serial
+        ]
+
     def test_parallel_preserves_candidate_ids(self):
         candidates = [_make_candidate(f"cand_{i}", snr=30.0 + i) for i in range(5)]
         results = score_candidates_parallel(candidates, workers=2)

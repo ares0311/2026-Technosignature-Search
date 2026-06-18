@@ -16,18 +16,56 @@ dist/
 htmlcov/
 
 # Local data and generated products
+data/
 data/raw/
 data/interim/
 data/external/
 data/processed/
 cache/
 artifacts/
+docs/SYSTEM_PROFILE.md
+docs/LOCAL_DATA_INVENTORY.local.md
+results/*
+!results/scans/
+!results/scans/**
+*.h5
+*.hdf5
+*.fil
+*.fits
+*.fit
+*.fits.gz
+*.dat
+!tests/fixtures/**/*.dat
+*.npy
+*.npz
+*.parquet
+*.feather
+*.pkl
+*.pickle
+*.joblib
 logs/*.sqlite
 logs/*.sqlite3
 logs/*.db
 logs/*-wal
 logs/*-shm
+*.sqlite
+*.sqlite3
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+*.sqlite-journal
+*.sqlite3-journal
 logs/backups/
+Logs (*conflicted copy*)/
+*.log
+scripts/*.log
+*_output.txt
+*.tmp
+*.bak
+*.orig
+*.rej
+uv.lock
 
 # Secrets and local configuration
 .env

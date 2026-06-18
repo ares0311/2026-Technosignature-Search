@@ -107,8 +107,11 @@ def score_candidates_parallel(
         return []
     if workers is None or workers <= 1 or len(candidate_list) <= 1:
         return score_candidates(candidate_list, scoring_config=scoring_config)
-    with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
-        return list(executor.map(_score_one, candidate_list))
+    try:
+        with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
+            return list(executor.map(_score_one, candidate_list))
+    except (NotImplementedError, OSError):
+        return score_candidates(candidate_list, scoring_config=scoring_config)
 
 
 def _track_scores(
