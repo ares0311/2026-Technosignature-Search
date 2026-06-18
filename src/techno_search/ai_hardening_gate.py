@@ -112,10 +112,16 @@ def ai_hardening_gate_summary(
 
     status = str(gate.get("status", "unknown"))
     production_promotion_allowed = _as_bool(gate.get("production_promotion_allowed"))
+    production_promotion_scope = str(gate.get("production_promotion_scope", "blocked"))
     external_submission_allowed = _as_bool(gate.get("external_submission_allowed"))
     detection_claimed = _as_bool(gate.get("detection_claimed"))
     expert_review_claimed = _as_bool(gate.get("expert_review_claimed"))
     independent_methods_required = int(gate.get("independent_methods_required", 0))
+    closure_evidence_bundle_path = str(gate.get("closure_evidence_bundle_path", ""))
+    closure_evidence_bundle_exists = bool(
+        closure_evidence_bundle_path
+        and _path_exists(root, closure_evidence_bundle_path)
+    )
 
     requirements = [
         cast(dict[str, Any], item)
@@ -173,8 +179,23 @@ def ai_hardening_gate_summary(
         issues.append("AI hardening gate schema_version mismatch")
     if status not in {"open", "closed"}:
         issues.append(f"AI hardening gate status {status!r} is invalid")
-    if production_promotion_allowed:
+    if production_promotion_scope not in {
+        "blocked",
+        "local_citizen_science_operations_only",
+    }:
+        issues.append(
+            f"AI hardening gate production scope {production_promotion_scope!r} "
+            "is invalid"
+        )
+    if status == "open" and production_promotion_allowed:
         issues.append("AI hardening gate allows production promotion while under review")
+    if status == "open" and production_promotion_scope != "blocked":
+        issues.append("AI hardening gate is open with a non-blocked promotion scope")
+    if (
+        production_promotion_allowed
+        and production_promotion_scope != "local_citizen_science_operations_only"
+    ):
+        issues.append("AI hardening gate production promotion is not local-only")
     if external_submission_allowed:
         issues.append("AI hardening gate allows external submission")
     if detection_claimed:
@@ -189,6 +210,14 @@ def ai_hardening_gate_summary(
         issues.append("AI hardening gate is closed with blocking requirements unresolved")
     if status == "closed" and len(recorded_methods) < independent_methods_required:
         issues.append("AI hardening gate is closed without enough independent methods")
+    if status == "closed" and not production_promotion_allowed:
+        issues.append("AI hardening gate is closed but still blocks local production")
+    if status == "closed" and production_promotion_scope != (
+        "local_citizen_science_operations_only"
+    ):
+        issues.append("AI hardening gate is closed without local-only promotion scope")
+    if status == "closed" and not closure_evidence_bundle_exists:
+        issues.append("AI hardening gate is closed without a closure evidence bundle")
 
     return {
         "schema_version": AI_HARDENING_GATE_SCHEMA_VERSION,
@@ -199,9 +228,12 @@ def ai_hardening_gate_summary(
         "gate_id": str(gate.get("gate_id", "")),
         "status": status,
         "production_promotion_allowed": production_promotion_allowed,
+        "production_promotion_scope": production_promotion_scope,
         "external_submission_allowed": external_submission_allowed,
         "detection_claimed": detection_claimed,
         "expert_review_claimed": expert_review_claimed,
+        "closure_evidence_bundle_path": closure_evidence_bundle_path,
+        "closure_evidence_bundle_exists": closure_evidence_bundle_exists,
         "requirement_count": len(requirements),
         "satisfied_requirement_count": len(satisfied_requirements),
         "open_blocking_requirement_count": len(blocking_requirements),

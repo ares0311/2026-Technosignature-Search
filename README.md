@@ -118,8 +118,8 @@ The workflow follows the same broad pattern used in exoplanet vetting: detect an
 - ✅ Calibrated GBT scoring thresholds admitted for local scoring-config review
 - ✅ GBT provisional RFI catalog operator sign-off complete for local fixture use
 - ✅ Learned real-label scoring model and generalizability suite implemented
-- 🚫 Live production promotion is blocked by DECISION-134 pending held-out AI
-  hardening evidence and independent-method citizen-science review
+- ✅ Local citizen-science production promotion is allowed after DECISION-134
+  closed with injection-recovery evidence and independent method-family review
 - ⚠️ External submission and discovery-style claims remain blocked pending the external submission protocol and independent external validation
 
 👉 See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md)

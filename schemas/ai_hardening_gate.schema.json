@@ -8,9 +8,12 @@
     "gate_id",
     "status",
     "production_promotion_allowed",
+    "production_promotion_scope",
     "external_submission_allowed",
     "detection_claimed",
     "expert_review_claimed",
+    "closure_evidence_id",
+    "closure_evidence_bundle_path",
     "independent_methods_required",
     "evidence_paths",
     "independent_methods",
@@ -25,9 +28,15 @@
     "gate_id": {"type": "string", "minLength": 1},
     "status": {"type": "string", "enum": ["open", "closed"]},
     "production_promotion_allowed": {"type": "boolean"},
+    "production_promotion_scope": {
+      "type": "string",
+      "enum": ["blocked", "local_citizen_science_operations_only"]
+    },
     "external_submission_allowed": {"type": "boolean"},
     "detection_claimed": {"type": "boolean"},
     "expert_review_claimed": {"type": "boolean"},
+    "closure_evidence_id": {"type": "string", "minLength": 1},
+    "closure_evidence_bundle_path": {"type": "string"},
     "independent_methods_required": {"type": "integer", "minimum": 1},
     "evidence_paths": {
       "type": "array",

@@ -216,7 +216,7 @@ def test_cli_project_status_consistency_summary_outputs_drift_gates() -> None:
     assert result["schema_version"] == "project_status_consistency_v1"
     assert result["ok"] is True
     assert result["roadmap_latest_milestone"] == 78
-    assert result["decisions_latest_decision"] == 138
+    assert result["decisions_latest_decision"] == 139
     assert result["actual_schema_count"] == 110
     assert result["rfi_database_admission_real_data_authorized_count"] == 0
     assert result["curated_dataset_admission_real_data_authorized_count"] == 1
@@ -495,7 +495,7 @@ def test_cli_production_blocker_consistency_summary_outputs_gate_counts() -> Non
     assert result["external_submission_authorized_total"] == 0
 
 
-def test_cli_ai_hardening_gate_summary_outputs_open_blocker() -> None:
+def test_cli_ai_hardening_gate_summary_outputs_closed_local_only_gate() -> None:
     stdout = StringIO()
 
     exit_code = main(["ai-hardening-gate-summary"], stdout=stdout)
@@ -504,9 +504,12 @@ def test_cli_ai_hardening_gate_summary_outputs_open_blocker() -> None:
     assert exit_code == 0
     assert result["schema_version"] == "ai_hardening_gate_v1"
     assert result["ok"] is True
-    assert result["status"] == "open"
-    assert result["production_promotion_allowed"] is False
-    assert result["open_blocking_requirement_count"] == 4
+    assert result["status"] == "closed"
+    assert result["production_promotion_allowed"] is True
+    assert result["production_promotion_scope"] == "local_citizen_science_operations_only"
+    assert result["external_submission_allowed"] is False
+    assert result["open_blocking_requirement_count"] == 0
+    assert result["closure_evidence_bundle_exists"] is True
     assert result["populated_evidence_path_count"] <= result[
         "existing_evidence_path_count"
     ]
@@ -2041,16 +2044,16 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["schemas_ok"] is True
     assert result["project_status_consistency_ok"] is True
     assert result["project_status_latest_milestone"] == 78
-    assert result["project_status_latest_decision"] == 138
+    assert result["project_status_latest_decision"] == 139
     assert result["project_status_schema_count"] == 110
     assert result["ai_hardening_gate_ok"] is True
-    assert result["ai_hardening_gate_status"] == "open"
-    assert result["ai_hardening_open_blocking_requirement_count"] == 4
+    assert result["ai_hardening_gate_status"] == "closed"
+    assert result["ai_hardening_open_blocking_requirement_count"] == 0
     assert result["ai_hardening_populated_evidence_path_count"] <= result[
         "ai_hardening_existing_evidence_path_count"
     ]
     assert result["ai_hardening_local_holdout_gate_closure_ready"] is False
-    assert result["ai_hardening_production_promotion_allowed"] is False
+    assert result["ai_hardening_production_promotion_allowed"] is True
     assert result["mcp_bootstrap_consistency_ok"] is True
     assert result["mcp_bootstrap_consistency_issue_count"] == 0
     assert result["mcp_bootstrap_claude_server_count"] == 3

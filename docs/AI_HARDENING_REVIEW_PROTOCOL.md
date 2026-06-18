@@ -1,6 +1,7 @@
 # AI Hardening Review Protocol
 
-**Status:** Required before closing DECISION-134.
+**Status:** DECISION-134 closed for local citizen-science production promotion;
+required for reruns, audits, and future production-promotion evidence updates.
 **Scope:** Citizen-science production evidence for learned and AI-assisted
 pathway routing.
 
@@ -48,10 +49,11 @@ git pull origin main
 .venv/bin/techno-search validation-summary
 ```
 
-The AI hardening gate must report:
+Before closure, the AI hardening gate must report:
 
 - `status: "open"` until all requirements are complete
 - `production_promotion_allowed: false`
+- `production_promotion_scope: "blocked"`
 - `external_submission_allowed: false`
 - `detection_claimed: false`
 - `expert_review_claimed: false`
@@ -60,6 +62,16 @@ The AI hardening gate must report:
 
 If any of those safety fields differ, stop and fix the gate before running
 evidence generation.
+
+After closure, the AI hardening gate must report:
+
+- `status: "closed"`
+- `production_promotion_allowed: true`
+- `production_promotion_scope: "local_citizen_science_operations_only"`
+- `external_submission_allowed: false`
+- `detection_claimed: false`
+- `expert_review_claimed: false`
+- `closure_evidence_bundle_exists: true`
 
 Path existence is not evidence. Failed acquisition attempts may create
 `data/extended_corpus/` or `data/meerkat_hits/` directories without usable
