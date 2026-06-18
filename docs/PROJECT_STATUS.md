@@ -12,22 +12,25 @@ Production triage, deployment verification, and conservative operations
 ## Package Name
 `techno_search`
 
-## Current Production Blocker
+## Current Production Gate
 
-Tier 1 and Tier 2 engineering blockers are closed, but live production
-promotion is blocked by the Tier 3 **AI hardening production blocker**
-(DECISION-134). Future work must produce held-out real-data evidence,
-independent-method citizen-science review, and review-safe production run
-artifacts before learned or AI-assisted pathway routing is treated as
-production-promotable.
+Tier 1 and Tier 2 engineering blockers are closed. The Tier 3 **AI hardening
+production blocker** (DECISION-134) is also closed for local citizen-science
+production promotion after the injection-recovery closure bundle recorded
+populated DECISION-133 evidence, independent method-family review, preserved
+abstentions, and negative evidence.
+
+DECISION-134 is closed for local citizen-science production promotion.
 
 Current DECISION-134 evidence state: `data/extended_corpus` has been populated
 with two bounded held-out GBT HDF5 records, HIP17147 and HIP39826, and both
 produced zero-hit turboSETI results at the configured threshold. This is useful
-negative evidence, but it does not close DECISION-134 because candidate-level
-independent-method comparison still needs valid held-out hit rows or an
-injection-recovery stream in real noise. Expansion beyond the second bounded
-attempt requires a new operator approval cycle.
+negative evidence. DECISION-134 is closed by the `data/injection_grid`
+evidence stream: 75/75 setigen injections in real Voyager 1 GBT noise were
+recovered, producing 256 valid turboSETI hit rows and a committed review-safe
+closure bundle. Production promotion is local citizen-science operations only;
+expert review, peer review, external validation, detection, discovery, and
+external submission are not claimed.
 
 ---
 
@@ -397,16 +400,19 @@ The project will support three tracks from day one:
 - [x] Extended-corpus acquisition hardened for DECISION-134: the downloader now
       discovers current Breakthrough Open Data HDF5 links and fails closed when
       it produces zero held-out evidence files
+- [x] DECISION-134 AI hardening production blocker closed for local
+      citizen-science production promotion via the injection-recovery closure
+      evidence bundle
 
 ## Next 3 Actions
 
-1. Close the Tier 3 AI hardening production blocker by producing held-out
-   real-data evidence outside the HIP99427 training cadence.
-2. Run the production-readiness validation gate from a clean checkout and
+1. Run the production-readiness validation gate from a clean checkout and
    preserve the command output as local operator evidence.
-3. Execute the first conservative production scan using
+2. Execute the first conservative production scan using
    `docs/PRODUCTION_SCAN_GUIDE.md`, with live data still opt-in and no external
    submission.
+3. Preserve the first scan's negative-result or escalation-gate record as local
+   operator evidence without making any discovery-style claim.
 
 ---
 
@@ -414,7 +420,7 @@ The project will support three tracks from day one:
 
 **Milestone 78 — Citizen-Science Production Run Evidence**
 
-Status: blocked on DECISION-134 AI hardening evidence.
+Status: DECISION-134 closed for local citizen-science production promotion.
 
 Input:
 - reviewed local configuration

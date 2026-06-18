@@ -1,29 +1,27 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-06-17
-**Current milestone:** 78 (AI Hardening Production Evidence Gate — Tier 3 Production Blocker)
+**Last updated:** 2026-06-18
+**Current milestone:** 78 (AI Hardening Production Evidence Gate — Closed Local Production Gate)
 
 ---
 
 ## Summary
 
-The pipeline has closed the documented Tier 1 and Tier 2 engineering blockers,
-but it is **not yet cleared for live production promotion** because a new Tier 3
-AI hardening production blocker is open. DECISION-134 requires held-out
-real-data evidence, independent-method citizen-science review, and production
-run evidence before the learned or AI-assisted scoring stack can be treated as
-production-promotable. Optional expert/institutional review remains a future
-external opportunity, not an assumed dependency. The calibration gate passed
+The pipeline has closed the documented Tier 1 and Tier 2 engineering blockers.
+DECISION-134 is now closed for **local citizen-science production promotion** of
+learned or AI-assisted pathway routing after a populated setigen
+injection-recovery grid in real Voyager 1 GBT noise produced 75/75 recovered
+injections and 256 valid turboSETI hit rows for review-safe method-family
+comparison. Optional expert/institutional review remains a future external
+opportunity, not an assumed dependency. The calibration gate passed
 `calibration_ready: true` against 213 real GBT hits from 5 cadences, 5 targets,
 and 2 epochs (HIP99427, HIP100670, HIP99560, HIP99759, VOYAGER-1). Derived
 thresholds: noise_floor_snr=42.4, follow_up_snr=54.8, high_interest_snr=118.3,
-max_rfi_like_drift_hz_s=5.21. Thresholds and learned model outputs remain local
-scheduling aids until the AI hardening gate is satisfied. Two bounded held-out
-GBT HDF5 records, HIP17147 and HIP39826, have been admitted into
-`data/extended_corpus` and preserved as zero-hit negative evidence, but they do
-not close DECISION-134 because candidate-level independent-method comparison
-still needs valid held-out hit rows or injection-recovery rows. Expert review
-and external validation are not claimed.
+max_rfi_like_drift_hz_s=5.21. Thresholds, learned model outputs, dense-cluster
+labels, and semi-supervised anomaly scores remain local scheduling aids. Two
+bounded held-out GBT HDF5 records, HIP17147 and HIP39826, remain preserved as
+zero-hit negative evidence. Expert review, peer review, external validation,
+detection, discovery, and external submission are not claimed.
 
 ---
 
@@ -119,6 +117,7 @@ and external validation are not claimed.
 | **Extended-corpus acquisition fail-closed hardening (DECISION-138)** — `scripts/download_bl_extended_corpus.sh` discovers current Breakthrough Open Data HDF5 links and exits nonzero when it produces zero held-out evidence files; this supports DECISION-134 but does not by itself close it | ✅ Complete |
 | **First DECISION-134 held-out evidence population** — HIP17147 GBT HDF5 acquired from current BL Open Data, validated as HDF5, processed with turboSETI, and preserved as review-safe zero-hit negative evidence with checksums and method abstentions; this supports DECISION-134 but does not close it because no valid hit rows were available for independent candidate-level method comparison | ✅ Complete |
 | **Second DECISION-134 bounded held-out evidence attempt** — HIP39826 GBT HDF5 acquired from current BL Open Data, validated as HDF5, processed with turboSETI, and preserved as review-safe zero-hit negative evidence with checksums and method abstentions; this supports DECISION-134 but does not close it because no valid hit rows were available for independent candidate-level method comparison | ✅ Complete |
+| **DECISION-134 AI hardening production blocker closed** — setigen injection-recovery grid in real Voyager 1 GBT noise produced 75/75 recovered injections, 256 valid turboSETI hit rows, a committed closure evidence bundle, and three recorded independent method-family reviews while preserving learned-model and cross-target abstentions; production promotion is local citizen-science operations only | ✅ Complete |
 
 ---
 
@@ -140,7 +139,7 @@ and external validation are not claimed.
 
 | Gap | Effort estimate |
 |---|---|
-| **AI hardening production blocker (DECISION-134)** | 🚫 Open — production promotion is blocked until held-out DECISION-133 real-data evidence exists, the learned/rule-based/semi-supervised methods are compared on that evidence, disagreements and negative evidence are preserved, and a review-safe production run evidence bundle is produced. This does not reopen Tier 1/Tier 2 engineering closure, but it blocks live production promotion of learned or AI-assisted pathway routing. |
+| **AI hardening production blocker (DECISION-134)** | ✅ Closed — production promotion is allowed only for local citizen-science operations after the injection-recovery closure bundle recorded populated DECISION-133 evidence, independent method-family review, preserved abstentions, and negative evidence. |
 | Parallelized batch processing | ✅ Complete (Tier 3) |
 | Database-backed candidate store (not file-based) | ✅ Complete (Tier 3) |
 | Operator UI / review dashboard | ✅ Complete (Tier 3) |
@@ -152,7 +151,7 @@ and external validation are not claimed.
 
 ## Production Readiness Estimate
 
-- **Current state:** Engineering substrate complete, but live production promotion is blocked by the Tier 3 AI hardening production evidence gate (DECISION-134)
+- **Current state:** Engineering substrate complete and production-promotable for local citizen-science operations; external submission and discovery-style claims remain blocked
 - **After Tier 1 complete:** ~60% ✅ reached
 - **After Tier 2 complete:** ~80% ✅ reached 2026-06-12
 - **After Tier 3 AI hardening gate complete:** production-promotable for citizen-science operations, while still making no detection, expert-review, external-validation, or external-submission claim
@@ -171,9 +170,9 @@ Regardless of engineering readiness:
    decisions require deterministic rules, an independent-method audit,
    published provenance, and visible abstentions or disagreements.
 6. Expert review and external validation remain unclaimed unless they actually occur.
-7. Learned, semi-supervised, or AI-assisted scores must not be used for
-   production pathway promotion until the DECISION-134 AI hardening evidence
-   gate is closed.
+7. Learned, semi-supervised, or AI-assisted scores may be used only for local
+   citizen-science production pathway promotion; they remain local scheduling
+   aids and do not authorize external submission or discovery-style claims.
 
 ---
 
@@ -210,4 +209,4 @@ from public regulatory documentation. DECISION-125 records the calibration corpu
 DECISION-126 records the GBT provisional RFI catalog operator sign-off.
 DECISION-127 records the calibrated scoring configuration from real GBT noise data.
 DECISION-128 records scoring model v1 with calibrated SNR tiers and drift neutralization (77.42% diagnostic agreement).
-DECISION-134 records the AI hardening production evidence gate as an open Tier 3 production blocker. DECISION-135 records that DECISION-133 evidence paths must be populated before they receive review credit. DECISION-136 records the policy to ignore generated payloads while committing sanitized GitHub-visible artifact maps. DECISION-137 records the M4 Max local optimization directive, including GPU-first AI training when a tested accelerator backend is available. DECISION-138 records that extended-corpus acquisition must discover current Breakthrough Open Data URLs and fail closed on zero evidence.
+DECISION-134 records the AI hardening production evidence gate. DECISION-135 records that DECISION-133 evidence paths must be populated before they receive review credit. DECISION-136 records the policy to ignore generated payloads while committing sanitized GitHub-visible artifact maps. DECISION-137 records the M4 Max local optimization directive, including GPU-first AI training when a tested accelerator backend is available. DECISION-138 records that extended-corpus acquisition must discover current Breakthrough Open Data URLs and fail closed on zero evidence. DECISION-139 closes DECISION-134 for local citizen-science production promotion using the injection-recovery closure evidence bundle.

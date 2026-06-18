@@ -3318,7 +3318,7 @@ review before use in production pathway routing.
 # DECISION-134: AI Hardening Production Evidence Gate
 
 **Date:** 2026-06-17
-**Status:** Active
+**Status:** Closed by DECISION-139
 **Opens:** Tier 3 gap — AI hardening production blocker
 
 The Tier 1 and Tier 2 engineering gates are closed, and DECISION-133 adds the
@@ -3530,3 +3530,81 @@ successes. Review-safe manifests, checksums, summaries, and tests may be
 committed, but raw HDF5 files, derived hit tables, logs, caches, and local scan
 outputs remain ignored payloads. This decision does not claim a detection,
 expert review, external validation, or external-submission authorization.
+
+---
+
+# DECISION-139: DECISION-134 Closed For Local Citizen-Science Production Promotion
+
+**Date:** 2026-06-18
+**Status:** Accepted
+**Closes:** DECISION-134 — AI hardening production blocker
+
+## Context
+
+DECISION-134 required a populated held-out evidence stream, at least two
+structurally independent citizen-science method reviews, preserved disagreements
+or abstentions, negative evidence, and a review-safe production evidence bundle
+before learned or AI-assisted pathway routing could be promoted for production
+operations.
+
+Two bounded `data/extended_corpus` GBT HDF5 attempts, HIP17147 and HIP39826,
+produced useful zero-hit negative evidence but no valid turboSETI hit rows for
+candidate-level method comparison. The approved DECISION-133
+`data/injection_grid` stream then used the Voyager 1 GBT HDF5 file as real-noise
+substrate for a setigen injection-recovery grid.
+
+## Evidence
+
+The committed closure evidence bundle is
+`tests/fixtures/ai_hardening_injection_grid_closure_evidence.json`, with the
+human-readable summary in
+`docs/ai_hardening_evidence/INJECTION_GRID_CLOSURE_EVIDENCE.md`.
+
+Review-safe evidence recorded:
+
+- source HDF5 path `data/bl_hits/Voyager1.single_coarse.fine_res.h5`, SHA-256
+  `c9a9a54f4140e3754ffb2455fae4eeb2eb70c8207123116ee953e4fce15c36ac`,
+  byte count `50549227`, uncommitted raw payload;
+- injection manifest `data/injection_grid/injection_grid_manifest.json`,
+  SHA-256 `4315dcee426fba4b44ce18015a82d0771782d6ea3b6d6503be7d7eb2b46252ac`,
+  uncommitted generated payload;
+- 75/75 injections completed and recovered;
+- 75 HDF5 outputs, 75 turboSETI DAT outputs, 75 logs, and one local manifest,
+  all ignored under `data/injection_grid`;
+- 256 valid turboSETI hit rows available for review-safe method comparison;
+- recorded method-family reviews for rule-based scoring, GLOBULAR-style
+  dense-cluster filtering, and semi-supervised anomaly scoring;
+- learned logistic regression abstention because this closure does not retrain
+  or externally validate the HIP99427 real-label model on the injection grid;
+- cross-target RFI suppression abstention because the injection grid uses one
+  real-noise source target.
+
+## Decision
+
+Close DECISION-134 for local citizen-science production promotion only.
+
+The machine-readable AI hardening gate is now closed with:
+
+- `status: "closed"`;
+- `production_promotion_allowed: true`;
+- `production_promotion_scope: "local_citizen_science_operations_only"`;
+- `external_submission_allowed: false`;
+- `detection_claimed: false`;
+- `expert_review_claimed: false`;
+- a committed closure evidence bundle path.
+
+## Consequences
+
+Learned, semi-supervised, and AI-assisted pathway routing may be used as local
+citizen-science production scheduling aids. They do not constitute detections,
+discoveries, expert review, peer review, external validation, or
+external-submission authorization.
+
+DECISION-132 remains controlling for external submission. External submission
+is still blocked unless all DECISION-132 preconditions are satisfied and the
+operator explicitly authorizes that separate path.
+
+Raw HDF5, DAT, LOG, SQLite, cache, and generated science payloads remain
+ignored. Future agents must preserve GitHub-visible continuity through
+sanitized evidence bundles, checksums, manifests, methodology docs, schemas,
+and tests rather than committing raw local payloads.

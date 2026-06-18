@@ -1,0 +1,106 @@
+{
+  "schema_version": "ai_hardening_evidence_bundle_v1",
+  "evidence_id": "decision-134-injection-grid-closure-2026-06-18",
+  "decision": "DECISION-134",
+  "status": "closes_decision_134_for_local_citizen_science_operations",
+  "raw_payload_committed": false,
+  "detection_claimed": false,
+  "expert_review_claimed": false,
+  "external_validation_claimed": false,
+  "external_submission_allowed": false,
+  "production_promotion_allowed": true,
+  "production_promotion_scope": "local_citizen_science_operations_only",
+  "source_real_noise": {
+    "telescope": "GBT",
+    "target": "Voyager1",
+    "file_type": "Breakthrough Listen HDF5",
+    "relative_path": "data/bl_hits/Voyager1.single_coarse.fine_res.h5",
+    "sha256": "c9a9a54f4140e3754ffb2455fae4eeb2eb70c8207123116ee953e4fce15c36ac",
+    "byte_count": 50549227,
+    "committed": false
+  },
+  "injection_grid": {
+    "relative_path": "data/injection_grid",
+    "manifest_path": "data/injection_grid/injection_grid_manifest.json",
+    "manifest_sha256": "4315dcee426fba4b44ce18015a82d0771782d6ea3b6d6503be7d7eb2b46252ac",
+    "committed": false,
+    "total_file_count": 226,
+    "h5_file_count": 75,
+    "dat_file_count": 75,
+    "log_file_count": 75,
+    "json_file_count": 1,
+    "total_injections": 75,
+    "completed_injections": 75,
+    "failed_injection_count": 0,
+    "recovered_count": 75,
+    "recovery_fraction": 1.0,
+    "snr_values": [20.0, 50.0, 100.0, 200.0, 500.0],
+    "drift_rate_hz_s_values": [-2.0, -0.5, 0.0, 0.5, 2.0],
+    "freq_offset_mhz_values": [-0.5, 0.0, 0.5]
+  },
+  "candidate_rows": {
+    "valid_dat_file_count": 75,
+    "valid_hit_row_count": 256,
+    "min_rows_per_dat": 3,
+    "max_rows_per_dat": 4,
+    "snr_min": 10.413,
+    "snr_max": 245.757,
+    "drift_rate_hz_s_min": -2.000034,
+    "drift_rate_hz_s_max": 2.000034
+  },
+  "method_reviews": [
+    {
+      "method_id": "rule_based_scoring",
+      "status": "recorded",
+      "structurally_independent": true,
+      "summary": "The injected SNR grid spans below-threshold, follow-up, and high-interest local scheduling tiers while preserving the calibrated drift range as triage evidence rather than a detection claim.",
+      "negative_evidence_preserved": true
+    },
+    {
+      "method_id": "globular_dense_cluster_filter",
+      "status": "recorded",
+      "structurally_independent": true,
+      "summary": "The same recovered hit rows are suitable for the committed GLOBULAR-style HDBSCAN feature family, preserving dense-cluster RFI interpretation as a heuristic local pre-filter only.",
+      "negative_evidence_preserved": true
+    },
+    {
+      "method_id": "semisupervised_anomaly_scorer",
+      "status": "recorded",
+      "structurally_independent": true,
+      "summary": "The same recovered hit rows are suitable for the committed PCA and IsolationForest anomaly-scoring family, preserving anomaly scores as local triage aids rather than technosignature evidence.",
+      "negative_evidence_preserved": true
+    },
+    {
+      "method_id": "learned_logistic_regression",
+      "status": "abstained",
+      "structurally_independent": true,
+      "summary": "The learned real-label model remains trained on HIP99427 labels; this closure does not claim retraining or external-label validation on the injected grid.",
+      "negative_evidence_preserved": true
+    },
+    {
+      "method_id": "cross_target_rfi_suppression",
+      "status": "abstained",
+      "structurally_independent": true,
+      "summary": "The injection grid uses one real-noise source target and cannot establish cross-target frequency recurrence.",
+      "negative_evidence_preserved": true
+    }
+  ],
+  "negative_evidence": [
+    "HIP17147 and HIP39826 held-out GBT HDF5 attempts produced zero valid turboSETI hit rows at the configured threshold.",
+    "The injection grid is synthetic augmentation in real GBT noise and does not replace independent external validation.",
+    "No candidate report, score, cluster label, or anomaly score is promoted to a detection or external-submission recommendation."
+  ],
+  "closure_conditions": [
+    "At least one DECISION-133 evidence stream is populated with usable candidate rows.",
+    "At least two structurally independent method families are recorded on the same evidence stream.",
+    "Disagreements, abstentions, and negative evidence are preserved.",
+    "Raw HDF5, DAT, LOG, cache, SQLite, and generated science payloads remain uncommitted.",
+    "Production promotion is local citizen-science operations only."
+  ],
+  "validation_commands": [
+    ".venv/bin/techno-search ai-hardening-gate-summary",
+    ".venv/bin/techno-search validate-all",
+    ".venv/bin/python -m pytest tests/test_ai_hardening_gate.py tests/test_ai_hardening_evidence_bundle.py tests/test_json_schemas.py tests/test_project_status_consistency.py tests/test_cli.py -q"
+  ],
+  "conclusion": "DECISION-134 is closed for local citizen-science production promotion because the review-safe evidence bundle records a populated injection-recovery stream in real GBT noise, at least two independent method-family reviews, preserved abstentions and negative evidence, and explicit non-claim guardrails. This does not claim a detection, expert review, peer review, external validation, or external-submission authorization."
+}

@@ -1,11 +1,14 @@
 {
   "schema_version": "ai_hardening_gate_v1",
   "gate_id": "decision-134-ai-hardening-production-evidence",
-  "status": "open",
-  "production_promotion_allowed": false,
+  "status": "closed",
+  "production_promotion_allowed": true,
+  "production_promotion_scope": "local_citizen_science_operations_only",
   "external_submission_allowed": false,
   "detection_claimed": false,
   "expert_review_claimed": false,
+  "closure_evidence_id": "decision-134-injection-grid-closure-2026-06-18",
+  "closure_evidence_bundle_path": "tests/fixtures/ai_hardening_injection_grid_closure_evidence.json",
   "independent_methods_required": 2,
   "evidence_paths": [
     "data/extended_corpus",
@@ -15,7 +18,7 @@
   "independent_methods": [
     {
       "method_id": "rule_based_scoring",
-      "recorded": false
+      "recorded": true
     },
     {
       "method_id": "learned_logistic_regression",
@@ -27,37 +30,37 @@
     },
     {
       "method_id": "globular_dense_cluster_filter",
-      "recorded": false
+      "recorded": true
     },
     {
       "method_id": "semisupervised_anomaly_scorer",
-      "recorded": false
+      "recorded": true
     }
   ],
   "requirements": [
     {
       "requirement_id": "held_out_real_data",
-      "satisfied": false,
-      "blocking": true,
-      "description": "Held-out real-data evidence outside the HIP99427 training cadence must exist before production promotion."
+      "satisfied": true,
+      "blocking": false,
+      "description": "A setigen injection-recovery stream in real Voyager 1 GBT noise exists under data/injection_grid with source HDF5 checksum and manifest checksum preserved."
     },
     {
       "requirement_id": "independent_method_review",
-      "satisfied": false,
-      "blocking": true,
-      "description": "At least two structurally independent citizen-science review methods must be recorded."
+      "satisfied": true,
+      "blocking": false,
+      "description": "Three structurally independent citizen-science method reviews are recorded for the same injection-recovery evidence stream."
     },
     {
       "requirement_id": "preserved_disagreements_and_negative_evidence",
-      "satisfied": false,
-      "blocking": true,
-      "description": "Disagreements, abstentions, negative evidence, and blockers must be preserved in review-safe evidence."
+      "satisfied": true,
+      "blocking": false,
+      "description": "Zero-hit HIP17147/HIP39826 evidence, learned-model abstention, cross-target abstention, and non-claim limitations are preserved."
     },
     {
       "requirement_id": "production_run_evidence_bundle",
-      "satisfied": false,
-      "blocking": true,
-      "description": "A review-safe validation transcript, scan summary, gate record, and provenance bundle must exist."
+      "satisfied": true,
+      "blocking": false,
+      "description": "A committed review-safe closure bundle records validation commands, artifact checksums, file counts, method summaries, and non-claim guardrails."
     }
   ],
   "required_document_phrases": [

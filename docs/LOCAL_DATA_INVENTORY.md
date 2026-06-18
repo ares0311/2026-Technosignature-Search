@@ -84,6 +84,14 @@ Current committed review-safe DECISION-134 evidence map:
 - `docs/ai_hardening_evidence/HIP39826_ZERO_HIT_EVIDENCE.md` summarizes the
   second bounded attempt. Raw HDF5, `.dat`, and `.log` payloads remain ignored
   local artifacts.
+- `tests/fixtures/ai_hardening_injection_grid_closure_evidence.json` records
+  the DECISION-134 closure evidence: Voyager 1 GBT HDF5 checksum, setigen
+  injection-grid manifest checksum, 75/75 recovered injections, 256 valid
+  turboSETI hit rows, method-family reviews, abstentions, and local-only
+  production scope.
+- `docs/ai_hardening_evidence/INJECTION_GRID_CLOSURE_EVIDENCE.md` summarizes
+  the same closure evidence for future GitHub-only agents. Raw HDF5, generated
+  injected HDF5, `.dat`, and `.log` payloads remain ignored local artifacts.
 
 ## Local Inventory Snapshot
 
