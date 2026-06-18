@@ -3016,3 +3016,84 @@ def test_cli_catalog_cache_validate_rejects_forbidden_paths() -> None:
         ),
         "Catalog cache path must not be committed: data/raw/catalog.csv",
     ]
+
+
+def test_cli_prod_run_id_accepts_deterministic_token() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["prod-run-id", "--token", "a7k4"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["run_id"].startswith("RUN-")
+    assert result["run_id"].endswith("-A7K4-prod-scan")
+
+
+def test_cli_prod_write_and_show_outcomes(tmp_path) -> None:
+    run_id = "RUN-2026-06-18_201325Z-A7K4-prod-scan"
+    results_dir = tmp_path / "results"
+    target_dir = results_dir / "HIP99427"
+    target_dir.mkdir(parents=True)
+    candidate_json = target_dir / "candidate.json"
+    candidate_json.write_text(
+        json.dumps(
+            {
+                "candidate_id": "candidate",
+                "recommended_pathway": "candidate_review_packet",
+                "features": {
+                    "frequency_hz": 1420000000.0,
+                    "snr": 55.0,
+                    "drift_rate_hz_per_sec": 0.2,
+                },
+                "scores": {"followup_value": 0.9},
+                "track": "radio",
+            }
+        ),
+        encoding="utf-8",
+    )
+    (target_dir / "candidate.manifest.json").write_text(
+        json.dumps(
+            {
+                "candidate_id": "candidate",
+                "recommended_pathway": "candidate_review_packet",
+                "json_path": candidate_json.name,
+            }
+        ),
+        encoding="utf-8",
+    )
+    run_dir = results_dir / "scans" / run_id
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "prod-write-outcomes",
+            "--results-dir",
+            str(results_dir),
+            "--run-dir",
+            str(run_dir),
+            "--run-id",
+            run_id,
+            "--started-at-utc",
+            "2026-06-18T20:13:25Z",
+        ],
+        stdout=stdout,
+    )
+    written = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert written["follow_up_count"] == 1
+    stdout = StringIO()
+    assert main(["prod-show", str(run_dir)], stdout=stdout) == 0
+    shown = json.loads(stdout.getvalue())
+    assert shown["run_id"] == run_id
+    assert shown["external_submission_allowed"] is False
+    stdout = StringIO()
+    assert main(["prod-follow-ups", str(run_dir)], stdout=stdout) == 0
+    follow_ups = json.loads(stdout.getvalue())
+    assert follow_ups["entries"][0]["follow_up_id"] == (
+        "FU-2026-06-18_201325Z-A7K4-001"
+    )
+    stdout = StringIO()
+    assert main(["prod-runs", "--scans-dir", str(results_dir / "scans")], stdout=stdout) == 0
+    runs = json.loads(stdout.getvalue())
+    assert runs["run_count"] == 1

@@ -175,6 +175,7 @@ The project will support three tracks from day one:
 - [x] Candidate-extraction handoff counts wired into local validation
 - [x] Background reviewed and needs-follow-up outcome log schemas added
 - [x] Reviewed and needs-follow-up outcome summaries wired into local validation
+- [x] Production run IDs and separate non-detection/follow-up ledgers added for local production scan UX
 - [x] Scheduler target selection now accounts for never-reviewed boosts and prior-review penalties
 - [x] Deterministic local follow-up test result schema, fixture, and summary CLI added
 - [x] Report-readiness gate and top-three recommendation fixture added

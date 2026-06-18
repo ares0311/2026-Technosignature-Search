@@ -1831,6 +1831,60 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(_scan, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "prod-run-id":
+        from techno_search.production_run_outcomes import make_production_run_id
+
+        _run_id = make_production_run_id(token=getattr(args, "token", None))
+        print(json.dumps({"run_id": _run_id}, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "prod-write-outcomes":
+        from techno_search.production_run_outcomes import write_production_outcomes
+
+        _completed = datetime.now(UTC).isoformat().replace("+00:00", "Z")
+        _summary = write_production_outcomes(
+            results_dir=Path(args.results_dir),
+            run_dir=Path(args.run_dir),
+            run_id=str(args.run_id),
+            started_at_utc=str(args.started_at_utc),
+            completed_at_utc=_completed,
+            scan_summary_path=(
+                Path(args.scan_summary_path)
+                if getattr(args, "scan_summary_path", None)
+                else None
+            ),
+        )
+        print(json.dumps(_summary, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "prod-runs":
+        from techno_search.production_run_outcomes import production_run_list
+
+        _runs = production_run_list(Path(args.scans_dir))
+        print(json.dumps(_runs, indent=2, sort_keys=True), file=out)
+        return 0 if _runs.get("ok") else 1
+
+    if args.command == "prod-show":
+        from techno_search.production_run_outcomes import production_run_summary
+
+        _run = production_run_summary(Path(args.run_dir))
+        print(json.dumps(_run, indent=2, sort_keys=True), file=out)
+        return 0 if _run.get("ok") else 1
+
+    if args.command == "prod-follow-ups":
+        from techno_search.production_run_outcomes import production_run_file
+
+        _follow_ups = production_run_file(Path(args.run_dir), "follow_ups")
+        print(json.dumps(_follow_ups, indent=2, sort_keys=True), file=out)
+        return 0 if _follow_ups.get("ok") else 1
+
+    if args.command == "prod-non-detections":
+        from techno_search.production_run_outcomes import production_run_file
+
+        _non_detections = production_run_file(Path(args.run_dir), "non_detections")
+        print(json.dumps(_non_detections, indent=2, sort_keys=True), file=out)
+        return 0 if _non_detections.get("ok") else 1
+
     if args.command == "cross-target-rfi-summary":
         from techno_search.cross_target_rfi import cross_target_rfi_summary
 
@@ -11392,6 +11446,52 @@ def _build_parser() -> argparse.ArgumentParser:
         type=str,
         help="Directory containing *manifest.json files from a batch scan.",
     )
+    prod_run_id_parser = subparsers.add_parser(
+        "prod-run-id",
+        help="Generate a human-readable production scan run ID.",
+    )
+    prod_run_id_parser.add_argument(
+        "--token",
+        type=str,
+        default=None,
+        help="Optional four-character alphanumeric token for deterministic tests.",
+    )
+    prod_write_parser = subparsers.add_parser(
+        "prod-write-outcomes",
+        help=(
+            "Write production run manifest, non-detection ledger, and follow-up "
+            "ledger files. Local citizen-science operations only."
+        ),
+    )
+    prod_write_parser.add_argument("--results-dir", required=True)
+    prod_write_parser.add_argument("--run-dir", required=True)
+    prod_write_parser.add_argument("--run-id", required=True)
+    prod_write_parser.add_argument("--started-at-utc", required=True)
+    prod_write_parser.add_argument("--scan-summary-path", default=None)
+    prod_runs_parser = subparsers.add_parser(
+        "prod-runs",
+        help="List production scan runs under a scans directory.",
+    )
+    prod_runs_parser.add_argument(
+        "--scans-dir",
+        default="results/scans",
+        help="Directory containing production run subdirectories.",
+    )
+    prod_show_parser = subparsers.add_parser(
+        "prod-show",
+        help="Show one production scan run manifest summary.",
+    )
+    prod_show_parser.add_argument("run_dir", help="Production run directory.")
+    prod_follow_ups_parser = subparsers.add_parser(
+        "prod-follow-ups",
+        help="Show follow-up ledger entries for one production run.",
+    )
+    prod_follow_ups_parser.add_argument("run_dir", help="Production run directory.")
+    prod_non_detections_parser = subparsers.add_parser(
+        "prod-non-detections",
+        help="Show non-detection ledger entries for one production run.",
+    )
+    prod_non_detections_parser.add_argument("run_dir", help="Production run directory.")
     _cross_rfi_parser = subparsers.add_parser(
         "cross-target-rfi-summary",
         help=(

@@ -23,6 +23,48 @@ After installation, the console script should be available as:
 .venv/bin/techno-search --help
 ```
 
+## Production Run UX
+
+Production scans use human-readable run IDs and write separate ledgers for
+non-detections and follow-ups:
+
+```text
+RUN-2026-06-18_201325Z-A7K4-prod-scan
+NEG-2026-06-18_201325Z-A7K4-001
+FU-2026-06-18_201325Z-A7K4-001
+```
+
+Run a full local production scan:
+
+```bash
+git pull origin main
+caffeinate -i bash scripts/run_production_scan.sh
+```
+
+List and inspect runs:
+
+```bash
+git pull origin main
+.venv/bin/techno-search prod-runs
+.venv/bin/techno-search prod-show results/scans/RUN-2026-06-18_201325Z-A7K4-prod-scan
+.venv/bin/techno-search prod-non-detections results/scans/RUN-2026-06-18_201325Z-A7K4-prod-scan
+.venv/bin/techno-search prod-follow-ups results/scans/RUN-2026-06-18_201325Z-A7K4-prod-scan
+```
+
+Each production run directory contains:
+
+```text
+RUN-..._manifest.json
+RUN-..._scan_summary.json
+RUN-..._non_detections.json
+RUN-..._follow_ups.json
+RUN-..._review_dashboard.json
+```
+
+These files are local citizen-science operations ledgers only. They do not
+constitute detection, discovery, expert review, peer review, external
+validation, or authorization for external submission.
+
 ---
 
 ## Score One Candidate
