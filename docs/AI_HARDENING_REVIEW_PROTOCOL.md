@@ -28,7 +28,7 @@ can be completed. Preferred DECISION-133 paths:
 
 | Evidence path | Role | Current gate meaning |
 |---|---|---|
-| `data/extended_corpus/` | Non-Cygnus GBT L-band hit tables | Same telescope/band transfer evidence |
+| `data/extended_corpus/` | Non-Cygnus GBT evidence inputs from current BL Open Data HDF5 records and any derived hit tables | Same telescope/band transfer evidence |
 | `data/meerkat_hits/` | MeerKAT BLUSE false-positive corpus | Cross-instrument RFI behavior evidence |
 | `data/injection_grid/` | Synthetic injections into real GBT noise | Recovery and false-negative stress test |
 
@@ -81,6 +81,11 @@ available, acquire one or more DECISION-133 streams:
 git pull origin main
 caffeinate -i bash scripts/download_bl_extended_corpus.sh
 ```
+
+The extended-corpus downloader discovers current `bldata.berkeley.edu` HDF5
+links from the official Breakthrough Open Data search page and exits nonzero
+when it produces zero evidence files. Empty target directories from failed
+attempts must not receive review credit.
 
 ```bash
 git pull origin main
