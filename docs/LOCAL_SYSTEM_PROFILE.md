@@ -84,14 +84,23 @@ python script.py           # same problem
 
 Use this system profile when choosing local defaults:
 
-- Default CPU-bound worker pools should leave headroom for the OS and interactive use.
+- AI training, learned-model evaluation, embedding generation, tensor-heavy
+  inference, and large numerical experiments should use the 40-core Apple GPU
+  through a tested Metal/MPS/MLX or project-approved backend whenever available.
+  If no tested GPU path exists for the selected library, document the CPU
+  fallback and keep the run reproducible.
 - Default CPU-bound worker pools should leave headroom for the OS and interactive use.
 - Use up to 12 workers for CPU-heavy synthetic search, scoring calibration, or test parametrization unless benchmarks show a better value.
 - Use up to 16 workers only for light I/O-bound tasks or explicitly requested full-machine runs.
+- Use conservative I/O concurrency, usually 4 to 6 workers, for live-provider,
+  catalog, or disk-bound workflows until profiling shows a higher value is
+  safe.
 - Keep default memory budgets conservative. A good default ceiling is 48 GB, reserving roughly 16 GB for the OS, IDEs, browser sessions, and Dropbox sync.
 - Avoid writing large intermediate products into the repository. Use ignored data/cache locations described in `docs/DATA_POLICY.md`.
 - Prefer chunked processing over loading full survey-scale arrays or catalogs into memory.
-- Treat GPU/Metal acceleration as optional. Code should run correctly on CPU-only systems unless a feature is explicitly documented as requiring Apple Silicon GPU support.
+- Avoid oversubscription when mixing process pools with NumPy, SciPy, sklearn,
+  or other native numerical libraries. Set native numerical library threads to
+  1 per worker process unless profiling shows a better configuration.
 - Make performance-sensitive worker counts, batch sizes, memory limits, and cache paths configurable through config files or CLI options.
 - Do not hard-code this hardware profile into scientific logic, thresholds, candidate scores, or report claims.
 
