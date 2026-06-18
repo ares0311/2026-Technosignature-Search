@@ -1,0 +1,95 @@
+{
+  "schema_version": "ai_hardening_evidence_bundle_v1",
+  "gate_id": "decision-134-ai-hardening-production-evidence",
+  "decision": "DECISION-134",
+  "evidence_id": "decision134-hip17147-zero-hit-heldout-v1",
+  "evidence_date_utc": "2026-06-18",
+  "source_target": "HIP17147",
+  "evidence_stream": "data/extended_corpus",
+  "training_cadence_overlap": false,
+  "raw_payload_committed": false,
+  "detection_claimed": false,
+  "expert_review_claimed": false,
+  "external_validation_claimed": false,
+  "external_submission_allowed": false,
+  "production_promotion_allowed": false,
+  "raw_artifacts": [
+    {
+      "relative_path": "data/extended_corpus/HIP17147/spliced_blc0001020304050607_guppi_57668_28900_HIP17147_0009.gpuspec.0002.h5",
+      "artifact_type": "hdf5",
+      "size_bytes": 264087094,
+      "sha256": "43470e490ebc15be4865757e19ee441f8c36a7392c5bc1f4694128df751b47b6",
+      "source_url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_39/holding/spliced_blc0001020304050607_guppi_57668_28900_HIP17147_0009.gpuspec.0002.h5",
+      "committed": false
+    },
+    {
+      "relative_path": "data/extended_corpus/HIP17147/spliced_blc0001020304050607_guppi_57668_28900_HIP17147_0009.gpuspec.0002.dat",
+      "artifact_type": "turboseti_dat",
+      "size_bytes": 603,
+      "sha256": "53e001678e26e25575d5b0305d190b96907e52bae6838247d98dd266cf16f9b6",
+      "committed": false
+    },
+    {
+      "relative_path": "data/extended_corpus/HIP17147/spliced_blc0001020304050607_guppi_57668_28900_HIP17147_0009.gpuspec.0002.log",
+      "artifact_type": "turboseti_log",
+      "size_bytes": 1437,
+      "sha256": "557d2a47f8199b46868f45c5a06c038d9d0a6e815e1566fa3e3b0e13b928d4f1",
+      "committed": false
+    }
+  ],
+  "turboseti_run": {
+    "tool": "turbo_seti",
+    "tool_version": "2.3.2",
+    "blimpy_version": "2.1.4",
+    "h5py_version": "3.16.0",
+    "max_drift_rate_hz_s": 4.0,
+    "min_drift_rate_hz_s": 0.0001,
+    "snr_threshold": 10.0,
+    "obs_length_seconds": 293.131518,
+    "frequency_start_mhz": 2802.83203125,
+    "frequency_delta_hz": -2861.022949,
+    "valid_hit_count": 0,
+    "negative_evidence": [
+      "turboSETI completed on held-out HIP17147 HDF5 without valid hits at SNR >= 10",
+      "radio input validation correctly refused candidate scoring because the hit table has zero valid rows"
+    ]
+  },
+  "method_reviews": [
+    {
+      "method_id": "rule_based_scoring",
+      "status": "abstained",
+      "reason": "No valid hit rows were present for candidate feature extraction.",
+      "negative_evidence_preserved": true
+    },
+    {
+      "method_id": "learned_logistic_regression",
+      "status": "abstained",
+      "reason": "No candidate feature vector can be produced from a zero-hit held-out table.",
+      "negative_evidence_preserved": true
+    },
+    {
+      "method_id": "cross_target_rfi_suppression",
+      "status": "abstained",
+      "reason": "Only one held-out target is populated, and it has no valid hit frequencies to compare across targets.",
+      "negative_evidence_preserved": true
+    },
+    {
+      "method_id": "globular_dense_cluster_filter",
+      "status": "abstained",
+      "reason": "No hit morphology rows exist for density clustering.",
+      "negative_evidence_preserved": true
+    },
+    {
+      "method_id": "semisupervised_anomaly_scorer",
+      "status": "abstained",
+      "reason": "No hit feature rows exist for scoring; scorer summary also reports no fitted training corpus.",
+      "negative_evidence_preserved": true
+    }
+  ],
+  "open_blockers_after_run": [
+    "Need at least one held-out DECISION-133 evidence stream with valid hit rows or an injection-recovery stream before independent candidate-level method comparison can close.",
+    "Need a production evidence bundle containing method outputs, disagreements, abstentions, and negative evidence from the same held-out evidence.",
+    "Need validate-all from the same checkout after any committed evidence-bundle changes."
+  ],
+  "conclusion": "This run partially unblocks DECISION-134 by proving data/extended_corpus can be populated with current BL Open Data evidence and by preserving a real zero-hit negative result. It does not close DECISION-134 because independent candidate-level method comparison still lacks valid held-out hit rows."
+}
