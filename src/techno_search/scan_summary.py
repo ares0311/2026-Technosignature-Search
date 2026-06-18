@@ -101,6 +101,8 @@ def load_candidates_from_batch_dir(batch_dir: Path) -> list[dict[str, Any]]:
                 manifest = json.load(fh)
         except (OSError, json.JSONDecodeError):
             continue
+        if manifest.get("artifact_kind") == "production_run_manifest":
+            continue
 
         stem = mf.stem
         if stem.endswith(".manifest"):
