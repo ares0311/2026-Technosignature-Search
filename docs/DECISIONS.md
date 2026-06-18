@@ -3608,3 +3608,42 @@ Raw HDF5, DAT, LOG, SQLite, cache, and generated science payloads remain
 ignored. Future agents must preserve GitHub-visible continuity through
 sanitized evidence bundles, checksums, manifests, methodology docs, schemas,
 and tests rather than committing raw local payloads.
+
+# DECISION-140: Terminal UX For Production Scan Operations
+
+**Date:** 2026-06-18
+**Status:** Accepted
+**Closes:** Tier 3 production scan operations UX gap
+
+## Context
+
+DECISION-139 authorized local citizen-science production promotion. Running
+overnight multi-target scans previously produced verbose pipeline output that
+made it impractical to monitor progress or spot escalation candidates at a
+glance. A production scan operator needs a clean, low-noise terminal interface.
+
+## Decision
+
+Add `prod-scan INPUT_DIR OUTPUT_DIR` CLI command and `src/techno_search/tui.py`
+module implementing:
+
+- Rich spinner (transient — disappears on completion) while each target processes
+- One printed line per completed target: `YYYYMMDD-HHMMSS-<TARGET>  <stellar class>  score=N.NN  [⚡ ESCALATION | —]`
+- Stellar classification via name-heuristic on `simbad_match_names` (galaxy/
+  extragalactic, star cluster, nebula/remnant, neutron star, white dwarf,
+  binary star, giant star, variable star, stellar (Gaia), stellar, unknown)
+- Composite score from `scores.signal_reality_confidence`
+- Resume support: skips targets whose output JSON already exists in OUTPUT_DIR
+- Clean Ctrl+C handling with exit code 130 and "restart to resume" message
+- Plain-text fallback when `rich` is unavailable
+
+All output lines are local scheduling aids only. No result line constitutes a
+detection claim or authorizes external submission.
+
+## Consequences
+
+Production scan operators can run `techno-search prod-scan DATA_DIR OUT_DIR`
+overnight and review a concise per-target summary on return. The `--force` flag
+allows re-processing already-completed targets. Stellar classification is
+name-heuristic only; SIMBAD otype codes are not currently stored and should be
+added to `catalog_crossmatch` in a future improvement for reliable classification.

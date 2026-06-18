@@ -146,6 +146,7 @@ detection, discovery, and external submission are not claimed.
 | External submission workflow | ✅ Complete (Tier 3) — protocol documented in `docs/EXTERNAL_SUBMISSION_PROTOCOL.md`; all preconditions currently unmet; DECISION-132 |
 | Reproducibility verification across data releases | ✅ Complete (Tier 3) |
 | Optional expert or institutional review | ✅ Closed (Tier 3) — no institutional expert available; citizen-science reproducibility protocol substituted per AGENTS.md independence standard; expert review explicitly unclaimed and remains a future opportunity if external collaboration arises |
+| **Terminal UX for production scan operations (DECISION-140)** — `prod-scan` CLI with Rich spinner, per-target one-line result (scan index / stellar class / score / escalation flag), resume support (skips existing output JSON), clean Ctrl+C with exit 130; `tui.py` module with `classify_stellar()`, `make_scan_index()`, `extract_composite_score()`; closes Tier 3 production scan operations UX gap | ✅ Complete (Tier 3) |
 
 ---
 
