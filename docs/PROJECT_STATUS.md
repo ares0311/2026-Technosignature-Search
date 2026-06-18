@@ -21,6 +21,12 @@ independent-method citizen-science review, and review-safe production run
 artifacts before learned or AI-assisted pathway routing is treated as
 production-promotable.
 
+Current DECISION-134 evidence state: `data/extended_corpus` has been populated
+with one bounded HIP17147 held-out GBT HDF5 and a zero-hit turboSETI result.
+This is useful negative evidence, but it does not close DECISION-134 because
+candidate-level independent-method comparison still needs valid held-out hit
+rows or an injection-recovery stream in real noise.
+
 ---
 
 ## Current Scope
