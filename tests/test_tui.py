@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import sys
 from pathlib import Path
 
 import pytest
@@ -209,7 +210,8 @@ class TestProdScanCLI:
         """prod-scan on an empty directory should exit 1."""
         import subprocess
         result = subprocess.run(
-            [".venv/bin/techno-search", "prod-scan", str(tmp_path), str(tmp_path / "out")],
+            [sys.executable, "-m", "techno_search.cli", "prod-scan",
+             str(tmp_path), str(tmp_path / "out")],
             capture_output=True,
             text=True,
         )
@@ -230,7 +232,8 @@ class TestProdScanCLI:
         (output_dir / "fake_target.json").write_text('{"skip": true}\n')
 
         result = subprocess.run(
-            [".venv/bin/techno-search", "prod-scan", str(input_dir), str(output_dir)],
+            [sys.executable, "-m", "techno_search.cli", "prod-scan",
+             str(input_dir), str(output_dir)],
             capture_output=True,
             text=True,
         )
