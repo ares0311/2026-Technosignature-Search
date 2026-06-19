@@ -30,11 +30,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
+import os
 import sys
 import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_MPLCONFIGDIR = REPO_ROOT / "cache" / "matplotlib"
 
 INJECTION_DISCLAIMER = (
     "Injection-recovery grid outputs are synthetic augmentation data only. "
@@ -46,6 +49,19 @@ INJECTION_DISCLAIMER = (
 DEFAULT_SNR_VALUES = [20.0, 50.0, 100.0, 200.0, 500.0]
 DEFAULT_DRIFT_RATES = [-2.0, -0.5, 0.0, 0.5, 2.0]   # Hz/s
 DEFAULT_N_FREQ_OFFSETS = 3   # inject at N evenly-spaced frequencies per coarse channel
+
+
+def configure_matplotlib_cache(cache_dir: Path | None = None) -> Path:
+    """Set a writable ignored Matplotlib cache before turboSETI imports it."""
+    logging.getLogger("matplotlib").setLevel(logging.ERROR)
+    logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
+    configured = os.environ.get("MPLCONFIGDIR")
+    if configured:
+        return Path(configured)
+    target = cache_dir or DEFAULT_MPLCONFIGDIR
+    target.mkdir(parents=True, exist_ok=True)
+    os.environ["MPLCONFIGDIR"] = str(target)
+    return target
 
 
 def _check_dependencies() -> bool:
@@ -105,6 +121,7 @@ def inject_signal(
 
 def run_turboseti_on_h5(h5_path: Path, output_dir: Path) -> Path | None:
     """Run turboSETI on an injected HDF5 file and return the .dat path."""
+    configure_matplotlib_cache()
     try:
         from turbo_seti.find_doppler.find_doppler import FindDoppler
     except ImportError:

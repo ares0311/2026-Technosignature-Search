@@ -9,6 +9,8 @@ parallel pipeline runner.
 
 from __future__ import annotations
 
+import logging
+import os
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -685,8 +687,43 @@ def test_bl_fetch_module_has_required_functions() -> None:
         "_lfs_batch_href",
         "resolve_lfs_url",
         "_try_download_single",
+        "configure_matplotlib_cache",
     ]:
         assert hasattr(bl_fetch, name), f"Missing function: {name}"
+
+
+# ---------------------------------------------------------------------------
+# configure_matplotlib_cache
+# ---------------------------------------------------------------------------
+
+
+def test_configure_matplotlib_cache_sets_ignored_cache_dir(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    cache_dir = tmp_path / "cache" / "matplotlib"
+    monkeypatch.delenv("MPLCONFIGDIR", raising=False)
+
+    configured = bl_fetch.configure_matplotlib_cache(cache_dir)
+
+    assert configured == cache_dir
+    assert cache_dir.is_dir()
+    assert os.environ["MPLCONFIGDIR"] == str(cache_dir)
+    assert logging.getLogger("matplotlib").level == logging.ERROR
+    assert logging.getLogger("matplotlib.font_manager").level == logging.ERROR
+
+
+def test_configure_matplotlib_cache_respects_existing_env(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    existing = tmp_path / "already-configured"
+    monkeypatch.setenv("MPLCONFIGDIR", str(existing))
+
+    configured = bl_fetch.configure_matplotlib_cache(tmp_path / "unused")
+
+    assert configured == existing
+    assert not (tmp_path / "unused").exists()
 
 
 # ---------------------------------------------------------------------------
