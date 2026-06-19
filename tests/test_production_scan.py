@@ -5,6 +5,7 @@ from io import StringIO
 from pathlib import Path
 
 from techno_search.production_scan import (
+    EmptyProductionScanError,
     ProductionConsole,
     production_diagnostics,
     run_production_scan,
@@ -119,6 +120,54 @@ def test_run_production_scan_writes_artifacts_and_compact_output(tmp_path: Path)
     assert target_status["entries"][0]["index_id"] == "FU-2026-06-18_201325Z-A7K4-001"
     assert target_status["entries"][0]["score_basis"] == "pipeline_score"
     assert target_status["entries"][0]["detection_claimed"] is False
+
+
+def test_run_production_scan_fails_closed_without_candidates(tmp_path: Path) -> None:
+    results_dir = tmp_path / "results"
+    scans_dir = tmp_path / "scans"
+    results_dir.mkdir()
+    stdout = StringIO()
+
+    try:
+        run_production_scan(
+            results_dir=results_dir,
+            scans_dir=scans_dir,
+            stdout=stdout,
+            run_id=RUN_ID,
+            use_rich=False,
+            validate_func=lambda: {"ok": True},
+            dashboard_func=lambda: {"needs_attention": False},
+        )
+    except EmptyProductionScanError:
+        pass
+    else:  # pragma: no cover - assertion branch
+        raise AssertionError("empty production scan should fail closed")
+
+    rendered = stdout.getvalue()
+    assert "ERROR no candidate manifests found" in rendered
+    assert "No production run artifacts were written" in rendered
+    assert not (scans_dir / RUN_ID).exists()
+
+
+def test_run_production_scan_allows_empty_only_when_explicit(tmp_path: Path) -> None:
+    results_dir = tmp_path / "results"
+    scans_dir = tmp_path / "scans"
+    results_dir.mkdir()
+    stdout = StringIO()
+
+    result = run_production_scan(
+        results_dir=results_dir,
+        scans_dir=scans_dir,
+        stdout=stdout,
+        run_id=RUN_ID,
+        use_rich=False,
+        allow_empty=True,
+        validate_func=lambda: {"ok": True},
+        dashboard_func=lambda: {"needs_attention": False},
+    )
+
+    assert result.target_count == 0
+    assert (scans_dir / RUN_ID / f"{RUN_ID}_manifest.json").exists()
 
 
 def test_run_production_scan_resume_skips_existing_artifacts(tmp_path: Path) -> None:

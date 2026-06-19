@@ -522,6 +522,11 @@ git pull origin main
 caffeinate -i bash scripts/run_production_scan.sh
 ```
 
+This command evaluates existing candidate report manifests under `results/`.
+If it reports `ERROR no candidate manifests found`, no production scan was
+performed and no useful target evaluation exists yet. Run the candidate-producing
+pipeline first, then rerun the production scan.
+
 Resume an interrupted run:
 
 First list real run directories with `prod-runs`, then resume the actual

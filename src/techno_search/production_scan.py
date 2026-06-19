@@ -48,6 +48,10 @@ ValidationFunc = Callable[[], JsonObject]
 DashboardFunc = Callable[[], JsonObject]
 
 
+class EmptyProductionScanError(RuntimeError):
+    """Raised when a production scan has no candidate manifests to evaluate."""
+
+
 @dataclass(frozen=True)
 class ProductionScanResult:
     """Summary of one local production scan run."""
@@ -150,6 +154,7 @@ def run_production_scan(
     run_id: str | None = None,
     resume_run_dir: Path | None = None,
     use_rich: bool = True,
+    allow_empty: bool = False,
     validate_func: ValidationFunc | None = None,
     dashboard_func: DashboardFunc | None = None,
 ) -> ProductionScanResult:
@@ -161,8 +166,18 @@ def run_production_scan(
     """
     started_at_utc = datetime.now(UTC).isoformat().replace("+00:00", "Z")
     resolved_run_dir, resolved_run_id = _resolve_run(scans_dir, run_id, resume_run_dir)
-    resolved_run_dir.mkdir(parents=True, exist_ok=True)
     console = ProductionConsole(stdout, use_rich=use_rich)
+    candidates = load_candidates_from_batch_dir(results_dir)
+    if not candidates and not allow_empty:
+        console.write(f"ERROR no candidate manifests found in {results_dir}")
+        console.write(
+            "Run candidate-producing pipeline steps first, or pass --allow-empty "
+            "only for diagnostics. No production run artifacts were written."
+        )
+        raise EmptyProductionScanError(
+            f"No candidate manifests found in {results_dir}; production scan aborted."
+        )
+    resolved_run_dir.mkdir(parents=True, exist_ok=True)
     console.print_header(resolved_run_id, resolved_run_dir)
     skipped_steps = 0
     interrupted = False
@@ -173,7 +188,6 @@ def run_production_scan(
             path=resolved_run_dir / "validate_all.json",
             producer=validate_func or _default_validate_all,
         )
-        candidates = load_candidates_from_batch_dir(results_dir)
         scan_summary_path = resolved_run_dir / f"{resolved_run_id}_scan_summary.json"
         skipped_steps += _run_json_step(
             console,
