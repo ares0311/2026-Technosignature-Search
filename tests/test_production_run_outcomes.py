@@ -13,6 +13,7 @@ from techno_search.production_run_outcomes import (
     PRODUCTION_TARGET_STATUS_SCHEMA_VERSION,
     build_production_outcomes,
     classify_target_kind,
+    latest_production_run_dir,
     make_production_run_id,
     production_run_file,
     production_run_list,
@@ -158,6 +159,7 @@ def test_write_and_read_production_outcomes(tmp_path) -> None:
     assert target_status["entries"][0]["score_basis"] == "pipeline_score"
     assert target_status["external_submission_allowed"] is False
     assert production_run_list(results_dir / "scans")["run_count"] == 1
+    assert latest_production_run_dir(results_dir / "scans") == run_dir
 
 
 def test_scan_summary_ignores_production_run_manifest(tmp_path) -> None:

@@ -75,7 +75,7 @@ JSON payloads to the console.
 Each run writes to a human-readable directory:
 
 ```text
-results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan/
+results/scans/RUN-<date>_<time>Z-<token>-prod-scan/
 ```
 
 The random four-character token keeps run IDs short enough for humans while
@@ -86,11 +86,9 @@ IDs, for example `NEG-YYYY-MM-DD_HHMMSSZ-A7K4-001` and
 If the run is stopped, restart it from the same directory. Completed artifacts
 are skipped:
 
-```bash
-git pull origin main
-caffeinate -i bash scripts/run_production_scan.sh \
-  --resume-run-dir results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
-```
+Run `prod-runs`, copy the actual `run_dir` value, then pass that real directory
+to `--resume-run-dir`. Do not paste the illustrative `RUN-<date>...` shape as a
+literal path.
 
 Each target completion row has this shape:
 
@@ -109,19 +107,19 @@ tracked as target-taxonomy hardening work rather than silently over-labeled.
 ```bash
 git pull origin main
 .venv/bin/techno-search prod-runs
-.venv/bin/techno-search prod-show results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
+.venv/bin/techno-search prod-show --latest
 ```
 
 The run directory contains both compatibility files and run-prefixed files:
 
 ```text
-RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan_manifest.json
-RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan_scan_summary.json
-RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan_target_status.json
-RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan_non_detections.json
-RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan_follow_ups.json
-RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan_review_dashboard.json
-RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan_terminal_summary.json
+RUN-<date>_<time>Z-<token>-prod-scan_manifest.json
+RUN-<date>_<time>Z-<token>-prod-scan_scan_summary.json
+RUN-<date>_<time>Z-<token>-prod-scan_target_status.json
+RUN-<date>_<time>Z-<token>-prod-scan_non_detections.json
+RUN-<date>_<time>Z-<token>-prod-scan_follow_ups.json
+RUN-<date>_<time>Z-<token>-prod-scan_review_dashboard.json
+RUN-<date>_<time>Z-<token>-prod-scan_terminal_summary.json
 ```
 
 The scan summary lists candidates ranked by score. Columns:
@@ -145,9 +143,9 @@ Focus on candidates where:
 
 ```bash
 git pull origin main
-.venv/bin/techno-search prod-non-detections results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
-.venv/bin/techno-search prod-follow-ups results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
-.venv/bin/techno-search prod-target-status results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
+.venv/bin/techno-search prod-non-detections --latest
+.venv/bin/techno-search prod-follow-ups --latest
+.venv/bin/techno-search prod-target-status --latest
 ```
 
 The non-detection file records what was examined but did not enter a follow-up
@@ -214,7 +212,7 @@ git pull origin main
 
 ```bash
 git pull origin main
-git add results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan/*.json
+git add results/scans
 git commit -m "Scan results $(date +%Y-%m-%d): <N> targets, <M> follow-up candidates"
 git push -u origin claude/general-session-Bb2dZ
 ```

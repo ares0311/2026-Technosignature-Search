@@ -53,11 +53,9 @@ caffeinate -i .venv/bin/techno-search prod-scan
 
 Resume a stopped run without redoing completed artifacts:
 
-```bash
-git pull origin main
-caffeinate -i bash scripts/run_production_scan.sh \
-  --resume-run-dir results/scans/RUN-2026-06-18_201325Z-A7K4-prod-scan
-```
+First list real run directories with `prod-runs`, then pass the actual `run_dir`
+value to `--resume-run-dir`. Example run IDs in this document are illustrative
+only; do not paste them as literal paths.
 
 Run compact diagnostics without dumping full JSON payloads:
 
@@ -75,10 +73,10 @@ List and inspect runs:
 ```bash
 git pull origin main
 .venv/bin/techno-search prod-runs
-.venv/bin/techno-search prod-show results/scans/RUN-2026-06-18_201325Z-A7K4-prod-scan
-.venv/bin/techno-search prod-target-status results/scans/RUN-2026-06-18_201325Z-A7K4-prod-scan
-.venv/bin/techno-search prod-non-detections results/scans/RUN-2026-06-18_201325Z-A7K4-prod-scan
-.venv/bin/techno-search prod-follow-ups results/scans/RUN-2026-06-18_201325Z-A7K4-prod-scan
+.venv/bin/techno-search prod-show --latest
+.venv/bin/techno-search prod-target-status --latest
+.venv/bin/techno-search prod-non-detections --latest
+.venv/bin/techno-search prod-follow-ups --latest
 ```
 
 Each production run directory contains:

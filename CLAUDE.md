@@ -204,20 +204,18 @@ git pull origin main
 caffeinate -i bash scripts/run_production_scan.sh
 ```
 
-```bash
-git pull origin main
-caffeinate -i bash scripts/run_production_scan.sh \
-  --resume-run-dir results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
-```
+To resume, first run `prod-runs`, copy the actual `run_dir`, and pass that real
+directory to `--resume-run-dir`. Never present the illustrative `RUN-...`
+pattern as a runnable path.
 
 Review commands:
 
 ```bash
 git pull origin main
 .venv/bin/techno-search prod-runs
-.venv/bin/techno-search prod-target-status results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
-.venv/bin/techno-search prod-follow-ups results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
-.venv/bin/techno-search prod-non-detections results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
+.venv/bin/techno-search prod-target-status --latest
+.venv/bin/techno-search prod-follow-ups --latest
+.venv/bin/techno-search prod-non-detections --latest
 ```
 
 Latest known validation from the merged DECISION-140 work:
