@@ -1,17 +1,21 @@
 #!/usr/bin/env bash
-# run_pipeline_on_bl_data.sh — Run techno-search pipeline on all BL hit tables
+# run_pipeline_on_bl_data.sh — Generate candidate report manifests from BL hit tables
 #
 # Usage:
-#   bash scripts/run_pipeline_on_bl_data.sh [--dat-dir PATH] [--workers N]
+#   git pull origin main
+#   caffeinate -i bash scripts/run_pipeline_on_bl_data.sh [--dat-dir PATH] [--workers N]
 #
-# Closes: Tier 1 gap — "Real observation data — no actual telescope data has been ingested"
+# Production role:
+#   This is the required bridge between local turboSETI .dat files and
+#   scripts/run_production_scan.sh. It writes candidate Markdown/JSON/manifest
+#   report artifacts under results/, which is ignored except for results/scans/.
 #
 # Parallel processing:
 #   Runs up to 12 workers in parallel (M4 Max has 12 performance cores).
 #   Override with --workers N.
 #
-# Resume / restart behaviour:
-#   Each .dat file is scored into its own subdirectory under results/.
+# Resume / restart behavior:
+#   Each .dat file is scored into its own collision-safe subdirectory under results/.
 #   If that subdirectory already contains a *.manifest.json the file is skipped.
 #   Stop and restart at any time — already-completed files are never re-processed.
 #
@@ -59,7 +63,7 @@ if [[ "$DAT_COUNT" -eq 0 ]]; then
   exit 1
 fi
 
-log "Found $DAT_COUNT .dat file(s) — launching parallel pipeline ..."
+log "Found $DAT_COUNT .dat file(s) recursively — launching parallel candidate manifest generation ..."
 
 "$VENV" "$BL_FETCH" run-pipeline \
   "$DATA_DIR" \
@@ -68,7 +72,8 @@ log "Found $DAT_COUNT .dat file(s) — launching parallel pipeline ..."
   --workers "$WORKERS"
 
 log ""
-log "Scored reports written to: $RESULTS_DIR"
-log "NEXT STEP: Review reports in $RESULTS_DIR"
-log "  Then: bash scripts/calibrate_thresholds.sh (coming soon)"
+log "Candidate reports written to: $RESULTS_DIR"
+log "NEXT STEP:"
+log "  git pull origin main"
+log "  caffeinate -i bash scripts/run_production_scan.sh"
 log "=== run_pipeline_on_bl_data.sh done ==="

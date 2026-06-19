@@ -41,6 +41,19 @@ Run a full local production scan:
 
 ```bash
 git pull origin main
+caffeinate -i bash scripts/run_pipeline_on_bl_data.sh
+caffeinate -i bash scripts/run_production_scan.sh
+```
+
+`scripts/run_pipeline_on_bl_data.sh` is the candidate-producing bridge: it
+recursively turns local turboSETI `.dat` files under `data/bl_hits/` into
+candidate report manifests under `results/`. `prod-scan` then evaluates those
+manifests and writes the production run ledgers under `results/scans/`.
+
+Run only the scan step after candidate manifests already exist:
+
+```bash
+git pull origin main
 caffeinate -i bash scripts/run_production_scan.sh
 ```
 

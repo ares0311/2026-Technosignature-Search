@@ -465,6 +465,46 @@ def test_run_pipeline_parallel_calls_techno_search(tmp_path: Path) -> None:
     assert str(dat) in called_cmds[0]
 
 
+def test_collect_dat_files_finds_nested_target_hit_tables(tmp_path: Path) -> None:
+    dat_dir = tmp_path / "data"
+    nested = dat_dir / "HIP99427" / "cadence_a"
+    nested.mkdir(parents=True)
+    top_level = dat_dir / "top.dat"
+    child = nested / "hit.dat"
+    top_level.write_text("# top\n")
+    child.write_text("# child\n")
+    (nested / "ignore.h5").write_text("not a hit table\n")
+
+    assert bl_fetch.collect_dat_files(dat_dir) == sorted([top_level, child])
+
+
+def test_run_pipeline_parallel_preserves_nested_output_paths(tmp_path: Path) -> None:
+    dat_root = tmp_path / "data"
+    dat = dat_root / "HIP99427" / "cadence_a" / "hit table.dat"
+    dat.parent.mkdir(parents=True)
+    dat.write_text("# header\n0.1 0.2 3\n")
+    out_dir = tmp_path / "results"
+
+    called_cmds: list[list[str]] = []
+
+    def _fake_run(cmd: list, **kwargs):  # type: ignore[override]
+        called_cmds.append(cmd)
+        return MagicMock(returncode=0)
+
+    with patch("subprocess.run", _fake_run):
+        results = bl_fetch.run_pipeline_parallel(
+            [str(dat)], out_dir, "/fake/techno-search", workers=1, dat_root=dat_root
+        )
+
+    expected_output = out_dir / "HIP99427" / "cadence_a" / "hit_table"
+    assert results[str(dat)] is True
+    assert expected_output.exists()
+    assert called_cmds[0][called_cmds[0].index("--output-dir") + 1] == str(expected_output)
+    assert called_cmds[0][called_cmds[0].index("--candidate-id") + 1] == (
+        "HIP99427__cadence_a__hit_table"
+    )
+
+
 def test_run_pipeline_parallel_reports_failure(tmp_path: Path) -> None:
     dat = tmp_path / "bad.dat"
     dat.write_text("junk\n")
@@ -587,6 +627,33 @@ def test_main_run_pipeline_parallel_success(tmp_path: Path) -> None:
     assert rc == 0
 
 
+def test_main_run_pipeline_discovers_nested_dat_files(tmp_path: Path) -> None:
+    dat_dir = tmp_path / "data"
+    nested = dat_dir / "HIP100670"
+    nested.mkdir(parents=True)
+    dat = nested / "hit.dat"
+    dat.write_text("# data\n1 2 3\n")
+    results = tmp_path / "results"
+
+    called_cmds: list[list[str]] = []
+
+    def _fake_run(cmd: list, **kwargs):  # type: ignore[override]
+        called_cmds.append(cmd)
+        return MagicMock(returncode=0)
+
+    with patch("subprocess.run", _fake_run):
+        rc = bl_fetch.main([
+            "run-pipeline", str(dat_dir), str(results),
+            "--workers", "1",
+        ])
+
+    assert rc == 0
+    assert str(dat) in called_cmds[0]
+    assert called_cmds[0][called_cmds[0].index("--candidate-id") + 1] == (
+        "HIP100670__hit"
+    )
+
+
 # ---------------------------------------------------------------------------
 # Script is importable and has __main__ block
 # ---------------------------------------------------------------------------
@@ -610,6 +677,7 @@ def test_bl_fetch_module_has_required_functions() -> None:
         "build_synthetic_h5",
         "run_turboseti",
         "run_pipeline_parallel",
+        "collect_dat_files",
         "main",
         "is_hdf5_bytes",
         "_is_lfs_pointer",

@@ -6,9 +6,8 @@
 #   caffeinate -i bash scripts/run_production_scan.sh
 #
 # Resume:
-#   git pull origin main
-#   caffeinate -i bash scripts/run_production_scan.sh \
-#     --resume-run-dir results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
+#   Run prod-runs, copy a real run_dir value, then pass that exact directory
+#   to --resume-run-dir. Do not paste illustrative RUN-* shapes as commands.
 #
 # The Python CLI owns the workflow and terminal UX:
 #   - spinner or compact progress while work is running

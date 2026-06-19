@@ -519,6 +519,21 @@ Start a local production scan:
 
 ```bash
 git pull origin main
+caffeinate -i bash scripts/run_pipeline_on_bl_data.sh
+caffeinate -i bash scripts/run_production_scan.sh
+```
+
+The first command recursively converts local turboSETI `.dat` hit tables under
+`data/bl_hits/` into candidate Markdown/JSON/manifest artifacts under
+`results/`. Those generated report artifacts are intentionally ignored by Git;
+they are local evidence inputs for the production run ledger. The production
+scanner then evaluates those manifests and writes compact run ledgers under
+`results/scans/RUN-*`.
+
+Run the production scanner by itself only after candidate manifests exist:
+
+```bash
+git pull origin main
 caffeinate -i bash scripts/run_production_scan.sh
 ```
 
