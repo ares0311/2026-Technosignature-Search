@@ -8,6 +8,8 @@ import glob
 import importlib.metadata
 import importlib.util
 import json
+import logging
+import os
 import shutil
 import ssl
 import sys
@@ -25,6 +27,22 @@ from techno_search.gbt_cadence import (
     load_cadence_manifest,
     write_hit_provenance,
 )
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_MPLCONFIGDIR = REPO_ROOT / "cache" / "matplotlib"
+
+
+def _configure_matplotlib_cache(cache_dir: Path | None = None) -> Path:
+    """Set a writable ignored Matplotlib cache before turboSETI imports it."""
+    logging.getLogger("matplotlib").setLevel(logging.ERROR)
+    logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
+    configured = os.environ.get("MPLCONFIGDIR")
+    if configured:
+        return Path(configured)
+    target = cache_dir or DEFAULT_MPLCONFIGDIR
+    target.mkdir(parents=True, exist_ok=True)
+    os.environ["MPLCONFIGDIR"] = str(target)
+    return target
 
 
 def _install_pkg_resources_compatibility() -> None:
@@ -91,6 +109,7 @@ def _run_turboseti(
     output_dir: Path,
     analysis: dict[str, Any],
 ) -> tuple[Path, str]:
+    _configure_matplotlib_cache()
     _install_pkg_resources_compatibility()
     package_spec = importlib.util.find_spec("turbo_seti")
     if package_spec is None or not package_spec.submodule_search_locations:

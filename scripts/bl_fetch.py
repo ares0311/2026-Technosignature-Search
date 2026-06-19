@@ -68,6 +68,8 @@ VOYAGER_URLS = [
     "/tests/test_data/Voyager1.single_coarse.fine_res.h5",
     "http://blpd0.ssl.berkeley.edu/Voyager_data/Voyager1.single_coarse.fine_res.h5",
 ]
+REPO_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_MPLCONFIGDIR = REPO_ROOT / "cache" / "matplotlib"
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -581,6 +583,19 @@ def apply_pkg_resources_shim() -> None:
     sys.modules["pkg_resources"] = pkg
 
 
+def configure_matplotlib_cache(cache_dir: Path | None = None) -> Path:
+    """Set a writable ignored Matplotlib cache before turboSETI imports it."""
+    logging.getLogger("matplotlib").setLevel(logging.ERROR)
+    logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
+    configured = os.environ.get("MPLCONFIGDIR")
+    if configured:
+        return Path(configured)
+    target = cache_dir or DEFAULT_MPLCONFIGDIR
+    target.mkdir(parents=True, exist_ok=True)
+    os.environ["MPLCONFIGDIR"] = str(target)
+    return target
+
+
 # ---------------------------------------------------------------------------
 # drift_indexes bootstrap
 # ---------------------------------------------------------------------------
@@ -621,6 +636,7 @@ def run_turboseti(h5_path: str | Path, out_dir: str | Path) -> None:
     Run turboSETI FindDoppler on h5_path, writing .dat hit table to out_dir.
     Applies all 6 Python 3.13+ fixes before importing turboSETI.
     """
+    configure_matplotlib_cache()
     apply_pkg_resources_shim()
     ensure_drift_indexes()
 
