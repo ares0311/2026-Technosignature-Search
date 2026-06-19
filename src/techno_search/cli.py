@@ -808,6 +808,180 @@ SCHEMA_FILENAMES = {
 }
 
 
+# ---------------------------------------------------------------------------
+# prod-file-scan: tidy per-file scan with Rich TUI
+# ---------------------------------------------------------------------------
+
+_TRACK_EXTENSIONS: dict[str, list[str]] = {
+    "radio": [".dat", ".csv"],
+    "infrared": [".csv", ".fits"],
+    "anomaly": [".csv", ".json"],
+}
+
+_EXTENSION_TRACK: dict[str, str] = {
+    ".dat": "radio",
+}
+
+
+def _infer_track(path: Path) -> str:
+    """Infer pipeline track from file extension; defaults to 'radio'."""
+    return _EXTENSION_TRACK.get(path.suffix.lower(), "radio")
+
+
+def _run_prod_file_scan(args: object) -> int:  # noqa: C901
+    """Run a per-file scan with Rich spinner UX.
+
+    Each target file is processed serially with a spinner while in-flight.
+    A single summary line is printed on completion. Ctrl+C writes an
+    interrupted notice; restart will skip already-completed targets.
+
+    Scientific guardrail: output lines are local triage aids only — no
+    result constitutes a detection claim or authorizes external submission.
+    """
+    import argparse as _argparse
+    import json as _json
+    import signal as _signal
+
+    from techno_search.candidate_escalation import escalation_gate_check
+    from techno_search.pipeline_runner import run_pipeline
+    from techno_search.tui import (
+        TUI_DISCLAIMER,
+        extract_composite_score,
+        extract_stellar_from_candidate,
+        make_scan_index,
+        print_interrupted,
+        print_result_line,
+        print_scan_footer,
+        print_scan_header,
+        scan_spinner,
+    )
+
+    ns = args if isinstance(args, _argparse.Namespace) else _argparse.Namespace(**vars(args))
+    input_dir = Path(ns.input_dir)
+    output_dir = Path(ns.output_dir)
+    track_arg: str | None = getattr(ns, "track", None)
+    force: bool = bool(getattr(ns, "force", False))
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Collect input files
+    if track_arg:
+        exts = _TRACK_EXTENSIONS.get(track_arg, [".dat", ".csv"])
+    else:
+        exts = [".dat", ".csv", ".fits", ".json"]
+
+    input_files: list[Path] = sorted(
+        f for f in input_dir.iterdir()
+        if f.is_file() and f.suffix.lower() in exts
+    )
+
+    if not input_files:
+        print(f"No input files found in {input_dir} for track={track_arg or 'auto'}")
+        return 1
+
+    # Resume: skip files whose JSON output already exists
+    def _output_json(src: Path) -> Path:
+        return output_dir / f"{src.stem}.json"
+
+    if not force:
+        pending = [f for f in input_files if not _output_json(f).exists()]
+        skipped = len(input_files) - len(pending)
+    else:
+        pending = input_files
+        skipped = 0
+
+    db_label = str(output_dir / "scan_progress")
+    print_scan_header(len(pending), db_label, resume=skipped > 0)
+    if skipped:
+        print(f"  (skipping {skipped} already-completed target(s) — use --force to reprocess)")
+
+    # Interrupt handling
+    _interrupted = False
+
+    def _sigint_handler(sig: int, frame: object) -> None:
+        nonlocal _interrupted
+        _interrupted = True
+
+    original_handler = _signal.signal(_signal.SIGINT, _sigint_handler)
+
+    succeeded = failed = escalations = 0
+
+    try:
+        for src in pending:
+            if _interrupted:
+                break
+
+            track = track_arg or _infer_track(src)
+            index = make_scan_index(src.stem)
+            label = f"{src.stem}  [{track}]"
+
+            with scan_spinner(label):
+                try:
+                    result = run_pipeline(
+                        src,
+                        track,
+                        output_dir,
+                        candidate_id=src.stem,
+                    )
+                except Exception as exc:
+                    failed += 1
+                    print_result_line(
+                        index=index,
+                        stellar="unknown",
+                        score=0.0,
+                        escalation=False,
+                        ok=False,
+                        error=str(exc)[:80],
+                    )
+                    continue
+
+            if not result.ok:
+                failed += 1
+                print_result_line(
+                    index=index,
+                    stellar="unknown",
+                    score=0.0,
+                    escalation=False,
+                    ok=False,
+                    error=result.error,
+                )
+                continue
+
+            # Load the written JSON to extract score / stellar / escalation
+            json_path = _output_json(src)
+            try:
+                candidate_dict = _json.loads(json_path.read_text(encoding="utf-8"))
+            except Exception:
+                candidate_dict = {}
+
+            score = extract_composite_score(candidate_dict)
+            stellar = extract_stellar_from_candidate(candidate_dict)
+            gate = escalation_gate_check(candidate_dict)
+            is_escalation = bool(gate.get("passes", False))
+
+            if is_escalation:
+                escalations += 1
+            succeeded += 1
+
+            print_result_line(
+                index=index,
+                stellar=stellar,
+                score=score,
+                escalation=is_escalation,
+                ok=True,
+            )
+
+    finally:
+        _signal.signal(_signal.SIGINT, original_handler)
+
+    if _interrupted:
+        print_interrupted()
+        return 130  # standard interrupted exit code
+
+    print_scan_footer(succeeded, failed, escalations)
+    _ = TUI_DISCLAIMER  # referenced for provenance; disclaimer is in module
+    return 0 if failed == 0 else 1
+
+
 def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
     """Run the `techno-search` CLI."""
 
@@ -4427,6 +4601,9 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         print(json.dumps(pipeline_result.as_dict(), indent=2, sort_keys=True), file=out)
         return 0 if pipeline_result.ok else 1
+
+    if args.command == "prod-file-scan":
+        return _run_prod_file_scan(args)
 
     if args.command == "generate-peer-review-package":
         from techno_search.peer_review_package import generate_peer_review_package
@@ -13981,6 +14158,35 @@ def _build_parser() -> argparse.ArgumentParser:
             "Print semi-supervised anomaly scorer provenance summary "
             "(PCA + IsolationForest; local triage aid only)."
         ),
+    )
+
+    prod_file_scan_parser = subparsers.add_parser(
+        "prod-file-scan",
+        help=(
+            "Run a tidy per-file scan with spinner progress and "
+            "one-line-per-target console output. Restartable: already-completed "
+            "targets (JSON output present) are skipped unless --force is passed."
+        ),
+    )
+    prod_file_scan_parser.add_argument(
+        "input_dir",
+        help="Directory containing input files (.dat for radio, .csv for infrared/anomaly).",
+    )
+    prod_file_scan_parser.add_argument(
+        "output_dir",
+        help="Directory for output reports (JSON, Markdown, manifests).",
+    )
+    prod_file_scan_parser.add_argument(
+        "--track",
+        default=None,
+        choices=["radio", "infrared", "anomaly"],
+        help="Pipeline track. Auto-detected from file extension if omitted (.dat → radio).",
+    )
+    prod_file_scan_parser.add_argument(
+        "--force",
+        action="store_true",
+        default=False,
+        help="Reprocess all targets even if output already exists (disables resume).",
     )
 
     return parser

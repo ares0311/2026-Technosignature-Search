@@ -66,6 +66,10 @@ git pull origin main
 .venv/bin/techno-search prod-diagnostics
 ```
 
+For lower-level file-oriented experiments outside the production run ledgers,
+use `prod-file-scan INPUT_DIR OUTPUT_DIR`. The production overnight command is
+still `prod-scan`.
+
 List and inspect runs:
 
 ```bash

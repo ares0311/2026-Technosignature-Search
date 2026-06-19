@@ -3608,3 +3608,53 @@ Raw HDF5, DAT, LOG, SQLite, cache, and generated science payloads remain
 ignored. Future agents must preserve GitHub-visible continuity through
 sanitized evidence bundles, checksums, manifests, methodology docs, schemas,
 and tests rather than committing raw local payloads.
+
+# DECISION-140: Terminal UX For Production Scan Operations
+
+**Date:** 2026-06-18
+**Status:** Accepted
+**Closes:** Tier 3 production scan operations UX gap
+
+## Context
+
+DECISION-139 authorized local citizen-science production promotion. Running
+overnight multi-target scans previously produced verbose pipeline output that
+made it impractical to monitor progress or spot escalation candidates at a
+glance. A production scan operator needs a clean, low-noise terminal interface.
+
+## Decision
+
+Add the artifact-backed `prod-scan` CLI command for production run operations,
+plus `prod-file-scan INPUT_DIR OUTPUT_DIR` and `src/techno_search/tui.py` for
+lower-level per-file scans. Together they implement:
+
+- Rich spinner or compact fallback progress while each production step or
+  target processes
+- One printed production target row with run index, target name, best-effort
+  target class, follow-up status, composite pipeline score, and pathway
+- One lower-level per-file result line:
+  `YYYYMMDD-HHMMSS-<TARGET>  <stellar class>  score=N.NN  [ESCALATION | --]`
+- Stellar classification via name-heuristic on `simbad_match_names` (galaxy/
+  extragalactic, star cluster, nebula/remnant, neutron star, white dwarf,
+  binary star, giant star, variable star, stellar (Gaia), stellar, unknown)
+- Production target classification via conservative local metadata heuristics
+- Composite production score from the existing pipeline follow-up score
+- Per-file composite score from `scores.signal_reality_confidence`
+- Resume support: `prod-scan --resume-run-dir` skips completed production
+  artifacts; `prod-file-scan` skips targets whose output JSON already exists
+- Clean Ctrl+C handling with exit code 130 and "restart to resume" message
+- Plain-text fallback when `rich` is unavailable
+
+All output lines are local scheduling aids only. No result line constitutes a
+detection claim or authorizes external submission.
+
+## Consequences
+
+Production scan operators can run `techno-search prod-scan` or
+`bash scripts/run_production_scan.sh` overnight and review a concise per-target
+summary on return while preserving JSON ledgers under `results/scans/RUN-*`.
+The `prod-file-scan` command remains available for lower-level file-oriented
+pipeline runs, and its `--force` flag allows re-processing already-completed
+targets. Stellar classification remains heuristic only; SIMBAD otype codes are
+not currently stored and should be added to `catalog_crossmatch` in a future
+improvement for reliable classification.
