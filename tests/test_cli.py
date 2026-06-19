@@ -3220,3 +3220,40 @@ def test_cli_prod_target_status_shows_target_status(tmp_path) -> None:
     target_status = json.loads(stdout.getvalue())
     assert target_status["target_count"] == 1
     assert target_status["entries"][0]["follow_up_required"] is True
+
+    stdout = StringIO()
+    assert (
+        main(
+            [
+                "prod-target-status",
+                "--latest",
+                "--scans-dir",
+                str(results_dir / "scans"),
+            ],
+            stdout=stdout,
+        )
+        == 0
+    )
+    latest_target_status = json.loads(stdout.getvalue())
+    assert latest_target_status["run_id"] == run_id
+
+
+def test_cli_prod_latest_reports_no_runs_without_placeholder_path(tmp_path) -> None:
+    stdout = StringIO()
+
+    assert (
+        main(
+            [
+                "prod-target-status",
+                "--latest",
+                "--scans-dir",
+                str(tmp_path / "scans"),
+            ],
+            stdout=stdout,
+        )
+        == 1
+    )
+    result = json.loads(stdout.getvalue())
+    assert result["ok"] is False
+    assert "No production runs found" in result["error"]
+    assert "run_production_scan.sh" in result["error"]

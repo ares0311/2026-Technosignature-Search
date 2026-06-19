@@ -982,6 +982,57 @@ def _run_prod_file_scan(args: object) -> int:  # noqa: C901
     return 0 if failed == 0 else 1
 
 
+def _resolve_production_run_dir_arg(args: object, out: TextIO) -> Path | None:
+    """Resolve a production run directory from a real path or --latest."""
+    run_dir = getattr(args, "run_dir", None)
+    if run_dir:
+        return Path(str(run_dir))
+    if not bool(getattr(args, "latest", False)):
+        from techno_search.production_run_outcomes import PRODUCTION_OUTCOME_DISCLAIMER
+
+        print(
+            json.dumps(
+                {
+                    "ok": False,
+                    "error": (
+                        "Pass a real run_dir from `prod-runs` or use --latest "
+                        "after a production scan has created a RUN-* directory."
+                    ),
+                    "disclaimer": PRODUCTION_OUTCOME_DISCLAIMER,
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return None
+    from techno_search.production_run_outcomes import (
+        PRODUCTION_OUTCOME_DISCLAIMER,
+        latest_production_run_dir,
+    )
+
+    scans_dir = Path(str(getattr(args, "scans_dir", "results/scans")))
+    latest = latest_production_run_dir(scans_dir)
+    if latest is None:
+        print(
+            json.dumps(
+                {
+                    "ok": False,
+                    "error": (
+                        f"No production runs found in {scans_dir}. Start one with "
+                        "`caffeinate -i bash scripts/run_production_scan.sh`."
+                    ),
+                    "disclaimer": PRODUCTION_OUTCOME_DISCLAIMER,
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return None
+    return latest
+
+
 def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
     """Run the `techno-search` CLI."""
 
@@ -2078,28 +2129,40 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
     if args.command == "prod-show":
         from techno_search.production_run_outcomes import production_run_summary
 
-        _run = production_run_summary(Path(args.run_dir))
+        run_dir = _resolve_production_run_dir_arg(args, out)
+        if run_dir is None:
+            return 1
+        _run = production_run_summary(run_dir)
         print(json.dumps(_run, indent=2, sort_keys=True), file=out)
         return 0 if _run.get("ok") else 1
 
     if args.command == "prod-follow-ups":
         from techno_search.production_run_outcomes import production_run_file
 
-        _follow_ups = production_run_file(Path(args.run_dir), "follow_ups")
+        run_dir = _resolve_production_run_dir_arg(args, out)
+        if run_dir is None:
+            return 1
+        _follow_ups = production_run_file(run_dir, "follow_ups")
         print(json.dumps(_follow_ups, indent=2, sort_keys=True), file=out)
         return 0 if _follow_ups.get("ok") else 1
 
     if args.command == "prod-non-detections":
         from techno_search.production_run_outcomes import production_run_file
 
-        _non_detections = production_run_file(Path(args.run_dir), "non_detections")
+        run_dir = _resolve_production_run_dir_arg(args, out)
+        if run_dir is None:
+            return 1
+        _non_detections = production_run_file(run_dir, "non_detections")
         print(json.dumps(_non_detections, indent=2, sort_keys=True), file=out)
         return 0 if _non_detections.get("ok") else 1
 
     if args.command == "prod-target-status":
         from techno_search.production_run_outcomes import production_run_file
 
-        _target_status = production_run_file(Path(args.run_dir), "target_status")
+        run_dir = _resolve_production_run_dir_arg(args, out)
+        if run_dir is None:
+            return 1
+        _target_status = production_run_file(run_dir, "target_status")
         print(json.dumps(_target_status, indent=2, sort_keys=True), file=out)
         return 0 if _target_status.get("ok") else 1
 
@@ -11754,22 +11817,78 @@ def _build_parser() -> argparse.ArgumentParser:
         "prod-show",
         help="Show one production scan run manifest summary.",
     )
-    prod_show_parser.add_argument("run_dir", help="Production run directory.")
+    prod_show_parser.add_argument(
+        "run_dir",
+        nargs="?",
+        help="Production run directory returned by prod-runs.",
+    )
+    prod_show_parser.add_argument(
+        "--latest",
+        action="store_true",
+        help="Inspect the latest valid production run under --scans-dir.",
+    )
+    prod_show_parser.add_argument(
+        "--scans-dir",
+        default="results/scans",
+        help="Directory containing production run subdirectories when using --latest.",
+    )
     prod_follow_ups_parser = subparsers.add_parser(
         "prod-follow-ups",
         help="Show follow-up ledger entries for one production run.",
     )
-    prod_follow_ups_parser.add_argument("run_dir", help="Production run directory.")
+    prod_follow_ups_parser.add_argument(
+        "run_dir",
+        nargs="?",
+        help="Production run directory returned by prod-runs.",
+    )
+    prod_follow_ups_parser.add_argument(
+        "--latest",
+        action="store_true",
+        help="Inspect the latest valid production run under --scans-dir.",
+    )
+    prod_follow_ups_parser.add_argument(
+        "--scans-dir",
+        default="results/scans",
+        help="Directory containing production run subdirectories when using --latest.",
+    )
     prod_non_detections_parser = subparsers.add_parser(
         "prod-non-detections",
         help="Show non-detection ledger entries for one production run.",
     )
-    prod_non_detections_parser.add_argument("run_dir", help="Production run directory.")
+    prod_non_detections_parser.add_argument(
+        "run_dir",
+        nargs="?",
+        help="Production run directory returned by prod-runs.",
+    )
+    prod_non_detections_parser.add_argument(
+        "--latest",
+        action="store_true",
+        help="Inspect the latest valid production run under --scans-dir.",
+    )
+    prod_non_detections_parser.add_argument(
+        "--scans-dir",
+        default="results/scans",
+        help="Directory containing production run subdirectories when using --latest.",
+    )
     prod_target_status_parser = subparsers.add_parser(
         "prod-target-status",
         help="Show compact per-target status rows for one production run.",
     )
-    prod_target_status_parser.add_argument("run_dir", help="Production run directory.")
+    prod_target_status_parser.add_argument(
+        "run_dir",
+        nargs="?",
+        help="Production run directory returned by prod-runs.",
+    )
+    prod_target_status_parser.add_argument(
+        "--latest",
+        action="store_true",
+        help="Inspect the latest valid production run under --scans-dir.",
+    )
+    prod_target_status_parser.add_argument(
+        "--scans-dir",
+        default="results/scans",
+        help="Directory containing production run subdirectories when using --latest.",
+    )
     _cross_rfi_parser = subparsers.add_parser(
         "cross-target-rfi-summary",
         help=(

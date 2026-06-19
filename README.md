@@ -524,20 +524,18 @@ caffeinate -i bash scripts/run_production_scan.sh
 
 Resume an interrupted run:
 
-```bash
-git pull origin main
-caffeinate -i bash scripts/run_production_scan.sh \
-  --resume-run-dir results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
-```
+First list real run directories with `prod-runs`, then resume the actual
+`run_dir` value returned by that command. Do not paste the example run-ID shape
+as a literal path.
 
 Inspect completed run artifacts without paging through large console output:
 
 ```bash
 git pull origin main
 .venv/bin/techno-search prod-runs
-.venv/bin/techno-search prod-target-status results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
-.venv/bin/techno-search prod-follow-ups results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
-.venv/bin/techno-search prod-non-detections results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
+.venv/bin/techno-search prod-target-status --latest
+.venv/bin/techno-search prod-follow-ups --latest
+.venv/bin/techno-search prod-non-detections --latest
 ```
 
 `prod-scan` is the canonical artifact-backed local production command.

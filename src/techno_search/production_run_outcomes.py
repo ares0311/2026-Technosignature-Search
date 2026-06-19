@@ -243,6 +243,16 @@ def production_run_list(scans_dir: Path) -> dict[str, Any]:
     }
 
 
+def latest_production_run_dir(scans_dir: Path) -> Path | None:
+    """Return the newest valid production run directory, if one exists."""
+    runs = production_run_list(scans_dir).get("runs", [])
+    valid_runs = [run for run in runs if run.get("ok") and run.get("run_dir")]
+    if not valid_runs:
+        return None
+    latest = sorted(valid_runs, key=lambda run: str(run.get("run_id", "")))[-1]
+    return Path(str(latest["run_dir"]))
+
+
 def production_run_file(run_dir: Path, kind: str) -> dict[str, Any]:
     """Load the follow-up or non-detection file from one production run."""
     suffix_by_kind = {
