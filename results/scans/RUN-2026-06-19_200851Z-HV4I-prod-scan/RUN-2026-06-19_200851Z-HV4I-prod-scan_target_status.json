@@ -7,25 +7,25 @@
   "entries": [
     {
       "candidate_count": 1,
-      "composite_score": 0.988819,
+      "composite_score": 0.309247,
       "descriptive_name": "Voyager1.single_coarse.fine_res (spacecraft calibration target)",
       "detection_claimed": false,
       "external_submission_allowed": false,
-      "follow_up_required": true,
-      "index_id": "FU-2026-06-19_195924Z-DST3-001",
+      "follow_up_required": false,
+      "index_id": "NEG-2026-06-19_200851Z-HV4I-001",
       "score_basis": "pipeline_score",
       "target_kind": "spacecraft calibration target",
       "target_kind_confidence": "high",
       "target_kind_limitation": "",
       "target_name": "Voyager1.single_coarse.fine_res",
       "top_candidate_id": "Voyager1.single_coarse.fine_res",
-      "top_pathway": "candidate_review_packet",
+      "top_pathway": "known_object_annotation",
       "track": "radio"
     }
   ],
   "external_submission_allowed": false,
-  "follow_up_required_count": 1,
-  "run_id": "RUN-2026-06-19_195924Z-DST3-prod-scan",
+  "follow_up_required_count": 0,
+  "run_id": "RUN-2026-06-19_200851Z-HV4I-prod-scan",
   "schema_version": "production_target_status_v1",
   "target_count": 1
 }

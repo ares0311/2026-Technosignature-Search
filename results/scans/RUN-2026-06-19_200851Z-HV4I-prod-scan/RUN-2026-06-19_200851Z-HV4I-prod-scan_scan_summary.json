@@ -1,16 +1,16 @@
 {
-  "candidate_review_count": 1,
+  "candidate_review_count": 0,
   "disclaimer": "Scan summary rankings are local scheduling aids only. Ranking reflects pipeline score, not astrophysical significance. No ranked candidate constitutes a detection claim.",
-  "follow_up_count": 1,
+  "follow_up_count": 0,
   "schema_version": "scan_summary_v1",
   "targets_scanned": 1,
   "top_candidates": [
     {
       "candidate_id": "Voyager1.single_coarse.fine_res",
       "frequency_hz": 8419297028.000001,
-      "pathway": "candidate_review_packet",
+      "pathway": "known_object_annotation",
       "rank": 1,
-      "score": 0.988819,
+      "score": 0.309247,
       "snr": 245.709641,
       "target_name": "Voyager1.single_coarse.fine_res"
     }

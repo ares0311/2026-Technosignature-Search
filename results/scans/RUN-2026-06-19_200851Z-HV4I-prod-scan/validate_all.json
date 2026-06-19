@@ -1437,7 +1437,7 @@
     "entry_count": 0
   },
   "catalog_cache_validation": {
-    "checked_path_count": 683,
+    "checked_path_count": 696,
     "checked_paths": [
       ".claude/.gitignore",
       ".claude/hooks/pre-commit.sh",
@@ -1544,6 +1544,19 @@
       "pyproject.toml",
       "requirements.txt",
       "results/scans/20260614/scan_summary.json",
+      "results/scans/RUN-2026-06-19_195924Z-DST3-prod-scan/RUN-2026-06-19_195924Z-DST3-prod-scan_follow_ups.json",
+      "results/scans/RUN-2026-06-19_195924Z-DST3-prod-scan/RUN-2026-06-19_195924Z-DST3-prod-scan_manifest.json",
+      "results/scans/RUN-2026-06-19_195924Z-DST3-prod-scan/RUN-2026-06-19_195924Z-DST3-prod-scan_non_detections.json",
+      "results/scans/RUN-2026-06-19_195924Z-DST3-prod-scan/RUN-2026-06-19_195924Z-DST3-prod-scan_review_dashboard.json",
+      "results/scans/RUN-2026-06-19_195924Z-DST3-prod-scan/RUN-2026-06-19_195924Z-DST3-prod-scan_scan_summary.json",
+      "results/scans/RUN-2026-06-19_195924Z-DST3-prod-scan/RUN-2026-06-19_195924Z-DST3-prod-scan_target_status.json",
+      "results/scans/RUN-2026-06-19_195924Z-DST3-prod-scan/RUN-2026-06-19_195924Z-DST3-prod-scan_terminal_summary.json",
+      "results/scans/RUN-2026-06-19_195924Z-DST3-prod-scan/cross_target_rfi.json",
+      "results/scans/RUN-2026-06-19_195924Z-DST3-prod-scan/escalations/Voyager1.single_coarse.fine_res_escalation.json",
+      "results/scans/RUN-2026-06-19_195924Z-DST3-prod-scan/escalations/summary.json",
+      "results/scans/RUN-2026-06-19_195924Z-DST3-prod-scan/review_dashboard.json",
+      "results/scans/RUN-2026-06-19_195924Z-DST3-prod-scan/scan_summary.json",
+      "results/scans/RUN-2026-06-19_195924Z-DST3-prod-scan/validate_all.json",
       "schemas/ai_hardening_gate.schema.json",
       "schemas/background_draft_follow_up_reports.schema.json",
       "schemas/background_draft_report_manifest.schema.json",
@@ -6168,7 +6181,7 @@
       "log_path": "logs/validation.sqlite3",
       "network_access_allowed_count": 0,
       "present": true,
-      "run_count": 896,
+      "run_count": 909,
       "weekly_digest_ok": true
     },
     "submission_blocking_issue_count": 2,
@@ -8135,8 +8148,8 @@
   },
   "top_level_sqlite_log_backup": {
     "backup_dir": "logs/backups",
-    "backup_path": "logs/backups/validation-20260619T195926597262Z.sqlite3",
-    "backup_size_bytes": 1863680,
+    "backup_path": "logs/backups/validation-20260619T200854064949Z.sqlite3",
+    "backup_size_bytes": 1888256,
     "db_path": "logs/validation.sqlite3",
     "disclaimer": "Top-level SQLite logs are local workflow and provenance records only; they are not detections, discoveries, external validation, or external submission approval.",
     "ok": true
@@ -8172,10 +8185,10 @@
     "min_run_count": 0,
     "network_access_allowed_count": 0,
     "ok": true,
-    "outcome_count": 896,
+    "outcome_count": 909,
     "pragmas_ok": true,
     "retention_ok": true,
-    "run_count": 896,
+    "run_count": 909,
     "schema_version": "top_level_sqlite_log_consistency_v1",
     "validation_ok": true,
     "weekly_digest_ok": true
@@ -8186,7 +8199,7 @@
     "export_scope": "review_safe_summary",
     "integrity": {
       "database_readable": true,
-      "database_size_bytes": 1863680,
+      "database_size_bytes": 1888256,
       "db_path": "logs/validation.sqlite3",
       "disclaimer": "Top-level SQLite logs are local workflow and provenance records only; they are not detections, discoveries, external validation, or external submission approval.",
       "errors": [],
@@ -8198,8 +8211,8 @@
       "multiple_outcome_run_ids": [],
       "network_access_allowed_count": 0,
       "ok": true,
-      "outcome_count": 896,
-      "run_count": 896,
+      "outcome_count": 909,
+      "run_count": 909,
       "schema_version": "top_level_sqlite_logs_v2",
       "size_warning_threshold_bytes": 104857600,
       "warnings": []
@@ -8349,7 +8362,7 @@
         ],
         "candidate_count": 0,
         "code_commit": "validation-local",
-        "completed_at_utc": "2026-06-19T19:59:26.472993+00:00",
+        "completed_at_utc": "2026-06-19T20:08:53.943664+00:00",
         "config_version": "background_priority_v0",
         "execution_mode": "local_non_network_fixture_runner",
         "negative_result_logged": true,
@@ -8359,9 +8372,9 @@
         ],
         "requires_human_review": false,
         "reviewed_workflow_status": "reviewed_no_follow_up",
-        "run_id": "validation-sqlite-20260619195926463372",
+        "run_id": "validation-sqlite-20260619200853936392",
         "selected_priority_score": 0.7515,
-        "started_at_utc": "2026-06-19T19:59:26.472993+00:00",
+        "started_at_utc": "2026-06-19T20:08:53.943664+00:00",
         "status": "reviewed_no_follow_up",
         "target_id": "target-radio-clean-drift",
         "target_selection_rationale": [
@@ -8383,7 +8396,7 @@
         ],
         "candidate_count": 0,
         "code_commit": "validation-local",
-        "completed_at_utc": "2026-06-19T19:55:22.385211+00:00",
+        "completed_at_utc": "2026-06-19T20:01:03.145588+00:00",
         "config_version": "background_priority_v0",
         "execution_mode": "local_non_network_fixture_runner",
         "negative_result_logged": true,
@@ -8393,9 +8406,9 @@
         ],
         "requires_human_review": false,
         "reviewed_workflow_status": "reviewed_no_follow_up",
-        "run_id": "validation-sqlite-20260619195522377821",
+        "run_id": "validation-sqlite-20260619200103139087",
         "selected_priority_score": 0.7515,
-        "started_at_utc": "2026-06-19T19:55:22.385211+00:00",
+        "started_at_utc": "2026-06-19T20:01:03.145588+00:00",
         "status": "reviewed_no_follow_up",
         "target_id": "target-radio-clean-drift",
         "target_selection_rationale": [
@@ -8417,7 +8430,7 @@
         ],
         "candidate_count": 0,
         "code_commit": "validation-local",
-        "completed_at_utc": "2026-06-19T19:48:11.651563+00:00",
+        "completed_at_utc": "2026-06-19T20:00:44.307811+00:00",
         "config_version": "background_priority_v0",
         "execution_mode": "local_non_network_fixture_runner",
         "negative_result_logged": true,
@@ -8427,9 +8440,9 @@
         ],
         "requires_human_review": false,
         "reviewed_workflow_status": "reviewed_no_follow_up",
-        "run_id": "validation-sqlite-20260619194811645385",
+        "run_id": "validation-sqlite-20260619200044301033",
         "selected_priority_score": 0.7515,
-        "started_at_utc": "2026-06-19T19:48:11.651563+00:00",
+        "started_at_utc": "2026-06-19T20:00:44.307811+00:00",
         "status": "reviewed_no_follow_up",
         "target_id": "target-radio-clean-drift",
         "target_selection_rationale": [
@@ -8450,11 +8463,11 @@
     "summary": {
       "by_status": {
         "needs_follow_up_logged": 4,
-        "reviewed_no_follow_up": 892
+        "reviewed_no_follow_up": 905
       },
       "by_track": {
         "infrared": 1,
-        "radio": 895
+        "radio": 908
       },
       "database_exists": true,
       "database_readable": true,
@@ -8469,9 +8482,9 @@
       "needs_follow_up_outcome_count": 4,
       "network_access_allowed_count": 0,
       "ok": true,
-      "outcome_count": 896,
-      "reviewed_outcome_count": 892,
-      "run_count": 896,
+      "outcome_count": 909,
+      "reviewed_outcome_count": 905,
+      "run_count": 909,
       "run_ids": [
         "validation-sqlite-20260509211342164189",
         "validation-sqlite-20260509211342214419",
@@ -9368,7 +9381,20 @@
         "validation-sqlite-20260619194735363095",
         "validation-sqlite-20260619194811645385",
         "validation-sqlite-20260619195522377821",
-        "validation-sqlite-20260619195926463372"
+        "validation-sqlite-20260619195926463372",
+        "validation-sqlite-20260619195959765861",
+        "validation-sqlite-20260619200000217557",
+        "validation-sqlite-20260619200004026614",
+        "validation-sqlite-20260619200006212873",
+        "validation-sqlite-20260619200014706908",
+        "validation-sqlite-20260619200016776277",
+        "validation-sqlite-20260619200018803021",
+        "validation-sqlite-20260619200038016919",
+        "validation-sqlite-20260619200040160354",
+        "validation-sqlite-20260619200042212263",
+        "validation-sqlite-20260619200044301033",
+        "validation-sqlite-20260619200103139087",
+        "validation-sqlite-20260619200853936392"
       ],
       "schema_version": "top_level_sqlite_logs_v2",
       "target_ids": [
@@ -9385,7 +9411,7 @@
   },
   "top_level_sqlite_log_integrity_summary": {
     "database_readable": true,
-    "database_size_bytes": 1863680,
+    "database_size_bytes": 1888256,
     "db_path": "logs/validation.sqlite3",
     "disclaimer": "Top-level SQLite logs are local workflow and provenance records only; they are not detections, discoveries, external validation, or external submission approval.",
     "errors": [],
@@ -9397,8 +9423,8 @@
     "multiple_outcome_run_ids": [],
     "network_access_allowed_count": 0,
     "ok": true,
-    "outcome_count": 896,
-    "run_count": 896,
+    "outcome_count": 909,
+    "run_count": 909,
     "schema_version": "top_level_sqlite_logs_v2",
     "size_warning_threshold_bytes": 104857600,
     "warnings": []
@@ -9465,42 +9491,42 @@
     "database_exists": true,
     "db_path": "logs/validation.sqlite3",
     "disclaimer": "Top-level SQLite logs are local workflow and provenance records only; they are not detections, discoveries, external validation, or external submission approval.",
-    "estimated_size_bytes": 1863680,
+    "estimated_size_bytes": 1888256,
     "foreign_keys": 1,
     "integrity_check": "ok",
     "journal_mode": "delete",
     "ok": true,
-    "page_count": 455,
+    "page_count": 461,
     "page_size": 4096
   },
   "top_level_sqlite_log_retention_summary": {
-    "backup_count": 870,
+    "backup_count": 883,
     "backup_dir": "logs/backups",
     "backup_paths": [
-      "logs/backups/validation-20260619T194733385799Z.sqlite3",
-      "logs/backups/validation-20260619T194735459547Z.sqlite3",
-      "logs/backups/validation-20260619T194811743027Z.sqlite3",
-      "logs/backups/validation-20260619T195522509167Z.sqlite3",
-      "logs/backups/validation-20260619T195926597262Z.sqlite3"
+      "logs/backups/validation-20260619T200040254656Z.sqlite3",
+      "logs/backups/validation-20260619T200042311604Z.sqlite3",
+      "logs/backups/validation-20260619T200044441662Z.sqlite3",
+      "logs/backups/validation-20260619T200103233829Z.sqlite3",
+      "logs/backups/validation-20260619T200854064949Z.sqlite3"
     ],
-    "backup_total_size_bytes": 866680832,
-    "database_age_seconds": 0.083644,
+    "backup_total_size_bytes": 891097088,
+    "database_age_seconds": 0.084445,
     "database_exists": true,
-    "database_size_bytes": 1863680,
+    "database_size_bytes": 1888256,
     "db_path": "logs/validation.sqlite3",
     "disclaimer": "Top-level SQLite logs are local workflow and provenance records only; they are not detections, discoveries, external validation, or external submission approval.",
     "ok": true,
-    "oldest_backup_age_seconds": 3508892.440219,
+    "oldest_backup_age_seconds": 3509459.905087,
     "retention_policy": "Generated SQLite logs and backups are local-only artifacts under logs/."
   },
   "top_level_sqlite_log_summary": {
     "by_status": {
       "needs_follow_up_logged": 4,
-      "reviewed_no_follow_up": 892
+      "reviewed_no_follow_up": 905
     },
     "by_track": {
       "infrared": 1,
-      "radio": 895
+      "radio": 908
     },
     "database_exists": true,
     "database_readable": true,
@@ -9515,9 +9541,9 @@
     "needs_follow_up_outcome_count": 4,
     "network_access_allowed_count": 0,
     "ok": true,
-    "outcome_count": 896,
-    "reviewed_outcome_count": 892,
-    "run_count": 896,
+    "outcome_count": 909,
+    "reviewed_outcome_count": 905,
+    "run_count": 909,
     "run_ids": [
       "validation-sqlite-20260509211342164189",
       "validation-sqlite-20260509211342214419",
@@ -10414,7 +10440,20 @@
       "validation-sqlite-20260619194735363095",
       "validation-sqlite-20260619194811645385",
       "validation-sqlite-20260619195522377821",
-      "validation-sqlite-20260619195926463372"
+      "validation-sqlite-20260619195926463372",
+      "validation-sqlite-20260619195959765861",
+      "validation-sqlite-20260619200000217557",
+      "validation-sqlite-20260619200004026614",
+      "validation-sqlite-20260619200006212873",
+      "validation-sqlite-20260619200014706908",
+      "validation-sqlite-20260619200016776277",
+      "validation-sqlite-20260619200018803021",
+      "validation-sqlite-20260619200038016919",
+      "validation-sqlite-20260619200040160354",
+      "validation-sqlite-20260619200042212263",
+      "validation-sqlite-20260619200044301033",
+      "validation-sqlite-20260619200103139087",
+      "validation-sqlite-20260619200853936392"
     ],
     "schema_version": "top_level_sqlite_logs_v2",
     "target_ids": [
@@ -10429,10 +10468,10 @@
     "warnings": []
   },
   "top_level_sqlite_log_weekly_digest": {
-    "blocking_issue_total": 901,
+    "blocking_issue_total": 914,
     "by_track": {
       "infrared": 1,
-      "radio": 895
+      "radio": 908
     },
     "database_exists": true,
     "db_path": "logs/validation.sqlite3",
@@ -10441,8 +10480,8 @@
     "needs_follow_up_outcome_count": 4,
     "network_access_allowed_count": 0,
     "ok": true,
-    "reviewed_outcome_count": 892,
-    "run_count": 896,
+    "reviewed_outcome_count": 905,
+    "run_count": 909,
     "schema_version": "top_level_sqlite_logs_v2",
     "uncertainty_and_limitations": [
       "Digest is a review-safe summary; it does not expose payloads.",

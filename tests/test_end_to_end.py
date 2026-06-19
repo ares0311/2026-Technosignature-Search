@@ -62,6 +62,22 @@ def test_radio_pipeline_records_rfi_database_evidence(tmp_path: Path) -> None:
     assert features["rfi_database_validation_ok"] is True
 
 
+def test_radio_pipeline_routes_known_spacecraft_to_annotation(tmp_path: Path) -> None:
+    voyager_dat = tmp_path / "Voyager1.single_coarse.fine_res.dat"
+    voyager_dat.write_text(RADIO_FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
+    output_dir = tmp_path / "reports"
+
+    result = run_pipeline(voyager_dat, "radio", output_dir)
+
+    assert result.ok, f"Pipeline failed: {result.error}"
+    assert result.pathway == "known_object_annotation"
+    packet = json.loads(result.report_paths.json_path.read_text(encoding="utf-8"))
+    assert packet["features"]["known_object_score"] == 1.0
+    assert packet["features"]["local_known_object_reason"] == (
+        "spacecraft_calibration_target"
+    )
+
+
 def test_infrared_pipeline_runs_successfully(tmp_path: Path) -> None:
     result = run_pipeline(INFRARED_FIXTURE, "infrared", tmp_path)
     assert isinstance(result, PipelineRunResult)
