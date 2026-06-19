@@ -380,6 +380,21 @@ spare-compute use on the user's MacBook Pro M4 Max:
 - preserve conservative language: follow-up candidate, non-detection, anomaly,
   or technosignature-interest candidate only.
 
+Current handoff state as of 2026-06-19:
+
+- PR #88 is merged to `main`: `prod-scan` now fails closed when no candidate
+  report manifests are loaded from `results/`.
+- A zero-candidate production scan is not a successful production run. It is
+  diagnostic-only and requires explicit `--allow-empty`.
+- `prod-scan` evaluates existing candidate report manifests; it does not itself
+  discover candidates directly from raw BL/GBT/HDF5 files.
+- If `prod-scan` prints `ERROR no candidate manifests found`, stop and work on
+  the production-relevant upstream task: generating or admitting real candidate
+  manifests from approved data. Do not tell the user the run succeeded.
+- Do not provide placeholder run paths such as `RUN-YYYY...` or angle-bracket
+  path templates as runnable commands. Prefer `prod-runs` and `--latest` for
+  inspection commands.
+
 `prod-file-scan` and `tui.py` are lower-level file-oriented scanner helpers.
 Do not give them to the user as the primary overnight production-ledger command
 unless the task is specifically file-scanner diagnostics.
