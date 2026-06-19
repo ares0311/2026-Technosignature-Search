@@ -8,6 +8,7 @@ target.
 from __future__ import annotations
 
 import json
+import os
 import time
 from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
@@ -443,4 +444,40 @@ def _load_json(path: Path) -> JsonObject:
 
 def _write_json(path: Path, data: Mapping[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    safe_data = _review_safe_json(data)
+    path.write_text(json.dumps(safe_data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _review_safe_json(value: Any, *, project_root: Path | None = None) -> Any:
+    """Remove local absolute project paths from production scan artifacts."""
+    root = project_root or Path.cwd()
+    if isinstance(value, Mapping):
+        return {
+            str(_review_safe_json(key, project_root=root)): _review_safe_json(
+                item, project_root=root
+            )
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_review_safe_json(item, project_root=root) for item in value]
+    if isinstance(value, tuple):
+        return [_review_safe_json(item, project_root=root) for item in value]
+    if isinstance(value, str):
+        return _sanitize_local_path_string(value, root)
+    return value
+
+
+def _sanitize_local_path_string(value: str, project_root: Path) -> str:
+    root = project_root.resolve()
+    root_variants = {str(root), root.as_posix()}
+    sanitized = value
+    for root_text in root_variants:
+        if sanitized == root_text:
+            return "."
+        prefix = root_text + os.sep
+        posix_prefix = root_text + "/"
+        for candidate_prefix in {prefix, posix_prefix}:
+            if sanitized.startswith(candidate_prefix):
+                return sanitized[len(candidate_prefix):]
+        sanitized = sanitized.replace(root_text, "$PROJECT_ROOT")
+    return sanitized

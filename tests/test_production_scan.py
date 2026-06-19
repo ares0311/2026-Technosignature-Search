@@ -122,6 +122,34 @@ def test_run_production_scan_writes_artifacts_and_compact_output(tmp_path: Path)
     assert target_status["entries"][0]["detection_claimed"] is False
 
 
+def test_run_production_scan_sanitizes_project_paths_in_artifacts(tmp_path: Path) -> None:
+    results_dir = tmp_path / "results"
+    scans_dir = tmp_path / "scans"
+    _write_result_pair(results_dir, "HIP99427", "candidate", "known_object_annotation", 0.1)
+    project_path = Path.cwd() / "tests" / "fixtures" / "background_targets.json"
+    stdout = StringIO()
+
+    run_production_scan(
+        results_dir=results_dir,
+        scans_dir=scans_dir,
+        stdout=stdout,
+        run_id=RUN_ID,
+        use_rich=False,
+        validate_func=lambda: {
+            "ok": True,
+            str(project_path): str(project_path),
+            "nested": [str(project_path)],
+        },
+        dashboard_func=lambda: {"needs_attention": False},
+    )
+
+    validate_text = (scans_dir / RUN_ID / "validate_all.json").read_text(
+        encoding="utf-8"
+    )
+    assert str(Path.cwd()) not in validate_text
+    assert "tests/fixtures/background_targets.json" in validate_text
+
+
 def test_run_production_scan_fails_closed_without_candidates(tmp_path: Path) -> None:
     results_dir = tmp_path / "results"
     scans_dir = tmp_path / "scans"
