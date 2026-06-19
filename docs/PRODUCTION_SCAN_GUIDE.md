@@ -65,6 +65,12 @@ This runs the local production scan gate sequence through the compact
 Rich is installed, or a short progress line otherwise. It does not stream large
 JSON payloads to the console.
 
+`prod-scan` evaluates existing candidate report manifests under `results/`; it
+does not discover candidates directly from raw survey files. If it prints
+`ERROR no candidate manifests found`, stop. No target evaluation was performed,
+and the candidate-producing pipeline must run before this production scan can
+produce follow-up or non-detection ledgers.
+
 - `validate-all`
 - `scan-summary`
 - `cross-target-rfi-summary`
@@ -99,6 +105,10 @@ INDEX | target | best-effort target kind | follow-up=yes/no | score=0.000 | path
 The score is the existing pipeline follow-up score. Target kind is inferred from
 local names and candidate metadata only; unresolved object classes should be
 tracked as target-taxonomy hardening work rather than silently over-labeled.
+
+An empty completed target table is not a successful production scan. Current
+code must fail closed before writing run artifacts when no candidates are
+loaded, unless `--allow-empty` is explicitly passed for diagnostics only.
 
 ---
 

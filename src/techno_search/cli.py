@@ -2083,7 +2083,10 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         return 0
 
     if args.command == "prod-scan":
-        from techno_search.production_scan import run_production_scan
+        from techno_search.production_scan import (
+            EmptyProductionScanError,
+            run_production_scan,
+        )
 
         try:
             run_production_scan(
@@ -2097,7 +2100,10 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                     else None
                 ),
                 use_rich=not bool(getattr(args, "no_rich", False)),
+                allow_empty=bool(getattr(args, "allow_empty", False)),
             )
+        except EmptyProductionScanError:
+            return 1
         except KeyboardInterrupt:
             return 130
         return 0
@@ -11784,6 +11790,14 @@ def _build_parser() -> argparse.ArgumentParser:
         "--no-rich",
         action="store_true",
         help="Disable Rich spinner/table rendering and use plain compact output.",
+    )
+    prod_scan_parser.add_argument(
+        "--allow-empty",
+        action="store_true",
+        help=(
+            "Allow a zero-candidate run for diagnostics only. Normal production "
+            "runs fail closed when no candidate manifests are found."
+        ),
     )
     prod_diagnostics_parser = subparsers.add_parser(
         "prod-diagnostics",

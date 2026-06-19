@@ -161,6 +161,8 @@ Mandatory requirements:
    production scan entry points. They must keep Rich spinner/fallback progress,
    compact per-target completion rows, target-status JSON, follow-up and
    non-detection ledgers, clean Ctrl+C handling, and `--resume-run-dir` support.
+   They must fail closed when no candidate manifests are loaded from `results/`;
+   a zero-candidate run is diagnostic-only and requires explicit `--allow-empty`.
 2. Full JSON, provenance, diagnostic detail, and ledgers belong in
    `results/scans/RUN-*` artifacts, not streamed continuously to the console.
 3. Download scripts may use progress bars and concise `[INFO]`/`[OK]` lines.

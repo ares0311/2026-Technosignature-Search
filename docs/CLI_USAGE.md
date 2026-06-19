@@ -44,6 +44,11 @@ git pull origin main
 caffeinate -i bash scripts/run_production_scan.sh
 ```
 
+The production scan evaluates existing candidate report manifests under
+`results/`. It fails closed when no candidates are present. If the command
+prints `ERROR no candidate manifests found`, stop: no target evaluation was
+performed, and candidate-producing pipeline steps must run first.
+
 The wrapper calls the same CLI command directly:
 
 ```bash

@@ -3135,6 +3135,36 @@ def test_cli_prod_scan_routes_to_compact_runner(monkeypatch, tmp_path) -> None:
     assert "compact scan" in stdout.getvalue()
 
 
+def test_cli_prod_scan_forwards_allow_empty(monkeypatch, tmp_path) -> None:
+    calls: dict[str, object] = {}
+
+    def fake_run_production_scan(**kwargs):
+        calls.update(kwargs)
+        kwargs["stdout"].write("compact scan\n")
+        return object()
+
+    monkeypatch.setattr(
+        "techno_search.production_scan.run_production_scan",
+        fake_run_production_scan,
+    )
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "prod-scan",
+            "--results-dir",
+            str(tmp_path / "results"),
+            "--scans-dir",
+            str(tmp_path / "scans"),
+            "--allow-empty",
+        ],
+        stdout=stdout,
+    )
+
+    assert exit_code == 0
+    assert calls["allow_empty"] is True
+
+
 def test_cli_prod_diagnostics_returns_nonzero_when_attention_needed(monkeypatch, tmp_path) -> None:
     def fake_production_diagnostics(**kwargs):
         kwargs["stdout"].write("diagnostics\n")
