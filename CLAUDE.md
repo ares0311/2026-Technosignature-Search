@@ -26,18 +26,31 @@ stays on `main` and pulls after each PR is merged.
 
 **You are only permitted to work on tasks that get this project to live production.**
 
-This is the only goal. Every plan, every step, every commit must directly close or unblock a Tier 1 or Tier 2 gap listed in `docs/PRODUCTION_READINESS.md`.
+This is the only goal. Every plan, every step, every commit must directly close
+or unblock a named production-readiness gap or production-support task listed
+or implied by `docs/PRODUCTION_READINESS.md`.
 
-If you are about to do work that does not close a named production gap — stop. Do not do it. Ask the user what to do instead.
+If Tier 1 or Tier 2 gaps are open, close or directly unblock those first. If
+Tier 1 and Tier 2 are closed, say so explicitly and work only on local
+production operation, data availability, AI/numerical-method hardening,
+reproducibility, artifact hygiene, operator UX, or other named production
+hardening. If a task does not support local production or its scientific
+guardrails, stop and ask the user what to do instead.
 
-Tier 1 gaps (nothing ships without these):
-- Real observation data ingested
-- Real labeled dataset approved
-- Calibrated scoring thresholds derived from real noise distributions
-- Real site-specific RFI database approved
-- External peer review of pipeline logic and candidate reports
+Current highest-level status from `docs/PRODUCTION_READINESS.md`:
 
-If your plan does not name which Tier 1 or Tier 2 gap each step closes, the plan is non-compliant. Rewrite it before doing anything.
+- Tier 1 and Tier 2 are closed for local citizen-science production promotion.
+- DECISION-134/139 closes the AI hardening production evidence gate for local
+  citizen-science operations only.
+- DECISION-140 closes the compact terminal UX gap for production scan
+  operations.
+- External submission, discovery/detection claims, expert-review claims,
+  peer-review claims, and external-validation claims remain blocked unless they
+  actually occur and are documented.
+
+If your plan does not name the production-readiness gap or production-support
+task each step advances, the plan is non-compliant. Rewrite it before doing
+anything.
 
 ---
 
@@ -93,11 +106,20 @@ correctness. A summary cannot authorize skipping mandatory reads, validate a
 prior agent's diagnosis, or approve a resumed task. Re-evaluate independently.
 
 After reading, your plan must:
-- Name the highest-priority unresolved Tier 1 gap from `docs/PRODUCTION_READINESS.md`
-- Show how each proposed step closes or directly unblocks that gap
-- Include outside blockers (real data, expert labeling, peer review) as explicit named steps
-- Never propose log modules, schemas, or scaffolding unless they directly unblock a named Tier 1 or Tier 2 gap
+- Name the highest-priority unresolved Tier 1 or Tier 2 gap from
+  `docs/PRODUCTION_READINESS.md`; if Tier 1 and Tier 2 are closed, state that
+  explicitly and name the production-hardening, live-operation, data,
+  AI/numerical-method, reproducibility, artifact-hygiene, or operator-safety
+  task that remains relevant to local production
+- Show how each proposed step closes or directly unblocks that named gap or task
+- Include outside blockers (real data, public review, independent reproduction)
+  as explicit named steps
+- Never propose log modules, schemas, or scaffolding unless they directly
+  unblock a named Tier 1/Tier 2 gap or the current named production-hardening
+  task
 - Never repeat work listed under "What Is Complete" in `docs/PRODUCTION_READINESS.md`
+- Never claim external submission readiness, discovery, detection, expert
+  review, peer review, or external validation unless documented evidence exists
 
 If your plan does not reference specific gaps from `docs/PRODUCTION_READINESS.md` by name, it is non-compliant and must be rewritten before execution.
 
@@ -127,40 +149,92 @@ No sudo required. Safe to omit for fast runs (< 30 s).
 
 ---
 
-## VERBOSE OUTPUT + ETA DIRECTIVE — NON-NEGOTIABLE
+## VISIBLE PROGRESS + COMPACT OUTPUT DIRECTIVE — NON-NEGOTIABLE
 
-**Every command and script given to the user MUST produce visible terminal output
-so the user can confirm it is running and know how long is remaining.**
+Long-running commands must prove they are alive without flooding the terminal.
+The current production operator preference is compact progress, not verbose
+logs that require paging.
 
-Mandatory requirements for all long-running scripts and commands:
+Mandatory requirements:
 
-1. **Shell scripts** (`bash scripts/*.sh`):
-   - Must use `set -x` OR print explicit `[INFO]` progress lines to stdout
-   - Must print file sizes on download completion: `echo "[OK] Downloaded: $(du -sh file) $file"`
-   - Must print step number and total: `echo "[Step 2/5] Running turboSETI..."`
-   - `curl` calls must use `--progress-bar` (not `-s`/`--silent`) for file downloads
+1. `prod-scan` and `scripts/run_production_scan.sh` are the canonical local
+   production scan entry points. They must keep Rich spinner/fallback progress,
+   compact per-target completion rows, target-status JSON, follow-up and
+   non-detection ledgers, clean Ctrl+C handling, and `--resume-run-dir` support.
+2. Full JSON, provenance, diagnostic detail, and ledgers belong in
+   `results/scans/RUN-*` artifacts, not streamed continuously to the console.
+3. Download scripts may use progress bars and concise `[INFO]`/`[OK]` lines.
+   Production scan scripts should not use `set -x` by default; reserve noisy
+   shell tracing for explicit debugging.
+4. Commands given to the user must start with `git pull origin main`. Long runs
+   must wrap the child process with `caffeinate -i`.
+5. `prod-file-scan` and `tui.py` are lower-level file-oriented diagnostics.
+   Do not present them as the main overnight production-ledger workflow unless
+   the user specifically asks for file-scanner diagnostics.
 
-2. **Python scripts** (`.venv/bin/python scripts/*.py`):
-   - Must print `[START]` and `[DONE]` lines with timestamps for every major step
-   - For loops over multiple items must print `[N/M] Processing TARGET_NAME...`
-   - Must print elapsed time on completion: `elapsed = time.time() - t0; print(f"[DONE] {elapsed:.1f}s")`
-
-3. **turboSETI** calls must pass `-v` (verbose) or print wrapper output
-
-4. **ETA rules**:
-   - Downloads: `curl --progress-bar` shows live speed + ETA natively
-   - Multi-target loops: print `[N/M]` prefix so user sees progress
-   - Pipeline runs: print start time; user can estimate from Voyager1 benchmark
-
-5. **Never use `>/dev/null 2>&1` or `-s`/`--silent` in commands given to the user**
-   unless output is confirmed irrelevant AND a summary line is printed instead.
-
-Any script that runs silently without visible progress violates this directive
-and must be rewritten before being given to the user.
+Any script that runs silently, hides progress, or dumps large routine payloads
+to the terminal violates this directive and must be corrected before being
+given to the user.
 
 ---
 
-## Current Iteration
+## Current Live Handoff — 2026-06-19
+
+Authoritative current state:
+
+- User stays on `main`; agents develop on `claude/general-session-Bb2dZ`.
+- PR #85 was merged to `main`; local production terminal UX work is complete.
+- Tier 1 and Tier 2 are closed for local citizen-science production promotion.
+- DECISION-134/139: AI hardening production gate closed for local
+  citizen-science operations only.
+- DECISION-140: `prod-scan` and `scripts/run_production_scan.sh` are the
+  canonical compact production scan UX.
+- External submission, discovery/detection, expert review, peer review, and
+  external validation remain unclaimed and blocked.
+
+Canonical user-facing commands:
+
+```bash
+git pull origin main
+.venv/bin/techno-search prod-diagnostics
+```
+
+```bash
+git pull origin main
+caffeinate -i bash scripts/run_production_scan.sh
+```
+
+```bash
+git pull origin main
+caffeinate -i bash scripts/run_production_scan.sh \
+  --resume-run-dir results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
+```
+
+Review commands:
+
+```bash
+git pull origin main
+.venv/bin/techno-search prod-runs
+.venv/bin/techno-search prod-target-status results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
+.venv/bin/techno-search prod-follow-ups results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
+.venv/bin/techno-search prod-non-detections results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
+```
+
+Latest known validation from the merged DECISION-140 work:
+
+- `.venv/bin/python -m pytest --tb=short -q` passed with 2391 passed, 7 skipped.
+- `.venv/bin/ruff check .` passed.
+- `.venv/bin/python -m mypy src --no-error-summary` passed.
+- `.venv/bin/techno-search validate-all` passed.
+- GitHub PR checks passed before merge.
+
+Older iteration notes below are historical continuity only. Do not treat them
+as current task authorization without re-reading `AGENTS.md` and
+`docs/PRODUCTION_READINESS.md`.
+
+---
+
+## Historical Iteration Notes
 
 User requested implementation of all 6 model generalizability priorities (DECISION-133).
 
