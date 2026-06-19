@@ -26,7 +26,10 @@ After installation, the console script should be available as:
 ## Production Run UX
 
 Production scans use human-readable run IDs and write separate ledgers for
-non-detections and follow-ups:
+non-detections and follow-ups. The terminal UX is intentionally compact: a
+spinner or short progress line shows the scan is alive, and each completed
+target prints one row with its index, target name, best-effort object class,
+follow-up status, composite pipeline score, and pathway.
 
 ```text
 RUN-2026-06-18_201325Z-A7K4-prod-scan
@@ -41,12 +44,35 @@ git pull origin main
 caffeinate -i bash scripts/run_production_scan.sh
 ```
 
+The wrapper calls the same CLI command directly:
+
+```bash
+git pull origin main
+caffeinate -i .venv/bin/techno-search prod-scan
+```
+
+Resume a stopped run without redoing completed artifacts:
+
+```bash
+git pull origin main
+caffeinate -i bash scripts/run_production_scan.sh \
+  --resume-run-dir results/scans/RUN-2026-06-18_201325Z-A7K4-prod-scan
+```
+
+Run compact diagnostics without dumping full JSON payloads:
+
+```bash
+git pull origin main
+.venv/bin/techno-search prod-diagnostics
+```
+
 List and inspect runs:
 
 ```bash
 git pull origin main
 .venv/bin/techno-search prod-runs
 .venv/bin/techno-search prod-show results/scans/RUN-2026-06-18_201325Z-A7K4-prod-scan
+.venv/bin/techno-search prod-target-status results/scans/RUN-2026-06-18_201325Z-A7K4-prod-scan
 .venv/bin/techno-search prod-non-detections results/scans/RUN-2026-06-18_201325Z-A7K4-prod-scan
 .venv/bin/techno-search prod-follow-ups results/scans/RUN-2026-06-18_201325Z-A7K4-prod-scan
 ```
@@ -56,10 +82,17 @@ Each production run directory contains:
 ```text
 RUN-..._manifest.json
 RUN-..._scan_summary.json
+RUN-..._target_status.json
 RUN-..._non_detections.json
 RUN-..._follow_ups.json
 RUN-..._review_dashboard.json
+RUN-..._terminal_summary.json
 ```
+
+`RUN-..._target_status.json` is the source of truth for the one-line terminal
+target rows. Target kind labels are best-effort local metadata labels only; a
+future committed target taxonomy is still required for reliable single-star,
+binary, and massive-body classification.
 
 These files are local citizen-science operations ledgers only. They do not
 constitute detection, discovery, expert review, peer review, external

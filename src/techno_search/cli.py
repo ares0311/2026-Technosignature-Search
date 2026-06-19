@@ -1857,6 +1857,43 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(_summary, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "prod-scan":
+        from techno_search.production_scan import run_production_scan
+
+        try:
+            run_production_scan(
+                results_dir=Path(args.results_dir),
+                scans_dir=Path(args.scans_dir),
+                stdout=out,
+                run_id=getattr(args, "run_id", None),
+                resume_run_dir=(
+                    Path(args.resume_run_dir)
+                    if getattr(args, "resume_run_dir", None)
+                    else None
+                ),
+                use_rich=not bool(getattr(args, "no_rich", False)),
+            )
+        except KeyboardInterrupt:
+            return 130
+        return 0
+
+    if args.command == "prod-diagnostics":
+        from techno_search.production_scan import production_diagnostics
+
+        _diagnostics = production_diagnostics(
+            scans_dir=Path(args.scans_dir),
+            stdout=out,
+            use_rich=not bool(getattr(args, "no_rich", False)),
+        )
+        if getattr(args, "json", False):
+            print(json.dumps(_diagnostics, indent=2, sort_keys=True), file=out)
+        return (
+            0
+            if _diagnostics["validate_all_ok"]
+            and not _diagnostics["review_dashboard_needs_attention"]
+            else 1
+        )
+
     if args.command == "prod-runs":
         from techno_search.production_run_outcomes import production_run_list
 
@@ -1884,6 +1921,13 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         _non_detections = production_run_file(Path(args.run_dir), "non_detections")
         print(json.dumps(_non_detections, indent=2, sort_keys=True), file=out)
         return 0 if _non_detections.get("ok") else 1
+
+    if args.command == "prod-target-status":
+        from techno_search.production_run_outcomes import production_run_file
+
+        _target_status = production_run_file(Path(args.run_dir), "target_status")
+        print(json.dumps(_target_status, indent=2, sort_keys=True), file=out)
+        return 0 if _target_status.get("ok") else 1
 
     if args.command == "cross-target-rfi-summary":
         from techno_search.cross_target_rfi import cross_target_rfi_summary
@@ -11468,6 +11512,58 @@ def _build_parser() -> argparse.ArgumentParser:
     prod_write_parser.add_argument("--run-id", required=True)
     prod_write_parser.add_argument("--started-at-utc", required=True)
     prod_write_parser.add_argument("--scan-summary-path", default=None)
+    prod_scan_parser = subparsers.add_parser(
+        "prod-scan",
+        help=(
+            "Run the compact local production scan UX: validation, scan "
+            "summary, RFI suppression, escalation checks, dashboard, and "
+            "outcome ledgers. Local citizen-science operations only."
+        ),
+    )
+    prod_scan_parser.add_argument(
+        "--results-dir",
+        default="results",
+        help="Directory containing candidate report manifests.",
+    )
+    prod_scan_parser.add_argument(
+        "--scans-dir",
+        default="results/scans",
+        help="Directory where production scan run directories are written.",
+    )
+    prod_scan_parser.add_argument(
+        "--run-id",
+        default=None,
+        help="Optional human-readable run ID. Defaults to a generated RUN-* ID.",
+    )
+    prod_scan_parser.add_argument(
+        "--resume-run-dir",
+        default=None,
+        help="Existing production run directory to resume without redoing completed steps.",
+    )
+    prod_scan_parser.add_argument(
+        "--no-rich",
+        action="store_true",
+        help="Disable Rich spinner/table rendering and use plain compact output.",
+    )
+    prod_diagnostics_parser = subparsers.add_parser(
+        "prod-diagnostics",
+        help="Run compact production diagnostics without dumping large JSON payloads.",
+    )
+    prod_diagnostics_parser.add_argument(
+        "--scans-dir",
+        default="results/scans",
+        help="Directory containing production run subdirectories.",
+    )
+    prod_diagnostics_parser.add_argument(
+        "--no-rich",
+        action="store_true",
+        help="Disable Rich spinner rendering and use plain compact output.",
+    )
+    prod_diagnostics_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Also print the machine-readable diagnostics summary after compact output.",
+    )
     prod_runs_parser = subparsers.add_parser(
         "prod-runs",
         help="List production scan runs under a scans directory.",
@@ -11492,6 +11588,11 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Show non-detection ledger entries for one production run.",
     )
     prod_non_detections_parser.add_argument("run_dir", help="Production run directory.")
+    prod_target_status_parser = subparsers.add_parser(
+        "prod-target-status",
+        help="Show compact per-target status rows for one production run.",
+    )
+    prod_target_status_parser.add_argument("run_dir", help="Production run directory.")
     _cross_rfi_parser = subparsers.add_parser(
         "cross-target-rfi-summary",
         help=(

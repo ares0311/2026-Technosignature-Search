@@ -106,11 +106,11 @@ def load_candidates_from_batch_dir(batch_dir: Path) -> list[dict[str, Any]]:
 
         stem = mf.stem
         if stem.endswith(".manifest"):
-            target_name = stem[: -len(".manifest")]
+            companion_stem = stem[: -len(".manifest")]
         elif stem.endswith("_manifest"):
-            target_name = stem[: -len("_manifest")]
+            companion_stem = stem[: -len("_manifest")]
         else:
-            target_name = mf.parent.name or stem
+            companion_stem = mf.parent.name or stem
 
         report_data: dict[str, Any] = {}
         json_path_str = manifest.get("json_path", "")
@@ -124,7 +124,7 @@ def load_candidates_from_batch_dir(batch_dir: Path) -> list[dict[str, Any]]:
             except (OSError, json.JSONDecodeError):
                 pass
         if not report_data:
-            companion = mf.parent / (target_name + ".json")
+            companion = mf.parent / (companion_stem + ".json")
             try:
                 with companion.open(encoding="utf-8") as fh:
                     report_data = json.load(fh)
@@ -132,6 +132,8 @@ def load_candidates_from_batch_dir(batch_dir: Path) -> list[dict[str, Any]]:
                 pass
 
         merged = {**report_data, **manifest}
+        parent_target_name = mf.parent.name if mf.parent != batch_path else companion_stem
+        target_name = str(merged.get("target_name") or parent_target_name or companion_stem)
         scores_block = report_data.get("scores", {})
         score = float(
             scores_block.get(

@@ -10,7 +10,9 @@ from techno_search.production_run_outcomes import (
     PRODUCTION_NON_DETECTIONS_SCHEMA_VERSION,
     PRODUCTION_OUTCOME_DISCLAIMER,
     PRODUCTION_RUN_MANIFEST_SCHEMA_VERSION,
+    PRODUCTION_TARGET_STATUS_SCHEMA_VERSION,
     build_production_outcomes,
+    classify_target_kind,
     make_production_run_id,
     production_run_file,
     production_run_list,
@@ -100,8 +102,10 @@ def test_build_production_outcomes_splits_non_detections_and_follow_ups() -> Non
     assert manifest["schema_version"] == PRODUCTION_RUN_MANIFEST_SCHEMA_VERSION
     assert non_detections["schema_version"] == PRODUCTION_NON_DETECTIONS_SCHEMA_VERSION
     assert follow_ups["schema_version"] == PRODUCTION_FOLLOW_UPS_SCHEMA_VERSION
+    assert outcomes["target_status"]["schema_version"] == PRODUCTION_TARGET_STATUS_SCHEMA_VERSION
     assert manifest["non_detection_count"] == 1
     assert manifest["follow_up_count"] == 1
+    assert manifest["target_status_count"] == 1
     assert non_detections["entries"][0]["non_detection_id"] == (
         "NEG-2026-06-18_201325Z-A7K4-001"
     )
@@ -145,9 +149,14 @@ def test_write_and_read_production_outcomes(tmp_path) -> None:
     assert (run_dir / f"{RUN_ID}_manifest.json").exists()
     assert (run_dir / f"{RUN_ID}_non_detections.json").exists()
     assert (run_dir / f"{RUN_ID}_follow_ups.json").exists()
+    assert (run_dir / f"{RUN_ID}_target_status.json").exists()
     assert production_run_summary(run_dir)["follow_up_count"] == 1
     assert production_run_file(run_dir, "follow_ups")["entry_count"] == 1
     assert production_run_file(run_dir, "non_detections")["entry_count"] == 1
+    target_status = production_run_file(run_dir, "target_status")
+    assert target_status["target_count"] == 2
+    assert target_status["entries"][0]["score_basis"] == "pipeline_score"
+    assert target_status["external_submission_allowed"] is False
     assert production_run_list(results_dir / "scans")["run_count"] == 1
 
 
@@ -175,3 +184,18 @@ def test_scan_summary_ignores_production_run_manifest(tmp_path) -> None:
 def test_invalid_run_id_token_rejected() -> None:
     with pytest.raises(ValueError):
         make_production_run_id(token="toolong")
+
+
+def test_classify_target_kind_uses_conservative_local_metadata() -> None:
+    assert classify_target_kind({"target_name": "Voyager1"})["target_kind"] == (
+        "spacecraft calibration target"
+    )
+    hip_kind = classify_target_kind({"target_name": "HIP99427", "track": "radio"})
+    assert hip_kind["target_kind"] == "stellar target"
+    assert "single stars from binaries" in hip_kind["target_kind_limitation"]
+    assert classify_target_kind({"target_name": "Kepler binary candidate"})[
+        "target_kind"
+    ] == "binary stellar system"
+    assert classify_target_kind({"target_name": "Jupiter", "track": "radio"})[
+        "target_kind"
+    ] == "solar-system or massive body"
