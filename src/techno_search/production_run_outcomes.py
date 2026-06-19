@@ -8,9 +8,11 @@ external-submission claims.
 from __future__ import annotations
 
 import json
+import os
 import re
 import secrets
 import string
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -503,4 +505,40 @@ def _load_json(path: Path | None) -> dict[str, Any]:
 
 
 def _write_json(path: Path, data: dict[str, Any]) -> None:
-    path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(_review_safe_json(data), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _review_safe_json(value: Any, *, project_root: Path | None = None) -> Any:
+    """Remove local absolute project paths from production run artifacts."""
+    root = project_root or Path.cwd()
+    if isinstance(value, Mapping):
+        return {
+            str(_review_safe_json(key, project_root=root)): _review_safe_json(
+                item, project_root=root
+            )
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_review_safe_json(item, project_root=root) for item in value]
+    if isinstance(value, tuple):
+        return [_review_safe_json(item, project_root=root) for item in value]
+    if isinstance(value, str):
+        return _sanitize_local_path_string(value, root)
+    return value
+
+
+def _sanitize_local_path_string(value: str, project_root: Path) -> str:
+    root = project_root.resolve()
+    root_variants = {str(root), root.as_posix()}
+    sanitized = value
+    for root_text in root_variants:
+        if sanitized == root_text:
+            return "."
+        for candidate_prefix in {root_text + os.sep, root_text + "/"}:
+            if sanitized.startswith(candidate_prefix):
+                return sanitized[len(candidate_prefix):]
+        sanitized = sanitized.replace(root_text, "$PROJECT_ROOT")
+    return sanitized
