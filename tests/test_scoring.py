@@ -209,6 +209,34 @@ def test_known_object_routes_to_annotation() -> None:
     assert scored.recommended_pathway == Pathway.KNOWN_OBJECT_ANNOTATION
 
 
+def test_known_object_feature_takes_precedence_for_high_snr_radio() -> None:
+    candidate = Candidate(
+        candidate_id="Voyager1.single_coarse.fine_res",
+        track=Track.RADIO,
+        features={
+            "snr": 245.0,
+            "bandwidth_hz": 2.79,
+            "drift_rate_hz_per_sec": -0.38,
+            "on_target_presence_score": 1.0,
+            "off_target_presence_score": 0.0,
+            "rfi_band_overlap_score": 0.0,
+            "frequency_persistence_score": 0.0,
+            "nearby_target_recurrence_score": 0.0,
+            "instrumental_artifact_score": 0.0,
+            "injection_recovery_score": 0.5,
+            "repeat_observation_score": 0.0,
+            "metadata_completeness_score": 1.0,
+            "data_quality_score": 1.0,
+            "provenance_completeness_score": 1.0,
+            "known_object_score": 1.0,
+        },
+    )
+
+    scored = score_candidate(candidate)
+
+    assert scored.recommended_pathway == Pathway.KNOWN_OBJECT_ANNOTATION
+
+
 def test_score_candidate_uses_supplied_pathway_thresholds() -> None:
     candidate = Candidate(
         candidate_id="threshold-check",

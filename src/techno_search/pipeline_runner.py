@@ -15,6 +15,7 @@ PIPELINE_RUN_DISCLAIMER = (
     "do not constitute detections, discoveries, external validation, or "
     "authorization for external submission."
 )
+KNOWN_SPACECRAFT_TOKENS = ("voyager", "spacecraft", "probe")
 
 
 @dataclass
@@ -229,6 +230,27 @@ def _build_radio_candidate(
         extra_features["gaia_match_count"] = gaia_count
         extra_provenance["gaia_match_count"] = gaia_count
 
+    local_known_score = _local_radio_known_object_score(
+        path=path,
+        candidate_id=candidate_id,
+        raw_rows=raw_rows,
+        source_ids=source_ids,
+    )
+    if local_known_score > 0.0:
+        existing_known_score = extra_features.get("known_object_score", 0.0)
+        known_score = (
+            float(existing_known_score)
+            if isinstance(existing_known_score, (int, float, str))
+            else 0.0
+        )
+        extra_features["known_object_score"] = max(
+            known_score,
+            local_known_score,
+        )
+        extra_features["local_known_object_reason"] = "spacecraft_calibration_target"
+        extra_provenance["local_known_object_reason"] = "spacecraft_calibration_target"
+        extra_provenance["local_known_object_score"] = local_known_score
+
     # Multi-epoch persistence injection (radio only, opt-in via epoch_dat_files)
     if epoch_dat_files:
         from techno_search.multi_epoch import compare_epochs
@@ -254,6 +276,21 @@ def _build_radio_candidate(
         )
 
     return candidate
+
+
+def _local_radio_known_object_score(
+    *,
+    path: Path,
+    candidate_id: str,
+    raw_rows: list[dict[str, Any]],
+    source_ids: tuple[str, ...],
+) -> float:
+    identifiers: list[str] = [candidate_id, path.name, path.stem, *source_ids]
+    identifiers.extend(
+        str(row.get("source_name", "")) for row in raw_rows if row.get("source_name")
+    )
+    searchable = " ".join(identifiers).lower()
+    return 1.0 if any(token in searchable for token in KNOWN_SPACECRAFT_TOKENS) else 0.0
 
 
 def _build_infrared_candidate(path: Path, candidate_id: str) -> Candidate:

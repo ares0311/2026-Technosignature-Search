@@ -17,6 +17,7 @@ from techno_search.schemas import (
     Candidate,
     CandidateScores,
     EvidenceSummary,
+    Pathway,
     PosteriorClass,
     ScoredCandidate,
     Track,
@@ -59,11 +60,17 @@ def score_candidate(
         }
     )
     scores = _derived_scores(candidate, posterior)
-    pathway = classify_pathway(
-        posterior,
-        scores,
-        thresholds or config.pathway_thresholds,
-    )
+    pathway_thresholds = thresholds or config.pathway_thresholds
+    if _score(candidate.features, "known_object_score") >= (
+        pathway_thresholds.known_object_probability
+    ):
+        pathway = Pathway.KNOWN_OBJECT_ANNOTATION
+    else:
+        pathway = classify_pathway(
+            posterior,
+            scores,
+            pathway_thresholds,
+        )
 
     return ScoredCandidate(
         candidate=candidate,
