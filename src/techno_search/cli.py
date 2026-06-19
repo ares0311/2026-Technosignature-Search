@@ -808,6 +808,180 @@ SCHEMA_FILENAMES = {
 }
 
 
+# ---------------------------------------------------------------------------
+# prod-file-scan: tidy per-file scan with Rich TUI
+# ---------------------------------------------------------------------------
+
+_TRACK_EXTENSIONS: dict[str, list[str]] = {
+    "radio": [".dat", ".csv"],
+    "infrared": [".csv", ".fits"],
+    "anomaly": [".csv", ".json"],
+}
+
+_EXTENSION_TRACK: dict[str, str] = {
+    ".dat": "radio",
+}
+
+
+def _infer_track(path: Path) -> str:
+    """Infer pipeline track from file extension; defaults to 'radio'."""
+    return _EXTENSION_TRACK.get(path.suffix.lower(), "radio")
+
+
+def _run_prod_file_scan(args: object) -> int:  # noqa: C901
+    """Run a per-file scan with Rich spinner UX.
+
+    Each target file is processed serially with a spinner while in-flight.
+    A single summary line is printed on completion. Ctrl+C writes an
+    interrupted notice; restart will skip already-completed targets.
+
+    Scientific guardrail: output lines are local triage aids only — no
+    result constitutes a detection claim or authorizes external submission.
+    """
+    import argparse as _argparse
+    import json as _json
+    import signal as _signal
+
+    from techno_search.candidate_escalation import escalation_gate_check
+    from techno_search.pipeline_runner import run_pipeline
+    from techno_search.tui import (
+        TUI_DISCLAIMER,
+        extract_composite_score,
+        extract_stellar_from_candidate,
+        make_scan_index,
+        print_interrupted,
+        print_result_line,
+        print_scan_footer,
+        print_scan_header,
+        scan_spinner,
+    )
+
+    ns = args if isinstance(args, _argparse.Namespace) else _argparse.Namespace(**vars(args))
+    input_dir = Path(ns.input_dir)
+    output_dir = Path(ns.output_dir)
+    track_arg: str | None = getattr(ns, "track", None)
+    force: bool = bool(getattr(ns, "force", False))
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Collect input files
+    if track_arg:
+        exts = _TRACK_EXTENSIONS.get(track_arg, [".dat", ".csv"])
+    else:
+        exts = [".dat", ".csv", ".fits", ".json"]
+
+    input_files: list[Path] = sorted(
+        f for f in input_dir.iterdir()
+        if f.is_file() and f.suffix.lower() in exts
+    )
+
+    if not input_files:
+        print(f"No input files found in {input_dir} for track={track_arg or 'auto'}")
+        return 1
+
+    # Resume: skip files whose JSON output already exists
+    def _output_json(src: Path) -> Path:
+        return output_dir / f"{src.stem}.json"
+
+    if not force:
+        pending = [f for f in input_files if not _output_json(f).exists()]
+        skipped = len(input_files) - len(pending)
+    else:
+        pending = input_files
+        skipped = 0
+
+    db_label = str(output_dir / "scan_progress")
+    print_scan_header(len(pending), db_label, resume=skipped > 0)
+    if skipped:
+        print(f"  (skipping {skipped} already-completed target(s) — use --force to reprocess)")
+
+    # Interrupt handling
+    _interrupted = False
+
+    def _sigint_handler(sig: int, frame: object) -> None:
+        nonlocal _interrupted
+        _interrupted = True
+
+    original_handler = _signal.signal(_signal.SIGINT, _sigint_handler)
+
+    succeeded = failed = escalations = 0
+
+    try:
+        for src in pending:
+            if _interrupted:
+                break
+
+            track = track_arg or _infer_track(src)
+            index = make_scan_index(src.stem)
+            label = f"{src.stem}  [{track}]"
+
+            with scan_spinner(label):
+                try:
+                    result = run_pipeline(
+                        src,
+                        track,
+                        output_dir,
+                        candidate_id=src.stem,
+                    )
+                except Exception as exc:
+                    failed += 1
+                    print_result_line(
+                        index=index,
+                        stellar="unknown",
+                        score=0.0,
+                        escalation=False,
+                        ok=False,
+                        error=str(exc)[:80],
+                    )
+                    continue
+
+            if not result.ok:
+                failed += 1
+                print_result_line(
+                    index=index,
+                    stellar="unknown",
+                    score=0.0,
+                    escalation=False,
+                    ok=False,
+                    error=result.error,
+                )
+                continue
+
+            # Load the written JSON to extract score / stellar / escalation
+            json_path = _output_json(src)
+            try:
+                candidate_dict = _json.loads(json_path.read_text(encoding="utf-8"))
+            except Exception:
+                candidate_dict = {}
+
+            score = extract_composite_score(candidate_dict)
+            stellar = extract_stellar_from_candidate(candidate_dict)
+            gate = escalation_gate_check(candidate_dict)
+            is_escalation = bool(gate.get("passes", False))
+
+            if is_escalation:
+                escalations += 1
+            succeeded += 1
+
+            print_result_line(
+                index=index,
+                stellar=stellar,
+                score=score,
+                escalation=is_escalation,
+                ok=True,
+            )
+
+    finally:
+        _signal.signal(_signal.SIGINT, original_handler)
+
+    if _interrupted:
+        print_interrupted()
+        return 130  # standard interrupted exit code
+
+    print_scan_footer(succeeded, failed, escalations)
+    _ = TUI_DISCLAIMER  # referenced for provenance; disclaimer is in module
+    return 0 if failed == 0 else 1
+
+
 def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
     """Run the `techno-search` CLI."""
 
@@ -1857,6 +2031,43 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(_summary, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "prod-scan":
+        from techno_search.production_scan import run_production_scan
+
+        try:
+            run_production_scan(
+                results_dir=Path(args.results_dir),
+                scans_dir=Path(args.scans_dir),
+                stdout=out,
+                run_id=getattr(args, "run_id", None),
+                resume_run_dir=(
+                    Path(args.resume_run_dir)
+                    if getattr(args, "resume_run_dir", None)
+                    else None
+                ),
+                use_rich=not bool(getattr(args, "no_rich", False)),
+            )
+        except KeyboardInterrupt:
+            return 130
+        return 0
+
+    if args.command == "prod-diagnostics":
+        from techno_search.production_scan import production_diagnostics
+
+        _diagnostics = production_diagnostics(
+            scans_dir=Path(args.scans_dir),
+            stdout=out,
+            use_rich=not bool(getattr(args, "no_rich", False)),
+        )
+        if getattr(args, "json", False):
+            print(json.dumps(_diagnostics, indent=2, sort_keys=True), file=out)
+        return (
+            0
+            if _diagnostics["validate_all_ok"]
+            and not _diagnostics["review_dashboard_needs_attention"]
+            else 1
+        )
+
     if args.command == "prod-runs":
         from techno_search.production_run_outcomes import production_run_list
 
@@ -1884,6 +2095,13 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         _non_detections = production_run_file(Path(args.run_dir), "non_detections")
         print(json.dumps(_non_detections, indent=2, sort_keys=True), file=out)
         return 0 if _non_detections.get("ok") else 1
+
+    if args.command == "prod-target-status":
+        from techno_search.production_run_outcomes import production_run_file
+
+        _target_status = production_run_file(Path(args.run_dir), "target_status")
+        print(json.dumps(_target_status, indent=2, sort_keys=True), file=out)
+        return 0 if _target_status.get("ok") else 1
 
     if args.command == "cross-target-rfi-summary":
         from techno_search.cross_target_rfi import cross_target_rfi_summary
@@ -4383,6 +4601,9 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         print(json.dumps(pipeline_result.as_dict(), indent=2, sort_keys=True), file=out)
         return 0 if pipeline_result.ok else 1
+
+    if args.command == "prod-file-scan":
+        return _run_prod_file_scan(args)
 
     if args.command == "generate-peer-review-package":
         from techno_search.peer_review_package import generate_peer_review_package
@@ -11468,6 +11689,58 @@ def _build_parser() -> argparse.ArgumentParser:
     prod_write_parser.add_argument("--run-id", required=True)
     prod_write_parser.add_argument("--started-at-utc", required=True)
     prod_write_parser.add_argument("--scan-summary-path", default=None)
+    prod_scan_parser = subparsers.add_parser(
+        "prod-scan",
+        help=(
+            "Run the compact local production scan UX: validation, scan "
+            "summary, RFI suppression, escalation checks, dashboard, and "
+            "outcome ledgers. Local citizen-science operations only."
+        ),
+    )
+    prod_scan_parser.add_argument(
+        "--results-dir",
+        default="results",
+        help="Directory containing candidate report manifests.",
+    )
+    prod_scan_parser.add_argument(
+        "--scans-dir",
+        default="results/scans",
+        help="Directory where production scan run directories are written.",
+    )
+    prod_scan_parser.add_argument(
+        "--run-id",
+        default=None,
+        help="Optional human-readable run ID. Defaults to a generated RUN-* ID.",
+    )
+    prod_scan_parser.add_argument(
+        "--resume-run-dir",
+        default=None,
+        help="Existing production run directory to resume without redoing completed steps.",
+    )
+    prod_scan_parser.add_argument(
+        "--no-rich",
+        action="store_true",
+        help="Disable Rich spinner/table rendering and use plain compact output.",
+    )
+    prod_diagnostics_parser = subparsers.add_parser(
+        "prod-diagnostics",
+        help="Run compact production diagnostics without dumping large JSON payloads.",
+    )
+    prod_diagnostics_parser.add_argument(
+        "--scans-dir",
+        default="results/scans",
+        help="Directory containing production run subdirectories.",
+    )
+    prod_diagnostics_parser.add_argument(
+        "--no-rich",
+        action="store_true",
+        help="Disable Rich spinner rendering and use plain compact output.",
+    )
+    prod_diagnostics_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Also print the machine-readable diagnostics summary after compact output.",
+    )
     prod_runs_parser = subparsers.add_parser(
         "prod-runs",
         help="List production scan runs under a scans directory.",
@@ -11492,6 +11765,11 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Show non-detection ledger entries for one production run.",
     )
     prod_non_detections_parser.add_argument("run_dir", help="Production run directory.")
+    prod_target_status_parser = subparsers.add_parser(
+        "prod-target-status",
+        help="Show compact per-target status rows for one production run.",
+    )
+    prod_target_status_parser.add_argument("run_dir", help="Production run directory.")
     _cross_rfi_parser = subparsers.add_parser(
         "cross-target-rfi-summary",
         help=(
@@ -13880,6 +14158,35 @@ def _build_parser() -> argparse.ArgumentParser:
             "Print semi-supervised anomaly scorer provenance summary "
             "(PCA + IsolationForest; local triage aid only)."
         ),
+    )
+
+    prod_file_scan_parser = subparsers.add_parser(
+        "prod-file-scan",
+        help=(
+            "Run a tidy per-file scan with spinner progress and "
+            "one-line-per-target console output. Restartable: already-completed "
+            "targets (JSON output present) are skipped unless --force is passed."
+        ),
+    )
+    prod_file_scan_parser.add_argument(
+        "input_dir",
+        help="Directory containing input files (.dat for radio, .csv for infrared/anomaly).",
+    )
+    prod_file_scan_parser.add_argument(
+        "output_dir",
+        help="Directory for output reports (JSON, Markdown, manifests).",
+    )
+    prod_file_scan_parser.add_argument(
+        "--track",
+        default=None,
+        choices=["radio", "infrared", "anomaly"],
+        help="Pipeline track. Auto-detected from file extension if omitted (.dat → radio).",
+    )
+    prod_file_scan_parser.add_argument(
+        "--force",
+        action="store_true",
+        default=False,
+        help="Reprocess all targets even if output already exists (disables resume).",
     )
 
     return parser

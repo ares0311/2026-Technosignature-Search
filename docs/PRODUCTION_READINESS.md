@@ -146,6 +146,7 @@ detection, discovery, and external submission are not claimed.
 | External submission workflow | ✅ Complete (Tier 3) — protocol documented in `docs/EXTERNAL_SUBMISSION_PROTOCOL.md`; all preconditions currently unmet; DECISION-132 |
 | Reproducibility verification across data releases | ✅ Complete (Tier 3) |
 | Optional expert or institutional review | ✅ Closed (Tier 3) — no institutional expert available; citizen-science reproducibility protocol substituted per AGENTS.md independence standard; expert review explicitly unclaimed and remains a future opportunity if external collaboration arises |
+| **Terminal UX for production scan operations (DECISION-140)** — `prod-scan` CLI and `scripts/run_production_scan.sh` now run the artifact-backed production workflow with Rich spinner/fallback progress, per-target completion rows, target-status JSON, follow-up/non-detection ledgers, resume support via `--resume-run-dir`, and clean Ctrl+C handling; `prod-file-scan` and `tui.py` preserve the lower-level file-oriented scanner helpers; closes Tier 3 production scan operations UX gap | ✅ Complete (Tier 3) |
 
 ---
 

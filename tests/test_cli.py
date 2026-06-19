@@ -216,7 +216,7 @@ def test_cli_project_status_consistency_summary_outputs_drift_gates() -> None:
     assert result["schema_version"] == "project_status_consistency_v1"
     assert result["ok"] is True
     assert result["roadmap_latest_milestone"] == 78
-    assert result["decisions_latest_decision"] == 139
+    assert result["decisions_latest_decision"] == 140
     assert result["actual_schema_count"] == 110
     assert result["rfi_database_admission_real_data_authorized_count"] == 0
     assert result["curated_dataset_admission_real_data_authorized_count"] == 1
@@ -2044,7 +2044,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["schemas_ok"] is True
     assert result["project_status_consistency_ok"] is True
     assert result["project_status_latest_milestone"] == 78
-    assert result["project_status_latest_decision"] == 139
+    assert result["project_status_latest_decision"] == 140
     assert result["project_status_schema_count"] == 110
     assert result["ai_hardening_gate_ok"] is True
     assert result["ai_hardening_gate_status"] == "closed"
@@ -3097,3 +3097,126 @@ def test_cli_prod_write_and_show_outcomes(tmp_path) -> None:
     assert main(["prod-runs", "--scans-dir", str(results_dir / "scans")], stdout=stdout) == 0
     runs = json.loads(stdout.getvalue())
     assert runs["run_count"] == 1
+
+
+def test_cli_prod_scan_routes_to_compact_runner(monkeypatch, tmp_path) -> None:
+    calls: dict[str, object] = {}
+
+    def fake_run_production_scan(**kwargs):
+        calls.update(kwargs)
+        kwargs["stdout"].write("compact scan\n")
+        return object()
+
+    monkeypatch.setattr(
+        "techno_search.production_scan.run_production_scan",
+        fake_run_production_scan,
+    )
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "prod-scan",
+            "--results-dir",
+            str(tmp_path / "results"),
+            "--scans-dir",
+            str(tmp_path / "scans"),
+            "--run-id",
+            "RUN-2026-06-18_201325Z-A7K4-prod-scan",
+            "--no-rich",
+        ],
+        stdout=stdout,
+    )
+
+    assert exit_code == 0
+    assert calls["results_dir"] == tmp_path / "results"
+    assert calls["scans_dir"] == tmp_path / "scans"
+    assert calls["run_id"] == "RUN-2026-06-18_201325Z-A7K4-prod-scan"
+    assert calls["use_rich"] is False
+    assert "compact scan" in stdout.getvalue()
+
+
+def test_cli_prod_diagnostics_returns_nonzero_when_attention_needed(monkeypatch, tmp_path) -> None:
+    def fake_production_diagnostics(**kwargs):
+        kwargs["stdout"].write("diagnostics\n")
+        return {
+            "validate_all_ok": True,
+            "review_dashboard_needs_attention": True,
+            "production_run_count": 2,
+        }
+
+    monkeypatch.setattr(
+        "techno_search.production_scan.production_diagnostics",
+        fake_production_diagnostics,
+    )
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "prod-diagnostics",
+            "--scans-dir",
+            str(tmp_path / "scans"),
+            "--no-rich",
+            "--json",
+        ],
+        stdout=stdout,
+    )
+
+    assert exit_code == 1
+    rendered = stdout.getvalue()
+    assert "diagnostics" in rendered
+    assert '"review_dashboard_needs_attention": true' in rendered
+
+
+def test_cli_prod_target_status_shows_target_status(tmp_path) -> None:
+    run_id = "RUN-2026-06-18_201325Z-A7K4-prod-scan"
+    results_dir = tmp_path / "results"
+    target_dir = results_dir / "HIP99427"
+    target_dir.mkdir(parents=True)
+    candidate_json = target_dir / "candidate.json"
+    candidate_json.write_text(
+        json.dumps(
+            {
+                "candidate_id": "candidate",
+                "recommended_pathway": "candidate_review_packet",
+                "features": {
+                    "frequency_hz": 1420000000.0,
+                    "snr": 55.0,
+                    "drift_rate_hz_per_sec": 0.2,
+                },
+                "scores": {"followup_value": 0.9},
+                "track": "radio",
+            }
+        ),
+        encoding="utf-8",
+    )
+    (target_dir / "candidate.manifest.json").write_text(
+        json.dumps(
+            {
+                "candidate_id": "candidate",
+                "recommended_pathway": "candidate_review_packet",
+                "json_path": candidate_json.name,
+            }
+        ),
+        encoding="utf-8",
+    )
+    run_dir = results_dir / "scans" / run_id
+    main(
+        [
+            "prod-write-outcomes",
+            "--results-dir",
+            str(results_dir),
+            "--run-dir",
+            str(run_dir),
+            "--run-id",
+            run_id,
+            "--started-at-utc",
+            "2026-06-18T20:13:25Z",
+        ],
+        stdout=StringIO(),
+    )
+    stdout = StringIO()
+
+    assert main(["prod-target-status", str(run_dir)], stdout=stdout) == 0
+    target_status = json.loads(stdout.getvalue())
+    assert target_status["target_count"] == 1
+    assert target_status["entries"][0]["follow_up_required"] is True

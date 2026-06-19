@@ -60,7 +60,10 @@ git pull origin main
 caffeinate -i bash scripts/run_production_scan.sh
 ```
 
-This runs the local production scan gate sequence:
+This runs the local production scan gate sequence through the compact
+`prod-scan` terminal UX. While a step is running, the CLI shows a spinner when
+Rich is installed, or a short progress line otherwise. It does not stream large
+JSON payloads to the console.
 
 - `validate-all`
 - `scan-summary`
@@ -80,6 +83,25 @@ making same-second runs distinct. Production run child records use matching
 IDs, for example `NEG-YYYY-MM-DD_HHMMSSZ-A7K4-001` and
 `FU-YYYY-MM-DD_HHMMSSZ-A7K4-001`.
 
+If the run is stopped, restart it from the same directory. Completed artifacts
+are skipped:
+
+```bash
+git pull origin main
+caffeinate -i bash scripts/run_production_scan.sh \
+  --resume-run-dir results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
+```
+
+Each target completion row has this shape:
+
+```text
+INDEX | target | best-effort target kind | follow-up=yes/no | score=0.000 | pathway
+```
+
+The score is the existing pipeline follow-up score. Target kind is inferred from
+local names and candidate metadata only; unresolved object classes should be
+tracked as target-taxonomy hardening work rather than silently over-labeled.
+
 ---
 
 ## Step 4 — Review the anomaly ranking
@@ -95,9 +117,11 @@ The run directory contains both compatibility files and run-prefixed files:
 ```text
 RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan_manifest.json
 RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan_scan_summary.json
+RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan_target_status.json
 RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan_non_detections.json
 RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan_follow_ups.json
 RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan_review_dashboard.json
+RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan_terminal_summary.json
 ```
 
 The scan summary lists candidates ranked by score. Columns:
@@ -123,6 +147,7 @@ Focus on candidates where:
 git pull origin main
 .venv/bin/techno-search prod-non-detections results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
 .venv/bin/techno-search prod-follow-ups results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
+.venv/bin/techno-search prod-target-status results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
 ```
 
 The non-detection file records what was examined but did not enter a follow-up
