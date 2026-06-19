@@ -44,6 +44,9 @@ Current highest-level status from `docs/PRODUCTION_READINESS.md`:
   citizen-science operations only.
 - DECISION-140 closes the compact terminal UX gap for production scan
   operations.
+- PR #88 is merged to `main`: `prod-scan` fails closed when no candidate report
+  manifests are loaded from `results/`; zero-candidate runs require explicit
+  `--allow-empty` and are diagnostic-only.
 - External submission, discovery/detection claims, expert-review claims,
   peer-review claims, and external-validation claims remain blocked unless they
   actually occur and are documented.
@@ -185,12 +188,22 @@ given to the user.
 Authoritative current state:
 
 - User stays on `main`; agents develop on `claude/general-session-Bb2dZ`.
-- PR #85 was merged to `main`; local production terminal UX work is complete.
+- PR #88 was merged to `main`; local production terminal UX now fails closed on
+  empty candidate sets.
 - Tier 1 and Tier 2 are closed for local citizen-science production promotion.
 - DECISION-134/139: AI hardening production gate closed for local
   citizen-science operations only.
 - DECISION-140: `prod-scan` and `scripts/run_production_scan.sh` are the
   canonical compact production scan UX.
+- `prod-scan` evaluates existing candidate report manifests under `results/`;
+  it does not discover candidates directly from raw survey files.
+- If the current local checkout has no candidate manifests under `results/`,
+  `prod-scan` must print `ERROR no candidate manifests found` and exit nonzero.
+  This is correct. The next production task is upstream candidate-producing
+  pipeline/data-availability work, not another scan inspection command.
+- Do not provide placeholder run paths (`RUN-YYYY...`, `<actual-RUN-dir>`, or
+  similar) as runnable commands. Use real commands only; for inspection, prefer
+  `--latest` after a real run exists.
 - External submission, discovery/detection, expert review, peer review, and
   external validation remain unclaimed and blocked.
 
@@ -204,6 +217,13 @@ git pull origin main
 ```bash
 git pull origin main
 caffeinate -i bash scripts/run_production_scan.sh
+```
+
+Expected empty-input behavior:
+
+```bash
+ERROR no candidate manifests found in results
+Run candidate-producing pipeline steps first, or pass --allow-empty only for diagnostics. No production run artifacts were written.
 ```
 
 To resume, first run `prod-runs`, copy the actual `run_dir`, and pass that real
@@ -220,12 +240,13 @@ git pull origin main
 .venv/bin/techno-search prod-non-detections --latest
 ```
 
-Latest known validation from the merged DECISION-140 work:
+Latest known validation from the merged PR #88 work:
 
-- `.venv/bin/python -m pytest --tb=short -q` passed with 2391 passed, 7 skipped.
-- `.venv/bin/ruff check .` passed.
-- `.venv/bin/python -m mypy src --no-error-summary` passed.
-- `.venv/bin/techno-search validate-all` passed.
+- `.venv/bin/techno-search prod-scan --no-rich` exits 1 when no candidate
+  manifests exist and writes no new `RUN-*` artifacts.
+- `.venv/bin/python -m pytest tests/test_production_scan.py tests/test_cli.py::test_cli_prod_scan_routes_to_compact_runner tests/test_cli.py::test_cli_prod_scan_forwards_allow_empty tests/test_cli.py::test_cli_prod_latest_reports_no_runs_without_placeholder_path tests/test_docs.py -q` passed with 16 tests.
+- `.venv/bin/ruff check src/techno_search/cli.py src/techno_search/production_scan.py tests/test_cli.py tests/test_production_scan.py` passed.
+- `.venv/bin/python -m mypy src/techno_search/cli.py src/techno_search/production_scan.py --no-error-summary` passed.
 - GitHub PR checks passed before merge.
 
 Older iteration notes below are historical continuity only. Do not treat them
