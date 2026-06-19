@@ -53,7 +53,34 @@ archive URLs for your chosen targets. Verify checksums after download:
 
 ---
 
-## Step 3 — Run the pipeline across all targets
+## Step 3 — Generate candidate manifests across all targets
+
+```bash
+git pull origin main
+caffeinate -i bash scripts/run_pipeline_on_bl_data.sh
+```
+
+This recursively runs `techno-search run-pipeline` on local turboSETI `.dat`
+hit tables under `data/bl_hits/` and writes candidate Markdown, JSON, and
+manifest artifacts under `results/`. Existing per-file manifest directories
+are skipped, so the command is safe to stop and restart.
+
+Generated report artifacts under `results/` are local payloads and are ignored
+by Git. They are the required candidate inputs for the production scan ledger.
+
+If your `.dat` files are in another approved local directory, pass the real
+directory explicitly:
+
+```bash
+git pull origin main
+caffeinate -i bash scripts/run_pipeline_on_bl_data.sh --dat-dir data/extended_corpus --workers 6
+```
+
+Use a lower worker count for disk-bound or mixed live-provider work; the default
+12 workers is tuned for the local M4 Max CPU-heavy path documented in
+`docs/LOCAL_SYSTEM_PROFILE.md`.
+
+## Step 4 — Run the production scan ledger
 
 ```bash
 git pull origin main
@@ -112,7 +139,7 @@ loaded, unless `--allow-empty` is explicitly passed for diagnostics only.
 
 ---
 
-## Step 4 — Review the anomaly ranking
+## Step 5 — Review the anomaly ranking
 
 ```bash
 git pull origin main
@@ -149,7 +176,7 @@ Focus on candidates where:
 
 ---
 
-## Step 5 — Review non-detections and follow-ups
+## Step 6 — Review non-detections and follow-ups
 
 ```bash
 git pull origin main
@@ -175,7 +202,7 @@ The run manifest keeps these guardrails machine-readable:
 
 ---
 
-## Step 6 — Check the review dashboard
+## Step 7 — Check the review dashboard
 
 ```bash
 git pull origin main
@@ -190,7 +217,7 @@ Exit code 1 means `needs_attention: true`. Review the dashboard output for:
 
 ---
 
-## Step 7 — Escalation gate (if a compelling candidate is found)
+## Step 8 — Escalation gate (if a compelling candidate is found)
 
 If any candidate passes the escalation gate criteria:
 

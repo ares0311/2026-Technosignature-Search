@@ -706,6 +706,7 @@ def run_pipeline_parallel(
     results_dir: Path,
     techno_search_bin: str,
     workers: int = 12,
+    dat_root: Path | None = None,
 ) -> dict[str, bool]:
     """
     Run `techno-search run-pipeline` on each .dat file in parallel.
@@ -713,21 +714,35 @@ def run_pipeline_parallel(
     Idempotent: files whose output directory already contains a manifest.json
     are skipped.  Workers = 12 matches M4 Max performance core count.
 
+    When ``dat_root`` is provided, nested BL target directories are preserved
+    under ``results_dir`` so two files with the same basename do not collide.
+
     Returns {dat_path: success_bool} for all inputs.
     """
 
     def _process(dat: str) -> tuple[str, bool]:
-        out_dir = results_dir / Path(dat).stem
+        dat_path = Path(dat)
+        out_dir = _pipeline_output_dir(dat_path, results_dir, dat_root)
         out_dir.mkdir(parents=True, exist_ok=True)
 
         # Idempotent skip
         if list(out_dir.glob("*.manifest.json")):
-            log.info("  Skipping (manifest exists): %s", Path(dat).name)
+            log.info("  Skipping (manifest exists): %s", dat_path)
             return dat, True
 
-        log.info("  Processing: %s", Path(dat).name)
-        cmd = [techno_search_bin, "run-pipeline", dat,
-               "--track", "radio", "--output-dir", str(out_dir)]
+        candidate_id = _candidate_id_for_dat(dat_path, dat_root)
+        log.info("  Processing: %s -> %s", dat_path, out_dir)
+        cmd = [
+            techno_search_bin,
+            "run-pipeline",
+            dat,
+            "--track",
+            "radio",
+            "--output-dir",
+            str(out_dir),
+            "--candidate-id",
+            candidate_id,
+        ]
         result = subprocess.run(
             cmd,
             capture_output=True,
@@ -738,9 +753,9 @@ def run_pipeline_parallel(
             # run-pipeline writes its JSON result (including the error field)
             # to stdout, not stderr — log both so the root cause is visible.
             diag = (result.stderr or result.stdout or "(no output)")[-1000:]
-            log.error("  FAILED %s:\n%s", Path(dat).name, diag)
+            log.error("  FAILED %s:\n%s", dat_path, diag)
         else:
-            log.info("  OK: %s", Path(dat).name)
+            log.info("  OK: %s", dat_path)
         return dat, result.returncode == 0
 
     results: dict[str, bool] = {}
@@ -748,6 +763,38 @@ def run_pipeline_parallel(
         for dat, ok in pool.map(_process, dat_files):
             results[dat] = ok
     return results
+
+
+def collect_dat_files(dat_dir: Path) -> list[Path]:
+    """Return all local turboSETI ``.dat`` files below ``dat_dir`` recursively."""
+    return sorted(p for p in Path(dat_dir).rglob("*.dat") if p.is_file())
+
+
+def _pipeline_output_dir(dat_path: Path, results_dir: Path, dat_root: Path | None) -> Path:
+    if dat_root is None:
+        return results_dir / _safe_path_part(dat_path.stem)
+    try:
+        relative = dat_path.relative_to(dat_root)
+    except ValueError:
+        return results_dir / _safe_path_part(dat_path.stem)
+    relative_without_suffix = relative.with_suffix("")
+    parts = [_safe_path_part(part) for part in relative_without_suffix.parts]
+    return results_dir.joinpath(*parts)
+
+
+def _candidate_id_for_dat(dat_path: Path, dat_root: Path | None) -> str:
+    if dat_root is None:
+        return _safe_path_part(dat_path.stem)
+    try:
+        relative = dat_path.relative_to(dat_root).with_suffix("")
+    except ValueError:
+        return _safe_path_part(dat_path.stem)
+    return "__".join(_safe_path_part(part) for part in relative.parts)
+
+
+def _safe_path_part(value: str) -> str:
+    cleaned = "".join(char if char.isalnum() or char in "._-" else "_" for char in value)
+    return cleaned.strip("._") or "unnamed"
 
 
 # ---------------------------------------------------------------------------
@@ -832,14 +879,22 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.cmd == "run-pipeline":
-        dat_files = sorted(str(p) for p in args.dat_dir.glob("*.dat"))
+        dat_files = [str(p) for p in collect_dat_files(args.dat_dir)]
         if not dat_files:
             log.error("No .dat files found in %s", args.dat_dir)
             return 1
-        log.info("Running pipeline on %d file(s) with %d workers ...", len(dat_files), args.workers)
+        log.info(
+            "Running pipeline on %d recursive .dat file(s) with %d workers ...",
+            len(dat_files),
+            args.workers,
+        )
         args.results_dir.mkdir(parents=True, exist_ok=True)
         results = run_pipeline_parallel(
-            dat_files, args.results_dir, args.techno_search, workers=args.workers
+            dat_files,
+            args.results_dir,
+            args.techno_search,
+            workers=args.workers,
+            dat_root=args.dat_dir,
         )
         failed = [d for d, ok in results.items() if not ok]
         log.info("Done: %d OK, %d failed", len(results) - len(failed), len(failed))
