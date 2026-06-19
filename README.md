@@ -120,6 +120,10 @@ The workflow follows the same broad pattern used in exoplanet vetting: detect an
 - ✅ Learned real-label scoring model and generalizability suite implemented
 - ✅ Local citizen-science production promotion is allowed after DECISION-134
   closed with injection-recovery evidence and independent method-family review
+- ✅ Compact local production terminal UX is ready after DECISION-140:
+  `prod-scan` and `scripts/run_production_scan.sh` provide visible progress,
+  per-target completion rows, follow-up/non-detection ledgers, resumable run
+  directories, and target-status JSON without flooding the console
 - ⚠️ External submission and discovery-style claims remain blocked pending the external submission protocol and independent external validation
 
 👉 See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md)
@@ -414,14 +418,15 @@ All data products remain governed by their original licenses, citation requireme
 Use the local virtual environment. Do not rely on system Python packages.
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
+git pull origin main
+.venv/bin/python -m pip install --upgrade pip setuptools wheel
+.venv/bin/python -m pip install -e ".[dev]"
 ```
 
 Confirm the CLI is available:
 
 ```bash
+git pull origin main
 .venv/bin/techno-search --help
 ```
 
@@ -473,6 +478,7 @@ Validate and run one local CSV input through the hardened ingestion path:
 Run local validation summaries:
 
 ```bash
+git pull origin main
 .venv/bin/techno-search validate-all
 .venv/bin/techno-search validation-summary
 .venv/bin/techno-search operations-readiness-summary
@@ -493,6 +499,50 @@ Run local validation summaries:
 
 👉 See [`docs/CLI_USAGE.md`](docs/CLI_USAGE.md) and the non-networked CI
 template guidance in [`docs/CI.md`](docs/CI.md).
+
+### Local Production Live Test
+
+Use the compact production scanner for overnight or spare-compute local runs.
+It prints a spinner or fallback progress indicator while work is active, then a
+single completion row per evaluated target with the run index, target
+description, follow-up status, and composite score. Full JSON and ledger detail
+are written under `results/scans/RUN-*`.
+
+Preview the local production environment:
+
+```bash
+git pull origin main
+.venv/bin/techno-search prod-diagnostics
+```
+
+Start a local production scan:
+
+```bash
+git pull origin main
+caffeinate -i bash scripts/run_production_scan.sh
+```
+
+Resume an interrupted run:
+
+```bash
+git pull origin main
+caffeinate -i bash scripts/run_production_scan.sh \
+  --resume-run-dir results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
+```
+
+Inspect completed run artifacts without paging through large console output:
+
+```bash
+git pull origin main
+.venv/bin/techno-search prod-runs
+.venv/bin/techno-search prod-target-status results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
+.venv/bin/techno-search prod-follow-ups results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
+.venv/bin/techno-search prod-non-detections results/scans/RUN-YYYY-MM-DD_HHMMSSZ-A7K4-prod-scan
+```
+
+`prod-scan` is the canonical artifact-backed local production command.
+`prod-file-scan` remains available for lower-level file-oriented diagnostics,
+not for the main overnight ledger workflow.
 
 ---
 
@@ -900,7 +950,7 @@ Release-grade local validation:
 ```bash
 .venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
 .venv/bin/ruff check .
-.venv/bin/mypy src
+.venv/bin/python -m mypy src
 git diff --check
 ```
 
@@ -1035,6 +1085,12 @@ Key package modules:
 Local development and batch-run sizing guidance is recorded in [`docs/LOCAL_SYSTEM_PROFILE.md`](docs/LOCAL_SYSTEM_PROFILE.md).
 
 Performance defaults may use that profile, but scientific scores, thresholds, candidate claims, and provenance requirements must remain portable and configurable.
+For the production terminal UX, optimization means using the project `.venv`,
+`caffeinate` for long runs, resumable artifact directories, compact console
+progress, and configurable worker/accelerator settings where applicable. GPU
+acceleration is required for AI or tensor-heavy training/evaluation when a
+tested local backend exists; the production scan wrapper itself is orchestration
+and must preserve deterministic scientific guardrails on CPU or GPU.
 
 ---
 

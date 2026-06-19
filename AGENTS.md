@@ -86,11 +86,19 @@ or summarized incorrectly. "Resume directly" means: do not waste text on
 preamble after the reads are done. It does not mean skip the reads.
 
 After reading, your plan must:
-- Name the highest-priority unresolved Tier 1 gap from `docs/PRODUCTION_READINESS.md`
-- Show how each proposed step closes or directly unblocks that gap
+- Name the highest-priority unresolved Tier 1 or Tier 2 gap from
+  `docs/PRODUCTION_READINESS.md`; if all Tier 1 and Tier 2 gaps are closed,
+  state that explicitly and name the highest-priority production-hardening,
+  live-operation, data-availability, AI-hardening, numerical-method, or
+  artifact-hygiene gap that remains relevant to local production
+- Show how each proposed step closes or directly unblocks that named gap
 - Include outside blockers (real data, public review, independent reproduction) as explicit named steps
-- Never propose log modules, schemas, or scaffolding unless they directly unblock a named Tier 1 or Tier 2 gap
+- Never propose log modules, schemas, or scaffolding unless they directly unblock
+  a named Tier 1/Tier 2 gap or the current named production-hardening task
 - Never repeat work listed under "What Is Complete" in `docs/PRODUCTION_READINESS.md`
+- Never claim external submission readiness, discovery, detection, expert
+  review, peer review, or external validation unless those events have actually
+  occurred and are documented in the production-readiness file
 
 If your plan does not reference specific gaps from `docs/PRODUCTION_READINESS.md` by name, it is non-compliant and must be rewritten before execution.
 
@@ -343,16 +351,42 @@ All code changes must include appropriate tests.
 Run minimum validation:
 
 ```bash
-pytest
+.venv/bin/python -m pytest
 ```
 
 Extended checks:
 
 ```bash
-pytest --cov=techno_search --cov-report=term-missing
-ruff check .
-mypy src
+caffeinate -i .venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
+.venv/bin/ruff check .
+.venv/bin/python -m mypy src
+.venv/bin/techno-search validate-all
 ```
+
+---
+
+## Production Terminal UX — DECISION-140
+
+`prod-scan` and `scripts/run_production_scan.sh` are the canonical local
+production scan entry points. They must remain suitable for overnight or
+spare-compute use on the user's MacBook Pro M4 Max:
+
+- show visible progress with Rich spinner output or the documented fallback;
+- print compact per-target completion rows instead of streaming large JSON
+  payloads to the console;
+- write target-status JSON plus follow-up and non-detection ledgers under
+  `results/scans/RUN-*`;
+- support clean interruption and resume with `--resume-run-dir`;
+- preserve conservative language: follow-up candidate, non-detection, anomaly,
+  or technosignature-interest candidate only.
+
+`prod-file-scan` and `tui.py` are lower-level file-oriented scanner helpers.
+Do not give them to the user as the primary overnight production-ledger command
+unless the task is specifically file-scanner diagnostics.
+
+Full evidence belongs in artifacts and ledgers, not in noisy terminal output.
+Long-running user recipes still require `git pull origin main` at the top and
+`caffeinate -i` around the long-running child process.
 
 ---
 
@@ -381,12 +415,17 @@ Do not commit:
 
 **The sole goal of this project is to reach live production as fast as possible.**
 
-Every planning session must begin by reading `docs/PRODUCTION_READINESS.md` and identifying the highest-priority unresolved Tier 1 or Tier 2 gap. All planned steps must move the system closer to that goal.
+Every planning session must begin by reading `docs/PRODUCTION_READINESS.md`.
+If any Tier 1 or Tier 2 gap is unresolved, identify the highest-priority open
+gap and prioritize it. If Tier 1 and Tier 2 are closed, say so explicitly and
+focus only on named production-hardening, live-operation, data-availability,
+AI-hardening, numerical-method, reproducibility, or artifact-hygiene work that
+keeps local citizen-science production safe and usable.
 
 ### Rules for planning the next steps:
 
-1. **Always read `docs/PRODUCTION_READINESS.md` first.** Identify the top unresolved gap.
-2. **Plan steps that close that gap.** Engineering work that directly unblocks Tier 1 or Tier 2 items takes absolute priority.
+1. **Always read `docs/PRODUCTION_READINESS.md` first.** Identify the top unresolved gap; if none exists in Tier 1 or Tier 2, identify the top named production-hardening gap.
+2. **Plan steps that close that gap.** Engineering work that directly unblocks Tier 1 or Tier 2 items takes absolute priority when such items are open. After Tier 1 and Tier 2 are closed, prefer work that strengthens local production operation, data availability, AI/numerical method hardening, reproducibility, and operator safety.
 3. **Outside blockers belong in the plan.** If the next step requires real data,
    telescope access, public review, or independent reproduction, say so
    explicitly. Do not assume expert access. Use the Citizen-Science Independence
@@ -405,3 +444,6 @@ Every planning session must begin by reading `docs/PRODUCTION_READINESS.md` and 
 - Public reproducibility review of pipeline logic and candidate reports
 
 Progress is only real if it closes one of these gaps or directly enables closing one.
+As of the current production-readiness file, all Tier 1 and Tier 2 gaps are
+closed for local citizen-science production promotion; do not reopen them
+without new evidence documented in `docs/PRODUCTION_READINESS.md`.
