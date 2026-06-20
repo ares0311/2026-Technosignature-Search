@@ -106,6 +106,29 @@ def _read_csv_lines(path: Path) -> tuple[list[str], list[dict[str, str]]]:
     return list(reader.fieldnames or []), rows
 
 
+def _count_raw_radio_data_lines(path: Path) -> int:
+    """Count non-comment, non-header data lines in a turboSETI hit table."""
+    raw_text = path.read_text(encoding="utf-8", errors="replace")
+    lines = raw_text.splitlines()
+    # TAB-format: data lines appear after the "# Top_Hit_#" header, no leading "#"
+    past_header = False
+    data_count = 0
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.startswith("# Top_Hit_#") or stripped.startswith("#Top_Hit_#"):
+            past_header = True
+            continue
+        if past_header and not stripped.startswith("#"):
+            data_count += 1
+        elif not stripped.startswith("#"):
+            # CSV fallback: non-comment, non-blank line that could be a data row
+            data_count += 1
+    # Subtract 1 for the CSV header row (plain first non-comment line)
+    return max(0, data_count - (0 if past_header else 1))
+
+
 def _validate_radio(
     path: Path, issues: list[str], warnings: list[str]
 ) -> tuple[int, list[str], list[str]]:
@@ -119,7 +142,19 @@ def _validate_radio(
         return 0, issues, warnings
 
     if not normalized_rows:
-        issues.append("No valid hits found in radio hit table.")
+        raw_data_lines = _count_raw_radio_data_lines(path)
+        if raw_data_lines > 0:
+            # Data rows exist but all failed to parse — structurally bad file
+            issues.append(
+                "No valid hits found in radio hit table "
+                "(all rows failed to parse — bad format or non-numeric values)."
+            )
+        else:
+            # No data rows at all — legitimate turboSETI non-detection
+            warnings.append(
+                "No hits found above threshold in radio hit table. "
+                "This is a valid non-detection result."
+            )
         return 0, issues, warnings
 
     # Verify normalized rows have required keys

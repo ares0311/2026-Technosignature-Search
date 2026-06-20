@@ -161,6 +161,27 @@ def test_cli_run_pipeline_outputs_json(tmp_path: Path, capsys) -> None:
     assert Path(data["json_path"]).exists()
 
 
+def test_radio_pipeline_zero_hit_dat_produces_non_detection_manifest(tmp_path: Path) -> None:
+    """Zero-hit .dat files (turboSETI found nothing) must produce a manifest, not an error."""
+    zero_hit = tmp_path / "HIP66704_zero_hits.dat"
+    zero_hit.write_text(
+        "# turboSETI output — zero hits above threshold\n"
+        "Frequency,SEFD,SNR,Drift_Rate,Source_Name,MJD,RA,DEC,FOFF,Index,top_hit_num\n",
+        encoding="utf-8",
+    )
+    output_dir = tmp_path / "reports"
+    result = run_pipeline(zero_hit, "radio", output_dir, candidate_id="hip66704-non-detection")
+    assert result.ok, f"Zero-hit pipeline should succeed, got error: {result.error}"
+    assert result.pathway != "unknown"
+    assert result.report_paths.manifest_path.exists()
+    manifest = json.loads(result.report_paths.manifest_path.read_text())
+    assert manifest["candidate_id"] == "hip66704-non-detection"
+    packet = json.loads(result.report_paths.json_path.read_text())
+    assert packet["features"]["zero_hit_non_detection"] is True
+    assert packet["features"]["turboseti_hit_count"] == 0
+    assert packet["provenance"]["non_detection"] is True
+
+
 def test_cli_run_pipeline_rejects_invalid_input(tmp_path: Path, capsys) -> None:
     bad = tmp_path / "bad.csv"
     bad.write_text("Frequency,SNR,Drift_Rate\nnot-a-number,1.0,0.0\n", encoding="utf-8")

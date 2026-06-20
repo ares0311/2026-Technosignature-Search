@@ -188,10 +188,9 @@ def _build_radio_candidate(
     from techno_search.radio.prototype import build_radio_candidate
 
     rows = hit_table_to_radio_hit_dicts(path)
-    if not rows:
-        msg = f"No valid hits found in {path}"
-        raise ValueError(msg)
     source_ids, provenance = cadence_candidate_context(path)
+    if not rows:
+        return _build_radio_non_detection_candidate(path, candidate_id, source_ids, provenance)
     candidate = build_radio_candidate(
         candidate_id,
         rows,
@@ -291,6 +290,50 @@ def _local_radio_known_object_score(
     )
     searchable = " ".join(identifiers).lower()
     return 1.0 if any(token in searchable for token in KNOWN_SPACECRAFT_TOKENS) else 0.0
+
+
+def _build_radio_non_detection_candidate(
+    path: Path,
+    candidate_id: str,
+    source_ids: tuple[str, ...],
+    provenance: dict[str, Any],
+) -> Candidate:
+    """Build a non-detection candidate when turboSETI found 0 hits above threshold.
+
+    Routes to do_not_submit_false_positive via zero SNR, which is the correct
+    disposition: the target was searched and no narrowband signal was detected.
+    Writes a manifest so prod-scan can record this as a confirmed non-detection.
+    """
+    return Candidate(
+        candidate_id=candidate_id,
+        track=Track.RADIO,
+        features={
+            "snr": 0.0,
+            "bandwidth_hz": 0.0,
+            "drift_rate_hz_per_sec": 0.0,
+            "on_target_presence_score": 0.0,
+            "off_target_presence_score": 0.0,
+            "rfi_band_overlap_score": 0.0,
+            "frequency_persistence_score": 0.0,
+            "nearby_target_recurrence_score": 0.0,
+            "instrumental_artifact_score": 0.0,
+            "injection_recovery_score": 0.0,
+            "repeat_observation_score": 0.0,
+            "data_quality_score": 1.0,
+            "metadata_completeness_score": 0.5,
+            "turboseti_hit_count": 0,
+            "zero_hit_non_detection": True,
+        },
+        source_ids=source_ids,
+        provenance={
+            **provenance,
+            "non_detection": True,
+            "hit_count": 0,
+            "source_file": str(path),
+            "reader_type": "turboSETI_csv",
+            "classification": "zero_hit_non_detection",
+        },
+    )
 
 
 def _build_infrared_candidate(path: Path, candidate_id: str) -> Candidate:
