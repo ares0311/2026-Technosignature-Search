@@ -28,6 +28,8 @@ docs/LOCAL_DATA_INVENTORY.local.md
 results/*
 !results/scans/
 !results/scans/**
+# Scan history NDJSON (local operational log, not committed)
+results/scan_history.ndjson
 *.h5
 *.hdf5
 *.fil

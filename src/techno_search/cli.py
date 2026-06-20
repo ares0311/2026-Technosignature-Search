@@ -2056,6 +2056,87 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(_scan, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "prod-target-queue":
+        from techno_search.prod_scan_queue import build_target_queue
+
+        _hist_path: Path | None = None
+        if getattr(args, "history_file", None):
+            _hist_path = Path(args.history_file)
+        _queue = build_target_queue(
+            Path(args.dat_dir),
+            _hist_path,
+            force_rescan=bool(getattr(args, "force", False)),
+        )
+        _queue_out = {
+            "schema_version": "prod_scan_queue_v1",
+            "disclaimer": (
+                "Target queue is a local scheduling aid. "
+                "No result constitutes a detection claim or authorizes external submission."
+            ),
+            "dat_dir": args.dat_dir,
+            "history_file": str(_hist_path) if _hist_path else None,
+            "pending_count": len(_queue),
+            "queue": [
+                {
+                    "target_stem": e.target_stem,
+                    "dat_file": str(e.dat_file),
+                    "is_first_scan": e.is_first_scan,
+                    "prior_scan_count": e.prior_scan_count,
+                    "last_scanned_at_utc": e.last_scanned_at_utc,
+                    "last_score": e.last_score,
+                    "last_pathway": e.last_pathway,
+                    "selection_score": e.selection_score,
+                    "rationale": e.rationale,
+                }
+                for e in _queue
+            ],
+        }
+        print(json.dumps(_queue_out, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "prod-record-scan":
+        from techno_search.prod_scan_queue import ScanHistoryRecord, append_scan_record
+
+        _record = ScanHistoryRecord(
+            target_stem=str(args.target_stem),
+            run_id=str(args.run_id),
+            scanned_at_utc=datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            score=float(args.score),
+            pathway=str(args.pathway),
+            dat_file=str(args.dat_file),
+            parent_run_id=getattr(args, "parent_run_id", None) or None,
+        )
+        _hist_file = Path(args.history_file)
+        append_scan_record(_hist_file, _record)
+        print(
+            json.dumps(
+                {
+                    "ok": True,
+                    "target_stem": _record.target_stem,
+                    "run_id": _record.run_id,
+                    "scanned_at_utc": _record.scanned_at_utc,
+                    "history_file": str(_hist_file),
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "scan-history-summary":
+        from techno_search.prod_scan_queue import scan_history_summary
+
+        _sh_hist: Path | None = (
+            Path(args.history_file) if getattr(args, "history_file", None) else None
+        )
+        _sh_dat: Path | None = (
+            Path(args.dat_dir) if getattr(args, "dat_dir", None) else None
+        )
+        _sh = scan_history_summary(_sh_hist, _sh_dat)
+        print(json.dumps(_sh, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "prod-run-id":
         from techno_search.production_run_outcomes import make_production_run_id
 
@@ -14291,6 +14372,65 @@ def _build_parser() -> argparse.ArgumentParser:
             "Print semi-supervised anomaly scorer provenance summary "
             "(PCA + IsolationForest; local triage aid only)."
         ),
+    )
+
+    prod_target_queue_parser = subparsers.add_parser(
+        "prod-target-queue",
+        help=(
+            "Show the ranked scan queue for a .dat directory. "
+            "Returns JSON with pending targets and selection rationale."
+        ),
+    )
+    prod_target_queue_parser.add_argument(
+        "--dat-dir",
+        required=True,
+        help="Directory containing turboSETI .dat hit-table files.",
+    )
+    prod_target_queue_parser.add_argument(
+        "--history-file",
+        default=None,
+        help="Path to scan history NDJSON (default: none, all targets treated as new).",
+    )
+    prod_target_queue_parser.add_argument(
+        "--force",
+        action="store_true",
+        default=False,
+        help="Include already-scanned targets (they rank lower than fresh targets).",
+    )
+
+    prod_record_scan_parser = subparsers.add_parser(
+        "prod-record-scan",
+        help="Append a completed scan record to the scan history NDJSON file.",
+    )
+    prod_record_scan_parser.add_argument("--target-stem", required=True)
+    prod_record_scan_parser.add_argument("--run-id", required=True)
+    prod_record_scan_parser.add_argument("--score", required=True, type=float)
+    prod_record_scan_parser.add_argument("--pathway", required=True)
+    prod_record_scan_parser.add_argument("--dat-file", required=True)
+    prod_record_scan_parser.add_argument(
+        "--history-file",
+        required=True,
+        help="Path to scan history NDJSON file.",
+    )
+    prod_record_scan_parser.add_argument(
+        "--parent-run-id",
+        default=None,
+        help="Run ID of a prior scan of this target (for re-scan linking).",
+    )
+
+    scan_history_summary_parser = subparsers.add_parser(
+        "scan-history-summary",
+        help="Show a summary of all prior production scans from the history NDJSON.",
+    )
+    scan_history_summary_parser.add_argument(
+        "--history-file",
+        default=None,
+        help="Path to scan history NDJSON.",
+    )
+    scan_history_summary_parser.add_argument(
+        "--dat-dir",
+        default=None,
+        help="If provided, report how many .dat files are still pending (never scanned).",
     )
 
     prod_file_scan_parser = subparsers.add_parser(
