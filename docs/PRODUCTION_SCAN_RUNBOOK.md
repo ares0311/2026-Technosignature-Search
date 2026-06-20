@@ -170,9 +170,40 @@ Each line in `results/scan_history.ndjson` is one JSON object:
 
 ---
 
+## Data Directories
+
+| Directory | Contents | Source |
+|---|---|---|
+| `data/bl_hits/` | Voyager 1 GBT `.dat` hit table (pipeline calibration) | `scripts/download_bl_hits.sh` |
+| `data/extended_corpus/<TARGET>/` | GBT L-band HDF5 files for 5 HIP targets | `scripts/download_bl_extended_corpus.sh` |
+
+HDF5 files in `data/extended_corpus/` must be processed with turboSETI before they can
+enter the production scan queue.  Use `scripts/run_turboseti_on_extended_corpus.sh` (idempotent).
+
+---
+
 ## Running the Script
 
-### First run (new targets only)
+### Full setup — extended corpus (recommended, 5 targets)
+
+Run once after downloading the extended corpus:
+
+```bash
+git pull origin main
+
+# Step 1: produce .dat hit tables (~5–15 min per target on M4 Max, one-time)
+caffeinate -i bash scripts/run_turboseti_on_extended_corpus.sh
+
+# Step 2: build candidate reports
+caffeinate -i bash scripts/run_pipeline_on_bl_data.sh \
+    --dat-dir data/extended_corpus
+
+# Step 3: continuous production scan (5 targets)
+caffeinate -i bash scripts/run_production_scan.sh \
+    --dat-dir data/extended_corpus
+```
+
+### First run — Voyager calibration only (3 targets)
 
 ```bash
 git pull origin main
@@ -184,7 +215,7 @@ caffeinate -i bash scripts/run_production_scan.sh \
 
 ```bash
 caffeinate -i bash scripts/run_production_scan.sh \
-    --dat-dir data/bl_hits \
+    --dat-dir data/extended_corpus \
     --continuous
 ```
 
@@ -192,7 +223,7 @@ caffeinate -i bash scripts/run_production_scan.sh \
 
 ```bash
 caffeinate -i bash scripts/run_production_scan.sh \
-    --dat-dir data/bl_hits \
+    --dat-dir data/extended_corpus \
     --force-rescan
 ```
 
@@ -200,7 +231,7 @@ caffeinate -i bash scripts/run_production_scan.sh \
 
 ```bash
 .venv/bin/techno-search prod-target-queue \
-    --dat-dir data/bl_hits \
+    --dat-dir data/extended_corpus \
     --history-file results/scan_history.ndjson
 ```
 
@@ -209,7 +240,7 @@ caffeinate -i bash scripts/run_production_scan.sh \
 ```bash
 .venv/bin/techno-search scan-history-summary \
     --history-file results/scan_history.ndjson \
-    --dat-dir data/bl_hits
+    --dat-dir data/extended_corpus
 ```
 
 ---
