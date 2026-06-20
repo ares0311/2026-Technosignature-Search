@@ -3658,3 +3658,82 @@ pipeline runs, and its `--force` flag allows re-processing already-completed
 targets. Stellar classification remains heuristic only; SIMBAD otype codes are
 not currently stored and should be added to `catalog_crossmatch` in a future
 improvement for reliable classification.
+
+# DECISION-141: Production Scan History, History-Aware Queue, And Continuous Loop
+
+**Date:** 2026-06-20
+**Status:** Accepted
+**Closes:** Five operational bugs observed during live production scan operation
+
+## Context
+
+Live operation of `run_production_scan.sh` revealed five distinct bugs that
+prevented it from functioning as a real production scanner:
+
+1. The script only read already-processed `results/` manifests and never
+   called `run-pipeline` on new `.dat` files — running the same three targets
+   every time regardless of what was in the data directory.
+2. Each run assigned new scan indexes to the same targets, making it impossible
+   to tell whether two entries referred to the same physical target observation.
+3. No scan history was maintained, so the script had no awareness of targets
+   already searched and could not link re-scans together.
+4. The target selection algorithm (`target_selection_score()`) existed in
+   `background_search.py` but was never called by the script, so the operator
+   could not see why targets were chosen.
+5. The scan exited after processing a fixed list rather than running
+   continuously until stopped.
+
+Additionally, the UX DNA of a correct production scan had never been captured
+in a project-agnostic reference document.
+
+## Decision
+
+1. Add `src/techno_search/prod_scan_queue.py` implementing:
+   - `ScanHistoryRecord` — one completed scan per target per run
+   - `append_scan_record()` — atomic NDJSON append with `fcntl.flock`
+   - `load_scan_history()` — NDJSON reader keyed by `target_stem`
+   - `build_target_queue()` — ranked queue; base 0.50, +0.08 first-scan boost,
+     −0.04/scan penalty capped at −0.12; scanned targets excluded by default
+   - `scan_history_summary()` — all-time history summary with pending count
+
+2. Add three new CLI commands:
+   - `prod-target-queue --dat-dir PATH [--history-file F] [--force]`
+   - `prod-record-scan --target-stem T --run-id R --score S --pathway P --dat-file F --history-file H [--parent-run-id ID]`
+   - `scan-history-summary [--history-file H] [--dat-dir D]`
+
+3. Rewrite `scripts/run_production_scan.sh` to:
+   - Require `--dat-dir PATH` (raw turboSETI `.dat` input directory)
+   - Discover `.dat` files at runtime via `prod-target-queue`
+   - Print the full ranked queue with selection scores before the scan loop
+   - Process each target with `run-pipeline FILE --track radio --output-dir DIR`
+   - Record each completed scan with `prod-record-scan`
+   - Wrap the selection+pipeline loop in `while true` with `trap SIGINT/SIGTERM`
+   - Support `--continuous` mode that polls for new `.dat` files on queue exhaustion
+   - Run post-scan steps after all targets are processed, not interleaved
+
+4. Add `docs/PRODUCTION_SCAN_RUNBOOK.md` — a project-agnostic durable reference
+   capturing the five rules of correct production scan orchestration, with
+   adaptation guidance for other pipelines.
+
+5. The `target_stem` (filename without extension) is the stable cross-run
+   identity. The `parent_run_id` field links re-scans of the same target across
+   runs. The history file `results/scan_history.ndjson` is gitignored because
+   it contains absolute local paths and grows without bound.
+
+## Consequences
+
+The production scan operator can now run:
+
+```bash
+caffeinate -i bash scripts/run_production_scan.sh --dat-dir data/bl_hits
+```
+
+On first run, all `.dat` targets are queued (first-scan boost). On subsequent
+runs, already-scanned targets are skipped by default, so the scanner naturally
+progresses through the corpus without manual tracking. `--force-rescan` includes
+previously scanned targets at lower priority and links the re-scan record to the
+prior run via `parent_run_id`. `--continuous` mode polls for newly deposited
+`.dat` files after queue exhaustion, enabling unattended overnight operation.
+
+All scan history records are local scheduling aids only. No record constitutes
+a detection claim or authorizes external submission.

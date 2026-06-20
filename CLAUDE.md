@@ -44,9 +44,15 @@ Current highest-level status from `docs/PRODUCTION_READINESS.md`:
   citizen-science operations only.
 - DECISION-140 closes the compact terminal UX gap for production scan
   operations.
+- DECISION-141 closes five live-operation bugs in `run_production_scan.sh`:
+  script now acquires new `.dat` files via `prod-target-queue`, records scan
+  history in `results/scan_history.ndjson`, displays ranked queue with selection
+  rationale, and runs continuously until Ctrl+C.
 - PR #88 is merged to `main`: `prod-scan` fails closed when no candidate report
   manifests are loaded from `results/`; zero-candidate runs require explicit
   `--allow-empty` and are diagnostic-only.
+- PR #94 is merged to `main` (DECISION-141): scan history, history-aware queue,
+  continuous loop, and `docs/PRODUCTION_SCAN_RUNBOOK.md`.
 - External submission, discovery/detection claims, expert-review claims,
   peer-review claims, and external-validation claims remain blocked unless they
   actually occur and are documented.
