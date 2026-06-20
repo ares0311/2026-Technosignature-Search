@@ -1,7 +1,7 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-06-18
-**Current milestone:** 78 (AI Hardening Production Evidence Gate — Closed Local Production Gate)
+**Last updated:** 2026-06-20
+**Current milestone:** 79 (Production Scan Hardening And Artifact Hygiene)
 
 ---
 
@@ -119,6 +119,7 @@ detection, discovery, and external submission are not claimed.
 | **Second DECISION-134 bounded held-out evidence attempt** — HIP39826 GBT HDF5 acquired from current BL Open Data, validated as HDF5, processed with turboSETI, and preserved as review-safe zero-hit negative evidence with checksums and method abstentions; this supports DECISION-134 but does not close it because no valid hit rows were available for independent candidate-level method comparison | ✅ Complete |
 | **DECISION-134 AI hardening production blocker closed** — setigen injection-recovery grid in real Voyager 1 GBT noise produced 75/75 recovered injections, 256 valid turboSETI hit rows, a committed closure evidence bundle, and three recorded independent method-family reviews while preserving learned-model and cross-target abstentions; production promotion is local citizen-science operations only | ✅ Complete |
 | **Production scan history and history-aware queue (DECISION-141)** — `src/techno_search/prod_scan_queue.py` implements atomic NDJSON scan history (`results/scan_history.ndjson`), `build_target_queue()` with base 0.50 / +0.08 first-scan boost / −0.04 per-scan penalty, and `parent_run_id` chain for re-scan linking; three new CLI commands: `prod-target-queue`, `prod-record-scan`, `scan-history-summary`; `run_production_scan.sh` fully rewritten to acquire new `.dat` files, display ranked queue with rationale, run `run-pipeline` in a continuous `while true` loop with SIGINT trap, and record each scan result; `docs/PRODUCTION_SCAN_RUNBOOK.md` captures the five rules of correct production scan orchestration for reuse in other projects; 32 new tests; fixes five live-operation bugs | ✅ Complete |
+| **Non-deterministic turboSETI .dat discovery fixed (DECISION-142)** — `find "$DATA_DIR" -name "*.dat" \| head -1` replaced with deterministic H5-stem prediction in `download_bl_hits.sh` and `fetch_bl_alternative.sh`; eliminates artifact duplication when multiple `.dat` files coexist in `data/bl_hits/`; production scan candidate count now correctly reflects actual observation targets | ✅ Complete |
 
 ---
 

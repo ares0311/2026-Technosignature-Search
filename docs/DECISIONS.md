@@ -3737,3 +3737,59 @@ prior run via `parent_run_id`. `--continuous` mode polls for newly deposited
 
 All scan history records are local scheduling aids only. No record constitutes
 a detection claim or authorizes external submission.
+
+# DECISION-142: Non-Deterministic turboSETI .dat Discovery Fixed In Download Scripts
+
+**Date:** 2026-06-20
+**Status:** Accepted
+**Closes:** Production data pipeline artifact hygiene gap — non-deterministic hit-table discovery in `download_bl_hits.sh` and `fetch_bl_alternative.sh`
+
+## Context
+
+During live production testing following DECISION-141, the `run_production_scan.sh`
+pipeline was observed to receive more `.dat` files than expected from the `data/bl_hits/`
+directory. Investigation revealed that both download scripts used `find "$DATA_DIR" -name "*.dat" | head -1`
+to locate the turboSETI output file after a run. This non-deterministic glob:
+
+1. Picks the alphabetically-first `.dat` file, not the one just produced.
+2. When `bl_turboSETI_test.dat` (from `fetch_bl_alternative.sh`) already existed,
+   `download_bl_hits.sh`'s `find | head -1` would grab that file instead of the
+   newly-created `voyager1.dat`, leaving `voyager1.dat` as residual alongside the
+   renamed copy.
+3. Both residual files were then processed by `run_pipeline_on_bl_data.sh`, producing
+   two candidate manifests for what is physically one observation target and inflating
+   `candidate_count` from 1 to 2.
+
+The root cause is using `find | head -1` when the output filename is deterministically
+predictable from the input H5 filename.
+
+## Decision
+
+Replace `find "$DATA_DIR" -name "*.dat" | head -1` with a deterministic stem
+prediction in both scripts:
+
+```bash
+H5_STEM="$(basename "$H5_FILE" .h5)"
+FOUND_DAT="$DATA_DIR/${H5_STEM}.dat"
+```
+
+turboSETI always writes `<input_stem>.dat` in the output directory. Using the
+stem directly eliminates file-ordering ambiguity and guarantees the script
+operates on the file it just produced, not a pre-existing alphabetically-prior file.
+
+The fix is applied in:
+- `scripts/download_bl_hits.sh` — stem from `voyager1.h5` → `voyager1.dat`
+- `scripts/fetch_bl_alternative.sh` — stem from `tseti_test.h5` → `tseti_test.dat`
+
+Both scripts also retain the `[[ "$FOUND_DAT" != "$FINAL_DAT" ]] && mv` rename
+guard to canonicalize the output filename regardless of the H5 input name.
+
+## Consequences
+
+`download_bl_hits.sh` and `fetch_bl_alternative.sh` are now deterministic: each
+script operates only on the file it produced, regardless of what other `.dat`
+files exist in `data/bl_hits/`. The `run_pipeline_on_bl_data.sh` receives exactly
+one `.dat` per download script invocation. Production scan candidate counts
+reflect actual observation targets rather than artifact duplication.
+
+No result constitutes a detection claim or authorizes external submission.
