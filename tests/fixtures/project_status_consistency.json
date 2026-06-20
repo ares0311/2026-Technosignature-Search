@@ -3,7 +3,7 @@
   "expected_status": {
     "latest_milestone_number": 78,
     "latest_milestone_label": "AI Hardening Production Evidence Gate — Closed Local Production Gate",
-    "latest_decision_number": 140,
+    "latest_decision_number": 141,
     "schema_count": 110,
     "expected_rfi_real_data_authorization_total": 0,
     "expected_curated_real_data_authorization_total": 1,
