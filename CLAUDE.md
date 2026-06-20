@@ -191,13 +191,23 @@ given to the user.
 
 ## Current Live Handoff — 2026-06-20
 
-Authoritative current state:
+### RESULT RECORDING RULE — NON-NEGOTIABLE
+
+**When the user pastes terminal output (validate-all, prod-scan, turboSETI, pipeline),
+you MUST record the key results in this handoff section before responding.
+Do NOT ask the user to run a command again if they have already run it and
+pasted the results — even across sessions. This file is the memory between sessions.**
+
+### Authoritative current state:
 
 - User stays on `main`; agents develop on `claude/general-session-Bb2dZ`.
 - **PR #100 merged to `main`** (Milestone 79): triage label completeness gate
   closed (`all_labels_covered: true`), batch turboSETI script for extended
   corpus, blocker review evidence count corrected. All CI passed.
-- **PR #101 open (draft)**: CHANGELOG versioning for milestones 77–79; CI pending.
+- **PR #101 merged to `main`**: CHANGELOG versioning for milestones 77–79. CI passed.
+- **PR #102 merged to `main`**: documentation fix — corrected hallucinated script
+  name `run_batch_turboseti.sh` → `run_turboseti_on_extended_corpus.sh` in
+  CHANGELOG.md and PRODUCTION_READINESS.md. CI passed (run #255, success).
 - Tier 1 and Tier 2 are closed for local citizen-science production promotion.
 - All Tier 3 production-hardening gaps are also closed.
 - DECISION-134/139: AI hardening production gate closed for local
@@ -210,55 +220,54 @@ Authoritative current state:
   download scripts.
 - `prod-scan` evaluates existing candidate report manifests under `results/`;
   it does not discover candidates directly from raw survey files.
-- If the current local checkout has no candidate manifests under `results/`,
-  `prod-scan` must print `ERROR no candidate manifests found` and exit nonzero.
-  This is correct. The next production task is upstream candidate-producing
-  pipeline/data-availability work (run turboSETI on extended corpus HDF5 files).
-- **DATA AVAILABILITY BLOCKER (user-action required):** HIP66704, HIP74981,
-  HIP82860 HDF5 files downloaded but turboSETI has not run on them yet; no
-  `.dat` hit tables exist; `prod-scan` queue shows 0 targets. Run:
-  ```bash
-  caffeinate -i bash scripts/run_batch_turboseti.sh
-  ```
-  This produces `.dat` files from which `prod-scan` can generate candidate
-  reports. Cannot be done by the agent in the remote environment.
 - Do not provide placeholder run paths (`RUN-YYYY...`, `<actual-RUN-dir>`, or
   similar) as runnable commands. Use real commands only; for inspection, prefer
   `--latest` after a real run exists.
 - External submission, discovery/detection, expert review, peer review, and
   external validation remain unclaimed and blocked.
 
-Canonical user-facing commands:
+### Latest known validate-all result (user-pasted 2026-06-20 ~21:57 local):
+
+- `validate-all`: PASSED (ok: True)
+- `triage_label_completeness.all_labels_covered`: true
+- `external_submission_approved_count`: 0
+- `network_access_allowed_count`: 0
+- `semisupervised_scorer`: is_fitted: false, train_hit_count: 0
+- SQLite log: run_count: 945, reviewed_no_follow_up: 941, needs_follow_up_logged: 4
+- prod-scan result: **0 pending targets, 0 scanned** — queue exhausted with nothing
+
+### turboSETI / pipeline run status (as of 2026-06-20):
+
+**IMPORTANT: The user reports having run `scripts/run_turboseti_on_extended_corpus.sh`
+6+ times. The previous CLAUDE.md entry claiming "turboSETI has not run on them yet"
+was WRONG and caused agents to repeatedly ask the user to run turboSETI again.
+DO NOT repeat that instruction without first asking the user for the terminal output.**
+
+- turboSETI run status: User has run the script 6+ times (confirmed 2026-06-20)
+- `.dat` file status: **UNKNOWN** — agent has not seen terminal output from the run
+- pipeline run status: **UNKNOWN** — agent has not seen `run_pipeline_on_bl_data.sh` output
+- prod-scan queue: 0 targets (no candidate manifests in `results/`)
+- Root cause of 0 targets: **UNDIAGNOSED** — need user to paste turboSETI and pipeline output
+
+**Next agent action: When user pastes turboSETI or pipeline output, record it here
+and diagnose why prod-scan shows 0 targets. Do NOT ask the user to run turboSETI
+again without first seeing and recording the output from a prior run.**
+
+### Canonical commands (give these, then record the pasted output):
 
 ```bash
 git pull origin main
-.venv/bin/techno-search prod-diagnostics
-```
+# Step 1 — turboSETI (paste ALL output back to the agent)
+caffeinate -i bash scripts/run_turboseti_on_extended_corpus.sh 2>&1 | tee /tmp/turboseti_run.log
 
-```bash
-git pull origin main
-# Step 1 — generate .dat hit tables from HDF5 files (idempotent)
-caffeinate -i bash scripts/run_turboseti_on_extended_corpus.sh
-
-# Step 2 — build candidate report manifests from hit tables
+# Step 2 — pipeline (paste ALL output back to the agent)
 caffeinate -i bash scripts/run_pipeline_on_bl_data.sh \
-    --dat-dir data/extended_corpus
+    --dat-dir data/extended_corpus 2>&1 | tee /tmp/pipeline_run.log
 
-# Step 3 — continuous production scan (5 targets)
+# Step 3 — prod-scan
 caffeinate -i bash scripts/run_production_scan.sh \
     --dat-dir data/extended_corpus
 ```
-
-Expected behavior until turboSETI step is run (no `.dat` files):
-
-```bash
-ERROR no candidate manifests found in results
-Run candidate-producing pipeline steps first, or pass --allow-empty only for diagnostics. No production run artifacts were written.
-```
-
-To resume, first run `prod-runs`, copy the actual `run_dir`, and pass that real
-directory to `--resume-run-dir`. Never present the illustrative `RUN-...`
-pattern as a runnable path.
 
 Review commands:
 
@@ -270,9 +279,8 @@ git pull origin main
 .venv/bin/techno-search prod-non-detections --latest
 ```
 
-Latest known validation (PR #100, 2026-06-20):
+Latest known CI validation (PR #100, 2026-06-20):
 
-- `validate-all` ok: True — all gates pass including `triage_label_completeness.all_labels_covered: true`
 - `.venv/bin/python -m pytest -q` — 2430 passed, 13 skipped
 - `.venv/bin/ruff check .` — All checks passed
 - GitHub CI passed on PR #100 before merge (run #249, conclusion: success)
