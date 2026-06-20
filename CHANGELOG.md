@@ -17,8 +17,8 @@ or authorizes external submission.
 ### Added
 - Triage label completeness gate: 6th triage note (`triage-006`, label `defer`) added
   to fixture; `validate-all` `triage_label_completeness.all_labels_covered` now `true`
-- Batch turboSETI script for extended BL corpus (`scripts/run_batch_turboseti.sh`):
-  processes HIP66704, HIP74981, HIP82860 HDF5 files in sequence with caffeinate guard
+- Batch turboSETI script for extended BL corpus (`scripts/run_turboseti_on_extended_corpus.sh`):
+  processes all HDF5 files under `data/extended_corpus/` (HIP66704, HIP74981, HIP82860) idempotently
 - Extended corpus runbook update: `docs/PRODUCTION_SCAN_RUNBOOK.md` documents
   multi-target `.dat` acquisition workflow for the five non-Cygnus GBT targets
 
