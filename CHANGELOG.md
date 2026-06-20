@@ -10,6 +10,54 @@ or authorizes external submission.
 
 ## [Unreleased]
 
+---
+
+## [v0.79.0] — 2026-06-20 (Milestone 79 — Production Scan Hardening And Artifact Hygiene)
+
+### Added
+- Triage label completeness gate: 6th triage note (`triage-006`, label `defer`) added
+  to fixture; `validate-all` `triage_label_completeness.all_labels_covered` now `true`
+- Batch turboSETI script for extended BL corpus (`scripts/run_batch_turboseti.sh`):
+  processes HIP66704, HIP74981, HIP82860 HDF5 files in sequence with caffeinate guard
+- Extended corpus runbook update: `docs/PRODUCTION_SCAN_RUNBOOK.md` documents
+  multi-target `.dat` acquisition workflow for the five non-Cygnus GBT targets
+
+### Fixed
+- Non-deterministic turboSETI `.dat` discovery in `download_bl_hits.sh` and
+  `fetch_bl_alternative.sh` replaced with deterministic H5-stem prediction (DECISION-142)
+- Race condition and type hint error in `production_scan.py` multi-target path
+- HDBSCAN `copy=` FutureWarning silenced in `globular_filter.py`
+- `workers` parameter wired correctly through `run_multi_target_scan()` CLI path
+
+---
+
+## [v0.78.0] — 2026-06-19 (Milestone 78 — Production Scan UX And History)
+
+### Added
+- Production scan history: atomic NDJSON scan log (`results/scan_history.ndjson`);
+  `prod-target-queue`, `prod-record-scan`, `scan-history-summary` CLI commands (DECISION-141)
+- History-aware target queue: base priority 0.50 with +0.08 first-scan boost and
+  −0.04 per-scan penalty; `parent_run_id` chain for re-scan linking
+- `scripts/run_production_scan.sh` fully rewritten: acquires new `.dat` files via
+  `prod-target-queue`, runs continuous `while true` scan loop with SIGINT trap,
+  records each scan result, displays ranked queue with rationale
+- `docs/PRODUCTION_SCAN_RUNBOOK.md`: five rules of correct production scan orchestration
+- `prod-scan` and `prod-file-scan` fail closed when no candidate manifests exist;
+  zero-candidate runs require explicit `--allow-empty` (DECISION-140)
+- Model generalizability suite (DECISION-133): extended GBT corpus download script;
+  MeerKAT BLUSE 2M-hit ingest; setigen injection-recovery grid; cross-band feature
+  normalization (`normalize_drift_hz_s_per_ghz`, `is_earth_drift_consistent`,
+  `relative_snr`, `on_off_consistency_score`); GLOBULAR density pre-filter (HDBSCAN,
+  13 features, ~93% FP reduction); semi-supervised anomaly scorer (PCA + IsolationForest)
+- AI hardening evidence gate (DECISION-134/135/138/139) closed for local citizen-science
+  operations: setigen grid in real Voyager 1 GBT noise produced 75/75 recovered
+  injections, 256 valid turboSETI hit rows, and three recorded independent method-family
+  reviews; production promotion is local citizen-science operations only
+
+---
+
+## [v0.77.0] — 2026-06-16 (Milestone 77 — Escalation Gate Hardening)
+
 ### Added
 - External submission protocol (`docs/EXTERNAL_SUBMISSION_PROTOCOL.md`) with 7
   preconditions (P1–P7); DECISION-132
