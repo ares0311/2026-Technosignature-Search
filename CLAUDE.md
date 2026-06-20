@@ -237,11 +237,19 @@ git pull origin main
 
 ```bash
 git pull origin main
-caffeinate -i bash scripts/run_batch_turboseti.sh   # must run first if no .dat files exist
-caffeinate -i bash scripts/run_production_scan.sh
+# Step 1 — generate .dat hit tables from HDF5 files (idempotent)
+caffeinate -i bash scripts/run_turboseti_on_extended_corpus.sh
+
+# Step 2 — build candidate report manifests from hit tables
+caffeinate -i bash scripts/run_pipeline_on_bl_data.sh \
+    --dat-dir data/extended_corpus
+
+# Step 3 — continuous production scan (5 targets)
+caffeinate -i bash scripts/run_production_scan.sh \
+    --dat-dir data/extended_corpus
 ```
 
-Expected empty-input behavior (until turboSETI is run):
+Expected behavior until turboSETI step is run (no `.dat` files):
 
 ```bash
 ERROR no candidate manifests found in results
