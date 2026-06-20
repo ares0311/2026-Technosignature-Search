@@ -1672,3 +1672,9 @@ Total schemas: 188.
   promotion after the setigen injection-recovery grid produced 75/75 recovered
   injections in real Voyager 1 GBT noise, 256 valid turboSETI hit rows, a
   committed review-safe closure bundle, and preserved method abstentions.
+
+# Milestone 79 — Production Scan Hardening And Artifact Hygiene
+
+- **Compact terminal UX (DECISION-140)** — `prod-scan` and `scripts/run_production_scan.sh` made the canonical scan entry point; Rich spinner, compact per-target completion rows, `--no-rich` fallback, `prod-runs` / `prod-target-status` / `prod-follow-ups` / `prod-non-detections` review CLIs; fails closed when no candidate manifests loaded from `results/` (zero-candidate run requires `--allow-empty`); PR #88 merged
+- **Scan history and history-aware queue (DECISION-141)** — `prod_scan_queue.py` adds atomic NDJSON scan history (`results/scan_history.ndjson`), `build_target_queue()` (base 0.50 / +0.08 first-scan boost / −0.04 penalty), `parent_run_id` chain for re-scan linking; three new CLIs: `prod-target-queue`, `prod-record-scan`, `scan-history-summary`; `run_production_scan.sh` rewritten to discover new `.dat` files at runtime, display ranked queue with rationale, run `run-pipeline` in continuous `while true` loop with SIGINT trap, and record each scan result; `docs/PRODUCTION_SCAN_RUNBOOK.md`; 32 new tests; PR #94 merged
+- **Non-deterministic turboSETI .dat discovery fixed (DECISION-142)** — `find "$DATA_DIR" -name "*.dat" | head -1` replaced with deterministic H5-stem prediction in both `download_bl_hits.sh` and `fetch_bl_alternative.sh`; eliminates alphabetically-prior file capture when multiple `.dat` files exist; production scan candidate count now reflects actual observation targets; PR #95 merged

@@ -1,9 +1,9 @@
 {
   "schema_version": "project_status_consistency_v1",
   "expected_status": {
-    "latest_milestone_number": 78,
-    "latest_milestone_label": "AI Hardening Production Evidence Gate — Closed Local Production Gate",
-    "latest_decision_number": 141,
+    "latest_milestone_number": 79,
+    "latest_milestone_label": "Production Scan Hardening And Artifact Hygiene",
+    "latest_decision_number": 142,
     "schema_count": 110,
     "expected_rfi_real_data_authorization_total": 0,
     "expected_curated_real_data_authorization_total": 1,

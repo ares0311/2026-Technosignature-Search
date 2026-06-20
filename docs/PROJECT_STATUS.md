@@ -407,24 +407,36 @@ The project will support three tracks from day one:
 - [x] DECISION-134 AI hardening production blocker closed for local
       citizen-science production promotion via the injection-recovery closure
       evidence bundle
+- [x] Compact terminal UX (`prod-scan` / `run_production_scan.sh`) — fails closed
+      on empty candidate sets; Rich spinner; per-target completion rows; review
+      CLIs (`prod-runs`, `prod-target-status`, `prod-follow-ups`,
+      `prod-non-detections`); PR #88 merged (DECISION-140, Milestone 79)
+- [x] Production scan history and history-aware queue — atomic NDJSON history,
+      `build_target_queue()`, `parent_run_id` chain, three new CLIs, continuous
+      loop with SIGINT trap, `docs/PRODUCTION_SCAN_RUNBOOK.md`; PR #94 merged
+      (DECISION-141, Milestone 79)
+- [x] Non-deterministic turboSETI `.dat` discovery fixed — H5-stem prediction
+      replaces `find | head -1` in both download scripts; eliminates artifact
+      duplication when multiple `.dat` files coexist; PR #95 merged
+      (DECISION-142, Milestone 79)
 
 ## Next 3 Actions
 
-1. Run the production-readiness validation gate from a clean checkout and
-   preserve the command output as local operator evidence.
-2. Execute the first conservative production scan using
-   `docs/PRODUCTION_SCAN_GUIDE.md`, with live data still opt-in and no external
-   submission.
-3. Preserve the first scan's negative-result or escalation-gate record as local
-   operator evidence without making any discovery-style claim.
+1. Run `caffeinate -i bash scripts/run_production_scan.sh --dat-dir data/bl_hits`
+   to execute a live production scan and preserve the `results/scans/RUN-*/`
+   evidence bundle.
+2. Review `prod-follow-ups --latest` and `prod-non-detections --latest` output
+   after the scan completes.
+3. If any candidate passes the escalation gate, follow the operator steps in
+   `docs/EXTERNAL_SUBMISSION_PROTOCOL.md` before making any external claim.
 
 ---
 
 ## Next Milestone
 
-**Milestone 78 — Citizen-Science Production Run Evidence**
+**Milestone 79 — Production Scan Hardening And Artifact Hygiene**
 
-Status: DECISION-134 closed for local citizen-science production promotion.
+Status: CLOSED — DECISION-140, DECISION-141, and DECISION-142 all merged to `main`.
 
 Input:
 - reviewed local configuration
