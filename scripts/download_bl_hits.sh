@@ -67,9 +67,12 @@ if "$VENV" "$BL_FETCH" download-h5 "$VOYAGER_H5" --connections 16; then
   log "Option A: HDF5 download succeeded."
   log "Option A: running turboSETI ..."
   if "$VENV" "$BL_FETCH" run-turboseti "$VOYAGER_H5" "$DATA_DIR"; then
-    FOUND_DAT=$(find "$DATA_DIR" -name "*.dat" | head -1)
-    if [[ -n "$FOUND_DAT" ]]; then
-      REAL_DAT="$DATA_DIR/voyager1_hits.dat"
+    # Predict the turboSETI output name deterministically from the H5 stem.
+    # Using find|head -1 is wrong when pre-existing .dat files are present.
+    H5_STEM="$(basename "$VOYAGER_H5" .h5)"
+    FOUND_DAT="$DATA_DIR/${H5_STEM}.dat"
+    REAL_DAT="$DATA_DIR/voyager1_hits.dat"
+    if [[ -f "$FOUND_DAT" ]]; then
       [[ "$FOUND_DAT" != "$REAL_DAT" ]] && mv "$FOUND_DAT" "$REAL_DAT"
       rm -f "$VOYAGER_H5"
       log "Option A complete — REAL DATA."

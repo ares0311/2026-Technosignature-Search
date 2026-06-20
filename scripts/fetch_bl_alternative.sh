@@ -69,8 +69,11 @@ if "$VENV" "$BL_FETCH" download-h5 "$TSETI_H5" \
 
   log "Download succeeded.  Running turboSETI ..."
   if "$VENV" "$BL_FETCH" run-turboseti "$TSETI_H5" "$DATA_DIR"; then
-    FOUND_DAT=$(find "$DATA_DIR" -name "*.dat" ! -name "synthetic_*.dat" | head -1)
-    if [[ -n "$FOUND_DAT" ]]; then
+    # Predict the turboSETI output name deterministically from the H5 stem.
+    # Using find|head -1 is wrong when pre-existing .dat files are present.
+    H5_STEM="$(basename "$TSETI_H5" .h5)"
+    FOUND_DAT="$DATA_DIR/${H5_STEM}.dat"
+    if [[ -f "$FOUND_DAT" ]]; then
       [[ "$FOUND_DAT" != "$FINAL_DAT" ]] && mv "$FOUND_DAT" "$FINAL_DAT"
       rm -f "$TSETI_H5"
       log ""
