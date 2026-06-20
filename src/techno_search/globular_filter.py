@@ -179,6 +179,7 @@ def apply_globular_filter(
     clusterer = HDBSCAN(
         min_cluster_size=min_cluster_size,
         min_samples=min_samples,
+        copy=False,
     )
     labels: list[int] = list(clusterer.fit_predict(matrix))
 

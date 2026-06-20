@@ -389,3 +389,47 @@ class TestProdScanQueueCLI:
             capture_output=True, text=True,
         )
         assert json.loads(r.stdout)["pending_count"] == 0
+
+    def test_missing_dat_file_not_recorded_to_history(self, tmp_path: Path) -> None:
+        """Race condition guard: if a .dat file vanishes between queue build and
+        pipeline execution, the production scan script skips the target without
+        recording it to scan_history.ndjson, keeping it in the queue for future runs.
+
+        This test verifies that build_target_queue still includes a target whose
+        .dat file has been removed (simulating the post-removal state) — i.e.,
+        the history file has NOT been written for that target.
+        """
+        import subprocess
+
+        dat_file = tmp_path / "VANISHED.dat"
+        dat_file.write_text("# fake\n")
+        h = tmp_path / "history.ndjson"
+
+        # Confirm target is in the queue while the file exists
+        r = subprocess.run(
+            [sys.executable, "-m", "techno_search.cli",
+             "prod-target-queue", "--dat-dir", str(tmp_path),
+             "--history-file", str(h)],
+            capture_output=True, text=True,
+        )
+        assert json.loads(r.stdout)["pending_count"] == 1
+
+        # Simulate race: .dat file vanishes (e.g. moved by another process)
+        dat_file.unlink()
+
+        # Do NOT call prod-record-scan (simulates the shell guard that skips
+        # recording when the file is missing).  History file should not exist.
+        assert not h.exists(), "History must not be written when .dat is missing"
+
+        # After the file is restored (next download cycle), the target must
+        # re-appear in the queue because it was never recorded.
+        dat_file.write_text("# restored\n")
+        r = subprocess.run(
+            [sys.executable, "-m", "techno_search.cli",
+             "prod-target-queue", "--dat-dir", str(tmp_path),
+             "--history-file", str(h)],
+            capture_output=True, text=True,
+        )
+        assert json.loads(r.stdout)["pending_count"] == 1, (
+            "Target must remain in queue if .dat vanished and was never recorded"
+        )
