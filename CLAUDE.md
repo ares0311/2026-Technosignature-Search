@@ -197,7 +197,10 @@ Authoritative current state:
 - **PR #100 merged to `main`** (Milestone 79): triage label completeness gate
   closed (`all_labels_covered: true`), batch turboSETI script for extended
   corpus, blocker review evidence count corrected. All CI passed.
-- **PR #101 open (draft)**: CHANGELOG versioning for milestones 77–79; CI pending.
+- **PR #101 merged to `main`**: CHANGELOG versioning for milestones 77–79. CI passed.
+- **PR #102 merged to `main`**: documentation fix — corrected hallucinated script
+  name `run_batch_turboseti.sh` → `run_turboseti_on_extended_corpus.sh` in
+  CHANGELOG.md and PRODUCTION_READINESS.md. CI passed (run #255, success).
 - Tier 1 and Tier 2 are closed for local citizen-science production promotion.
 - All Tier 3 production-hardening gaps are also closed.
 - DECISION-134/139: AI hardening production gate closed for local
@@ -216,12 +219,9 @@ Authoritative current state:
   pipeline/data-availability work (run turboSETI on extended corpus HDF5 files).
 - **DATA AVAILABILITY BLOCKER (user-action required):** HIP66704, HIP74981,
   HIP82860 HDF5 files downloaded but turboSETI has not run on them yet; no
-  `.dat` hit tables exist; `prod-scan` queue shows 0 targets. Run:
-  ```bash
-  caffeinate -i bash scripts/run_batch_turboseti.sh
-  ```
-  This produces `.dat` files from which `prod-scan` can generate candidate
-  reports. Cannot be done by the agent in the remote environment.
+  `.dat` hit tables exist; `prod-scan` queue shows 0 targets. The canonical
+  script is `scripts/run_turboseti_on_extended_corpus.sh` (confirmed on disk).
+  Cannot be done by the agent in the remote environment.
 - Do not provide placeholder run paths (`RUN-YYYY...`, `<actual-RUN-dir>`, or
   similar) as runnable commands. Use real commands only; for inspection, prefer
   `--latest` after a real run exists.
