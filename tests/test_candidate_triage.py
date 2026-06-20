@@ -33,9 +33,9 @@ def test_triage_disclaimer_is_conservative() -> None:
     assert "detection" in disclaimer.lower() or "claim" in disclaimer.lower()
 
 
-def test_triage_fixture_loads_five_notes() -> None:
+def test_triage_fixture_loads_six_notes() -> None:
     notes = load_triage_notes()
-    assert len(notes) == 5
+    assert len(notes) == 6
 
 
 def test_triage_notes_are_dataclass_instances() -> None:
@@ -63,12 +63,12 @@ def test_triage_note_labels_are_allowed() -> None:
 
 def test_triage_summary_note_count() -> None:
     summary = triage_summary()
-    assert summary["note_count"] == 5
+    assert summary["note_count"] == 6
 
 
 def test_triage_summary_unique_candidate_count() -> None:
     summary = triage_summary()
-    assert summary["unique_candidate_count"] == 5
+    assert summary["unique_candidate_count"] == 6
 
 
 def test_triage_summary_unique_operator_count() -> None:
@@ -78,7 +78,7 @@ def test_triage_summary_unique_operator_count() -> None:
 
 def test_triage_summary_follow_up_required_count() -> None:
     summary = triage_summary()
-    assert summary["follow_up_required_count"] == 2
+    assert summary["follow_up_required_count"] == 3
 
 
 def test_triage_summary_by_track_covers_all_tracks() -> None:
@@ -87,7 +87,7 @@ def test_triage_summary_by_track_covers_all_tracks() -> None:
     assert set(summary["tracks_covered"]) == {"radio", "infrared", "anomaly"}
     assert by_track["radio"] == 2
     assert by_track["infrared"] == 2
-    assert by_track["anomaly"] == 1
+    assert by_track["anomaly"] == 2
 
 
 def test_triage_summary_by_label_covers_expected_labels() -> None:
@@ -98,6 +98,7 @@ def test_triage_summary_by_label_covers_expected_labels() -> None:
     assert "follow_up_target" in labels
     assert "known_object_annotation" in labels
     assert "insufficient_evidence" in labels
+    assert "defer" in labels
 
 
 def test_triage_summary_blocking_reason_total() -> None:
@@ -128,7 +129,7 @@ def test_cli_triage_summary_outputs_json() -> None:
     main(["triage-summary"], stdout=stdout)
     result = json.loads(stdout.getvalue())
     assert result["schema_version"] == "candidate_triage_v1"
-    assert result["note_count"] == 5
+    assert result["note_count"] == 6
     assert "by_label" in result
     assert "by_track" in result
     assert "disclaimer" in result

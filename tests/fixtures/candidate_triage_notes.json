@@ -61,6 +61,18 @@
       "blocking_reasons": ["poor_photometric_quality", "pending_additional_photometry"],
       "follow_up_required": false,
       "annotation_tags": ["poor_photometry", "defer_pending_data"]
+    },
+    {
+      "note_id": "triage-006",
+      "candidate_id": "synth-anomaly-2026-002",
+      "track": "anomaly",
+      "triage_label": "defer",
+      "operator_id": "operator-a",
+      "note_text": "Archival image quality insufficient for reliable crossmatch at current epoch. Deferring triage pending higher-resolution archival imaging availability. No pathway decision at this time.",
+      "created_utc": "2026-05-06T09:00:00Z",
+      "blocking_reasons": ["insufficient_archival_resolution", "pending_imaging_data"],
+      "follow_up_required": true,
+      "annotation_tags": ["defer_pending_imaging", "archival_resolution_insufficient"]
     }
   ]
 }

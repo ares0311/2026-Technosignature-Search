@@ -70,8 +70,8 @@ def test_blocker_review_preserves_residual_blockers_and_zero_authorization(
 def test_blocker_review_accounts_for_all_detail_evidence(tmp_path) -> None:
     detail = _detail_summary(tmp_path)
     result = operations_blocker_review_summary(blocker_detail_summary=detail)
-    assert result["detail_evidence_record_count"] == 22
-    assert result["reviewed_evidence_record_count"] == 22
+    assert result["detail_evidence_record_count"] == 23
+    assert result["reviewed_evidence_record_count"] == 23
     assert result["unreviewed_evidence_record_count"] == 0
     assert result["evidence_count_mismatch_count"] == 0
     assert result["all_detail_evidence_reviewed"] is True
