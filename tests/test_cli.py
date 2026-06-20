@@ -2390,7 +2390,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     )
     assert result["operations_blocker_detail_sqlite_context_is_resolved"] is True
     assert result["operations_blocker_review_record_count"] == 7
-    assert result["operations_blocker_review_reviewed_evidence_record_count"] == 22
+    assert result["operations_blocker_review_reviewed_evidence_record_count"] == 23
     assert result["operations_blocker_review_unreviewed_evidence_record_count"] == 0
     assert result["operations_blocker_review_residual_blocker_total"] == 26
     assert result["operations_blocker_review_live_data_authorized_count"] == 0
