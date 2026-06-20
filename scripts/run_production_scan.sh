@@ -239,6 +239,13 @@ while true; do
         PARENT_RUN_ID_ARG="--parent-run-id ${RUN_ID}"
     fi
 
+    # Guard: skip without recording history if the .dat file vanished since
+    # the queue was built (race condition between queue rebuild and pipeline run).
+    if [[ ! -f "${DAT_FILE}" ]]; then
+        warn "dat file no longer present — skipping without recording: ${DAT_FILE}"
+        continue
+    fi
+
     # Run the pipeline on this target
     TARGET_OUTPUT_DIR="${OUTPUT_DIR}/${TARGET_STEM}"
     mkdir -p "${TARGET_OUTPUT_DIR}"

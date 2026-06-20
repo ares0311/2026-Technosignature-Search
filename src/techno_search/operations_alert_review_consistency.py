@@ -14,7 +14,7 @@ from techno_search.operations_readiness import operations_readiness_summary
 from techno_search.quality_control_summary import quality_control_summary
 
 
-def alert_resolution_summary(_path: object = None) -> dict:  # type: ignore[type-arg]
+def alert_resolution_summary(_path: Path | str | None = None) -> dict[str, Any]:
     if _path is not None:
         try:
             data = json.loads(Path(str(_path)).read_text(encoding="utf-8"))
@@ -26,7 +26,7 @@ def alert_resolution_summary(_path: object = None) -> dict:  # type: ignore[type
     return {"open_count": 0, "entry_count": 0}
 
 
-def load_alert_resolution_entries(_path: object = None) -> list:  # type: ignore[type-arg]
+def load_alert_resolution_entries(_path: Path | str | None = None) -> list[Any]:
     if _path is not None:
         try:
             data = json.loads(Path(str(_path)).read_text(encoding="utf-8"))
@@ -36,7 +36,7 @@ def load_alert_resolution_entries(_path: object = None) -> list:  # type: ignore
     return []
 
 
-def candidate_alert_summary(_path: object = None) -> dict:  # type: ignore[type-arg]
+def candidate_alert_summary(_path: Path | str | None = None) -> dict[str, Any]:
     if _path is not None:
         try:
             data = json.loads(Path(str(_path)).read_text(encoding="utf-8"))
@@ -52,7 +52,7 @@ def candidate_alert_summary(_path: object = None) -> dict:  # type: ignore[type-
     return {"open_count": 0, "critical_open_count": 0}
 
 
-def load_alert_entries(_path: object = None) -> list:  # type: ignore[type-arg]
+def load_alert_entries(_path: Path | str | None = None) -> list[Any]:
     if _path is not None:
         try:
             data = json.loads(Path(str(_path)).read_text(encoding="utf-8"))
