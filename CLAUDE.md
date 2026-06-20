@@ -189,24 +189,39 @@ given to the user.
 
 ---
 
-## Current Live Handoff — 2026-06-19
+## Current Live Handoff — 2026-06-20
 
 Authoritative current state:
 
 - User stays on `main`; agents develop on `claude/general-session-Bb2dZ`.
-- PR #88 was merged to `main`; local production terminal UX now fails closed on
-  empty candidate sets.
+- **PR #100 merged to `main`** (Milestone 79): triage label completeness gate
+  closed (`all_labels_covered: true`), batch turboSETI script for extended
+  corpus, blocker review evidence count corrected. All CI passed.
+- **PR #101 open (draft)**: CHANGELOG versioning for milestones 77–79; CI pending.
 - Tier 1 and Tier 2 are closed for local citizen-science production promotion.
+- All Tier 3 production-hardening gaps are also closed.
 - DECISION-134/139: AI hardening production gate closed for local
   citizen-science operations only.
 - DECISION-140: `prod-scan` and `scripts/run_production_scan.sh` are the
   canonical compact production scan UX.
+- DECISION-141: `prod-target-queue`, `prod-record-scan`, `scan-history-summary`
+  CLI commands active; continuous scan loop with SIGINT trap in production script.
+- DECISION-142: non-deterministic turboSETI `.dat` discovery fixed in
+  download scripts.
 - `prod-scan` evaluates existing candidate report manifests under `results/`;
   it does not discover candidates directly from raw survey files.
 - If the current local checkout has no candidate manifests under `results/`,
   `prod-scan` must print `ERROR no candidate manifests found` and exit nonzero.
   This is correct. The next production task is upstream candidate-producing
-  pipeline/data-availability work, not another scan inspection command.
+  pipeline/data-availability work (run turboSETI on extended corpus HDF5 files).
+- **DATA AVAILABILITY BLOCKER (user-action required):** HIP66704, HIP74981,
+  HIP82860 HDF5 files downloaded but turboSETI has not run on them yet; no
+  `.dat` hit tables exist; `prod-scan` queue shows 0 targets. Run:
+  ```bash
+  caffeinate -i bash scripts/run_batch_turboseti.sh
+  ```
+  This produces `.dat` files from which `prod-scan` can generate candidate
+  reports. Cannot be done by the agent in the remote environment.
 - Do not provide placeholder run paths (`RUN-YYYY...`, `<actual-RUN-dir>`, or
   similar) as runnable commands. Use real commands only; for inspection, prefer
   `--latest` after a real run exists.
@@ -222,10 +237,11 @@ git pull origin main
 
 ```bash
 git pull origin main
+caffeinate -i bash scripts/run_batch_turboseti.sh   # must run first if no .dat files exist
 caffeinate -i bash scripts/run_production_scan.sh
 ```
 
-Expected empty-input behavior:
+Expected empty-input behavior (until turboSETI is run):
 
 ```bash
 ERROR no candidate manifests found in results
@@ -246,14 +262,12 @@ git pull origin main
 .venv/bin/techno-search prod-non-detections --latest
 ```
 
-Latest known validation from the merged PR #88 work:
+Latest known validation (PR #100, 2026-06-20):
 
-- `.venv/bin/techno-search prod-scan --no-rich` exits 1 when no candidate
-  manifests exist and writes no new `RUN-*` artifacts.
-- `.venv/bin/python -m pytest tests/test_production_scan.py tests/test_cli.py::test_cli_prod_scan_routes_to_compact_runner tests/test_cli.py::test_cli_prod_scan_forwards_allow_empty tests/test_cli.py::test_cli_prod_latest_reports_no_runs_without_placeholder_path tests/test_docs.py -q` passed with 16 tests.
-- `.venv/bin/ruff check src/techno_search/cli.py src/techno_search/production_scan.py tests/test_cli.py tests/test_production_scan.py` passed.
-- `.venv/bin/python -m mypy src/techno_search/cli.py src/techno_search/production_scan.py --no-error-summary` passed.
-- GitHub PR checks passed before merge.
+- `validate-all` ok: True — all gates pass including `triage_label_completeness.all_labels_covered: true`
+- `.venv/bin/python -m pytest -q` — 2430 passed, 13 skipped
+- `.venv/bin/ruff check .` — All checks passed
+- GitHub CI passed on PR #100 before merge (run #249, conclusion: success)
 
 Older iteration notes below are historical continuity only. Do not treat them
 as current task authorization without re-reading `AGENTS.md` and
