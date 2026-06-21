@@ -215,10 +215,10 @@ pasted the results — even across sessions. This file is the memory between ses
   non-detection manifests instead of errors. This closes the root cause of 0 prod-scan
   targets. CI: no GitHub Actions run triggered (force-push); tests passed locally
   (2431 passed, 13 skipped).
-- **PR #105 open on `claude/general-session-Bb2dZ`**: CLAUDE.md state update —
+- **PR #105 merged to `main`**: CLAUDE.md state update —
   records 10th–12th validate-all results, ROOT CAUSE OF PERSISTENT 0 TARGETS
   (`scan_history.ndjson` has all stems as `pipeline_failed`), and `--force-rescan`
-  as next step. Marked ready for review by user.
+  as next step.
 - Tier 1 and Tier 2 are closed for local citizen-science production promotion.
 - All Tier 3 production-hardening gaps are also closed.
 - DECISION-134/139: AI hardening production gate closed for local
@@ -263,6 +263,14 @@ pasted the results — even across sessions. This file is the memory between ses
 - SQLite backup count: **924 files (~970MB in Dropbox logs/backups/)**
 - prod-scan result: **0 pending targets, 0 scanned** — queue STILL exhausted
   (expected: `--force-rescan` was NOT passed)
+
+**13th run (2026-06-21T15:06:14, WITHOUT --force-rescan):**
+- `validate-all`: PASSED (ok: True)
+- SQLite log: run_count: **951**, reviewed_no_follow_up: 947, needs_follow_up_logged: 4
+- SQLite backup count: **925 files (~972MB in Dropbox logs/backups/)**
+- external_submission_approved_count: 0, network_access_allowed_count: 0
+- prod-scan result: **0 pending targets, 0 scanned** — queue STILL exhausted
+  (`--force-rescan` was NOT passed — flag is required to re-queue pipeline_failed stems)
 
 ### ROOT CAUSE OF 0 TARGETS — FIXED IN PR #104:
 
