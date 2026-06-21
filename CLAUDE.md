@@ -210,9 +210,11 @@ pasted the results — even across sessions. This file is the memory between ses
   CHANGELOG.md and PRODUCTION_READINESS.md. CI passed (run #255, success).
 - **PR #103 merged to `main`**: CLAUDE.md state fix — removed stale "turboSETI has
   not run yet" claim, added RESULT RECORDING RULE, recorded 9th validate-all result.
-- **PR #104 (in progress)**: Zero-hit `.dat` pipeline fix — pipeline_runner and
-  data_quality now handle zero-hit turboSETI output as non-detection manifests
-  instead of errors. This is the root cause of 0 prod-scan targets.
+- **PR #104 merged to `main`** (2026-06-21): Zero-hit `.dat` pipeline fix —
+  `pipeline_runner` and `data_quality` now handle zero-hit turboSETI output as
+  non-detection manifests instead of errors. This closes the root cause of 0 prod-scan
+  targets. CI: no GitHub Actions run triggered (force-push); tests passed locally
+  (2431 passed, 13 skipped).
 - Tier 1 and Tier 2 are closed for local citizen-science production promotion.
 - All Tier 3 production-hardening gaps are also closed.
 - DECISION-134/139: AI hardening production gate closed for local
