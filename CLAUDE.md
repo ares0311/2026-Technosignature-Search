@@ -282,6 +282,14 @@ pasted the results — even across sessions. This file is the memory between ses
 - prod-scan result: **0 pending targets, 0 scanned** — queue STILL exhausted
   (`--force-rescan` was NOT passed — flag is required to re-queue pipeline_failed stems)
 
+**15th run (2026-06-21T11:34:06, WITHOUT --force-rescan):**
+- `validate-all`: PASSED (ok: True)
+- SQLite log: run_count: **953**, reviewed_no_follow_up: 949, needs_follow_up_logged: 4
+- SQLite backup count: **927 files (~976MB in Dropbox logs/backups/)**
+- external_submission_approved_count: 0, network_access_allowed_count: 0
+- prod-scan result: **0 pending targets, 0 scanned** — queue STILL exhausted
+  (`--force-rescan` was NOT passed — flag is required to re-queue pipeline_failed stems)
+
 ### ROOT CAUSE OF 0 TARGETS — FIXED IN PR #104:
 
 **Root cause:** `pipeline_runner._build_radio_candidate` raised `ValueError("No valid hits
