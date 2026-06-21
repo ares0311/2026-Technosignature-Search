@@ -189,7 +189,7 @@ given to the user.
 
 ---
 
-## Current Live Handoff — 2026-06-20
+## Current Live Handoff — 2026-06-21
 
 ### RESULT RECORDING RULE — NON-NEGOTIABLE
 
@@ -210,9 +210,15 @@ pasted the results — even across sessions. This file is the memory between ses
   CHANGELOG.md and PRODUCTION_READINESS.md. CI passed (run #255, success).
 - **PR #103 merged to `main`**: CLAUDE.md state fix — removed stale "turboSETI has
   not run yet" claim, added RESULT RECORDING RULE, recorded 9th validate-all result.
-- **PR #104 (in progress)**: Zero-hit `.dat` pipeline fix — pipeline_runner and
-  data_quality now handle zero-hit turboSETI output as non-detection manifests
-  instead of errors. This is the root cause of 0 prod-scan targets.
+- **PR #104 merged to `main`** (2026-06-21): Zero-hit `.dat` pipeline fix —
+  `pipeline_runner` and `data_quality` now handle zero-hit turboSETI output as
+  non-detection manifests instead of errors. This closes the root cause of 0 prod-scan
+  targets. CI: no GitHub Actions run triggered (force-push); tests passed locally
+  (2431 passed, 13 skipped).
+- **PR #105 open on `claude/general-session-Bb2dZ`**: CLAUDE.md state update —
+  records 10th–12th validate-all results, ROOT CAUSE OF PERSISTENT 0 TARGETS
+  (`scan_history.ndjson` has all stems as `pipeline_failed`), and `--force-rescan`
+  as next step. Marked ready for review by user.
 - Tier 1 and Tier 2 are closed for local citizen-science production promotion.
 - All Tier 3 production-hardening gaps are also closed.
 - DECISION-134/139: AI hardening production gate closed for local
@@ -231,17 +237,32 @@ pasted the results — even across sessions. This file is the memory between ses
 - External submission, discovery/detection, expert review, peer review, and
   external validation remain unclaimed and blocked.
 
-### Latest known validate-all result (user-pasted 9th time, 2026-06-20):
+### Latest known validate-all results (user-pasted, 2026-06-21):
 
+**10th run (corrected numbers):**
 - `validate-all`: PASSED (ok: True)
 - `triage_label_completeness.all_labels_covered`: true
 - `external_submission_approved_count`: 0
 - `network_access_allowed_count`: 0
 - `semisupervised_scorer`: is_fitted: false, train_hit_count: 0
-- SQLite log: run_count: **946**, reviewed_no_follow_up: 942, needs_follow_up_logged: 4
-- SQLite backup count: **920 files (~917MB in Dropbox logs/backups/)** — accumulating
+- SQLite log: run_count: **948**, reviewed_no_follow_up: 944, needs_follow_up_logged: 4
+- SQLite backup count: **922 files (~966MB in Dropbox logs/backups/)** — accumulating
   each validate-all run; secondary cleanup issue, does not block pipeline
-- prod-scan result: **0 pending targets, 0 scanned** — queue exhausted
+- prod-scan result: **0 pending targets, 0 scanned** — queue STILL exhausted (see root cause below)
+
+**11th run (2026-06-21T04:30:34, WITHOUT --force-rescan):**
+- `validate-all`: PASSED (ok: True)
+- SQLite log: run_count: **949**, reviewed_no_follow_up: 945, needs_follow_up_logged: 4
+- SQLite backup count: **923 files (~968MB in Dropbox logs/backups/)**
+- prod-scan result: **0 pending targets, 0 scanned** — queue STILL exhausted
+  (expected: `--force-rescan` was NOT passed)
+
+**12th run (2026-06-21T04:31:00, WITHOUT --force-rescan):**
+- `validate-all`: PASSED (ok: True)
+- SQLite log: run_count: **950**, reviewed_no_follow_up: 946, needs_follow_up_logged: 4
+- SQLite backup count: **924 files (~970MB in Dropbox logs/backups/)**
+- prod-scan result: **0 pending targets, 0 scanned** — queue STILL exhausted
+  (expected: `--force-rescan` was NOT passed)
 
 ### ROOT CAUSE OF 0 TARGETS — FIXED IN PR #104:
 
@@ -262,28 +283,55 @@ manifest → prod-scan saw 0 targets.
 **After user runs `git pull origin main` + pipeline, zero-hit targets WILL appear in
 prod-scan as non-detections instead of being silently dropped.**
 
-### turboSETI / pipeline run status (as of 2026-06-20):
+### turboSETI / pipeline run status (as of 2026-06-21):
 
 **IMPORTANT: The user has run turboSETI 6+ times (confirmed). DO NOT ask to re-run it.
-The `.dat` files exist locally under `data/extended_corpus/<target>/`.
-The fix was in the pipeline code — now merged. User needs to run pipeline script only.**
+The `.dat` files exist locally under `data/extended_corpus/<target>/`.**
+
+**PIPELINE RUN RESULT (user-pasted 2026-06-21T04:02):**
+```
+[2026-06-21T04:02:22] Found 5 .dat file(s) recursively
+[2026-06-21T04:02:23]   Skipping (manifest exists): HIP17147/...dat
+[2026-06-21T04:02:23]   Skipping (manifest exists): HIP39826/...dat
+[2026-06-21T04:02:23]   Processing: HIP66704 -> results/HIP66704/...
+[2026-06-21T04:02:23]   Processing: HIP82860 -> results/HIP82860/...
+[2026-06-21T04:02:23]   Processing: HIP74981 -> results/HIP74981/...
+[2026-06-21T04:02:24]   OK: HIP82860
+[2026-06-21T04:02:24]   OK: HIP74981
+[2026-06-21T04:02:24]   OK: HIP66704
+[2026-06-21T04:02:24] Done: 5 OK, 0 failed
+```
 
 - turboSETI run status: Run 6+ times (confirmed 2026-06-20). `.dat` files exist locally.
 - `.dat` files: Live on user's macOS machine at `data/extended_corpus/`. Not in remote env.
-- pipeline run status: **UNKNOWN** — user needs to re-run pipeline after `git pull`
-- prod-scan queue: 0 targets before fix; should populate after pipeline runs with fix
+- pipeline run status: **COMPLETE (2026-06-21)** — 5 OK, 0 failed. Non-detection manifests
+  written for HIP66704, HIP74981, HIP82860. HIP17147 and HIP39826 skipped (had existing manifests).
+- prod-scan queue: **STILL 0 targets after pipeline ran** — see root cause below.
 
-### Next steps for user (after PR #104 merges):
+### ROOT CAUSE OF PERSISTENT 0 TARGETS (discovered 2026-06-21):
+
+**Root cause:** `run_production_scan.sh` uses `prod-target-queue --dat-dir data/extended_corpus`
+which checks `results/scan_history.ndjson` to determine pending targets. All 5 `.dat` file
+stems (HIP17147, HIP39826, HIP66704, HIP74981, HIP82860) were already recorded in that
+history from PRIOR runs of `run_production_scan.sh` (before the PR #104 fix). Those prior
+runs recorded them as `pipeline_failed` with pathway `pipeline_failed` because zero-hit
+`.dat` files caused the pipeline to error. Since all stems are in the history,
+`prod-target-queue` returns 0 pending targets.
+
+This is SEPARATE from the PR #104 pipeline fix. PR #104 fixed the pipeline. This new
+root cause is that `scan_history.ndjson` still has all 5 targets as "already scanned".
+
+**Fix: use `--force-rescan`** — this re-queues already-scanned targets (with a penalty
+score). The pipeline will now succeed for all 5 (PR #104 is merged), producing proper
+non-detection manifests. No code change needed.
+
+### Next step for user (use --force-rescan):
 
 ```bash
 git pull origin main
-# Re-run pipeline on extended corpus (now handles zero-hit .dat files)
-caffeinate -i bash scripts/run_pipeline_on_bl_data.sh \
-    --dat-dir data/extended_corpus 2>&1 | tee /tmp/pipeline_run.log
-
-# Then run prod-scan — should now see non-detection targets
 caffeinate -i bash scripts/run_production_scan.sh \
-    --dat-dir data/extended_corpus
+    --dat-dir data/extended_corpus \
+    --force-rescan
 ```
 
 ### Canonical commands (give these, then record the pasted output):
