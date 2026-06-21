@@ -189,7 +189,7 @@ given to the user.
 
 ---
 
-## Current Live Handoff — 2026-06-20
+## Current Live Handoff — 2026-06-21
 
 ### RESULT RECORDING RULE — NON-NEGOTIABLE
 
@@ -264,26 +264,35 @@ manifest → prod-scan saw 0 targets.
 **After user runs `git pull origin main` + pipeline, zero-hit targets WILL appear in
 prod-scan as non-detections instead of being silently dropped.**
 
-### turboSETI / pipeline run status (as of 2026-06-20):
+### turboSETI / pipeline run status (as of 2026-06-21):
 
 **IMPORTANT: The user has run turboSETI 6+ times (confirmed). DO NOT ask to re-run it.
-The `.dat` files exist locally under `data/extended_corpus/<target>/`.
-The fix was in the pipeline code — now merged. User needs to run pipeline script only.**
+The `.dat` files exist locally under `data/extended_corpus/<target>/`.**
+
+**PIPELINE RUN RESULT (user-pasted 2026-06-21T04:02):**
+```
+[2026-06-21T04:02:22] Found 5 .dat file(s) recursively
+[2026-06-21T04:02:23]   Skipping (manifest exists): HIP17147/...dat
+[2026-06-21T04:02:23]   Skipping (manifest exists): HIP39826/...dat
+[2026-06-21T04:02:23]   Processing: HIP66704 -> results/HIP66704/...
+[2026-06-21T04:02:23]   Processing: HIP82860 -> results/HIP82860/...
+[2026-06-21T04:02:23]   Processing: HIP74981 -> results/HIP74981/...
+[2026-06-21T04:02:24]   OK: HIP82860
+[2026-06-21T04:02:24]   OK: HIP74981
+[2026-06-21T04:02:24]   OK: HIP66704
+[2026-06-21T04:02:24] Done: 5 OK, 0 failed
+```
 
 - turboSETI run status: Run 6+ times (confirmed 2026-06-20). `.dat` files exist locally.
 - `.dat` files: Live on user's macOS machine at `data/extended_corpus/`. Not in remote env.
-- pipeline run status: **UNKNOWN** — user needs to re-run pipeline after `git pull`
-- prod-scan queue: 0 targets before fix; should populate after pipeline runs with fix
+- pipeline run status: **COMPLETE (2026-06-21)** — 5 OK, 0 failed. Non-detection manifests
+  written for HIP66704, HIP74981, HIP82860. HIP17147 and HIP39826 skipped (had existing manifests).
+- prod-scan queue: Was 0 targets; **should now show HIP66704, HIP74981, HIP82860 as non-detections**.
 
-### Next steps for user (after PR #104 merges):
+### Next step for user (pipeline DONE — run prod-scan to verify):
 
 ```bash
 git pull origin main
-# Re-run pipeline on extended corpus (now handles zero-hit .dat files)
-caffeinate -i bash scripts/run_pipeline_on_bl_data.sh \
-    --dat-dir data/extended_corpus 2>&1 | tee /tmp/pipeline_run.log
-
-# Then run prod-scan — should now see non-detection targets
 caffeinate -i bash scripts/run_production_scan.sh \
     --dat-dir data/extended_corpus
 ```
