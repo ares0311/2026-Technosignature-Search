@@ -225,6 +225,8 @@ pasted the results — even across sessions. This file is the memory between ses
   result (run_count 952, 0 prod-scan targets, `--force-rescan` NOT passed).
 - **PR #108 merged to `main`**: CLAUDE.md state update — records 15th validate-all
   result (run_count 953, 0 prod-scan targets, `--force-rescan` NOT passed).
+- **PR #109 merged to `main`**: CLAUDE.md state update — records 16th validate-all
+  result (run_count 954, 0 prod-scan targets, `--force-rescan` NOT passed).
 - Tier 1 and Tier 2 are closed for local citizen-science production promotion.
 - All Tier 3 production-hardening gaps are also closed.
 - DECISION-134/139: AI hardening production gate closed for local
@@ -298,6 +300,14 @@ pasted the results — even across sessions. This file is the memory between ses
 - `validate-all`: PASSED (ok: True)
 - SQLite log: run_count: **954**, reviewed_no_follow_up: 950, needs_follow_up_logged: 4
 - SQLite backup count: **928 files (~978MB in Dropbox logs/backups/)**
+- external_submission_approved_count: 0, network_access_allowed_count: 0
+- prod-scan result: **0 pending targets, 0 scanned** — queue STILL exhausted
+  (`--force-rescan` was NOT passed — flag is required to re-queue pipeline_failed stems)
+
+**17th run (2026-06-21T17:48:17, WITHOUT --force-rescan):**
+- `validate-all`: PASSED (ok: True)
+- SQLite log: run_count: **955**, reviewed_no_follow_up: 951, needs_follow_up_logged: 4
+- SQLite backup count: **929 files (~980MB in Dropbox logs/backups/)**
 - external_submission_approved_count: 0, network_access_allowed_count: 0
 - prod-scan result: **0 pending targets, 0 scanned** — queue STILL exhausted
   (`--force-rescan` was NOT passed — flag is required to re-queue pipeline_failed stems)
