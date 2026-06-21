@@ -219,6 +219,8 @@ pasted the results — even across sessions. This file is the memory between ses
   records 10th–12th validate-all results, ROOT CAUSE OF PERSISTENT 0 TARGETS
   (`scan_history.ndjson` has all stems as `pipeline_failed`), and `--force-rescan`
   as next step.
+- **PR #106 merged to `main`**: CLAUDE.md state update — records 13th validate-all
+  result (run_count 951, 0 prod-scan targets, `--force-rescan` NOT passed).
 - Tier 1 and Tier 2 are closed for local citizen-science production promotion.
 - All Tier 3 production-hardening gaps are also closed.
 - DECISION-134/139: AI hardening production gate closed for local
@@ -268,6 +270,14 @@ pasted the results — even across sessions. This file is the memory between ses
 - `validate-all`: PASSED (ok: True)
 - SQLite log: run_count: **951**, reviewed_no_follow_up: 947, needs_follow_up_logged: 4
 - SQLite backup count: **925 files (~972MB in Dropbox logs/backups/)**
+- external_submission_approved_count: 0, network_access_allowed_count: 0
+- prod-scan result: **0 pending targets, 0 scanned** — queue STILL exhausted
+  (`--force-rescan` was NOT passed — flag is required to re-queue pipeline_failed stems)
+
+**14th run (2026-06-21T11:23:37, WITHOUT --force-rescan):**
+- `validate-all`: PASSED (ok: True)
+- SQLite log: run_count: **952**, reviewed_no_follow_up: 948, needs_follow_up_logged: 4
+- SQLite backup count: **926 files (~974MB in Dropbox logs/backups/)**
 - external_submission_approved_count: 0, network_access_allowed_count: 0
 - prod-scan result: **0 pending targets, 0 scanned** — queue STILL exhausted
   (`--force-rescan` was NOT passed — flag is required to re-queue pipeline_failed stems)
