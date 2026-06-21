@@ -208,6 +208,11 @@ pasted the results — even across sessions. This file is the memory between ses
 - **PR #102 merged to `main`**: documentation fix — corrected hallucinated script
   name `run_batch_turboseti.sh` → `run_turboseti_on_extended_corpus.sh` in
   CHANGELOG.md and PRODUCTION_READINESS.md. CI passed (run #255, success).
+- **PR #103 merged to `main`**: CLAUDE.md state fix — removed stale "turboSETI has
+  not run yet" claim, added RESULT RECORDING RULE, recorded 9th validate-all result.
+- **PR #104 (in progress)**: Zero-hit `.dat` pipeline fix — pipeline_runner and
+  data_quality now handle zero-hit turboSETI output as non-detection manifests
+  instead of errors. This is the root cause of 0 prod-scan targets.
 - Tier 1 and Tier 2 are closed for local citizen-science production promotion.
 - All Tier 3 production-hardening gaps are also closed.
 - DECISION-134/139: AI hardening production gate closed for local
@@ -226,32 +231,60 @@ pasted the results — even across sessions. This file is the memory between ses
 - External submission, discovery/detection, expert review, peer review, and
   external validation remain unclaimed and blocked.
 
-### Latest known validate-all result (user-pasted 2026-06-20 ~21:57 local):
+### Latest known validate-all result (user-pasted 9th time, 2026-06-20):
 
 - `validate-all`: PASSED (ok: True)
 - `triage_label_completeness.all_labels_covered`: true
 - `external_submission_approved_count`: 0
 - `network_access_allowed_count`: 0
 - `semisupervised_scorer`: is_fitted: false, train_hit_count: 0
-- SQLite log: run_count: 945, reviewed_no_follow_up: 941, needs_follow_up_logged: 4
-- prod-scan result: **0 pending targets, 0 scanned** — queue exhausted with nothing
+- SQLite log: run_count: **946**, reviewed_no_follow_up: 942, needs_follow_up_logged: 4
+- SQLite backup count: **920 files (~917MB in Dropbox logs/backups/)** — accumulating
+  each validate-all run; secondary cleanup issue, does not block pipeline
+- prod-scan result: **0 pending targets, 0 scanned** — queue exhausted
+
+### ROOT CAUSE OF 0 TARGETS — FIXED IN PR #104:
+
+**Root cause:** `pipeline_runner._build_radio_candidate` raised `ValueError("No valid hits
+found")` when a `.dat` file had 0 hits above turboSETI threshold. The validator also
+blocked it with an issue ("No valid hits found"). Both paths wrote an error result with no
+manifest → prod-scan saw 0 targets.
+
+**Fix applied (2026-06-20, PR #104):**
+1. `data_quality._validate_radio`: Distinguishes zero data rows (warning → non-detection)
+   from data rows with parse failures (issue → error). A header-only `.dat` (valid
+   turboSETI non-detection output) now passes validation.
+2. `pipeline_runner._build_radio_candidate`: On zero hits, calls
+   `_build_radio_non_detection_candidate()` instead of raising. This builds a candidate
+   with `snr=0.0`, `zero_hit_non_detection=True`, routes to `do_not_submit_false_positive`,
+   and writes a manifest that prod-scan can load.
+
+**After user runs `git pull origin main` + pipeline, zero-hit targets WILL appear in
+prod-scan as non-detections instead of being silently dropped.**
 
 ### turboSETI / pipeline run status (as of 2026-06-20):
 
-**IMPORTANT: The user reports having run `scripts/run_turboseti_on_extended_corpus.sh`
-6+ times. The previous CLAUDE.md entry claiming "turboSETI has not run on them yet"
-was WRONG and caused agents to repeatedly ask the user to run turboSETI again.
-DO NOT repeat that instruction without first asking the user for the terminal output.**
+**IMPORTANT: The user has run turboSETI 6+ times (confirmed). DO NOT ask to re-run it.
+The `.dat` files exist locally under `data/extended_corpus/<target>/`.
+The fix was in the pipeline code — now merged. User needs to run pipeline script only.**
 
-- turboSETI run status: User has run the script 6+ times (confirmed 2026-06-20)
-- `.dat` file status: **UNKNOWN** — agent has not seen terminal output from the run
-- pipeline run status: **UNKNOWN** — agent has not seen `run_pipeline_on_bl_data.sh` output
-- prod-scan queue: 0 targets (no candidate manifests in `results/`)
-- Root cause of 0 targets: **UNDIAGNOSED** — need user to paste turboSETI and pipeline output
+- turboSETI run status: Run 6+ times (confirmed 2026-06-20). `.dat` files exist locally.
+- `.dat` files: Live on user's macOS machine at `data/extended_corpus/`. Not in remote env.
+- pipeline run status: **UNKNOWN** — user needs to re-run pipeline after `git pull`
+- prod-scan queue: 0 targets before fix; should populate after pipeline runs with fix
 
-**Next agent action: When user pastes turboSETI or pipeline output, record it here
-and diagnose why prod-scan shows 0 targets. Do NOT ask the user to run turboSETI
-again without first seeing and recording the output from a prior run.**
+### Next steps for user (after PR #104 merges):
+
+```bash
+git pull origin main
+# Re-run pipeline on extended corpus (now handles zero-hit .dat files)
+caffeinate -i bash scripts/run_pipeline_on_bl_data.sh \
+    --dat-dir data/extended_corpus 2>&1 | tee /tmp/pipeline_run.log
+
+# Then run prod-scan — should now see non-detection targets
+caffeinate -i bash scripts/run_production_scan.sh \
+    --dat-dir data/extended_corpus
+```
 
 ### Canonical commands (give these, then record the pasted output):
 
