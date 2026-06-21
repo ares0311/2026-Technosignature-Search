@@ -215,6 +215,10 @@ pasted the results — even across sessions. This file is the memory between ses
   non-detection manifests instead of errors. This closes the root cause of 0 prod-scan
   targets. CI: no GitHub Actions run triggered (force-push); tests passed locally
   (2431 passed, 13 skipped).
+- **PR #105 open on `claude/general-session-Bb2dZ`**: CLAUDE.md state update —
+  records 10th–12th validate-all results, ROOT CAUSE OF PERSISTENT 0 TARGETS
+  (`scan_history.ndjson` has all stems as `pipeline_failed`), and `--force-rescan`
+  as next step. Marked ready for review by user.
 - Tier 1 and Tier 2 are closed for local citizen-science production promotion.
 - All Tier 3 production-hardening gaps are also closed.
 - DECISION-134/139: AI hardening production gate closed for local
@@ -233,17 +237,32 @@ pasted the results — even across sessions. This file is the memory between ses
 - External submission, discovery/detection, expert review, peer review, and
   external validation remain unclaimed and blocked.
 
-### Latest known validate-all result (user-pasted 10th time, 2026-06-21):
+### Latest known validate-all results (user-pasted, 2026-06-21):
 
+**10th run (corrected numbers):**
 - `validate-all`: PASSED (ok: True)
 - `triage_label_completeness.all_labels_covered`: true
 - `external_submission_approved_count`: 0
 - `network_access_allowed_count`: 0
 - `semisupervised_scorer`: is_fitted: false, train_hit_count: 0
-- SQLite log: run_count: **947**, reviewed_no_follow_up: 943, needs_follow_up_logged: 4
-- SQLite backup count: **921 files (~964MB in Dropbox logs/backups/)** — accumulating
+- SQLite log: run_count: **948**, reviewed_no_follow_up: 944, needs_follow_up_logged: 4
+- SQLite backup count: **922 files (~966MB in Dropbox logs/backups/)** — accumulating
   each validate-all run; secondary cleanup issue, does not block pipeline
 - prod-scan result: **0 pending targets, 0 scanned** — queue STILL exhausted (see root cause below)
+
+**11th run (2026-06-21T04:30:34, WITHOUT --force-rescan):**
+- `validate-all`: PASSED (ok: True)
+- SQLite log: run_count: **949**, reviewed_no_follow_up: 945, needs_follow_up_logged: 4
+- SQLite backup count: **923 files (~968MB in Dropbox logs/backups/)**
+- prod-scan result: **0 pending targets, 0 scanned** — queue STILL exhausted
+  (expected: `--force-rescan` was NOT passed)
+
+**12th run (2026-06-21T04:31:00, WITHOUT --force-rescan):**
+- `validate-all`: PASSED (ok: True)
+- SQLite log: run_count: **950**, reviewed_no_follow_up: 946, needs_follow_up_logged: 4
+- SQLite backup count: **924 files (~970MB in Dropbox logs/backups/)**
+- prod-scan result: **0 pending targets, 0 scanned** — queue STILL exhausted
+  (expected: `--force-rescan` was NOT passed)
 
 ### ROOT CAUSE OF 0 TARGETS — FIXED IN PR #104:
 
