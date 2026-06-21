@@ -233,17 +233,17 @@ pasted the results — even across sessions. This file is the memory between ses
 - External submission, discovery/detection, expert review, peer review, and
   external validation remain unclaimed and blocked.
 
-### Latest known validate-all result (user-pasted 9th time, 2026-06-20):
+### Latest known validate-all result (user-pasted 10th time, 2026-06-21):
 
 - `validate-all`: PASSED (ok: True)
 - `triage_label_completeness.all_labels_covered`: true
 - `external_submission_approved_count`: 0
 - `network_access_allowed_count`: 0
 - `semisupervised_scorer`: is_fitted: false, train_hit_count: 0
-- SQLite log: run_count: **946**, reviewed_no_follow_up: 942, needs_follow_up_logged: 4
-- SQLite backup count: **920 files (~917MB in Dropbox logs/backups/)** — accumulating
+- SQLite log: run_count: **947**, reviewed_no_follow_up: 943, needs_follow_up_logged: 4
+- SQLite backup count: **921 files (~964MB in Dropbox logs/backups/)** — accumulating
   each validate-all run; secondary cleanup issue, does not block pipeline
-- prod-scan result: **0 pending targets, 0 scanned** — queue exhausted
+- prod-scan result: **0 pending targets, 0 scanned** — queue STILL exhausted (see root cause below)
 
 ### ROOT CAUSE OF 0 TARGETS — FIXED IN PR #104:
 
@@ -287,14 +287,32 @@ The `.dat` files exist locally under `data/extended_corpus/<target>/`.**
 - `.dat` files: Live on user's macOS machine at `data/extended_corpus/`. Not in remote env.
 - pipeline run status: **COMPLETE (2026-06-21)** — 5 OK, 0 failed. Non-detection manifests
   written for HIP66704, HIP74981, HIP82860. HIP17147 and HIP39826 skipped (had existing manifests).
-- prod-scan queue: Was 0 targets; **should now show HIP66704, HIP74981, HIP82860 as non-detections**.
+- prod-scan queue: **STILL 0 targets after pipeline ran** — see root cause below.
 
-### Next step for user (pipeline DONE — run prod-scan to verify):
+### ROOT CAUSE OF PERSISTENT 0 TARGETS (discovered 2026-06-21):
+
+**Root cause:** `run_production_scan.sh` uses `prod-target-queue --dat-dir data/extended_corpus`
+which checks `results/scan_history.ndjson` to determine pending targets. All 5 `.dat` file
+stems (HIP17147, HIP39826, HIP66704, HIP74981, HIP82860) were already recorded in that
+history from PRIOR runs of `run_production_scan.sh` (before the PR #104 fix). Those prior
+runs recorded them as `pipeline_failed` with pathway `pipeline_failed` because zero-hit
+`.dat` files caused the pipeline to error. Since all stems are in the history,
+`prod-target-queue` returns 0 pending targets.
+
+This is SEPARATE from the PR #104 pipeline fix. PR #104 fixed the pipeline. This new
+root cause is that `scan_history.ndjson` still has all 5 targets as "already scanned".
+
+**Fix: use `--force-rescan`** — this re-queues already-scanned targets (with a penalty
+score). The pipeline will now succeed for all 5 (PR #104 is merged), producing proper
+non-detection manifests. No code change needed.
+
+### Next step for user (use --force-rescan):
 
 ```bash
 git pull origin main
 caffeinate -i bash scripts/run_production_scan.sh \
-    --dat-dir data/extended_corpus
+    --dat-dir data/extended_corpus \
+    --force-rescan
 ```
 
 ### Canonical commands (give these, then record the pasted output):
