@@ -20,6 +20,24 @@ machine and GitHub in sync:
 The agent always develops on `claude/general-session-Bb2dZ`. The user always
 stays on `main` and pulls after each PR is merged.
 
+### AGENT BRANCH SYNC — NON-NEGOTIABLE (prevents recurring merge conflicts)
+
+At the START of each session, before making any new commits, the agent must:
+
+```bash
+git fetch origin main
+git reset --hard origin/main
+```
+
+**Never use `git rebase origin/main` for this branch.** When PRs are squash-merged,
+the commit patch lands on main under a new SHA. Rebase skips the old commit (already
+applied) and rebases new commits — leaving `origin/claude/general-session-Bb2dZ`
+pointing to the old SHA while local has a new SHA. This causes divergence that
+requires `--force` push and results in `mergeable_state: "dirty"` on the next PR.
+
+`git reset --hard origin/main` avoids this by always starting cleanly from main's
+HEAD. New commits then push cleanly with no force required.
+
 ---
 
 ## PRIMARY DIRECTIVE — NON-NEGOTIABLE
@@ -246,6 +264,8 @@ pasted the results — even across sessions. This file is the memory between ses
   result (run_count 962, 0 prod-scan targets, `--force-rescan` NOT passed).
 - **PR #118 merged to `main`**: CLAUDE.md state update — records 25th validate-all
   result (run_count 963, 0 prod-scan targets, `--force-rescan` NOT passed).
+- **PR #119 merged to `main`**: CLAUDE.md state update — records 26th validate-all
+  result (run_count 964, 0 prod-scan targets, `--force-rescan` NOT passed).
 - Tier 1 and Tier 2 are closed for local citizen-science production promotion.
 - All Tier 3 production-hardening gaps are also closed.
 - DECISION-134/139: AI hardening production gate closed for local
@@ -393,6 +413,15 @@ pasted the results — even across sessions. This file is the memory between ses
 - `validate-all`: PASSED (ok: True)
 - SQLite log: run_count: **963**, reviewed_no_follow_up: 959, needs_follow_up_logged: 4
 - SQLite backup count: **937 files (~996MB in Dropbox logs/backups/)**
+- external_submission_approved_count: 0, network_access_allowed_count: 0
+- `readiness_preflight_schema_count`: 110; `synthetic_training_summary.test_accuracy`: 0.9667
+- prod-scan result: **0 pending targets, 0 scanned** — queue STILL exhausted
+  (`--force-rescan` was NOT passed — flag is required to re-queue pipeline_failed stems)
+
+**26th run (2026-06-22T03:57:07, WITHOUT --force-rescan):**
+- `validate-all`: PASSED (ok: True)
+- SQLite log: run_count: **964**, reviewed_no_follow_up: 960, needs_follow_up_logged: 4
+- SQLite backup count: **938 files (~998MB in Dropbox logs/backups/)**
 - external_submission_approved_count: 0, network_access_allowed_count: 0
 - `readiness_preflight_schema_count`: 110; `synthetic_training_summary.test_accuracy`: 0.9667
 - prod-scan result: **0 pending targets, 0 scanned** — queue STILL exhausted
