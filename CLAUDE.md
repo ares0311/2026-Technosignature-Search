@@ -20,6 +20,24 @@ machine and GitHub in sync:
 The agent always develops on `claude/general-session-Bb2dZ`. The user always
 stays on `main` and pulls after each PR is merged.
 
+### AGENT BRANCH SYNC — NON-NEGOTIABLE (prevents recurring merge conflicts)
+
+At the START of each session, before making any new commits, the agent must:
+
+```bash
+git fetch origin main
+git reset --hard origin/main
+```
+
+**Never use `git rebase origin/main` for this branch.** When PRs are squash-merged,
+the commit patch lands on main under a new SHA. Rebase skips the old commit (already
+applied) and rebases new commits — leaving `origin/claude/general-session-Bb2dZ`
+pointing to the old SHA while local has a new SHA. This causes divergence that
+requires `--force` push and results in `mergeable_state: "dirty"` on the next PR.
+
+`git reset --hard origin/main` avoids this by always starting cleanly from main's
+HEAD. New commits then push cleanly with no force required.
+
 ---
 
 ## PRIMARY DIRECTIVE — NON-NEGOTIABLE
