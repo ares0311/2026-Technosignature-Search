@@ -1,0 +1,547 @@
+{
+  "schema_version": "target_sample_manifest_v1",
+  "disclaimer": "This manifest is a local scheduling aid produced by stratified random sampling from the BL HPRC target list (Isaacson et al. 2017). No selected target constitutes a detection claim or authorizes external submission. Targets with no BL open-data availability will be skipped silently by the download script.",
+  "generated_at_utc": "2026-06-26T06:21:16.231968+00:00",
+  "sampling": {
+    "random_seed": 42,
+    "per_stratum_quota": 2,
+    "max_targets": null,
+    "distance_bins_pc": [
+      {
+        "label": "near",
+        "lo": 0.0,
+        "hi": 8.0
+      },
+      {
+        "label": "mid",
+        "lo": 8.0,
+        "hi": 20.0
+      },
+      {
+        "label": "far",
+        "lo": 20.0,
+        "hi": 50.0
+      }
+    ],
+    "spectral_classes": [
+      "F",
+      "G",
+      "K",
+      "M"
+    ],
+    "strata_count": 18
+  },
+  "seed_csv": {
+    "path": "/home/user/2026-Technosignature-Search/data/bl_hprc_seed_targets.csv",
+    "sha256": "fbabcb7c949b8e95babfa9ecf839fca746b5a14068e321c8466b9962ef9ff9dd",
+    "total_targets": 48
+  },
+  "selection_summary": {
+    "selected_count": 31,
+    "strata_with_targets": {
+      "far:F:exoplanet=0": [
+        "16852",
+        "82860"
+      ],
+      "far:G:exoplanet=0": [
+        "66704",
+        "17147"
+      ],
+      "far:K:exoplanet=0": [
+        "99427",
+        "39826"
+      ],
+      "far:M:exoplanet=0": [
+        "23311"
+      ],
+      "mid:F:exoplanet=0": [
+        "22449",
+        "57757"
+      ],
+      "mid:F:exoplanet=1": [
+        "113421",
+        "67275"
+      ],
+      "mid:G:exoplanet=0": [
+        "64797",
+        "26779"
+      ],
+      "mid:G:exoplanet=1": [
+        "72659",
+        "49908"
+      ],
+      "mid:K:exoplanet=0": [
+        "80337",
+        "74981"
+      ],
+      "mid:K:exoplanet=1": [
+        "15510"
+      ],
+      "mid:M:exoplanet=1": [
+        "54211"
+      ],
+      "near:F:exoplanet=0": [
+        "37279",
+        "3821"
+      ],
+      "near:G:exoplanet=0": [
+        "71683",
+        "99240"
+      ],
+      "near:G:exoplanet=1": [
+        "8102"
+      ],
+      "near:K:exoplanet=0": [
+        "71681",
+        "104214"
+      ],
+      "near:K:exoplanet=1": [
+        "16537",
+        "99701"
+      ],
+      "near:M:exoplanet=0": [
+        "87937",
+        "54035"
+      ],
+      "near:M:exoplanet=1": [
+        "75676"
+      ]
+    }
+  },
+  "targets": [
+    {
+      "hip": "71681",
+      "name": "alpha Centauri B",
+      "ra_deg": 219.896,
+      "dec_deg": -60.839,
+      "dist_pc": 1.34,
+      "spec_type": "K1V",
+      "spec_class": "K",
+      "bv": 0.88,
+      "gal_lat": -0.7,
+      "exoplanet": 0,
+      "bl_paper": "E17",
+      "distance_bin": "near"
+    },
+    {
+      "hip": "71683",
+      "name": "alpha Centauri A",
+      "ra_deg": 219.921,
+      "dec_deg": -60.835,
+      "dist_pc": 1.34,
+      "spec_type": "G2V",
+      "spec_class": "G",
+      "bv": 0.69,
+      "gal_lat": -0.7,
+      "exoplanet": 0,
+      "bl_paper": "E17",
+      "distance_bin": "near"
+    },
+    {
+      "hip": "87937",
+      "name": "Barnard's Star",
+      "ra_deg": 269.454,
+      "dec_deg": 4.693,
+      "dist_pc": 1.83,
+      "spec_type": "M4V",
+      "spec_class": "M",
+      "bv": 1.57,
+      "gal_lat": 14.2,
+      "exoplanet": 0,
+      "bl_paper": "E17",
+      "distance_bin": "near"
+    },
+    {
+      "hip": "54035",
+      "name": "GJ 411 (Lalande 21185)",
+      "ra_deg": 165.834,
+      "dec_deg": 35.97,
+      "dist_pc": 2.55,
+      "spec_type": "M2V",
+      "spec_class": "M",
+      "bv": 1.5,
+      "gal_lat": 62.1,
+      "exoplanet": 0,
+      "bl_paper": "E17",
+      "distance_bin": "near"
+    },
+    {
+      "hip": "16537",
+      "name": "eps Eridani",
+      "ra_deg": 53.233,
+      "dec_deg": -9.458,
+      "dist_pc": 3.22,
+      "spec_type": "K2V",
+      "spec_class": "K",
+      "bv": 0.88,
+      "gal_lat": -48.0,
+      "exoplanet": 1,
+      "bl_paper": "E17",
+      "distance_bin": "near"
+    },
+    {
+      "hip": "104214",
+      "name": "61 Cyg A",
+      "ra_deg": 316.73,
+      "dec_deg": 38.748,
+      "dist_pc": 3.5,
+      "spec_type": "K5V",
+      "spec_class": "K",
+      "bv": 1.07,
+      "gal_lat": -5.7,
+      "exoplanet": 0,
+      "bl_paper": "E17",
+      "distance_bin": "near"
+    },
+    {
+      "hip": "37279",
+      "name": "Procyon A",
+      "ra_deg": 114.828,
+      "dec_deg": 5.224,
+      "dist_pc": 3.51,
+      "spec_type": "F5IV",
+      "spec_class": "F",
+      "bv": 0.43,
+      "gal_lat": 13.1,
+      "exoplanet": 0,
+      "bl_paper": "E17",
+      "distance_bin": "near"
+    },
+    {
+      "hip": "99701",
+      "name": "eps Indi A",
+      "ra_deg": 304.064,
+      "dec_deg": -56.791,
+      "dist_pc": 3.63,
+      "spec_type": "K5Ve",
+      "spec_class": "K",
+      "bv": 1.06,
+      "gal_lat": -48.0,
+      "exoplanet": 1,
+      "bl_paper": "P20",
+      "distance_bin": "near"
+    },
+    {
+      "hip": "8102",
+      "name": "tau Ceti",
+      "ra_deg": 26.017,
+      "dec_deg": -15.939,
+      "dist_pc": 3.65,
+      "spec_type": "G8V",
+      "spec_class": "G",
+      "bv": 0.72,
+      "gal_lat": -73.4,
+      "exoplanet": 1,
+      "bl_paper": "E17",
+      "distance_bin": "near"
+    },
+    {
+      "hip": "3821",
+      "name": "eta Cassiopeiae A",
+      "ra_deg": 12.276,
+      "dec_deg": 57.815,
+      "dist_pc": 5.94,
+      "spec_type": "F9V",
+      "spec_class": "F",
+      "bv": 0.57,
+      "gal_lat": -4.5,
+      "exoplanet": 0,
+      "bl_paper": "E17",
+      "distance_bin": "near"
+    },
+    {
+      "hip": "99240",
+      "name": "del Pavonis",
+      "ra_deg": 306.412,
+      "dec_deg": -66.178,
+      "dist_pc": 6.11,
+      "spec_type": "G7V",
+      "spec_class": "G",
+      "bv": 0.74,
+      "gal_lat": -34.0,
+      "exoplanet": 0,
+      "bl_paper": "E17",
+      "distance_bin": "near"
+    },
+    {
+      "hip": "75676",
+      "name": "GJ 581",
+      "ra_deg": 193.502,
+      "dec_deg": -7.721,
+      "dist_pc": 6.27,
+      "spec_type": "M3V",
+      "spec_class": "M",
+      "bv": 1.57,
+      "gal_lat": 55.4,
+      "exoplanet": 1,
+      "bl_paper": "E17",
+      "distance_bin": "near"
+    },
+    {
+      "hip": "22449",
+      "name": "1 Ori (pi3 Ori)",
+      "ra_deg": 83.858,
+      "dec_deg": 6.961,
+      "dist_pc": 8.07,
+      "spec_type": "F6V",
+      "spec_class": "F",
+      "bv": 0.45,
+      "gal_lat": -16.0,
+      "exoplanet": 0,
+      "bl_paper": "E17",
+      "distance_bin": "mid"
+    },
+    {
+      "hip": "72659",
+      "name": "61 Virginis",
+      "ra_deg": 223.218,
+      "dec_deg": -18.313,
+      "dist_pc": 8.53,
+      "spec_type": "G5V",
+      "spec_class": "G",
+      "bv": 0.71,
+      "gal_lat": 38.8,
+      "exoplanet": 1,
+      "bl_paper": "E17",
+      "distance_bin": "mid"
+    },
+    {
+      "hip": "54211",
+      "name": "GJ 436",
+      "ra_deg": 175.546,
+      "dec_deg": 26.708,
+      "dist_pc": 9.75,
+      "spec_type": "M3V",
+      "spec_class": "M",
+      "bv": 1.52,
+      "gal_lat": 71.0,
+      "exoplanet": 1,
+      "bl_paper": "E17",
+      "distance_bin": "mid"
+    },
+    {
+      "hip": "80337",
+      "name": "GJ 617 A",
+      "ra_deg": 246.35,
+      "dec_deg": 54.018,
+      "dist_pc": 10.3,
+      "spec_type": "K2V",
+      "spec_class": "K",
+      "bv": 0.86,
+      "gal_lat": 41.3,
+      "exoplanet": 0,
+      "bl_paper": "I17",
+      "distance_bin": "mid"
+    },
+    {
+      "hip": "57757",
+      "name": "bet Virginis",
+      "ra_deg": 188.596,
+      "dec_deg": 1.764,
+      "dist_pc": 10.9,
+      "spec_type": "F9V",
+      "spec_class": "F",
+      "bv": 0.55,
+      "gal_lat": 62.1,
+      "exoplanet": 0,
+      "bl_paper": "E17",
+      "distance_bin": "mid"
+    },
+    {
+      "hip": "64797",
+      "name": "psi Ser",
+      "ra_deg": 200.75,
+      "dec_deg": 2.499,
+      "dist_pc": 11.1,
+      "spec_type": "G2.5Va",
+      "spec_class": "G",
+      "bv": 0.64,
+      "gal_lat": 62.8,
+      "exoplanet": 0,
+      "bl_paper": "I17",
+      "distance_bin": "mid"
+    },
+    {
+      "hip": "113421",
+      "name": "ups And",
+      "ra_deg": 1.641,
+      "dec_deg": 41.404,
+      "dist_pc": 13.5,
+      "spec_type": "F9V",
+      "spec_class": "F",
+      "bv": 0.55,
+      "gal_lat": -20.6,
+      "exoplanet": 1,
+      "bl_paper": "E17",
+      "distance_bin": "mid"
+    },
+    {
+      "hip": "26779",
+      "name": "HR 2622",
+      "ra_deg": 85.25,
+      "dec_deg": -21.396,
+      "dist_pc": 14.3,
+      "spec_type": "G2V",
+      "spec_class": "G",
+      "bv": 0.63,
+      "gal_lat": -24.8,
+      "exoplanet": 0,
+      "bl_paper": "I17",
+      "distance_bin": "mid"
+    },
+    {
+      "hip": "49908",
+      "name": "mu Arae",
+      "ra_deg": 148.427,
+      "dec_deg": -51.834,
+      "dist_pc": 15.3,
+      "spec_type": "G3IV-V",
+      "spec_class": "G",
+      "bv": 0.7,
+      "gal_lat": -1.5,
+      "exoplanet": 1,
+      "bl_paper": "E17",
+      "distance_bin": "mid"
+    },
+    {
+      "hip": "67275",
+      "name": "tau Boo",
+      "ra_deg": 206.816,
+      "dec_deg": 17.457,
+      "dist_pc": 15.6,
+      "spec_type": "F7IV",
+      "spec_class": "F",
+      "bv": 0.48,
+      "gal_lat": 71.0,
+      "exoplanet": 1,
+      "bl_paper": "E17",
+      "distance_bin": "mid"
+    },
+    {
+      "hip": "15510",
+      "name": "eps Reticuli",
+      "ra_deg": 49.98,
+      "dec_deg": -59.303,
+      "dist_pc": 18.1,
+      "spec_type": "K2IVa",
+      "spec_class": "K",
+      "bv": 0.87,
+      "gal_lat": -46.6,
+      "exoplanet": 1,
+      "bl_paper": "I17",
+      "distance_bin": "mid"
+    },
+    {
+      "hip": "74981",
+      "name": "HIP74981",
+      "ra_deg": 229.981,
+      "dec_deg": -28.456,
+      "dist_pc": 18.4,
+      "spec_type": "K1V",
+      "spec_class": "K",
+      "bv": 0.84,
+      "gal_lat": 27.3,
+      "exoplanet": 0,
+      "bl_paper": "P20",
+      "distance_bin": "mid"
+    },
+    {
+      "hip": "16852",
+      "name": "kap Ret",
+      "ra_deg": 53.24,
+      "dec_deg": -62.951,
+      "dist_pc": 21.3,
+      "spec_type": "F5V",
+      "spec_class": "F",
+      "bv": 0.44,
+      "gal_lat": -41.5,
+      "exoplanet": 0,
+      "bl_paper": "I17",
+      "distance_bin": "far"
+    },
+    {
+      "hip": "99427",
+      "name": "HIP99427",
+      "ra_deg": 302.369,
+      "dec_deg": 71.83,
+      "dist_pc": 21.7,
+      "spec_type": "K0V",
+      "spec_class": "K",
+      "bv": 0.79,
+      "gal_lat": 20.6,
+      "exoplanet": 0,
+      "bl_paper": "E17",
+      "distance_bin": "far"
+    },
+    {
+      "hip": "66704",
+      "name": "HIP66704",
+      "ra_deg": 205.24,
+      "dec_deg": 19.854,
+      "dist_pc": 22.1,
+      "spec_type": "G2V",
+      "spec_class": "G",
+      "bv": 0.63,
+      "gal_lat": 73.1,
+      "exoplanet": 0,
+      "bl_paper": "P20",
+      "distance_bin": "far"
+    },
+    {
+      "hip": "39826",
+      "name": "HIP39826",
+      "ra_deg": 122.018,
+      "dec_deg": -5.906,
+      "dist_pc": 25.8,
+      "spec_type": "K2V",
+      "spec_class": "K",
+      "bv": 0.88,
+      "gal_lat": 15.8,
+      "exoplanet": 0,
+      "bl_paper": "P20",
+      "distance_bin": "far"
+    },
+    {
+      "hip": "23311",
+      "name": "GJ 182",
+      "ra_deg": 75.19,
+      "dec_deg": 16.873,
+      "dist_pc": 26.7,
+      "spec_type": "M1V",
+      "spec_class": "M",
+      "bv": 1.43,
+      "gal_lat": -8.8,
+      "exoplanet": 0,
+      "bl_paper": "I17",
+      "distance_bin": "far"
+    },
+    {
+      "hip": "82860",
+      "name": "HIP82860",
+      "ra_deg": 253.972,
+      "dec_deg": 18.773,
+      "dist_pc": 29.6,
+      "spec_type": "F8V",
+      "spec_class": "F",
+      "bv": 0.52,
+      "gal_lat": 29.8,
+      "exoplanet": 0,
+      "bl_paper": "P20",
+      "distance_bin": "far"
+    },
+    {
+      "hip": "17147",
+      "name": "HIP17147",
+      "ra_deg": 55.145,
+      "dec_deg": -24.38,
+      "dist_pc": 31.2,
+      "spec_type": "G0V",
+      "spec_class": "G",
+      "bv": 0.6,
+      "gal_lat": -51.4,
+      "exoplanet": 0,
+      "bl_paper": "P20",
+      "distance_bin": "far"
+    }
+  ]
+}

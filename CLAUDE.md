@@ -266,6 +266,19 @@ pasted the results — even across sessions. This file is the memory between ses
   result (run_count 963, 0 prod-scan targets, `--force-rescan` NOT passed).
 - **PR #119 merged to `main`**: CLAUDE.md state update — records 26th validate-all
   result (run_count 964, 0 prod-scan targets, `--force-rescan` NOT passed).
+- **PR #121 merged to `main`** (2026-06-26): **DOOM LOOP BROKEN — TRUE ROOT CAUSE FIX.**
+  `discover_dat_files` in `prod_scan_queue.py` was non-recursive (`iterdir()`), so it
+  found zero `.dat` files when `--dat-dir data/extended_corpus` was used (files live in
+  `data/extended_corpus/<TARGET>/*.dat` subdirectories). Changed to `rglob("*.dat")`.
+  Also adds recursive-discovery test. 2471 passed, 13 skipped.
+- **PR #122 merged to `main`** (2026-06-26): **STRATIFIED RANDOM SAMPLING (DECISION-143).**
+  Replaces arbitrary 5-target extended corpus list with a scientifically defensible
+  stratified random sample from BL HPRC target list (Isaacson et al. 2017).
+  Stratification: distance (near/mid/far) × spectral class (FGKM) × exoplanet host (0/1)
+  = 24 strata. Default: 2 per stratum, seed 42. Committed artifacts:
+  `data/bl_hprc_seed_targets.csv` (48 targets), `data/target_sample_manifest.json`
+  (31 targets across 18 strata), `docs/SAMPLING_DESIGN.md`. Download script now reads
+  from manifest. 2471 passed, 13 skipped.
 - Tier 1 and Tier 2 are closed for local citizen-science production promotion.
 - All Tier 3 production-hardening gaps are also closed.
 - DECISION-134/139: AI hardening production gate closed for local
@@ -488,30 +501,42 @@ root cause is that `scan_history.ndjson` still has all 5 targets as "already sca
 score). The pipeline will now succeed for all 5 (PR #104 is merged), producing proper
 non-detection manifests. No code change needed.
 
-### Next step for user (use --force-rescan):
+### Next steps for user (DECISION-143 stratified sample + doom loop fix both merged):
 
+The doom loop is fixed (PR #121, `rglob` recursive discovery). The extended corpus target
+list is now a stratified random sample (PR #122, DECISION-143, 31 targets from 18 strata).
+
+**Step 1 — Pull the merged fixes:**
 ```bash
 git pull origin main
-caffeinate -i bash scripts/run_production_scan.sh \
-    --dat-dir data/extended_corpus \
-    --force-rescan
 ```
 
-### Canonical commands (give these, then record the pasted output):
+**Step 2 — Regenerate the manifest (already committed, but can verify):**
+```bash
+.venv/bin/python scripts/build_stratified_sample.py --dry-run
+```
 
+**Step 3 — Download the stratified corpus (run on macOS with turboSETI installed):**
 ```bash
 git pull origin main
-# Step 1 — turboSETI (paste ALL output back to the agent)
-caffeinate -i bash scripts/run_turboseti_on_extended_corpus.sh 2>&1 | tee /tmp/turboseti_run.log
+caffeinate -i bash scripts/download_bl_extended_corpus.sh \
+    --manifest data/target_sample_manifest.json
+```
 
-# Step 2 — pipeline (paste ALL output back to the agent)
+**Step 4 — Run turboSETI on the new downloads:**
+```bash
+caffeinate -i bash scripts/run_turboseti_on_extended_corpus.sh 2>&1 | tee /tmp/turboseti_run.log
+```
+
+**Step 5 — Pipeline + prod-scan (NO --force-rescan needed; new stems not in history):**
+```bash
 caffeinate -i bash scripts/run_pipeline_on_bl_data.sh \
     --dat-dir data/extended_corpus 2>&1 | tee /tmp/pipeline_run.log
-
-# Step 3 — prod-scan
 caffeinate -i bash scripts/run_production_scan.sh \
     --dat-dir data/extended_corpus
 ```
+
+### Canonical commands (give these, then record the pasted output):
 
 Review commands:
 
@@ -523,11 +548,11 @@ git pull origin main
 .venv/bin/techno-search prod-non-detections --latest
 ```
 
-Latest known CI validation (PR #100, 2026-06-20):
+Latest known CI validation (PR #121/#122, 2026-06-26):
 
-- `.venv/bin/python -m pytest -q` — 2430 passed, 13 skipped
+- `.venv/bin/python -m pytest -q` — 2471 passed, 13 skipped
 - `.venv/bin/ruff check .` — All checks passed
-- GitHub CI passed on PR #100 before merge (run #249, conclusion: success)
+- `.venv/bin/mypy src --no-error-summary` — clean
 
 Older iteration notes below are historical continuity only. Do not treat them
 as current task authorization without re-reading `AGENTS.md` and
