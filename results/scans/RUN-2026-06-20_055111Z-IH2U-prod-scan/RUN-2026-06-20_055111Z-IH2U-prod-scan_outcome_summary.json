@@ -1,0 +1,42 @@
+{
+  "artifact_kind": "production_run_manifest",
+  "candidate_count": 4,
+  "completed_at_utc": "2026-06-20T05:51:23.658462Z",
+  "detection_claimed": false,
+  "disclaimer": "Production run outcome files are local citizen-science operations ledgers only. They do not constitute detection, discovery, expert review, peer review, external validation, or authorization for external submission.",
+  "discovery_claimed": false,
+  "expert_review_claimed": false,
+  "external_submission_allowed": false,
+  "external_validation_claimed": false,
+  "files": {
+    "follow_ups": "RUN-2026-06-20_055111Z-IH2U-prod-scan_follow_ups.json",
+    "manifest": "RUN-2026-06-20_055111Z-IH2U-prod-scan_manifest.json",
+    "non_detections": "RUN-2026-06-20_055111Z-IH2U-prod-scan_non_detections.json",
+    "review_dashboard": "RUN-2026-06-20_055111Z-IH2U-prod-scan_review_dashboard.json",
+    "scan_summary": "RUN-2026-06-20_055111Z-IH2U-prod-scan_scan_summary.json",
+    "target_status": "RUN-2026-06-20_055111Z-IH2U-prod-scan_target_status.json"
+  },
+  "follow_up_count": 0,
+  "follow_ups_path": "/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Technosignatures/results/scans/RUN-2026-06-20_055111Z-IH2U-prod-scan/RUN-2026-06-20_055111Z-IH2U-prod-scan_follow_ups.json",
+  "manifest_path": "/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Technosignatures/results/scans/RUN-2026-06-20_055111Z-IH2U-prod-scan/RUN-2026-06-20_055111Z-IH2U-prod-scan_manifest.json",
+  "non_detection_count": 4,
+  "non_detections_path": "/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Technosignatures/results/scans/RUN-2026-06-20_055111Z-IH2U-prod-scan/RUN-2026-06-20_055111Z-IH2U-prod-scan_non_detections.json",
+  "production_promotion_scope": "local_citizen_science_operations_only",
+  "run_id": "RUN-2026-06-20_055111Z-IH2U-prod-scan",
+  "scan_level_negative_result": {
+    "applies": true,
+    "candidate_count": 4,
+    "follow_up_count": 0,
+    "reason": "no_follow_up_pathway_candidates"
+  },
+  "scan_summary": {
+    "candidate_review_count": 0,
+    "follow_up_count": 0,
+    "targets_scanned": 3,
+    "total_candidates": 4
+  },
+  "schema_version": "production_run_manifest_v1",
+  "started_at_utc": "2026-06-20T05:51:09Z",
+  "target_status_count": 3,
+  "target_status_path": "/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Technosignatures/results/scans/RUN-2026-06-20_055111Z-IH2U-prod-scan/RUN-2026-06-20_055111Z-IH2U-prod-scan_target_status.json"
+}

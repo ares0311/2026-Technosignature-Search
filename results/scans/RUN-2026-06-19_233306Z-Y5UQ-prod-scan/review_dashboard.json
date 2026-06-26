@@ -1,0 +1,19 @@
+{
+  "action_item_count": 0,
+  "action_items": [],
+  "critical_flags": 0,
+  "disclaimer": "Review dashboard entries are local operator scheduling aids only. No dashboard output modifies candidate scores, authorizes external submission, or constitutes a detection claim.",
+  "elevated_watchlist_targets": 1,
+  "needs_attention": false,
+  "open_flags": 0,
+  "overdue_deadlines": 0,
+  "pipeline_blocker_count": 17,
+  "real_label_accuracy": 0.7742,
+  "real_label_accuracy_gate_ok": true,
+  "real_label_entry_count": 124,
+  "review_queue_depth": 0,
+  "review_queue_needs_human_review": 0,
+  "unique_blocked_candidates": 9,
+  "upcoming_deadlines": 5,
+  "watchlist_conflicts": 0
+}
