@@ -1,0 +1,12 @@
+{
+  "detection_claimed": false,
+  "disclaimer": "Production scan terminal summaries are local citizen-science operations aids only. They do not constitute detections, discoveries, expert review, external validation, or authorization for external submission.",
+  "external_submission_allowed": false,
+  "follow_up_required_count": 0,
+  "interrupted": false,
+  "run_dir": "results/scans/RUN-2026-06-19_233306Z-Y5UQ-prod-scan",
+  "run_id": "RUN-2026-06-19_233306Z-Y5UQ-prod-scan",
+  "schema_version": "production_scan_summary_v1",
+  "skipped_step_count": 0,
+  "target_count": 3
+}

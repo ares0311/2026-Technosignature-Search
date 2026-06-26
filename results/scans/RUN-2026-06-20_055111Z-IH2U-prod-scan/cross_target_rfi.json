@@ -1,0 +1,7 @@
+{
+  "disclaimer": "Cross-target frequency matches are flagged as likely RFI. This does not confirm absence of a real signal at the matched frequency.",
+  "flag_rate": 0.5,
+  "flagged_count": 2,
+  "schema_version": "cross_target_rfi_v1",
+  "total_candidates": 4
+}

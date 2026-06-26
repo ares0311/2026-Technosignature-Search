@@ -1,0 +1,74 @@
+{
+  "artifact_kind": "production_non_detections",
+  "detection_claimed": false,
+  "disclaimer": "Production run outcome files are local citizen-science operations ledgers only. They do not constitute detection, discovery, expert review, peer review, external validation, or authorization for external submission.",
+  "entries": [
+    {
+      "candidate_id": "HIP17147__spliced_blc0001020304050607_guppi_57668_28900_HIP17147_0009.gpuspec.0002",
+      "detection_claimed": false,
+      "external_submission_allowed": false,
+      "frequency_hz": 0.0,
+      "hit_row_count": 0,
+      "negative_evidence": [
+        "turboSETI hit table contained no hit rows above the configured threshold."
+      ],
+      "non_detection_id": "NEG-2026-06-19_233306Z-Y5UQ-001",
+      "observation_id": "HIP17147__spliced_blc0001020304050607_guppi_57668_28900_HIP17147_0009.gpuspec.0002",
+      "pathway": "no_follow_up_observation",
+      "reason": "zero_hit_observation_no_turboseti_hits",
+      "score": 0.0,
+      "snr": 0.0,
+      "source_data_path": "HIP17147/spliced_blc0001020304050607_guppi_57668_28900_HIP17147_0009.gpuspec.0002.dat",
+      "status": "reviewed_zero_hit_observation",
+      "target_name": "HIP17147",
+      "track": "radio"
+    },
+    {
+      "candidate_id": "HIP39826__spliced_blc0001020304050607_guppi_57829_11159_HIP39826_0032.gpuspec.0002",
+      "detection_claimed": false,
+      "external_submission_allowed": false,
+      "frequency_hz": 0.0,
+      "hit_row_count": 0,
+      "negative_evidence": [
+        "turboSETI hit table contained no hit rows above the configured threshold."
+      ],
+      "non_detection_id": "NEG-2026-06-19_233306Z-Y5UQ-002",
+      "observation_id": "HIP39826__spliced_blc0001020304050607_guppi_57829_11159_HIP39826_0032.gpuspec.0002",
+      "pathway": "no_follow_up_observation",
+      "reason": "zero_hit_observation_no_turboseti_hits",
+      "score": 0.0,
+      "snr": 0.0,
+      "source_data_path": "HIP39826/spliced_blc0001020304050607_guppi_57829_11159_HIP39826_0032.gpuspec.0002.dat",
+      "status": "reviewed_zero_hit_observation",
+      "target_name": "HIP39826",
+      "track": "radio"
+    },
+    {
+      "candidate_id": "Voyager1.single_coarse.fine_res",
+      "detection_claimed": false,
+      "external_submission_allowed": false,
+      "frequency_hz": 8419297028.000001,
+      "negative_evidence": [
+        "No production follow-up pathway assigned by local pipeline routing."
+      ],
+      "non_detection_id": "NEG-2026-06-19_233306Z-Y5UQ-003",
+      "pathway": "known_object_annotation",
+      "reason": "candidate_did_not_enter_follow_up_pathway",
+      "score": 0.309247,
+      "snr": 245.709641,
+      "status": "reviewed_no_follow_up_required",
+      "target_name": "Voyager1.single_coarse.fine_res",
+      "track": "radio"
+    }
+  ],
+  "entry_count": 3,
+  "external_submission_allowed": false,
+  "run_id": "RUN-2026-06-19_233306Z-Y5UQ-prod-scan",
+  "scan_level_negative_result": {
+    "applies": true,
+    "candidate_count": 3,
+    "follow_up_count": 0,
+    "reason": "no_follow_up_pathway_candidates"
+  },
+  "schema_version": "production_non_detections_v1"
+}
