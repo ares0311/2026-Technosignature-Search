@@ -1,216 +1,243 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-06-20
+**Last updated:** 2026-06-26
 **Current milestone:** 79 (Production Scan Hardening And Artifact Hygiene)
+**Current phase:** Phase 0 — Strip & Fix (multi-modal realignment)
 
 ---
 
-## Summary
+## Mission
 
-The pipeline has closed the documented Tier 1 and Tier 2 engineering blockers.
-DECISION-134 is now closed for **local citizen-science production promotion** of
-learned or AI-assisted pathway routing after a populated setigen
-injection-recovery grid in real Voyager 1 GBT noise produced 75/75 recovered
-injections and 256 valid turboSETI hit rows for review-safe method-family
-comparison. Optional expert/institutional review remains a future external
-opportunity, not an assumed dependency. The calibration gate passed
-`calibration_ready: true` against 213 real GBT hits from 5 cadences, 5 targets,
-and 2 epochs (HIP99427, HIP100670, HIP99560, HIP99759, VOYAGER-1). Derived
-thresholds: noise_floor_snr=42.4, follow_up_snr=54.8, high_interest_snr=118.3,
-max_rfi_like_drift_hz_s=5.21. Thresholds, learned model outputs, dense-cluster
-labels, and semi-supervised anomaly scores remain local scheduling aids. Two
-bounded held-out GBT HDF5 records, HIP17147 and HIP39826, remain preserved as
-zero-hit negative evidence. Expert review, peer review, external validation,
-detection, discovery, and external submission are not claimed.
+Search publicly available multi-modal astronomical data for signals that cannot
+be explained by natural phenomena. Use rigorous, literature-grounded methods
+consistent with publication-grade science. Report surviving candidates for
+expert review. Never claim detection without external validation.
+
+**Review chain:**
+1. Automated multi-modal pipeline (radio + photometry + IR + spectroscopy)
+2. Adversarial review agent (purpose-built to refute each specific candidate)
+3. Third-party expert review (Breakthrough Listen, Penn State SETI, Galileo
+   Project, IAU SETI Committee, per IAU post-detection protocol)
 
 ---
 
-## What Is Complete
+## What Is Scientifically Aligned (Keep)
 
-| Capability | Status |
+These modules do real science or directly support it:
+
+| Capability | Module / Script | Status |
+|---|---|---|
+| Radio hit-table reader (turboSETI format) | `radio/hit_table_reader.py` | ✅ Keep |
+| Data quality validator (turboSETI `.dat` files) | `data_quality.py` | ✅ Keep |
+| Pipeline runner (`.dat` → candidate manifest) | `pipeline_runner.py` | ✅ Keep |
+| ON/OFF cadence RFI rejection | `pipeline_runner.py` (partial) | ⚠️ Needs hardening |
+| Cross-band feature normalization | `radio/cross_band_features.py` | ✅ Keep |
+| GLOBULAR density pre-filter (HDBSCAN) | `globular_filter.py` | ✅ Keep |
+| Semi-supervised anomaly scorer (IsolationForest) | `semisupervised_scorer.py` | ⚠️ Unfitted — needs real MeerKAT training |
+| Multi-epoch hit comparison | `pipeline_runner.py` | ✅ Keep |
+| Cross-target RFI suppression | existing CLI | ✅ Keep |
+| Candidate escalation gate | `prod_scan_queue.py` | ✅ Keep (simplified) |
+| Production scan queue + history | `prod_scan_queue.py` | ✅ Keep |
+| BL extended corpus download script | `scripts/download_bl_extended_corpus.sh` | ✅ Keep |
+| turboSETI batch script | `scripts/run_turboseti_on_extended_corpus.sh` | ✅ Keep |
+| Stratified target sample | `data/bl_hprc_seed_targets.csv`, `data/target_sample_manifest.json` | ✅ Keep |
+| MeerKAT BLUSE ingest script | `scripts/ingest_meerkat_hits.py` | ✅ Keep (for real training) |
+| Injection-recovery grid (setigen) | `scripts/setigen_injection_grid.py` | ✅ Keep |
+| Gaia/WISE catalog CSV reader | `infrared/catalog_reader.py` | ✅ Keep |
+| SIMBAD known-object cross-match | `live_data.py` | ✅ Keep |
+| CI workflow | `.github/workflows/ci.yml` | ✅ Keep |
+| `validate-all` (simplified) | `cli.py` | ✅ Keep (needs cleanup) |
+| Production scan runbook | `docs/PRODUCTION_SCAN_RUNBOOK.md` | ✅ Keep |
+| 110 JSON schema artifacts | `schemas/` | ⚠️ ~100 are misaligned overhead; delete in Phase 0 |
+
+---
+
+## What Must Be Deleted (Misaligned Overhead)
+
+The following modules were built as operational overhead and do not advance
+technosignature search. They should be deleted in Phase 0 to reduce complexity,
+free storage space, and eliminate doom-loop maintenance burden.
+
+**Operational log modules (~86 log types):** `risk_assessment_log.py`,
+`backup_recovery_log.py`, `capacity_planning_log.py`, `polarization_log.py`,
+`telescope_status_log.py`, `observation_parameter_log.py`,
+`source_catalog_log.py`, `noise_measurement_log.py`,
+`spectral_feature_log.py`, `frequency_channel_log.py`,
+`pipeline_checkpoint_log.py`, `candidate_status_log.py`,
+`signal_classification_log.py`, `rfi_mitigation_log.py`,
+`candidate_annotation_log.py`, `observation_request_log.py`,
+`candidate_export_log.py`, `quality_gate_log.py`, `data_gap_log.py`,
+`candidate_match_log.py`, `pipeline_error_log.py`,
+`candidate_deduplication_log.py`, `intake_queue_log.py`,
+`workflow_state_log.py`, `alert_resolution_log.py`,
+`config_version_history.py`, `operator_escalation_log.py`,
+`candidate_alert_log.py`, `pipeline_replay_log.py`,
+`scoring_threshold_audit.py`, and associated schemas, fixtures, tests.
+
+**Scheduling/planning scaffolding:** `candidate_triage.py`,
+`candidate_observation_notes.py`, `epoch_plan.py`,
+`aggregate_blockers.py`, `candidate_score_history.py`,
+`operator_assignment.py`, `pipeline_health.py`, `review_deadlines.py`,
+`candidate_flags.py`, `pipeline_throughput.py`, `candidate_lifecycle.py`,
+`observation_schedule.py`, `weekly_review.py`, `target_watchlist.py`,
+`candidate_comparison.py`, `pipeline_telemetry.py`,
+`provenance_audit.py`, `candidate_rescore.py`, `operator_handoff.py`,
+and associated schemas, fixtures, tests.
+
+**SQLite operational log system:** `log_store.py` (keep the background run
+tracking, delete the 86-type adapter scaffolding), all SQLite adapter
+consistency gates.
+
+**MCP bootstrap configuration** and associated consistency gates.
+
+**Consensus/calibration/benchmark scaffolding built on synthetic data:**
+`consensus_labels.py`, `calibration_metrics.py`, `benchmark_metadata.py`,
+`validation_promotion_rules.py`, `validation_dataset_manifest.py`,
+`consensus_export.py`, `benchmark_run_results.py`, `sensitivity_config.py`,
+`scoring_config.py`, and associated schemas, fixtures, tests.
+
+**Synthetic-only scoring infrastructure** (non-scientific v0 scoring): the
+rule-based `baseline_model.py`, `baseline_eval.py`, synthetic calibration
+fixture set, score regression snapshots derived from synthetic data.
+
+**Synthetic training data files** — delete to free storage:
+- `tests/fixtures/calibration_false_positives.json`
+- `tests/fixtures/score_regressions.json`
+- Any fixture built purely from synthetic candidates, not real observations
+
+---
+
+## Engineering Foundation Status
+
+All Tier 1 gaps are closed for the radio pipeline as of Milestone 79. All Tier 2
+gaps are closed. The project now pivots to multi-modal science (Phases 0–4).
+
+---
+
+## What Is Missing for Science (Phases 0–4)
+
+### Phase 0 — Strip & Fix (NOW)
+
+| Task | Status |
 |---|---|
-| Synthetic scoring pipeline (radio, infrared, anomaly) | ✅ Complete |
-| Candidate report generation (Markdown, JSON, manifest) | ✅ Complete |
-| Calibration fixture set (15 false-positive classes) | ✅ Complete |
-| Score regression + determinism checks | ✅ Complete |
-| Interpretable baseline classifier | ✅ Complete |
-| 110 JSON schema artifacts | ✅ Complete |
-| Local validation gate (`validate-all`) | ✅ Complete |
-| Provenance, audit trail, lifecycle tracking | ✅ Complete |
-| Operational log system (86 log types) | ✅ Complete |
-| CI workflow (GitHub Actions) | ✅ Complete |
-| Real hit-table CSV reader (turboSETI format) | ✅ Complete |
-| Real Gaia+WISE catalog CSV reader (IRSA TAP format) | ✅ Complete |
-| End-to-end pipeline runner (CSV → scored report) | ✅ Complete |
-| Data quality validator (`validate-input`) | ✅ Complete |
-| Direct `run-pipeline` CLI with validation-first execution | ✅ Complete |
-| Archival anomaly CSV reader scaffold | ✅ Complete |
-| Synthetic/local RFI database guardrails | ✅ Complete |
-| RFI database admission gates | ✅ Complete |
-| Curated dataset admission gates | ✅ Complete |
-| Project status consistency gates | ✅ Complete |
-| Operations alert review consistency gates | ✅ Complete |
-| Operations action resolution staleness gates | ✅ Complete |
-| Operations blocker-progress consistency gates | ✅ Complete |
-| Top-level SQLite log consistency gates | ✅ Complete |
-| Production blocker visibility consistency gates | ✅ Complete |
-| SQLite operational log registry consistency gate | ✅ Complete |
-| SQLite operational log adapter plan gate | ✅ Complete |
-| SQLite operational log adapter contract gate | ✅ Complete |
-| SQLite operational log adapter DDL preview gate | ✅ Complete |
-| SQLite operational log adapter row preview gate | ✅ Complete |
-| SQLite operational log adapter insert preview gate | ✅ Complete |
-| SQLite operational log adapter execution preview gate | ✅ Complete |
-| SQLite operational log adapter dry-run manifest gate | ✅ Complete |
-| SQLite operational log adapter readiness preflight gate | ✅ Complete |
-| SQLite operational log adapter authorization gate | ✅ Complete |
-| Project-scoped MCP bootstrap configuration | ✅ Complete |
-| MCP bootstrap consistency gate | ✅ Complete |
-| MCP server policy gate | ✅ Complete |
-| Labeled candidate dataset v0 (10 synthetic entries) | ✅ Complete |
-| Scoring model evaluation against labeled dataset | ✅ Complete |
-| Live catalog clients (Gaia TAP, SIMBAD) with opt-in guard | ✅ Complete |
-| Real-observation artifact audit and human-approval gate | ✅ Complete |
-| Checksum-verified HIP99427 GBT ABACAD cadence ingestion | ✅ Complete |
-| Real turboSETI processing with explicit ON/OFF evidence | ✅ Complete |
-| Frequency-matched OFF-target rejection guard validated against real cadence data | ✅ Complete |
-| Real HIP99427 cadence label set (124 evidence groups) | ✅ Complete |
-| Independent-method citizen-science label audit | ✅ Complete |
-| Public reproducibility review package | ✅ Complete |
-| Current scoring model evaluated against real labels (54.03% diagnostic agreement) | ✅ Complete |
-| **Scoring model v1 with calibrated SNR tiers and drift neutralization** — 77.42% diagnostic agreement (96/124); tiered SNR using noise_floor/follow_up/high_interest thresholds; drift artifact neutralized for real GBT data; NOISE boost for sub-noise-floor single-hit candidates | ✅ Complete |
-| Unit-safe, provenance-aware real-noise calibration preflight | ✅ Complete |
-| Cadence/target/epoch, dominance, bootstrap, and leave-one-cadence-out gates | ✅ Complete |
-| Operational log system (86 log types) | ✅ Complete |
-| Resumable parallel BL data download scripts (16-thread, LFS + SSL) | ✅ Complete |
-| Voyager 1 GBT turboSETI test H5 downloaded and scored end-to-end (3 real hits, pipeline OK) | ✅ Complete |
-| GBT provisional RFI catalog (15 bands, ITU/GPS/ICAO/FCC citations, all inactive pending review) | ✅ Complete |
-| Calibration corpus download manifest (5 BL targets, admission gate, pipeline script, operator review protocol) | ✅ Complete |
-| GBT provisional RFI catalog operator sign-off (15 entries reviewed, admission gate cleared, ready_for_local_fixture) | ✅ Complete |
-| **Calibrated scoring thresholds from real GBT noise data** — calibration gate passed `calibration_ready: true`; 213 hits, 5 cadences, 5 targets, 2 epochs; noise_floor_snr=42.4, follow_up_snr=54.8, high_interest_snr=118.3 | ✅ Complete |
-| **Multi-epoch hit-table comparison** — `compare_epochs()` groups hits within frequency tolerance across .dat files; persistence scores; `multi-epoch-compare` CLI (DECISION-129) | ✅ Complete |
-| **Parallel candidate scoring** — `score_candidates_parallel()` with `ProcessPoolExecutor`; deterministic; falls back to serial for ≤1 candidate or workers=0/None (DECISION-129) | ✅ Complete |
-| **SQLite candidate store** — `CandidateStore` with init/insert/get/list/summary; `candidate-store-init/summary/list` CLI; local triage aid only (DECISION-129) | ✅ Complete |
-| **Multi-epoch pipeline injection** — `epoch_dat_files` param wired through `run_pipeline` → `_build_radio_candidate`; `multi_epoch_persistence_score`, `multi_epoch_group_count`, `multi_epoch_epoch_count` injected as candidate features and provenance; `--epoch-files` CLI arg | ✅ Complete |
-| **SIMBAD known-object injection** — `simbad_match_count`, `simbad_known_object_score`, `simbad_match_names` injected into radio and infrared candidate features/provenance on every live cross-match query (zero-match also recorded) | ✅ Complete |
-| **Gaia/WISE cross-match at scale** — `catalog_crossmatch` wired into `_build_infrared_candidate`; `gaia_match_count`, `known_object_score` injected; both radio and infrared tracks now run live Gaia+SIMBAD queries on `TECHNO_SEARCH_ENABLE_LIVE_DATA=1` | ✅ Complete |
-| **Independent reproduction** — `validate-all` confirmed passing in a separate citizen-science environment (2026-06-12) | ✅ Complete |
-| **Learned scoring model v1** — logistic regression trained on 124 real GBT/HIP99427 citizen-science labels; 3-class pathway classifier (false_positive / insufficient_evidence / follow_up); 3-fold stratified CV accuracy 99.19% (rule-based baseline: 77.42%); `real-labels-model-summary` CLI; `validate-all` gate: `learned_scoring_model_v1_trained=True`; closes final Tier 2 gap (DECISION-130) | ✅ Complete |
-| **Operator review dashboard** — `review_dashboard_summary()` aggregates open flags, overdue deadlines, review queue, blockers, watchlist elevated targets, and real-label accuracy gate into a single operator scheduling aid; `techno-search review-dashboard` CLI with exit code 1 on needs_attention; closes Tier 3 operator UI gap | ✅ Complete |
-| **Data release snapshot** — `data_release_snapshot_summary()`, `snapshot_from_batch_manifest()`, `compare_snapshots()`; deterministic SHA-256 pathway assignment hash; `data-release-snapshot-summary` and `compare-data-releases` CLI; 105 JSON schema artifacts; closes Tier 3 reproducibility gap (DECISION-131) | ✅ Complete |
-| **Multi-target scan orchestration** — `run_multi_target_scan()` with parallel scoring; per-target result tracking; `MultiTargetScanResult` dataclass; `scan-summary` CLI for ranked anomaly list across N targets (Milestone 76) | ✅ Complete |
-| **Cross-target RFI suppression** — `flag_cross_target_rfi()`; signals in ≥2 independent targets at same frequency (within 500 Hz default) flagged as likely terrestrial; `cross-target-rfi-summary` CLI | ✅ Complete |
-| **Candidate escalation gate** — `escalation_gate_check()` requiring `candidate_review_packet` + SNR ≥ 42.4; `create_escalation_record()` with SHA-256 reproduction checklist; `operator_cleared` and `external_review_authorized` always start False; `escalation-gate-check` CLI | ✅ Complete |
-| **Cross-store position deduplication** — `find_cross_store_matches()` and `cross_store_dedup_summary()` for radio+infrared corroboration by angular separation; 10 arcsec default tolerance | ✅ Complete |
-| **Gaia DR3 scan workflow** — `query_gaia_for_targets()` for batch sky queries; guarded behind `TECHNO_SEARCH_ENABLE_LIVE_DATA=1`; per-target JSON output; `load_targets_from_json()` for target list ingestion | ✅ Complete |
-| **Weekly automated scan schedule** — `.github/workflows/weekly_scan.yml`; runs Sunday 02:00 UTC; validate-all gate before scan; escalation check on results; commits scan summary to `results/scans/` | ✅ Complete |
-| **Calibration transfer protocol** — `docs/CALIBRATION_TRANSFER_PROTOCOL.md`; recalibration steps for new telescope/band; independent-method audit requirement documented | ✅ Complete |
-| **Production scan guide** — `docs/PRODUCTION_SCAN_GUIDE.md`; step-by-step operator instructions for multi-store anomaly scanning; escalation triage criteria | ✅ Complete |
-| **110 JSON schema artifacts** | ✅ Complete |
-| **Hardened escalation gate** — `escalation_gate_check()` returns structured dict; adds `multi_epoch_persistence_score > 0` as third gate (single-epoch candidates cannot pass); `ESCALATION_MULTI_EPOCH_GATE` constant; `negative_result_summary()` for zero-gate scans; `negative-result-summary` CLI (Milestone 77) | ✅ Complete |
-| **External submission protocol** — `docs/EXTERNAL_SUBMISSION_PROTOCOL.md`; 7 preconditions (P1–P7) required before any external submission; all currently unmet; DECISION-132; closes Tier 3 external submission workflow gap | ✅ Complete |
-| **CHANGELOG.md** — engineering milestone history from v0.10 through current; follows Keep a Changelog format | ✅ Complete |
-| **Expert review gate closed** — no institutional expert available; citizen-science reproducibility protocol per AGENTS.md independence standard substituted; expert review explicitly unclaimed | ✅ Complete (Tier 3) |
-| **Model generalizability suite (DECISION-133)** — 6 priorities closing the single-campaign generalization gap: (1) extended GBT corpus download script (5 non-Cygnus L-band targets); (2) MeerKAT BLUSE 2M-hit ingest (Sheikh et al. 2025, 900–1670 MHz, false-positive training corpus); (3) setigen injection-recovery grid (SNR × drift × freq); (4) cross-band feature normalization module (`normalized_drift_hz_s_per_ghz`, `is_earth_drift_consistent`, `relative_snr`, `on_off_consistency_score`); (5) GLOBULAR density-based pre-filter (HDBSCAN, 13 features, Jacobson-Bell et al. 2024, ~93% FP reduction, zero labels); (6) semi-supervised anomaly scorer (PCA + IsolationForest, sklearn only, fit on unlabeled RFI corpus); 90 new tests; validate-all gates added | ✅ Complete |
-| **AI hardening review protocol** — `docs/AI_HARDENING_REVIEW_PROTOCOL.md`; defines DECISION-134 held-out evidence streams, independent-method review requirements, review-safe evidence bundle contents, and non-claim guardrails | ✅ Complete |
-| **AI hardening evidence population accounting (DECISION-135)** — `ai-hardening-gate-summary` and `validation-summary` distinguish configured, existing, populated, and empty DECISION-133 evidence paths; provisional local calibration holdouts remain explicitly insufficient for gate closure | ✅ Complete |
-| **Extended-corpus acquisition fail-closed hardening (DECISION-138)** — `scripts/download_bl_extended_corpus.sh` discovers current Breakthrough Open Data HDF5 links and exits nonzero when it produces zero held-out evidence files; this supports DECISION-134 but does not by itself close it | ✅ Complete |
-| **First DECISION-134 held-out evidence population** — HIP17147 GBT HDF5 acquired from current BL Open Data, validated as HDF5, processed with turboSETI, and preserved as review-safe zero-hit negative evidence with checksums and method abstentions; this supports DECISION-134 but does not close it because no valid hit rows were available for independent candidate-level method comparison | ✅ Complete |
-| **Second DECISION-134 bounded held-out evidence attempt** — HIP39826 GBT HDF5 acquired from current BL Open Data, validated as HDF5, processed with turboSETI, and preserved as review-safe zero-hit negative evidence with checksums and method abstentions; this supports DECISION-134 but does not close it because no valid hit rows were available for independent candidate-level method comparison | ✅ Complete |
-| **DECISION-134 AI hardening production blocker closed** — setigen injection-recovery grid in real Voyager 1 GBT noise produced 75/75 recovered injections, 256 valid turboSETI hit rows, a committed closure evidence bundle, and three recorded independent method-family reviews while preserving learned-model and cross-target abstentions; production promotion is local citizen-science operations only | ✅ Complete |
-| **Production scan history and history-aware queue (DECISION-141)** — `src/techno_search/prod_scan_queue.py` implements atomic NDJSON scan history (`results/scan_history.ndjson`), `build_target_queue()` with base 0.50 / +0.08 first-scan boost / −0.04 per-scan penalty, and `parent_run_id` chain for re-scan linking; three new CLI commands: `prod-target-queue`, `prod-record-scan`, `scan-history-summary`; `run_production_scan.sh` fully rewritten to acquire new `.dat` files, display ranked queue with rationale, run `run-pipeline` in a continuous `while true` loop with SIGINT trap, and record each scan result; `docs/PRODUCTION_SCAN_RUNBOOK.md` captures the five rules of correct production scan orchestration for reuse in other projects; 32 new tests; fixes five live-operation bugs | ✅ Complete |
-| **Non-deterministic turboSETI .dat discovery fixed (DECISION-142)** — `find "$DATA_DIR" -name "*.dat" \| head -1` replaced with deterministic H5-stem prediction in `download_bl_hits.sh` and `fetch_bl_alternative.sh`; eliminates artifact duplication when multiple `.dat` files coexist in `data/bl_hits/`; production scan candidate count now correctly reflects actual observation targets | ✅ Complete |
-| **Milestone 79 — Production Scan Hardening And Artifact Hygiene** — triage label completeness gate closed (`all_labels_covered: true`, all 6 allowed labels covered by fixture); `validate-all` passes cleanly on 2430 tests; `scripts/run_turboseti_on_extended_corpus.sh` confirmed as the canonical batch turboSETI script for extended corpus HDF5 files (HIP66704, HIP74981, HIP82860); `docs/PRODUCTION_SCAN_RUNBOOK.md` updated with extended corpus multi-target acquisition workflow | ✅ Complete |
+| Delete ~141 misaligned overhead modules | ❌ Not started |
+| Delete synthetic training data files | ❌ Not started |
+| Harden ON/OFF cadence RFI rejection (Enriquez 2017 ABACAB) | ❌ Not started |
+| Train `semisupervised_scorer` on real MeerKAT BLUSE corpus | ❌ Unfitted |
+| Update `validate-all` to scientific-only gates | ❌ Not started |
+| Add "delete synthetic training data" to production scan runbook | ❌ Not started |
+
+**Runbook maintenance task (from user):** Add to `docs/PRODUCTION_SCAN_RUNBOOK.md`:
+"Before each new download batch, delete old `.dat` files and intermediate
+results from prior zero-hit targets to free storage space. Only keep manifests
+and scan history records."
+
+### Phase 1 — Radio: GBT/MeerKAT Hardening
+
+| Task | Status |
+|---|---|
+| Proper ON/OFF cadence verification (ABACAB from raw files) | ❌ Not started |
+| MeerKAT BLUSE real training corpus loaded into semisupervised_scorer | ❌ Not started |
+| Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial |
+| Cross-target RFI suppression on full stratified corpus | ⚠️ Partial |
+| Ranked candidate list output ready for Phase 5 | ❌ Not started |
+
+### Phase 2 — Transit Photometry: Kepler/TESS
+
+| Task | Status |
+|---|---|
+| `lightkurve` integration for TESS/Kepler light curve ingest (NASA MAST) | ❌ Not started |
+| Box Least Squares (BLS) transit detection | ❌ Not started |
+| Non-circular / non-achromatic transit shape analysis | ❌ Not started |
+| Asymmetric ingress/egress detection | ❌ Not started |
+| Boyajian's Star (KIC 8462852) methodology applied to corpus | ❌ Not started |
+| Candidate transit anomaly output | ❌ Not started |
+
+### Phase 3 — Infrared: WISE Dyson Sphere Candidates
+
+| Task | Status |
+|---|---|
+| WISE W1/W2/W3/W4 photometry ingest for target stars | ❌ Not started |
+| SED fitting against stellar photosphere models (Kurucz/BT-Settl) | ❌ Not started |
+| W3/W4 excess above stellar photosphere detection | ❌ Not started |
+| Natural contaminant rejection (dust, debris disk, AGN) | ❌ Not started |
+| IR excess candidate output with SED residual provenance | ❌ Not started |
+
+**References:** Griffith et al. 2015 (ApJ 816, 1), Wright et al. 2014 (ApJ 792, 26)
+
+### Phase 4 — Spectroscopy: JWST Disequilibrium Gases
+
+| Task | Status |
+|---|---|
+| JWST NIRSpec/NIRISS transmission spectra ingest (MAST) | ❌ Not started |
+| NO₂ (combustion) detection in transmission spectra | ❌ Not started |
+| CFC/HFC (no natural source) detection | ❌ Not started |
+| N₂O (agricultural enhancement) detection | ❌ Not started |
+| SF₆ (electrical insulation, no natural source) detection | ❌ Not started |
+| Comparison to photochemical equilibrium models | ❌ Not started |
+| Spectral anomaly candidate output with significance | ❌ Not started |
+
+**References:** Lin et al. 2014 (ApJ 792, L7), Schwieterman et al. 2018 (Astrobiology 18, 663)
+
+### Phase 5 — Multi-Modal Cross-Correlation & Expert Review
+
+| Task | Status |
+|---|---|
+| Cross-modal candidate matching by sky position | ❌ Not started |
+| Multi-modal priority scoring (targets appearing in ≥2 modalities) | ❌ Not started |
+| Adversarial review agent (purpose-built per candidate) | ❌ Not started |
+| Candidate submission package (IAU post-detection protocol) | ❌ Not started |
+| Third-party expert contact (BL, Penn State, Galileo Project) | ❌ Blocked pending surviving candidate |
 
 ---
 
-## What Is Missing for Production
+## Current Production Capability (Honest Assessment)
 
-### Tier 1 — Blockers (nothing ships without these)
+**Radio pipeline:** Functional for BL/GBT `.dat` files. Produces non-detection
+manifests and candidate manifests. ON/OFF cadence rejection is partially
+implemented but needs hardening to ABACAB standard. Semi-supervised scorer
+is structurally correct but unfitted (trained on zero real hits).
 
-**All Tier 1 gaps are closed.** The calibration gate produced `calibration_ready: true` on 2026-06-12.
+**Photometry, IR, spectroscopy:** Not implemented. No `lightkurve`, no WISE SED
+fitting, no JWST spectral ingest.
 
-### Tier 2 — Required for Research-Grade Use
+**Candidate output:** The radio pipeline can produce candidate manifests from
+real GBT data (stratified sample of 31 targets, 18 strata). No multi-modal
+candidates have been produced.
 
-**All Tier 2 gaps are closed as of 2026-06-12.**
-
-| Gap | Status |
-|---|---|
-| Learned scoring model (replace rule-based baseline) | ✅ Complete — logistic regression v1 on 124 real HIP99427 labels; 3-fold CV accuracy 99.19%; closes Tier 2 |
-
-### Tier 3 — Production Hardening
-
-| Gap | Effort estimate |
-|---|---|
-| **AI hardening production blocker (DECISION-134)** | ✅ Closed — production promotion is allowed only for local citizen-science operations after the injection-recovery closure bundle recorded populated DECISION-133 evidence, independent method-family review, preserved abstentions, and negative evidence. |
-| Parallelized batch processing | ✅ Complete (Tier 3) |
-| Database-backed candidate store (not file-based) | ✅ Complete (Tier 3) |
-| Operator UI / review dashboard | ✅ Complete (Tier 3) |
-| External submission workflow | ✅ Complete (Tier 3) — protocol documented in `docs/EXTERNAL_SUBMISSION_PROTOCOL.md`; all preconditions currently unmet; DECISION-132 |
-| Reproducibility verification across data releases | ✅ Complete (Tier 3) |
-| Optional expert or institutional review | ✅ Closed (Tier 3) — no institutional expert available; citizen-science reproducibility protocol substituted per AGENTS.md independence standard; expert review explicitly unclaimed and remains a future opportunity if external collaboration arises |
-| **Terminal UX for production scan operations (DECISION-140)** — `prod-scan` CLI and `scripts/run_production_scan.sh` now run the artifact-backed production workflow with Rich spinner/fallback progress, per-target completion rows, target-status JSON, follow-up/non-detection ledgers, resume support via `--resume-run-dir`, and clean Ctrl+C handling; `prod-file-scan` and `tui.py` preserve the lower-level file-oriented scanner helpers; closes Tier 3 production scan operations UX gap | ✅ Complete (Tier 3) |
-
----
-
-## Production Readiness Estimate
-
-- **Current state:** Engineering substrate complete and production-promotable for local citizen-science operations; external submission and discovery-style claims remain blocked
-- **After Tier 1 complete:** ~60% ✅ reached
-- **After Tier 2 complete:** ~80% ✅ reached 2026-06-12
-- **After Tier 3 AI hardening gate complete:** production-promotable for citizen-science operations, while still making no detection, expert-review, external-validation, or external-submission claim
+**Review chain:** Steps 1 (automated) and 2 (adversarial agent) not yet
+functional for real candidates. Step 3 (expert review) blocked pending
+surviving candidates.
 
 ---
 
 ## Scientific Guardrails (Non-Negotiable)
 
-Regardless of engineering readiness:
-
 1. No candidate report authorizes external submission.
 2. No scoring result constitutes a detection claim.
-3. Pathway routing is a local scheduling aid, not a scientific verdict.
-4. All external catalog queries remain opt-in via `TECHNO_SEARCH_ENABLE_LIVE_DATA=1`.
-5. The pipeline is a provenance and triage tool. Citizen-science production
-   decisions require deterministic rules, an independent-method audit,
-   published provenance, and visible abstentions or disagreements.
-6. Expert review and external validation remain unclaimed unless they actually occur.
-7. Learned, semi-supervised, or AI-assisted scores may be used only for local
-   citizen-science production pathway promotion; they remain local scheduling
-   aids and do not authorize external submission or discovery-style claims.
+3. All external catalog queries remain opt-in via `TECHNO_SEARCH_ENABLE_LIVE_DATA=1`.
+4. No synthetic training data. Models trained on synthetic data are not used for
+   real signal detection.
+5. Expert review and external validation remain unclaimed unless they actually
+   occur and are documented here.
+6. A candidate that the adversarial agent cannot refute goes to third-party
+   expert review — not to public disclosure.
+7. Negative results are valuable. Document them with full provenance.
 
 ---
 
 ## Decision Reference
 
-See `docs/DECISIONS.md` (DECISION-074) for the formal production readiness
-assessment, DECISION-080 for the status-consistency gate, DECISION-081 for the
-alert/QC review consistency gate, DECISION-082 for the action-resolution
-staleness gate, DECISION-083 for the blocker-progress consistency gate,
-DECISION-084 for the top-level SQLite log consistency gate, and DECISION-085
-for the production blocker visibility consistency gate, DECISION-097 for
-the SQLite operational log registry consistency gate, DECISION-098 for
-the SQLite operational log adapter plan gate, DECISION-099 for the SQLite
-operational log adapter contract gate, DECISION-100 for the SQLite operational
-log adapter DDL preview gate, DECISION-101 for the SQLite operational log
-adapter row preview gate, DECISION-102 for the SQLite operational log adapter
-insert preview gate, DECISION-103 for the SQLite operational log adapter
-execution preview gate, DECISION-104 for the SQLite operational log adapter
-dry-run manifest gate, DECISION-105 for the SQLite operational log adapter
-readiness preflight gate, DECISION-106 for the SQLite operational log
-adapter authorization gate, DECISION-107 for the project-scoped MCP
-bootstrap, DECISION-108 for the MCP bootstrap consistency gate,
-DECISION-109 for the MCP server policy gate, DECISION-110 for the data
-transfer log, system diagnostics log, and resource allocation log,
-DECISION-111 for the access control log, change management log, and
-incident log, and DECISION-112 for the patch management log, vulnerability
-scan log, and compliance audit log, and DECISION-113 for the disaster
-recovery log, service level log, and asset management log. DECISION-121 records
-the observation admission gate, DECISION-122 records the first approved
-real GBT cadence ingestion and OFF-target rejection correction, and
-DECISION-123 records the citizen-science reproducibility standard and first
-admitted real label set. DECISION-124 records the GBT provisional RFI catalog
-from public regulatory documentation. DECISION-125 records the calibration corpus admission gate and download manifest.
-DECISION-126 records the GBT provisional RFI catalog operator sign-off.
-DECISION-127 records the calibrated scoring configuration from real GBT noise data.
-DECISION-128 records scoring model v1 with calibrated SNR tiers and drift neutralization (77.42% diagnostic agreement).
-DECISION-134 records the AI hardening production evidence gate. DECISION-135 records that DECISION-133 evidence paths must be populated before they receive review credit. DECISION-136 records the policy to ignore generated payloads while committing sanitized GitHub-visible artifact maps. DECISION-137 records the M4 Max local optimization directive, including GPU-first AI training when a tested accelerator backend is available. DECISION-138 records that extended-corpus acquisition must discover current Breakthrough Open Data URLs and fail closed on zero evidence. DECISION-139 closes DECISION-134 for local citizen-science production promotion using the injection-recovery closure evidence bundle.
+Key scientific decisions:
+- DECISION-121: Observation admission gate
+- DECISION-122: First approved real GBT cadence ingestion; OFF-target rejection
+- DECISION-123: Citizen-science reproducibility standard (now superseded by
+  publication-grade standard — see AGENTS.md PRIMARY DIRECTIVE)
+- DECISION-127: Calibrated scoring thresholds from real GBT noise data
+- DECISION-128: Scoring model v1 (77.42% diagnostic agreement on real labels)
+- DECISION-133: Model generalizability suite (cross-band features, GLOBULAR,
+  semi-supervised scorer — all need real training data)
+- DECISION-139: AI hardening production blocker closed for local operations (closes DECISION-134)
+- DECISION-141: Production scan history and history-aware queue
+- DECISION-143: Stratified random sampling of BL HPRC target list (31 targets,
+  18 strata, Isaacson et al. 2017)
