@@ -43,6 +43,15 @@ DEFAULT_CATALOG_CACHE_REQUIRED_PROVENANCE_FIELDS = (
 )
 CATALOG_CACHE_FORBIDDEN_COMMITTED_ROOTS = ("data", "cache", "artifacts")
 
+# Small committed scheduling artifacts under data/ that are explicitly versioned.
+# These are NOT catalog cache files and must be allowed through the commit path validator.
+CATALOG_CACHE_COMMITTED_DATA_ALLOWLIST = frozenset(
+    [
+        "data/bl_hprc_seed_targets.csv",
+        "data/target_sample_manifest.json",
+    ]
+)
+
 
 def configured_live_cache_dir(project_root: Path | str | None = None) -> Path:
     """Return the configured live-provider cache directory without creating it."""
@@ -223,7 +232,9 @@ def validate_catalog_cache_commit_paths(
         checked_paths.append(str(path))
         relative = _relative_to_project(path, root)
         if relative.parts and relative.parts[0] in CATALOG_CACHE_FORBIDDEN_COMMITTED_ROOTS:
-            errors.append(f"Catalog cache path must not be committed: {relative.as_posix()}")
+            posix = relative.as_posix()
+            if posix not in CATALOG_CACHE_COMMITTED_DATA_ALLOWLIST:
+                errors.append(f"Catalog cache path must not be committed: {posix}")
 
     return {
         "ok": not errors,

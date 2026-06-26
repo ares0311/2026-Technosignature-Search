@@ -216,7 +216,7 @@ def test_cli_project_status_consistency_summary_outputs_drift_gates() -> None:
     assert result["schema_version"] == "project_status_consistency_v1"
     assert result["ok"] is True
     assert result["roadmap_latest_milestone"] == 79
-    assert result["decisions_latest_decision"] == 142
+    assert result["decisions_latest_decision"] == 143
     assert result["actual_schema_count"] == 110
     assert result["rfi_database_admission_real_data_authorized_count"] == 0
     assert result["curated_dataset_admission_real_data_authorized_count"] == 1
@@ -2044,7 +2044,7 @@ def test_cli_validation_summary_outputs_concise_health_dashboard() -> None:
     assert result["schemas_ok"] is True
     assert result["project_status_consistency_ok"] is True
     assert result["project_status_latest_milestone"] == 79
-    assert result["project_status_latest_decision"] == 142
+    assert result["project_status_latest_decision"] == 143
     assert result["project_status_schema_count"] == 110
     assert result["ai_hardening_gate_ok"] is True
     assert result["ai_hardening_gate_status"] == "closed"
