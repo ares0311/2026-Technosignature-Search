@@ -3793,3 +3793,57 @@ one `.dat` per download script invocation. Production scan candidate counts
 reflect actual observation targets rather than artifact duplication.
 
 No result constitutes a detection claim or authorizes external submission.
+
+
+# DECISION-143: Stratified Random Sampling Design Replaces Arbitrary 5-Target Extended Corpus
+
+**Date:** 2026-06-26
+**Status:** Accepted
+**Closes:** Scientific methodology gap — extended corpus target selection lacked statistical sampling rationale required for publishable null results or candidate claims.
+
+## Context
+
+The initial extended corpus (HIP17147, HIP39826, HIP66704, HIP74981, HIP82860) was selected
+for sky-coverage diversity (non-Cygnus pointings), not statistical representativeness. Without
+a documented sampling rationale, any null result or candidate from these targets cannot be
+defended in peer review. Citizen science producing candidates for review must meet the same
+methodological standards as institutional research.
+
+## Decision
+
+Replace the arbitrary 5-target list with a stratified random sample drawn from the
+Breakthrough Listen High-Priority Candidate (HPRC) target list (Isaacson et al. 2017,
+PASP 129, 054501).
+
+**Stratification:** Cartesian product of three dimensions:
+- Distance: near (0–8 pc), mid (8–20 pc), far (20–50 pc) → 3 bins
+- Spectral class: F, G, K, M → 4 classes
+- Exoplanet host: 0 (no), 1 (yes) → 2 values
+- Total: 24 strata; 2 targets per stratum (default); seed 42 for reproducibility
+
+**Implementation:**
+- `data/bl_hprc_seed_targets.csv` — 48-target committed seed file (Isaacson et al. 2017 +
+  Enriquez et al. 2017 + Price et al. 2020 + Hipparcos/Gaia/NASA Exoplanet Archive)
+- `scripts/build_stratified_sample.py` — deterministic sampler; same seed + same CSV → same output
+- `data/target_sample_manifest.json` — committed manifest (31 targets across 18 strata, seed 42)
+  with SHA-256 checksum of seed CSV for reproducibility verification
+- `docs/SAMPLING_DESIGN.md` — publishable methodology documentation
+
+**Also fixed in this PR:** `discover_dat_files()` in `prod_scan_queue.py` changed from
+non-recursive `iterdir()` to `rglob("*.dat")`, enabling discovery of `.dat` files stored
+in per-target subdirectories (the nested layout produced by the extended corpus download
+and turboSETI scripts).
+
+## Consequences
+
+The download script (`scripts/download_bl_extended_corpus.sh`) now reads targets from
+`data/target_sample_manifest.json` instead of a hardcoded list. The stratified sample
+provides the methodological foundation required to defend null results and candidate claims
+in peer review. Any publication must cite: sampling frame (Isaacson et al. 2017),
+stratification scheme (distance × spectral class × exoplanet status), and random seed (42).
+
+The 5 original targets remain in the seed CSV and may appear in the manifest if selected
+by the stratified sampler — their prior inclusion is now coincidental overlap, not
+post-hoc justification.
+
+No entry in any manifest constitutes a detection claim or authorizes external submission.

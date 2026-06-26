@@ -15,12 +15,16 @@ dist/
 .coverage
 htmlcov/
 
-# Local data and generated products
-data/
+# Local data and generated products (large payloads stay local)
+# Use data/* (not data/) so that specific file exceptions below can work.
+data/*
 data/raw/
 data/interim/
 data/external/
 data/processed/
+# Committed scheduling/sampling artifacts (small, versioned)
+!data/bl_hprc_seed_targets.csv
+!data/target_sample_manifest.json
 cache/
 artifacts/
 docs/SYSTEM_PROFILE.md

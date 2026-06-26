@@ -44,6 +44,27 @@ class TestDiscoverDatFiles:
         assert len(files) == 1
         assert files[0].name == "real.dat"
 
+    def test_discovers_dat_files_in_subdirectories(self, tmp_path: Path) -> None:
+        """Nested layout: dat_dir/<TARGET>/<file>.dat (produced by BL extended corpus scripts)."""
+        subdir = tmp_path / "HIP17147"
+        subdir.mkdir()
+        (subdir / "blc1_HIP17147_0002.dat").write_text("x")
+        (tmp_path / "flat.dat").write_text("x")  # flat layout also works
+        files = discover_dat_files(tmp_path)
+        assert len(files) == 2
+        names = {f.name for f in files}
+        assert "blc1_HIP17147_0002.dat" in names
+        assert "flat.dat" in names
+
+    def test_nested_layout_only(self, tmp_path: Path) -> None:
+        """Nested layout with no flat files: only the subdirectory .dat is returned."""
+        subdir = tmp_path / "HIP82860"
+        subdir.mkdir()
+        (subdir / "blc1_HIP82860_0001.dat").write_text("x")
+        files = discover_dat_files(tmp_path)
+        assert len(files) == 1
+        assert files[0].name == "blc1_HIP82860_0001.dat"
+
 
 # ---------------------------------------------------------------------------
 # load_scan_history

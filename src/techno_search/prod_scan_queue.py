@@ -53,10 +53,15 @@ class QueueEntry:
 
 
 def discover_dat_files(dat_dir: Path) -> list[Path]:
-    """Return sorted .dat files in dat_dir (non-recursive)."""
+    """Return sorted .dat files found recursively under dat_dir.
+
+    Supports both flat layouts (dat_dir/*.dat) and nested layouts produced by
+    download_bl_extended_corpus.sh + run_turboseti_on_extended_corpus.sh, where
+    .dat files live in per-target subdirectories (dat_dir/<TARGET>/*.dat).
+    """
     if not dat_dir.is_dir():
         return []
-    return sorted(f for f in dat_dir.iterdir() if f.is_file() and f.suffix.lower() == ".dat")
+    return sorted(f for f in dat_dir.rglob("*.dat") if f.is_file())
 
 
 def load_scan_history(history_path: Path) -> dict[str, list[ScanHistoryRecord]]:
