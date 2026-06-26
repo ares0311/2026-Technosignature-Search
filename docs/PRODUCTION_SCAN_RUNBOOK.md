@@ -245,6 +245,57 @@ caffeinate -i bash scripts/run_production_scan.sh \
 
 ---
 
+## Storage Cleanup — Non-Negotiable
+
+Large intermediate files accumulate quickly. Before each new download batch,
+clean up files from prior runs to free storage space.
+
+### What to delete between batches
+
+```bash
+# Delete raw HDF5 files after turboSETI has run (keep .dat outputs)
+# Only delete if the .dat file exists and is non-empty
+rm -f data/extended_corpus/<TARGET>/*.h5
+
+# Delete .dat files from targets that produced zero-hit non-detections
+# (the manifests are already committed; the raw .dat is no longer needed)
+rm -f data/extended_corpus/<TARGET>/*.dat
+
+# Delete SQLite log backups older than 30 days (they accumulate ~2 MB/run)
+find logs/backups/ -name "*.db" -mtime +30 -delete
+
+# Verify the pipeline output is in results/ before deleting source files
+ls results/<TARGET>/
+```
+
+### What to keep
+
+| Keep | Reason |
+|---|---|
+| `results/scans/PROD-RUN-*/` | Durable audit trail — committed to GitHub |
+| `data/target_sample_manifest.json` | Reproduces the download list |
+| `data/bl_hprc_seed_targets.csv` | Source of stratified sample |
+| `data/meerkat_hits/*.ndjson` | Real MeerKAT corpus used for model training |
+| Any `.dat` file with real hits above threshold | Needed for re-processing |
+
+### Synthetic training data — delete permanently
+
+Synthetic calibration data was never scientifically valid for training models
+that will operate on real signals. Delete it:
+
+```bash
+# These files contain synthetic (fake) data and must not be used for training
+rm -f tests/fixtures/calibration_false_positives.json
+rm -f tests/fixtures/score_regressions.json
+
+# After deletion, update any tests that import these fixtures to skip or remove
+```
+
+Do not replace synthetic training data with more synthetic data. Use real
+labeled corpora only (MeerKAT BLUSE, real GBT hits, real turboSETI output).
+
+---
+
 ## Scientific Guardrails (non-negotiable)
 
 1. `validate-all` must pass before any scan proceeds. The script aborts on failure.
