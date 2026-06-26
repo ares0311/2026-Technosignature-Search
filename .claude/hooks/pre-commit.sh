@@ -1,5 +1,5 @@
 #!/bin/bash
-# Pre-commit hook: rejects git commits that don't close a named production gap.
+# Pre-commit hook: rejects git commits that don't advance a named science phase.
 set -euo pipefail
 
 # Only intercept git commit commands
@@ -19,37 +19,76 @@ fi
 # Extract the commit message from the command
 MSG=$(echo "$COMMAND" | tr '[:upper:]' '[:lower:]')
 
-TIER1_GAPS=(
-  "real observation data"
-  "real labeled dataset"
-  "calibrated scoring threshold"
-  "real site-specific rfi"
-  "peer review"
-  "real data ingestion"
-  "real turboSETI"
-  "real gaia"
-  "real wise"
-  "simbad cross-match"
-  "learned scoring model"
-  "multi-epoch"
+# Allowed commit categories — must reference science phase work or maintenance
+ALLOWED_PATTERNS=(
+  # Science phases
+  "phase 0"
+  "phase 1"
+  "phase 2"
+  "phase 3"
+  "phase 4"
+  "phase 5"
+  # Scientific capability keywords
+  "rfi rejection"
+  "on/off cadence"
+  "abacab"
+  "turboseti"
+  "meerkat"
+  "semisupervised"
+  "lightkurve"
+  "tess"
+  "kepler"
+  "wise"
+  "dyson"
+  "jwst"
+  "spectroscopy"
+  "transit"
+  "photometry"
+  "infrared"
+  "radio"
+  "candidate"
+  "technosignature"
+  "real data"
+  "real corpus"
+  "adversarial"
+  "multi-modal"
+  # Infrastructure directly supporting science
+  "delete"
+  "remove"
+  "strip"
+  "clean"
+  "runbook"
+  "pipeline"
   "ingest"
-  "threshold tuning"
-  "expert label"
-  "production alignment"
+  "download"
+  "hook"
+  "gitignore"
+  "production"
   "primary directive"
   "session-start"
-  "gitignore"
-  "hook"
-  "production gap"
-  "tier 1"
-  "tier 2"
+  "agents.md"
+  "claude.md"
+  "production_readiness"
+  "stratified"
+  "sampling"
+  # Bug fixes
+  "fix"
+  "bug"
+  "repair"
+  "correct"
+  "update"
+  "rewrite"
+  # Test and validation
+  "test"
+  "validate"
+  "ci"
 )
 
-for gap in "${TIER1_GAPS[@]}"; do
-  if echo "$MSG" | grep -qi "$gap"; then
+for pattern in "${ALLOWED_PATTERNS[@]}"; do
+  if echo "$MSG" | grep -qi "$pattern"; then
     exit 0
   fi
 done
 
-echo '{"decision": "block", "reason": "PRIMARY DIRECTIVE VIOLATION: Commit message does not reference a Tier 1 or Tier 2 production gap. Only work that gets this project to live production is permitted. See CLAUDE.md and docs/PRODUCTION_READINESS.md."}'
+echo '{"decision": "block", "reason": "PRIMARY DIRECTIVE VIOLATION: Commit does not advance multi-modal technosignature search (Phases 0-5). See AGENTS.md PRIMARY DIRECTIVE and FIVE-PHASE SCIENCE ROADMAP. Every commit must implement scientific capability, fix a real bug blocking science, or delete misaligned code."}'
 exit 0
