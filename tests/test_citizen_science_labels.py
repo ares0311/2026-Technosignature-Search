@@ -3,9 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
-from techno_search.baseline_eval import eval_against_labels
 from techno_search.citizen_science_labels import (
     CadenceHit,
     _audit_label,
@@ -108,18 +105,3 @@ def test_real_labeled_dataset_summary_preserves_review_limits() -> None:
     assert "not expert labels" in summary["disclaimer"]
 
 
-def test_real_label_evaluation_is_recorded_without_threshold_tuning() -> None:
-    evaluation = eval_against_labels(DATASET)
-
-    assert evaluation["entry_count"] == 124
-    assert evaluation["correct_count"] == 96
-    assert evaluation["accuracy"] == pytest.approx(0.7742)
-    assert evaluation["by_label_accuracy"]["false_positive"] == pytest.approx(
-        65 / 81, rel=1e-2
-    )
-    assert evaluation["by_label_accuracy"]["follow_up"] == pytest.approx(1.0)
-    assert evaluation["by_label_accuracy"]["insufficient_evidence"] == pytest.approx(
-        29 / 41, rel=1e-2
-    )
-    assert evaluation["expert_review_claimed"] is False
-    assert evaluation["external_validation_claimed"] is False

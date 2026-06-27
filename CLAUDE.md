@@ -250,6 +250,12 @@ The project was redirected in session on 2026-06-26. Key changes:
 - DECISION-143: stratified random sampling active.
 - External submission, discovery/detection, expert review remain unclaimed and blocked.
 
+### Phase 0 start (2026-06-26):
+
+**PR #122 merged.** All system directives updated. Git config set to `noreply@anthropic.com`.
+Starting Phase 0 science work: deleting ~141 misaligned overhead modules and synthetic
+training data. Then: ABACAB RFI rejection hardening, validate-all cleanup.
+
 ### turboSETI / pipeline status (as of 2026-06-21):
 
 **The user has run turboSETI 6+ times (confirmed). DO NOT ask to re-run it.**
