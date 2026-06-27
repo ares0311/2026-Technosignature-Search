@@ -9,6 +9,7 @@ parallel pipeline runner.
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import sys
@@ -654,6 +655,37 @@ def test_main_run_pipeline_discovers_nested_dat_files(tmp_path: Path) -> None:
     assert called_cmds[0][called_cmds[0].index("--candidate-id") + 1] == (
         "HIP100670__hit"
     )
+
+
+def test_main_run_pipeline_writes_zero_hit_observation_manifest(tmp_path: Path) -> None:
+    dat_dir = tmp_path / "data"
+    nested = dat_dir / "HIP17147"
+    nested.mkdir(parents=True)
+    dat = nested / "zero.dat"
+    dat.write_text(
+        "# Source:HIP17147\n"
+        "# Top_Hit_# \tDrift_Rate \tSNR \tUncorrected_Frequency\n"
+        "# --------------------------\n",
+        encoding="utf-8",
+    )
+    results = tmp_path / "results"
+
+    with patch("subprocess.run") as run:
+        rc = bl_fetch.main([
+            "run-pipeline", str(dat_dir), str(results),
+            "--workers", "1",
+        ])
+
+    manifest_path = results / "HIP17147" / "zero" / "HIP17147__zero.manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert rc == 0
+    run.assert_not_called()
+    assert manifest["artifact_kind"] == "zero_hit_observation_manifest"
+    assert manifest["target_name"] == "HIP17147"
+    assert manifest["hit_row_count"] == 0
+    assert manifest["recommended_pathway"] == "no_follow_up_observation"
+    assert manifest["detection_claimed"] is False
+    assert manifest["external_submission_allowed"] is False
 
 
 # ---------------------------------------------------------------------------

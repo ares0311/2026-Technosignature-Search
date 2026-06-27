@@ -60,6 +60,13 @@ HDF5_MAGIC = b"\x89HDF"
 DEFAULT_CONNECTIONS = 16  # gigabit wifi + M4 Max NIC throughput
 CHUNK_SIZE = 4 * 1024 * 1024  # 4 MiB per chunk
 DOWNLOAD_TIMEOUT = 120  # seconds per chunk/request
+ZERO_HIT_OBSERVATION_SCHEMA_VERSION = "zero_hit_observation_manifest_v1"
+ZERO_HIT_OBSERVATION_DISCLAIMER = (
+    "Zero-hit observation manifests record turboSETI hit tables with no hit "
+    "rows. They are local negative-evidence ledgers only; they do not "
+    "constitute detections, discoveries, external validation, or authorization "
+    "for external submission."
+)
 
 VOYAGER_URLS = [
     "https://github.com/UCBerkeleySETI/turbo_seti/raw/master/tests/test_data"
@@ -747,6 +754,16 @@ def run_pipeline_parallel(
             return dat, True
 
         candidate_id = _candidate_id_for_dat(dat_path, dat_root)
+        if _turboseti_hit_row_count(dat_path) == 0:
+            _write_zero_hit_observation_manifest(
+                dat_path=dat_path,
+                out_dir=out_dir,
+                dat_root=dat_root,
+                observation_id=candidate_id,
+            )
+            log.info("  ZERO-HIT: %s -> %s", dat_path, out_dir)
+            return dat, True
+
         log.info("  Processing: %s -> %s", dat_path, out_dir)
         cmd = [
             techno_search_bin,
@@ -806,6 +823,61 @@ def _candidate_id_for_dat(dat_path: Path, dat_root: Path | None) -> str:
     except ValueError:
         return _safe_path_part(dat_path.stem)
     return "__".join(_safe_path_part(part) for part in relative.parts)
+
+
+def _turboseti_hit_row_count(dat_path: Path) -> int:
+    """Return the count of non-comment turboSETI hit rows in a .dat file."""
+    try:
+        lines = dat_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        return 0
+    return sum(1 for line in lines if line.strip() and not line.lstrip().startswith("#"))
+
+
+def _write_zero_hit_observation_manifest(
+    *,
+    dat_path: Path,
+    out_dir: Path,
+    dat_root: Path | None,
+    observation_id: str,
+) -> Path:
+    rel_path = _relative_dat_path(dat_path, dat_root)
+    target_name = dat_path.parent.name if dat_root is not None else dat_path.stem
+    manifest_path = out_dir / f"{observation_id}.manifest.json"
+    manifest = {
+        "schema_version": ZERO_HIT_OBSERVATION_SCHEMA_VERSION,
+        "artifact_kind": "zero_hit_observation_manifest",
+        "observation_id": observation_id,
+        "candidate_id": observation_id,
+        "target_name": target_name,
+        "track": "radio",
+        "recommended_pathway": "no_follow_up_observation",
+        "source_data_path": rel_path,
+        "hit_row_count": 0,
+        "score": 0.0,
+        "snr": 0.0,
+        "frequency_hz": 0.0,
+        "negative_evidence": [
+            "turboSETI hit table contained no hit rows above the configured threshold."
+        ],
+        "disclaimer": ZERO_HIT_OBSERVATION_DISCLAIMER,
+        "detection_claimed": False,
+        "external_submission_allowed": False,
+    }
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return manifest_path
+
+
+def _relative_dat_path(dat_path: Path, dat_root: Path | None) -> str:
+    if dat_root is not None:
+        try:
+            return dat_path.relative_to(dat_root).as_posix()
+        except ValueError:
+            pass
+    return dat_path.name
 
 
 def _safe_path_part(value: str) -> str:

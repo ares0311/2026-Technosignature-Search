@@ -81,9 +81,7 @@ Every commit must advance one of Phases 0–4 in `docs/PRODUCTION_READINESS.md`.
 If a commit does not close a named gap in Phases 0–4, it should not be merged.
 
 Current Phase 0 open gaps:
-- Delete ~141 misaligned overhead modules (log schemas, operational adapters, MCP bootstrap)
 - Delete synthetic training data files
-- Harden ON/OFF cadence RFI rejection (ABACAB standard, Enriquez et al. 2017)
 - Train `semisupervised_scorer` on real MeerKAT BLUSE corpus (Sheikh et al. 2025)
 - Update `validate-all` to scientific-only gates
 
@@ -241,10 +239,15 @@ The project was redirected in session on 2026-06-26. Key changes:
   cleanup, PROJECT_STATUS.md, CLAUDE.md updates.
 - **PR #124 merged to `main`** (2026-06-27): Phase 0 module deletion — 74 overhead modules
   deleted, 41 overhead test files deleted, stubs in cli.py/__init__.py.
-- **PR #125 open (2026-06-27):** ABACAB ON/OFF cadence rejection score (Enriquez et al. 2017).
+- **PR #125 merged to `main`** (2026-06-27): ABACAB ON/OFF cadence rejection score (Enriquez et al. 2017).
   source_artifact tracking through RadioHit, _abacab_cadence_score(), 3 new tests.
+- **Current PR in progress:** carry forward the useful old `claude/general-session-Bb2dZ`
+  diff on top of PR #125: zero-hit turboSETI `.dat` files become negative-evidence
+  manifests and production non-detection ledger entries, and
+  `docs/fermi_paradox_technosignatures_brief.md` is tracked on GitHub.
 - **Phase 0 status:** Module deletion ✅ (PR #124). ABACAB ✅ (PR #125). Remaining:
-  synthetic training data deletion, validate-all science-only gates.
+  synthetic training data deletion, validate-all science-only gates, real MeerKAT
+  BLUSE training for `semisupervised_scorer`.
 - **semisupervised_scorer:** `is_fitted: false`, `train_hit_count: 0` — must be
   trained on real MeerKAT BLUSE data (not synthetic) when Phase 1 begins.
 - DECISION-134/139: AI hardening gate closed for local operations only.
@@ -257,7 +260,7 @@ The project was redirected in session on 2026-06-26. Key changes:
 ### Phase 0 progress (2026-06-27):
 
 **PR #124 merged.** Deleted 74 overhead modules.
-**PR #125 open.** ABACAB cadence rejection score implemented.
+**PR #125 merged.** ABACAB cadence rejection score implemented.
 Next Phase 0 items:
 1. Delete synthetic training data files (`tests/fixtures/calibration_false_positives.json`,
    `tests/fixtures/score_regressions.json`) — complex: calibration.py and baseline_eval.py

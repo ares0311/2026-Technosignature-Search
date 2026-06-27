@@ -70,6 +70,10 @@ def build_production_outcomes(
     summary = scan_summary_data or scan_summary(candidates)
     follow_up_entries: list[dict[str, Any]] = []
     non_detection_entries: list[dict[str, Any]] = []
+    zero_hit_observation_count = sum(
+        1 for candidate in candidates if bool(candidate.get("observation_only"))
+    )
+    scored_candidate_count = len(candidates) - zero_hit_observation_count
 
     for candidate in candidates:
         pathway = str(candidate.get("recommended_pathway") or candidate.get("pathway") or "unknown")
@@ -122,6 +126,8 @@ def build_production_outcomes(
         "external_validation_claimed": False,
         "external_submission_allowed": False,
         "candidate_count": len(candidates),
+        "scored_candidate_count": scored_candidate_count,
+        "zero_hit_observation_count": zero_hit_observation_count,
         "non_detection_count": len(non_detection_entries),
         "follow_up_count": len(follow_up_entries),
         "target_status_count": int(target_status["target_count"]),
@@ -299,10 +305,14 @@ def build_target_status_summary(
             target_candidates,
             key=lambda item: float(item.get("score", 0.0)),
         )
+        observation_only = bool(best_candidate.get("observation_only"))
         follow_up_required = any(
             str(item.get("recommended_pathway") or item.get("pathway") or "unknown")
             in FOLLOW_UP_PATHWAYS
             for item in target_candidates
+        )
+        scored_candidate_count = sum(
+            1 for item in target_candidates if not bool(item.get("observation_only"))
         )
         candidate_id = str(best_candidate.get("candidate_id", ""))
         kind = classify_target_kind(best_candidate)
@@ -320,8 +330,11 @@ def build_target_status_summary(
                 "target_kind_limitation": kind["target_kind_limitation"],
                 "follow_up_required": follow_up_required,
                 "composite_score": float(best_candidate.get("score", 0.0)),
-                "score_basis": "pipeline_score",
-                "candidate_count": len(target_candidates),
+                "score_basis": (
+                    "zero_hit_observation" if observation_only else "pipeline_score"
+                ),
+                "candidate_count": scored_candidate_count,
+                "observation_count": len(target_candidates),
                 "top_candidate_id": candidate_id,
                 "top_pathway": str(
                     best_candidate.get("recommended_pathway")
@@ -431,6 +444,30 @@ def _follow_up_entry(candidate: dict[str, Any], run_id: str, sequence: int) -> d
 
 def _non_detection_entry(candidate: dict[str, Any], run_id: str, sequence: int) -> dict[str, Any]:
     pathway = str(candidate.get("recommended_pathway") or candidate.get("pathway") or "unknown")
+    if bool(candidate.get("observation_only")):
+        negative_evidence = candidate.get("negative_evidence") or [
+            "turboSETI hit table contained no hit rows above the configured threshold."
+        ]
+        return {
+            "non_detection_id": _child_id("NEG", run_id, sequence),
+            "candidate_id": str(candidate.get("candidate_id", "")),
+            "observation_id": str(
+                candidate.get("observation_id", candidate.get("candidate_id", ""))
+            ),
+            "target_name": str(candidate.get("target_name", "")),
+            "track": str(candidate.get("track", "unknown")),
+            "pathway": pathway,
+            "score": 0.0,
+            "frequency_hz": 0.0,
+            "snr": 0.0,
+            "hit_row_count": int(candidate.get("hit_row_count", 0)),
+            "source_data_path": str(candidate.get("source_data_path", "")),
+            "status": "reviewed_zero_hit_observation",
+            "reason": "zero_hit_observation_no_turboseti_hits",
+            "negative_evidence": list(negative_evidence),
+            "detection_claimed": False,
+            "external_submission_allowed": False,
+        }
     return {
         "non_detection_id": _child_id("NEG", run_id, sequence),
         "candidate_id": str(candidate.get("candidate_id", "")),

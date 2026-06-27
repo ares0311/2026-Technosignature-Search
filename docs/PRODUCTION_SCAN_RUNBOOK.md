@@ -139,6 +139,9 @@ results/
       HIP99427.json            ← scored candidate packet
       HIP99427.md              ← Markdown report
       HIP99427.manifest.json   ← report manifest
+    HIP17147/
+      zero/
+        HIP17147__zero.manifest.json ← zero-hit observation manifest
 ```
 
 The `results/scans/` subtree is committed to GitHub as the durable audit trail.
@@ -179,6 +182,11 @@ Each line in `results/scan_history.ndjson` is one JSON object:
 
 HDF5 files in `data/extended_corpus/` must be processed with turboSETI before they can
 enter the production scan queue.  Use `scripts/run_turboseti_on_extended_corpus.sh` (idempotent).
+
+Zero-hit turboSETI `.dat` files are still evidence. `scripts/bl_fetch.py run-pipeline`
+writes `zero_hit_observation_manifest_v1` records for hit tables with no non-comment
+rows, and `prod-scan` turns those records into non-detection ledger entries with
+score `0.0`, no follow-up requirement, and explicit negative evidence.
 
 ---
 
@@ -300,7 +308,9 @@ labeled corpora only (MeerKAT BLUSE, real GBT hits, real turboSETI output).
 
 1. `validate-all` must pass before any scan proceeds. The script aborts on failure.
 2. No scan result constitutes a detection claim or authorizes external submission.
-3. All outputs are local citizen-science scheduling aids only.
+3. All outputs are local production-scan evidence records only; they are not
+   detection, discovery, expert-review, peer-review, external-validation, or
+   external-submission claims.
 4. Escalation candidates require `operator_cleared` and `external_review_authorized`
    to both be `True` before any external action — those fields start as `False` and
    require explicit human approval.
