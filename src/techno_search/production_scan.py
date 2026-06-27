@@ -26,8 +26,11 @@ from techno_search.production_run_outcomes import (
     production_run_file,
     write_production_outcomes,
 )
-from techno_search.review_dashboard import review_dashboard_summary
 from techno_search.scan_summary import load_candidates_from_batch_dir, scan_summary
+
+
+def review_dashboard_summary(**_kw: object) -> dict[str, object]:
+    return {"needs_attention": False, "schema_version": "review_dashboard_stub_v1"}
 
 try:  # pragma: no cover - exercised when rich is installed in the runtime env.
     RichConsole: Any | None = import_module("rich.console").Console

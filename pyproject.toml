@@ -63,6 +63,9 @@ src = ["src", "tests"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM"]
 
+[tool.ruff.lint.per-file-ignores]
+"src/techno_search/__init__.py" = ["F401"]
+
 [tool.mypy]
 python_version = "3.11"
 mypy_path = "src"
