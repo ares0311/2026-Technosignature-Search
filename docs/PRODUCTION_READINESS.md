@@ -120,7 +120,7 @@ gaps are closed. The project now pivots to multi-modal science (Phases 0–4).
 
 | Task | Status |
 |---|---|
-| Delete ~141 misaligned overhead modules | ❌ Not started |
+| Delete ~141 misaligned overhead modules | ✅ Done (PR #124, 2026-06-27) — 74 modules deleted, stubs in place |
 | Delete synthetic training data files | ❌ Not started |
 | Harden ON/OFF cadence RFI rejection (Enriquez 2017 ABACAB) | ❌ Not started |
 | Train `semisupervised_scorer` on real MeerKAT BLUSE corpus | ❌ Unfitted |

@@ -201,7 +201,7 @@ Mandatory requirements:
 
 ---
 
-## Current Live Handoff — 2026-06-26
+## Current Live Handoff — 2026-06-27
 
 ### RESULT RECORDING RULE — NON-NEGOTIABLE
 
@@ -237,10 +237,12 @@ The project was redirected in session on 2026-06-26. Key changes:
 - **PR #122 merged to `main`** (2026-06-26): STRATIFIED RANDOM SAMPLING (DECISION-143).
   31 targets across 18 strata from BL HPRC list (Isaacson et al. 2017).
   `data/bl_hprc_seed_targets.csv`, `data/target_sample_manifest.json`, `docs/SAMPLING_DESIGN.md`.
-- **Current pending PR (this session):** Pre-commit hook, runbook storage cleanup,
-  PROJECT_STATUS.md, CLAUDE.md updates.
-- **Phase 0 status:** System directives updated. Science deletions (141 modules,
-  synthetic training data) not yet started.
+- **PR #123 merged to `main`** (2026-06-26): Pre-commit hook phase-based, runbook storage
+  cleanup, PROJECT_STATUS.md, CLAUDE.md updates.
+- **PR #124 open (2026-06-27):** Phase 0 module deletion — 74 overhead modules deleted,
+  41 overhead test files deleted, stubs in cli.py/__init__.py, 1332 tests pass.
+- **Phase 0 status:** Module deletion complete (PR #124). Remaining: synthetic training
+  data deletion, ABACAB RFI rejection, validate-all science-only gates.
 - **semisupervised_scorer:** `is_fitted: false`, `train_hit_count: 0` — must be
   trained on real MeerKAT BLUSE data (not synthetic) when Phase 1 begins.
 - DECISION-134/139: AI hardening gate closed for local operations only.
@@ -250,11 +252,14 @@ The project was redirected in session on 2026-06-26. Key changes:
 - DECISION-143: stratified random sampling active.
 - External submission, discovery/detection, expert review remain unclaimed and blocked.
 
-### Phase 0 start (2026-06-26):
+### Phase 0 progress (2026-06-27):
 
-**PR #122 merged.** All system directives updated. Git config set to `noreply@anthropic.com`.
-Starting Phase 0 science work: deleting ~141 misaligned overhead modules and synthetic
-training data. Then: ABACAB RFI rejection hardening, validate-all cleanup.
+**PR #124 pending merge.** Deleted 74 overhead modules + 41 overhead test files.
+Next Phase 0 items:
+1. Delete synthetic training data files (`tests/fixtures/calibration_false_positives.json`,
+   `tests/fixtures/score_regressions.json`) — but verify first that no real tests depend on them
+2. Harden ON/OFF cadence RFI rejection to ABACAB standard (Enriquez et al. 2017)
+3. Update `validate-all` to science-only gates (remove overhead stub checks)
 
 ### turboSETI / pipeline status (as of 2026-06-21):
 
@@ -264,10 +269,11 @@ training data. Then: ABACAB RFI rejection hardening, validate-all cleanup.
 - `scan_history.ndjson` has all 5 stems recorded. New stratified targets (31) are not yet
   downloaded or processed — use `--force-rescan` is NOT needed for new targets.
 
-### Latest known CI state (PR #121/#122, 2026-06-26):
-- `.venv/bin/python -m pytest -q` — 2471 passed, 13 skipped
+### Latest known CI state (PR #124, 2026-06-27):
+- `.venv/bin/python -m pytest -q` — 1332 passed, 13 skipped (74 overhead modules deleted)
 - `.venv/bin/ruff check .` — All checks passed
 - `.venv/bin/mypy src --no-error-summary` — clean
+- `.venv/bin/techno-search validate-all` — ok: True
 
 ### Next steps for user (after merging current PR):
 
