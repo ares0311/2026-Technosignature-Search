@@ -177,6 +177,56 @@ def test_run_production_scan_fails_closed_without_candidates(tmp_path: Path) -> 
     assert not (scans_dir / RUN_ID).exists()
 
 
+def test_run_production_scan_ledgers_zero_hit_observation(tmp_path: Path) -> None:
+    results_dir = tmp_path / "results"
+    scans_dir = tmp_path / "scans"
+    target_dir = results_dir / "HIP17147" / "zero"
+    target_dir.mkdir(parents=True)
+    (target_dir / "HIP17147__zero.manifest.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "zero_hit_observation_manifest_v1",
+                "artifact_kind": "zero_hit_observation_manifest",
+                "observation_id": "HIP17147__zero",
+                "target_name": "HIP17147",
+                "track": "radio",
+                "recommended_pathway": "no_follow_up_observation",
+                "source_data_path": "HIP17147/zero.dat",
+                "hit_row_count": 0,
+                "negative_evidence": [
+                    "turboSETI hit table contained no hit rows above the configured threshold."
+                ],
+                "detection_claimed": False,
+                "external_submission_allowed": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+    stdout = StringIO()
+
+    result = run_production_scan(
+        results_dir=results_dir,
+        scans_dir=scans_dir,
+        stdout=stdout,
+        run_id=RUN_ID,
+        use_rich=False,
+        validate_func=lambda: {"ok": True},
+        dashboard_func=lambda: {"needs_attention": False},
+    )
+
+    non_detections = json.loads(
+        (scans_dir / RUN_ID / f"{RUN_ID}_non_detections.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert result.target_count == 1
+    assert result.follow_up_required_count == 0
+    assert "HIP17147 | stellar target | follow-up=no | score=0.000" in stdout.getvalue()
+    assert non_detections["entries"][0]["reason"] == (
+        "zero_hit_observation_no_turboseti_hits"
+    )
+
+
 def test_run_production_scan_allows_empty_only_when_explicit(tmp_path: Path) -> None:
     results_dir = tmp_path / "results"
     scans_dir = tmp_path / "scans"

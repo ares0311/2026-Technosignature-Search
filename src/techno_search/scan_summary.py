@@ -103,6 +103,9 @@ def load_candidates_from_batch_dir(batch_dir: Path) -> list[dict[str, Any]]:
             continue
         if manifest.get("artifact_kind") == "production_run_manifest":
             continue
+        if manifest.get("artifact_kind") == "zero_hit_observation_manifest":
+            candidates.append(_zero_hit_observation_candidate(manifest, mf, batch_path))
+            continue
 
         stem = mf.stem
         if stem.endswith(".manifest"):
@@ -161,6 +164,35 @@ def load_candidates_from_batch_dir(batch_dir: Path) -> list[dict[str, Any]]:
         )
 
     return candidates
+
+
+def _zero_hit_observation_candidate(
+    manifest: dict[str, Any],
+    manifest_path: Path,
+    batch_path: Path,
+) -> dict[str, Any]:
+    observation_id = str(
+        manifest.get("observation_id") or manifest.get("candidate_id") or manifest_path.stem
+    )
+    parent_target_name = (
+        manifest_path.parent.name if manifest_path.parent != batch_path else observation_id
+    )
+    target_name = str(manifest.get("target_name") or parent_target_name)
+    return {
+        "candidate_id": observation_id,
+        "observation_id": observation_id,
+        "score": 0.0,
+        "recommended_pathway": "no_follow_up_observation",
+        "target_name": target_name,
+        "frequency_hz": 0.0,
+        "snr": 0.0,
+        "drift_rate_hz_per_sec": 0.0,
+        "track": str(manifest.get("track", "radio")),
+        "observation_only": True,
+        "hit_row_count": int(manifest.get("hit_row_count", 0)),
+        "negative_evidence": list(manifest.get("negative_evidence", [])),
+        "source_data_path": str(manifest.get("source_data_path", "")),
+    }
 
 
 def scan_summary_from_batch_dir(batch_dir: Path) -> dict[str, Any]:

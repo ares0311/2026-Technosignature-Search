@@ -183,6 +183,55 @@ def test_scan_summary_ignores_production_run_manifest(tmp_path) -> None:
     assert summary["total_candidates"] == 1
 
 
+def test_zero_hit_observation_manifest_becomes_non_detection(tmp_path) -> None:
+    results_dir = tmp_path / "results"
+    target_dir = results_dir / "HIP17147" / "zero"
+    target_dir.mkdir(parents=True)
+    (target_dir / "HIP17147__zero.manifest.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "zero_hit_observation_manifest_v1",
+                "artifact_kind": "zero_hit_observation_manifest",
+                "observation_id": "HIP17147__zero",
+                "candidate_id": "HIP17147__zero",
+                "target_name": "HIP17147",
+                "track": "radio",
+                "recommended_pathway": "no_follow_up_observation",
+                "source_data_path": "HIP17147/zero.dat",
+                "hit_row_count": 0,
+                "negative_evidence": [
+                    "turboSETI hit table contained no hit rows above the configured threshold."
+                ],
+                "detection_claimed": False,
+                "external_submission_allowed": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    written = write_production_outcomes(
+        results_dir=results_dir,
+        run_dir=results_dir / "scans" / RUN_ID,
+        run_id=RUN_ID,
+        started_at_utc="2026-06-18T20:13:25Z",
+        completed_at_utc="2026-06-18T20:13:30Z",
+    )
+    non_detections = production_run_file(results_dir / "scans" / RUN_ID, "non_detections")
+    target_status = production_run_file(results_dir / "scans" / RUN_ID, "target_status")
+
+    assert written["zero_hit_observation_count"] == 1
+    assert written["follow_up_count"] == 0
+    assert non_detections["entries"][0]["reason"] == (
+        "zero_hit_observation_no_turboseti_hits"
+    )
+    assert non_detections["entries"][0]["status"] == "reviewed_zero_hit_observation"
+    assert non_detections["entries"][0]["source_data_path"] == "HIP17147/zero.dat"
+    assert target_status["entries"][0]["target_name"] == "HIP17147"
+    assert target_status["entries"][0]["score_basis"] == "zero_hit_observation"
+    assert target_status["entries"][0]["follow_up_required"] is False
+    assert target_status["entries"][0]["candidate_count"] == 0
+
+
 def test_invalid_run_id_token_rejected() -> None:
     with pytest.raises(ValueError):
         make_production_run_id(token="toolong")

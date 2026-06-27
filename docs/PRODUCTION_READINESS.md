@@ -140,7 +140,7 @@ and scan history records."
 | MeerKAT BLUSE real training corpus loaded into semisupervised_scorer | ❌ Not started |
 | Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial |
 | Cross-target RFI suppression on full stratified corpus | ⚠️ Partial |
-| Ranked candidate list output ready for Phase 5 | ❌ Not started |
+| Ranked candidate/non-detection output ready for Phase 5 | ⚠️ Partial — zero-hit observations are preserved as negative evidence ledgers |
 
 ### Phase 2 — Transit Photometry: Kepler/TESS
 
@@ -194,16 +194,19 @@ and scan history records."
 ## Current Production Capability (Honest Assessment)
 
 **Radio pipeline:** Functional for BL/GBT `.dat` files. Produces non-detection
-manifests and candidate manifests. ON/OFF cadence rejection is partially
-implemented but needs hardening to ABACAB standard. Semi-supervised scorer
-is structurally correct but unfitted (trained on zero real hits).
+manifests and candidate manifests. Zero-hit turboSETI observations are preserved
+as negative-evidence ledger entries instead of being dropped as empty scans.
+ON/OFF cadence rejection now exposes an ABACAB cadence score from cadence source
+artifacts; raw-file ABACAB verification remains a Phase 1 hardening task.
+Semi-supervised scorer is structurally correct but unfitted (trained on zero
+real hits).
 
 **Photometry, IR, spectroscopy:** Not implemented. No `lightkurve`, no WISE SED
 fitting, no JWST spectral ingest.
 
-**Candidate output:** The radio pipeline can produce candidate manifests from
-real GBT data (stratified sample of 31 targets, 18 strata). No multi-modal
-candidates have been produced.
+**Candidate output:** The radio pipeline can produce candidate manifests and
+zero-hit non-detection ledgers from real GBT data (stratified sample of 31
+targets, 18 strata). No multi-modal candidates have been produced.
 
 **Review chain:** Steps 1 (automated) and 2 (adversarial agent) not yet
 functional for real candidates. Step 3 (expert review) blocked pending
