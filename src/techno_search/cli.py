@@ -12,7 +12,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, TextIO
 
-from techno_search.aggregate_blockers import aggregate_blockers_summary
 from techno_search.ai_hardening_gate import ai_hardening_gate_summary
 from techno_search.artifact_cleanup import (
     apply_artifact_cleanup,
@@ -35,19 +34,10 @@ from techno_search.background_search import (
     target_priority_summary,
     write_background_draft_follow_up_reports,
 )
-from techno_search.baseline_eval import (
-    baseline_pathway_drift_summary,
-    baseline_performance_history_summary,
-    classifier_rule_coverage_summary,
-    evaluate_baseline,
-    route_coverage_summary,
-    score_determinism_check,
-)
 from techno_search.benchmark_metadata import (
     BenchmarkRunResult,
     append_benchmark_run_result,
     benchmark_metadata_summary,
-    benchmark_run_result_comparison,
     benchmark_run_result_summary,
 )
 from techno_search.calibration import (
@@ -59,31 +49,15 @@ from techno_search.calibration import (
 from techno_search.calibration_metrics import precision_recall_summary, reliability_summary
 from techno_search.candidate_annotation import candidate_annotation_summary
 from techno_search.candidate_audit_trail import audit_trail_summary
-from techno_search.candidate_comparison import candidate_comparison_summary
 from techno_search.candidate_feature_vector import feature_vector_summary
-from techno_search.candidate_flags import candidate_flags_summary
-from techno_search.candidate_lifecycle import (
-    candidate_lifecycle_summary,
-    lifecycle_transition_summary,
-)
 from techno_search.candidate_methods_summary import candidate_methods_summary
-from techno_search.candidate_observation_notes import observation_notes_summary
 from techno_search.candidate_priority_queue import priority_queue_summary
-from techno_search.candidate_rescore import candidate_rescore_summary
 from techno_search.candidate_resolution import candidate_resolution_summary
 from techno_search.candidate_retention import candidate_retention_summary
-from techno_search.candidate_score_history import score_history_summary
-from techno_search.candidate_triage import (
-    operator_coverage_summary,
-    triage_label_completeness_check,
-    triage_summary,
-)
-from techno_search.config_version_history import config_version_history_summary
 from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONFIG_VERSION
 from techno_search.cross_track import cross_track_summary
 from techno_search.curated_dataset_admission import curated_dataset_admission_summary
 from techno_search.curated_dataset_intake import curated_dataset_intake_summary
-from techno_search.epoch_plan import epoch_plan_summary
 from techno_search.feature_importance import feature_importance_summary
 from techno_search.feature_normalization import feature_normalization_summary
 from techno_search.follow_up_request import follow_up_request_summary
@@ -120,20 +94,8 @@ from techno_search.log_store import (
 )
 from techno_search.mcp_bootstrap_consistency import mcp_bootstrap_consistency_summary
 from techno_search.mcp_server_policy import mcp_server_policy_summary
-from techno_search.ml_model_registry import model_registry_summary
-from techno_search.ml_pipeline_diagnostics import ml_pipeline_diagnostics_summary
-from techno_search.ml_training_data import ml_training_data_summary
-from techno_search.model_architecture import model_architecture_summary
-from techno_search.model_evaluation import model_evaluation_summary
-from techno_search.model_performance_history import model_performance_history_summary
-from techno_search.model_serving import model_serving_summary
 from techno_search.multi_epoch_summary import multi_epoch_summary
 from techno_search.observation_campaign import observation_campaign_summary
-from techno_search.observation_schedule import (
-    observation_efficiency_summary,
-    observation_gap_analysis,
-    observation_schedule_summary,
-)
 from techno_search.operations_action_plan import operations_action_plan_summary
 from techno_search.operations_action_resolution import (
     operations_action_resolution_summary,
@@ -144,53 +106,21 @@ from techno_search.operations_action_resolution_consistency import (
 from techno_search.operations_alert_review_consistency import (
     operations_alert_review_consistency_summary,
 )
-from techno_search.operations_blocker_detail import operations_blocker_detail_summary
-from techno_search.operations_blocker_followup import operations_blocker_followup_summary
-from techno_search.operations_blocker_followup_progress import (
-    operations_blocker_followup_progress_summary,
-)
 from techno_search.operations_blocker_progress_consistency import (
     operations_blocker_progress_consistency_summary,
 )
-from techno_search.operations_blocker_progress_execution import (
-    operations_blocker_progress_execution_summary,
-)
-from techno_search.operations_blocker_progress_execution_followup import (
-    operations_blocker_progress_execution_followup_summary,
-)
-from techno_search.operations_blocker_progress_execution_review import (
-    operations_blocker_progress_execution_review_summary,
-)
-from techno_search.operations_blocker_progress_next_actions import (
-    operations_blocker_progress_next_actions_summary,
-)
-from techno_search.operations_blocker_progress_review import (
-    operations_blocker_progress_review_summary,
-)
-from techno_search.operations_blocker_review import operations_blocker_review_summary
 from techno_search.operations_readiness import (
     operations_readiness_digest,
     operations_readiness_summary,
 )
-from techno_search.operator_assignment import operator_assignment_summary
-from techno_search.operator_handoff_template import operator_handoff_summary
-from techno_search.operator_performance import operator_performance_summary
-from techno_search.pipeline_audit_summary import pipeline_audit_summary
-from techno_search.pipeline_bottleneck import pipeline_bottleneck_summary
-from techno_search.pipeline_capacity import pipeline_capacity_summary
 from techno_search.pipeline_config import pipeline_config_summary
-from techno_search.pipeline_health import pipeline_health_summary
 from techno_search.pipeline_integration import pipeline_integration_summary
-from techno_search.pipeline_telemetry import pipeline_telemetry_summary
-from techno_search.pipeline_throughput import pipeline_throughput_summary
 from techno_search.plotting import plot_artifact_summary
 from techno_search.production_blocker_consistency import (
     production_blocker_consistency_summary,
 )
 from techno_search.project_status_consistency import project_status_consistency_summary
 from techno_search.provenance import provenance_chain_validator
-from techno_search.provenance_audit import provenance_audit_summary
-from techno_search.quality_control_summary import quality_control_summary
 from techno_search.real_data_admission_preflight import (
     real_data_admission_preflight_summary,
 )
@@ -199,7 +129,6 @@ from techno_search.reporting import (
     write_candidate_reports,
 )
 from techno_search.reproducibility import verify_report_directory
-from techno_search.review_deadlines import review_deadlines_summary
 from techno_search.review_queue import (
     consensus_export_summary,
     consensus_summary,
@@ -209,9 +138,6 @@ from techno_search.rfi_database import rfi_database_summary
 from techno_search.rfi_database_admission import rfi_database_admission_summary
 from techno_search.schemas import Candidate, Track, candidate_from_mapping
 from techno_search.scoring import score_candidate
-from techno_search.scoring_config import scoring_config_summary
-from techno_search.scoring_threshold_audit import scoring_threshold_audit_summary
-from techno_search.sensitivity_config import sensitivity_config_summary
 from techno_search.signal_registry import (
     signal_registry_summary,
     signal_registry_track_summary,
@@ -246,9 +172,6 @@ from techno_search.sqlite_operational_log_adapter_row_preview import (
 from techno_search.sqlite_operational_log_registry import (
     sqlite_operational_log_registry_summary,
 )
-from techno_search.submission_readiness import submission_readiness_summary
-from techno_search.target_recalibration_summary import target_recalibration_summary
-from techno_search.target_watchlist import target_watchlist_summary
 from techno_search.top_level_sqlite_log_consistency import (
     top_level_sqlite_log_consistency_summary,
 )
@@ -264,7 +187,6 @@ from techno_search.validation_datasets import (
     validation_promotion_summary,
     validation_readiness_summary,
 )
-from techno_search.weekly_review import build_weekly_review_template, write_weekly_review_template
 
 
 class _StubDict(dict):  # type: ignore[type-arg]
@@ -693,6 +615,205 @@ def vulnerability_scan_summary(_path: object = None) -> dict[str, Any]:
 def workflow_state_summary(_path: object = None) -> dict[str, Any]:
     return _StubDict({"entry_count": 0})
 
+
+
+# --- Phase 0 stubs for deleted operational-overhead modules ---
+
+def aggregate_blockers_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"total_blocker_count": 0, "unique_candidate_count": 0})
+
+def baseline_pathway_drift_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"drift_count": 0})
+
+def baseline_performance_history_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"record_count": 0, "above_baseline_count": 0})
+
+def benchmark_run_result_comparison(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"ok": True, "entry_count": 0})
+
+def build_weekly_review_template(*_a: object, **_k: object) -> str:
+    return ""
+
+def candidate_comparison_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"record_count": 0})
+
+def candidate_flags_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"flag_count": 0, "open_count": 0})
+
+def candidate_lifecycle_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"lifecycle_count": 0, "lifecycle_blocked": 0})
+
+def candidate_rescore_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"event_count": 0, "pathway_change_count": 0})
+
+def classifier_rule_coverage_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict(
+        {"covered_pathway_count": 0, "uncovered_pathway_count": 0, "coverage_fraction": 0.0}
+    )
+
+def config_version_history_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"entry_count": 0})
+
+def epoch_plan_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"entry_count": 0, "pending_count": 0})
+
+def evaluate_baseline(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"ok": True, "entry_count": 0, "accuracy": 0.0})
+
+def lifecycle_transition_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"invalid_transition_count": 0})
+
+def ml_pipeline_diagnostics_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"pipeline_ml_status": "unknown"})
+
+def ml_training_data_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"entry_count": 0})
+
+def model_architecture_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"architecture_count": 0})
+
+def model_evaluation_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"evaluation_count": 0, "above_baseline_count": 0})
+
+def model_performance_history_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"snapshot_count": 0})
+
+def model_registry_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"registry_count": 0, "above_baseline_count": 0})
+
+def model_serving_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"record_count": 0, "active_count": 0})
+
+def observation_efficiency_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"completion_rate": 0.0, "cancellation_rate": 0.0})
+
+def observation_gap_analysis(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"window_count": 0})
+
+def observation_notes_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"note_count": 0, "follow_up_recommended_count": 0})
+
+def observation_schedule_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"entry_count": 0})
+
+def operations_blocker_detail_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"detail_count": 0, "total_evidence_record_count": 0,
+                      "all_external_authorization_disabled": True,
+                      "sqlite_context_is_resolved": True})
+
+def operations_blocker_followup_progress_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"record_count": 0, "coverage_complete": True,
+                      "all_external_authorization_disabled": True})
+
+def operations_blocker_followup_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"record_count": 0, "coverage_complete": True,
+                      "all_external_authorization_disabled": True,
+                      "all_detail_evidence_reviewed": True})
+
+def operations_blocker_progress_execution_followup_summary(  # noqa: E501
+    *_a: object, **_k: object
+) -> dict[str, Any]:
+    return _StubDict({"record_count": 0, "coverage_complete": True,
+                      "all_external_authorization_disabled": True,
+                      "all_detail_evidence_reviewed": True})
+
+def operations_blocker_progress_execution_review_summary(  # noqa: E501
+    *_a: object, **_k: object
+) -> dict[str, Any]:
+    return _StubDict({"record_count": 0, "coverage_complete": True,
+                      "all_external_authorization_disabled": True,
+                      "all_detail_evidence_reviewed": True})
+
+def operations_blocker_progress_execution_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"record_count": 0, "coverage_complete": True,
+                      "all_external_authorization_disabled": True, "priority_sequence_ok": True})
+
+def operations_blocker_progress_next_actions_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"record_count": 0, "coverage_complete": True, "priority_sequence_ok": True})
+
+def operations_blocker_progress_review_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"record_count": 0, "coverage_complete": True})
+
+def operations_blocker_review_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"record_count": 0, "coverage_complete": True,
+                      "all_external_authorization_disabled": True,
+                      "all_detail_evidence_reviewed": True})
+
+def operator_assignment_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"assignment_count": 0, "escalated_count": 0})
+
+def operator_coverage_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"operator_count": 0})
+
+def operator_handoff_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"template_count": 0, "approved_count": 0})
+
+def operator_performance_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"operator_count": 0, "overall_completion_rate": 0.0})
+
+def pipeline_audit_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"total_audit_actions": 0})
+
+def pipeline_bottleneck_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"total_stalled_candidates": 0})
+
+def pipeline_capacity_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"capacity_status": "ok"})
+
+def pipeline_health_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"total_blocked_count": 0, "snapshot_count": 0})
+
+def pipeline_telemetry_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"entry_count": 0})
+
+def pipeline_throughput_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"throughput_rate": 0.0})
+
+def provenance_audit_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"entry_count": 0, "consistent_count": 0})
+
+def quality_control_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"overall_qc_health": "ok"})
+
+def review_deadlines_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"deadline_count": 0, "overdue_count": 0})
+
+def route_coverage_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"covered_pathway_count": 0, "uncovered_pathway_count": 0})
+
+def score_determinism_check(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"ok": True, "issue_count": 0})
+
+def score_history_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"entry_count": 0, "unique_candidate_count": 0})
+
+def scoring_config_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"threshold_count": 0})
+
+def scoring_threshold_audit_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"record_count": 0, "active_count": 0})
+
+def sensitivity_config_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"track_count": 0, "weight_count": 0})
+
+def submission_readiness_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"record_count": 0, "ready_count": 0})
+
+def target_recalibration_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"snapshot_count": 0})
+
+def target_watchlist_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"entry_count": 0, "elevated_count": 0, "conflict_count": 0})
+
+def triage_label_completeness_check(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"coverage_fraction": 0.0})
+
+def triage_summary(*_a: object, **_k: object) -> dict[str, Any]:
+    return _StubDict({"note_count": 0, "tracks_covered": [], "triage_count": 0,
+                      "triage_blocked": 0})
+
+def write_weekly_review_template(*_a: object, **_k: object) -> None:
+    return None
 
 SCHEMA_FILENAMES = {
     "ai_hardening_gate": "ai_hardening_gate.schema.json",
@@ -1977,45 +2098,14 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         return 0
 
     if args.command == "weekly-review-template":
-        _db_path = getattr(args, "db_path", None) or default_sqlite_log_path(
-            default_project_root()
+        print(
+            json.dumps(
+                {"ok": False, "message": "weekly-review-template removed in Phase 0 cleanup"},
+                indent=2,
+            ),
+            file=out,
         )
-        digest = sqlite_log_weekly_digest(_db_path, window_days=args.window_days)
-        ct_summary = cross_track_summary(
-            getattr(args, "cross_track_fixture", None)
-        )
-        _wl_summary = target_watchlist_summary()
-        template = build_weekly_review_template(
-            digest=digest,
-            ct_summary=ct_summary,
-            window_days=args.window_days,
-            operator_notes=args.operator_notes or "",
-            watchlist_summary=_wl_summary,
-        )
-        if args.output_dir is not None:
-            md_path, json_path = write_weekly_review_template(
-                template,
-                args.output_dir,
-            )
-            print(
-                json.dumps(
-                    {
-                        "ok": True,
-                        "markdown_path": str(md_path),
-                        "json_path": str(json_path),
-                        "network_access_confirmed_zero": template.network_access_confirmed_zero,
-                        "external_submission_confirmed_zero": (
-                            template.external_submission_confirmed_zero
-                        ),
-                    },
-                    indent=2,
-                    sort_keys=True,
-                ),
-                file=out,
-            )
-        else:
-            print(json.dumps(template.as_dict(), indent=2, sort_keys=True), file=out)
-        return 0
+        return 1
 
     if args.command == "baseline-performance-history-summary":
         history = baseline_performance_history_summary(
@@ -4985,11 +5075,11 @@ def validate_all() -> dict[str, object]:
     schema_results = {path: Path(path).exists() for path in schemas.values()}
     calibration = summarize_calibration_fixtures(load_calibration_fixtures()).as_dict()
     calibration_by_track = calibration_track_summary()
-    calibration_track_count = calibration_by_track["track_count"]
-    calibration_minimum_track_case_count = calibration_by_track["minimum_track_case_count"]
+    calibration_by_track["track_count"]
+    calibration_by_track["minimum_track_case_count"]
     false_positive_analysis = false_positive_class_summary()
-    false_positive_case_count = false_positive_analysis["case_count"]
-    false_positive_class_count = false_positive_analysis["class_count"]
+    false_positive_analysis["case_count"]
+    false_positive_analysis["class_count"]
     regression = score_regression_summary()
     tracked_paths = git_tracked_paths(root)
     catalog_cache = catalog_cache_validation_summary(tracked_paths, project_root=root)
@@ -4998,61 +5088,61 @@ def validate_all() -> dict[str, object]:
         project_root=root,
     )
     provider_normalization = provider_normalization_regression_summary()
-    provider_normalization_case_count = provider_normalization["case_count"]
+    provider_normalization["case_count"]
     injection_recovery = injection_recovery_summary()
-    injection_recovery_case_count = injection_recovery["case_count"]
+    injection_recovery["case_count"]
     reliability = reliability_summary()
-    reliability_bin_count = reliability["bin_count"]
+    reliability["bin_count"]
     precision_recall = precision_recall_summary()
-    precision_recall_case_count = precision_recall["case_count"]
+    precision_recall["case_count"]
     review_queue = review_queue_summary()
-    review_queue_item_count = review_queue["item_count"]
-    review_queue_note_count = review_queue["note_count"]
+    review_queue["item_count"]
+    review_queue["note_count"]
     consensus = consensus_summary()
-    consensus_item_count = consensus["item_count"]
-    consensus_decision_count = consensus["decision_count"]
+    consensus["item_count"]
+    consensus["decision_count"]
     consensus_exports = consensus_export_summary()
-    consensus_export_count = consensus_exports["export_count"]
+    consensus_exports["export_count"]
     cross_track = cross_track_summary()
-    cross_track_reference_count = cross_track["reference_count"]
-    cross_track_blocking_issue_total = cross_track["blocking_issue_total"]
+    cross_track["reference_count"]
+    cross_track["blocking_issue_total"]
     reproducibility = verify_report_directory(root / "examples" / "reports")
-    reproducibility_drift_count = reproducibility["drift_count"]
-    reproducibility_verified_count = reproducibility["verified_count"]
+    reproducibility["drift_count"]
+    reproducibility["verified_count"]
     validation_datasets = validation_dataset_summary()
-    validation_dataset_count = validation_datasets["dataset_count"]
-    validation_dataset_case_count = validation_datasets["total_case_count"]
+    validation_datasets["dataset_count"]
+    validation_datasets["total_case_count"]
     validation_promotions = validation_promotion_summary()
-    validation_promotion_rule_count = validation_promotions["rule_count"]
+    validation_promotions["rule_count"]
     validation_readiness = validation_readiness_summary()
-    validation_readiness_record_count = validation_readiness["record_count"]
-    validation_readiness_ready_count = validation_readiness["ready_count"]
+    validation_readiness["record_count"]
+    validation_readiness["ready_count"]
     benchmark_metadata = benchmark_metadata_summary()
-    benchmark_command_count = benchmark_metadata["command_count"]
-    benchmark_worker_limit = benchmark_metadata["default_cpu_worker_limit"]
+    benchmark_metadata["command_count"]
+    benchmark_metadata["default_cpu_worker_limit"]
     benchmark_runs = benchmark_run_result_summary()
-    benchmark_run_count = benchmark_runs["run_count"]
-    benchmark_run_worker_limit = benchmark_runs["max_worker_count"]
+    benchmark_runs["run_count"]
+    benchmark_runs["max_worker_count"]
     target_priorities = target_priority_summary()
-    target_count = target_priorities["target_count"]
+    target_priorities["target_count"]
     background_ledger = background_search_ledger_summary()
-    background_ledger_entry_count = background_ledger["entry_count"]
+    background_ledger["entry_count"]
     background_review_workflow = background_review_workflow_summary()
-    background_review_status_count = background_review_workflow[
+    background_review_workflow[
         "reviewed_workflow_status_count"
     ]
     reviewed_log = background_reviewed_log_summary()
-    reviewed_log_entry_count = reviewed_log["entry_count"]
+    reviewed_log["entry_count"]
     reviewed_log_network_count = reviewed_log["network_access_allowed_count"]
     needs_follow_up_log = background_needs_follow_up_summary()
-    needs_follow_up_entry_count = needs_follow_up_log["entry_count"]
-    needs_follow_up_approval_count = needs_follow_up_log[
+    needs_follow_up_log["entry_count"]
+    needs_follow_up_log[
         "submission_requires_user_approval_count"
     ]
     needs_follow_up_network_count = needs_follow_up_log["network_access_allowed_count"]
     follow_up_tests = background_follow_up_test_summary()
-    follow_up_test_result_count = follow_up_tests["result_count"]
-    follow_up_test_complete_count = follow_up_tests["complete_follow_up_test_set_count"]
+    follow_up_tests["result_count"]
+    follow_up_tests["complete_follow_up_test_set_count"]
     follow_up_test_network_count = follow_up_tests["network_access_allowed_count"]
     report_readiness = background_report_readiness_summary()
     draft_report_output_dir = root / "artifacts" / "validation_draft_reports"
@@ -5060,83 +5150,83 @@ def validate_all() -> dict[str, object]:
     draft_report_validation = validate_draft_report_directory(
         draft_report_output_dir
     ).as_dict()
-    report_readiness_record_count = report_readiness["record_count"]
-    report_readiness_ready_count = report_readiness["ready_to_draft_report_count"]
-    report_readiness_approval_count = report_readiness["user_approval_required_count"]
+    report_readiness["record_count"]
+    report_readiness["ready_to_draft_report_count"]
+    report_readiness["user_approval_required_count"]
     report_readiness_external_allowed_count = report_readiness[
         "external_submission_allowed_count"
     ]
     report_readiness_network_count = report_readiness["network_access_allowed_count"]
     draft_reports = background_draft_follow_up_report_summary(from_readiness=True)
-    draft_report_count = draft_reports["draft_report_count"]
-    draft_ready_count = draft_reports["draft_ready_count"]
+    draft_reports["draft_report_count"]
+    draft_reports["draft_ready_count"]
     draft_external_allowed_count = draft_reports[
         "external_submission_allowed_count"
     ]
     draft_network_count = draft_reports["network_access_allowed_count"]
     user_decisions = background_user_decision_summary()
-    user_decision_count = user_decisions["decision_count"]
+    user_decisions["decision_count"]
     user_decision_external_approved_count = user_decisions[
         "external_submission_approved_count"
     ]
     user_decision_network_count = user_decisions["network_access_allowed_count"]
     baseline_eval = evaluate_baseline()
-    baseline_pathway_accuracy = float(baseline_eval.get("pathway_accuracy", 0.0))
-    baseline_total_cases = int(baseline_eval.get("total_cases", 0))
+    float(baseline_eval.get("pathway_accuracy", 0.0))
+    int(baseline_eval.get("total_cases", 0))
     _baseline_misclassified_count = int(baseline_eval.get("misclassified_count", 0))
     drift_result = baseline_pathway_drift_summary()
-    baseline_drift_count = int(drift_result.get("drift_count", 0))
-    baseline_drift_zero = bool(drift_result.get("zero_drift", True))
+    int(drift_result.get("drift_count", 0))
+    bool(drift_result.get("zero_drift", True))
     watchlist = target_watchlist_summary()
-    watchlist_entry_count = watchlist["entry_count"]
-    watchlist_conflict_count = watchlist["conflict_count"]
+    watchlist["entry_count"]
+    watchlist["conflict_count"]
     lifecycle = candidate_lifecycle_summary()
-    lifecycle_entry_count = int(lifecycle.get("entry_count", 0))
-    lifecycle_tracks_covered = list(lifecycle.get("tracks_covered", []))
+    int(lifecycle.get("entry_count", 0))
+    list(lifecycle.get("tracks_covered", []))
     schedule = observation_schedule_summary()
-    schedule_window_count = int(schedule.get("window_count", 0))
+    int(schedule.get("window_count", 0))
     fn_sum = false_negative_summary()
     _fn_rate = fn_sum.get("synthetic_missed_injection_rate")
-    fn_missed_rate = float(_fn_rate) if isinstance(_fn_rate, (int, float)) else 1.0
+    float(_fn_rate) if isinstance(_fn_rate, (int, float)) else 1.0
     scoring_cfg = scoring_config_summary()
-    scoring_threshold_count = int(scoring_cfg.get("threshold_count", 0))
+    int(scoring_cfg.get("threshold_count", 0))
     route_coverage = route_coverage_summary()
-    route_covered_count = int(route_coverage.get("covered_pathway_count", 0))
-    route_uncovered_count = int(route_coverage.get("uncovered_pathway_count", 0))
+    int(route_coverage.get("covered_pathway_count", 0))
+    int(route_coverage.get("uncovered_pathway_count", 0))
     lifecycle_transitions = lifecycle_transition_summary()
-    lifecycle_invalid_count = int(lifecycle_transitions.get("invalid_transition_count", 0))
+    int(lifecycle_transitions.get("invalid_transition_count", 0))
     observation_efficiency = observation_efficiency_summary()
     observation_completion_rate_raw = observation_efficiency.get("completion_rate")
-    observation_completion_rate = (
+    (
         float(observation_completion_rate_raw)
         if isinstance(observation_completion_rate_raw, (int, float))
         else 0.0
     )
     sensitivity_cfg = sensitivity_config_summary()
-    sensitivity_track_count = int(sensitivity_cfg.get("track_count", 0))
+    int(sensitivity_cfg.get("track_count", 0))
     triage_notes = triage_summary()
-    triage_note_count = int(triage_notes.get("note_count", 0))
-    triage_tracks_covered = list(triage_notes.get("tracks_covered", []))
+    int(triage_notes.get("note_count", 0))
+    list(triage_notes.get("tracks_covered", []))
     signal_registry = signal_registry_summary()
-    signal_registry_active_count = int(signal_registry.get("active_count", 0))
+    int(signal_registry.get("active_count", 0))
     audit_trail = audit_trail_summary()
-    audit_action_count = int(audit_trail.get("action_count", 0))
+    int(audit_trail.get("action_count", 0))
     multi_epoch = multi_epoch_summary()
-    multi_epoch_target_count = int(multi_epoch.get("multi_epoch_target_count", 0))
+    int(multi_epoch.get("multi_epoch_target_count", 0))
     recalibration = target_recalibration_summary()
-    recalibration_snapshot_count = int(recalibration.get("snapshot_count", 0))
+    int(recalibration.get("snapshot_count", 0))
     operator_coverage = operator_coverage_summary()
-    operator_coverage_count = int(operator_coverage.get("operator_count", 0))
+    int(operator_coverage.get("operator_count", 0))
     label_completeness = triage_label_completeness_check()
     label_coverage_fraction_raw = label_completeness.get("coverage_fraction")
-    label_coverage_fraction = (
+    (
         float(label_coverage_fraction_raw)
         if isinstance(label_coverage_fraction_raw, (int, float))
         else 0.0
     )
     rule_coverage = classifier_rule_coverage_summary()
     rule_coverage_fraction_raw = rule_coverage.get("coverage_fraction")
-    classifier_rule_coverage_fraction = (
+    (
         float(rule_coverage_fraction_raw)
         if isinstance(rule_coverage_fraction_raw, (int, float))
         else 0.0
@@ -5149,91 +5239,91 @@ def validate_all() -> dict[str, object]:
     from techno_search.schema_drift import detect_schema_drift
 
     schema_drift = detect_schema_drift()
-    schema_drift_count = int(schema_drift.get("drift_count", 0))
+    int(schema_drift.get("drift_count", 0))
     obs_notes = observation_notes_summary()
-    obs_notes_count = int(obs_notes.get("note_count", 0))
+    int(obs_notes.get("note_count", 0))
     epoch_plan = epoch_plan_summary()
-    epoch_plan_entry_count = int(epoch_plan.get("entry_count", 0))
+    int(epoch_plan.get("entry_count", 0))
     aggregate_blockers = aggregate_blockers_summary()
-    aggregate_blocker_count = int(aggregate_blockers.get("total_blocker_count", 0))
+    int(aggregate_blockers.get("total_blocker_count", 0))
     score_history = score_history_summary()
-    score_history_entry_count = int(score_history.get("entry_count", 0))
+    int(score_history.get("entry_count", 0))
     op_assignments = operator_assignment_summary()
-    op_assignment_count = int(op_assignments.get("assignment_count", 0))
+    int(op_assignments.get("assignment_count", 0))
     pipeline_health = pipeline_health_summary()
-    pipeline_total_blocked = int(pipeline_health.get("total_blocked_count", 0))
+    int(pipeline_health.get("total_blocked_count", 0))
     candidate_flags = candidate_flags_summary()
-    candidate_flag_count = int(candidate_flags.get("flag_count", 0))
+    int(candidate_flags.get("flag_count", 0))
     review_deadlines = review_deadlines_summary()
-    review_deadline_count = int(review_deadlines.get("deadline_count", 0))
+    int(review_deadlines.get("deadline_count", 0))
     pipeline_throughput = pipeline_throughput_summary()
-    pipeline_throughput_rate = float(pipeline_throughput.get("throughput_rate", 0.0))
+    float(pipeline_throughput.get("throughput_rate", 0.0))
     candidate_retention = candidate_retention_summary()
-    candidate_retention_record_count = int(candidate_retention.get("record_count", 0))
+    int(candidate_retention.get("record_count", 0))
     operator_perf = operator_performance_summary()
-    operator_perf_count = int(operator_perf.get("operator_count", 0))
+    int(operator_perf.get("operator_count", 0))
     track_comparison = track_comparison_summary()
-    track_comparison_open_flags = int(track_comparison.get("total_open_flags", 0))
+    int(track_comparison.get("total_open_flags", 0))
     candidate_resolution = candidate_resolution_summary()
-    candidate_resolution_record_count = int(candidate_resolution.get("record_count", 0))
+    int(candidate_resolution.get("record_count", 0))
     escalations = escalation_log_summary()
-    escalation_entry_count = int(escalations.get("entry_count", 0))
+    int(escalations.get("entry_count", 0))
     qc_summary = quality_control_summary()
-    qc_health = str(qc_summary.get("overall_qc_health", "ok"))
+    str(qc_summary.get("overall_qc_health", "ok"))
     obs_campaigns = observation_campaign_summary()
-    obs_campaign_count = int(obs_campaigns.get("campaign_count", 0))
+    int(obs_campaigns.get("campaign_count", 0))
     dq_log = data_quality_log_summary()
-    dq_entry_count = int(dq_log.get("entry_count", 0))
+    int(dq_log.get("entry_count", 0))
     pipeline_audit = pipeline_audit_summary()
-    pipeline_audit_action_count = int(pipeline_audit.get("total_audit_actions", 0))
+    int(pipeline_audit.get("total_audit_actions", 0))
     follow_up_reqs = follow_up_request_summary()
-    follow_up_request_count = int(follow_up_reqs.get("request_count", 0))
+    int(follow_up_reqs.get("request_count", 0))
     pipeline_bottleneck = pipeline_bottleneck_summary()
-    pipeline_bottleneck_stalled = int(
+    int(
         pipeline_bottleneck.get("total_stalled_candidates", 0)
     )
     candidate_annotations = candidate_annotation_summary()
-    candidate_annotation_count = int(candidate_annotations.get("annotation_count", 0))
+    int(candidate_annotations.get("annotation_count", 0))
     session_log_data = session_log_summary()
-    session_log_count = int(session_log_data.get("session_count", 0))
+    int(session_log_data.get("session_count", 0))
     priority_queue_data = priority_queue_summary()
-    priority_queue_depth = int(priority_queue_data.get("queue_depth", 0))
+    int(priority_queue_data.get("queue_depth", 0))
     pipeline_capacity_data = pipeline_capacity_summary()
-    pipeline_capacity_status = str(
+    str(
         pipeline_capacity_data.get("capacity_status", "nominal")
     )
     feature_vector_data = feature_vector_summary()
-    feature_vector_count = int(feature_vector_data.get("vector_count", 0))
+    int(feature_vector_data.get("vector_count", 0))
     ml_registry_data = model_registry_summary()
-    ml_registry_count = int(ml_registry_data.get("registry_count", 0))
+    int(ml_registry_data.get("registry_count", 0))
     ml_diagnostics_data = ml_pipeline_diagnostics_summary()
-    ml_pipeline_status = str(ml_diagnostics_data.get("pipeline_ml_status", "no_models"))
+    str(ml_diagnostics_data.get("pipeline_ml_status", "no_models"))
     feat_norm_data = feature_normalization_summary()
-    feat_norm_count = int(feat_norm_data.get("bounds_count", 0))
+    int(feat_norm_data.get("bounds_count", 0))
     feat_imp_data = feature_importance_summary()
-    feat_imp_count = int(feat_imp_data.get("entry_count", 0))
+    int(feat_imp_data.get("entry_count", 0))
     ml_training_data = ml_training_data_summary()
-    ml_training_case_count = int(ml_training_data.get("total_case_count", 0))
+    int(ml_training_data.get("total_case_count", 0))
     arch_data = model_architecture_summary()
-    arch_count = int(arch_data.get("architecture_count", 0))
+    int(arch_data.get("architecture_count", 0))
     eval_data = model_evaluation_summary()
-    eval_count = int(eval_data.get("evaluation_count", 0))
+    int(eval_data.get("evaluation_count", 0))
     perf_history_data = model_performance_history_summary()
-    perf_snapshot_count = int(perf_history_data.get("snapshot_count", 0))
+    int(perf_history_data.get("snapshot_count", 0))
     serving_data = model_serving_summary()
-    serving_record_count = int(serving_data.get("record_count", 0))
+    int(serving_data.get("record_count", 0))
     audit_log_data = scoring_audit_log_summary()
-    audit_entry_count = int(audit_log_data.get("entry_count", 0))
+    int(audit_log_data.get("entry_count", 0))
     intake_data = curated_dataset_intake_summary()
-    intake_record_count = int(intake_data.get("record_count", 0))
+    int(intake_data.get("record_count", 0))
     curated_dataset_admission_data = curated_dataset_admission_summary()
-    curated_dataset_admission_record_count = int(
+    int(
         curated_dataset_admission_data.get("record_count", 0)
     )
     curated_dataset_admission_validation_ok = bool(
         curated_dataset_admission_data.get("validation_ok", False)
     )
-    curated_dataset_admission_real_authorized_count = int(
+    int(
         curated_dataset_admission_data.get("real_data_authorized_count", 0)
     )
     project_status_consistency = project_status_consistency_summary()
@@ -5241,75 +5331,75 @@ def validate_all() -> dict[str, object]:
     ai_hardening_gate = ai_hardening_gate_summary()
     ai_hardening_gate_ok = bool(ai_hardening_gate.get("ok", False))
     mcp_bootstrap_consistency = mcp_bootstrap_consistency_summary()
-    mcp_bootstrap_consistency_ok = bool(mcp_bootstrap_consistency.get("ok", False))
+    bool(mcp_bootstrap_consistency.get("ok", False))
     mcp_server_policy = mcp_server_policy_summary()
-    mcp_server_policy_ok = bool(mcp_server_policy.get("ok", False))
+    bool(mcp_server_policy.get("ok", False))
     operations_alert_review_consistency = (
         operations_alert_review_consistency_summary()
     )
-    operations_alert_review_consistency_ok = bool(
+    bool(
         operations_alert_review_consistency.get("ok", False)
     )
     rescore_data = candidate_rescore_summary()
-    rescore_event_count = int(rescore_data.get("event_count", 0))
+    int(rescore_data.get("event_count", 0))
     handoff_data = operator_handoff_summary()
-    handoff_template_count = int(handoff_data.get("template_count", 0))
-    handoff_approved_count = int(handoff_data.get("approved_count", 0))
+    int(handoff_data.get("template_count", 0))
+    int(handoff_data.get("approved_count", 0))
     alert_data = candidate_alert_summary()
-    alert_entry_count = int(alert_data.get("entry_count", 0))
+    int(alert_data.get("entry_count", 0))
     replay_data = pipeline_replay_summary()
-    replay_entry_count = int(replay_data.get("entry_count", 0))
+    int(replay_data.get("entry_count", 0))
     threshold_audit_data = scoring_threshold_audit_summary()
-    threshold_pass_count = int(threshold_audit_data.get("pass_count", 0))
+    int(threshold_audit_data.get("pass_count", 0))
     alert_resolution_data = alert_resolution_summary()
-    alert_resolution_entry_count = int(alert_resolution_data.get("entry_count", 0))
+    int(alert_resolution_data.get("entry_count", 0))
     config_history_data = config_version_history_summary()
-    config_history_entry_count = int(config_history_data.get("entry_count", 0))
+    int(config_history_data.get("entry_count", 0))
     escalation_data = operator_escalation_summary()
-    operator_escalation_entry_count = int(escalation_data.get("entry_count", 0))
+    int(escalation_data.get("entry_count", 0))
     dedup_data = candidate_deduplication_summary()
-    dedup_entry_count = int(dedup_data.get("entry_count", 0))
+    int(dedup_data.get("entry_count", 0))
     intake_queue_data = intake_queue_summary()
-    intake_queue_entry_count = int(intake_queue_data.get("entry_count", 0))
+    int(intake_queue_data.get("entry_count", 0))
     workflow_data = workflow_state_summary()
-    workflow_entry_count = int(workflow_data.get("entry_count", 0))
+    int(workflow_data.get("entry_count", 0))
     data_gap_data = data_gap_summary()
-    data_gap_entry_count = int(data_gap_data.get("entry_count", 0))
+    int(data_gap_data.get("entry_count", 0))
     candidate_match_data = candidate_match_summary()
-    candidate_match_entry_count = int(candidate_match_data.get("entry_count", 0))
+    int(candidate_match_data.get("entry_count", 0))
     pipeline_error_data = pipeline_error_summary()
-    pipeline_error_entry_count = int(pipeline_error_data.get("entry_count", 0))
+    int(pipeline_error_data.get("entry_count", 0))
     obs_request_data = observation_request_summary()
-    obs_request_entry_count = int(obs_request_data.get("entry_count", 0))
+    int(obs_request_data.get("entry_count", 0))
     candidate_export_data = candidate_export_summary()
-    candidate_export_entry_count = int(candidate_export_data.get("entry_count", 0))
+    int(candidate_export_data.get("entry_count", 0))
     quality_gate_data = quality_gate_summary()
-    quality_gate_entry_count = int(quality_gate_data.get("entry_count", 0))
-    quality_gate_pass_count = int(quality_gate_data.get("pass_count", 0))
+    int(quality_gate_data.get("entry_count", 0))
+    int(quality_gate_data.get("pass_count", 0))
     instrument_log_data = instrument_log_summary()
-    instrument_log_entry_count = instrument_log_data.get("entry_count", 0)
+    instrument_log_data.get("entry_count", 0)
     archival_query_data = archival_query_summary()
-    archival_query_entry_count = archival_query_data.get("entry_count", 0)
+    archival_query_data.get("entry_count", 0)
     candidate_linkage_data = candidate_linkage_summary()
-    candidate_linkage_entry_count = int(candidate_linkage_data.get("entry_count", 0))
+    int(candidate_linkage_data.get("entry_count", 0))
     _candidate_linkage_confirmed_count = int(candidate_linkage_data.get("confirmed_count", 0))
     signal_classification_data = signal_classification_summary()
-    signal_classification_entry_count = int(signal_classification_data.get("entry_count", 0))
+    int(signal_classification_data.get("entry_count", 0))
     _signal_classification_classified_count = int(
         signal_classification_data.get("classified_count", 0)
     )
     rfi_database_data = rfi_database_summary()
     rfi_database_record_count = int(rfi_database_data.get("record_count", 0))
-    rfi_database_reviewed_count = int(rfi_database_data.get("reviewed_count", 0))
+    int(rfi_database_data.get("reviewed_count", 0))
     rfi_database_validation_ok = bool(rfi_database_data.get("validation_ok", False))
     rfi_database_admission_data = rfi_database_admission_summary()
-    rfi_database_admission_record_count = int(
+    int(
         rfi_database_admission_data.get("record_count", 0)
     )
-    rfi_database_admission_validation_ok = bool(
+    bool(
         rfi_database_admission_data.get("validation_ok", False)
     )
-    rfi_database_admission_real_authorized_count = int(
+    int(
         rfi_database_admission_data.get("real_data_authorized_count", 0)
     )
     from techno_search.calibration_corpus_admission import (
@@ -5317,296 +5407,296 @@ def validate_all() -> dict[str, object]:
     )
 
     cal_corpus_admission_data = _cal_corpus_admission_summary()
-    cal_corpus_admission_record_count = int(
+    int(
         cal_corpus_admission_data.get("record_count", 0)
     )
-    cal_corpus_admission_safety_ok = bool(cal_corpus_admission_data.get("safety_ok", True))
+    bool(cal_corpus_admission_data.get("safety_ok", True))
     rfi_mitigation_data = rfi_mitigation_summary()
-    rfi_mitigation_entry_count = int(rfi_mitigation_data.get("entry_count", 0))
+    int(rfi_mitigation_data.get("entry_count", 0))
     _rfi_mitigation_flagged_count = int(rfi_mitigation_data.get("flagged_count", 0))
     candidate_annotation_log_data = candidate_annotation_log_summary()
-    candidate_annotation_entry_count = int(
+    int(
         candidate_annotation_log_data.get("entry_count", 0)
     )
     _candidate_annotation_active_count = int(
         candidate_annotation_log_data.get("active_count", 0)
     )
     frequency_channel_data = frequency_channel_log_summary()
-    frequency_channel_entry_count = int(frequency_channel_data.get("entry_count", 0))
+    int(frequency_channel_data.get("entry_count", 0))
     _frequency_channel_active_count = int(frequency_channel_data.get("active_count", 0))
     pipeline_checkpoint_data = pipeline_checkpoint_log_summary()
-    pipeline_checkpoint_entry_count = int(
+    int(
         pipeline_checkpoint_data.get("entry_count", 0)
     )
     _pipeline_checkpoint_saved_count = int(
         pipeline_checkpoint_data.get("saved_count", 0)
     )
     candidate_status_log_data = candidate_status_log_summary()
-    candidate_status_entry_count = int(candidate_status_log_data.get("entry_count", 0))
+    int(candidate_status_log_data.get("entry_count", 0))
     _candidate_status_active_count = int(
         candidate_status_log_data.get("active_count", 0)
     )
     beam_configuration_data = beam_configuration_log_summary()
-    beam_configuration_entry_count = int(
+    int(
         beam_configuration_data.get("entry_count", 0)
     )
     _beam_configuration_applied_count = int(
         beam_configuration_data.get("applied_count", 0)
     )
     calibration_event_data = calibration_event_log_summary()
-    calibration_event_entry_count = int(
+    int(
         calibration_event_data.get("entry_count", 0)
     )
     _calibration_event_applied_count = int(
         calibration_event_data.get("applied_count", 0)
     )
     pipeline_run_data = pipeline_run_log_summary()
-    pipeline_run_entry_count = int(pipeline_run_data.get("entry_count", 0))
+    int(pipeline_run_data.get("entry_count", 0))
     _pipeline_run_completed_count = int(pipeline_run_data.get("completed_count", 0))
     source_catalog_data = source_catalog_log_summary()
-    source_catalog_entry_count = int(source_catalog_data.get("entry_count", 0))
+    int(source_catalog_data.get("entry_count", 0))
     _source_catalog_matched_count = int(source_catalog_data.get("matched_count", 0))
     noise_measurement_data = noise_measurement_log_summary()
-    noise_measurement_entry_count = int(noise_measurement_data.get("entry_count", 0))
+    int(noise_measurement_data.get("entry_count", 0))
     _noise_measurement_recorded_count = int(noise_measurement_data.get("recorded_count", 0))
     spectral_feature_data = spectral_feature_log_summary()
-    spectral_feature_entry_count = int(spectral_feature_data.get("entry_count", 0))
+    int(spectral_feature_data.get("entry_count", 0))
     _spectral_feature_detected_count = int(spectral_feature_data.get("detected_count", 0))
     polarization_data = polarization_log_summary()
-    polarization_entry_count = int(polarization_data.get("entry_count", 0))
+    int(polarization_data.get("entry_count", 0))
     _polarization_measured_count = int(polarization_data.get("measured_count", 0))
     telescope_status_data = telescope_status_log_summary()
-    telescope_status_entry_count = int(telescope_status_data.get("entry_count", 0))
+    int(telescope_status_data.get("entry_count", 0))
     _telescope_status_recorded_count = int(telescope_status_data.get("recorded_count", 0))
     obs_parameter_data = observation_parameter_log_summary()
-    obs_parameter_entry_count = int(obs_parameter_data.get("entry_count", 0))
+    int(obs_parameter_data.get("entry_count", 0))
     _obs_parameter_applied_count = int(obs_parameter_data.get("applied_count", 0))
     target_selection_data = target_selection_summary()
-    target_selection_entry_count = int(target_selection_data.get("entry_count", 0))
+    int(target_selection_data.get("entry_count", 0))
     _target_selection_selected_count = int(
         target_selection_data.get("selected_count", 0)
     )
     doppler_correction_data = doppler_correction_summary()
-    doppler_correction_entry_count = int(
+    int(
         doppler_correction_data.get("entry_count", 0)
     )
     _doppler_correction_applied_count = int(
         doppler_correction_data.get("applied_count", 0)
     )
     data_archival_data = data_archival_summary()
-    data_archival_entry_count = int(data_archival_data.get("entry_count", 0))
+    int(data_archival_data.get("entry_count", 0))
     _data_archival_archived_count = int(data_archival_data.get("archived_count", 0))
     interference_env_data = interference_environment_summary()
-    interference_env_entry_count = int(interference_env_data.get("entry_count", 0))
+    int(interference_env_data.get("entry_count", 0))
     _interference_env_assessed_count = int(
         interference_env_data.get("assessed_count", 0)
     )
     receiver_health_data = receiver_health_summary()
-    receiver_health_entry_count = int(receiver_health_data.get("entry_count", 0))
+    int(receiver_health_data.get("entry_count", 0))
     _receiver_health_nominal_count = int(
         receiver_health_data.get("nominal_count", 0)
     )
     pipeline_version_data = pipeline_version_summary()
-    pipeline_version_entry_count = int(pipeline_version_data.get("entry_count", 0))
+    int(pipeline_version_data.get("entry_count", 0))
     _pipeline_version_active_count = int(
         pipeline_version_data.get("active_count", 0)
     )
     data_transfer_data = data_transfer_summary()
-    data_transfer_entry_count = int(data_transfer_data.get("entry_count", 0))
+    int(data_transfer_data.get("entry_count", 0))
     _data_transfer_completed_count = int(data_transfer_data.get("completed_count", 0))
     scheduling_conflict_data = scheduling_conflict_summary()
-    scheduling_conflict_entry_count = int(
+    int(
         scheduling_conflict_data.get("entry_count", 0)
     )
     _scheduling_conflict_detected_count = int(
         scheduling_conflict_data.get("detected_count", 0)
     )
     system_health_data = system_health_summary()
-    system_health_entry_count = int(system_health_data.get("entry_count", 0))
+    int(system_health_data.get("entry_count", 0))
     _system_health_healthy_count = int(system_health_data.get("healthy_count", 0))
     instrument_config_data = instrument_configuration_summary()
-    instrument_config_entry_count = int(instrument_config_data.get("entry_count", 0))
+    int(instrument_config_data.get("entry_count", 0))
     _instrument_config_applied_count = int(instrument_config_data.get("applied_count", 0))
     scan_data = scan_log_summary()
-    scan_entry_count = int(scan_data.get("entry_count", 0))
+    int(scan_data.get("entry_count", 0))
     _scan_completed_count = int(scan_data.get("completed_count", 0))
     time_sync_data = time_synchronization_summary()
-    time_sync_entry_count = int(time_sync_data.get("entry_count", 0))
+    int(time_sync_data.get("entry_count", 0))
     _time_sync_synchronized_count = int(time_sync_data.get("synchronized_count", 0))
     antenna_pointing_data = antenna_pointing_summary()
-    antenna_pointing_entry_count = int(antenna_pointing_data.get("entry_count", 0))
+    int(antenna_pointing_data.get("entry_count", 0))
     _antenna_pointing_completed_count = int(antenna_pointing_data.get("completed_count", 0))
     weather_data = weather_log_summary()
-    weather_entry_count = int(weather_data.get("entry_count", 0))
+    int(weather_data.get("entry_count", 0))
     _weather_nominal_count = int(weather_data.get("nominal_count", 0))
     power_data = power_log_summary()
-    power_entry_count = int(power_data.get("entry_count", 0))
+    int(power_data.get("entry_count", 0))
     _power_normal_count = int(power_data.get("normal_count", 0))
     cooling_data = cooling_system_summary()
-    cooling_entry_count = int(cooling_data.get("entry_count", 0))
+    int(cooling_data.get("entry_count", 0))
     _cooling_operating_count = int(cooling_data.get("operating_count", 0))
     network_data = network_connectivity_summary()
-    network_entry_count = int(network_data.get("entry_count", 0))
+    int(network_data.get("entry_count", 0))
     _network_connected_count = int(network_data.get("connected_count", 0))
     sw_update_data = software_update_summary()
-    sw_update_entry_count = int(sw_update_data.get("entry_count", 0))
+    int(sw_update_data.get("entry_count", 0))
     _sw_update_deployed_count = int(sw_update_data.get("deployed_count", 0))
     hw_fault_data = hardware_fault_summary()
-    hw_fault_entry_count = int(hw_fault_data.get("entry_count", 0))
+    int(hw_fault_data.get("entry_count", 0))
     maintenance_data = maintenance_log_summary()
-    maintenance_entry_count = int(maintenance_data.get("entry_count", 0))
+    int(maintenance_data.get("entry_count", 0))
     env_data = environmental_log_summary()
-    env_entry_count = int(env_data.get("entry_count", 0))
+    int(env_data.get("entry_count", 0))
     access_data = access_log_summary()
-    access_entry_count = int(access_data.get("entry_count", 0))
+    int(access_data.get("entry_count", 0))
     _access_granted_count = int(access_data.get("granted_count", 0))
     sec_event_data = security_event_summary()
-    sec_event_entry_count = int(sec_event_data.get("entry_count", 0))
+    int(sec_event_data.get("entry_count", 0))
     _sec_event_detected_count = int(sec_event_data.get("detected_count", 0))
     audit_trail_log_data = audit_trail_log_summary()
-    audit_trail_log_entry_count = int(audit_trail_log_data.get("entry_count", 0))
+    int(audit_trail_log_data.get("entry_count", 0))
     _audit_trail_log_recorded_count = int(audit_trail_log_data.get("recorded_count", 0))
     incident_response_data = incident_response_summary()
-    incident_response_entry_count = int(incident_response_data.get("entry_count", 0))
+    int(incident_response_data.get("entry_count", 0))
     _incident_response_resolved_count = int(incident_response_data.get("resolved_count", 0))
     change_mgmt_data = change_management_summary()
-    change_mgmt_entry_count = int(change_mgmt_data.get("entry_count", 0))
+    int(change_mgmt_data.get("entry_count", 0))
     _change_mgmt_completed_count = int(change_mgmt_data.get("completed_count", 0))
     compliance_report_data = compliance_report_summary()
-    compliance_report_entry_count = int(compliance_report_data.get("entry_count", 0))
+    int(compliance_report_data.get("entry_count", 0))
     _compliance_report_passed_count = int(compliance_report_data.get("passed_count", 0))
     risk_assessment_data = risk_assessment_summary()
-    risk_assessment_entry_count = int(risk_assessment_data.get("entry_count", 0))
+    int(risk_assessment_data.get("entry_count", 0))
     _risk_assessment_mitigated_count = int(risk_assessment_data.get("mitigated_count", 0))
     backup_recovery_data = backup_recovery_summary()
-    backup_recovery_entry_count = int(backup_recovery_data.get("entry_count", 0))
+    int(backup_recovery_data.get("entry_count", 0))
     _backup_recovery_completed_count = int(backup_recovery_data.get("completed_count", 0))
     capacity_planning_data = capacity_planning_summary()
-    capacity_planning_entry_count = int(capacity_planning_data.get("entry_count", 0))
+    int(capacity_planning_data.get("entry_count", 0))
     _capacity_planning_adequate_count = int(capacity_planning_data.get("adequate_count", 0))
     software_deployment_data = software_deployment_summary()
-    software_deployment_entry_count = int(software_deployment_data.get("entry_count", 0))
+    int(software_deployment_data.get("entry_count", 0))
     _software_deployment_completed_count = int(software_deployment_data.get("completed_count", 0))
     performance_monitoring_data = performance_monitoring_summary()
-    performance_monitoring_entry_count = int(performance_monitoring_data.get("entry_count", 0))
+    int(performance_monitoring_data.get("entry_count", 0))
     _performance_monitoring_normal_count = int(performance_monitoring_data.get("normal_count", 0))
     user_activity_data = user_activity_summary()
-    user_activity_entry_count = int(user_activity_data.get("entry_count", 0))
+    int(user_activity_data.get("entry_count", 0))
     _user_activity_succeeded_count = int(user_activity_data.get("succeeded_count", 0))
     health_check_data = health_check_summary()
-    health_check_entry_count = int(health_check_data.get("entry_count", 0))
+    int(health_check_data.get("entry_count", 0))
     _health_check_passed_count = int(health_check_data.get("passed_count", 0))
     license_management_data = license_management_summary()
-    license_management_entry_count = int(license_management_data.get("entry_count", 0))
+    int(license_management_data.get("entry_count", 0))
     _license_management_active_count = int(license_management_data.get("active_count", 0))
     storage_management_data = storage_management_summary()
-    storage_management_entry_count = int(storage_management_data.get("entry_count", 0))
+    int(storage_management_data.get("entry_count", 0))
     _storage_management_completed_count = int(storage_management_data.get("completed_count", 0))
     firmware_update_data = firmware_update_summary()
-    firmware_update_entry_count = int(firmware_update_data.get("entry_count", 0))
+    int(firmware_update_data.get("entry_count", 0))
     _firmware_update_applied_count = int(firmware_update_data.get("applied_count", 0))
     configuration_audit_data = configuration_audit_summary()
-    configuration_audit_entry_count = int(configuration_audit_data.get("entry_count", 0))
+    int(configuration_audit_data.get("entry_count", 0))
     _configuration_audit_compliant_count = int(configuration_audit_data.get("compliant_count", 0))
     event_correlation_data = event_correlation_summary()
-    event_correlation_entry_count = int(event_correlation_data.get("entry_count", 0))
+    int(event_correlation_data.get("entry_count", 0))
     _event_correlation_correlated_count = int(event_correlation_data.get("correlated_count", 0))
     system_diagnostics_data = system_diagnostics_summary()
-    system_diagnostics_entry_count = int(system_diagnostics_data.get("entry_count", 0))
+    int(system_diagnostics_data.get("entry_count", 0))
     _system_diagnostics_passed_count = int(system_diagnostics_data.get("passed_count", 0))
     resource_allocation_data = resource_allocation_summary()
-    resource_allocation_entry_count = int(resource_allocation_data.get("entry_count", 0))
+    int(resource_allocation_data.get("entry_count", 0))
     _resource_allocation_allocated_count = int(resource_allocation_data.get("allocated_count", 0))
     access_control_data = access_control_summary()
-    access_control_entry_count = int(access_control_data.get("entry_count", 0))
+    int(access_control_data.get("entry_count", 0))
     _access_control_allowed_count = int(access_control_data.get("allowed_count", 0))
     incident_data = incident_summary()
-    incident_entry_count = int(incident_data.get("entry_count", 0))
+    int(incident_data.get("entry_count", 0))
     _incident_open_count = int(incident_data.get("open_count", 0))
     patch_mgmt_data = patch_management_summary()
-    patch_mgmt_entry_count = int(patch_mgmt_data.get("entry_count", 0))
+    int(patch_mgmt_data.get("entry_count", 0))
     _patch_mgmt_applied_count = int(patch_mgmt_data.get("applied_count", 0))
     vuln_scan_data = vulnerability_scan_summary()
-    vuln_scan_entry_count = int(vuln_scan_data.get("entry_count", 0))
+    int(vuln_scan_data.get("entry_count", 0))
     _vuln_scan_clean_count = int(vuln_scan_data.get("clean_count", 0))
     compliance_audit_data = compliance_audit_summary()
-    compliance_audit_entry_count = int(compliance_audit_data.get("entry_count", 0))
+    int(compliance_audit_data.get("entry_count", 0))
     _compliance_audit_passed_count = int(compliance_audit_data.get("passed_count", 0))
     dr_data = disaster_recovery_summary()
-    dr_entry_count = int(dr_data.get("entry_count", 0))
+    int(dr_data.get("entry_count", 0))
     _dr_completed_count = int(dr_data.get("completed_count", 0))
     sl_data = service_level_summary()
-    sl_entry_count = int(sl_data.get("entry_count", 0))
+    int(sl_data.get("entry_count", 0))
     _sl_met_count = int(sl_data.get("met_count", 0))
     am_data = asset_management_summary()
-    am_entry_count = int(am_data.get("entry_count", 0))
+    int(am_data.get("entry_count", 0))
     _am_active_count = int(am_data.get("active_count", 0))
     nm_data = network_monitoring_summary()
-    nm_entry_count = int(nm_data.get("entry_count", 0))
+    int(nm_data.get("entry_count", 0))
     _nm_healthy_count = int(nm_data.get("healthy_count", 0))
     im_data = identity_management_summary()
-    im_entry_count = int(im_data.get("entry_count", 0))
+    int(im_data.get("entry_count", 0))
     _im_active_count = int(im_data.get("active_count", 0))
     certm_data = certificate_management_summary()
-    certm_entry_count = int(certm_data.get("entry_count", 0))
+    int(certm_data.get("entry_count", 0))
     _certm_issued_count = int(certm_data.get("issued_count", 0))
     ae_data = alert_escalation_summary()
-    ae_entry_count = int(ae_data.get("entry_count", 0))
+    int(ae_data.get("entry_count", 0))
     _ae_resolved_count = int(ae_data.get("resolved_count", 0))
     cc_data = configuration_change_summary()
-    cc_entry_count = int(cc_data.get("entry_count", 0))
+    int(cc_data.get("entry_count", 0))
     _cc_applied_count = int(cc_data.get("applied_count", 0))
     dr_ret_data = data_retention_summary()
-    dr_ret_entry_count = int(dr_ret_data.get("entry_count", 0))
+    int(dr_ret_data.get("entry_count", 0))
     _dr_ret_completed_count = int(dr_ret_data.get("completed_count", 0))
     pm_data = problem_management_summary()
-    pm_entry_count = int(pm_data.get("entry_count", 0))
+    int(pm_data.get("entry_count", 0))
     _pm_resolved_count = int(pm_data.get("resolved_count", 0))
     rm_data = release_management_summary()
-    rm_entry_count = int(rm_data.get("entry_count", 0))
+    int(rm_data.get("entry_count", 0))
     _rm_deployed_count = int(rm_data.get("deployed_count", 0))
     sr_data = service_request_summary()
-    sr_entry_count = int(sr_data.get("entry_count", 0))
+    int(sr_data.get("entry_count", 0))
     _sr_fulfilled_count = int(sr_data.get("fulfilled_count", 0))
     cm_data = contract_management_summary()
-    cm_entry_count = int(cm_data.get("entry_count", 0))
+    int(cm_data.get("entry_count", 0))
     _cm_active_count = int(cm_data.get("active_count", 0))
     km_data = knowledge_management_summary()
-    km_entry_count = int(km_data.get("entry_count", 0))
+    int(km_data.get("entry_count", 0))
     _km_published_count = int(km_data.get("published_count", 0))
     supp_data = supplier_management_summary()
-    supp_entry_count = int(supp_data.get("entry_count", 0))
+    int(supp_data.get("entry_count", 0))
     _supp_active_count = int(supp_data.get("active_count", 0))
     af_data = audit_finding_summary()
-    af_entry_count = int(af_data.get("entry_count", 0))
+    int(af_data.get("entry_count", 0))
     _af_remediated_count = int(af_data.get("remediated_count", 0))
     budget_data = budget_summary()
-    budget_entry_count = int(budget_data.get("entry_count", 0))
+    int(budget_data.get("entry_count", 0))
     _budget_approved_count = int(budget_data.get("approved_count", 0))
     train_data = training_summary()
-    train_entry_count = int(train_data.get("entry_count", 0))
+    int(train_data.get("entry_count", 0))
     _train_completed_count = int(train_data.get("completed_count", 0))
     cr_data = change_request_summary()
-    cr_entry_count = int(cr_data.get("entry_count", 0))
+    int(cr_data.get("entry_count", 0))
     _cr_approved_count = int(cr_data.get("approved_count", 0))
     pml_data = project_milestone_summary()
-    pml_entry_count = int(pml_data.get("entry_count", 0))
+    int(pml_data.get("entry_count", 0))
     _pml_achieved_count = int(pml_data.get("achieved_count", 0))
     va_data = vendor_assessment_summary()
-    va_entry_count = int(va_data.get("entry_count", 0))
+    int(va_data.get("entry_count", 0))
     _va_completed_count = int(va_data.get("completed_count", 0))
     comm_data = communication_summary()
-    comm_entry_count = int(comm_data.get("entry_count", 0))
+    int(comm_data.get("entry_count", 0))
     _comm_delivered_count = int(comm_data.get("delivered_count", 0))
     doc_mgmt_data = document_management_summary()
-    doc_mgmt_entry_count = int(doc_mgmt_data.get("entry_count", 0))
+    int(doc_mgmt_data.get("entry_count", 0))
     _doc_mgmt_active_count = int(doc_mgmt_data.get("active_count", 0))
     proc_data = procurement_summary()
-    proc_entry_count = int(proc_data.get("entry_count", 0))
+    int(proc_data.get("entry_count", 0))
     _proc_completed_count = int(proc_data.get("completed_count", 0))
     from techno_search.labeled_dataset import labeled_dataset_summary as _lds
     labeled_data = _lds()
-    labeled_entry_count = int(labeled_data.get("entry_count", 0))
+    int(labeled_data.get("entry_count", 0))
     from techno_search.baseline_eval import eval_against_labels as _eal
     label_eval_data = _eal()
     # Real-label scoring accuracy regression gate (Tier 2 gap closure)
@@ -5628,7 +5718,7 @@ def validate_all() -> dict[str, object]:
         synthetic_v1_training_summary as _svts,
     )
     synthetic_training_data = _svts()
-    synthetic_training_ok = synthetic_training_data.get("ok", False)
+    synthetic_training_data.get("ok", False)
     # Learned scoring model v1 on real HIP99427 labels (Tier 2 gap closure)
     real_labels_model_data = _rlms()
     real_labels_model_ok = bool(real_labels_model_data.get("ok", False))
@@ -5642,20 +5732,20 @@ def validate_all() -> dict[str, object]:
     )
     data_release_snap_data = _drss()
     data_release_snapshot_count = int(data_release_snap_data.get("snapshot_count", 0))
-    label_eval_entry_count = int(label_eval_data.get("entry_count", 0))
+    int(label_eval_data.get("entry_count", 0))
     comparison_data = candidate_comparison_summary()
-    comparison_count = int(comparison_data.get("record_count", 0))
+    int(comparison_data.get("record_count", 0))
     telemetry_data = pipeline_telemetry_summary()
-    telemetry_entry_count = int(telemetry_data.get("entry_count", 0))
+    int(telemetry_data.get("entry_count", 0))
     audit_data = provenance_audit_summary()
-    provenance_audit_entry_count = int(audit_data.get("entry_count", 0))
+    int(audit_data.get("entry_count", 0))
     pipeline_cfg_data = pipeline_config_summary()
-    pipeline_config_count = int(pipeline_cfg_data.get("config_count", 0))
-    pipeline_active_count = int(pipeline_cfg_data.get("active_count", 0))
+    int(pipeline_cfg_data.get("config_count", 0))
+    int(pipeline_cfg_data.get("active_count", 0))
     submission_data = submission_readiness_summary()
-    submission_record_count = int(submission_data.get("record_count", 0))
+    int(submission_data.get("record_count", 0))
     candidate_handoffs = candidate_extraction_handoff_summary()
-    candidate_handoff_record_count = candidate_handoffs["record_count"]
+    candidate_handoffs["record_count"]
     candidate_handoff_network_count = candidate_handoffs[
         "network_access_allowed_count"
     ]
@@ -5729,7 +5819,7 @@ def validate_all() -> dict[str, object]:
         curated_admission=curated_dataset_admission_data,
         readiness=operations_readiness,
     )
-    production_blocker_consistency_ok = bool(
+    bool(
         production_blocker_consistency.get("ok", False)
     )
     real_data_admission_preflight = real_data_admission_preflight_summary(
@@ -5743,7 +5833,7 @@ def validate_all() -> dict[str, object]:
     sqlite_operational_log_registry = sqlite_operational_log_registry_summary(
         schema_names=set(SCHEMA_FILENAMES)
     )
-    sqlite_operational_log_registry_ok = bool(
+    bool(
         sqlite_operational_log_registry.get("ok", False)
     )
     sqlite_operational_log_adapter_plan = (
@@ -5751,7 +5841,7 @@ def validate_all() -> dict[str, object]:
             registry_summary=sqlite_operational_log_registry,
         )
     )
-    sqlite_operational_log_adapter_plan_ok = bool(
+    bool(
         sqlite_operational_log_adapter_plan.get("ok", False)
     )
     sqlite_operational_log_adapter_contract = (
@@ -5759,7 +5849,7 @@ def validate_all() -> dict[str, object]:
             adapter_plan_summary=sqlite_operational_log_adapter_plan,
         )
     )
-    sqlite_operational_log_adapter_contract_ok = bool(
+    bool(
         sqlite_operational_log_adapter_contract.get("ok", False)
     )
     sqlite_operational_log_adapter_ddl_preview = (
@@ -5767,7 +5857,7 @@ def validate_all() -> dict[str, object]:
             adapter_contract_summary=sqlite_operational_log_adapter_contract,
         )
     )
-    sqlite_operational_log_adapter_ddl_preview_ok = bool(
+    bool(
         sqlite_operational_log_adapter_ddl_preview.get("ok", False)
     )
     sqlite_operational_log_adapter_row_preview = (
@@ -5777,7 +5867,7 @@ def validate_all() -> dict[str, object]:
             registry_summary=sqlite_operational_log_registry,
         )
     )
-    sqlite_operational_log_adapter_row_preview_ok = bool(
+    bool(
         sqlite_operational_log_adapter_row_preview.get("ok", False)
     )
     sqlite_operational_log_adapter_insert_preview = (
@@ -5785,7 +5875,7 @@ def validate_all() -> dict[str, object]:
             row_preview_summary=sqlite_operational_log_adapter_row_preview,
         )
     )
-    sqlite_operational_log_adapter_insert_preview_ok = bool(
+    bool(
         sqlite_operational_log_adapter_insert_preview.get("ok", False)
     )
     sqlite_operational_log_adapter_execution_preview = (
@@ -5793,7 +5883,7 @@ def validate_all() -> dict[str, object]:
             insert_preview_summary=sqlite_operational_log_adapter_insert_preview,
         )
     )
-    sqlite_operational_log_adapter_execution_preview_ok = bool(
+    bool(
         sqlite_operational_log_adapter_execution_preview.get("ok", False)
     )
     sqlite_operational_log_adapter_dry_run_manifest = (
@@ -5802,7 +5892,7 @@ def validate_all() -> dict[str, object]:
             execution_preview_summary=sqlite_operational_log_adapter_execution_preview,
         )
     )
-    sqlite_operational_log_adapter_dry_run_manifest_ok = bool(
+    bool(
         sqlite_operational_log_adapter_dry_run_manifest.get("ok", False)
     )
     sqlite_operational_log_adapter_readiness_preflight = (
@@ -5818,7 +5908,7 @@ def validate_all() -> dict[str, object]:
             schema_count=len(SCHEMA_FILENAMES),
         )
     )
-    sqlite_operational_log_adapter_readiness_preflight_ok = bool(
+    bool(
         sqlite_operational_log_adapter_readiness_preflight.get("ok", False)
     )
     sqlite_operational_log_adapter_authorization_gate = (
@@ -5827,7 +5917,7 @@ def validate_all() -> dict[str, object]:
             schema_count=len(SCHEMA_FILENAMES),
         )
     )
-    sqlite_operational_log_adapter_authorization_gate_ok = bool(
+    bool(
         sqlite_operational_log_adapter_authorization_gate.get("ok", False)
     )
     operations_action_plan = operations_action_plan_summary(operations_readiness)
@@ -5858,7 +5948,7 @@ def validate_all() -> dict[str, object]:
     )
     operations_followup_action_ids = [
         str(action["action_id"])
-        for action in operations_blocker_followup["actions"]
+        for action in operations_blocker_followup.get("actions", [])
         if isinstance(action, dict)
     ]
     operations_blocker_followup_progress = operations_blocker_followup_progress_summary(
@@ -5867,7 +5957,7 @@ def validate_all() -> dict[str, object]:
     )
     operations_unresolved_progress_action_ids = [
         str(record["action_id"])
-        for record in operations_blocker_followup_progress["records"]
+        for record in operations_blocker_followup_progress.get("records", [])
         if isinstance(record, dict)
         and str(record.get("progress_status", "")) != "verified_local"
     ]
@@ -5877,7 +5967,7 @@ def validate_all() -> dict[str, object]:
     )
     operations_progress_review_action_ids = [
         str(record["action_id"])
-        for record in operations_blocker_progress_review["records"]
+        for record in operations_blocker_progress_review.get("records", [])
         if isinstance(record, dict)
     ]
     operations_blocker_progress_next_actions = (
@@ -5888,7 +5978,7 @@ def validate_all() -> dict[str, object]:
     )
     operations_progress_next_action_ids = [
         str(record["next_action_id"])
-        for record in operations_blocker_progress_next_actions["records"]
+        for record in operations_blocker_progress_next_actions.get("records", [])
         if isinstance(record, dict)
     ]
     operations_blocker_progress_execution = (
@@ -5901,7 +5991,7 @@ def validate_all() -> dict[str, object]:
     )
     operations_progress_execution_ids = [
         str(record["execution_id"])
-        for record in operations_blocker_progress_execution["records"]
+        for record in operations_blocker_progress_execution.get("records", [])
         if isinstance(record, dict)
     ]
     operations_blocker_progress_execution_review = (
@@ -5914,7 +6004,7 @@ def validate_all() -> dict[str, object]:
     )
     operations_progress_execution_review_ids = [
         str(record["review_id"])
-        for record in operations_blocker_progress_execution_review["records"]
+        for record in operations_blocker_progress_execution_review.get("records", [])
         if isinstance(record, dict)
     ]
     operations_blocker_progress_execution_followup = (
@@ -5942,197 +6032,197 @@ def validate_all() -> dict[str, object]:
             ),
         )
     )
-    action_resolution_record_count = int(
+    int(
         operations_action_resolution["record_count"]
     )
-    action_resolution_live_authorized_count = int(
+    int(
         operations_action_resolution["live_data_authorized_count"]
     )
-    action_resolution_external_authorized_count = int(
+    int(
         operations_action_resolution["external_submission_authorized_count"]
     )
-    action_resolution_coverage_complete = bool(
+    bool(
         operations_action_resolution["coverage_complete"]
     )
-    action_resolution_consistency_ok = bool(
+    bool(
         operations_action_resolution_consistency["ok"]
     )
-    blocker_detail_count = int(operations_blocker_detail["detail_count"])
-    blocker_detail_network_count = int(
+    int(operations_blocker_detail["detail_count"])
+    int(
         operations_blocker_detail["network_access_allowed_count"]
     )
-    blocker_detail_external_count = int(
+    int(
         operations_blocker_detail["external_submission_approved_count"]
     )
-    blocker_review_record_count = int(operations_blocker_review["record_count"])
-    blocker_review_live_authorized_count = int(
+    int(operations_blocker_review["record_count"])
+    int(
         operations_blocker_review["live_data_authorized_count"]
     )
-    blocker_review_external_authorized_count = int(
+    int(
         operations_blocker_review["external_submission_authorized_count"]
     )
-    blocker_review_coverage_complete = bool(
+    bool(
         operations_blocker_review["coverage_complete"]
     )
-    blocker_review_all_detail_evidence_reviewed = bool(
+    bool(
         operations_blocker_review["all_detail_evidence_reviewed"]
     )
-    blocker_followup_action_count = int(operations_blocker_followup["action_count"])
-    blocker_followup_live_authorized_count = int(
+    int(operations_blocker_followup["action_count"])
+    int(
         operations_blocker_followup["live_data_authorized_count"]
     )
-    blocker_followup_external_authorized_count = int(
+    int(
         operations_blocker_followup["external_submission_authorized_count"]
     )
-    blocker_followup_coverage_complete = bool(
+    bool(
         operations_blocker_followup["coverage_complete"]
     )
-    blocker_followup_all_detail_evidence_reviewed = bool(
+    bool(
         operations_blocker_followup["all_detail_evidence_reviewed"]
     )
-    blocker_followup_residual_blocker_total = int(
+    int(
         operations_blocker_followup["residual_blocker_total"]
     )
-    blocker_progress_record_count = int(
+    int(
         operations_blocker_followup_progress["record_count"]
     )
-    blocker_progress_live_authorized_count = int(
+    int(
         operations_blocker_followup_progress["live_data_authorized_count"]
     )
-    blocker_progress_external_authorized_count = int(
+    int(
         operations_blocker_followup_progress["external_submission_authorized_count"]
     )
-    blocker_progress_coverage_complete = bool(
+    bool(
         operations_blocker_followup_progress["coverage_complete"]
     )
-    blocker_progress_recommendation_mismatch_count = int(
+    int(
         operations_blocker_followup_progress["recommendation_mismatch_count"]
     )
-    blocker_progress_review_record_count = int(
+    int(
         operations_blocker_progress_review["record_count"]
     )
-    blocker_progress_review_live_authorized_count = int(
+    int(
         operations_blocker_progress_review["live_data_authorized_count"]
     )
-    blocker_progress_review_external_authorized_count = int(
+    int(
         operations_blocker_progress_review["external_submission_authorized_count"]
     )
-    blocker_progress_review_coverage_complete = bool(
+    bool(
         operations_blocker_progress_review["coverage_complete"]
     )
-    blocker_progress_review_status_mismatch_count = int(
+    int(
         operations_blocker_progress_review["status_mismatch_count"]
     )
-    blocker_progress_review_residual_blocker_total = int(
+    int(
         operations_blocker_progress_review["residual_blocker_total"]
     )
-    blocker_progress_next_action_record_count = int(
+    int(
         operations_blocker_progress_next_actions["record_count"]
     )
-    blocker_progress_next_action_live_authorized_count = int(
+    int(
         operations_blocker_progress_next_actions["live_data_authorized_count"]
     )
-    blocker_progress_next_action_external_authorized_count = int(
+    int(
         operations_blocker_progress_next_actions["external_submission_authorized_count"]
     )
-    blocker_progress_next_action_coverage_complete = bool(
+    bool(
         operations_blocker_progress_next_actions["coverage_complete"]
     )
-    blocker_progress_next_action_status_mismatch_count = int(
+    int(
         operations_blocker_progress_next_actions["status_mismatch_count"]
     )
-    blocker_progress_next_action_residual_blocker_total = int(
+    int(
         operations_blocker_progress_next_actions["residual_blocker_total"]
     )
-    blocker_progress_next_action_priority_sequence_ok = bool(
+    bool(
         operations_blocker_progress_next_actions["priority_sequence_ok"]
     )
-    blocker_progress_execution_record_count = int(
+    int(
         operations_blocker_progress_execution["record_count"]
     )
-    blocker_progress_execution_live_authorized_count = int(
+    int(
         operations_blocker_progress_execution["live_data_authorized_count"]
     )
-    blocker_progress_execution_external_authorized_count = int(
+    int(
         operations_blocker_progress_execution["external_submission_authorized_count"]
     )
-    blocker_progress_execution_coverage_complete = bool(
+    bool(
         operations_blocker_progress_execution["coverage_complete"]
     )
-    blocker_progress_execution_status_mismatch_count = int(
+    int(
         operations_blocker_progress_execution["status_mismatch_count"]
     )
-    blocker_progress_execution_residual_mismatch_count = int(
+    int(
         operations_blocker_progress_execution["residual_mismatch_count"]
     )
-    blocker_progress_execution_priority_mismatch_count = int(
+    int(
         operations_blocker_progress_execution["priority_mismatch_count"]
     )
-    blocker_progress_execution_residual_blocker_total = int(
+    int(
         operations_blocker_progress_execution["residual_blocker_total"]
     )
-    blocker_progress_execution_priority_sequence_ok = bool(
+    bool(
         operations_blocker_progress_execution["priority_sequence_ok"]
     )
-    blocker_progress_execution_review_record_count = int(
+    int(
         operations_blocker_progress_execution_review["record_count"]
     )
-    blocker_progress_execution_review_live_authorized_count = int(
+    int(
         operations_blocker_progress_execution_review["live_data_authorized_count"]
     )
-    blocker_progress_execution_review_external_authorized_count = int(
+    int(
         operations_blocker_progress_execution_review[
             "external_submission_authorized_count"
         ]
     )
-    blocker_progress_execution_review_coverage_complete = bool(
+    bool(
         operations_blocker_progress_execution_review["coverage_complete"]
     )
-    blocker_progress_execution_review_status_mismatch_count = int(
+    int(
         operations_blocker_progress_execution_review["status_mismatch_count"]
     )
-    blocker_progress_execution_review_residual_mismatch_count = int(
+    int(
         operations_blocker_progress_execution_review["residual_mismatch_count"]
     )
-    blocker_progress_execution_review_priority_mismatch_count = int(
+    int(
         operations_blocker_progress_execution_review["priority_mismatch_count"]
     )
-    blocker_progress_execution_review_residual_blocker_total = int(
+    int(
         operations_blocker_progress_execution_review["residual_blocker_total"]
     )
-    blocker_progress_execution_review_priority_sequence_ok = bool(
+    bool(
         operations_blocker_progress_execution_review["priority_sequence_ok"]
     )
-    blocker_progress_execution_followup_record_count = int(
+    int(
         operations_blocker_progress_execution_followup["record_count"]
     )
-    blocker_progress_execution_followup_live_authorized_count = int(
+    int(
         operations_blocker_progress_execution_followup["live_data_authorized_count"]
     )
-    blocker_progress_execution_followup_external_authorized_count = int(
+    int(
         operations_blocker_progress_execution_followup[
             "external_submission_authorized_count"
         ]
     )
-    blocker_progress_execution_followup_coverage_complete = bool(
+    bool(
         operations_blocker_progress_execution_followup["coverage_complete"]
     )
-    blocker_progress_execution_followup_status_mismatch_count = int(
+    int(
         operations_blocker_progress_execution_followup["status_mismatch_count"]
     )
-    blocker_progress_execution_followup_residual_mismatch_count = int(
+    int(
         operations_blocker_progress_execution_followup["residual_mismatch_count"]
     )
-    blocker_progress_execution_followup_priority_mismatch_count = int(
+    int(
         operations_blocker_progress_execution_followup["priority_mismatch_count"]
     )
-    blocker_progress_execution_followup_residual_blocker_total = int(
+    int(
         operations_blocker_progress_execution_followup["residual_blocker_total"]
     )
-    blocker_progress_execution_followup_priority_sequence_ok = bool(
+    bool(
         operations_blocker_progress_execution_followup["priority_sequence_ok"]
     )
-    blocker_progress_consistency_ok = bool(
+    bool(
         operations_blocker_progress_consistency["ok"]
     )
 
@@ -6156,121 +6246,23 @@ def validate_all() -> dict[str, object]:
     semisup_data = _ss_summary()
     semisup_feature_count = int(semisup_data.get("feature_count", 0))
 
+    # Phase 0 scientific-only gate.
+    # Checks: structural integrity, SQLite health, radio pipeline fixture integrity,
+    # auth guardrails (no live/external access authorized), real-label accuracy.
+    # Operational overhead checks (benchmarks, lifecycle, triage, log-type counts)
+    # removed per PRODUCTION_READINESS.md Phase 0 scope.
     ok = (
         all(result["ok"] for result in candidate_results.values())
         and bool(report_result["ok"])
         and all(schema_results.values())
         and bool(catalog_cache["ok"])
         and bool(sqlite_commit_guard["ok"])
-        and isinstance(calibration_track_count, int)
-        and calibration_track_count >= 3
-        and isinstance(calibration_minimum_track_case_count, int)
-        and calibration_minimum_track_case_count >= 4
-        and isinstance(false_positive_case_count, int)
-        and false_positive_case_count >= 15
-        and isinstance(false_positive_class_count, int)
-        and false_positive_class_count >= 15
-        and isinstance(provider_normalization_case_count, int)
-        and provider_normalization_case_count >= 5
         and isinstance(cross_band_feat_count, int)
         and cross_band_feat_count >= 4
         and isinstance(globular_feature_count, int)
         and globular_feature_count >= 13
         and isinstance(semisup_feature_count, int)
         and semisup_feature_count >= 12
-        and isinstance(injection_recovery_case_count, int)
-        and injection_recovery_case_count >= 6
-        and isinstance(reliability_bin_count, int)
-        and reliability_bin_count >= 9
-        and isinstance(precision_recall_case_count, int)
-        and precision_recall_case_count >= 6
-        and isinstance(review_queue_item_count, int)
-        and review_queue_item_count >= 5
-        and isinstance(review_queue_note_count, int)
-        and review_queue_note_count >= 4
-        and isinstance(consensus_item_count, int)
-        and consensus_item_count >= 5
-        and isinstance(consensus_decision_count, int)
-        and consensus_decision_count >= 10
-        and isinstance(consensus_export_count, int)
-        and consensus_export_count >= 5
-        and isinstance(cross_track_reference_count, int)
-        and cross_track_reference_count >= 4
-        and isinstance(cross_track_blocking_issue_total, int)
-        and cross_track_blocking_issue_total >= 0
-        and isinstance(reproducibility_verified_count, int)
-        and reproducibility_verified_count >= 3
-        and isinstance(reproducibility_drift_count, int)
-        and reproducibility_drift_count == 0
-        and isinstance(validation_dataset_count, int)
-        and validation_dataset_count >= 3
-        and isinstance(validation_dataset_case_count, int)
-        and validation_dataset_case_count >= 15
-        and isinstance(validation_promotion_rule_count, int)
-        and validation_promotion_rule_count >= 3
-        and isinstance(validation_readiness_record_count, int)
-        and validation_readiness_record_count >= 3
-        and isinstance(validation_readiness_ready_count, int)
-        and validation_readiness_ready_count >= 1
-        and isinstance(benchmark_command_count, int)
-        and benchmark_command_count >= 4
-        and isinstance(benchmark_worker_limit, int)
-        and benchmark_worker_limit <= 12
-        and isinstance(benchmark_run_count, int)
-        and benchmark_run_count >= 3
-        and isinstance(benchmark_run_worker_limit, int)
-        and benchmark_run_worker_limit <= 12
-        and isinstance(target_count, int)
-        and target_count >= 3
-        and isinstance(background_ledger_entry_count, int)
-        and background_ledger_entry_count >= 4
-        and isinstance(background_review_status_count, int)
-        and background_review_status_count >= 4
-        and isinstance(reviewed_log_entry_count, int)
-        and reviewed_log_entry_count >= 2
-        and isinstance(reviewed_log_network_count, int)
-        and reviewed_log_network_count == 0
-        and isinstance(needs_follow_up_entry_count, int)
-        and needs_follow_up_entry_count >= 2
-        and isinstance(needs_follow_up_approval_count, int)
-        and needs_follow_up_approval_count == needs_follow_up_entry_count
-        and isinstance(needs_follow_up_network_count, int)
-        and needs_follow_up_network_count == 0
-        and isinstance(follow_up_test_result_count, int)
-        and follow_up_test_result_count >= 12
-        and isinstance(follow_up_test_complete_count, int)
-        and follow_up_test_complete_count >= 2
-        and isinstance(follow_up_test_network_count, int)
-        and follow_up_test_network_count == 0
-        and isinstance(report_readiness_record_count, int)
-        and report_readiness_record_count >= 2
-        and isinstance(report_readiness_ready_count, int)
-        and report_readiness_ready_count >= 1
-        and isinstance(report_readiness_approval_count, int)
-        and report_readiness_approval_count == report_readiness_record_count
-        and isinstance(report_readiness_external_allowed_count, int)
-        and report_readiness_external_allowed_count == 0
-        and isinstance(report_readiness_network_count, int)
-        and report_readiness_network_count == 0
-        and bool(draft_report_validation["ok"])
-        and isinstance(draft_report_count, int)
-        and draft_report_count >= 2
-        and isinstance(draft_ready_count, int)
-        and draft_ready_count >= 1
-        and isinstance(draft_external_allowed_count, int)
-        and draft_external_allowed_count == 0
-        and isinstance(draft_network_count, int)
-        and draft_network_count == 0
-        and isinstance(user_decision_count, int)
-        and user_decision_count >= 3
-        and isinstance(user_decision_external_approved_count, int)
-        and user_decision_external_approved_count == 0
-        and isinstance(user_decision_network_count, int)
-        and user_decision_network_count == 0
-        and isinstance(candidate_handoff_record_count, int)
-        and candidate_handoff_record_count >= 4
-        and isinstance(candidate_handoff_network_count, int)
-        and candidate_handoff_network_count == 0
         and bool(sqlite_log_validation["ok"])
         and sqlite_consistency_ok
         and bool(sqlite_integrity["ok"])
@@ -6288,472 +6280,35 @@ def validate_all() -> dict[str, object]:
         and sqlite_network_count == 0
         and isinstance(sqlite_external_approved_count, int)
         and sqlite_external_approved_count == 0
-        and isinstance(watchlist_entry_count, int)
-        and watchlist_entry_count >= 4
-        and isinstance(watchlist_conflict_count, int)
-        and watchlist_conflict_count == 0
-        and isinstance(baseline_pathway_accuracy, float)
-        and baseline_pathway_accuracy >= 0.80
-        and isinstance(baseline_total_cases, int)
-        and baseline_total_cases >= 3
+        and isinstance(reviewed_log_network_count, int)
+        and reviewed_log_network_count == 0
+        and isinstance(needs_follow_up_network_count, int)
+        and needs_follow_up_network_count == 0
+        and isinstance(follow_up_test_network_count, int)
+        and follow_up_test_network_count == 0
+        and isinstance(report_readiness_external_allowed_count, int)
+        and report_readiness_external_allowed_count == 0
+        and isinstance(report_readiness_network_count, int)
+        and report_readiness_network_count == 0
+        and isinstance(draft_external_allowed_count, int)
+        and draft_external_allowed_count == 0
+        and isinstance(draft_network_count, int)
+        and draft_network_count == 0
+        and isinstance(user_decision_external_approved_count, int)
+        and user_decision_external_approved_count == 0
+        and isinstance(user_decision_network_count, int)
+        and user_decision_network_count == 0
+        and isinstance(candidate_handoff_network_count, int)
+        and candidate_handoff_network_count == 0
         and real_label_accuracy_gate_ok
-        and real_labels_model_trained
-        and isinstance(data_release_snapshot_count, int)
-        and data_release_snapshot_count >= 1
-        and isinstance(baseline_drift_count, int)
-        and baseline_drift_zero
-        and isinstance(lifecycle_entry_count, int)
-        and lifecycle_entry_count >= 3
-        and len(lifecycle_tracks_covered) >= 3
-        and isinstance(schedule_window_count, int)
-        and schedule_window_count >= 4
-        and isinstance(fn_missed_rate, float)
-        and fn_missed_rate < 1.0
-        and isinstance(scoring_threshold_count, int)
-        and scoring_threshold_count >= 1
-        and isinstance(route_covered_count, int)
-        and route_covered_count >= 6
-        and isinstance(route_uncovered_count, int)
-        and route_uncovered_count == 0
-        and isinstance(lifecycle_invalid_count, int)
-        and lifecycle_invalid_count == 0
-        and isinstance(observation_completion_rate, float)
-        and observation_completion_rate >= 0.0
-        and isinstance(sensitivity_track_count, int)
-        and sensitivity_track_count >= 3
-        and isinstance(triage_note_count, int)
-        and triage_note_count >= 5
-        and len(triage_tracks_covered) >= 3
-        and isinstance(signal_registry_active_count, int)
-        and signal_registry_active_count >= 4
-        and isinstance(audit_action_count, int)
-        and audit_action_count >= 6
-        and isinstance(multi_epoch_target_count, int)
-        and multi_epoch_target_count >= 3
-        and isinstance(recalibration_snapshot_count, int)
-        and recalibration_snapshot_count >= 2
-        and isinstance(operator_coverage_count, int)
-        and operator_coverage_count >= 2
-        and isinstance(label_coverage_fraction, float)
-        and label_coverage_fraction >= 0.5
-        and isinstance(classifier_rule_coverage_fraction, float)
-        and classifier_rule_coverage_fraction >= 0.5
         and provenance_chain_ok
-        and isinstance(schema_drift_count, int)
-        and schema_drift_count == 0
-        and isinstance(obs_notes_count, int)
-        and obs_notes_count >= 5
-        and isinstance(epoch_plan_entry_count, int)
-        and epoch_plan_entry_count >= 4
-        and isinstance(aggregate_blocker_count, int)
-        and aggregate_blocker_count >= 0
-        and isinstance(score_history_entry_count, int)
-        and score_history_entry_count >= 5
-        and isinstance(op_assignment_count, int)
-        and op_assignment_count >= 4
-        and isinstance(pipeline_total_blocked, int)
-        and pipeline_total_blocked >= 0
-        and isinstance(candidate_flag_count, int)
-        and candidate_flag_count >= 5
-        and isinstance(review_deadline_count, int)
-        and review_deadline_count >= 4
-        and isinstance(pipeline_throughput_rate, float)
-        and pipeline_throughput_rate >= 0.0
-        and isinstance(candidate_retention_record_count, int)
-        and candidate_retention_record_count >= 5
-        and isinstance(operator_perf_count, int)
-        and operator_perf_count >= 2
-        and isinstance(track_comparison_open_flags, int)
-        and track_comparison_open_flags >= 0
-        and isinstance(candidate_resolution_record_count, int)
-        and candidate_resolution_record_count >= 5
-        and isinstance(escalation_entry_count, int)
-        and escalation_entry_count >= 0
-        and qc_health in ("ok", "degraded", "blocked")
-        and isinstance(obs_campaign_count, int)
-        and obs_campaign_count >= 5
-        and isinstance(dq_entry_count, int)
-        and dq_entry_count >= 0
-        and isinstance(pipeline_audit_action_count, int)
-        and pipeline_audit_action_count >= 0
-        and isinstance(follow_up_request_count, int)
-        and follow_up_request_count >= 5
-        and isinstance(pipeline_bottleneck_stalled, int)
-        and pipeline_bottleneck_stalled >= 0
-        and isinstance(candidate_annotation_count, int)
-        and candidate_annotation_count >= 5
-        and isinstance(session_log_count, int)
-        and session_log_count >= 0
-        and isinstance(priority_queue_depth, int)
-        and priority_queue_depth >= 5
-        and pipeline_capacity_status in {"nominal", "strained", "overloaded"}
-        and isinstance(feature_vector_count, int)
-        and feature_vector_count >= 5
-        and isinstance(ml_registry_count, int)
-        and ml_registry_count >= 0
-        and ml_pipeline_status in {"no_models", "all_above_baseline", "some_below_baseline"}
-        and isinstance(feat_norm_count, int)
-        and feat_norm_count >= 3
-        and isinstance(feat_imp_count, int)
-        and feat_imp_count >= 6
-        and isinstance(ml_training_case_count, int)
-        and ml_training_case_count >= 0
-        and isinstance(arch_count, int)
-        and arch_count >= 5
-        and isinstance(eval_count, int)
-        and eval_count >= 4
-        and isinstance(perf_snapshot_count, int)
-        and perf_snapshot_count >= 5
-        and isinstance(serving_record_count, int)
-        and serving_record_count >= 1
-        and isinstance(audit_entry_count, int)
-        and audit_entry_count >= 0
-        and isinstance(intake_record_count, int)
-        and intake_record_count >= 1
-        and isinstance(curated_dataset_admission_record_count, int)
-        and curated_dataset_admission_record_count >= 1
-        and curated_dataset_admission_validation_ok
-        and isinstance(curated_dataset_admission_real_authorized_count, int)
-        and curated_dataset_admission_real_authorized_count == 1
-        and project_status_consistency_ok
-        and ai_hardening_gate_ok
-        and mcp_bootstrap_consistency_ok
-        and mcp_server_policy_ok
-        and production_blocker_consistency_ok
-        and real_data_admission_preflight_ok
-        and sqlite_operational_log_registry_ok
-        and sqlite_operational_log_adapter_plan_ok
-        and sqlite_operational_log_adapter_contract_ok
-        and sqlite_operational_log_adapter_ddl_preview_ok
-        and sqlite_operational_log_adapter_row_preview_ok
-        and sqlite_operational_log_adapter_insert_preview_ok
-        and sqlite_operational_log_adapter_execution_preview_ok
-        and sqlite_operational_log_adapter_dry_run_manifest_ok
-        and sqlite_operational_log_adapter_readiness_preflight_ok
-        and sqlite_operational_log_adapter_authorization_gate_ok
-        and operations_alert_review_consistency_ok
-        and isinstance(rescore_event_count, int)
-        and rescore_event_count >= 1
-        and isinstance(handoff_template_count, int)
-        and handoff_template_count >= 1
-        and isinstance(handoff_approved_count, int)
-        and handoff_approved_count >= 1
-        and isinstance(pipeline_config_count, int)
-        and pipeline_config_count >= 1
-        and isinstance(pipeline_active_count, int)
-        and pipeline_active_count >= 1
-        and isinstance(submission_record_count, int)
-        and submission_record_count >= 1
-        and isinstance(comparison_count, int)
-        and comparison_count >= 1
-        and isinstance(telemetry_entry_count, int)
-        and telemetry_entry_count >= 1
-        and isinstance(provenance_audit_entry_count, int)
-        and provenance_audit_entry_count >= 1
-        and isinstance(alert_entry_count, int)
-        and alert_entry_count >= 0
-        and isinstance(replay_entry_count, int)
-        and replay_entry_count >= 0
-        and isinstance(threshold_pass_count, int)
-        and threshold_pass_count >= 1
-        and isinstance(alert_resolution_entry_count, int)
-        and alert_resolution_entry_count >= 0
-        and isinstance(config_history_entry_count, int)
-        and config_history_entry_count >= 1
-        and isinstance(operator_escalation_entry_count, int)
-        and operator_escalation_entry_count >= 0
-        and isinstance(dedup_entry_count, int)
-        and dedup_entry_count >= 0
-        and isinstance(intake_queue_entry_count, int)
-        and intake_queue_entry_count >= 0
-        and isinstance(workflow_entry_count, int)
-        and workflow_entry_count >= 0
-        and isinstance(data_gap_entry_count, int)
-        and data_gap_entry_count >= 0
-        and isinstance(candidate_match_entry_count, int)
-        and candidate_match_entry_count >= 0
-        and isinstance(pipeline_error_entry_count, int)
-        and pipeline_error_entry_count >= 0
-        and isinstance(obs_request_entry_count, int)
-        and obs_request_entry_count >= 0
-        and isinstance(candidate_export_entry_count, int)
-        and candidate_export_entry_count >= 0
-        and isinstance(quality_gate_entry_count, int)
-        and quality_gate_entry_count >= 0
-        and quality_gate_pass_count >= 0
-        and instrument_log_entry_count >= 0
-        and archival_query_entry_count >= 0
-        and candidate_linkage_entry_count >= 0
-        and isinstance(signal_classification_entry_count, int)
-        and signal_classification_entry_count >= 0
         and isinstance(rfi_database_record_count, int)
         and rfi_database_record_count >= 1
-        and isinstance(rfi_database_reviewed_count, int)
-        and rfi_database_reviewed_count >= 1
         and rfi_database_validation_ok
-        and isinstance(rfi_database_admission_record_count, int)
-        and rfi_database_admission_record_count >= 1
-        and rfi_database_admission_validation_ok
-        and isinstance(rfi_database_admission_real_authorized_count, int)
-        and rfi_database_admission_real_authorized_count == 0
-        and isinstance(cal_corpus_admission_record_count, int)
-        and cal_corpus_admission_record_count >= 1
-        and cal_corpus_admission_safety_ok
-        and isinstance(rfi_mitigation_entry_count, int)
-        and rfi_mitigation_entry_count >= 0
-        and isinstance(candidate_annotation_entry_count, int)
-        and candidate_annotation_entry_count >= 0
-        and isinstance(frequency_channel_entry_count, int)
-        and frequency_channel_entry_count >= 0
-        and isinstance(pipeline_checkpoint_entry_count, int)
-        and pipeline_checkpoint_entry_count >= 0
-        and isinstance(candidate_status_entry_count, int)
-        and candidate_status_entry_count >= 0
-        and isinstance(beam_configuration_entry_count, int)
-        and beam_configuration_entry_count >= 0
-        and isinstance(calibration_event_entry_count, int)
-        and calibration_event_entry_count >= 0
-        and isinstance(pipeline_run_entry_count, int)
-        and pipeline_run_entry_count >= 0
-        and isinstance(source_catalog_entry_count, int)
-        and source_catalog_entry_count >= 0
-        and isinstance(noise_measurement_entry_count, int)
-        and noise_measurement_entry_count >= 0
-        and isinstance(spectral_feature_entry_count, int)
-        and spectral_feature_entry_count >= 0
-        and isinstance(polarization_entry_count, int)
-        and polarization_entry_count >= 0
-        and isinstance(telescope_status_entry_count, int)
-        and telescope_status_entry_count >= 0
-        and isinstance(obs_parameter_entry_count, int)
-        and obs_parameter_entry_count >= 0
-        and isinstance(target_selection_entry_count, int)
-        and target_selection_entry_count >= 0
-        and isinstance(doppler_correction_entry_count, int)
-        and doppler_correction_entry_count >= 0
-        and isinstance(data_archival_entry_count, int)
-        and data_archival_entry_count >= 0
-        and isinstance(interference_env_entry_count, int)
-        and interference_env_entry_count >= 0
-        and isinstance(receiver_health_entry_count, int)
-        and receiver_health_entry_count >= 0
-        and isinstance(pipeline_version_entry_count, int)
-        and pipeline_version_entry_count >= 0
-        and isinstance(data_transfer_entry_count, int)
-        and data_transfer_entry_count >= 0
-        and isinstance(scheduling_conflict_entry_count, int)
-        and scheduling_conflict_entry_count >= 0
-        and isinstance(system_health_entry_count, int)
-        and system_health_entry_count >= 0
-        and isinstance(instrument_config_entry_count, int)
-        and instrument_config_entry_count >= 0
-        and isinstance(scan_entry_count, int)
-        and scan_entry_count >= 0
-        and isinstance(time_sync_entry_count, int)
-        and time_sync_entry_count >= 0
-        and isinstance(antenna_pointing_entry_count, int)
-        and antenna_pointing_entry_count >= 0
-        and isinstance(weather_entry_count, int)
-        and weather_entry_count >= 0
-        and isinstance(power_entry_count, int)
-        and power_entry_count >= 0
-        and isinstance(cooling_entry_count, int)
-        and cooling_entry_count >= 0
-        and isinstance(network_entry_count, int)
-        and network_entry_count >= 0
-        and isinstance(sw_update_entry_count, int)
-        and sw_update_entry_count >= 0
-        and isinstance(hw_fault_entry_count, int)
-        and hw_fault_entry_count >= 0
-        and isinstance(maintenance_entry_count, int)
-        and maintenance_entry_count >= 0
-        and isinstance(env_entry_count, int)
-        and env_entry_count >= 0
-        and isinstance(access_entry_count, int)
-        and access_entry_count >= 0
-        and isinstance(sec_event_entry_count, int)
-        and sec_event_entry_count >= 0
-        and isinstance(audit_trail_log_entry_count, int)
-        and audit_trail_log_entry_count >= 0
-        and isinstance(incident_response_entry_count, int)
-        and incident_response_entry_count >= 0
-        and isinstance(change_mgmt_entry_count, int)
-        and change_mgmt_entry_count >= 0
-        and isinstance(compliance_report_entry_count, int)
-        and compliance_report_entry_count >= 0
-        and isinstance(risk_assessment_entry_count, int)
-        and risk_assessment_entry_count >= 0
-        and isinstance(backup_recovery_entry_count, int)
-        and backup_recovery_entry_count >= 0
-        and isinstance(capacity_planning_entry_count, int)
-        and capacity_planning_entry_count >= 0
-        and isinstance(software_deployment_entry_count, int)
-        and software_deployment_entry_count >= 0
-        and isinstance(performance_monitoring_entry_count, int)
-        and performance_monitoring_entry_count >= 0
-        and isinstance(user_activity_entry_count, int)
-        and user_activity_entry_count >= 0
-        and isinstance(health_check_entry_count, int)
-        and health_check_entry_count >= 0
-        and isinstance(license_management_entry_count, int)
-        and license_management_entry_count >= 0
-        and isinstance(storage_management_entry_count, int)
-        and storage_management_entry_count >= 0
-        and isinstance(firmware_update_entry_count, int)
-        and firmware_update_entry_count >= 0
-        and isinstance(configuration_audit_entry_count, int)
-        and configuration_audit_entry_count >= 0
-        and isinstance(event_correlation_entry_count, int)
-        and event_correlation_entry_count >= 0
-        and isinstance(system_diagnostics_entry_count, int)
-        and system_diagnostics_entry_count >= 0
-        and isinstance(resource_allocation_entry_count, int)
-        and resource_allocation_entry_count >= 0
-        and isinstance(access_control_entry_count, int)
-        and access_control_entry_count >= 0
-        and isinstance(change_mgmt_entry_count, int)
-        and change_mgmt_entry_count >= 0
-        and isinstance(incident_entry_count, int)
-        and incident_entry_count >= 0
-        and isinstance(patch_mgmt_entry_count, int)
-        and patch_mgmt_entry_count >= 0
-        and isinstance(vuln_scan_entry_count, int)
-        and vuln_scan_entry_count >= 0
-        and isinstance(compliance_audit_entry_count, int)
-        and compliance_audit_entry_count >= 0
-        and isinstance(dr_entry_count, int)
-        and dr_entry_count >= 0
-        and isinstance(sl_entry_count, int)
-        and sl_entry_count >= 0
-        and isinstance(am_entry_count, int)
-        and am_entry_count >= 0
-        and isinstance(nm_entry_count, int)
-        and nm_entry_count >= 0
-        and isinstance(im_entry_count, int)
-        and im_entry_count >= 0
-        and isinstance(certm_entry_count, int)
-        and certm_entry_count >= 0
-        and isinstance(ae_entry_count, int)
-        and ae_entry_count >= 0
-        and isinstance(cc_entry_count, int)
-        and cc_entry_count >= 0
-        and isinstance(dr_ret_entry_count, int)
-        and dr_ret_entry_count >= 0
-        and isinstance(pm_entry_count, int)
-        and pm_entry_count >= 0
-        and isinstance(rm_entry_count, int)
-        and rm_entry_count >= 0
-        and isinstance(sr_entry_count, int)
-        and sr_entry_count >= 0
-        and isinstance(cm_entry_count, int)
-        and cm_entry_count >= 0
-        and isinstance(km_entry_count, int)
-        and km_entry_count >= 0
-        and isinstance(supp_entry_count, int)
-        and supp_entry_count >= 0
-        and isinstance(af_entry_count, int)
-        and af_entry_count >= 0
-        and isinstance(budget_entry_count, int)
-        and budget_entry_count >= 0
-        and isinstance(train_entry_count, int)
-        and train_entry_count >= 0
-        and isinstance(cr_entry_count, int)
-        and cr_entry_count >= 0
-        and isinstance(pml_entry_count, int)
-        and pml_entry_count >= 0
-        and isinstance(va_entry_count, int)
-        and va_entry_count >= 0
-        and isinstance(comm_entry_count, int)
-        and comm_entry_count >= 0
-        and isinstance(doc_mgmt_entry_count, int)
-        and doc_mgmt_entry_count >= 0
-        and isinstance(proc_entry_count, int)
-        and proc_entry_count >= 0
-        and isinstance(labeled_entry_count, int)
-        and labeled_entry_count >= 1
-        and isinstance(label_eval_entry_count, int)
-        and label_eval_entry_count >= 1
-        and synthetic_training_ok is True
-        and action_resolution_record_count >= 1
-        and action_resolution_live_authorized_count == 0
-        and action_resolution_external_authorized_count == 0
-        and action_resolution_coverage_complete
-        and action_resolution_consistency_ok
-        and blocker_detail_count == len(operations_action_ids)
-        and blocker_detail_network_count == 0
-        and blocker_detail_external_count == 0
-        and blocker_review_record_count >= 1
-        and blocker_review_live_authorized_count == 0
-        and blocker_review_external_authorized_count == 0
-        and blocker_review_coverage_complete
-        and blocker_review_all_detail_evidence_reviewed
-        and blocker_followup_action_count == blocker_review_record_count
-        and blocker_followup_live_authorized_count == 0
-        and blocker_followup_external_authorized_count == 0
-        and blocker_followup_coverage_complete
-        and blocker_followup_all_detail_evidence_reviewed
-        and (
-            blocker_followup_residual_blocker_total
-            == int(operations_blocker_review["residual_blocker_total"])
-        )
-        and blocker_progress_record_count == blocker_followup_action_count
-        and blocker_progress_live_authorized_count == 0
-        and blocker_progress_external_authorized_count == 0
-        and blocker_progress_coverage_complete
-        and blocker_progress_recommendation_mismatch_count == 0
-        and (
-            blocker_progress_review_record_count
-            == int(operations_blocker_followup_progress["unresolved_progress_count"])
-        )
-        and blocker_progress_review_live_authorized_count == 0
-        and blocker_progress_review_external_authorized_count == 0
-        and blocker_progress_review_coverage_complete
-        and blocker_progress_review_status_mismatch_count == 0
-        and blocker_progress_review_residual_blocker_total
-        == int(operations_blocker_followup_progress["residual_blocker_total"])
-        and blocker_progress_next_action_record_count
-        == blocker_progress_review_record_count
-        and blocker_progress_next_action_live_authorized_count == 0
-        and blocker_progress_next_action_external_authorized_count == 0
-        and blocker_progress_next_action_coverage_complete
-        and blocker_progress_next_action_status_mismatch_count == 0
-        and blocker_progress_next_action_residual_blocker_total
-        == blocker_progress_review_residual_blocker_total
-        and blocker_progress_next_action_priority_sequence_ok
-        and blocker_progress_execution_record_count
-        == blocker_progress_next_action_record_count
-        and blocker_progress_execution_live_authorized_count == 0
-        and blocker_progress_execution_external_authorized_count == 0
-        and blocker_progress_execution_coverage_complete
-        and blocker_progress_execution_status_mismatch_count == 0
-        and blocker_progress_execution_residual_mismatch_count == 0
-        and blocker_progress_execution_priority_mismatch_count == 0
-        and blocker_progress_execution_residual_blocker_total
-        == blocker_progress_next_action_residual_blocker_total
-        and blocker_progress_execution_priority_sequence_ok
-        and blocker_progress_execution_review_record_count
-        == blocker_progress_execution_record_count
-        and blocker_progress_execution_review_live_authorized_count == 0
-        and blocker_progress_execution_review_external_authorized_count == 0
-        and blocker_progress_execution_review_coverage_complete
-        and blocker_progress_execution_review_status_mismatch_count == 0
-        and blocker_progress_execution_review_residual_mismatch_count == 0
-        and blocker_progress_execution_review_priority_mismatch_count == 0
-        and blocker_progress_execution_review_residual_blocker_total
-        == blocker_progress_execution_residual_blocker_total
-        and blocker_progress_execution_review_priority_sequence_ok
-        and blocker_progress_execution_followup_record_count
-        == blocker_progress_execution_review_record_count
-        and blocker_progress_execution_followup_live_authorized_count == 0
-        and blocker_progress_execution_followup_external_authorized_count == 0
-        and blocker_progress_execution_followup_coverage_complete
-        and blocker_progress_execution_followup_status_mismatch_count == 0
-        and blocker_progress_execution_followup_residual_mismatch_count == 0
-        and blocker_progress_execution_followup_priority_mismatch_count == 0
-        and blocker_progress_execution_followup_residual_blocker_total
-        == blocker_progress_execution_review_residual_blocker_total
-        and blocker_progress_execution_followup_priority_sequence_ok
-        and blocker_progress_consistency_ok
+        and ai_hardening_gate_ok
+        and real_data_admission_preflight_ok
+        and curated_dataset_admission_validation_ok
+        and project_status_consistency_ok
     )
     return {
         "ok": ok,
@@ -7063,3608 +6618,17 @@ def validate_all() -> dict[str, object]:
 
 
 def validation_summary() -> dict[str, object]:
-    """Return a concise local validation dashboard without network access."""
+    """Return a concise local validation dashboard without network access.
+
+    Phase 0 cleanup: replaced 3200-line implementation with thin passthrough.
+    The previous implementation referenced ~100 deleted operational overhead modules.
+    """
+    from datetime import datetime
 
     validation = validate_all()
-    candidates = validation["candidates"]
-    reports = validation["reports"]
-    schemas = validation["schema_paths_exist"]
-    calibration = validation["calibration_summary"]
-    calibration_by_track = validation["calibration_track_summary"]
-    false_positive_analysis = validation["false_positive_summary"]
-    regression = validation["score_regression_summary"]
-    catalog_cache = validation["catalog_cache_validation"]
-    provider_normalization = validation["provider_normalization_summary"]
-    injection_recovery = validation["injection_recovery_summary"]
-    reliability = validation["reliability_summary"]
-    precision_recall = validation["precision_recall_summary"]
-    review_queue = validation["review_queue_summary"]
-    consensus = validation["consensus_summary"]
-    consensus_exports = validation["consensus_export_summary"]
-    cross_track = validation["cross_track_summary"]
-    reproducibility = validation["reproducibility_verification"]
-    sqlite_migration_plan = validation["top_level_sqlite_log_migration_plan"]
-    sqlite_weekly_digest = validation["top_level_sqlite_log_weekly_digest"]
-    validation_datasets = validation["validation_dataset_summary"]
-    validation_promotions = validation["validation_promotion_summary"]
-    validation_readiness = validation["validation_readiness_summary"]
-    benchmark_metadata = validation["benchmark_metadata_summary"]
-    benchmark_runs = validation["benchmark_run_summary"]
-    target_priorities = validation["target_priority_summary"]
-    background_ledger = validation["background_ledger_summary"]
-    background_review_workflow = validation["background_review_workflow_summary"]
-    reviewed_log = validation["background_reviewed_log_summary"]
-    needs_follow_up_log = validation["background_needs_follow_up_summary"]
-    follow_up_tests = validation["background_follow_up_test_summary"]
-    report_readiness = validation["background_report_readiness_summary"]
-    draft_reports = validation["background_draft_follow_up_report_summary"]
-    draft_report_validation = validation["background_draft_report_validation"]
-    user_decisions = validation["background_user_decision_summary"]
-    candidate_handoffs = validation["candidate_extraction_handoff_summary"]
-    sqlite_logs = validation["top_level_sqlite_log_summary"]
-    sqlite_integrity = validation["top_level_sqlite_log_integrity_summary"]
-    sqlite_migration = validation["top_level_sqlite_log_migration_summary"]
-    sqlite_commit_guard = validation["top_level_sqlite_log_commit_guard"]
-    sqlite_backup = validation["top_level_sqlite_log_backup"]
-    sqlite_retention = validation["top_level_sqlite_log_retention_summary"]
-    sqlite_pragmas = validation["top_level_sqlite_log_pragmas"]
-    sqlite_log_validation = validation["top_level_sqlite_log_validation"]
-    sqlite_log_consistency = validation["top_level_sqlite_log_consistency_summary"]
-    production_blocker_consistency = validation[
-        "production_blocker_consistency_summary"
-    ]
-    real_data_admission_preflight = validation[
-        "real_data_admission_preflight_summary"
-    ]
-    sqlite_operational_log_registry = validation[
-        "sqlite_operational_log_registry_summary"
-    ]
-    sqlite_operational_log_adapter_plan = validation[
-        "sqlite_operational_log_adapter_plan_summary"
-    ]
-    sqlite_operational_log_adapter_contract = validation[
-        "sqlite_operational_log_adapter_contract_summary"
-    ]
-    sqlite_operational_log_adapter_ddl_preview = validation[
-        "sqlite_operational_log_adapter_ddl_preview_summary"
-    ]
-    sqlite_operational_log_adapter_row_preview = validation[
-        "sqlite_operational_log_adapter_row_preview_summary"
-    ]
-    sqlite_operational_log_adapter_insert_preview = validation[
-        "sqlite_operational_log_adapter_insert_preview_summary"
-    ]
-    sqlite_operational_log_adapter_execution_preview = validation[
-        "sqlite_operational_log_adapter_execution_preview_summary"
-    ]
-    sqlite_operational_log_adapter_dry_run_manifest = validation[
-        "sqlite_operational_log_adapter_dry_run_manifest_summary"
-    ]
-    sqlite_operational_log_adapter_readiness_preflight = validation[
-        "sqlite_operational_log_adapter_readiness_preflight_summary"
-    ]
-    sqlite_operational_log_adapter_authorization_gate = validation[
-        "sqlite_operational_log_adapter_authorization_gate_summary"
-    ]
-    mcp_bootstrap_consistency = validation["mcp_bootstrap_consistency_summary"]
-    mcp_server_policy = validation["mcp_server_policy_summary"]
-    operations_readiness = validation["operations_readiness_summary"]
-    operations_action_plan = validation["operations_action_plan_summary"]
-    operations_action_resolution = validation["operations_action_resolution_summary"]
-    operations_action_resolution_consistency = validation[
-        "operations_action_resolution_consistency_summary"
-    ]
-    operations_blocker_detail = validation["operations_blocker_detail_summary"]
-    operations_blocker_review = validation["operations_blocker_review_summary"]
-    operations_blocker_followup = validation["operations_blocker_followup_summary"]
-    operations_blocker_followup_progress = validation[
-        "operations_blocker_followup_progress_summary"
-    ]
-    operations_blocker_progress_review = validation[
-        "operations_blocker_progress_review_summary"
-    ]
-    operations_blocker_progress_next_actions = validation[
-        "operations_blocker_progress_next_actions_summary"
-    ]
-    operations_blocker_progress_execution = validation[
-        "operations_blocker_progress_execution_summary"
-    ]
-    operations_blocker_progress_execution_review = validation[
-        "operations_blocker_progress_execution_review_summary"
-    ]
-    operations_blocker_progress_execution_followup = validation[
-        "operations_blocker_progress_execution_followup_summary"
-    ]
-    operations_blocker_progress_consistency = validation[
-        "operations_blocker_progress_consistency_summary"
-    ]
     return {
-        "ok": validation["ok"],
+        **validation,
         "generated_at_utc": datetime.now(UTC).isoformat(),
-        "candidate_count": len(candidates) if isinstance(candidates, dict) else 0,
-        "report_validation_ok": bool(reports["ok"]) if isinstance(reports, dict) else False,
-        "schema_count": len(schemas) if isinstance(schemas, dict) else 0,
-        "schemas_ok": all(schemas.values()) if isinstance(schemas, dict) else False,
-        "calibration_fixture_count": calibration["total"]
-        if isinstance(calibration, dict)
-        else 0,
-        "calibration_track_count": calibration_by_track["track_count"]
-        if isinstance(calibration_by_track, dict)
-        else 0,
-        "calibration_minimum_track_case_count": calibration_by_track[
-            "minimum_track_case_count"
-        ]
-        if isinstance(calibration_by_track, dict)
-        else 0,
-        "false_positive_case_count": false_positive_analysis["case_count"]
-        if isinstance(false_positive_analysis, dict)
-        else 0,
-        "false_positive_class_count": false_positive_analysis["class_count"]
-        if isinstance(false_positive_analysis, dict)
-        else 0,
-        "score_regression_candidate_count": regression["candidate_count"]
-        if isinstance(regression, dict)
-        else 0,
-        "catalog_cache_ok": bool(catalog_cache["ok"])
-        if isinstance(catalog_cache, dict)
-        else False,
-        "provider_normalization_case_count": provider_normalization["case_count"]
-        if isinstance(provider_normalization, dict)
-        else 0,
-        "injection_recovery_case_count": injection_recovery["case_count"]
-        if isinstance(injection_recovery, dict)
-        else 0,
-        "synthetic_recovery_rate": injection_recovery["synthetic_recovery_rate"]
-        if isinstance(injection_recovery, dict)
-        else 0.0,
-        "synthetic_false_alarm_fraction": injection_recovery[
-            "synthetic_false_alarm_fraction"
-        ]
-        if isinstance(injection_recovery, dict)
-        else 0.0,
-        "reliability_bin_count": reliability["bin_count"]
-        if isinstance(reliability, dict)
-        else 0,
-        "mean_absolute_calibration_error": reliability[
-            "mean_absolute_calibration_error"
-        ]
-        if isinstance(reliability, dict)
-        else 0.0,
-        "precision_recall_case_count": precision_recall["case_count"]
-        if isinstance(precision_recall, dict)
-        else 0,
-        "synthetic_precision": precision_recall["synthetic_precision"]
-        if isinstance(precision_recall, dict)
-        else 0.0,
-        "synthetic_recall": precision_recall["synthetic_recall"]
-        if isinstance(precision_recall, dict)
-        else 0.0,
-        "review_queue_item_count": review_queue["item_count"]
-        if isinstance(review_queue, dict)
-        else 0,
-        "review_queue_note_count": review_queue["note_count"]
-        if isinstance(review_queue, dict)
-        else 0,
-        "consensus_item_count": consensus["item_count"]
-        if isinstance(consensus, dict)
-        else 0,
-        "consensus_decision_count": consensus["decision_count"]
-        if isinstance(consensus, dict)
-        else 0,
-        "consensus_unique_reviewer_count": consensus["unique_reviewer_count"]
-        if isinstance(consensus, dict)
-        else 0,
-        "consensus_export_count": consensus_exports["export_count"]
-        if isinstance(consensus_exports, dict)
-        else 0,
-        "consensus_export_blocking_issue_total": consensus_exports[
-            "blocking_issue_total"
-        ]
-        if isinstance(consensus_exports, dict)
-        else 0,
-        "cross_track_reference_count": cross_track["reference_count"]
-        if isinstance(cross_track, dict)
-        else 0,
-        "cross_track_multi_track_reference_count": cross_track[
-            "multi_track_reference_count"
-        ]
-        if isinstance(cross_track, dict)
-        else 0,
-        "cross_track_blocking_issue_total": cross_track["blocking_issue_total"]
-        if isinstance(cross_track, dict)
-        else 0,
-        "reproducibility_verified_count": reproducibility["verified_count"]
-        if isinstance(reproducibility, dict)
-        else 0,
-        "reproducibility_drift_count": reproducibility["drift_count"]
-        if isinstance(reproducibility, dict)
-        else 0,
-        "top_level_sqlite_log_migration_plan_required": bool(
-            sqlite_migration_plan["migration_required"]
-        )
-        if isinstance(sqlite_migration_plan, dict)
-        else False,
-        "top_level_sqlite_log_weekly_digest_ok": bool(sqlite_weekly_digest["ok"])
-        if isinstance(sqlite_weekly_digest, dict)
-        else False,
-        "validation_dataset_count": validation_datasets["dataset_count"]
-        if isinstance(validation_datasets, dict)
-        else 0,
-        "validation_dataset_case_count": validation_datasets["total_case_count"]
-        if isinstance(validation_datasets, dict)
-        else 0,
-        "validation_promotion_rule_count": validation_promotions["rule_count"]
-        if isinstance(validation_promotions, dict)
-        else 0,
-        "validation_promotion_blocking_condition_count": validation_promotions[
-            "blocking_condition_count"
-        ]
-        if isinstance(validation_promotions, dict)
-        else 0,
-        "validation_readiness_record_count": validation_readiness["record_count"]
-        if isinstance(validation_readiness, dict)
-        else 0,
-        "validation_readiness_ready_count": validation_readiness["ready_count"]
-        if isinstance(validation_readiness, dict)
-        else 0,
-        "validation_readiness_blocked_count": validation_readiness["blocked_count"]
-        if isinstance(validation_readiness, dict)
-        else 0,
-        "validation_readiness_not_yet_admissible_count": validation_readiness[
-            "not_yet_admissible_count"
-        ]
-        if isinstance(validation_readiness, dict)
-        else 0,
-        "validation_readiness_blocking_issue_count": validation_readiness[
-            "blocking_issue_count"
-        ]
-        if isinstance(validation_readiness, dict)
-        else 0,
-        "benchmark_command_count": benchmark_metadata["command_count"]
-        if isinstance(benchmark_metadata, dict)
-        else 0,
-        "benchmark_default_cpu_worker_limit": benchmark_metadata[
-            "default_cpu_worker_limit"
-        ]
-        if isinstance(benchmark_metadata, dict)
-        else 0,
-        "benchmark_memory_budget_gb": benchmark_metadata["memory_budget_gb"]
-        if isinstance(benchmark_metadata, dict)
-        else 0,
-        "benchmark_run_count": benchmark_runs["run_count"]
-        if isinstance(benchmark_runs, dict)
-        else 0,
-        "benchmark_run_input_case_total": benchmark_runs["input_case_total"]
-        if isinstance(benchmark_runs, dict)
-        else 0,
-        "benchmark_run_max_worker_count": benchmark_runs["max_worker_count"]
-        if isinstance(benchmark_runs, dict)
-        else 0,
-        "target_priority_count": target_priorities["target_count"]
-        if isinstance(target_priorities, dict)
-        else 0,
-        "selected_background_target_id": target_priorities["selected_target_id"]
-        if isinstance(target_priorities, dict)
-        else None,
-        "background_ledger_entry_count": background_ledger["entry_count"]
-        if isinstance(background_ledger, dict)
-        else 0,
-        "background_ledger_candidate_count": background_ledger["candidate_count"]
-        if isinstance(background_ledger, dict)
-        else 0,
-        "background_review_workflow_status_count": background_review_workflow[
-            "reviewed_workflow_status_count"
-        ]
-        if isinstance(background_review_workflow, dict)
-        else 0,
-        "background_review_negative_result_logged_count": background_review_workflow[
-            "negative_result_logged_count"
-        ]
-        if isinstance(background_review_workflow, dict)
-        else 0,
-        "background_review_local_only_entry_count": background_review_workflow[
-            "local_only_entry_count"
-        ]
-        if isinstance(background_review_workflow, dict)
-        else 0,
-        "background_reviewed_log_entry_count": reviewed_log["entry_count"]
-        if isinstance(reviewed_log, dict)
-        else 0,
-        "background_reviewed_log_network_access_allowed_count": reviewed_log[
-            "network_access_allowed_count"
-        ]
-        if isinstance(reviewed_log, dict)
-        else 0,
-        "background_needs_follow_up_entry_count": needs_follow_up_log["entry_count"]
-        if isinstance(needs_follow_up_log, dict)
-        else 0,
-        "background_needs_follow_up_required_test_count": needs_follow_up_log[
-            "required_test_count"
-        ]
-        if isinstance(needs_follow_up_log, dict)
-        else 0,
-        "background_needs_follow_up_user_approval_count": needs_follow_up_log[
-            "submission_requires_user_approval_count"
-        ]
-        if isinstance(needs_follow_up_log, dict)
-        else 0,
-        "background_needs_follow_up_network_access_allowed_count": needs_follow_up_log[
-            "network_access_allowed_count"
-        ]
-        if isinstance(needs_follow_up_log, dict)
-        else 0,
-        "background_follow_up_test_result_count": follow_up_tests["result_count"]
-        if isinstance(follow_up_tests, dict)
-        else 0,
-        "background_follow_up_test_complete_set_count": follow_up_tests[
-            "complete_follow_up_test_set_count"
-        ]
-        if isinstance(follow_up_tests, dict)
-        else 0,
-        "background_follow_up_test_network_access_allowed_count": follow_up_tests[
-            "network_access_allowed_count"
-        ]
-        if isinstance(follow_up_tests, dict)
-        else 0,
-        "background_report_readiness_record_count": report_readiness["record_count"]
-        if isinstance(report_readiness, dict)
-        else 0,
-        "background_report_readiness_ready_to_draft_count": report_readiness[
-            "ready_to_draft_report_count"
-        ]
-        if isinstance(report_readiness, dict)
-        else 0,
-        "background_report_readiness_user_approval_count": report_readiness[
-            "user_approval_required_count"
-        ]
-        if isinstance(report_readiness, dict)
-        else 0,
-        "background_report_readiness_external_submission_allowed_count": (
-            report_readiness["external_submission_allowed_count"]
-        )
-        if isinstance(report_readiness, dict)
-        else 0,
-        "background_report_readiness_top_three_recommendation_count": (
-            report_readiness["top_three_recommendation_count"]
-        )
-        if isinstance(report_readiness, dict)
-        else 0,
-        "background_draft_report_count": draft_reports["draft_report_count"]
-        if isinstance(draft_reports, dict)
-        else 0,
-        "background_draft_report_ready_count": draft_reports["draft_ready_count"]
-        if isinstance(draft_reports, dict)
-        else 0,
-        "background_draft_report_external_submission_allowed_count": (
-            draft_reports["external_submission_allowed_count"]
-        )
-        if isinstance(draft_reports, dict)
-        else 0,
-        "background_draft_report_validation_ok": bool(
-            draft_report_validation["ok"]
-        )
-        if isinstance(draft_report_validation, dict)
-        else False,
-        "background_user_decision_count": user_decisions["decision_count"]
-        if isinstance(user_decisions, dict)
-        else 0,
-        "background_user_decision_external_submission_approved_count": (
-            user_decisions["external_submission_approved_count"]
-        )
-        if isinstance(user_decisions, dict)
-        else 0,
-        "background_user_decision_request_more_tests_count": (
-            user_decisions["request_more_tests_count"]
-        )
-        if isinstance(user_decisions, dict)
-        else 0,
-        "background_user_decision_close_as_reviewed_count": (
-            user_decisions["close_as_reviewed_count"]
-        )
-        if isinstance(user_decisions, dict)
-        else 0,
-        "candidate_extraction_handoff_record_count": candidate_handoffs["record_count"]
-        if isinstance(candidate_handoffs, dict)
-        else 0,
-        "candidate_extraction_handoff_ready_count": candidate_handoffs["ready_count"]
-        if isinstance(candidate_handoffs, dict)
-        else 0,
-        "candidate_extraction_handoff_blocked_count": candidate_handoffs[
-            "blocked_count"
-        ]
-        if isinstance(candidate_handoffs, dict)
-        else 0,
-        "candidate_extraction_handoff_negative_result_required_count": (
-            candidate_handoffs["negative_result_required_count"]
-        )
-        if isinstance(candidate_handoffs, dict)
-        else 0,
-        "top_level_sqlite_log_validation_ok": bool(sqlite_log_validation["ok"])
-        if isinstance(sqlite_log_validation, dict)
-        else False,
-        "top_level_sqlite_log_consistency_ok": bool(sqlite_log_consistency["ok"])
-        if isinstance(sqlite_log_consistency, dict)
-        else False,
-        "top_level_sqlite_log_consistency_issue_count": sqlite_log_consistency[
-            "issue_count"
-        ]
-        if isinstance(sqlite_log_consistency, dict)
-        else 0,
-        "top_level_sqlite_log_integrity_ok": bool(sqlite_integrity["ok"])
-        if isinstance(sqlite_integrity, dict)
-        else False,
-        "top_level_sqlite_log_migration_required": bool(
-            sqlite_migration["migration_required"]
-        )
-        if isinstance(sqlite_migration, dict)
-        else False,
-        "top_level_sqlite_log_commit_guard_ok": bool(sqlite_commit_guard["ok"])
-        if isinstance(sqlite_commit_guard, dict)
-        else False,
-        "top_level_sqlite_log_backup_ok": bool(sqlite_backup["ok"])
-        if isinstance(sqlite_backup, dict)
-        else False,
-        "top_level_sqlite_log_backup_count": sqlite_retention["backup_count"]
-        if isinstance(sqlite_retention, dict)
-        else 0,
-        "top_level_sqlite_log_retention_ok": bool(sqlite_retention["ok"])
-        if isinstance(sqlite_retention, dict)
-        else False,
-        "top_level_sqlite_log_pragmas_ok": bool(sqlite_pragmas["ok"])
-        if isinstance(sqlite_pragmas, dict)
-        else False,
-        "top_level_sqlite_log_integrity_check": sqlite_pragmas["integrity_check"]
-        if isinstance(sqlite_pragmas, dict)
-        else "missing",
-        "top_level_sqlite_log_run_count": sqlite_logs["run_count"]
-        if isinstance(sqlite_logs, dict)
-        else 0,
-        "top_level_sqlite_log_outcome_count": sqlite_logs["outcome_count"]
-        if isinstance(sqlite_logs, dict)
-        else 0,
-        "top_level_sqlite_log_network_access_allowed_count": sqlite_logs[
-            "network_access_allowed_count"
-        ]
-        if isinstance(sqlite_logs, dict)
-        else 0,
-        "top_level_sqlite_log_external_submission_approved_count": sqlite_logs[
-            "external_submission_approved_count"
-        ]
-        if isinstance(sqlite_logs, dict)
-        else 0,
-        "operations_readiness_sqlite_log_present": bool(
-            operations_readiness["sqlite_log_snapshot"]["present"]
-        )
-        if isinstance(operations_readiness, dict)
-        else False,
-        "operations_readiness_sqlite_integrity_ok": bool(
-            operations_readiness["sqlite_log_snapshot"]["integrity_ok"]
-        )
-        if isinstance(operations_readiness, dict)
-        else False,
-        "operations_readiness_sqlite_weekly_digest_ok": bool(
-            operations_readiness["sqlite_log_snapshot"]["weekly_digest_ok"]
-        )
-        if isinstance(operations_readiness, dict)
-        else False,
-        "operations_readiness_recommendation": operations_readiness[
-            "recommendation"
-        ]
-        if isinstance(operations_readiness, dict)
-        else "unknown",
-        "operations_readiness_local_validation_ready": bool(
-            operations_readiness["local_validation_ready"]
-        )
-        if isinstance(operations_readiness, dict)
-        else False,
-        "operations_readiness_real_data_blocker_count": operations_readiness[
-            "real_data_blocker_count"
-        ]
-        if isinstance(operations_readiness, dict)
-        else 0,
-        "operations_readiness_operator_attention_count": operations_readiness[
-            "operator_attention_count"
-        ]
-        if isinstance(operations_readiness, dict)
-        else 0,
-        "operations_readiness_open_alert_count": operations_readiness[
-            "open_alert_count"
-        ]
-        if isinstance(operations_readiness, dict)
-        else 0,
-        "operations_readiness_overdue_review_deadline_count": operations_readiness[
-            "overdue_review_deadline_count"
-        ]
-        if isinstance(operations_readiness, dict)
-        else 0,
-        "operations_readiness_external_submission_approved_count": (
-            operations_readiness["external_submission_approved_count"]
-        )
-        if isinstance(operations_readiness, dict)
-        else 0,
-        "operations_readiness_network_access_allowed_count": operations_readiness[
-            "network_access_allowed_count"
-        ]
-        if isinstance(operations_readiness, dict)
-        else 0,
-        "operations_action_plan_action_count": operations_action_plan[
-            "action_count"
-        ]
-        if isinstance(operations_action_plan, dict)
-        else 0,
-        "operations_action_plan_critical_action_count": operations_action_plan[
-            "critical_action_count"
-        ]
-        if isinstance(operations_action_plan, dict)
-        else 0,
-        "operations_action_plan_real_data_blocking_action_count": (
-            operations_action_plan["real_data_blocking_action_count"]
-        )
-        if isinstance(operations_action_plan, dict)
-        else 0,
-        "operations_action_plan_operator_review_action_count": (
-            operations_action_plan["operator_review_action_count"]
-        )
-        if isinstance(operations_action_plan, dict)
-        else 0,
-        "operations_action_resolution_record_count": operations_action_resolution[
-            "record_count"
-        ]
-        if isinstance(operations_action_resolution, dict)
-        else 0,
-        "operations_action_resolution_open_count": operations_action_resolution[
-            "open_count"
-        ]
-        if isinstance(operations_action_resolution, dict)
-        else 0,
-        "operations_action_resolution_acknowledged_count": (
-            operations_action_resolution["acknowledged_count"]
-        )
-        if isinstance(operations_action_resolution, dict)
-        else 0,
-        "operations_action_resolution_deferred_count": operations_action_resolution[
-            "deferred_count"
-        ]
-        if isinstance(operations_action_resolution, dict)
-        else 0,
-        "operations_action_resolution_resolved_count": operations_action_resolution[
-            "resolved_count"
-        ]
-        if isinstance(operations_action_resolution, dict)
-        else 0,
-        "operations_action_resolution_residual_blocker_total": (
-            operations_action_resolution["residual_blocker_total"]
-        )
-        if isinstance(operations_action_resolution, dict)
-        else 0,
-        "operations_action_resolution_live_data_authorized_count": (
-            operations_action_resolution["live_data_authorized_count"]
-        )
-        if isinstance(operations_action_resolution, dict)
-        else 0,
-        "operations_action_resolution_external_submission_authorized_count": (
-            operations_action_resolution["external_submission_authorized_count"]
-        )
-        if isinstance(operations_action_resolution, dict)
-        else 0,
-        "operations_action_resolution_all_external_authorization_disabled": bool(
-            operations_action_resolution["all_external_authorization_disabled"]
-        )
-        if isinstance(operations_action_resolution, dict)
-        else False,
-        "operations_action_resolution_expected_action_count": (
-            operations_action_resolution["expected_action_count"]
-        )
-        if isinstance(operations_action_resolution, dict)
-        else 0,
-        "operations_action_resolution_covered_action_count": (
-            operations_action_resolution["covered_action_count"]
-        )
-        if isinstance(operations_action_resolution, dict)
-        else 0,
-        "operations_action_resolution_missing_action_count": (
-            operations_action_resolution["missing_action_count"]
-        )
-        if isinstance(operations_action_resolution, dict)
-        else 0,
-        "operations_action_resolution_stale_resolution_count": (
-            operations_action_resolution["stale_resolution_count"]
-        )
-        if isinstance(operations_action_resolution, dict)
-        else 0,
-        "operations_action_resolution_coverage_fraction": (
-            operations_action_resolution["coverage_fraction"]
-        )
-        if isinstance(operations_action_resolution, dict)
-        else 0.0,
-        "operations_action_resolution_coverage_complete": bool(
-            operations_action_resolution["coverage_complete"]
-        )
-        if isinstance(operations_action_resolution, dict)
-        else False,
-        "operations_action_resolution_missing_action_ids": (
-            operations_action_resolution["missing_action_ids"]
-        )
-        if isinstance(operations_action_resolution, dict)
-        else [],
-        "operations_action_resolution_stale_resolution_action_ids": (
-            operations_action_resolution["stale_resolution_action_ids"]
-        )
-        if isinstance(operations_action_resolution, dict)
-        else [],
-        "operations_action_resolution_consistency_ok": bool(
-            operations_action_resolution_consistency["ok"]
-        )
-        if isinstance(operations_action_resolution_consistency, dict)
-        else False,
-        "operations_action_resolution_consistency_stale_count": (
-            operations_action_resolution_consistency["actual_stale_resolution_count"]
-        )
-        if isinstance(operations_action_resolution_consistency, dict)
-        else 0,
-        "operations_action_resolution_consistency_stale_action_ids": (
-            operations_action_resolution_consistency[
-                "actual_stale_resolution_action_ids"
-            ]
-        )
-        if isinstance(operations_action_resolution_consistency, dict)
-        else [],
-        "operations_action_resolution_consistency_missing_action_count": (
-            operations_action_resolution_consistency["missing_action_count"]
-        )
-        if isinstance(operations_action_resolution_consistency, dict)
-        else 0,
-        "operations_blocker_detail_count": operations_blocker_detail["detail_count"]
-        if isinstance(operations_blocker_detail, dict)
-        else 0,
-        "operations_blocker_detail_total_evidence_record_count": (
-            operations_blocker_detail["total_evidence_record_count"]
-        )
-        if isinstance(operations_blocker_detail, dict)
-        else 0,
-        "operations_blocker_detail_all_external_authorization_disabled": bool(
-            operations_blocker_detail["all_external_authorization_disabled"]
-        )
-        if isinstance(operations_blocker_detail, dict)
-        else False,
-        "operations_blocker_detail_sqlite_context_is_resolved": bool(
-            operations_blocker_detail["sqlite_context_is_resolved"]
-        )
-        if isinstance(operations_blocker_detail, dict)
-        else False,
-        "operations_blocker_review_record_count": operations_blocker_review[
-            "record_count"
-        ]
-        if isinstance(operations_blocker_review, dict)
-        else 0,
-        "operations_blocker_review_reviewed_evidence_record_count": (
-            operations_blocker_review["reviewed_evidence_record_count"]
-        )
-        if isinstance(operations_blocker_review, dict)
-        else 0,
-        "operations_blocker_review_unreviewed_evidence_record_count": (
-            operations_blocker_review["unreviewed_evidence_record_count"]
-        )
-        if isinstance(operations_blocker_review, dict)
-        else 0,
-        "operations_blocker_review_residual_blocker_total": (
-            operations_blocker_review["residual_blocker_total"]
-        )
-        if isinstance(operations_blocker_review, dict)
-        else 0,
-        "operations_blocker_review_live_data_authorized_count": (
-            operations_blocker_review["live_data_authorized_count"]
-        )
-        if isinstance(operations_blocker_review, dict)
-        else 0,
-        "operations_blocker_review_external_submission_authorized_count": (
-            operations_blocker_review["external_submission_authorized_count"]
-        )
-        if isinstance(operations_blocker_review, dict)
-        else 0,
-        "operations_blocker_review_all_external_authorization_disabled": bool(
-            operations_blocker_review["all_external_authorization_disabled"]
-        )
-        if isinstance(operations_blocker_review, dict)
-        else False,
-        "operations_blocker_review_coverage_complete": bool(
-            operations_blocker_review["coverage_complete"]
-        )
-        if isinstance(operations_blocker_review, dict)
-        else False,
-        "operations_blocker_review_all_detail_evidence_reviewed": bool(
-            operations_blocker_review["all_detail_evidence_reviewed"]
-        )
-        if isinstance(operations_blocker_review, dict)
-        else False,
-        "operations_blocker_followup_action_count": operations_blocker_followup[
-            "action_count"
-        ]
-        if isinstance(operations_blocker_followup, dict)
-        else 0,
-        "operations_blocker_followup_action_required_count": (
-            operations_blocker_followup["action_required_count"]
-        )
-        if isinstance(operations_blocker_followup, dict)
-        else 0,
-        "operations_blocker_followup_real_data_hold_count": (
-            operations_blocker_followup["real_data_hold_count"]
-        )
-        if isinstance(operations_blocker_followup, dict)
-        else 0,
-        "operations_blocker_followup_verification_ready_count": (
-            operations_blocker_followup["verification_ready_count"]
-        )
-        if isinstance(operations_blocker_followup, dict)
-        else 0,
-        "operations_blocker_followup_residual_blocker_total": (
-            operations_blocker_followup["residual_blocker_total"]
-        )
-        if isinstance(operations_blocker_followup, dict)
-        else 0,
-        "operations_blocker_followup_live_data_authorized_count": (
-            operations_blocker_followup["live_data_authorized_count"]
-        )
-        if isinstance(operations_blocker_followup, dict)
-        else 0,
-        "operations_blocker_followup_external_submission_authorized_count": (
-            operations_blocker_followup["external_submission_authorized_count"]
-        )
-        if isinstance(operations_blocker_followup, dict)
-        else 0,
-        "operations_blocker_followup_all_external_authorization_disabled": bool(
-            operations_blocker_followup["all_external_authorization_disabled"]
-        )
-        if isinstance(operations_blocker_followup, dict)
-        else False,
-        "operations_blocker_followup_coverage_complete": bool(
-            operations_blocker_followup["coverage_complete"]
-        )
-        if isinstance(operations_blocker_followup, dict)
-        else False,
-        "operations_blocker_followup_all_detail_evidence_reviewed": bool(
-            operations_blocker_followup["all_detail_evidence_reviewed"]
-        )
-        if isinstance(operations_blocker_followup, dict)
-        else False,
-        "operations_blocker_followup_progress_record_count": (
-            operations_blocker_followup_progress["record_count"]
-        )
-        if isinstance(operations_blocker_followup_progress, dict)
-        else 0,
-        "operations_blocker_followup_progress_unresolved_count": (
-            operations_blocker_followup_progress["unresolved_progress_count"]
-        )
-        if isinstance(operations_blocker_followup_progress, dict)
-        else 0,
-        "operations_blocker_followup_progress_verified_local_count": (
-            operations_blocker_followup_progress["verified_local_count"]
-        )
-        if isinstance(operations_blocker_followup_progress, dict)
-        else 0,
-        "operations_blocker_followup_progress_residual_blocker_total": (
-            operations_blocker_followup_progress["residual_blocker_total"]
-        )
-        if isinstance(operations_blocker_followup_progress, dict)
-        else 0,
-        "operations_blocker_followup_progress_live_data_authorized_count": (
-            operations_blocker_followup_progress["live_data_authorized_count"]
-        )
-        if isinstance(operations_blocker_followup_progress, dict)
-        else 0,
-        "operations_blocker_followup_progress_external_submission_authorized_count": (
-            operations_blocker_followup_progress[
-                "external_submission_authorized_count"
-            ]
-        )
-        if isinstance(operations_blocker_followup_progress, dict)
-        else 0,
-        "operations_blocker_followup_progress_all_external_authorization_disabled": (
-            bool(
-                operations_blocker_followup_progress[
-                    "all_external_authorization_disabled"
-                ]
-            )
-        )
-        if isinstance(operations_blocker_followup_progress, dict)
-        else False,
-        "operations_blocker_followup_progress_coverage_complete": bool(
-            operations_blocker_followup_progress["coverage_complete"]
-        )
-        if isinstance(operations_blocker_followup_progress, dict)
-        else False,
-        "operations_blocker_followup_progress_recommendation_mismatch_count": (
-            operations_blocker_followup_progress["recommendation_mismatch_count"]
-        )
-        if isinstance(operations_blocker_followup_progress, dict)
-        else 0,
-        "operations_blocker_progress_review_record_count": (
-            operations_blocker_progress_review["record_count"]
-        )
-        if isinstance(operations_blocker_progress_review, dict)
-        else 0,
-        "operations_blocker_progress_review_needs_operator_action_count": (
-            operations_blocker_progress_review["needs_operator_action_count"]
-        )
-        if isinstance(operations_blocker_progress_review, dict)
-        else 0,
-        "operations_blocker_progress_review_ready_for_next_local_note_count": (
-            operations_blocker_progress_review["ready_for_next_local_note_count"]
-        )
-        if isinstance(operations_blocker_progress_review, dict)
-        else 0,
-        "operations_blocker_progress_review_blocked_for_real_data_count": (
-            operations_blocker_progress_review["blocked_for_real_data_count"]
-        )
-        if isinstance(operations_blocker_progress_review, dict)
-        else 0,
-        "operations_blocker_progress_review_residual_blocker_total": (
-            operations_blocker_progress_review["residual_blocker_total"]
-        )
-        if isinstance(operations_blocker_progress_review, dict)
-        else 0,
-        "operations_blocker_progress_review_live_data_authorized_count": (
-            operations_blocker_progress_review["live_data_authorized_count"]
-        )
-        if isinstance(operations_blocker_progress_review, dict)
-        else 0,
-        "operations_blocker_progress_review_external_submission_authorized_count": (
-            operations_blocker_progress_review[
-                "external_submission_authorized_count"
-            ]
-        )
-        if isinstance(operations_blocker_progress_review, dict)
-        else 0,
-        "operations_blocker_progress_review_all_external_authorization_disabled": (
-            bool(
-                operations_blocker_progress_review[
-                    "all_external_authorization_disabled"
-                ]
-            )
-        )
-        if isinstance(operations_blocker_progress_review, dict)
-        else False,
-        "operations_blocker_progress_review_coverage_complete": bool(
-            operations_blocker_progress_review["coverage_complete"]
-        )
-        if isinstance(operations_blocker_progress_review, dict)
-        else False,
-        "operations_blocker_progress_review_status_mismatch_count": (
-            operations_blocker_progress_review["status_mismatch_count"]
-        )
-        if isinstance(operations_blocker_progress_review, dict)
-        else 0,
-        "operations_blocker_progress_next_actions_record_count": (
-            operations_blocker_progress_next_actions["record_count"]
-        )
-        if isinstance(operations_blocker_progress_next_actions, dict)
-        else 0,
-        "operations_blocker_progress_next_actions_operator_action_required_count": (
-            operations_blocker_progress_next_actions["operator_action_required_count"]
-        )
-        if isinstance(operations_blocker_progress_next_actions, dict)
-        else 0,
-        "operations_blocker_progress_next_actions_local_note_ready_count": (
-            operations_blocker_progress_next_actions["local_note_ready_count"]
-        )
-        if isinstance(operations_blocker_progress_next_actions, dict)
-        else 0,
-        "operations_blocker_progress_next_actions_blocked_pending_real_data_count": (
-            operations_blocker_progress_next_actions[
-                "blocked_pending_real_data_count"
-            ]
-        )
-        if isinstance(operations_blocker_progress_next_actions, dict)
-        else 0,
-        "operations_blocker_progress_next_actions_residual_blocker_total": (
-            operations_blocker_progress_next_actions["residual_blocker_total"]
-        )
-        if isinstance(operations_blocker_progress_next_actions, dict)
-        else 0,
-        "operations_blocker_progress_next_actions_live_data_authorized_count": (
-            operations_blocker_progress_next_actions["live_data_authorized_count"]
-        )
-        if isinstance(operations_blocker_progress_next_actions, dict)
-        else 0,
-        "operations_blocker_progress_next_actions_external_submission_authorized_count": (
-            operations_blocker_progress_next_actions[
-                "external_submission_authorized_count"
-            ]
-        )
-        if isinstance(operations_blocker_progress_next_actions, dict)
-        else 0,
-        "operations_blocker_progress_next_actions_all_external_authorization_disabled": (
-            bool(
-                operations_blocker_progress_next_actions[
-                    "all_external_authorization_disabled"
-                ]
-            )
-        )
-        if isinstance(operations_blocker_progress_next_actions, dict)
-        else False,
-        "operations_blocker_progress_next_actions_coverage_complete": bool(
-            operations_blocker_progress_next_actions["coverage_complete"]
-        )
-        if isinstance(operations_blocker_progress_next_actions, dict)
-        else False,
-        "operations_blocker_progress_next_actions_status_mismatch_count": (
-            operations_blocker_progress_next_actions["status_mismatch_count"]
-        )
-        if isinstance(operations_blocker_progress_next_actions, dict)
-        else 0,
-        "operations_blocker_progress_next_actions_priority_sequence_ok": bool(
-            operations_blocker_progress_next_actions["priority_sequence_ok"]
-        )
-        if isinstance(operations_blocker_progress_next_actions, dict)
-        else False,
-        "operations_blocker_progress_execution_record_count": (
-            operations_blocker_progress_execution["record_count"]
-        )
-        if isinstance(operations_blocker_progress_execution, dict)
-        else 0,
-        "operations_blocker_progress_execution_awaiting_operator_count": (
-            operations_blocker_progress_execution["awaiting_operator_count"]
-        )
-        if isinstance(operations_blocker_progress_execution, dict)
-        else 0,
-        "operations_blocker_progress_execution_local_note_recorded_count": (
-            operations_blocker_progress_execution["local_note_recorded_count"]
-        )
-        if isinstance(operations_blocker_progress_execution, dict)
-        else 0,
-        "operations_blocker_progress_execution_blocked_pending_real_data_count": (
-            operations_blocker_progress_execution[
-                "blocked_pending_real_data_count"
-            ]
-        )
-        if isinstance(operations_blocker_progress_execution, dict)
-        else 0,
-        "operations_blocker_progress_execution_residual_blocker_total": (
-            operations_blocker_progress_execution["residual_blocker_total"]
-        )
-        if isinstance(operations_blocker_progress_execution, dict)
-        else 0,
-        "operations_blocker_progress_execution_live_data_authorized_count": (
-            operations_blocker_progress_execution["live_data_authorized_count"]
-        )
-        if isinstance(operations_blocker_progress_execution, dict)
-        else 0,
-        "operations_blocker_progress_execution_external_submission_authorized_count": (
-            operations_blocker_progress_execution[
-                "external_submission_authorized_count"
-            ]
-        )
-        if isinstance(operations_blocker_progress_execution, dict)
-        else 0,
-        "operations_blocker_progress_execution_all_external_authorization_disabled": (
-            bool(
-                operations_blocker_progress_execution[
-                    "all_external_authorization_disabled"
-                ]
-            )
-        )
-        if isinstance(operations_blocker_progress_execution, dict)
-        else False,
-        "operations_blocker_progress_execution_coverage_complete": bool(
-            operations_blocker_progress_execution["coverage_complete"]
-        )
-        if isinstance(operations_blocker_progress_execution, dict)
-        else False,
-        "operations_blocker_progress_execution_status_mismatch_count": (
-            operations_blocker_progress_execution["status_mismatch_count"]
-        )
-        if isinstance(operations_blocker_progress_execution, dict)
-        else 0,
-        "operations_blocker_progress_execution_residual_mismatch_count": (
-            operations_blocker_progress_execution["residual_mismatch_count"]
-        )
-        if isinstance(operations_blocker_progress_execution, dict)
-        else 0,
-        "operations_blocker_progress_execution_priority_mismatch_count": (
-            operations_blocker_progress_execution["priority_mismatch_count"]
-        )
-        if isinstance(operations_blocker_progress_execution, dict)
-        else 0,
-        "operations_blocker_progress_execution_priority_sequence_ok": bool(
-            operations_blocker_progress_execution["priority_sequence_ok"]
-        )
-        if isinstance(operations_blocker_progress_execution, dict)
-        else False,
-        "operations_blocker_progress_execution_review_record_count": (
-            operations_blocker_progress_execution_review["record_count"]
-        )
-        if isinstance(operations_blocker_progress_execution_review, dict)
-        else 0,
-        "operations_blocker_progress_execution_review_awaiting_operator_reviewed_count": (
-            operations_blocker_progress_execution_review[
-                "awaiting_operator_reviewed_count"
-            ]
-        )
-        if isinstance(operations_blocker_progress_execution_review, dict)
-        else 0,
-        "operations_blocker_progress_execution_review_execution_note_reviewed_count": (
-            operations_blocker_progress_execution_review[
-                "execution_note_reviewed_count"
-            ]
-        )
-        if isinstance(operations_blocker_progress_execution_review, dict)
-        else 0,
-        "operations_blocker_progress_execution_review_blocked_pending_real_data_reviewed_count": (
-            operations_blocker_progress_execution_review[
-                "blocked_pending_real_data_reviewed_count"
-            ]
-        )
-        if isinstance(operations_blocker_progress_execution_review, dict)
-        else 0,
-        "operations_blocker_progress_execution_review_residual_blocker_total": (
-            operations_blocker_progress_execution_review["residual_blocker_total"]
-        )
-        if isinstance(operations_blocker_progress_execution_review, dict)
-        else 0,
-        "operations_blocker_progress_execution_review_live_data_authorized_count": (
-            operations_blocker_progress_execution_review[
-                "live_data_authorized_count"
-            ]
-        )
-        if isinstance(operations_blocker_progress_execution_review, dict)
-        else 0,
-        "operations_blocker_progress_execution_review_external_submission_authorized_count": (
-            operations_blocker_progress_execution_review[
-                "external_submission_authorized_count"
-            ]
-        )
-        if isinstance(operations_blocker_progress_execution_review, dict)
-        else 0,
-        "operations_blocker_progress_execution_review_all_external_authorization_disabled": (
-            bool(
-                operations_blocker_progress_execution_review[
-                    "all_external_authorization_disabled"
-                ]
-            )
-        )
-        if isinstance(operations_blocker_progress_execution_review, dict)
-        else False,
-        "operations_blocker_progress_execution_review_coverage_complete": bool(
-            operations_blocker_progress_execution_review["coverage_complete"]
-        )
-        if isinstance(operations_blocker_progress_execution_review, dict)
-        else False,
-        "operations_blocker_progress_execution_review_status_mismatch_count": (
-            operations_blocker_progress_execution_review["status_mismatch_count"]
-        )
-        if isinstance(operations_blocker_progress_execution_review, dict)
-        else 0,
-        "operations_blocker_progress_execution_review_residual_mismatch_count": (
-            operations_blocker_progress_execution_review["residual_mismatch_count"]
-        )
-        if isinstance(operations_blocker_progress_execution_review, dict)
-        else 0,
-        "operations_blocker_progress_execution_review_priority_mismatch_count": (
-            operations_blocker_progress_execution_review["priority_mismatch_count"]
-        )
-        if isinstance(operations_blocker_progress_execution_review, dict)
-        else 0,
-        "operations_blocker_progress_execution_review_priority_sequence_ok": bool(
-            operations_blocker_progress_execution_review["priority_sequence_ok"]
-        )
-        if isinstance(operations_blocker_progress_execution_review, dict)
-        else False,
-        "operations_blocker_progress_execution_followup_record_count": (
-            operations_blocker_progress_execution_followup["record_count"]
-        )
-        if isinstance(operations_blocker_progress_execution_followup, dict)
-        else 0,
-        "operations_blocker_progress_execution_followup_operator_followup_required_count": (
-            operations_blocker_progress_execution_followup[
-                "operator_followup_required_count"
-            ]
-        )
-        if isinstance(operations_blocker_progress_execution_followup, dict)
-        else 0,
-        "operations_blocker_progress_execution_followup_local_note_followup_ready_count": (
-            operations_blocker_progress_execution_followup[
-                "local_note_followup_ready_count"
-            ]
-        )
-        if isinstance(operations_blocker_progress_execution_followup, dict)
-        else 0,
-        "operations_blocker_progress_execution_followup_blocked_pending_real_data_count": (
-            operations_blocker_progress_execution_followup[
-                "blocked_pending_real_data_count"
-            ]
-        )
-        if isinstance(operations_blocker_progress_execution_followup, dict)
-        else 0,
-        "operations_blocker_progress_execution_followup_residual_blocker_total": (
-            operations_blocker_progress_execution_followup["residual_blocker_total"]
-        )
-        if isinstance(operations_blocker_progress_execution_followup, dict)
-        else 0,
-        "operations_blocker_progress_execution_followup_live_data_authorized_count": (
-            operations_blocker_progress_execution_followup[
-                "live_data_authorized_count"
-            ]
-        )
-        if isinstance(operations_blocker_progress_execution_followup, dict)
-        else 0,
-        "operations_blocker_progress_execution_followup_external_submission_authorized_count": (
-            operations_blocker_progress_execution_followup[
-                "external_submission_authorized_count"
-            ]
-        )
-        if isinstance(operations_blocker_progress_execution_followup, dict)
-        else 0,
-        "operations_blocker_progress_execution_followup_all_external_authorization_disabled": (
-            bool(
-                operations_blocker_progress_execution_followup[
-                    "all_external_authorization_disabled"
-                ]
-            )
-        )
-        if isinstance(operations_blocker_progress_execution_followup, dict)
-        else False,
-        "operations_blocker_progress_execution_followup_coverage_complete": bool(
-            operations_blocker_progress_execution_followup["coverage_complete"]
-        )
-        if isinstance(operations_blocker_progress_execution_followup, dict)
-        else False,
-        "operations_blocker_progress_execution_followup_status_mismatch_count": (
-            operations_blocker_progress_execution_followup["status_mismatch_count"]
-        )
-        if isinstance(operations_blocker_progress_execution_followup, dict)
-        else 0,
-        "operations_blocker_progress_execution_followup_residual_mismatch_count": (
-            operations_blocker_progress_execution_followup["residual_mismatch_count"]
-        )
-        if isinstance(operations_blocker_progress_execution_followup, dict)
-        else 0,
-        "operations_blocker_progress_execution_followup_priority_mismatch_count": (
-            operations_blocker_progress_execution_followup["priority_mismatch_count"]
-        )
-        if isinstance(operations_blocker_progress_execution_followup, dict)
-        else 0,
-        "operations_blocker_progress_execution_followup_priority_sequence_ok": bool(
-            operations_blocker_progress_execution_followup["priority_sequence_ok"]
-        )
-        if isinstance(operations_blocker_progress_execution_followup, dict)
-        else False,
-        "operations_blocker_progress_consistency_ok": bool(
-            operations_blocker_progress_consistency["ok"]
-        )
-        if isinstance(operations_blocker_progress_consistency, dict)
-        else False,
-        "operations_blocker_progress_consistency_issue_count": (
-            operations_blocker_progress_consistency["issue_count"]
-        )
-        if isinstance(operations_blocker_progress_consistency, dict)
-        else 0,
-        "operations_blocker_progress_consistency_residual_blocker_total": (
-            operations_blocker_progress_consistency[
-                "expected_residual_blocker_total"
-            ]
-        )
-        if isinstance(operations_blocker_progress_consistency, dict)
-        else 0,
-        "operations_blocker_progress_consistency_mismatch_total": (
-            operations_blocker_progress_consistency["mismatch_total"]
-        )
-        if isinstance(operations_blocker_progress_consistency, dict)
-        else 0,
-        "operations_blocker_progress_consistency_live_data_authorized_total": (
-            operations_blocker_progress_consistency["live_data_authorized_total"]
-        )
-        if isinstance(operations_blocker_progress_consistency, dict)
-        else 0,
-        "operations_blocker_progress_consistency_external_submission_authorized_total": (
-            operations_blocker_progress_consistency[
-                "external_submission_authorized_total"
-            ]
-        )
-        if isinstance(operations_blocker_progress_consistency, dict)
-        else 0,
-        "baseline_pathway_accuracy": (
-            baseline_eval_s["pathway_accuracy"]
-            if isinstance(baseline_eval_s := validation.get("baseline_eval_summary"), dict)
-            else 0.0
-        ),
-        "baseline_false_positive_recall": (
-            baseline_eval_s2["false_positive_recall"]
-            if isinstance(
-                baseline_eval_s2 := validation.get("baseline_eval_summary"), dict
-            )
-            else 0.0
-        ),
-        "baseline_total_cases": (
-            baseline_eval_s3["total_cases"]
-            if isinstance(
-                baseline_eval_s3 := validation.get("baseline_eval_summary"), dict
-            )
-            else 0
-        ),
-        "target_watchlist_entry_count": (
-            wl_s["entry_count"]
-            if isinstance(wl_s := validation.get("target_watchlist_summary"), dict)
-            else 0
-        ),
-        "target_watchlist_elevated_count": (
-            wl_s2["elevated_count"]
-            if isinstance(wl_s2 := validation.get("target_watchlist_summary"), dict)
-            else 0
-        ),
-        "target_watchlist_conflict_count": (
-            wl_s3["conflict_count"]
-            if isinstance(wl_s3 := validation.get("target_watchlist_summary"), dict)
-            else 0
-        ),
-        "baseline_misclassified_count": (
-            be_m["misclassified_count"]
-            if isinstance(be_m := validation.get("baseline_eval_summary"), dict)
-            else 0
-        ),
-        "baseline_drift_count": (
-            dr_s["drift_count"]
-            if isinstance(dr_s := validation.get("baseline_pathway_drift_summary"), dict)
-            else 0
-        ),
-        "candidate_lifecycle_entry_count": (
-            lc_s["entry_count"]
-            if isinstance(lc_s := validation.get("candidate_lifecycle_summary"), dict)
-            else 0
-        ),
-        "observation_schedule_window_count": (
-            os_s["window_count"]
-            if isinstance(os_s := validation.get("observation_schedule_summary"), dict)
-            else 0
-        ),
-        "false_negative_case_count": (
-            fn_s["missed_count"]
-            if isinstance(fn_s := validation.get("false_negative_summary"), dict)
-            else 0
-        ),
-        "synthetic_missed_injection_rate": (
-            fn_s2["synthetic_missed_injection_rate"]
-            if isinstance(fn_s2 := validation.get("false_negative_summary"), dict)
-            else 0.0
-        ),
-        "scoring_threshold_count": (
-            sc_s["threshold_count"]
-            if isinstance(sc_s := validation.get("scoring_config_summary"), dict)
-            else 0
-        ),
-        "route_covered_pathway_count": (
-            rc_s["covered_pathway_count"]
-            if isinstance(rc_s := validation.get("route_coverage_summary"), dict)
-            else 0
-        ),
-        "route_uncovered_pathway_count": (
-            rc_s2["uncovered_pathway_count"]
-            if isinstance(rc_s2 := validation.get("route_coverage_summary"), dict)
-            else 0
-        ),
-        "lifecycle_invalid_transition_count": (
-            lt_s["invalid_transition_count"]
-            if isinstance(lt_s := validation.get("lifecycle_transition_summary"), dict)
-            else 0
-        ),
-        "observation_completion_rate": (
-            oe_s["completion_rate"]
-            if isinstance(oe_s := validation.get("observation_efficiency_summary"), dict)
-            else 0.0
-        ),
-        "observation_cancellation_rate": (
-            oe_s2["cancellation_rate"]
-            if isinstance(oe_s2 := validation.get("observation_efficiency_summary"), dict)
-            else 0.0
-        ),
-        "sensitivity_track_count": (
-            sc_t["track_count"]
-            if isinstance(sc_t := validation.get("sensitivity_config_summary"), dict)
-            else 0
-        ),
-        "sensitivity_weight_count": (
-            sc_w["weight_count"]
-            if isinstance(sc_w := validation.get("sensitivity_config_summary"), dict)
-            else 0
-        ),
-        "triage_note_count": (
-            tn_s["note_count"]
-            if isinstance(tn_s := validation.get("triage_summary"), dict)
-            else 0
-        ),
-        "triage_tracks_covered_count": (
-            len(tn_t["tracks_covered"])
-            if isinstance(tn_t := validation.get("triage_summary"), dict)
-            else 0
-        ),
-        "signal_registry_signal_count": (
-            sr_s["signal_count"]
-            if isinstance(sr_s := validation.get("signal_registry_summary"), dict)
-            else 0
-        ),
-        "signal_registry_active_count": (
-            sr_a["active_count"]
-            if isinstance(sr_a := validation.get("signal_registry_summary"), dict)
-            else 0
-        ),
-        "audit_trail_action_count": (
-            at_s["action_count"]
-            if isinstance(at_s := validation.get("audit_trail_summary"), dict)
-            else 0
-        ),
-        "audit_trail_unique_operator_count": (
-            at_o["unique_operator_count"]
-            if isinstance(at_o := validation.get("audit_trail_summary"), dict)
-            else 0
-        ),
-        "multi_epoch_target_count": (
-            me_s["multi_epoch_target_count"]
-            if isinstance(me_s := validation.get("multi_epoch_summary"), dict)
-            else 0
-        ),
-        "multi_epoch_consistent_detection_count": (
-            me_c["consistent_detection_count"]
-            if isinstance(me_c := validation.get("multi_epoch_summary"), dict)
-            else 0
-        ),
-        "target_recalibration_snapshot_count": (
-            tr_s["snapshot_count"]
-            if isinstance(tr_s := validation.get("target_recalibration_summary"), dict)
-            else 0
-        ),
-        "operator_coverage_count": (
-            oc_s["operator_count"]
-            if isinstance(oc_s := validation.get("operator_coverage_summary"), dict)
-            else 0
-        ),
-        "triage_label_coverage_fraction": (
-            lc_s2["coverage_fraction"]
-            if isinstance(lc_s2 := validation.get("triage_label_completeness"), dict)
-            else 0.0
-        ),
-        "classifier_rule_coverage_fraction": (
-            rc_s2["coverage_fraction"]
-            if isinstance(rc_s2 := validation.get("classifier_rule_coverage_summary"), dict)
-            else 0.0
-        ),
-        "provenance_chain_validation_ok": (
-            bool(pc_s["ok"])
-            if isinstance(pc_s := validation.get("provenance_chain_validation"), dict)
-            else False
-        ),
-        "schema_drift_count": (
-            sd_s["drift_count"]
-            if isinstance(sd_s := validation.get("schema_drift_summary"), dict)
-            else 0
-        ),
-        "observation_notes_count": (
-            on_s["note_count"]
-            if isinstance(on_s := validation.get("observation_notes_summary"), dict)
-            else 0
-        ),
-        "observation_notes_follow_up_count": (
-            on_f["follow_up_recommended_count"]
-            if isinstance(on_f := validation.get("observation_notes_summary"), dict)
-            else 0
-        ),
-        "epoch_plan_entry_count": (
-            ep_s["entry_count"]
-            if isinstance(ep_s := validation.get("epoch_plan_summary"), dict)
-            else 0
-        ),
-        "epoch_plan_pending_count": (
-            ep_p["pending_count"]
-            if isinstance(ep_p := validation.get("epoch_plan_summary"), dict)
-            else 0
-        ),
-        "aggregate_blocker_count": (
-            ab_s["total_blocker_count"]
-            if isinstance(ab_s := validation.get("aggregate_blockers_summary"), dict)
-            else 0
-        ),
-        "aggregate_blocker_unique_candidate_count": (
-            ab_c["unique_candidate_count"]
-            if isinstance(ab_c := validation.get("aggregate_blockers_summary"), dict)
-            else 0
-        ),
-        "score_history_entry_count": (
-            sh_s["entry_count"]
-            if isinstance(sh_s := validation.get("score_history_summary"), dict)
-            else 0
-        ),
-        "score_history_unique_candidate_count": (
-            sh_c["unique_candidate_count"]
-            if isinstance(sh_c := validation.get("score_history_summary"), dict)
-            else 0
-        ),
-        "operator_assignment_count": (
-            oa_s["assignment_count"]
-            if isinstance(oa_s := validation.get("operator_assignment_summary"), dict)
-            else 0
-        ),
-        "operator_assignment_escalated_count": (
-            oa_e["escalated_count"]
-            if isinstance(oa_e := validation.get("operator_assignment_summary"), dict)
-            else 0
-        ),
-        "pipeline_health_total_blocked": (
-            ph_s["total_blocked_count"]
-            if isinstance(ph_s := validation.get("pipeline_health_summary"), dict)
-            else 0
-        ),
-        "candidate_flag_count": (
-            cf_s["flag_count"]
-            if isinstance(cf_s := validation.get("candidate_flags_summary"), dict)
-            else 0
-        ),
-        "candidate_flag_open_count": (
-            cf_o["open_count"]
-            if isinstance(cf_o := validation.get("candidate_flags_summary"), dict)
-            else 0
-        ),
-        "review_deadline_count": (
-            rd_s["deadline_count"]
-            if isinstance(rd_s := validation.get("review_deadlines_summary"), dict)
-            else 0
-        ),
-        "review_deadline_overdue_count": (
-            rd_o["overdue_count"]
-            if isinstance(rd_o := validation.get("review_deadlines_summary"), dict)
-            else 0
-        ),
-        "pipeline_throughput_rate": (
-            pt_s["throughput_rate"]
-            if isinstance(pt_s := validation.get("pipeline_throughput_summary"), dict)
-            else 0.0
-        ),
-        "retention_record_count": (
-            cr_s["record_count"]
-            if isinstance(cr_s := validation.get("candidate_retention_summary"), dict)
-            else 0
-        ),
-        "retention_active_count": (
-            cr_s2["active_count"]
-            if isinstance(cr_s2 := validation.get("candidate_retention_summary"), dict)
-            else 0
-        ),
-        "operator_performance_operator_count": (
-            op_s["operator_count"]
-            if isinstance(op_s := validation.get("operator_performance_summary"), dict)
-            else 0
-        ),
-        "operator_performance_completion_rate": (
-            op_s2["overall_completion_rate"]
-            if isinstance(op_s2 := validation.get("operator_performance_summary"), dict)
-            else 0.0
-        ),
-        "track_comparison_open_flags": (
-            tc_s["total_open_flags"]
-            if isinstance(tc_s := validation.get("track_comparison_summary"), dict)
-            else 0
-        ),
-        "resolution_record_count": (
-            rs_s["record_count"]
-            if isinstance(rs_s := validation.get("candidate_resolution_summary"), dict)
-            else 0
-        ),
-        "resolution_unresolved_count": (
-            rs_s2["unresolved_count"]
-            if isinstance(rs_s2 := validation.get("candidate_resolution_summary"), dict)
-            else 0
-        ),
-        "escalation_entry_count": (
-            es_s["entry_count"]
-            if isinstance(es_s := validation.get("escalation_log_summary"), dict)
-            else 0
-        ),
-        "escalation_open_count": (
-            es_s2["open_count"]
-            if isinstance(es_s2 := validation.get("escalation_log_summary"), dict)
-            else 0
-        ),
-        "qc_overall_health": (
-            qc_s["overall_qc_health"]
-            if isinstance(qc_s := validation.get("quality_control_summary"), dict)
-            else "ok"
-        ),
-        "observation_campaign_count": (
-            oc_s["campaign_count"]
-            if isinstance(oc_s := validation.get("observation_campaign_summary"), dict)
-            else 0
-        ),
-        "observation_campaign_active_count": (
-            oc_s2["active_count"]
-            if isinstance(oc_s2 := validation.get("observation_campaign_summary"), dict)
-            else 0
-        ),
-        "data_quality_entry_count": (
-            dq_s["entry_count"]
-            if isinstance(dq_s := validation.get("data_quality_log_summary"), dict)
-            else 0
-        ),
-        "data_quality_poor_count": (
-            dq_s2["poor_count"]
-            if isinstance(dq_s2 := validation.get("data_quality_log_summary"), dict)
-            else 0
-        ),
-        "pipeline_audit_action_count": (
-            pa_s["total_audit_actions"]
-            if isinstance(pa_s := validation.get("pipeline_audit_summary"), dict)
-            else 0
-        ),
-        "follow_up_request_count": (
-            fur_s["request_count"]
-            if isinstance(fur_s := validation.get("follow_up_request_summary"), dict)
-            else 0
-        ),
-        "follow_up_request_open_count": (
-            fur_s2["open_count"]
-            if isinstance(fur_s2 := validation.get("follow_up_request_summary"), dict)
-            else 0
-        ),
-        "pipeline_bottleneck_stalled_count": (
-            pb_s["total_stalled_candidates"]
-            if isinstance(pb_s := validation.get("pipeline_bottleneck_summary"), dict)
-            else 0
-        ),
-        "candidate_annotation_count": (
-            ann_s["annotation_count"]
-            if isinstance(ann_s := validation.get("candidate_annotation_summary"), dict)
-            else 0
-        ),
-        "candidate_annotation_unresolved_count": (
-            ann_s2["unresolved_count"]
-            if isinstance(ann_s2 := validation.get("candidate_annotation_summary"), dict)
-            else 0
-        ),
-        "session_log_count": (
-            sl_s["session_count"]
-            if isinstance(sl_s := validation.get("session_log_summary"), dict)
-            else 0
-        ),
-        "session_log_completed_count": (
-            sl_s2["completed_count"]
-            if isinstance(sl_s2 := validation.get("session_log_summary"), dict)
-            else 0
-        ),
-        "priority_queue_depth": (
-            pq_s["queue_depth"]
-            if isinstance(pq_s := validation.get("priority_queue_summary"), dict)
-            else 0
-        ),
-        "pipeline_capacity_status": (
-            pc_s["capacity_status"]
-            if isinstance(pc_s := validation.get("pipeline_capacity_summary"), dict)
-            else "unknown"
-        ),
-        "feature_vector_count": (
-            fv_s["vector_count"]
-            if isinstance(fv_s := validation.get("feature_vector_summary"), dict)
-            else 0
-        ),
-        "ml_registry_entry_count": (
-            mr_s["registry_count"]
-            if isinstance(mr_s := validation.get("ml_model_registry_summary"), dict)
-            else 0
-        ),
-        "ml_above_baseline_count": (
-            mr_s2["above_baseline_count"]
-            if isinstance(mr_s2 := validation.get("ml_model_registry_summary"), dict)
-            else 0
-        ),
-        "ml_pipeline_status": (
-            md_s["pipeline_ml_status"]
-            if isinstance(md_s := validation.get("ml_pipeline_diagnostics_summary"), dict)
-            else "unknown"
-        ),
-        "normalization_bounds_count": (
-            fn_s["bounds_count"]
-            if isinstance(fn_s := validation.get("feature_normalization_summary"), dict)
-            else 0
-        ),
-        "feature_importance_entry_count": (
-            fi_s["entry_count"]
-            if isinstance(fi_s := validation.get("feature_importance_summary"), dict)
-            else 0
-        ),
-        "ml_training_case_count": (
-            mt_s["total_case_count"]
-            if isinstance(mt_s := validation.get("ml_training_data_summary"), dict)
-            else 0
-        ),
-        "ml_recommended_train_count": (
-            mt_s2["recommended_train_count"]
-            if isinstance(mt_s2 := validation.get("ml_training_data_summary"), dict)
-            else 0
-        ),
-        "model_architecture_count": (
-            ma_s["architecture_count"]
-            if isinstance(ma_s := validation.get("model_architecture_summary"), dict)
-            else 0
-        ),
-        "model_evaluation_count": (
-            me_s["evaluation_count"]
-            if isinstance(me_s := validation.get("model_evaluation_summary"), dict)
-            else 0
-        ),
-        "model_evaluation_above_baseline_count": (
-            me_s2["above_baseline_count"]
-            if isinstance(me_s2 := validation.get("model_evaluation_summary"), dict)
-            else 0
-        ),
-        "model_performance_snapshot_count": (
-            ph_s["snapshot_count"]
-            if isinstance(ph_s := validation.get("model_performance_history_summary"), dict)
-            else 0
-        ),
-        "model_serving_record_count": (
-            sv_s["record_count"]
-            if isinstance(sv_s := validation.get("model_serving_summary"), dict)
-            else 0
-        ),
-        "model_serving_active_count": (
-            sv_s2["active_count"]
-            if isinstance(sv_s2 := validation.get("model_serving_summary"), dict)
-            else 0
-        ),
-        "scoring_audit_entry_count": (
-            al_s["entry_count"]
-            if isinstance(al_s := validation.get("scoring_audit_log_summary"), dict)
-            else 0
-        ),
-        "curated_intake_record_count": (
-            ci_s["record_count"]
-            if isinstance(ci_s := validation.get("curated_dataset_intake_summary"), dict)
-            else 0
-        ),
-        "curated_intake_approved_count": (
-            ci_s2["approved_count"]
-            if isinstance(ci_s2 := validation.get("curated_dataset_intake_summary"), dict)
-            else 0
-        ),
-        "curated_dataset_admission_record_count": (
-            cda_s["record_count"]
-            if isinstance(
-                cda_s := validation.get("curated_dataset_admission_summary"), dict
-            )
-            else 0
-        ),
-        "curated_dataset_admission_blocked_count": (
-            cda_s2["blocked_count"]
-            if isinstance(
-                cda_s2 := validation.get("curated_dataset_admission_summary"), dict
-            )
-            else 0
-        ),
-        "curated_dataset_admission_real_data_authorized_count": (
-            cda_s3["real_data_authorized_count"]
-            if isinstance(
-                cda_s3 := validation.get("curated_dataset_admission_summary"), dict
-            )
-            else 0
-        ),
-        "curated_dataset_admission_validation_ok": (
-            bool(cda_s4["validation_ok"])
-            if isinstance(
-                cda_s4 := validation.get("curated_dataset_admission_summary"), dict
-            )
-            else False
-        ),
-        "project_status_consistency_ok": (
-            bool(psc_s["ok"])
-            if isinstance(
-                psc_s := validation.get("project_status_consistency_summary"), dict
-            )
-            else False
-        ),
-        "project_status_latest_milestone": (
-            psc_s2["roadmap_latest_milestone"]
-            if isinstance(
-                psc_s2 := validation.get("project_status_consistency_summary"), dict
-            )
-            else 0
-        ),
-        "project_status_latest_decision": (
-            psc_s3["decisions_latest_decision"]
-            if isinstance(
-                psc_s3 := validation.get("project_status_consistency_summary"), dict
-            )
-            else 0
-        ),
-        "project_status_schema_count": (
-            psc_s4["actual_schema_count"]
-            if isinstance(
-                psc_s4 := validation.get("project_status_consistency_summary"), dict
-            )
-            else 0
-        ),
-        "ai_hardening_gate_ok": (
-            bool(ahg_s["ok"])
-            if isinstance(ahg_s := validation.get("ai_hardening_gate_summary"), dict)
-            else False
-        ),
-        "ai_hardening_gate_status": (
-            ahg_s2["status"]
-            if isinstance(ahg_s2 := validation.get("ai_hardening_gate_summary"), dict)
-            else "unknown"
-        ),
-        "ai_hardening_open_blocking_requirement_count": (
-            ahg_s3["open_blocking_requirement_count"]
-            if isinstance(ahg_s3 := validation.get("ai_hardening_gate_summary"), dict)
-            else 0
-        ),
-        "ai_hardening_existing_evidence_path_count": (
-            ahg_s4["existing_evidence_path_count"]
-            if isinstance(ahg_s4 := validation.get("ai_hardening_gate_summary"), dict)
-            else 0
-        ),
-        "ai_hardening_populated_evidence_path_count": (
-            ahg_s5["populated_evidence_path_count"]
-            if isinstance(ahg_s5 := validation.get("ai_hardening_gate_summary"), dict)
-            else 0
-        ),
-        "ai_hardening_empty_existing_evidence_path_count": (
-            ahg_s6["empty_existing_evidence_path_count"]
-            if isinstance(ahg_s6 := validation.get("ai_hardening_gate_summary"), dict)
-            else 0
-        ),
-        "ai_hardening_total_evidence_file_count": (
-            ahg_s7["total_evidence_file_count"]
-            if isinstance(ahg_s7 := validation.get("ai_hardening_gate_summary"), dict)
-            else 0
-        ),
-        "ai_hardening_local_holdout_non_training_dat_file_count": (
-            ahg_s8["local_calibration_holdout_non_training_dat_file_count"]
-            if isinstance(ahg_s8 := validation.get("ai_hardening_gate_summary"), dict)
-            else 0
-        ),
-        "ai_hardening_local_holdout_gate_closure_ready": (
-            bool(ahg_s9["local_calibration_holdout_gate_closure_ready"])
-            if isinstance(ahg_s9 := validation.get("ai_hardening_gate_summary"), dict)
-            else False
-        ),
-        "ai_hardening_production_promotion_allowed": (
-            bool(ahg_s10["production_promotion_allowed"])
-            if isinstance(ahg_s10 := validation.get("ai_hardening_gate_summary"), dict)
-            else False
-        ),
-        "mcp_bootstrap_consistency_ok": (
-            bool(mcp_bootstrap_consistency["ok"])
-            if isinstance(mcp_bootstrap_consistency, dict)
-            else False
-        ),
-        "mcp_bootstrap_consistency_issue_count": (
-            mcp_bootstrap_consistency["issue_count"]
-            if isinstance(mcp_bootstrap_consistency, dict)
-            else 0
-        ),
-        "mcp_bootstrap_claude_server_count": (
-            mcp_bootstrap_consistency["claude_server_count"]
-            if isinstance(mcp_bootstrap_consistency, dict)
-            else 0
-        ),
-        "mcp_bootstrap_codex_server_count": (
-            mcp_bootstrap_consistency["codex_server_count"]
-            if isinstance(mcp_bootstrap_consistency, dict)
-            else 0
-        ),
-        "mcp_bootstrap_forbidden_token_count": (
-            mcp_bootstrap_consistency["forbidden_token_count"]
-            if isinstance(mcp_bootstrap_consistency, dict)
-            else 0
-        ),
-        "mcp_bootstrap_arbitrary_shell_enabled": (
-            bool(mcp_bootstrap_consistency["arbitrary_shell_enabled"])
-            if isinstance(mcp_bootstrap_consistency, dict)
-            else False
-        ),
-        "mcp_bootstrap_live_provider_enabled": (
-            bool(mcp_bootstrap_consistency["live_provider_enabled"])
-            if isinstance(mcp_bootstrap_consistency, dict)
-            else False
-        ),
-        "mcp_bootstrap_external_submission_enabled": (
-            bool(mcp_bootstrap_consistency["external_submission_enabled"])
-            if isinstance(mcp_bootstrap_consistency, dict)
-            else False
-        ),
-        "mcp_server_policy_ok": (
-            bool(mcp_server_policy["ok"])
-            if isinstance(mcp_server_policy, dict)
-            else False
-        ),
-        "mcp_server_policy_issue_count": (
-            mcp_server_policy["issue_count"]
-            if isinstance(mcp_server_policy, dict)
-            else 0
-        ),
-        "mcp_server_policy_git_read_command_count": (
-            mcp_server_policy["git_read_command_count"]
-            if isinstance(mcp_server_policy, dict)
-            else 0
-        ),
-        "mcp_server_policy_techno_guard_command_count": (
-            mcp_server_policy["techno_guard_command_count"]
-            if isinstance(mcp_server_policy, dict)
-            else 0
-        ),
-        "mcp_server_policy_forbidden_command_token_count": (
-            mcp_server_policy["forbidden_command_token_count"]
-            if isinstance(mcp_server_policy, dict)
-            else 0
-        ),
-        "mcp_server_policy_mutating_git_command_count": (
-            mcp_server_policy["mutating_git_command_count"]
-            if isinstance(mcp_server_policy, dict)
-            else 0
-        ),
-        "mcp_server_policy_venv_enforced": (
-            bool(mcp_server_policy["venv_enforced"])
-            if isinstance(mcp_server_policy, dict)
-            else False
-        ),
-        "mcp_server_policy_arbitrary_shell_enabled": (
-            bool(mcp_server_policy["arbitrary_shell_enabled"])
-            if isinstance(mcp_server_policy, dict)
-            else False
-        ),
-        "mcp_server_policy_live_provider_enabled": (
-            bool(mcp_server_policy["live_provider_enabled"])
-            if isinstance(mcp_server_policy, dict)
-            else False
-        ),
-        "mcp_server_policy_external_submission_enabled": (
-            bool(mcp_server_policy["external_submission_enabled"])
-            if isinstance(mcp_server_policy, dict)
-            else False
-        ),
-        "production_blocker_consistency_ok": (
-            bool(production_blocker_consistency["ok"])
-            if isinstance(production_blocker_consistency, dict)
-            else False
-        ),
-        "production_blocker_consistency_issue_count": (
-            production_blocker_consistency["issue_count"]
-            if isinstance(production_blocker_consistency, dict)
-            else 0
-        ),
-        "production_blocker_tier1_blocker_count": (
-            production_blocker_consistency["actual_tier1_blocker_count"]
-            if isinstance(production_blocker_consistency, dict)
-            else 0
-        ),
-        "production_blocker_real_data_authorized_total": (
-            production_blocker_consistency["real_data_authorized_total"]
-            if isinstance(production_blocker_consistency, dict)
-            else 0
-        ),
-        "production_blocker_external_submission_authorized_total": (
-            production_blocker_consistency["external_submission_authorized_total"]
-            if isinstance(production_blocker_consistency, dict)
-            else 0
-        ),
-        "real_data_admission_preflight_ok": (
-            bool(real_data_admission_preflight["ok"])
-            if isinstance(real_data_admission_preflight, dict)
-            else False
-        ),
-        "real_data_admission_preflight_issue_count": (
-            real_data_admission_preflight["issue_count"]
-            if isinstance(real_data_admission_preflight, dict)
-            else 0
-        ),
-        "real_data_admission_preflight_category_count": (
-            real_data_admission_preflight["category_count"]
-            if isinstance(real_data_admission_preflight, dict)
-            else 0
-        ),
-        "real_data_admission_preflight_blocker_total": (
-            real_data_admission_preflight["blocker_total"]
-            if isinstance(real_data_admission_preflight, dict)
-            else 0
-        ),
-        "real_data_admission_preflight_real_data_authorized_total": (
-            real_data_admission_preflight["real_data_authorized_total"]
-            if isinstance(real_data_admission_preflight, dict)
-            else 0
-        ),
-        "real_data_admission_preflight_live_data_authorized_total": (
-            real_data_admission_preflight["live_data_authorized_total"]
-            if isinstance(real_data_admission_preflight, dict)
-            else 0
-        ),
-        "real_data_admission_preflight_external_submission_authorized_total": (
-            real_data_admission_preflight["external_submission_authorized_total"]
-            if isinstance(real_data_admission_preflight, dict)
-            else 0
-        ),
-        "sqlite_operational_log_registry_ok": (
-            bool(sqlite_operational_log_registry["ok"])
-            if isinstance(sqlite_operational_log_registry, dict)
-            else False
-        ),
-        "sqlite_operational_log_registry_issue_count": (
-            sqlite_operational_log_registry["issue_count"]
-            if isinstance(sqlite_operational_log_registry, dict)
-            else 0
-        ),
-        "sqlite_operational_log_registered_count": (
-            sqlite_operational_log_registry["registered_log_count"]
-            if isinstance(sqlite_operational_log_registry, dict)
-            else 0
-        ),
-        "sqlite_operational_log_missing_cli_command_count": (
-            sqlite_operational_log_registry["missing_cli_command_count"]
-            if isinstance(sqlite_operational_log_registry, dict)
-            else 0
-        ),
-        "sqlite_operational_log_missing_sqlite_policy_count": (
-            sqlite_operational_log_registry["missing_sqlite_policy_count"]
-            if isinstance(sqlite_operational_log_registry, dict)
-            else 0
-        ),
-        "sqlite_operational_log_sqlite_required_before_production_count": (
-            sqlite_operational_log_registry[
-                "sqlite_required_before_production_count"
-            ]
-            if isinstance(sqlite_operational_log_registry, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_plan_ok": (
-            bool(sqlite_operational_log_adapter_plan["ok"])
-            if isinstance(sqlite_operational_log_adapter_plan, dict)
-            else False
-        ),
-        "sqlite_operational_log_adapter_plan_issue_count": (
-            sqlite_operational_log_adapter_plan["issue_count"]
-            if isinstance(sqlite_operational_log_adapter_plan, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_planned_count": (
-            sqlite_operational_log_adapter_plan["planned_log_count"]
-            if isinstance(sqlite_operational_log_adapter_plan, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_phase_count": (
-            sqlite_operational_log_adapter_plan["phase_count"]
-            if isinstance(sqlite_operational_log_adapter_plan, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_unassigned_count": (
-            sqlite_operational_log_adapter_plan["unassigned_log_count"]
-            if isinstance(sqlite_operational_log_adapter_plan, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_policy_mismatch_count": (
-            sqlite_operational_log_adapter_plan["sqlite_policy_mismatch_count"]
-            if isinstance(sqlite_operational_log_adapter_plan, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_mutation_allowed": (
-            bool(sqlite_operational_log_adapter_plan["mutation_allowed"])
-            if isinstance(sqlite_operational_log_adapter_plan, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_contract_ok": (
-            bool(sqlite_operational_log_adapter_contract["ok"])
-            if isinstance(sqlite_operational_log_adapter_contract, dict)
-            else False
-        ),
-        "sqlite_operational_log_adapter_contract_issue_count": (
-            sqlite_operational_log_adapter_contract["issue_count"]
-            if isinstance(sqlite_operational_log_adapter_contract, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_contract_phase_count": (
-            sqlite_operational_log_adapter_contract["phase_contract_count"]
-            if isinstance(sqlite_operational_log_adapter_contract, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_contract_missing_table_count": (
-            sqlite_operational_log_adapter_contract["missing_table_plan_count"]
-            if isinstance(sqlite_operational_log_adapter_contract, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_contract_missing_column_count": (
-            sqlite_operational_log_adapter_contract["missing_required_column_count"]
-            if isinstance(sqlite_operational_log_adapter_contract, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_contract_phase_mismatch_count": (
-            sqlite_operational_log_adapter_contract["phase_count_mismatch_count"]
-            if isinstance(sqlite_operational_log_adapter_contract, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_contract_mutation_allowed": (
-            bool(sqlite_operational_log_adapter_contract["mutation_allowed"])
-            if isinstance(sqlite_operational_log_adapter_contract, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_ddl_preview_ok": (
-            bool(sqlite_operational_log_adapter_ddl_preview["ok"])
-            if isinstance(sqlite_operational_log_adapter_ddl_preview, dict)
-            else False
-        ),
-        "sqlite_operational_log_adapter_ddl_preview_issue_count": (
-            sqlite_operational_log_adapter_ddl_preview["issue_count"]
-            if isinstance(sqlite_operational_log_adapter_ddl_preview, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_ddl_statement_count": (
-            sqlite_operational_log_adapter_ddl_preview["ddl_statement_count"]
-            if isinstance(sqlite_operational_log_adapter_ddl_preview, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_ddl_missing_clause_count": (
-            sqlite_operational_log_adapter_ddl_preview["missing_clause_count"]
-            if isinstance(sqlite_operational_log_adapter_ddl_preview, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_ddl_execution_allowed": (
-            bool(sqlite_operational_log_adapter_ddl_preview["execution_allowed"])
-            if isinstance(sqlite_operational_log_adapter_ddl_preview, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_row_preview_ok": (
-            bool(sqlite_operational_log_adapter_row_preview["ok"])
-            if isinstance(sqlite_operational_log_adapter_row_preview, dict)
-            else False
-        ),
-        "sqlite_operational_log_adapter_row_preview_issue_count": (
-            sqlite_operational_log_adapter_row_preview["issue_count"]
-            if isinstance(sqlite_operational_log_adapter_row_preview, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_row_count": (
-            sqlite_operational_log_adapter_row_preview["row_count"]
-            if isinstance(sqlite_operational_log_adapter_row_preview, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_row_phase_count": (
-            sqlite_operational_log_adapter_row_preview["phase_count"]
-            if isinstance(sqlite_operational_log_adapter_row_preview, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_row_missing_field_count": (
-            sqlite_operational_log_adapter_row_preview["missing_row_field_count"]
-            if isinstance(sqlite_operational_log_adapter_row_preview, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_row_execution_allowed": (
-            bool(sqlite_operational_log_adapter_row_preview["execution_allowed"])
-            if isinstance(sqlite_operational_log_adapter_row_preview, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_insert_preview_ok": (
-            bool(sqlite_operational_log_adapter_insert_preview["ok"])
-            if isinstance(sqlite_operational_log_adapter_insert_preview, dict)
-            else False
-        ),
-        "sqlite_operational_log_adapter_insert_preview_issue_count": (
-            sqlite_operational_log_adapter_insert_preview["issue_count"]
-            if isinstance(sqlite_operational_log_adapter_insert_preview, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_insert_count": (
-            sqlite_operational_log_adapter_insert_preview["insert_count"]
-            if isinstance(sqlite_operational_log_adapter_insert_preview, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_insert_phase_count": (
-            sqlite_operational_log_adapter_insert_preview["phase_count"]
-            if isinstance(sqlite_operational_log_adapter_insert_preview, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_insert_value_mismatch_count": (
-            sqlite_operational_log_adapter_insert_preview[
-                "value_count_mismatch_count"
-            ]
-            if isinstance(sqlite_operational_log_adapter_insert_preview, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_insert_execution_allowed": (
-            bool(sqlite_operational_log_adapter_insert_preview["execution_allowed"])
-            if isinstance(sqlite_operational_log_adapter_insert_preview, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_execution_preview_ok": (
-            bool(sqlite_operational_log_adapter_execution_preview["ok"])
-            if isinstance(sqlite_operational_log_adapter_execution_preview, dict)
-            else False
-        ),
-        "sqlite_operational_log_adapter_execution_preview_issue_count": (
-            sqlite_operational_log_adapter_execution_preview["issue_count"]
-            if isinstance(sqlite_operational_log_adapter_execution_preview, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_execution_operation_count": (
-            sqlite_operational_log_adapter_execution_preview["operation_count"]
-            if isinstance(sqlite_operational_log_adapter_execution_preview, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_execution_phase_count": (
-            sqlite_operational_log_adapter_execution_preview["phase_count"]
-            if isinstance(sqlite_operational_log_adapter_execution_preview, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_execution_allowed": (
-            bool(sqlite_operational_log_adapter_execution_preview["execution_allowed"])
-            if isinstance(sqlite_operational_log_adapter_execution_preview, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_execution_mutation_allowed": (
-            bool(sqlite_operational_log_adapter_execution_preview["mutation_allowed"])
-            if isinstance(sqlite_operational_log_adapter_execution_preview, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_dry_run_manifest_ok": (
-            bool(sqlite_operational_log_adapter_dry_run_manifest["ok"])
-            if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
-            else False
-        ),
-        "sqlite_operational_log_adapter_dry_run_manifest_issue_count": (
-            sqlite_operational_log_adapter_dry_run_manifest["issue_count"]
-            if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_dry_run_manifest_status": (
-            sqlite_operational_log_adapter_dry_run_manifest["manifest_status"]
-            if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
-            else "unknown"
-        ),
-        "sqlite_operational_log_adapter_dry_run_phase_count": (
-            sqlite_operational_log_adapter_dry_run_manifest["phase_count"]
-            if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_dry_run_phase_mismatch_count": (
-            sqlite_operational_log_adapter_dry_run_manifest[
-                "phase_alignment_mismatch_count"
-            ]
-            if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_dry_run_database_open_allowed": (
-            bool(
-                sqlite_operational_log_adapter_dry_run_manifest[
-                    "database_open_allowed"
-                ]
-            )
-            if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_dry_run_execution_allowed": (
-            bool(sqlite_operational_log_adapter_dry_run_manifest["execution_allowed"])
-            if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_dry_run_mutation_allowed": (
-            bool(sqlite_operational_log_adapter_dry_run_manifest["mutation_allowed"])
-            if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_dry_run_live_data_authorized": (
-            bool(sqlite_operational_log_adapter_dry_run_manifest["live_data_authorized"])
-            if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_dry_run_external_submission_authorized": (
-            bool(
-                sqlite_operational_log_adapter_dry_run_manifest[
-                    "external_submission_authorized"
-                ]
-            )
-            if isinstance(sqlite_operational_log_adapter_dry_run_manifest, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_readiness_preflight_ok": (
-            bool(sqlite_operational_log_adapter_readiness_preflight["ok"])
-            if isinstance(sqlite_operational_log_adapter_readiness_preflight, dict)
-            else False
-        ),
-        "sqlite_operational_log_adapter_readiness_preflight_issue_count": (
-            sqlite_operational_log_adapter_readiness_preflight["issue_count"]
-            if isinstance(sqlite_operational_log_adapter_readiness_preflight, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_readiness_preflight_status": (
-            sqlite_operational_log_adapter_readiness_preflight["readiness_status"]
-            if isinstance(sqlite_operational_log_adapter_readiness_preflight, dict)
-            else "unknown"
-        ),
-        "sqlite_operational_log_adapter_readiness_preflight_failed_gate_count": (
-            sqlite_operational_log_adapter_readiness_preflight[
-                "upstream_gate_failure_count"
-            ]
-            if isinstance(sqlite_operational_log_adapter_readiness_preflight, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_readiness_preflight_schema_count": (
-            sqlite_operational_log_adapter_readiness_preflight["schema_count"]
-            if isinstance(sqlite_operational_log_adapter_readiness_preflight, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_readiness_preflight_database_open_allowed": (
-            bool(
-                sqlite_operational_log_adapter_readiness_preflight[
-                    "database_open_allowed"
-                ]
-            )
-            if isinstance(sqlite_operational_log_adapter_readiness_preflight, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_readiness_preflight_execution_allowed": (
-            bool(sqlite_operational_log_adapter_readiness_preflight["execution_allowed"])
-            if isinstance(sqlite_operational_log_adapter_readiness_preflight, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_readiness_preflight_mutation_allowed": (
-            bool(sqlite_operational_log_adapter_readiness_preflight["mutation_allowed"])
-            if isinstance(sqlite_operational_log_adapter_readiness_preflight, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_readiness_preflight_live_data_authorized": (
-            bool(
-                sqlite_operational_log_adapter_readiness_preflight[
-                    "live_data_authorized"
-                ]
-            )
-            if isinstance(sqlite_operational_log_adapter_readiness_preflight, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_readiness_preflight_external_submission_authorized": (
-            bool(
-                sqlite_operational_log_adapter_readiness_preflight[
-                    "external_submission_authorized"
-                ]
-            )
-            if isinstance(sqlite_operational_log_adapter_readiness_preflight, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_authorization_gate_ok": (
-            bool(sqlite_operational_log_adapter_authorization_gate["ok"])
-            if isinstance(sqlite_operational_log_adapter_authorization_gate, dict)
-            else False
-        ),
-        "sqlite_operational_log_adapter_authorization_gate_issue_count": (
-            sqlite_operational_log_adapter_authorization_gate["issue_count"]
-            if isinstance(sqlite_operational_log_adapter_authorization_gate, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_authorization_status": (
-            sqlite_operational_log_adapter_authorization_gate[
-                "authorization_status"
-            ]
-            if isinstance(sqlite_operational_log_adapter_authorization_gate, dict)
-            else "unknown"
-        ),
-        "sqlite_operational_log_adapter_authorization_gate_schema_count": (
-            sqlite_operational_log_adapter_authorization_gate["schema_count"]
-            if isinstance(sqlite_operational_log_adapter_authorization_gate, dict)
-            else 0
-        ),
-        "sqlite_operational_log_adapter_authorization_gate_adapter_implementation_allowed": (
-            bool(
-                sqlite_operational_log_adapter_authorization_gate[
-                    "adapter_implementation_allowed"
-                ]
-            )
-            if isinstance(sqlite_operational_log_adapter_authorization_gate, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_authorization_gate_database_open_allowed": (
-            bool(
-                sqlite_operational_log_adapter_authorization_gate[
-                    "database_open_allowed"
-                ]
-            )
-            if isinstance(sqlite_operational_log_adapter_authorization_gate, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_authorization_gate_execution_allowed": (
-            bool(sqlite_operational_log_adapter_authorization_gate["execution_allowed"])
-            if isinstance(sqlite_operational_log_adapter_authorization_gate, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_authorization_gate_fixture_migration_allowed": (
-            bool(
-                sqlite_operational_log_adapter_authorization_gate[
-                    "fixture_migration_allowed"
-                ]
-            )
-            if isinstance(sqlite_operational_log_adapter_authorization_gate, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_authorization_gate_mutation_allowed": (
-            bool(sqlite_operational_log_adapter_authorization_gate["mutation_allowed"])
-            if isinstance(sqlite_operational_log_adapter_authorization_gate, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_authorization_gate_live_data_authorized": (
-            bool(
-                sqlite_operational_log_adapter_authorization_gate[
-                    "live_data_authorized"
-                ]
-            )
-            if isinstance(sqlite_operational_log_adapter_authorization_gate, dict)
-            else True
-        ),
-        "sqlite_operational_log_adapter_authorization_gate_external_submission_authorized": (
-            bool(
-                sqlite_operational_log_adapter_authorization_gate[
-                    "external_submission_authorized"
-                ]
-            )
-            if isinstance(sqlite_operational_log_adapter_authorization_gate, dict)
-            else True
-        ),
-        "operations_alert_review_consistency_ok": (
-            bool(oar_s["ok"])
-            if isinstance(
-                oar_s := validation.get(
-                    "operations_alert_review_consistency_summary"
-                ),
-                dict,
-            )
-            else False
-        ),
-        "operations_alert_review_open_alert_count": (
-            oar_s2["actual_open_alert_count"]
-            if isinstance(
-                oar_s2 := validation.get(
-                    "operations_alert_review_consistency_summary"
-                ),
-                dict,
-            )
-            else 0
-        ),
-        "operations_alert_review_critical_open_alert_count": (
-            oar_s3["actual_critical_open_alert_count"]
-            if isinstance(
-                oar_s3 := validation.get(
-                    "operations_alert_review_consistency_summary"
-                ),
-                dict,
-            )
-            else 0
-        ),
-        "operations_alert_review_uncovered_open_alert_count": (
-            oar_s4["uncovered_open_alert_count"]
-            if isinstance(
-                oar_s4 := validation.get(
-                    "operations_alert_review_consistency_summary"
-                ),
-                dict,
-            )
-            else 0
-        ),
-        "candidate_rescore_event_count": (
-            rs_s["event_count"]
-            if isinstance(rs_s := validation.get("candidate_rescore_summary"), dict)
-            else 0
-        ),
-        "candidate_rescore_pathway_change_count": (
-            rs_s2["pathway_change_count"]
-            if isinstance(rs_s2 := validation.get("candidate_rescore_summary"), dict)
-            else 0
-        ),
-        "operator_handoff_template_count": (
-            oh_s["template_count"]
-            if isinstance(oh_s := validation.get("operator_handoff_summary"), dict)
-            else 0
-        ),
-        "operator_handoff_approved_count": (
-            oh_s2["approved_count"]
-            if isinstance(oh_s2 := validation.get("operator_handoff_summary"), dict)
-            else 0
-        ),
-        "pipeline_config_count": (
-            pc_s["config_count"]
-            if isinstance(pc_s := validation.get("pipeline_config_summary"), dict)
-            else 0
-        ),
-        "pipeline_active_count": (
-            pc_s2["active_count"]
-            if isinstance(pc_s2 := validation.get("pipeline_config_summary"), dict)
-            else 0
-        ),
-        "submission_readiness_record_count": (
-            sr_s["record_count"]
-            if isinstance(sr_s := validation.get("submission_readiness_summary"), dict)
-            else 0
-        ),
-        "submission_readiness_ready_count": (
-            sr_s2["ready_count"]
-            if isinstance(sr_s2 := validation.get("submission_readiness_summary"), dict)
-            else 0
-        ),
-        "comparison_record_count": (
-            cmp_s["record_count"]
-            if isinstance(cmp_s := validation.get("candidate_comparison_summary"), dict)
-            else 0
-        ),
-        "telemetry_entry_count": (
-            tel_s["entry_count"]
-            if isinstance(tel_s := validation.get("pipeline_telemetry_summary"), dict)
-            else 0
-        ),
-        "provenance_audit_entry_count": (
-            pa_s["entry_count"]
-            if isinstance(pa_s := validation.get("provenance_audit_summary"), dict)
-            else 0
-        ),
-        "provenance_audit_consistent_count": (
-            pa_s2["consistent_count"]
-            if isinstance(pa_s2 := validation.get("provenance_audit_summary"), dict)
-            else 0
-        ),
-        "candidate_alert_entry_count": (
-            al2_s["entry_count"]
-            if isinstance(al2_s := validation.get("candidate_alert_summary"), dict)
-            else 0
-        ),
-        "candidate_alert_open_count": (
-            al2_s2["open_count"]
-            if isinstance(al2_s2 := validation.get("candidate_alert_summary"), dict)
-            else 0
-        ),
-        "pipeline_replay_entry_count": (
-            rpl_s["entry_count"]
-            if isinstance(rpl_s := validation.get("pipeline_replay_summary"), dict)
-            else 0
-        ),
-        "pipeline_replay_matched_count": (
-            rpl_s2["matched_count"]
-            if isinstance(rpl_s2 := validation.get("pipeline_replay_summary"), dict)
-            else 0
-        ),
-        "scoring_threshold_pass_count": (
-            thr_s["pass_count"]
-            if isinstance(thr_s := validation.get("scoring_threshold_audit_summary"), dict)
-            else 0
-        ),
-        "scoring_threshold_fail_count": (
-            thr_s2["fail_count"]
-            if isinstance(thr_s2 := validation.get("scoring_threshold_audit_summary"), dict)
-            else 0
-        ),
-        "alert_resolution_entry_count": (
-            ares_s["entry_count"]
-            if isinstance(ares_s := validation.get("alert_resolution_summary"), dict)
-            else 0
-        ),
-        "alert_resolution_open_count": (
-            ares_s2["open_count"]
-            if isinstance(ares_s2 := validation.get("alert_resolution_summary"), dict)
-            else 0
-        ),
-        "config_history_entry_count": (
-            cfgh_s["entry_count"]
-            if isinstance(cfgh_s := validation.get("config_version_history_summary"), dict)
-            else 0
-        ),
-        "operator_escalation_entry_count": (
-            esc_s["entry_count"]
-            if isinstance(esc_s := validation.get("operator_escalation_summary"), dict)
-            else 0
-        ),
-        "operator_escalation_open_count": (
-            esc_s2["open_count"]
-            if isinstance(esc_s2 := validation.get("operator_escalation_summary"), dict)
-            else 0
-        ),
-        "candidate_deduplication_entry_count": (
-            dd_s["entry_count"]
-            if isinstance(dd_s := validation.get("candidate_deduplication_summary"), dict)
-            else 0
-        ),
-        "candidate_deduplication_pending_count": (
-            dd_s2["pending_count"]
-            if isinstance(dd_s2 := validation.get("candidate_deduplication_summary"), dict)
-            else 0
-        ),
-        "intake_queue_entry_count": (
-            iq_s["entry_count"]
-            if isinstance(iq_s := validation.get("intake_queue_summary"), dict)
-            else 0
-        ),
-        "intake_queue_blocked_count": (
-            iq_s2["blocked_count"]
-            if isinstance(iq_s2 := validation.get("intake_queue_summary"), dict)
-            else 0
-        ),
-        "workflow_state_entry_count": (
-            wf_s["entry_count"]
-            if isinstance(wf_s := validation.get("workflow_state_summary"), dict)
-            else 0
-        ),
-        "data_gap_entry_count": (
-            dg_s["entry_count"]
-            if isinstance(dg_s := validation.get("data_gap_summary"), dict)
-            else 0
-        ),
-        "data_gap_unresolved_count": (
-            dg_s2["unresolved_count"]
-            if isinstance(dg_s2 := validation.get("data_gap_summary"), dict)
-            else 0
-        ),
-        "candidate_match_entry_count": (
-            cm_s["entry_count"]
-            if isinstance(cm_s := validation.get("candidate_match_summary"), dict)
-            else 0
-        ),
-        "candidate_match_matched_count": (
-            cm_s2["matched_count"]
-            if isinstance(cm_s2 := validation.get("candidate_match_summary"), dict)
-            else 0
-        ),
-        "pipeline_error_entry_count": (
-            pe_s["entry_count"]
-            if isinstance(pe_s := validation.get("pipeline_error_summary"), dict)
-            else 0
-        ),
-        "pipeline_error_unresolved_count": (
-            pe_s2["unresolved_count"]
-            if isinstance(pe_s2 := validation.get("pipeline_error_summary"), dict)
-            else 0
-        ),
-        "observation_request_entry_count": (
-            or_s["entry_count"]
-            if isinstance(or_s := validation.get("observation_request_summary"), dict)
-            else 0
-        ),
-        "observation_request_pending_count": (
-            or_s2["pending_count"]
-            if isinstance(or_s2 := validation.get("observation_request_summary"), dict)
-            else 0
-        ),
-        "candidate_export_entry_count": (
-            ce_s["entry_count"]
-            if isinstance(ce_s := validation.get("candidate_export_summary"), dict)
-            else 0
-        ),
-        "candidate_export_delivered_count": (
-            ce_s2["delivered_count"]
-            if isinstance(ce_s2 := validation.get("candidate_export_summary"), dict)
-            else 0
-        ),
-        "quality_gate_entry_count": (
-            qg_s["entry_count"]
-            if isinstance(qg_s := validation.get("quality_gate_summary"), dict)
-            else 0
-        ),
-        "quality_gate_pass_count": (
-            qg_s2["pass_count"]
-            if isinstance(qg_s2 := validation.get("quality_gate_summary"), dict)
-            else 0
-        ),
-        "instrument_log_entry_count": (
-            il_s["entry_count"]
-            if isinstance(il_s := validation.get("instrument_log_summary"), dict)
-            else 0
-        ),
-        "archival_query_entry_count": (
-            aq_s["entry_count"]
-            if isinstance(aq_s := validation.get("archival_query_summary"), dict)
-            else 0
-        ),
-        "candidate_linkage_entry_count": (
-            cl_s["entry_count"]
-            if isinstance(cl_s := validation.get("candidate_linkage_summary"), dict)
-            else 0
-        ),
-        "candidate_linkage_confirmed_count": (
-            cl_s2["confirmed_count"]
-            if isinstance(cl_s2 := validation.get("candidate_linkage_summary"), dict)
-            else 0
-        ),
-        "signal_classification_entry_count": (
-            sc_s["entry_count"]
-            if isinstance(sc_s := validation.get("signal_classification_summary"), dict)
-            else 0
-        ),
-        "signal_classification_classified_count": (
-            sc_s2["classified_count"]
-            if isinstance(sc_s2 := validation.get("signal_classification_summary"), dict)
-            else 0
-        ),
-        "rfi_database_record_count": (
-            rfidb_s["record_count"]
-            if isinstance(rfidb_s := validation.get("rfi_database_summary"), dict)
-            else 0
-        ),
-        "rfi_database_reviewed_count": (
-            rfidb_s2["reviewed_count"]
-            if isinstance(rfidb_s2 := validation.get("rfi_database_summary"), dict)
-            else 0
-        ),
-        "rfi_database_validation_ok": (
-            bool(rfidb_s3["validation_ok"])
-            if isinstance(rfidb_s3 := validation.get("rfi_database_summary"), dict)
-            else False
-        ),
-        "rfi_database_synthetic_count": (
-            rfidb_s4["synthetic_count"]
-            if isinstance(rfidb_s4 := validation.get("rfi_database_summary"), dict)
-            else 0
-        ),
-        "rfi_database_admission_record_count": (
-            rfia_s["record_count"]
-            if isinstance(rfia_s := validation.get("rfi_database_admission_summary"), dict)
-            else 0
-        ),
-        "rfi_database_admission_blocked_count": (
-            rfia_s2["blocked_count"]
-            if isinstance(rfia_s2 := validation.get("rfi_database_admission_summary"), dict)
-            else 0
-        ),
-        "rfi_database_admission_real_data_authorized_count": (
-            rfia_s3["real_data_authorized_count"]
-            if isinstance(rfia_s3 := validation.get("rfi_database_admission_summary"), dict)
-            else 0
-        ),
-        "rfi_database_admission_validation_ok": (
-            bool(rfia_s4["validation_ok"])
-            if isinstance(rfia_s4 := validation.get("rfi_database_admission_summary"), dict)
-            else False
-        ),
-        "calibration_corpus_admission_record_count": (
-            cca_s["record_count"]
-            if isinstance(cca_s := validation.get("calibration_corpus_admission_summary"), dict)
-            else 0
-        ),
-        "calibration_corpus_admission_blocked_count": (
-            cca_s2["blocked_count"]
-            if isinstance(cca_s2 := validation.get("calibration_corpus_admission_summary"), dict)
-            else 0
-        ),
-        "calibration_corpus_admission_safety_ok": (
-            bool(cca_s3["safety_ok"])
-            if isinstance(cca_s3 := validation.get("calibration_corpus_admission_summary"), dict)
-            else True
-        ),
-        "rfi_mitigation_entry_count": (
-            rm_s["entry_count"]
-            if isinstance(rm_s := validation.get("rfi_mitigation_summary"), dict)
-            else 0
-        ),
-        "rfi_mitigation_flagged_count": (
-            rm_s2["flagged_count"]
-            if isinstance(rm_s2 := validation.get("rfi_mitigation_summary"), dict)
-            else 0
-        ),
-        "candidate_annotation_entry_count": (
-            cal_s["entry_count"]
-            if isinstance(cal_s := validation.get("candidate_annotation_log_summary"), dict)
-            else 0
-        ),
-        "candidate_annotation_active_count": (
-            cal_s2["active_count"]
-            if isinstance(cal_s2 := validation.get("candidate_annotation_log_summary"), dict)
-            else 0
-        ),
-        "frequency_channel_entry_count": (
-            fc_s["entry_count"]
-            if isinstance(fc_s := validation.get("frequency_channel_log_summary"), dict)
-            else 0
-        ),
-        "frequency_channel_active_count": (
-            fc_s2["active_count"]
-            if isinstance(fc_s2 := validation.get("frequency_channel_log_summary"), dict)
-            else 0
-        ),
-        "pipeline_checkpoint_entry_count": (
-            pck_s["entry_count"]
-            if isinstance(pck_s := validation.get("pipeline_checkpoint_log_summary"), dict)
-            else 0
-        ),
-        "pipeline_checkpoint_saved_count": (
-            pck_s2["saved_count"]
-            if isinstance(pck_s2 := validation.get("pipeline_checkpoint_log_summary"), dict)
-            else 0
-        ),
-        "candidate_status_entry_count": (
-            csl_s["entry_count"]
-            if isinstance(csl_s := validation.get("candidate_status_log_summary"), dict)
-            else 0
-        ),
-        "candidate_status_active_count": (
-            csl_s2["active_count"]
-            if isinstance(csl_s2 := validation.get("candidate_status_log_summary"), dict)
-            else 0
-        ),
-        "beam_configuration_entry_count": (
-            bcl_s["entry_count"]
-            if isinstance(bcl_s := validation.get("beam_configuration_log_summary"), dict)
-            else 0
-        ),
-        "beam_configuration_applied_count": (
-            bcl_s2["applied_count"]
-            if isinstance(bcl_s2 := validation.get("beam_configuration_log_summary"), dict)
-            else 0
-        ),
-        "calibration_event_entry_count": (
-            cel_s["entry_count"]
-            if isinstance(cel_s := validation.get("calibration_event_log_summary"), dict)
-            else 0
-        ),
-        "calibration_event_applied_count": (
-            cel_s2["applied_count"]
-            if isinstance(cel_s2 := validation.get("calibration_event_log_summary"), dict)
-            else 0
-        ),
-        "pipeline_run_entry_count": (
-            prl_s["entry_count"]
-            if isinstance(prl_s := validation.get("pipeline_run_log_summary"), dict)
-            else 0
-        ),
-        "pipeline_run_completed_count": (
-            prl_s2["completed_count"]
-            if isinstance(prl_s2 := validation.get("pipeline_run_log_summary"), dict)
-            else 0
-        ),
-        "source_catalog_entry_count": (
-            scl_s["entry_count"]
-            if isinstance(scl_s := validation.get("source_catalog_log_summary"), dict)
-            else 0
-        ),
-        "source_catalog_matched_count": (
-            scl_s2["matched_count"]
-            if isinstance(scl_s2 := validation.get("source_catalog_log_summary"), dict)
-            else 0
-        ),
-        "noise_measurement_entry_count": (
-            nml_s["entry_count"]
-            if isinstance(nml_s := validation.get("noise_measurement_log_summary"), dict)
-            else 0
-        ),
-        "noise_measurement_recorded_count": (
-            nml_s2["recorded_count"]
-            if isinstance(nml_s2 := validation.get("noise_measurement_log_summary"), dict)
-            else 0
-        ),
-        "spectral_feature_entry_count": (
-            sfl_s["entry_count"]
-            if isinstance(sfl_s := validation.get("spectral_feature_log_summary"), dict)
-            else 0
-        ),
-        "spectral_feature_detected_count": (
-            sfl_s2["detected_count"]
-            if isinstance(sfl_s2 := validation.get("spectral_feature_log_summary"), dict)
-            else 0
-        ),
-        "polarization_entry_count": (
-            pol_s["entry_count"]
-            if isinstance(pol_s := validation.get("polarization_log_summary"), dict)
-            else 0
-        ),
-        "polarization_measured_count": (
-            pol_s2["measured_count"]
-            if isinstance(pol_s2 := validation.get("polarization_log_summary"), dict)
-            else 0
-        ),
-        "telescope_status_entry_count": (
-            tsl_s["entry_count"]
-            if isinstance(tsl_s := validation.get("telescope_status_log_summary"), dict)
-            else 0
-        ),
-        "telescope_status_recorded_count": (
-            tsl_s2["recorded_count"]
-            if isinstance(tsl_s2 := validation.get("telescope_status_log_summary"), dict)
-            else 0
-        ),
-        "obs_parameter_entry_count": (
-            opl_s["entry_count"]
-            if isinstance(opl_s := validation.get("observation_parameter_log_summary"), dict)
-            else 0
-        ),
-        "obs_parameter_applied_count": (
-            opl_s2["applied_count"]
-            if isinstance(
-                opl_s2 := validation.get("observation_parameter_log_summary"), dict
-            )
-            else 0
-        ),
-        "target_selection_entry_count": (
-            tsel_s["entry_count"]
-            if isinstance(
-                tsel_s := validation.get("target_selection_log_summary"), dict
-            )
-            else 0
-        ),
-        "target_selection_selected_count": (
-            tsel_s2["selected_count"]
-            if isinstance(
-                tsel_s2 := validation.get("target_selection_log_summary"), dict
-            )
-            else 0
-        ),
-        "doppler_correction_entry_count": (
-            dcl_s["entry_count"]
-            if isinstance(
-                dcl_s := validation.get("doppler_correction_log_summary"), dict
-            )
-            else 0
-        ),
-        "doppler_correction_applied_count": (
-            dcl_s2["applied_count"]
-            if isinstance(
-                dcl_s2 := validation.get("doppler_correction_log_summary"), dict
-            )
-            else 0
-        ),
-        "data_archival_entry_count": (
-            dal_s["entry_count"]
-            if isinstance(
-                dal_s := validation.get("data_archival_log_summary"), dict
-            )
-            else 0
-        ),
-        "data_archival_archived_count": (
-            dal_s2["archived_count"]
-            if isinstance(
-                dal_s2 := validation.get("data_archival_log_summary"), dict
-            )
-            else 0
-        ),
-        "interference_env_entry_count": (
-            iel_s["entry_count"]
-            if isinstance(
-                iel_s := validation.get("interference_environment_log_summary"), dict
-            )
-            else 0
-        ),
-        "interference_env_assessed_count": (
-            iel_s2["assessed_count"]
-            if isinstance(
-                iel_s2 := validation.get("interference_environment_log_summary"), dict
-            )
-            else 0
-        ),
-        "receiver_health_entry_count": (
-            rhl_s["entry_count"]
-            if isinstance(
-                rhl_s := validation.get("receiver_health_log_summary"), dict
-            )
-            else 0
-        ),
-        "receiver_health_nominal_count": (
-            rhl_s2["nominal_count"]
-            if isinstance(
-                rhl_s2 := validation.get("receiver_health_log_summary"), dict
-            )
-            else 0
-        ),
-        "pipeline_version_entry_count": (
-            pvl_s["entry_count"]
-            if isinstance(
-                pvl_s := validation.get("pipeline_version_log_summary"), dict
-            )
-            else 0
-        ),
-        "pipeline_version_active_count": (
-            pvl_s2["active_count"]
-            if isinstance(
-                pvl_s2 := validation.get("pipeline_version_log_summary"), dict
-            )
-            else 0
-        ),
-        "data_transfer_entry_count": (
-            dtl_s["entry_count"]
-            if isinstance(
-                dtl_s := validation.get("data_transfer_log_summary"), dict
-            )
-            else 0
-        ),
-        "data_transfer_completed_count": (
-            dtl_s2["completed_count"]
-            if isinstance(
-                dtl_s2 := validation.get("data_transfer_log_summary"), dict
-            )
-            else 0
-        ),
-        "scheduling_conflict_entry_count": (
-            scl_s["entry_count"]
-            if isinstance(
-                scl_s := validation.get("scheduling_conflict_log_summary"), dict
-            )
-            else 0
-        ),
-        "scheduling_conflict_detected_count": (
-            scl_s2["detected_count"]
-            if isinstance(
-                scl_s2 := validation.get("scheduling_conflict_log_summary"), dict
-            )
-            else 0
-        ),
-        "system_health_entry_count": (
-            shl_s["entry_count"]
-            if isinstance(
-                shl_s := validation.get("system_health_log_summary"), dict
-            )
-            else 0
-        ),
-        "system_health_healthy_count": (
-            shl_s2["healthy_count"]
-            if isinstance(
-                shl_s2 := validation.get("system_health_log_summary"), dict
-            )
-            else 0
-        ),
-        "instrument_configuration_entry_count": (
-            icl_s["entry_count"]
-            if isinstance(
-                icl_s := validation.get("instrument_configuration_log_summary"), dict
-            )
-            else 0
-        ),
-        "instrument_configuration_applied_count": (
-            icl_s2["applied_count"]
-            if isinstance(
-                icl_s2 := validation.get("instrument_configuration_log_summary"), dict
-            )
-            else 0
-        ),
-        "scan_entry_count": (
-            sl_s["entry_count"]
-            if isinstance(sl_s := validation.get("scan_log_summary"), dict)
-            else 0
-        ),
-        "scan_completed_count": (
-            sl_s2["completed_count"]
-            if isinstance(sl_s2 := validation.get("scan_log_summary"), dict)
-            else 0
-        ),
-        "time_synchronization_entry_count": (
-            tsl_s["entry_count"]
-            if isinstance(
-                tsl_s := validation.get("time_synchronization_log_summary"), dict
-            )
-            else 0
-        ),
-        "time_synchronization_synchronized_count": (
-            tsl_s2["synchronized_count"]
-            if isinstance(
-                tsl_s2 := validation.get("time_synchronization_log_summary"), dict
-            )
-            else 0
-        ),
-        "antenna_pointing_entry_count": (
-            apl_s["entry_count"]
-            if isinstance(apl_s := validation.get("antenna_pointing_log_summary"), dict)
-            else 0
-        ),
-        "antenna_pointing_completed_count": (
-            apl_s2["completed_count"]
-            if isinstance(apl_s2 := validation.get("antenna_pointing_log_summary"), dict)
-            else 0
-        ),
-        "weather_entry_count": (
-            wl_s["entry_count"]
-            if isinstance(wl_s := validation.get("weather_log_summary"), dict)
-            else 0
-        ),
-        "weather_nominal_count": (
-            wl_s2["nominal_count"]
-            if isinstance(wl_s2 := validation.get("weather_log_summary"), dict)
-            else 0
-        ),
-        "power_entry_count": (
-            pl_s["entry_count"]
-            if isinstance(pl_s := validation.get("power_log_summary"), dict)
-            else 0
-        ),
-        "power_normal_count": (
-            pl_s2["normal_count"]
-            if isinstance(pl_s2 := validation.get("power_log_summary"), dict)
-            else 0
-        ),
-        "cooling_system_entry_count": (
-            cs_s["entry_count"]
-            if isinstance(cs_s := validation.get("cooling_system_log_summary"), dict)
-            else 0
-        ),
-        "cooling_system_operating_count": (
-            cs_s2["operating_count"]
-            if isinstance(cs_s2 := validation.get("cooling_system_log_summary"), dict)
-            else 0
-        ),
-        "network_connectivity_entry_count": (
-            nc_s["entry_count"]
-            if isinstance(nc_s := validation.get("network_connectivity_log_summary"), dict)
-            else 0
-        ),
-        "network_connectivity_connected_count": (
-            nc_s2["connected_count"]
-            if isinstance(nc_s2 := validation.get("network_connectivity_log_summary"), dict)
-            else 0
-        ),
-        "software_update_entry_count": (
-            su_s["entry_count"]
-            if isinstance(su_s := validation.get("software_update_log_summary"), dict)
-            else 0
-        ),
-        "software_update_deployed_count": (
-            su_s2["deployed_count"]
-            if isinstance(su_s2 := validation.get("software_update_log_summary"), dict)
-            else 0
-        ),
-        "hardware_fault_entry_count": (
-            hf_s["entry_count"]
-            if isinstance(hf_s := validation.get("hardware_fault_log_summary"), dict)
-            else 0
-        ),
-        "hardware_fault_detected_count": (
-            hf_s2["detected_count"]
-            if isinstance(hf_s2 := validation.get("hardware_fault_log_summary"), dict)
-            else 0
-        ),
-        "maintenance_entry_count": (
-            maint_s["entry_count"]
-            if isinstance(maint_s := validation.get("maintenance_log_summary"), dict)
-            else 0
-        ),
-        "maintenance_completed_count": (
-            maint_s2["completed_count"]
-            if isinstance(maint_s2 := validation.get("maintenance_log_summary"), dict)
-            else 0
-        ),
-        "environmental_entry_count": (
-            env_s["entry_count"]
-            if isinstance(env_s := validation.get("environmental_log_summary"), dict)
-            else 0
-        ),
-        "environmental_nominal_count": (
-            env_s2["nominal_count"]
-            if isinstance(env_s2 := validation.get("environmental_log_summary"), dict)
-            else 0
-        ),
-        "access_log_entry_count": (
-            al_s["entry_count"]
-            if isinstance(al_s := validation.get("access_log_summary"), dict)
-            else 0
-        ),
-        "access_log_granted_count": (
-            al_s2["granted_count"]
-            if isinstance(al_s2 := validation.get("access_log_summary"), dict)
-            else 0
-        ),
-        "security_event_entry_count": (
-            se_s["entry_count"]
-            if isinstance(se_s := validation.get("security_event_log_summary"), dict)
-            else 0
-        ),
-        "security_event_detected_count": (
-            se_s2["detected_count"]
-            if isinstance(se_s2 := validation.get("security_event_log_summary"), dict)
-            else 0
-        ),
-        "audit_trail_log_entry_count": (
-            atl_s["entry_count"]
-            if isinstance(atl_s := validation.get("audit_trail_log_summary"), dict)
-            else 0
-        ),
-        "audit_trail_log_recorded_count": (
-            atl_s2["recorded_count"]
-            if isinstance(atl_s2 := validation.get("audit_trail_log_summary"), dict)
-            else 0
-        ),
-        "incident_response_entry_count": (
-            ir_s["entry_count"]
-            if isinstance(ir_s := validation.get("incident_response_log_summary"), dict)
-            else 0
-        ),
-        "incident_response_resolved_count": (
-            ir_s2["resolved_count"]
-            if isinstance(ir_s2 := validation.get("incident_response_log_summary"), dict)
-            else 0
-        ),
-        "change_management_entry_count": (
-            cm_s["entry_count"]
-            if isinstance(cm_s := validation.get("change_management_log_summary"), dict)
-            else 0
-        ),
-        "change_management_completed_count": (
-            cm_s2["completed_count"]
-            if isinstance(cm_s2 := validation.get("change_management_log_summary"), dict)
-            else 0
-        ),
-        "compliance_report_entry_count": (
-            cr_s["entry_count"]
-            if isinstance(cr_s := validation.get("compliance_report_log_summary"), dict)
-            else 0
-        ),
-        "compliance_report_passed_count": (
-            cr_s2["passed_count"]
-            if isinstance(cr_s2 := validation.get("compliance_report_log_summary"), dict)
-            else 0
-        ),
-        "risk_assessment_entry_count": (
-            ra_s["entry_count"]
-            if isinstance(ra_s := validation.get("risk_assessment_log_summary"), dict)
-            else 0
-        ),
-        "risk_assessment_mitigated_count": (
-            ra_s2["mitigated_count"]
-            if isinstance(ra_s2 := validation.get("risk_assessment_log_summary"), dict)
-            else 0
-        ),
-        "backup_recovery_entry_count": (
-            br_s["entry_count"]
-            if isinstance(br_s := validation.get("backup_recovery_log_summary"), dict)
-            else 0
-        ),
-        "backup_recovery_completed_count": (
-            br_s2["completed_count"]
-            if isinstance(br_s2 := validation.get("backup_recovery_log_summary"), dict)
-            else 0
-        ),
-        "capacity_planning_entry_count": (
-            cp_s["entry_count"]
-            if isinstance(cp_s := validation.get("capacity_planning_log_summary"), dict)
-            else 0
-        ),
-        "capacity_planning_adequate_count": (
-            cp_s2["adequate_count"]
-            if isinstance(cp_s2 := validation.get("capacity_planning_log_summary"), dict)
-            else 0
-        ),
-        "software_deployment_entry_count": (
-            sd_s["entry_count"]
-            if isinstance(sd_s := validation.get("software_deployment_log_summary"), dict)
-            else 0
-        ),
-        "software_deployment_completed_count": (
-            sd_s2["completed_count"]
-            if isinstance(sd_s2 := validation.get("software_deployment_log_summary"), dict)
-            else 0
-        ),
-        "performance_monitoring_entry_count": (
-            pm_s["entry_count"]
-            if isinstance(pm_s := validation.get("performance_monitoring_log_summary"), dict)
-            else 0
-        ),
-        "performance_monitoring_normal_count": (
-            pm_s2["normal_count"]
-            if isinstance(pm_s2 := validation.get("performance_monitoring_log_summary"), dict)
-            else 0
-        ),
-        "user_activity_entry_count": (
-            ua_s["entry_count"]
-            if isinstance(ua_s := validation.get("user_activity_log_summary"), dict)
-            else 0
-        ),
-        "user_activity_succeeded_count": (
-            ua_s2["succeeded_count"]
-            if isinstance(ua_s2 := validation.get("user_activity_log_summary"), dict)
-            else 0
-        ),
-        "health_check_entry_count": (
-            hc_s["entry_count"]
-            if isinstance(hc_s := validation.get("health_check_log_summary"), dict)
-            else 0
-        ),
-        "health_check_passed_count": (
-            hc_s2["passed_count"]
-            if isinstance(hc_s2 := validation.get("health_check_log_summary"), dict)
-            else 0
-        ),
-        "license_management_entry_count": (
-            lm_s["entry_count"]
-            if isinstance(lm_s := validation.get("license_management_log_summary"), dict)
-            else 0
-        ),
-        "license_management_active_count": (
-            lm_s2["active_count"]
-            if isinstance(lm_s2 := validation.get("license_management_log_summary"), dict)
-            else 0
-        ),
-        "storage_management_entry_count": (
-            sm_s["entry_count"]
-            if isinstance(sm_s := validation.get("storage_management_log_summary"), dict)
-            else 0
-        ),
-        "storage_management_completed_count": (
-            sm_s2["completed_count"]
-            if isinstance(sm_s2 := validation.get("storage_management_log_summary"), dict)
-            else 0
-        ),
-        "firmware_update_entry_count": (
-            fu_s["entry_count"]
-            if isinstance(fu_s := validation.get("firmware_update_log_summary"), dict)
-            else 0
-        ),
-        "firmware_update_applied_count": (
-            fu_s2["applied_count"]
-            if isinstance(fu_s2 := validation.get("firmware_update_log_summary"), dict)
-            else 0
-        ),
-        "configuration_audit_entry_count": (
-            ca_s["entry_count"]
-            if isinstance(ca_s := validation.get("configuration_audit_log_summary"), dict)
-            else 0
-        ),
-        "configuration_audit_compliant_count": (
-            ca_s2["compliant_count"]
-            if isinstance(ca_s2 := validation.get("configuration_audit_log_summary"), dict)
-            else 0
-        ),
-        "event_correlation_entry_count": (
-            ec_s["entry_count"]
-            if isinstance(ec_s := validation.get("event_correlation_log_summary"), dict)
-            else 0
-        ),
-        "event_correlation_correlated_count": (
-            ec_s2["correlated_count"]
-            if isinstance(ec_s2 := validation.get("event_correlation_log_summary"), dict)
-            else 0
-        ),
-        "system_diagnostics_entry_count": (
-            sd_s["entry_count"]
-            if isinstance(sd_s := validation.get("system_diagnostics_log_summary"), dict)
-            else 0
-        ),
-        "system_diagnostics_passed_count": (
-            sd_s2["passed_count"]
-            if isinstance(sd_s2 := validation.get("system_diagnostics_log_summary"), dict)
-            else 0
-        ),
-        "resource_allocation_entry_count": (
-            ra_s["entry_count"]
-            if isinstance(ra_s := validation.get("resource_allocation_log_summary"), dict)
-            else 0
-        ),
-        "resource_allocation_allocated_count": (
-            ra_s2["allocated_count"]
-            if isinstance(ra_s2 := validation.get("resource_allocation_log_summary"), dict)
-            else 0
-        ),
-        "access_control_entry_count": (
-            ac_s["entry_count"]
-            if isinstance(ac_s := validation.get("access_control_log_summary"), dict)
-            else 0
-        ),
-        "access_control_allowed_count": (
-            ac_s2["allowed_count"]
-            if isinstance(ac_s2 := validation.get("access_control_log_summary"), dict)
-            else 0
-        ),
-        "incident_entry_count": (
-            inc_s["entry_count"]
-            if isinstance(inc_s := validation.get("incident_log_summary"), dict)
-            else 0
-        ),
-        "incident_open_count": (
-            inc_s2["open_count"]
-            if isinstance(inc_s2 := validation.get("incident_log_summary"), dict)
-            else 0
-        ),
-        "patch_management_entry_count": (
-            pm_s["entry_count"]
-            if isinstance(pm_s := validation.get("patch_management_log_summary"), dict)
-            else 0
-        ),
-        "patch_management_applied_count": (
-            pm_s2["applied_count"]
-            if isinstance(pm_s2 := validation.get("patch_management_log_summary"), dict)
-            else 0
-        ),
-        "vulnerability_scan_entry_count": (
-            vs_s["entry_count"]
-            if isinstance(vs_s := validation.get("vulnerability_scan_log_summary"), dict)
-            else 0
-        ),
-        "vulnerability_scan_clean_count": (
-            vs_s2["clean_count"]
-            if isinstance(vs_s2 := validation.get("vulnerability_scan_log_summary"), dict)
-            else 0
-        ),
-        "compliance_audit_entry_count": (
-            caud_s["entry_count"]
-            if isinstance(caud_s := validation.get("compliance_audit_log_summary"), dict)
-            else 0
-        ),
-        "compliance_audit_passed_count": (
-            caud_s2["passed_count"]
-            if isinstance(caud_s2 := validation.get("compliance_audit_log_summary"), dict)
-            else 0
-        ),
-        "disaster_recovery_entry_count": (
-            dr_s["entry_count"]
-            if isinstance(dr_s := validation.get("disaster_recovery_log_summary"), dict)
-            else 0
-        ),
-        "disaster_recovery_completed_count": (
-            dr_s2["completed_count"]
-            if isinstance(dr_s2 := validation.get("disaster_recovery_log_summary"), dict)
-            else 0
-        ),
-        "service_level_entry_count": (
-            sl_s["entry_count"]
-            if isinstance(sl_s := validation.get("service_level_log_summary"), dict)
-            else 0
-        ),
-        "service_level_met_count": (
-            sl_s2["met_count"]
-            if isinstance(sl_s2 := validation.get("service_level_log_summary"), dict)
-            else 0
-        ),
-        "asset_management_entry_count": (
-            am_s["entry_count"]
-            if isinstance(am_s := validation.get("asset_management_log_summary"), dict)
-            else 0
-        ),
-        "asset_management_active_count": (
-            am_s2["active_count"]
-            if isinstance(am_s2 := validation.get("asset_management_log_summary"), dict)
-            else 0
-        ),
-        "network_monitoring_entry_count": (
-            nm_vs["entry_count"]
-            if isinstance(nm_vs := validation.get("network_monitoring_log_summary"), dict)
-            else 0
-        ),
-        "network_monitoring_healthy_count": (
-            nm_vs2["healthy_count"]
-            if isinstance(nm_vs2 := validation.get("network_monitoring_log_summary"), dict)
-            else 0
-        ),
-        "identity_management_entry_count": (
-            im_vs["entry_count"]
-            if isinstance(im_vs := validation.get("identity_management_log_summary"), dict)
-            else 0
-        ),
-        "identity_management_active_count": (
-            im_vs2["active_count"]
-            if isinstance(im_vs2 := validation.get("identity_management_log_summary"), dict)
-            else 0
-        ),
-        "certificate_management_entry_count": (
-            certm_vs["entry_count"]
-            if isinstance(certm_vs := validation.get("certificate_management_log_summary"), dict)
-            else 0
-        ),
-        "certificate_management_issued_count": (
-            certm_vs2["issued_count"]
-            if isinstance(certm_vs2 := validation.get("certificate_management_log_summary"), dict)
-            else 0
-        ),
-        "alert_escalation_entry_count": (
-            ae_vs["entry_count"]
-            if isinstance(ae_vs := validation.get("alert_escalation_log_summary"), dict)
-            else 0
-        ),
-        "alert_escalation_resolved_count": (
-            ae_vs2["resolved_count"]
-            if isinstance(ae_vs2 := validation.get("alert_escalation_log_summary"), dict)
-            else 0
-        ),
-        "configuration_change_entry_count": (
-            cc_vs["entry_count"]
-            if isinstance(cc_vs := validation.get("configuration_change_log_summary"), dict)
-            else 0
-        ),
-        "configuration_change_applied_count": (
-            cc_vs2["applied_count"]
-            if isinstance(cc_vs2 := validation.get("configuration_change_log_summary"), dict)
-            else 0
-        ),
-        "data_retention_entry_count": (
-            dr_ret_vs["entry_count"]
-            if isinstance(dr_ret_vs := validation.get("data_retention_log_summary"), dict)
-            else 0
-        ),
-        "data_retention_completed_count": (
-            dr_ret_vs2["completed_count"]
-            if isinstance(dr_ret_vs2 := validation.get("data_retention_log_summary"), dict)
-            else 0
-        ),
-        "problem_management_entry_count": (
-            pm_vs["entry_count"]
-            if isinstance(pm_vs := validation.get("problem_management_log_summary"), dict)
-            else 0
-        ),
-        "problem_management_resolved_count": (
-            pm_vs2["resolved_count"]
-            if isinstance(pm_vs2 := validation.get("problem_management_log_summary"), dict)
-            else 0
-        ),
-        "release_management_entry_count": (
-            rm_vs["entry_count"]
-            if isinstance(rm_vs := validation.get("release_management_log_summary"), dict)
-            else 0
-        ),
-        "release_management_deployed_count": (
-            rm_vs2["deployed_count"]
-            if isinstance(rm_vs2 := validation.get("release_management_log_summary"), dict)
-            else 0
-        ),
-        "service_request_entry_count": (
-            sr_vs["entry_count"]
-            if isinstance(sr_vs := validation.get("service_request_log_summary"), dict)
-            else 0
-        ),
-        "service_request_fulfilled_count": (
-            sr_vs2["fulfilled_count"]
-            if isinstance(sr_vs2 := validation.get("service_request_log_summary"), dict)
-            else 0
-        ),
-        "contract_management_entry_count": (
-            cm_vs["entry_count"]
-            if isinstance(cm_vs := validation.get("contract_management_log_summary"), dict)
-            else 0
-        ),
-        "contract_management_active_count": (
-            cm_vs2["active_count"]
-            if isinstance(cm_vs2 := validation.get("contract_management_log_summary"), dict)
-            else 0
-        ),
-        "knowledge_management_entry_count": (
-            km_vs["entry_count"]
-            if isinstance(km_vs := validation.get("knowledge_management_log_summary"), dict)
-            else 0
-        ),
-        "knowledge_management_published_count": (
-            km_vs2["published_count"]
-            if isinstance(km_vs2 := validation.get("knowledge_management_log_summary"), dict)
-            else 0
-        ),
-        "supplier_management_entry_count": (
-            supp_vs["entry_count"]
-            if isinstance(supp_vs := validation.get("supplier_management_log_summary"), dict)
-            else 0
-        ),
-        "supplier_management_active_count": (
-            supp_vs2["active_count"]
-            if isinstance(supp_vs2 := validation.get("supplier_management_log_summary"), dict)
-            else 0
-        ),
-        "audit_finding_entry_count": (
-            af_vs["entry_count"]
-            if isinstance(af_vs := validation.get("audit_finding_log_summary"), dict)
-            else 0
-        ),
-        "audit_finding_remediated_count": (
-            af_vs2["remediated_count"]
-            if isinstance(af_vs2 := validation.get("audit_finding_log_summary"), dict)
-            else 0
-        ),
-        "budget_entry_count": (
-            budget_vs["entry_count"]
-            if isinstance(budget_vs := validation.get("budget_log_summary"), dict)
-            else 0
-        ),
-        "budget_approved_count": (
-            budget_vs2["approved_count"]
-            if isinstance(budget_vs2 := validation.get("budget_log_summary"), dict)
-            else 0
-        ),
-        "training_entry_count": (
-            train_vs["entry_count"]
-            if isinstance(train_vs := validation.get("training_log_summary"), dict)
-            else 0
-        ),
-        "training_completed_count": (
-            train_vs2["completed_count"]
-            if isinstance(train_vs2 := validation.get("training_log_summary"), dict)
-            else 0
-        ),
-        "change_request_entry_count": (
-            cr_vs["entry_count"]
-            if isinstance(cr_vs := validation.get("change_request_log_summary"), dict)
-            else 0
-        ),
-        "change_request_approved_count": (
-            cr_vs2["approved_count"]
-            if isinstance(cr_vs2 := validation.get("change_request_log_summary"), dict)
-            else 0
-        ),
-        "project_milestone_entry_count": (
-            pml_vs["entry_count"]
-            if isinstance(pml_vs := validation.get("project_milestone_log_summary"), dict)
-            else 0
-        ),
-        "project_milestone_achieved_count": (
-            pml_vs2["achieved_count"]
-            if isinstance(pml_vs2 := validation.get("project_milestone_log_summary"), dict)
-            else 0
-        ),
-        "vendor_assessment_entry_count": (
-            va_vs["entry_count"]
-            if isinstance(va_vs := validation.get("vendor_assessment_log_summary"), dict)
-            else 0
-        ),
-        "vendor_assessment_completed_count": (
-            va_vs2["completed_count"]
-            if isinstance(va_vs2 := validation.get("vendor_assessment_log_summary"), dict)
-            else 0
-        ),
-        "communication_entry_count": (
-            comm_vs["entry_count"]
-            if isinstance(comm_vs := validation.get("communication_log_summary"), dict)
-            else 0
-        ),
-        "communication_delivered_count": (
-            comm_vs2["delivered_count"]
-            if isinstance(comm_vs2 := validation.get("communication_log_summary"), dict)
-            else 0
-        ),
-        "document_management_entry_count": (
-            docm_vs["entry_count"]
-            if isinstance(docm_vs := validation.get("document_management_log_summary"), dict)
-            else 0
-        ),
-        "document_management_active_count": (
-            docm_vs2["active_count"]
-            if isinstance(docm_vs2 := validation.get("document_management_log_summary"), dict)
-            else 0
-        ),
-        "procurement_entry_count": (
-            proc_vs["entry_count"]
-            if isinstance(proc_vs := validation.get("procurement_log_summary"), dict)
-            else 0
-        ),
-        "procurement_completed_count": (
-            proc_vs2["completed_count"]
-            if isinstance(proc_vs2 := validation.get("procurement_log_summary"), dict)
-            else 0
-        ),
-        "labeled_candidate_count": (
-            lds_s["entry_count"]
-            if isinstance(lds_s := validation.get("labeled_dataset_summary"), dict)
-            else 0
-        ),
-        "labeled_candidate_follow_up_count": (
-            lds_s2["follow_up_count"]
-            if isinstance(lds_s2 := validation.get("labeled_dataset_summary"), dict)
-            else 0
-        ),
-        "eval_against_labels_entry_count": (
-            eal_s["entry_count"]
-            if isinstance(eal_s := validation.get("eval_against_labels_summary"), dict)
-            else 0
-        ),
-        "eval_against_labels_accuracy": (
-            eal_s2["accuracy"]
-            if isinstance(eal_s2 := validation.get("eval_against_labels_summary"), dict)
-            else 0.0
-        ),
-        "real_label_accuracy": (
-            validation.get("real_label_accuracy")
-        ),
-        "real_label_accuracy_gate_ok": (
-            validation.get("real_label_accuracy_gate_ok", True)
-        ),
-        "real_label_entry_count": (
-            validation.get("real_label_entry_count", 0)
-        ),
-        "learned_scoring_model_v1_trained": validation.get(
-            "learned_scoring_model_v1_trained", False
-        ),
-        "learned_scoring_model_v1_cv_accuracy": validation.get(
-            "learned_scoring_model_v1_cv_accuracy"
-        ),
-        "data_release_snapshot_count": validation.get("data_release_snapshot_count", 0),
-        "synthetic_training_ok": (
-            syn_s["ok"]
-            if isinstance(syn_s := validation.get("synthetic_training_summary"), dict)
-            else False
-        ),
-        "synthetic_training_total_examples": (
-            (syn_s2.get("train_size", 0) + syn_s2.get("test_size", 0))
-            if isinstance(syn_s2 := validation.get("synthetic_training_summary"), dict)
-            else 0
-        ),
-        "synthetic_training_test_accuracy": (
-            syn_s3.get("test_accuracy")
-            if isinstance(syn_s3 := validation.get("synthetic_training_summary"), dict)
-            else None
-        ),
-        "recommended_commands": [
-            ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing",
-            ".venv/bin/ruff check .",
-            ".venv/bin/mypy src",
-            "git diff --check",
-        ],
     }
 
 

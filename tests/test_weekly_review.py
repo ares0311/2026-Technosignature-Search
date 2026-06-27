@@ -3,10 +3,7 @@
 from __future__ import annotations
 
 import json
-from io import StringIO
-from pathlib import Path
 
-from techno_search.cli import main
 from techno_search.weekly_review import (
     WEEKLY_REVIEW_DISCLAIMER,
     WEEKLY_REVIEW_SCHEMA_VERSION,
@@ -142,43 +139,6 @@ def test_write_weekly_review_template(tmp_path):
     assert data["schema_version"] == WEEKLY_REVIEW_SCHEMA_VERSION
     assert WEEKLY_REVIEW_DISCLAIMER in data["disclaimer"]
 
-
-def test_cli_weekly_review_template_stdout(tmp_path):
-    """CLI produces JSON with required gate fields when run against a temp SQLite db."""
-    db_path = tmp_path / "test.sqlite3"
-    out = StringIO()
-    ret = main(
-        ["weekly-review-template", "--db-path", str(db_path)],
-        stdout=out,
-    )
-    assert ret == 0
-    data = json.loads(out.getvalue())
-    assert "schema_version" in data
-    assert "network_access_confirmed_zero" in data
-    assert "external_submission_confirmed_zero" in data
-    assert WEEKLY_REVIEW_DISCLAIMER in data["disclaimer"]
-
-
-def test_cli_weekly_review_template_output_dir(tmp_path):
-    """CLI writes Markdown and JSON files when --output-dir is given."""
-    db_path = tmp_path / "test.sqlite3"
-    out_dir = tmp_path / "review"
-    out = StringIO()
-    ret = main(
-        [
-            "weekly-review-template",
-            "--db-path",
-            str(db_path),
-            "--output-dir",
-            str(out_dir),
-        ],
-        stdout=out,
-    )
-    assert ret == 0
-    data = json.loads(out.getvalue())
-    assert data["ok"] is True
-    assert Path(data["markdown_path"]).exists()
-    assert Path(data["json_path"]).exists()
 
 
 def test_weekly_review_template_next_actions_include_validate():
