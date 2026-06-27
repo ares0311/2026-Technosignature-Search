@@ -239,10 +239,12 @@ The project was redirected in session on 2026-06-26. Key changes:
   `data/bl_hprc_seed_targets.csv`, `data/target_sample_manifest.json`, `docs/SAMPLING_DESIGN.md`.
 - **PR #123 merged to `main`** (2026-06-26): Pre-commit hook phase-based, runbook storage
   cleanup, PROJECT_STATUS.md, CLAUDE.md updates.
-- **PR #124 open (2026-06-27):** Phase 0 module deletion — 74 overhead modules deleted,
-  41 overhead test files deleted, stubs in cli.py/__init__.py, 1332 tests pass.
-- **Phase 0 status:** Module deletion complete (PR #124). Remaining: synthetic training
-  data deletion, ABACAB RFI rejection, validate-all science-only gates.
+- **PR #124 merged to `main`** (2026-06-27): Phase 0 module deletion — 74 overhead modules
+  deleted, 41 overhead test files deleted, stubs in cli.py/__init__.py.
+- **PR #125 open (2026-06-27):** ABACAB ON/OFF cadence rejection score (Enriquez et al. 2017).
+  source_artifact tracking through RadioHit, _abacab_cadence_score(), 3 new tests.
+- **Phase 0 status:** Module deletion ✅ (PR #124). ABACAB ✅ (PR #125). Remaining:
+  synthetic training data deletion, validate-all science-only gates.
 - **semisupervised_scorer:** `is_fitted: false`, `train_hit_count: 0` — must be
   trained on real MeerKAT BLUSE data (not synthetic) when Phase 1 begins.
 - DECISION-134/139: AI hardening gate closed for local operations only.
@@ -254,12 +256,14 @@ The project was redirected in session on 2026-06-26. Key changes:
 
 ### Phase 0 progress (2026-06-27):
 
-**PR #124 pending merge.** Deleted 74 overhead modules + 41 overhead test files.
+**PR #124 merged.** Deleted 74 overhead modules.
+**PR #125 open.** ABACAB cadence rejection score implemented.
 Next Phase 0 items:
 1. Delete synthetic training data files (`tests/fixtures/calibration_false_positives.json`,
-   `tests/fixtures/score_regressions.json`) — but verify first that no real tests depend on them
-2. Harden ON/OFF cadence RFI rejection to ABACAB standard (Enriquez et al. 2017)
-3. Update `validate-all` to science-only gates (remove overhead stub checks)
+   `tests/fixtures/score_regressions.json`) — complex: calibration.py and baseline_eval.py
+   reference calibration_false_positives.json; test_score_regressions.py tests example candidate
+   scoring against score_regressions.json snapshots. Requires careful coordination.
+2. Update `validate-all` to science-only gates (remove overhead stub checks)
 
 ### turboSETI / pipeline status (as of 2026-06-21):
 
@@ -269,8 +273,8 @@ Next Phase 0 items:
 - `scan_history.ndjson` has all 5 stems recorded. New stratified targets (31) are not yet
   downloaded or processed — use `--force-rescan` is NOT needed for new targets.
 
-### Latest known CI state (PR #124, 2026-06-27):
-- `.venv/bin/python -m pytest -q` — 1332 passed, 13 skipped (74 overhead modules deleted)
+### Latest known CI state (PR #125, 2026-06-27):
+- `.venv/bin/python -m pytest -q` — 1335 passed, 13 skipped (3 new ABACAB tests)
 - `.venv/bin/ruff check .` — All checks passed
 - `.venv/bin/mypy src --no-error-summary` — clean
 - `.venv/bin/techno-search validate-all` — ok: True
