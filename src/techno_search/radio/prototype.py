@@ -41,6 +41,7 @@ class RadioHit:
     instrumental_artifact_score: float = 0.0
     injection_recovery_score: float = 0.5
     repeat_observation_score: float = 0.0
+    source_artifact: str = ""
 
 
 @dataclass(frozen=True)
@@ -122,6 +123,9 @@ def build_radio_candidate(
     configured_rfi_overlap = rfi_band_overlap_score(best_hit.frequency_hz, rfi_bands)
     database_rfi_overlap = _float(rfi_database_features["rfi_database_overlap_score"])
 
+    abacab_score, on_src_count, off_src_count = _abacab_cadence_score(
+        matched_on_hits, matched_off_hits
+    )
     features: dict[str, FeatureValue] = {
         "frequency_hz": best_hit.frequency_hz,
         "drift_rate_hz_per_sec": best_hit.drift_rate_hz_per_sec,
@@ -129,6 +133,9 @@ def build_radio_candidate(
         "bandwidth_hz": best_hit.bandwidth_hz,
         "on_target_presence_score": _presence_score(max_on_snr),
         "off_target_presence_score": _presence_score(max_off_snr),
+        "abacab_cadence_score": abacab_score,
+        "on_scan_distinct_source_count": on_src_count,
+        "off_scan_distinct_source_count": off_src_count,
         "rfi_band_overlap_score": max(configured_rfi_overlap, database_rfi_overlap),
         "frequency_persistence_score": _frequency_persistence_score(hits, best_hit),
         "nearby_target_recurrence_score": _clamp(len(recurrence_targets) / 3.0),
@@ -184,6 +191,7 @@ def _parse_hit(row: Mapping[str, FeatureValue], defaults: Mapping[str, float]) -
         repeat_observation_score=_clamp(
             _float(row.get("repeat_observation_score", defaults["repeat_observation_score"]))
         ),
+        source_artifact=str(row.get("source_artifact", "")),
     )
 
 
@@ -210,6 +218,28 @@ def _frequency_matched_hits(
         if abs(hit.frequency_hz - reference.frequency_hz)
         <= FREQUENCY_MATCH_TOLERANCE_HZ
     ]
+
+
+def _abacab_cadence_score(
+    matched_on_hits: Sequence[RadioHit],
+    matched_off_hits: Sequence[RadioHit],
+) -> tuple[float, int, int]:
+    """ABACAB ON/OFF cadence rejection score (Enriquez et al. 2017).
+
+    Returns (score, on_source_count, off_source_count).
+      1.0 — passes ABACAB: signal in ≥3 distinct ON observations, zero OFF observations
+      0.0 — fails ABACAB: signal detected in ≥1 OFF observation (RFI)
+      0.5 — insufficient cadence data: <3 distinct ON sources and zero OFF sources
+    """
+    on_sources = {h.source_artifact for h in matched_on_hits if h.source_artifact}
+    off_sources = {h.source_artifact for h in matched_off_hits if h.source_artifact}
+    on_count = len(on_sources)
+    off_count = len(off_sources)
+    if off_count > 0:
+        return 0.0, on_count, off_count
+    if on_count >= 3:
+        return 1.0, on_count, off_count
+    return 0.5, on_count, off_count
 
 
 def _metadata_completeness_score(hits: Sequence[RadioHit]) -> float:

@@ -28,6 +28,7 @@ _SNR_ALIASES = ("SNR", "snr", "Signal_to_Noise")
 _DRIFT_ALIASES = ("Drift_Rate", "drift_rate", "DriftRate", "drift_rate_hz_s")
 _SCAN_ROLE_ALIASES = ("scan_role", "Scan_Role")
 _TARGET_ALIASES = ("target_id", "Target_ID")
+_SOURCE_ARTIFACT_ALIASES = ("source_artifact", "Source_Artifact")
 
 # Metadata keys to extract from "#" header lines
 _META_KEYS = ("Source", "MJD", "RA", "DEC", "DELTAT", "DELTAF")
@@ -156,6 +157,7 @@ def _normalize_row(
     sefd_str = raw.get("SEFD") or raw.get("sefd")
     scan_role = _resolve_col(raw, _SCAN_ROLE_ALIASES)
     target_id = _resolve_col(raw, _TARGET_ALIASES)
+    source_artifact = _resolve_col(raw, _SOURCE_ARTIFACT_ALIASES)
 
     def _float_or_none(s: str | None) -> float | None:
         if not s:
@@ -176,6 +178,7 @@ def _normalize_row(
         "sefd": _float_or_none(sefd_str),
         "scan_role": scan_role.lower() if scan_role else None,
         "target_id": target_id,
+        "source_artifact": source_artifact or "",
     }
 
 
@@ -200,6 +203,7 @@ def hit_table_to_radio_hit_dicts(path: Path) -> list[dict[str, Any]]:
                 or r.get("source_name")
                 or "unknown"
             ),
+            "source_artifact": r.get("source_artifact") or str(path.name),
         })
     return out
 

@@ -224,3 +224,74 @@ def test_parse_hit_table_rejects_invalid_scan_role() -> None:
                 }
             ]
         )
+
+
+def _make_on_hit(artifact: str, snr: float = 20.0) -> dict:
+    return {
+        "frequency_hz": 1_420_000_000.0,
+        "drift_rate_hz_per_sec": 0.4,
+        "snr": snr,
+        "bandwidth_hz": 2.79,
+        "scan_role": "on",
+        "target_id": "hip12345",
+        "source_artifact": artifact,
+    }
+
+
+def _make_off_hit(artifact: str, snr: float = 15.0) -> dict:
+    return {
+        "frequency_hz": 1_420_000_000.0,
+        "drift_rate_hz_per_sec": 0.4,
+        "snr": snr,
+        "bandwidth_hz": 2.79,
+        "scan_role": "off",
+        "target_id": "off-hip12345",
+        "source_artifact": artifact,
+    }
+
+
+def test_abacab_cadence_score_passes_three_on_zero_off() -> None:
+    candidate = build_radio_candidate(
+        "abacab-pass",
+        [
+            _make_on_hit("obs_on_1.dat"),
+            _make_on_hit("obs_on_2.dat"),
+            _make_on_hit("obs_on_3.dat"),
+        ],
+    )
+    assert candidate.features["abacab_cadence_score"] == 1.0
+    assert candidate.features["on_scan_distinct_source_count"] == 3
+    assert candidate.features["off_scan_distinct_source_count"] == 0
+
+
+def test_abacab_cadence_score_fails_on_off_detection() -> None:
+    candidate = build_radio_candidate(
+        "abacab-rfi",
+        [
+            _make_on_hit("obs_on_1.dat"),
+            _make_on_hit("obs_on_2.dat"),
+            _make_on_hit("obs_on_3.dat"),
+            _make_off_hit("obs_off_1.dat"),
+        ],
+    )
+    assert candidate.features["abacab_cadence_score"] == 0.0
+    assert candidate.features["off_scan_distinct_source_count"] == 1
+
+
+def test_abacab_cadence_score_neutral_without_cadence_data() -> None:
+    candidate = build_radio_candidate(
+        "single-dat",
+        [
+            {
+                "frequency_hz": 1_420_000_000.0,
+                "drift_rate_hz_per_sec": 0.4,
+                "snr": 22.0,
+                "bandwidth_hz": 2.79,
+                "scan_role": "on",
+                "target_id": "hip99999",
+            },
+        ],
+    )
+    assert candidate.features["abacab_cadence_score"] == 0.5
+    assert candidate.features["on_scan_distinct_source_count"] == 0
+    assert candidate.features["off_scan_distinct_source_count"] == 0
