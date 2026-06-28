@@ -56,9 +56,33 @@ class TestFlagCrossTargetRfi:
         assert flagged["r1"]["flagged"] is True
         assert flagged["r1"]["reason"] == "cross_target_rfi"
         assert flagged["r1"]["match_count"] >= 1
+        assert flagged["r1"]["matched_target_names"] == ["A", "B"]
+        assert flagged["r1"]["matched_candidate_ids"] == ["r1", "r2"]
 
     def test_empty_lists_returns_empty(self) -> None:
         assert flag_cross_target_rfi([[], []]) == {}
+
+    def test_zero_frequency_observation_records_are_not_flagged(self) -> None:
+        lists = [
+            [
+                {
+                    "candidate_id": "zero-a",
+                    "frequency_hz": 0.0,
+                    "target_name": "HIP17147",
+                    "observation_only": True,
+                }
+            ],
+            [
+                {
+                    "candidate_id": "zero-b",
+                    "frequency_hz": 0.0,
+                    "target_name": "HIP39826",
+                    "observation_only": True,
+                }
+            ],
+        ]
+
+        assert flag_cross_target_rfi(lists) == {}
 
     def test_single_target_no_flags(self) -> None:
         lists = [[_cand("r1", 1420e6, "A"), _cand("r2", 1421e6, "A")]]

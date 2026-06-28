@@ -28,10 +28,15 @@ def flag_cross_target_rfi(
         Dict mapping candidate_id → flag info for flagged candidates.
         Candidates from only one target are never flagged.
     """
-    # Flatten all candidates, preserving their source
+    # Flatten scored signal candidates, preserving their source.  Zero-frequency
+    # observation-only records are negative evidence, not RFI-bearing hits.
     flat: list[dict[str, Any]] = []
     for clist in candidate_lists:
         for cand in clist:
+            if bool(cand.get("observation_only")):
+                continue
+            if float(cand.get("frequency_hz", 0.0) or 0.0) <= 0.0:
+                continue
             flat.append(cand)
 
     if not flat:
@@ -65,6 +70,7 @@ def flag_cross_target_rfi(
             matched_freqs = sorted(
                 {float(c.get("frequency_hz", 0.0)) for c in group}
             )
+            matched_candidate_ids = sorted(str(c.get("candidate_id", "")) for c in group)
             for cand in group:
                 cid = str(cand.get("candidate_id", ""))
                 flagged[cid] = {
@@ -72,6 +78,9 @@ def flag_cross_target_rfi(
                     "reason": "cross_target_rfi",
                     "match_count": len(unique_targets),
                     "matched_frequencies": matched_freqs,
+                    "matched_target_names": sorted(unique_targets),
+                    "matched_candidate_ids": matched_candidate_ids,
+                    "frequency_tolerance_hz": float(freq_tolerance_hz),
                 }
 
     return flagged

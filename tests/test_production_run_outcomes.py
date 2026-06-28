@@ -132,6 +132,39 @@ def test_build_production_outcomes_records_scan_level_negative_result() -> None:
     )
 
 
+def test_build_production_outcomes_carries_cross_target_rfi_flags() -> None:
+    outcomes = build_production_outcomes(
+        [
+            _candidate(
+                "cand-a",
+                "candidate_review_packet",
+                target_name="HIP99427",
+                score=0.9,
+            ),
+            _candidate(
+                "cand-b",
+                "known_object_annotation",
+                target_name="HIP100670",
+                score=0.1,
+            ),
+        ],
+        run_id=RUN_ID,
+        started_at_utc="2026-06-18T20:13:25Z",
+        completed_at_utc="2026-06-18T20:13:30Z",
+    )
+
+    follow_up = outcomes["follow_ups"]["entries"][0]
+    non_detection = outcomes["non_detections"]["entries"][0]
+    target_entries = outcomes["target_status"]["entries"]
+
+    assert follow_up["cross_target_rfi_flagged"] is True
+    assert follow_up["cross_target_rfi_match_count"] == 2
+    assert follow_up["cross_target_rfi_matched_targets"] == ["HIP100670", "HIP99427"]
+    assert non_detection["cross_target_rfi_flagged"] is True
+    assert {entry["target_name"] for entry in target_entries} == {"HIP99427", "HIP100670"}
+    assert all(entry["cross_target_rfi_flagged"] for entry in target_entries)
+
+
 def test_write_and_read_production_outcomes(tmp_path) -> None:
     results_dir = tmp_path / "results"
     run_dir = results_dir / "scans" / RUN_ID

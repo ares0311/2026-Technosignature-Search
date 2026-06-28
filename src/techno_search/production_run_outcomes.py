@@ -17,6 +17,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from techno_search.cross_target_rfi import flag_cross_target_rfi
 from techno_search.scan_summary import load_candidates_from_batch_dir, scan_summary
 
 PRODUCTION_RUN_MANIFEST_SCHEMA_VERSION = "production_run_manifest_v1"
@@ -74,16 +75,28 @@ def build_production_outcomes(
         1 for candidate in candidates if bool(candidate.get("observation_only"))
     )
     scored_candidate_count = len(candidates) - zero_hit_observation_count
+    rfi_flags = _cross_target_rfi_flags_by_candidate(candidates)
 
     for candidate in candidates:
         pathway = str(candidate.get("recommended_pathway") or candidate.get("pathway") or "unknown")
+        rfi_flag = rfi_flags.get(str(candidate.get("candidate_id", "")))
         if pathway in FOLLOW_UP_PATHWAYS:
             follow_up_entries.append(
-                _follow_up_entry(candidate, run_id, len(follow_up_entries) + 1)
+                _follow_up_entry(
+                    candidate,
+                    run_id,
+                    len(follow_up_entries) + 1,
+                    rfi_flag=rfi_flag,
+                )
             )
         else:
             non_detection_entries.append(
-                _non_detection_entry(candidate, run_id, len(non_detection_entries) + 1)
+                _non_detection_entry(
+                    candidate,
+                    run_id,
+                    len(non_detection_entries) + 1,
+                    rfi_flag=rfi_flag,
+                )
             )
 
     scan_level_negative_result = {
@@ -110,6 +123,7 @@ def build_production_outcomes(
         run_id=run_id,
         follow_up_entries=follow_up_entries,
         non_detection_entries=non_detection_entries,
+        rfi_flags=rfi_flags,
     )
 
     manifest = {
@@ -285,12 +299,14 @@ def build_target_status_summary(
     run_id: str,
     follow_up_entries: list[dict[str, Any]] | None = None,
     non_detection_entries: list[dict[str, Any]] | None = None,
+    rfi_flags: Mapping[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Build compact per-target status rows for terminal UX and resume artifacts."""
     index_by_candidate = _index_ids_by_candidate(
         follow_up_entries=follow_up_entries or [],
         non_detection_entries=non_detection_entries or [],
     )
+    flags = dict(rfi_flags or _cross_target_rfi_flags_by_candidate(candidates))
     by_target: dict[str, list[dict[str, Any]]] = {}
     for candidate in candidates:
         target_name = str(
@@ -315,6 +331,7 @@ def build_target_status_summary(
             1 for item in target_candidates if not bool(item.get("observation_only"))
         )
         candidate_id = str(best_candidate.get("candidate_id", ""))
+        rfi_flag = flags.get(candidate_id, {})
         kind = classify_target_kind(best_candidate)
         index_id = index_by_candidate.get(candidate_id)
         if not index_id:
@@ -340,6 +357,11 @@ def build_target_status_summary(
                     best_candidate.get("recommended_pathway")
                     or best_candidate.get("pathway")
                     or "unknown"
+                ),
+                "cross_target_rfi_flagged": bool(rfi_flag.get("flagged")),
+                "cross_target_rfi_match_count": int(rfi_flag.get("match_count", 0) or 0),
+                "cross_target_rfi_matched_targets": list(
+                    rfi_flag.get("matched_target_names", [])
                 ),
                 "track": str(best_candidate.get("track", "unknown")),
                 "detection_claimed": False,
@@ -424,9 +446,15 @@ def classify_target_kind(candidate: dict[str, Any]) -> dict[str, str]:
     )
 
 
-def _follow_up_entry(candidate: dict[str, Any], run_id: str, sequence: int) -> dict[str, Any]:
+def _follow_up_entry(
+    candidate: dict[str, Any],
+    run_id: str,
+    sequence: int,
+    *,
+    rfi_flag: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     pathway = str(candidate.get("recommended_pathway") or candidate.get("pathway") or "unknown")
-    return {
+    entry = {
         "follow_up_id": _child_id("FU", run_id, sequence),
         "candidate_id": str(candidate.get("candidate_id", "")),
         "target_name": str(candidate.get("target_name", "")),
@@ -440,15 +468,22 @@ def _follow_up_entry(candidate: dict[str, Any], run_id: str, sequence: int) -> d
         "detection_claimed": False,
         "external_submission_allowed": False,
     }
+    return _with_cross_target_rfi(entry, rfi_flag)
 
 
-def _non_detection_entry(candidate: dict[str, Any], run_id: str, sequence: int) -> dict[str, Any]:
+def _non_detection_entry(
+    candidate: dict[str, Any],
+    run_id: str,
+    sequence: int,
+    *,
+    rfi_flag: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     pathway = str(candidate.get("recommended_pathway") or candidate.get("pathway") or "unknown")
     if bool(candidate.get("observation_only")):
         negative_evidence = candidate.get("negative_evidence") or [
             "turboSETI hit table contained no hit rows above the configured threshold."
         ]
-        return {
+        entry = {
             "non_detection_id": _child_id("NEG", run_id, sequence),
             "candidate_id": str(candidate.get("candidate_id", "")),
             "observation_id": str(
@@ -468,7 +503,8 @@ def _non_detection_entry(candidate: dict[str, Any], run_id: str, sequence: int) 
             "detection_claimed": False,
             "external_submission_allowed": False,
         }
-    return {
+        return _with_cross_target_rfi(entry, rfi_flag)
+    entry = {
         "non_detection_id": _child_id("NEG", run_id, sequence),
         "candidate_id": str(candidate.get("candidate_id", "")),
         "target_name": str(candidate.get("target_name", "")),
@@ -485,6 +521,33 @@ def _non_detection_entry(candidate: dict[str, Any], run_id: str, sequence: int) 
         "detection_claimed": False,
         "external_submission_allowed": False,
     }
+    return _with_cross_target_rfi(entry, rfi_flag)
+
+
+def _cross_target_rfi_flags_by_candidate(
+    candidates: list[dict[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    by_target: dict[str, list[dict[str, Any]]] = {}
+    for candidate in candidates:
+        by_target.setdefault(str(candidate.get("target_name", "")), []).append(candidate)
+    return flag_cross_target_rfi(list(by_target.values()))
+
+
+def _with_cross_target_rfi(
+    entry: dict[str, Any],
+    rfi_flag: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    flag = rfi_flag or {}
+    flagged = bool(flag.get("flagged"))
+    entry["cross_target_rfi_flagged"] = flagged
+    entry["cross_target_rfi_match_count"] = int(flag.get("match_count", 0) or 0)
+    entry["cross_target_rfi_matched_targets"] = list(flag.get("matched_target_names", []))
+    if flagged:
+        entry["cross_target_rfi_reason"] = str(flag.get("reason", "cross_target_rfi"))
+        entry["cross_target_rfi_matched_frequencies"] = list(
+            flag.get("matched_frequencies", [])
+        )
+    return entry
 
 
 def _index_ids_by_candidate(
