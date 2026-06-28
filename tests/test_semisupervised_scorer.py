@@ -13,10 +13,13 @@ from techno_search.semisupervised_scorer import (
     DEFAULT_N_COMPONENTS,
     DEFAULT_N_ESTIMATORS,
     DEFAULT_WORKERS,
+    SEMISUPERVISED_CORPUS_DISCLAIMER,
+    SEMISUPERVISED_CORPUS_VERSION,
     SEMISUPERVISED_FEATURE_NAMES,
     SEMISUPERVISED_SCORER_DISCLAIMER,
     SEMISUPERVISED_SCORER_VERSION,
     SemisupervisedScorer,
+    build_training_corpus_from_dat_files,
     load_training_hits_ndjson,
     semisupervised_scorer_summary,
 )
@@ -58,6 +61,27 @@ def _training_corpus(n: int = 50) -> list[dict]:
             on_off=0.8,
         ))
     return hits
+
+
+def _write_turboseti_dat(path: Path, source: str, rows: list[tuple[float, float, float]]) -> None:
+    lines = [
+        "# -------------------------- o --------------------------",
+        f"# Source:{source}",
+        "# MJD: 57650.782094907408\tRA: 17h10m03.984s\tDEC: 12d10m58.8s",
+        "# DELTAT:  18.253611\tDELTAF(Hz):  -2.793968",
+        "# --------------------------",
+        (
+            "# Top_Hit_# \tDrift_Rate \tSNR \tUncorrected_Frequency "
+            "\tCorrected_Frequency \tIndex \tSEFD"
+        ),
+        "# --------------------------",
+    ]
+    for idx, (drift, snr, frequency_mhz) in enumerate(rows, start=1):
+        lines.append(
+            f"{idx:06d}\t {drift:.6f}\t {snr:.6f}\t   {frequency_mhz:.6f}"
+            f"\t   {frequency_mhz:.6f}\t{700000 + idx}\t0.0"
+        )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -304,3 +328,47 @@ def test_load_training_hits_ndjson_rejects_non_object(tmp_path) -> None:
 
     with pytest.raises(ValueError, match="Expected object"):
         load_training_hits_ndjson(path)
+
+
+def test_build_training_corpus_from_realistic_dat_files(tmp_path) -> None:
+    dat_dir = tmp_path / "dat"
+    dat_dir.mkdir()
+    _write_turboseti_dat(
+        dat_dir / "on.dat",
+        "HIP_REAL_ON",
+        [(-0.397966, 30.612337, 8419.319368), (-0.377557, 245.709641, 8419.297028)],
+    )
+    _write_turboseti_dat(
+        dat_dir / "off.dat",
+        "HIP_REAL_OFF",
+        [(-0.397966, 28.612337, 8419.319368)],
+    )
+    output = tmp_path / "training.ndjson"
+
+    summary = build_training_corpus_from_dat_files(dat_dir, output)
+    loaded = load_training_hits_ndjson(output)
+
+    assert summary["schema_version"] == SEMISUPERVISED_CORPUS_VERSION
+    assert summary["ok"] is True
+    assert summary["hit_count"] == 3
+    assert summary["dat_file_count"] == 2
+    assert summary["corpus_source"] == "real_turboseti_dat"
+    assert "detection" in SEMISUPERVISED_CORPUS_DISCLAIMER
+    assert output.exists()
+    assert Path(summary["provenance_path"]).exists()
+    assert loaded[0]["corpus_source"] == "real_turboseti_dat"
+    assert loaded[0]["frequency_hz"] == pytest.approx(8419.319368e6)
+    assert loaded[0]["normalized_drift_hz_s_per_ghz"] == pytest.approx(
+        -0.397966 / 8.419319368
+    )
+    assert loaded[0]["frequency_persistence_score"] == pytest.approx(1.0)
+    assert "input_dat_path" in loaded[0]
+
+
+def test_build_training_corpus_rejects_zero_hit_dat_files(tmp_path) -> None:
+    dat_dir = tmp_path / "dat"
+    dat_dir.mkdir()
+    _write_turboseti_dat(dat_dir / "zero.dat", "HIP_ZERO", [])
+
+    with pytest.raises(ValueError, match="No parseable turboSETI hits"):
+        build_training_corpus_from_dat_files(dat_dir, tmp_path / "training.ndjson")

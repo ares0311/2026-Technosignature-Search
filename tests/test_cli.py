@@ -29,6 +29,23 @@ def _candidate_json() -> dict[str, object]:
     }
 
 
+def _write_cli_turboseti_dat(path: Path) -> None:
+    path.write_text(
+        "\n".join(
+            [
+                "# Source:HIP_CLI",
+                "# MJD: 57650.782094907408\tRA: 17h10m03.984s\tDEC: 12d10m58.8s",
+                "# DELTAT:  18.253611\tDELTAF(Hz):  -2.793968",
+                "# Top_Hit_# \tDrift_Rate \tSNR \tUncorrected_Frequency \tCorrected_Frequency",
+                "000001\t -0.397966\t 30.612337\t 8419.319368\t 8419.319368",
+                "000002\t -0.377557\t 45.709641\t 8419.297028\t 8419.297028",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def test_cli_scores_candidate_json_to_stdout(tmp_path) -> None:
     input_path = tmp_path / "candidate.json"
     input_path.write_text(json.dumps(_candidate_json()), encoding="utf-8")
@@ -1322,6 +1339,33 @@ def test_cli_semisupervised_scorer_train_writes_local_artifacts(tmp_path) -> Non
     assert model_path.exists()
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
     assert metadata["train_hit_count"] == 12
+
+
+def test_cli_semisupervised_corpus_build_from_dat_files(tmp_path) -> None:
+    dat_dir = tmp_path / "dat"
+    dat_dir.mkdir()
+    _write_cli_turboseti_dat(dat_dir / "hits.dat")
+    output = tmp_path / "training.ndjson"
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "semisupervised-corpus-build",
+            "--dat-dir",
+            str(dat_dir),
+            "--output",
+            str(output),
+        ],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["ok"] is True
+    assert result["hit_count"] == 2
+    assert result["corpus_source"] == "real_turboseti_dat"
+    assert output.exists()
+    assert Path(result["provenance_path"]).exists()
 
 
 def test_cli_regenerate_examples_writes_relative_example_outputs(tmp_path, monkeypatch) -> None:

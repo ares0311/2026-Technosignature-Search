@@ -21,10 +21,12 @@ review before any use in production scoring.
 from __future__ import annotations
 
 import json
+import statistics
 from pathlib import Path
 from typing import Any
 
 SEMISUPERVISED_SCORER_VERSION = "semisupervised_scorer_v1"
+SEMISUPERVISED_CORPUS_VERSION = "semisupervised_training_corpus_v1"
 SEMISUPERVISED_SCORER_DISCLAIMER = (
     "Semi-supervised anomaly scores are local triage aids only. "
     "A high anomaly score indicates the hit is unusual relative to the "
@@ -32,6 +34,12 @@ SEMISUPERVISED_SCORER_DISCLAIMER = (
     "or authorize external submission. "
     "Independent-method review is required before any "
     "use of this scorer in production pathway routing."
+)
+SEMISUPERVISED_CORPUS_DISCLAIMER = (
+    "Semi-supervised training corpora are real turboSETI hit records used for "
+    "local false-positive and anomaly-distribution learning only. They do not "
+    "constitute technosignature detections, discoveries, expert review, "
+    "external validation, or authorization for external submission."
 )
 
 # Features used for semi-supervised training and scoring
@@ -57,6 +65,7 @@ DEFAULT_CONTAMINATION = 0.01
 DEFAULT_N_COMPONENTS = 8   # PCA components; captures >95% variance in GBT data
 DEFAULT_N_ESTIMATORS = 200  # IsolationForest trees
 DEFAULT_WORKERS = 12
+DEFAULT_FREQUENCY_BIN_HZ = 1.0
 
 
 class SemisupervisedScorer:
@@ -265,6 +274,165 @@ def load_training_hits_ndjson(
                 )
             hits.append(record)
     return hits
+
+
+def discover_training_dat_files(dat_dir: Path) -> list[Path]:
+    """Return real turboSETI .dat files below ``dat_dir`` in stable order."""
+
+    root = Path(dat_dir)
+    if not root.exists():
+        raise FileNotFoundError(f"Training .dat directory does not exist: {root}")
+    if root.is_file():
+        return [root]
+    return sorted(path for path in root.rglob("*.dat") if path.is_file())
+
+
+def _frequency_bin(frequency_hz: float, *, bin_hz: float = DEFAULT_FREQUENCY_BIN_HZ) -> int:
+    if bin_hz <= 0:
+        raise ValueError("frequency bin width must be positive")
+    return int(round(frequency_hz / bin_hz))
+
+
+def _normalised_drift(drift_rate_hz_per_sec: float, frequency_hz: float) -> float:
+    frequency_ghz = frequency_hz / 1e9
+    if frequency_ghz <= 0:
+        return 0.0
+    return drift_rate_hz_per_sec / frequency_ghz
+
+
+def build_training_corpus_from_dat_files(
+    dat_dir: Path,
+    output_path: Path,
+    *,
+    max_hits: int | None = None,
+    frequency_bin_hz: float = DEFAULT_FREQUENCY_BIN_HZ,
+) -> dict[str, Any]:
+    """Build a normalized real-hit NDJSON corpus from turboSETI .dat files.
+
+    The resulting records contain the feature names required by
+    :class:`SemisupervisedScorer`.  Input payloads remain local/ignored; the
+    returned summary and provenance sidecar preserve enough source context for
+    reproducible training.
+    """
+
+    from techno_search.radio.hit_table_reader import hit_table_to_radio_hit_dicts
+
+    dat_files = discover_training_dat_files(dat_dir)
+    if not dat_files:
+        raise ValueError(f"No .dat files found under {Path(dat_dir)}")
+
+    raw_hits: list[dict[str, Any]] = []
+    unreadable_files: list[str] = []
+    zero_hit_files = 0
+    for dat_file in dat_files:
+        try:
+            file_hits = hit_table_to_radio_hit_dicts(dat_file)
+        except Exception as exc:  # pragma: no cover - defensive source reporting
+            unreadable_files.append(f"{dat_file}: {exc}")
+            continue
+        if not file_hits:
+            zero_hit_files += 1
+            continue
+        for hit in file_hits:
+            copied = dict(hit)
+            copied["input_dat_path"] = str(dat_file)
+            raw_hits.append(copied)
+            if max_hits is not None and len(raw_hits) >= max_hits:
+                break
+        if max_hits is not None and len(raw_hits) >= max_hits:
+            break
+
+    if not raw_hits:
+        raise ValueError(
+            f"No parseable turboSETI hits found under {Path(dat_dir)} "
+            f"({zero_hit_files} zero-hit .dat files, "
+            f"{len(unreadable_files)} unreadable files)"
+        )
+
+    snrs = [float(hit.get("snr", 0.0) or 0.0) for hit in raw_hits]
+    median_snr = statistics.median(snrs) if snrs else 1.0
+    if median_snr <= 0:
+        median_snr = 1.0
+
+    frequency_counts: dict[int, int] = {}
+    role_counts: dict[int, dict[str, int]] = {}
+    for hit in raw_hits:
+        freq = float(hit.get("frequency_hz", 0.0) or 0.0)
+        freq_key = _frequency_bin(freq, bin_hz=frequency_bin_hz)
+        frequency_counts[freq_key] = frequency_counts.get(freq_key, 0) + 1
+        role = str(hit.get("scan_role") or "unknown").lower()
+        role_bucket = role_counts.setdefault(freq_key, {"on": 0, "off": 0})
+        if role.startswith("off"):
+            role_bucket["off"] += 1
+        else:
+            role_bucket["on"] += 1
+
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    written = 0
+    unique_targets: set[str] = set()
+    with output.open("w", encoding="utf-8") as handle:
+        for hit in raw_hits:
+            frequency_hz = float(hit.get("frequency_hz", 0.0) or 0.0)
+            drift = float(hit.get("drift_rate_hz_per_sec", 0.0) or 0.0)
+            snr = float(hit.get("snr", 0.0) or 0.0)
+            freq_key = _frequency_bin(frequency_hz, bin_hz=frequency_bin_hz)
+            role_bucket = role_counts.get(freq_key, {"on": 0, "off": 0})
+            on_hit_count = role_bucket["on"]
+            off_hit_count = role_bucket["off"]
+            total_role_hits = max(1, on_hit_count + off_hit_count)
+            persistence_denominator = max(1, len(dat_files) - 1)
+            normalized_drift = _normalised_drift(drift, frequency_hz)
+            target_id = str(hit.get("target_id") or "unknown")
+            unique_targets.add(target_id)
+            record = {
+                "snr": snr,
+                "drift_rate_hz_per_sec": drift,
+                "frequency_hz": frequency_hz,
+                "bandwidth_hz": float(hit.get("bandwidth_hz", 0.0) or 0.0),
+                "normalized_drift_hz_s_per_ghz": normalized_drift,
+                "relative_snr": snr / median_snr,
+                "on_off_consistency_score": off_hit_count / total_role_hits,
+                "is_earth_drift_consistent": (
+                    1.0 if abs(normalized_drift) <= 0.44 else 0.0
+                ),
+                "rfi_band_overlap_score": 0.0,
+                "frequency_persistence_score": min(
+                    1.0,
+                    max(0, frequency_counts.get(freq_key, 1) - 1)
+                    / persistence_denominator,
+                ),
+                "on_hit_count": on_hit_count,
+                "off_hit_count": off_hit_count,
+                "scan_role": str(hit.get("scan_role") or "unknown"),
+                "target_id": target_id,
+                "source_artifact": str(hit.get("source_artifact") or ""),
+                "input_dat_path": str(hit.get("input_dat_path") or ""),
+                "corpus_source": "real_turboseti_dat",
+            }
+            handle.write(json.dumps(record, sort_keys=True) + "\n")
+            written += 1
+
+    provenance_path = output.with_suffix(output.suffix + ".provenance.json")
+    summary: dict[str, Any] = {
+        "schema_version": SEMISUPERVISED_CORPUS_VERSION,
+        "disclaimer": SEMISUPERVISED_CORPUS_DISCLAIMER,
+        "ok": True,
+        "input_dat_dir": str(Path(dat_dir)),
+        "output_path": str(output),
+        "provenance_path": str(provenance_path),
+        "dat_file_count": len(dat_files),
+        "zero_hit_dat_file_count": zero_hit_files,
+        "unreadable_dat_file_count": len(unreadable_files),
+        "unreadable_dat_files": unreadable_files,
+        "hit_count": written,
+        "unique_target_count": len(unique_targets),
+        "frequency_bin_hz": frequency_bin_hz,
+        "max_hits_requested": max_hits,
+        "corpus_source": "real_turboseti_dat",
+    }
+    provenance_path.write_text(json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8")
+    return summary
 
 
 def semisupervised_scorer_summary(scorer: SemisupervisedScorer | None = None) -> dict[str, Any]:
