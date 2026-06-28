@@ -82,7 +82,6 @@ If a commit does not close a named gap in Phases 0–4, it should not be merged.
 
 Current Phase 0 open gaps:
  - Train `semisupervised_scorer` on real MeerKAT BLUSE corpus (Sheikh et al. 2025)
- - Update `validate-all` to scientific-only gates
 
 ### Anti-doom-loop rule (hard)
 
@@ -240,12 +239,18 @@ The project was redirected in session on 2026-06-26. Key changes:
   deleted, 41 overhead test files deleted, stubs in cli.py/__init__.py.
 - **PR #125 merged to `main`** (2026-06-27): ABACAB ON/OFF cadence rejection score (Enriquez et al. 2017).
   source_artifact tracking through RadioHit, _abacab_cadence_score(), 3 new tests.
-- **Current PR in progress:** carry forward the useful old `claude/general-session-Bb2dZ`
-  diff on top of PR #125: zero-hit turboSETI `.dat` files become negative-evidence
-  manifests and production non-detection ledger entries, and
+- **PR #126 merged to `main`** (2026-06-27): zero-hit turboSETI `.dat` files become
+  negative-evidence manifests and production non-detection ledger entries;
   `docs/fermi_paradox_technosignatures_brief.md` is tracked on GitHub.
-- **Phase 0 status:** Module deletion ✅ (PR #124). ABACAB ✅ (PR #125). Remaining:
-  validate-all science-only gate cleanup and real MeerKAT BLUSE training for
+- **PR #127 merged to `main`** (2026-06-27): synthetic training/calibration
+  fixtures removed and the runbook storage cleanup is tracked.
+- **Current PR in progress:** Phase 0 `validate-all` science-only gate cleanup.
+  The public `validate-all` output must omit legacy operational-log, scheduler,
+  MCP, benchmark, and synthetic-training summaries while retaining the scientific
+  gates that still affect production readiness.
+- **Phase 0 status:** Module deletion ✅ (PR #124). ABACAB ✅ (PR #125).
+  Zero-hit evidence ✅ (PR #126). Synthetic fixture deletion ✅ (PR #127).
+  Remaining after this PR: real MeerKAT BLUSE training for
   `semisupervised_scorer`.
 - **semisupervised_scorer:** `is_fitted: false`, `train_hit_count: 0` — must be
   trained on real MeerKAT BLUSE data (not synthetic) when Phase 1 begins.
@@ -260,9 +265,10 @@ The project was redirected in session on 2026-06-26. Key changes:
 
 **PR #124 merged.** Deleted 74 overhead modules.
 **PR #125 merged.** ABACAB cadence rejection score implemented.
+**PR #126 merged.** Zero-hit `.dat` observations are preserved as negative evidence.
+**PR #127 merged.** Synthetic training/calibration fixtures removed.
 Next Phase 0 items:
-1. Update `validate-all` to science-only gates (remove overhead stub checks and
-   leftover synthetic summary payloads).
+1. Finish and merge `validate-all` science-only gate cleanup.
 2. Train `semisupervised_scorer` on real MeerKAT BLUSE data.
 
 ### turboSETI / pipeline status (as of 2026-06-21):

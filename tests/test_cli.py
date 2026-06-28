@@ -1226,59 +1226,39 @@ def test_cli_validate_all_outputs_local_summary() -> None:
 
     assert exit_code == 0
     assert result["ok"] is True
-    assert result["calibration_summary"]["total"] == 0
-    assert result["calibration_track_summary"]["removed_in_phase_0"] is True
-    assert result["calibration_track_summary"]["track_count"] == 0
-    assert result["calibration_track_summary"]["minimum_track_case_count"] == 0
-    assert result["false_positive_summary"]["removed_in_phase_0"] is True
-    assert result["false_positive_summary"]["case_count"] == 0
-    assert result["false_positive_summary"]["class_count"] == 0
-    assert result["score_regression_summary"]["removed_in_phase_0"] is True
-    assert result["score_regression_summary"]["candidate_count"] == 0
-    assert result["catalog_cache_validation"]["ok"] is True
-    assert result["provider_normalization_summary"]["case_count"] == 5
-    assert result["provider_normalization_summary"]["by_provider"] == {
-        "breakthrough_listen": 1,
-        "gaia": 1,
-        "irsa": 1,
-        "simbad": 1,
-        "vizier": 1,
-    }
-    assert result["injection_recovery_summary"]["case_count"] == 6
-    assert result["injection_recovery_summary"]["by_track"] == {
-        "anomaly": 2,
-        "infrared": 2,
-        "radio": 2,
-    }
-    assert result["review_queue_summary"]["item_count"] == 5
-    assert result["review_queue_summary"]["note_count"] == 4
-    assert result["review_queue_summary"]["by_triage_label"] == {
-        "follow_up_target": 1,
-        "insufficient_evidence": 1,
-        "known_object_annotation": 1,
-        "likely_false_positive": 1,
-        "needs_human_review": 1,
-    }
-    assert result["top_level_sqlite_log_validation"]["ok"] is True
-    assert result["top_level_sqlite_log_consistency_summary"]["ok"] is True
-    assert result["production_blocker_consistency_summary"]["ok"] is True
-    assert result["production_blocker_consistency_summary"]["issue_count"] == 0
-    assert result["top_level_sqlite_log_integrity_summary"]["ok"] is True
-    assert result["top_level_sqlite_log_migration_summary"]["migration_required"] is False
-    assert result["top_level_sqlite_log_commit_guard"]["ok"] is True
-    assert result["top_level_sqlite_log_export"]["summary"]["ok"] is True
-    assert result["top_level_sqlite_log_backup"]["ok"] is True
-    assert result["top_level_sqlite_log_retention_summary"]["ok"] is True
-    assert result["top_level_sqlite_log_pragmas"]["ok"] is True
-    assert result["top_level_sqlite_log_pragmas"]["integrity_check"] == "ok"
-    assert result["top_level_sqlite_log_summary"]["run_count"] >= 1
-    assert result["top_level_sqlite_log_summary"]["network_access_allowed_count"] == 0
-    assert result["top_level_sqlite_log_summary"]["external_submission_approved_count"] == 0
+    assert result["schema_version"] == "phase0_scientific_validate_all_v1"
+    assert result["phase"] == "Phase 0 \u2014 Strip & Fix"
+    assert "operational_log_summaries" in result["omitted_legacy_payloads"]
+    assert "synthetic_training_summaries" in result["omitted_legacy_payloads"]
+    assert "calibration_summary" not in result
+    assert "false_positive_summary" not in result
+    assert "score_regression_summary" not in result
+    assert "provider_normalization_summary" not in result
+    assert "top_level_sqlite_log_summary" not in result
+    assert result["artifact_hygiene"]["catalog_cache_validation"]["ok"] is True
+    assert (
+        result["artifact_hygiene"]["top_level_sqlite_log_commit_guard"]["ok"]
+        is True
+    )
     assert result["catalog_cache_validation"]["forbidden_roots"] == [
         "data",
         "cache",
         "artifacts",
     ]
+    assert result["top_level_sqlite_log_commit_guard"]["ok"] is True
+    assert result["radio_science_summary"]["cross_band_feature_count"] >= 4
+    assert result["radio_science_summary"]["globular_feature_count"] >= 13
+    assert result["radio_science_summary"]["semisupervised_feature_count"] >= 12
+    assert result["real_label_accuracy_gate_ok"] is True
+    assert result["real_label_entry_count"] == 124
+    assert result["eval_against_labels_summary"]["dataset_classification"] != "synthetic"
+    assert "results" not in result["eval_against_labels_summary"]
+    assert result["learned_scoring_model_v1_ok"] is True
+    assert result["learned_scoring_model_v1_trained"] is True
+    assert result["provenance_chain_validation"]["ok"] is True
+    assert result["project_status_consistency_summary"]["ok"] is True
+    assert result["ai_hardening_gate_summary"]["ok"] is True
+    assert result["real_data_admission_preflight_summary"]["ok"] is True
     assert all(result["schema_paths_exist"].values())
 
 
