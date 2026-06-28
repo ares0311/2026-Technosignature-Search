@@ -10,6 +10,7 @@ from techno_search.gbt_cadence import (
     apply_turboseti_numpy_compatibility,
     build_cadence_csv,
     cadence_candidate_context,
+    has_hdf5_magic,
     load_cadence_manifest,
     md5_file,
     raw_cadence_status,
@@ -50,7 +51,7 @@ def _tiny_manifest(tmp_path: Path) -> dict:
     raw_dir.mkdir()
     for scan in manifest["scans"]:
         path = raw_dir / scan["filename"]
-        path.write_bytes(f"raw scan {scan['sequence_index']}".encode())
+        path.write_bytes(b"\x89HDF\r\n\x1a\n" + f"raw scan {scan['sequence_index']}".encode())
         scan["size_bytes"] = path.stat().st_size
         scan["md5"] = md5_file(path)
     return manifest
@@ -91,6 +92,16 @@ def test_archive_verification_rejects_wrong_size(tmp_path: Path) -> None:
         )
 
 
+def test_hdf5_magic_detects_raw_file_signature(tmp_path: Path) -> None:
+    hdf5 = tmp_path / "scan.h5"
+    text = tmp_path / "scan.txt"
+    hdf5.write_bytes(b"\x89HDF\r\n\x1a\npayload")
+    text.write_bytes(b"not hdf5")
+
+    assert has_hdf5_magic(hdf5) is True
+    assert has_hdf5_magic(text) is False
+
+
 def test_raw_cadence_status_reports_missing_files(tmp_path: Path) -> None:
     manifest = load_cadence_manifest(MANIFEST)
     result = raw_cadence_status(manifest, tmp_path / "missing")
@@ -119,6 +130,7 @@ def test_raw_cadence_status_verifies_complete_manifest(tmp_path: Path) -> None:
         "on",
         "off",
     ]
+    assert all(scan["hdf5_signature_verified"] for scan in result["scans"])
 
 
 def test_raw_cadence_status_reports_checksum_mismatch(tmp_path: Path) -> None:
@@ -132,6 +144,22 @@ def test_raw_cadence_status_reports_checksum_mismatch(tmp_path: Path) -> None:
     assert result["ok"] is False
     assert result["mismatch_count"] == 1
     assert result["scans"][0]["issue"] == "md5_mismatch"
+
+
+def test_raw_cadence_status_rejects_checksum_valid_non_hdf5_file(tmp_path: Path) -> None:
+    manifest = _tiny_manifest(tmp_path)
+    first = manifest["scans"][0]
+    path = tmp_path / "raw" / first["filename"]
+    path.write_bytes(b"not an hdf5 payload")
+    first["size_bytes"] = path.stat().st_size
+    first["md5"] = md5_file(path)
+
+    result = raw_cadence_status(manifest, tmp_path / "raw")
+
+    assert result["ok"] is False
+    assert result["mismatch_count"] == 1
+    assert result["scans"][0]["issue"] == "hdf5_signature_mismatch"
+    assert result["scans"][0]["hdf5_signature_verified"] is False
 
 
 def test_turboseti_numpy_compatibility_patch_is_idempotent(tmp_path: Path) -> None:

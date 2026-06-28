@@ -58,7 +58,9 @@ def _write_tiny_cli_cadence(tmp_path: Path) -> tuple[Path, Path]:
     raw_dir.mkdir()
     for scan in manifest["scans"]:
         raw_path = raw_dir / scan["filename"]
-        raw_path.write_bytes(f"raw cli scan {scan['sequence_index']}".encode())
+        raw_path.write_bytes(
+            b"\x89HDF\r\n\x1a\n" + f"raw cli scan {scan['sequence_index']}".encode()
+        )
         scan["size_bytes"] = raw_path.stat().st_size
         scan["md5"] = md5_file(raw_path)
     manifest_path = tmp_path / "manifest.json"
