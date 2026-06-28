@@ -63,7 +63,6 @@ from techno_search.live_data import (
     live_data_enabled,
     live_metadata_fixture_summary,
     provider_adapters,
-    provider_normalization_regression_summary,
     validate_catalog_cache_commit_paths,
 )
 from techno_search.log_store import (
@@ -5121,7 +5120,13 @@ def regenerate_examples() -> dict[str, object]:
 
 
 def validate_all() -> dict[str, object]:
-    """Run local validation summaries that do not require network access."""
+    """Run the Phase 0 scientific-only production readiness gate.
+
+    This public CLI gate intentionally excludes legacy operational-log,
+    scheduler, MCP, benchmark, and synthetic-training summaries. Those payloads
+    were useful scaffolding during earlier development but do not decide whether
+    the search pipeline is scientifically closer to production.
+    """
 
     root = default_project_root()
     candidate_results = {
@@ -5129,1540 +5134,164 @@ def validate_all() -> dict[str, object]:
         for path in sorted((root / "examples" / "candidates").glob("*.json"))
     }
     report_result = validate_report_directory(root / "examples" / "reports").as_dict()
-    schemas = schema_paths()
+    phase0_schema_keys = {
+        "ai_hardening_gate",
+        "candidate_escalation",
+        "candidate_packet",
+        "data_quality",
+        "labeled_candidates",
+        "project_status_consistency",
+        "real_data_admission_preflight",
+        "report_manifest",
+        "scan_summary",
+    }
+    all_schemas = schema_paths()
+    schemas = {
+        name: path
+        for name, path in all_schemas.items()
+        if name in phase0_schema_keys
+    }
     schema_results = {path: Path(path).exists() for path in schemas.values()}
-    calibration = summarize_calibration_fixtures(load_calibration_fixtures()).as_dict()
-    calibration_by_track = calibration_track_summary()
-    calibration_by_track["track_count"]
-    calibration_by_track["minimum_track_case_count"]
-    false_positive_analysis = false_positive_class_summary()
-    false_positive_analysis["case_count"]
-    false_positive_analysis["class_count"]
-    regression = score_regression_summary()
+
     tracked_paths = git_tracked_paths(root)
     catalog_cache = catalog_cache_validation_summary(tracked_paths, project_root=root)
+    catalog_cache_public = {
+        key: value
+        for key, value in catalog_cache.items()
+        if key != "checked_paths"
+    }
     sqlite_commit_guard = validate_sqlite_log_commit_paths(
         tracked_paths,
         project_root=root,
     )
-    provider_normalization = provider_normalization_regression_summary()
-    provider_normalization["case_count"]
-    injection_recovery = injection_recovery_summary()
-    injection_recovery["case_count"]
-    reliability = reliability_summary()
-    reliability["bin_count"]
-    precision_recall = precision_recall_summary()
-    precision_recall["case_count"]
-    review_queue = review_queue_summary()
-    review_queue["item_count"]
-    review_queue["note_count"]
-    consensus = consensus_summary()
-    consensus["item_count"]
-    consensus["decision_count"]
-    consensus_exports = consensus_export_summary()
-    consensus_exports["export_count"]
-    cross_track = cross_track_summary()
-    cross_track["reference_count"]
-    cross_track["blocking_issue_total"]
-    reproducibility = verify_report_directory(root / "examples" / "reports")
-    reproducibility["drift_count"]
-    reproducibility["verified_count"]
-    validation_datasets = validation_dataset_summary()
-    validation_datasets["dataset_count"]
-    validation_datasets["total_case_count"]
-    validation_promotions = validation_promotion_summary()
-    validation_promotions["rule_count"]
-    validation_readiness = validation_readiness_summary()
-    validation_readiness["record_count"]
-    validation_readiness["ready_count"]
-    benchmark_metadata = benchmark_metadata_summary()
-    benchmark_metadata["command_count"]
-    benchmark_metadata["default_cpu_worker_limit"]
-    benchmark_runs = benchmark_run_result_summary()
-    benchmark_runs["run_count"]
-    benchmark_runs["max_worker_count"]
-    target_priorities = target_priority_summary()
-    target_priorities["target_count"]
-    background_ledger = background_search_ledger_summary()
-    background_ledger["entry_count"]
-    background_review_workflow = background_review_workflow_summary()
-    background_review_workflow[
-        "reviewed_workflow_status_count"
-    ]
-    reviewed_log = background_reviewed_log_summary()
-    reviewed_log["entry_count"]
-    reviewed_log_network_count = reviewed_log["network_access_allowed_count"]
-    needs_follow_up_log = background_needs_follow_up_summary()
-    needs_follow_up_log["entry_count"]
-    needs_follow_up_log[
-        "submission_requires_user_approval_count"
-    ]
-    needs_follow_up_network_count = needs_follow_up_log["network_access_allowed_count"]
-    follow_up_tests = background_follow_up_test_summary()
-    follow_up_tests["result_count"]
-    follow_up_tests["complete_follow_up_test_set_count"]
-    follow_up_test_network_count = follow_up_tests["network_access_allowed_count"]
-    report_readiness = background_report_readiness_summary()
-    draft_report_output_dir = root / "artifacts" / "validation_draft_reports"
-    write_background_draft_follow_up_reports(draft_report_output_dir)
-    draft_report_validation = validate_draft_report_directory(
-        draft_report_output_dir
-    ).as_dict()
-    report_readiness["record_count"]
-    report_readiness["ready_to_draft_report_count"]
-    report_readiness["user_approval_required_count"]
-    report_readiness_external_allowed_count = report_readiness[
-        "external_submission_allowed_count"
-    ]
-    report_readiness_network_count = report_readiness["network_access_allowed_count"]
-    draft_reports = background_draft_follow_up_report_summary(from_readiness=True)
-    draft_reports["draft_report_count"]
-    draft_reports["draft_ready_count"]
-    draft_external_allowed_count = draft_reports[
-        "external_submission_allowed_count"
-    ]
-    draft_network_count = draft_reports["network_access_allowed_count"]
-    user_decisions = background_user_decision_summary()
-    user_decisions["decision_count"]
-    user_decision_external_approved_count = user_decisions[
-        "external_submission_approved_count"
-    ]
-    user_decision_network_count = user_decisions["network_access_allowed_count"]
-    baseline_eval = evaluate_baseline()
-    float(baseline_eval.get("pathway_accuracy", 0.0))
-    int(baseline_eval.get("total_cases", 0))
-    _baseline_misclassified_count = int(baseline_eval.get("misclassified_count", 0))
-    drift_result = baseline_pathway_drift_summary()
-    int(drift_result.get("drift_count", 0))
-    bool(drift_result.get("zero_drift", True))
-    watchlist = target_watchlist_summary()
-    watchlist["entry_count"]
-    watchlist["conflict_count"]
-    lifecycle = candidate_lifecycle_summary()
-    int(lifecycle.get("entry_count", 0))
-    list(lifecycle.get("tracks_covered", []))
-    schedule = observation_schedule_summary()
-    int(schedule.get("window_count", 0))
-    fn_sum = false_negative_summary()
-    _fn_rate = fn_sum.get("synthetic_missed_injection_rate")
-    float(_fn_rate) if isinstance(_fn_rate, (int, float)) else 1.0
-    scoring_cfg = scoring_config_summary()
-    int(scoring_cfg.get("threshold_count", 0))
-    route_coverage = route_coverage_summary()
-    int(route_coverage.get("covered_pathway_count", 0))
-    int(route_coverage.get("uncovered_pathway_count", 0))
-    lifecycle_transitions = lifecycle_transition_summary()
-    int(lifecycle_transitions.get("invalid_transition_count", 0))
-    observation_efficiency = observation_efficiency_summary()
-    observation_completion_rate_raw = observation_efficiency.get("completion_rate")
-    (
-        float(observation_completion_rate_raw)
-        if isinstance(observation_completion_rate_raw, (int, float))
-        else 0.0
+
+    from techno_search.baseline_eval import eval_against_labels as _eval_labels
+    from techno_search.globular_filter import (  # noqa: PLC0415
+        GLOBULAR_FEATURE_NAMES as _GLOBULAR_FEATURE_NAMES,
     )
-    sensitivity_cfg = sensitivity_config_summary()
-    int(sensitivity_cfg.get("track_count", 0))
-    triage_notes = triage_summary()
-    int(triage_notes.get("note_count", 0))
-    list(triage_notes.get("tracks_covered", []))
-    signal_registry = signal_registry_summary()
-    int(signal_registry.get("active_count", 0))
-    audit_trail = audit_trail_summary()
-    int(audit_trail.get("action_count", 0))
-    multi_epoch = multi_epoch_summary()
-    int(multi_epoch.get("multi_epoch_target_count", 0))
-    recalibration = target_recalibration_summary()
-    int(recalibration.get("snapshot_count", 0))
-    operator_coverage = operator_coverage_summary()
-    int(operator_coverage.get("operator_count", 0))
-    label_completeness = triage_label_completeness_check()
-    label_coverage_fraction_raw = label_completeness.get("coverage_fraction")
-    (
-        float(label_coverage_fraction_raw)
-        if isinstance(label_coverage_fraction_raw, (int, float))
-        else 0.0
+    from techno_search.learned_scoring_model import (  # noqa: PLC0415
+        real_labels_model_summary as _real_labels_model_summary,
     )
-    rule_coverage = classifier_rule_coverage_summary()
-    rule_coverage_fraction_raw = rule_coverage.get("coverage_fraction")
-    (
-        float(rule_coverage_fraction_raw)
-        if isinstance(rule_coverage_fraction_raw, (int, float))
-        else 0.0
+    from techno_search.radio.cross_band_features import (  # noqa: PLC0415
+        cross_band_features_summary as _cross_band_features_summary,
     )
-    provenance_chain = provenance_chain_validator(
-        report_dir=root / "examples" / "reports"
+    from techno_search.semisupervised_scorer import (  # noqa: PLC0415
+        semisupervised_scorer_summary as _semisupervised_scorer_summary,
     )
-    provenance_chain_ok = bool(provenance_chain.get("ok", False))
-    obs_gap = observation_gap_analysis()
-    schema_drift = _StubDict({})
-    int(schema_drift.get("drift_count", 0))
-    obs_notes = observation_notes_summary()
-    int(obs_notes.get("note_count", 0))
-    epoch_plan = epoch_plan_summary()
-    int(epoch_plan.get("entry_count", 0))
-    aggregate_blockers = aggregate_blockers_summary()
-    int(aggregate_blockers.get("total_blocker_count", 0))
-    score_history = score_history_summary()
-    int(score_history.get("entry_count", 0))
-    op_assignments = operator_assignment_summary()
-    int(op_assignments.get("assignment_count", 0))
-    pipeline_health = pipeline_health_summary()
-    int(pipeline_health.get("total_blocked_count", 0))
-    candidate_flags = candidate_flags_summary()
-    int(candidate_flags.get("flag_count", 0))
-    review_deadlines = review_deadlines_summary()
-    int(review_deadlines.get("deadline_count", 0))
-    pipeline_throughput = pipeline_throughput_summary()
-    float(pipeline_throughput.get("throughput_rate", 0.0))
-    candidate_retention = candidate_retention_summary()
-    int(candidate_retention.get("record_count", 0))
-    operator_perf = operator_performance_summary()
-    int(operator_perf.get("operator_count", 0))
-    track_comparison = track_comparison_summary()
-    int(track_comparison.get("total_open_flags", 0))
-    candidate_resolution = candidate_resolution_summary()
-    int(candidate_resolution.get("record_count", 0))
-    escalations = escalation_log_summary()
-    int(escalations.get("entry_count", 0))
-    qc_summary = quality_control_summary()
-    str(qc_summary.get("overall_qc_health", "ok"))
-    obs_campaigns = observation_campaign_summary()
-    int(obs_campaigns.get("campaign_count", 0))
-    dq_log = data_quality_log_summary()
-    int(dq_log.get("entry_count", 0))
-    pipeline_audit = pipeline_audit_summary()
-    int(pipeline_audit.get("total_audit_actions", 0))
-    follow_up_reqs = follow_up_request_summary()
-    int(follow_up_reqs.get("request_count", 0))
-    pipeline_bottleneck = pipeline_bottleneck_summary()
-    int(
-        pipeline_bottleneck.get("total_stalled_candidates", 0)
+
+    real_label_path = root / "examples" / "real_labeled" / (
+        "hip99427_citizen_science_labels_v1.json"
     )
-    candidate_annotations = candidate_annotation_summary()
-    int(candidate_annotations.get("annotation_count", 0))
-    session_log_data = session_log_summary()
-    int(session_log_data.get("session_count", 0))
-    priority_queue_data = priority_queue_summary()
-    int(priority_queue_data.get("queue_depth", 0))
-    pipeline_capacity_data = pipeline_capacity_summary()
-    str(
-        pipeline_capacity_data.get("capacity_status", "nominal")
-    )
-    feature_vector_data = feature_vector_summary()
-    int(feature_vector_data.get("vector_count", 0))
-    ml_registry_data = model_registry_summary()
-    int(ml_registry_data.get("registry_count", 0))
-    ml_diagnostics_data = ml_pipeline_diagnostics_summary()
-    str(ml_diagnostics_data.get("pipeline_ml_status", "no_models"))
-    feat_norm_data = feature_normalization_summary()
-    int(feat_norm_data.get("bounds_count", 0))
-    feat_imp_data = feature_importance_summary()
-    int(feat_imp_data.get("entry_count", 0))
-    ml_training_data = ml_training_data_summary()
-    int(ml_training_data.get("total_case_count", 0))
-    arch_data = model_architecture_summary()
-    int(arch_data.get("architecture_count", 0))
-    eval_data = model_evaluation_summary()
-    int(eval_data.get("evaluation_count", 0))
-    perf_history_data = model_performance_history_summary()
-    int(perf_history_data.get("snapshot_count", 0))
-    serving_data = model_serving_summary()
-    int(serving_data.get("record_count", 0))
-    audit_log_data = scoring_audit_log_summary()
-    int(audit_log_data.get("entry_count", 0))
-    intake_data = curated_dataset_intake_summary()
-    int(intake_data.get("record_count", 0))
-    curated_dataset_admission_data = curated_dataset_admission_summary()
-    int(
-        curated_dataset_admission_data.get("record_count", 0)
-    )
-    curated_dataset_admission_validation_ok = bool(
-        curated_dataset_admission_data.get("validation_ok", False)
-    )
-    int(
-        curated_dataset_admission_data.get("real_data_authorized_count", 0)
-    )
-    project_status_consistency = project_status_consistency_summary()
-    project_status_consistency_ok = bool(project_status_consistency.get("ok", False))
-    ai_hardening_gate = ai_hardening_gate_summary()
-    ai_hardening_gate_ok = bool(ai_hardening_gate.get("ok", False))
-    mcp_bootstrap_consistency = mcp_bootstrap_consistency_summary()
-    bool(mcp_bootstrap_consistency.get("ok", False))
-    mcp_server_policy = mcp_server_policy_summary()
-    bool(mcp_server_policy.get("ok", False))
-    operations_alert_review_consistency = (
-        operations_alert_review_consistency_summary()
-    )
-    bool(
-        operations_alert_review_consistency.get("ok", False)
-    )
-    rescore_data = candidate_rescore_summary()
-    int(rescore_data.get("event_count", 0))
-    handoff_data = operator_handoff_summary()
-    int(handoff_data.get("template_count", 0))
-    int(handoff_data.get("approved_count", 0))
-    alert_data = candidate_alert_summary()
-    int(alert_data.get("entry_count", 0))
-    replay_data = pipeline_replay_summary()
-    int(replay_data.get("entry_count", 0))
-    threshold_audit_data = scoring_threshold_audit_summary()
-    int(threshold_audit_data.get("pass_count", 0))
-    alert_resolution_data = alert_resolution_summary()
-    int(alert_resolution_data.get("entry_count", 0))
-    config_history_data = config_version_history_summary()
-    int(config_history_data.get("entry_count", 0))
-    escalation_data = operator_escalation_summary()
-    int(escalation_data.get("entry_count", 0))
-    dedup_data = candidate_deduplication_summary()
-    int(dedup_data.get("entry_count", 0))
-    intake_queue_data = intake_queue_summary()
-    int(intake_queue_data.get("entry_count", 0))
-    workflow_data = workflow_state_summary()
-    int(workflow_data.get("entry_count", 0))
-    data_gap_data = data_gap_summary()
-    int(data_gap_data.get("entry_count", 0))
-    candidate_match_data = candidate_match_summary()
-    int(candidate_match_data.get("entry_count", 0))
-    pipeline_error_data = pipeline_error_summary()
-    int(pipeline_error_data.get("entry_count", 0))
-    obs_request_data = observation_request_summary()
-    int(obs_request_data.get("entry_count", 0))
-    candidate_export_data = candidate_export_summary()
-    int(candidate_export_data.get("entry_count", 0))
-    quality_gate_data = quality_gate_summary()
-    int(quality_gate_data.get("entry_count", 0))
-    int(quality_gate_data.get("pass_count", 0))
-    instrument_log_data = instrument_log_summary()
-    instrument_log_data.get("entry_count", 0)
-    archival_query_data = archival_query_summary()
-    archival_query_data.get("entry_count", 0)
-    candidate_linkage_data = candidate_linkage_summary()
-    int(candidate_linkage_data.get("entry_count", 0))
-    _candidate_linkage_confirmed_count = int(candidate_linkage_data.get("confirmed_count", 0))
-    signal_classification_data = signal_classification_summary()
-    int(signal_classification_data.get("entry_count", 0))
-    _signal_classification_classified_count = int(
-        signal_classification_data.get("classified_count", 0)
-    )
-    rfi_database_data = rfi_database_summary()
-    rfi_database_record_count = int(rfi_database_data.get("record_count", 0))
-    int(rfi_database_data.get("reviewed_count", 0))
-    rfi_database_validation_ok = bool(rfi_database_data.get("validation_ok", False))
-    rfi_database_admission_data = rfi_database_admission_summary()
-    int(
-        rfi_database_admission_data.get("record_count", 0)
-    )
-    bool(
-        rfi_database_admission_data.get("validation_ok", False)
-    )
-    int(
-        rfi_database_admission_data.get("real_data_authorized_count", 0)
-    )
-    cal_corpus_admission_data = _StubDict({})
-    int(
-        cal_corpus_admission_data.get("record_count", 0)
-    )
-    bool(cal_corpus_admission_data.get("safety_ok", True))
-    rfi_mitigation_data = rfi_mitigation_summary()
-    int(rfi_mitigation_data.get("entry_count", 0))
-    _rfi_mitigation_flagged_count = int(rfi_mitigation_data.get("flagged_count", 0))
-    candidate_annotation_log_data = candidate_annotation_log_summary()
-    int(
-        candidate_annotation_log_data.get("entry_count", 0)
-    )
-    _candidate_annotation_active_count = int(
-        candidate_annotation_log_data.get("active_count", 0)
-    )
-    frequency_channel_data = frequency_channel_log_summary()
-    int(frequency_channel_data.get("entry_count", 0))
-    _frequency_channel_active_count = int(frequency_channel_data.get("active_count", 0))
-    pipeline_checkpoint_data = pipeline_checkpoint_log_summary()
-    int(
-        pipeline_checkpoint_data.get("entry_count", 0)
-    )
-    _pipeline_checkpoint_saved_count = int(
-        pipeline_checkpoint_data.get("saved_count", 0)
-    )
-    candidate_status_log_data = candidate_status_log_summary()
-    int(candidate_status_log_data.get("entry_count", 0))
-    _candidate_status_active_count = int(
-        candidate_status_log_data.get("active_count", 0)
-    )
-    beam_configuration_data = beam_configuration_log_summary()
-    int(
-        beam_configuration_data.get("entry_count", 0)
-    )
-    _beam_configuration_applied_count = int(
-        beam_configuration_data.get("applied_count", 0)
-    )
-    calibration_event_data = calibration_event_log_summary()
-    int(
-        calibration_event_data.get("entry_count", 0)
-    )
-    _calibration_event_applied_count = int(
-        calibration_event_data.get("applied_count", 0)
-    )
-    pipeline_run_data = pipeline_run_log_summary()
-    int(pipeline_run_data.get("entry_count", 0))
-    _pipeline_run_completed_count = int(pipeline_run_data.get("completed_count", 0))
-    source_catalog_data = source_catalog_log_summary()
-    int(source_catalog_data.get("entry_count", 0))
-    _source_catalog_matched_count = int(source_catalog_data.get("matched_count", 0))
-    noise_measurement_data = noise_measurement_log_summary()
-    int(noise_measurement_data.get("entry_count", 0))
-    _noise_measurement_recorded_count = int(noise_measurement_data.get("recorded_count", 0))
-    spectral_feature_data = spectral_feature_log_summary()
-    int(spectral_feature_data.get("entry_count", 0))
-    _spectral_feature_detected_count = int(spectral_feature_data.get("detected_count", 0))
-    polarization_data = polarization_log_summary()
-    int(polarization_data.get("entry_count", 0))
-    _polarization_measured_count = int(polarization_data.get("measured_count", 0))
-    telescope_status_data = telescope_status_log_summary()
-    int(telescope_status_data.get("entry_count", 0))
-    _telescope_status_recorded_count = int(telescope_status_data.get("recorded_count", 0))
-    obs_parameter_data = observation_parameter_log_summary()
-    int(obs_parameter_data.get("entry_count", 0))
-    _obs_parameter_applied_count = int(obs_parameter_data.get("applied_count", 0))
-    target_selection_data = target_selection_summary()
-    int(target_selection_data.get("entry_count", 0))
-    _target_selection_selected_count = int(
-        target_selection_data.get("selected_count", 0)
-    )
-    doppler_correction_data = doppler_correction_summary()
-    int(
-        doppler_correction_data.get("entry_count", 0)
-    )
-    _doppler_correction_applied_count = int(
-        doppler_correction_data.get("applied_count", 0)
-    )
-    data_archival_data = data_archival_summary()
-    int(data_archival_data.get("entry_count", 0))
-    _data_archival_archived_count = int(data_archival_data.get("archived_count", 0))
-    interference_env_data = interference_environment_summary()
-    int(interference_env_data.get("entry_count", 0))
-    _interference_env_assessed_count = int(
-        interference_env_data.get("assessed_count", 0)
-    )
-    receiver_health_data = receiver_health_summary()
-    int(receiver_health_data.get("entry_count", 0))
-    _receiver_health_nominal_count = int(
-        receiver_health_data.get("nominal_count", 0)
-    )
-    pipeline_version_data = pipeline_version_summary()
-    int(pipeline_version_data.get("entry_count", 0))
-    _pipeline_version_active_count = int(
-        pipeline_version_data.get("active_count", 0)
-    )
-    data_transfer_data = data_transfer_summary()
-    int(data_transfer_data.get("entry_count", 0))
-    _data_transfer_completed_count = int(data_transfer_data.get("completed_count", 0))
-    scheduling_conflict_data = scheduling_conflict_summary()
-    int(
-        scheduling_conflict_data.get("entry_count", 0)
-    )
-    _scheduling_conflict_detected_count = int(
-        scheduling_conflict_data.get("detected_count", 0)
-    )
-    system_health_data = system_health_summary()
-    int(system_health_data.get("entry_count", 0))
-    _system_health_healthy_count = int(system_health_data.get("healthy_count", 0))
-    instrument_config_data = instrument_configuration_summary()
-    int(instrument_config_data.get("entry_count", 0))
-    _instrument_config_applied_count = int(instrument_config_data.get("applied_count", 0))
-    scan_data = scan_log_summary()
-    int(scan_data.get("entry_count", 0))
-    _scan_completed_count = int(scan_data.get("completed_count", 0))
-    time_sync_data = time_synchronization_summary()
-    int(time_sync_data.get("entry_count", 0))
-    _time_sync_synchronized_count = int(time_sync_data.get("synchronized_count", 0))
-    antenna_pointing_data = antenna_pointing_summary()
-    int(antenna_pointing_data.get("entry_count", 0))
-    _antenna_pointing_completed_count = int(antenna_pointing_data.get("completed_count", 0))
-    weather_data = weather_log_summary()
-    int(weather_data.get("entry_count", 0))
-    _weather_nominal_count = int(weather_data.get("nominal_count", 0))
-    power_data = power_log_summary()
-    int(power_data.get("entry_count", 0))
-    _power_normal_count = int(power_data.get("normal_count", 0))
-    cooling_data = cooling_system_summary()
-    int(cooling_data.get("entry_count", 0))
-    _cooling_operating_count = int(cooling_data.get("operating_count", 0))
-    network_data = network_connectivity_summary()
-    int(network_data.get("entry_count", 0))
-    _network_connected_count = int(network_data.get("connected_count", 0))
-    sw_update_data = software_update_summary()
-    int(sw_update_data.get("entry_count", 0))
-    _sw_update_deployed_count = int(sw_update_data.get("deployed_count", 0))
-    hw_fault_data = hardware_fault_summary()
-    int(hw_fault_data.get("entry_count", 0))
-    maintenance_data = maintenance_log_summary()
-    int(maintenance_data.get("entry_count", 0))
-    env_data = environmental_log_summary()
-    int(env_data.get("entry_count", 0))
-    access_data = access_log_summary()
-    int(access_data.get("entry_count", 0))
-    _access_granted_count = int(access_data.get("granted_count", 0))
-    sec_event_data = security_event_summary()
-    int(sec_event_data.get("entry_count", 0))
-    _sec_event_detected_count = int(sec_event_data.get("detected_count", 0))
-    audit_trail_log_data = audit_trail_log_summary()
-    int(audit_trail_log_data.get("entry_count", 0))
-    _audit_trail_log_recorded_count = int(audit_trail_log_data.get("recorded_count", 0))
-    incident_response_data = incident_response_summary()
-    int(incident_response_data.get("entry_count", 0))
-    _incident_response_resolved_count = int(incident_response_data.get("resolved_count", 0))
-    change_mgmt_data = change_management_summary()
-    int(change_mgmt_data.get("entry_count", 0))
-    _change_mgmt_completed_count = int(change_mgmt_data.get("completed_count", 0))
-    compliance_report_data = compliance_report_summary()
-    int(compliance_report_data.get("entry_count", 0))
-    _compliance_report_passed_count = int(compliance_report_data.get("passed_count", 0))
-    risk_assessment_data = risk_assessment_summary()
-    int(risk_assessment_data.get("entry_count", 0))
-    _risk_assessment_mitigated_count = int(risk_assessment_data.get("mitigated_count", 0))
-    backup_recovery_data = backup_recovery_summary()
-    int(backup_recovery_data.get("entry_count", 0))
-    _backup_recovery_completed_count = int(backup_recovery_data.get("completed_count", 0))
-    capacity_planning_data = capacity_planning_summary()
-    int(capacity_planning_data.get("entry_count", 0))
-    _capacity_planning_adequate_count = int(capacity_planning_data.get("adequate_count", 0))
-    software_deployment_data = software_deployment_summary()
-    int(software_deployment_data.get("entry_count", 0))
-    _software_deployment_completed_count = int(software_deployment_data.get("completed_count", 0))
-    performance_monitoring_data = performance_monitoring_summary()
-    int(performance_monitoring_data.get("entry_count", 0))
-    _performance_monitoring_normal_count = int(performance_monitoring_data.get("normal_count", 0))
-    user_activity_data = user_activity_summary()
-    int(user_activity_data.get("entry_count", 0))
-    _user_activity_succeeded_count = int(user_activity_data.get("succeeded_count", 0))
-    health_check_data = health_check_summary()
-    int(health_check_data.get("entry_count", 0))
-    _health_check_passed_count = int(health_check_data.get("passed_count", 0))
-    license_management_data = license_management_summary()
-    int(license_management_data.get("entry_count", 0))
-    _license_management_active_count = int(license_management_data.get("active_count", 0))
-    storage_management_data = storage_management_summary()
-    int(storage_management_data.get("entry_count", 0))
-    _storage_management_completed_count = int(storage_management_data.get("completed_count", 0))
-    firmware_update_data = firmware_update_summary()
-    int(firmware_update_data.get("entry_count", 0))
-    _firmware_update_applied_count = int(firmware_update_data.get("applied_count", 0))
-    configuration_audit_data = configuration_audit_summary()
-    int(configuration_audit_data.get("entry_count", 0))
-    _configuration_audit_compliant_count = int(configuration_audit_data.get("compliant_count", 0))
-    event_correlation_data = event_correlation_summary()
-    int(event_correlation_data.get("entry_count", 0))
-    _event_correlation_correlated_count = int(event_correlation_data.get("correlated_count", 0))
-    system_diagnostics_data = system_diagnostics_summary()
-    int(system_diagnostics_data.get("entry_count", 0))
-    _system_diagnostics_passed_count = int(system_diagnostics_data.get("passed_count", 0))
-    resource_allocation_data = resource_allocation_summary()
-    int(resource_allocation_data.get("entry_count", 0))
-    _resource_allocation_allocated_count = int(resource_allocation_data.get("allocated_count", 0))
-    access_control_data = access_control_summary()
-    int(access_control_data.get("entry_count", 0))
-    _access_control_allowed_count = int(access_control_data.get("allowed_count", 0))
-    incident_data = incident_summary()
-    int(incident_data.get("entry_count", 0))
-    _incident_open_count = int(incident_data.get("open_count", 0))
-    patch_mgmt_data = patch_management_summary()
-    int(patch_mgmt_data.get("entry_count", 0))
-    _patch_mgmt_applied_count = int(patch_mgmt_data.get("applied_count", 0))
-    vuln_scan_data = vulnerability_scan_summary()
-    int(vuln_scan_data.get("entry_count", 0))
-    _vuln_scan_clean_count = int(vuln_scan_data.get("clean_count", 0))
-    compliance_audit_data = compliance_audit_summary()
-    int(compliance_audit_data.get("entry_count", 0))
-    _compliance_audit_passed_count = int(compliance_audit_data.get("passed_count", 0))
-    dr_data = disaster_recovery_summary()
-    int(dr_data.get("entry_count", 0))
-    _dr_completed_count = int(dr_data.get("completed_count", 0))
-    sl_data = service_level_summary()
-    int(sl_data.get("entry_count", 0))
-    _sl_met_count = int(sl_data.get("met_count", 0))
-    am_data = asset_management_summary()
-    int(am_data.get("entry_count", 0))
-    _am_active_count = int(am_data.get("active_count", 0))
-    nm_data = network_monitoring_summary()
-    int(nm_data.get("entry_count", 0))
-    _nm_healthy_count = int(nm_data.get("healthy_count", 0))
-    im_data = identity_management_summary()
-    int(im_data.get("entry_count", 0))
-    _im_active_count = int(im_data.get("active_count", 0))
-    certm_data = certificate_management_summary()
-    int(certm_data.get("entry_count", 0))
-    _certm_issued_count = int(certm_data.get("issued_count", 0))
-    ae_data = alert_escalation_summary()
-    int(ae_data.get("entry_count", 0))
-    _ae_resolved_count = int(ae_data.get("resolved_count", 0))
-    cc_data = configuration_change_summary()
-    int(cc_data.get("entry_count", 0))
-    _cc_applied_count = int(cc_data.get("applied_count", 0))
-    dr_ret_data = data_retention_summary()
-    int(dr_ret_data.get("entry_count", 0))
-    _dr_ret_completed_count = int(dr_ret_data.get("completed_count", 0))
-    pm_data = problem_management_summary()
-    int(pm_data.get("entry_count", 0))
-    _pm_resolved_count = int(pm_data.get("resolved_count", 0))
-    rm_data = release_management_summary()
-    int(rm_data.get("entry_count", 0))
-    _rm_deployed_count = int(rm_data.get("deployed_count", 0))
-    sr_data = service_request_summary()
-    int(sr_data.get("entry_count", 0))
-    _sr_fulfilled_count = int(sr_data.get("fulfilled_count", 0))
-    cm_data = contract_management_summary()
-    int(cm_data.get("entry_count", 0))
-    _cm_active_count = int(cm_data.get("active_count", 0))
-    km_data = knowledge_management_summary()
-    int(km_data.get("entry_count", 0))
-    _km_published_count = int(km_data.get("published_count", 0))
-    supp_data = supplier_management_summary()
-    int(supp_data.get("entry_count", 0))
-    _supp_active_count = int(supp_data.get("active_count", 0))
-    af_data = audit_finding_summary()
-    int(af_data.get("entry_count", 0))
-    _af_remediated_count = int(af_data.get("remediated_count", 0))
-    budget_data = budget_summary()
-    int(budget_data.get("entry_count", 0))
-    _budget_approved_count = int(budget_data.get("approved_count", 0))
-    train_data = training_summary()
-    int(train_data.get("entry_count", 0))
-    _train_completed_count = int(train_data.get("completed_count", 0))
-    cr_data = change_request_summary()
-    int(cr_data.get("entry_count", 0))
-    _cr_approved_count = int(cr_data.get("approved_count", 0))
-    pml_data = project_milestone_summary()
-    int(pml_data.get("entry_count", 0))
-    _pml_achieved_count = int(pml_data.get("achieved_count", 0))
-    va_data = vendor_assessment_summary()
-    int(va_data.get("entry_count", 0))
-    _va_completed_count = int(va_data.get("completed_count", 0))
-    comm_data = communication_summary()
-    int(comm_data.get("entry_count", 0))
-    _comm_delivered_count = int(comm_data.get("delivered_count", 0))
-    doc_mgmt_data = document_management_summary()
-    int(doc_mgmt_data.get("entry_count", 0))
-    _doc_mgmt_active_count = int(doc_mgmt_data.get("active_count", 0))
-    proc_data = procurement_summary()
-    int(proc_data.get("entry_count", 0))
-    _proc_completed_count = int(proc_data.get("completed_count", 0))
-    from techno_search.labeled_dataset import labeled_dataset_summary as _lds
-    labeled_data = _lds()
-    int(labeled_data.get("entry_count", 0))
-    from techno_search.baseline_eval import eval_against_labels as _eal
-    label_eval_data = _eal()
-    # Real-label scoring accuracy regression gate (Tier 2 gap closure)
-    _real_label_path = (
-        root / "examples" / "real_labeled" / "hip99427_citizen_science_labels_v1.json"
-    )
-    _real_label_eval = _eal(_real_label_path) if _real_label_path.exists() else {}
-    real_label_entry_count = int(_real_label_eval.get("entry_count", 0))
-    _real_acc_raw = _real_label_eval.get("accuracy")
+    label_eval_data = _eval_labels(real_label_path)
+    label_eval_public = {
+        key: value
+        for key, value in label_eval_data.items()
+        if key != "results"
+    }
+    real_label_accuracy_raw = label_eval_data.get("accuracy")
     real_label_accuracy = (
-        float(_real_acc_raw) if isinstance(_real_acc_raw, (int, float)) else None
+        float(real_label_accuracy_raw)
+        if isinstance(real_label_accuracy_raw, (int, float))
+        else None
     )
-    # Gate: if real labels exist, accuracy must be >= 0.70 (headroom below 77.42%)
+    real_label_entry_count = int(label_eval_data.get("entry_count", 0))
     real_label_accuracy_gate_ok = (
         real_label_accuracy is None or real_label_accuracy >= 0.70
     )
-    from techno_search.learned_scoring_model import (  # noqa: PLC0415, I001
-        real_labels_model_summary as _rlms,
-        synthetic_v1_training_summary as _svts,
-    )
-    synthetic_training_data = _svts()
-    synthetic_training_data.get("removed_in_phase_0", False)
-    # Learned scoring model v1 on real HIP99427 labels (Tier 2 gap closure)
-    real_labels_model_data = _rlms()
-    real_labels_model_ok = bool(real_labels_model_data.get("ok", False))
-    _rl_cv_acc_raw = real_labels_model_data.get("cv_accuracy")
-    real_labels_model_cv_accuracy = (
-        float(_rl_cv_acc_raw) if isinstance(_rl_cv_acc_raw, (int, float)) else None
-    )
-    real_labels_model_trained = bool(real_labels_model_data.get("trained", False))
-    data_release_snap_data = _StubDict({})
-    data_release_snapshot_count = int(data_release_snap_data.get("snapshot_count", 0))
-    int(label_eval_data.get("entry_count", 0))
-    comparison_data = candidate_comparison_summary()
-    int(comparison_data.get("record_count", 0))
-    telemetry_data = pipeline_telemetry_summary()
-    int(telemetry_data.get("entry_count", 0))
-    audit_data = provenance_audit_summary()
-    int(audit_data.get("entry_count", 0))
-    pipeline_cfg_data = pipeline_config_summary()
-    int(pipeline_cfg_data.get("config_count", 0))
-    int(pipeline_cfg_data.get("active_count", 0))
-    submission_data = submission_readiness_summary()
-    int(submission_data.get("record_count", 0))
-    candidate_handoffs = candidate_extraction_handoff_summary()
-    candidate_handoffs["record_count"]
-    candidate_handoff_network_count = candidate_handoffs[
-        "network_access_allowed_count"
-    ]
-    sqlite_validation_db = root / "logs" / "validation.sqlite3"
-    sqlite_validation_artifact_dir = root / "artifacts" / "validation_sqlite_logs"
-    sqlite_validation_run_id = (
-        "validation-sqlite-" + datetime.now(UTC).strftime("%Y%m%d%H%M%S%f")
-    )
-    run_local_background_search_once(
-        sqlite_validation_artifact_dir / "background_search_ledger.json",
-        reviewed_log_path=sqlite_validation_artifact_dir / "background_reviewed_log.json",
-        needs_follow_up_log_path=(
-            sqlite_validation_artifact_dir / "background_needs_follow_up_log.json"
-        ),
-        sqlite_log_path=sqlite_validation_db,
-        run_id=sqlite_validation_run_id,
-        code_commit="validation-local",
-        opt_in=True,
-    )
-    sqlite_logs = sqlite_log_summary(sqlite_validation_db)
-    sqlite_integrity = sqlite_log_integrity_summary(sqlite_validation_db)
-    sqlite_migration = sqlite_log_migration_summary(sqlite_validation_db)
-    sqlite_migration_plan = sqlite_log_migration_plan(sqlite_validation_db)
-    sqlite_weekly_digest = sqlite_log_weekly_digest(sqlite_validation_db)
-    sqlite_export = sqlite_log_export(sqlite_validation_db, limit=3)
-    sqlite_backup = sqlite_log_backup(sqlite_validation_db)
-    sqlite_retention = sqlite_log_retention_summary(sqlite_validation_db)
-    sqlite_pragmas = sqlite_log_pragmas(sqlite_validation_db)
-    sqlite_export_summary = sqlite_export.get("summary", {})
-    sqlite_export_ok = (
-        bool(sqlite_export_summary.get("ok"))
-        if isinstance(sqlite_export_summary, dict)
-        else False
-    )
-    sqlite_log_validation = validate_sqlite_log_database(sqlite_validation_db).as_dict()
-    sqlite_log_consistency = top_level_sqlite_log_consistency_summary(
-        db_path=sqlite_validation_db,
-        sqlite_summary=sqlite_logs,
-        integrity_summary=sqlite_integrity,
-        migration_summary=sqlite_migration,
-        migration_plan=sqlite_migration_plan,
-        weekly_digest=sqlite_weekly_digest,
-        retention_summary=sqlite_retention,
-        pragmas_summary=sqlite_pragmas,
-        validation_summary=sqlite_log_validation,
-        commit_guard=sqlite_commit_guard,
-    )
-    sqlite_run_count = sqlite_logs["run_count"]
-    sqlite_outcome_count = sqlite_logs["outcome_count"]
-    sqlite_network_count = sqlite_logs["network_access_allowed_count"]
-    sqlite_external_approved_count = sqlite_logs["external_submission_approved_count"]
-    sqlite_consistency_ok = bool(sqlite_log_consistency["ok"])
-    operations_readiness = operations_readiness_summary(
-        quality_control=qc_summary,
-        pipeline_capacity=pipeline_capacity_data,
-        candidate_alerts=alert_data,
-        review_deadlines=review_deadlines,
-        pipeline_health=pipeline_health,
-        route_coverage=route_coverage,
-        validation_readiness=validation_readiness,
-        curated_intake=intake_data,
-        submission_readiness=submission_data,
-        user_decisions=user_decisions,
-        sqlite_logs=sqlite_logs,
-        sqlite_integrity=sqlite_integrity,
-        sqlite_weekly_digest=sqlite_weekly_digest,
-        sqlite_log_path=sqlite_validation_db,
-    )
-    production_blocker_consistency = production_blocker_consistency_summary(
-        rfi_admission=rfi_database_admission_data,
-        curated_admission=curated_dataset_admission_data,
-        readiness=operations_readiness,
-    )
-    bool(
-        production_blocker_consistency.get("ok", False)
-    )
-    real_data_admission_preflight = real_data_admission_preflight_summary(
-        rfi_admission=rfi_database_admission_data,
-        curated_admission=curated_dataset_admission_data,
-        production_blockers=production_blocker_consistency,
-    )
-    real_data_admission_preflight_ok = bool(
-        real_data_admission_preflight.get("ok", False)
-    )
-    sqlite_operational_log_registry = sqlite_operational_log_registry_summary(
-        schema_names=set(SCHEMA_FILENAMES)
-    )
-    bool(
-        sqlite_operational_log_registry.get("ok", False)
-    )
-    sqlite_operational_log_adapter_plan = (
-        sqlite_operational_log_adapter_plan_summary(
-            registry_summary=sqlite_operational_log_registry,
-        )
-    )
-    bool(
-        sqlite_operational_log_adapter_plan.get("ok", False)
-    )
-    sqlite_operational_log_adapter_contract = (
-        sqlite_operational_log_adapter_contract_summary(
-            adapter_plan_summary=sqlite_operational_log_adapter_plan,
-        )
-    )
-    bool(
-        sqlite_operational_log_adapter_contract.get("ok", False)
-    )
-    sqlite_operational_log_adapter_ddl_preview = (
-        sqlite_operational_log_adapter_ddl_preview_summary(
-            adapter_contract_summary=sqlite_operational_log_adapter_contract,
-        )
-    )
-    bool(
-        sqlite_operational_log_adapter_ddl_preview.get("ok", False)
-    )
-    sqlite_operational_log_adapter_row_preview = (
-        sqlite_operational_log_adapter_row_preview_summary(
-            adapter_contract_summary=sqlite_operational_log_adapter_contract,
-            adapter_plan_summary=sqlite_operational_log_adapter_plan,
-            registry_summary=sqlite_operational_log_registry,
-        )
-    )
-    bool(
-        sqlite_operational_log_adapter_row_preview.get("ok", False)
-    )
-    sqlite_operational_log_adapter_insert_preview = (
-        sqlite_operational_log_adapter_insert_preview_summary(
-            row_preview_summary=sqlite_operational_log_adapter_row_preview,
-        )
-    )
-    bool(
-        sqlite_operational_log_adapter_insert_preview.get("ok", False)
-    )
-    sqlite_operational_log_adapter_execution_preview = (
-        sqlite_operational_log_adapter_execution_preview_summary(
-            insert_preview_summary=sqlite_operational_log_adapter_insert_preview,
-        )
-    )
-    bool(
-        sqlite_operational_log_adapter_execution_preview.get("ok", False)
-    )
-    sqlite_operational_log_adapter_dry_run_manifest = (
-        sqlite_operational_log_adapter_dry_run_manifest_summary(
-            ddl_preview_summary=sqlite_operational_log_adapter_ddl_preview,
-            execution_preview_summary=sqlite_operational_log_adapter_execution_preview,
-        )
-    )
-    bool(
-        sqlite_operational_log_adapter_dry_run_manifest.get("ok", False)
-    )
-    sqlite_operational_log_adapter_readiness_preflight = (
-        sqlite_operational_log_adapter_readiness_preflight_summary(
-            registry_summary=sqlite_operational_log_registry,
-            adapter_plan_summary=sqlite_operational_log_adapter_plan,
-            adapter_contract_summary=sqlite_operational_log_adapter_contract,
-            ddl_preview_summary=sqlite_operational_log_adapter_ddl_preview,
-            row_preview_summary=sqlite_operational_log_adapter_row_preview,
-            insert_preview_summary=sqlite_operational_log_adapter_insert_preview,
-            execution_preview_summary=sqlite_operational_log_adapter_execution_preview,
-            dry_run_manifest_summary=sqlite_operational_log_adapter_dry_run_manifest,
-            schema_count=len(SCHEMA_FILENAMES),
-        )
-    )
-    bool(
-        sqlite_operational_log_adapter_readiness_preflight.get("ok", False)
-    )
-    sqlite_operational_log_adapter_authorization_gate = (
-        sqlite_operational_log_adapter_authorization_gate_summary(
-            readiness_preflight_summary=sqlite_operational_log_adapter_readiness_preflight,
-            schema_count=len(SCHEMA_FILENAMES),
-        )
-    )
-    bool(
-        sqlite_operational_log_adapter_authorization_gate.get("ok", False)
-    )
-    operations_action_plan = operations_action_plan_summary(operations_readiness)
-    operations_action_ids = [
-        str(action["action_id"])
-        for action in operations_action_plan["actions"]
-        if isinstance(action, dict)
-    ]
-    operations_action_resolution = operations_action_resolution_summary(
-        expected_action_ids=operations_action_ids,
-    )
-    operations_action_resolution_consistency = (
-        operations_action_resolution_consistency_summary(
-            action_plan=operations_action_plan,
-        )
-    )
-    operations_blocker_detail = operations_blocker_detail_summary(
-        readiness_summary=operations_readiness,
-        action_plan_summary=operations_action_plan,
-    )
-    operations_blocker_review = operations_blocker_review_summary(
-        expected_action_ids=operations_action_ids,
-        blocker_detail_summary=operations_blocker_detail,
-    )
-    operations_blocker_followup = operations_blocker_followup_summary(
-        blocker_detail_summary_data=operations_blocker_detail,
-        blocker_review_summary_data=operations_blocker_review,
-    )
-    operations_followup_action_ids = [
-        str(action["action_id"])
-        for action in operations_blocker_followup.get("actions", [])
-        if isinstance(action, dict)
-    ]
-    operations_blocker_followup_progress = operations_blocker_followup_progress_summary(
-        expected_action_ids=operations_followup_action_ids,
-        blocker_followup_summary=operations_blocker_followup,
-    )
-    operations_unresolved_progress_action_ids = [
-        str(record["action_id"])
-        for record in operations_blocker_followup_progress.get("records", [])
-        if isinstance(record, dict)
-        and str(record.get("progress_status", "")) != "verified_local"
-    ]
-    operations_blocker_progress_review = operations_blocker_progress_review_summary(
-        expected_action_ids=operations_unresolved_progress_action_ids,
-        blocker_followup_progress_summary=operations_blocker_followup_progress,
-    )
-    operations_progress_review_action_ids = [
-        str(record["action_id"])
-        for record in operations_blocker_progress_review.get("records", [])
-        if isinstance(record, dict)
-    ]
-    operations_blocker_progress_next_actions = (
-        operations_blocker_progress_next_actions_summary(
-            expected_action_ids=operations_progress_review_action_ids,
-            blocker_progress_review_summary=operations_blocker_progress_review,
-        )
-    )
-    operations_progress_next_action_ids = [
-        str(record["next_action_id"])
-        for record in operations_blocker_progress_next_actions.get("records", [])
-        if isinstance(record, dict)
-    ]
-    operations_blocker_progress_execution = (
-        operations_blocker_progress_execution_summary(
-            expected_next_action_ids=operations_progress_next_action_ids,
-            blocker_progress_next_actions_summary=(
-                operations_blocker_progress_next_actions
-            ),
-        )
-    )
-    operations_progress_execution_ids = [
-        str(record["execution_id"])
-        for record in operations_blocker_progress_execution.get("records", [])
-        if isinstance(record, dict)
-    ]
-    operations_blocker_progress_execution_review = (
-        operations_blocker_progress_execution_review_summary(
-            expected_execution_ids=operations_progress_execution_ids,
-            blocker_progress_execution_summary=(
-                operations_blocker_progress_execution
-            ),
-        )
-    )
-    operations_progress_execution_review_ids = [
-        str(record["review_id"])
-        for record in operations_blocker_progress_execution_review.get("records", [])
-        if isinstance(record, dict)
-    ]
-    operations_blocker_progress_execution_followup = (
-        operations_blocker_progress_execution_followup_summary(
-            expected_review_ids=operations_progress_execution_review_ids,
-            blocker_progress_execution_review_summary=(
-                operations_blocker_progress_execution_review
-            ),
-        )
-    )
-    operations_blocker_progress_consistency = (
-        operations_blocker_progress_consistency_summary(
-            blocker_detail=operations_blocker_detail,
-            blocker_review=operations_blocker_review,
-            blocker_followup=operations_blocker_followup,
-            blocker_followup_progress=operations_blocker_followup_progress,
-            blocker_progress_review=operations_blocker_progress_review,
-            blocker_progress_next_actions=operations_blocker_progress_next_actions,
-            blocker_progress_execution=operations_blocker_progress_execution,
-            blocker_progress_execution_review=(
-                operations_blocker_progress_execution_review
-            ),
-            blocker_progress_execution_followup=(
-                operations_blocker_progress_execution_followup
-            ),
-        )
-    )
-    int(
-        operations_action_resolution["record_count"]
-    )
-    int(
-        operations_action_resolution["live_data_authorized_count"]
-    )
-    int(
-        operations_action_resolution["external_submission_authorized_count"]
-    )
-    bool(
-        operations_action_resolution["coverage_complete"]
-    )
-    bool(
-        operations_action_resolution_consistency["ok"]
-    )
-    int(operations_blocker_detail["detail_count"])
-    int(
-        operations_blocker_detail["network_access_allowed_count"]
-    )
-    int(
-        operations_blocker_detail["external_submission_approved_count"]
-    )
-    int(operations_blocker_review["record_count"])
-    int(
-        operations_blocker_review["live_data_authorized_count"]
-    )
-    int(
-        operations_blocker_review["external_submission_authorized_count"]
-    )
-    bool(
-        operations_blocker_review["coverage_complete"]
-    )
-    bool(
-        operations_blocker_review["all_detail_evidence_reviewed"]
-    )
-    int(operations_blocker_followup["action_count"])
-    int(
-        operations_blocker_followup["live_data_authorized_count"]
-    )
-    int(
-        operations_blocker_followup["external_submission_authorized_count"]
-    )
-    bool(
-        operations_blocker_followup["coverage_complete"]
-    )
-    bool(
-        operations_blocker_followup["all_detail_evidence_reviewed"]
-    )
-    int(
-        operations_blocker_followup["residual_blocker_total"]
-    )
-    int(
-        operations_blocker_followup_progress["record_count"]
-    )
-    int(
-        operations_blocker_followup_progress["live_data_authorized_count"]
-    )
-    int(
-        operations_blocker_followup_progress["external_submission_authorized_count"]
-    )
-    bool(
-        operations_blocker_followup_progress["coverage_complete"]
-    )
-    int(
-        operations_blocker_followup_progress["recommendation_mismatch_count"]
-    )
-    int(
-        operations_blocker_progress_review["record_count"]
-    )
-    int(
-        operations_blocker_progress_review["live_data_authorized_count"]
-    )
-    int(
-        operations_blocker_progress_review["external_submission_authorized_count"]
-    )
-    bool(
-        operations_blocker_progress_review["coverage_complete"]
-    )
-    int(
-        operations_blocker_progress_review["status_mismatch_count"]
-    )
-    int(
-        operations_blocker_progress_review["residual_blocker_total"]
-    )
-    int(
-        operations_blocker_progress_next_actions["record_count"]
-    )
-    int(
-        operations_blocker_progress_next_actions["live_data_authorized_count"]
-    )
-    int(
-        operations_blocker_progress_next_actions["external_submission_authorized_count"]
-    )
-    bool(
-        operations_blocker_progress_next_actions["coverage_complete"]
-    )
-    int(
-        operations_blocker_progress_next_actions["status_mismatch_count"]
-    )
-    int(
-        operations_blocker_progress_next_actions["residual_blocker_total"]
-    )
-    bool(
-        operations_blocker_progress_next_actions["priority_sequence_ok"]
-    )
-    int(
-        operations_blocker_progress_execution["record_count"]
-    )
-    int(
-        operations_blocker_progress_execution["live_data_authorized_count"]
-    )
-    int(
-        operations_blocker_progress_execution["external_submission_authorized_count"]
-    )
-    bool(
-        operations_blocker_progress_execution["coverage_complete"]
-    )
-    int(
-        operations_blocker_progress_execution["status_mismatch_count"]
-    )
-    int(
-        operations_blocker_progress_execution["residual_mismatch_count"]
-    )
-    int(
-        operations_blocker_progress_execution["priority_mismatch_count"]
-    )
-    int(
-        operations_blocker_progress_execution["residual_blocker_total"]
-    )
-    bool(
-        operations_blocker_progress_execution["priority_sequence_ok"]
-    )
-    int(
-        operations_blocker_progress_execution_review["record_count"]
-    )
-    int(
-        operations_blocker_progress_execution_review["live_data_authorized_count"]
-    )
-    int(
-        operations_blocker_progress_execution_review[
-            "external_submission_authorized_count"
-        ]
-    )
-    bool(
-        operations_blocker_progress_execution_review["coverage_complete"]
-    )
-    int(
-        operations_blocker_progress_execution_review["status_mismatch_count"]
-    )
-    int(
-        operations_blocker_progress_execution_review["residual_mismatch_count"]
-    )
-    int(
-        operations_blocker_progress_execution_review["priority_mismatch_count"]
-    )
-    int(
-        operations_blocker_progress_execution_review["residual_blocker_total"]
-    )
-    bool(
-        operations_blocker_progress_execution_review["priority_sequence_ok"]
-    )
-    int(
-        operations_blocker_progress_execution_followup["record_count"]
-    )
-    int(
-        operations_blocker_progress_execution_followup["live_data_authorized_count"]
-    )
-    int(
-        operations_blocker_progress_execution_followup[
-            "external_submission_authorized_count"
-        ]
-    )
-    bool(
-        operations_blocker_progress_execution_followup["coverage_complete"]
-    )
-    int(
-        operations_blocker_progress_execution_followup["status_mismatch_count"]
-    )
-    int(
-        operations_blocker_progress_execution_followup["residual_mismatch_count"]
-    )
-    int(
-        operations_blocker_progress_execution_followup["priority_mismatch_count"]
-    )
-    int(
-        operations_blocker_progress_execution_followup["residual_blocker_total"]
-    )
-    bool(
-        operations_blocker_progress_execution_followup["priority_sequence_ok"]
-    )
-    bool(
-        operations_blocker_progress_consistency["ok"]
+
+    real_labels_model = _real_labels_model_summary()
+    learned_model_ok = bool(real_labels_model.get("ok", False))
+    learned_model_trained = bool(real_labels_model.get("trained", False))
+    learned_model_cv_accuracy_raw = real_labels_model.get("cv_accuracy")
+    learned_model_cv_accuracy = (
+        float(learned_model_cv_accuracy_raw)
+        if isinstance(learned_model_cv_accuracy_raw, (int, float))
+        else None
     )
 
-    # Priority 4: cross-band feature normalization provenance gate
-    from techno_search.radio.cross_band_features import (
-        cross_band_features_summary as _cbf_summary,
+    cross_band_features = _cross_band_features_summary()
+    cross_band_feature_count = int(cross_band_features.get("feature_count", 0))
+    globular_feature_count = len(_GLOBULAR_FEATURE_NAMES)
+    globular_filter = {
+        "schema_version": "globular_filter_v1",
+        "feature_count": globular_feature_count,
+    }
+    semisupervised_scorer = _semisupervised_scorer_summary()
+    semisupervised_feature_count = int(
+        semisupervised_scorer.get("feature_count", 0)
     )
-    cross_band_feat_data = _cbf_summary()
-    cross_band_feat_count = int(cross_band_feat_data.get("feature_count", 0))
 
-    # Priority 5: GLOBULAR filter provenance gate
-    from techno_search.globular_filter import (  # noqa: PLC0415
-        GLOBULAR_FEATURE_NAMES as _GLOBULAR_FEAT_NAMES,
-    )
-    globular_feature_count = len(_GLOBULAR_FEAT_NAMES)
+    provenance_chain = provenance_chain_validator(report_dir=root / "examples" / "reports")
+    project_status = project_status_consistency_summary()
+    ai_hardening_gate = ai_hardening_gate_summary()
+    real_data_preflight = real_data_admission_preflight_summary()
 
-    # Priority 6: semi-supervised scorer provenance gate
-    from techno_search.semisupervised_scorer import (
-        semisupervised_scorer_summary as _ss_summary,
-    )
-    semisup_data = _ss_summary()
-    semisup_feature_count = int(semisup_data.get("feature_count", 0))
-
-    # Phase 0 scientific-only gate.
-    # Checks: structural integrity, SQLite health, radio pipeline fixture integrity,
-    # auth guardrails (no live/external access authorized), real-label accuracy.
-    # Operational overhead checks (benchmarks, lifecycle, triage, log-type counts)
-    # removed per PRODUCTION_READINESS.md Phase 0 scope.
     ok = (
         all(result["ok"] for result in candidate_results.values())
         and bool(report_result["ok"])
         and all(schema_results.values())
         and bool(catalog_cache["ok"])
         and bool(sqlite_commit_guard["ok"])
-        and isinstance(cross_band_feat_count, int)
-        and cross_band_feat_count >= 4
-        and isinstance(globular_feature_count, int)
+        and cross_band_feature_count >= 4
         and globular_feature_count >= 13
-        and isinstance(semisup_feature_count, int)
-        and semisup_feature_count >= 12
-        and bool(sqlite_log_validation["ok"])
-        and sqlite_consistency_ok
-        and bool(sqlite_integrity["ok"])
-        and not bool(sqlite_migration["migration_required"])
-        and sqlite_export_ok
-        and bool(sqlite_backup["ok"])
-        and bool(sqlite_retention["ok"])
-        and bool(sqlite_pragmas["ok"])
-        and bool(sqlite_weekly_digest["ok"])
-        and not bool(sqlite_migration_plan["migration_required"])
-        and isinstance(sqlite_run_count, int)
-        and sqlite_run_count >= 1
-        and sqlite_outcome_count == sqlite_run_count
-        and isinstance(sqlite_network_count, int)
-        and sqlite_network_count == 0
-        and isinstance(sqlite_external_approved_count, int)
-        and sqlite_external_approved_count == 0
-        and isinstance(reviewed_log_network_count, int)
-        and reviewed_log_network_count == 0
-        and isinstance(needs_follow_up_network_count, int)
-        and needs_follow_up_network_count == 0
-        and isinstance(follow_up_test_network_count, int)
-        and follow_up_test_network_count == 0
-        and isinstance(report_readiness_external_allowed_count, int)
-        and report_readiness_external_allowed_count == 0
-        and isinstance(report_readiness_network_count, int)
-        and report_readiness_network_count == 0
-        and isinstance(draft_external_allowed_count, int)
-        and draft_external_allowed_count == 0
-        and isinstance(draft_network_count, int)
-        and draft_network_count == 0
-        and isinstance(user_decision_external_approved_count, int)
-        and user_decision_external_approved_count == 0
-        and isinstance(user_decision_network_count, int)
-        and user_decision_network_count == 0
-        and isinstance(candidate_handoff_network_count, int)
-        and candidate_handoff_network_count == 0
+        and semisupervised_feature_count >= 12
         and real_label_accuracy_gate_ok
-        and provenance_chain_ok
-        and isinstance(rfi_database_record_count, int)
-        and rfi_database_record_count >= 1
-        and rfi_database_validation_ok
-        and ai_hardening_gate_ok
-        and real_data_admission_preflight_ok
-        and curated_dataset_admission_validation_ok
-        and project_status_consistency_ok
+        and learned_model_ok
+        and learned_model_trained
+        and bool(provenance_chain.get("ok", False))
+        and bool(project_status.get("ok", False))
+        and bool(ai_hardening_gate.get("ok", False))
+        and bool(real_data_preflight.get("ok", False))
     )
+
     return {
         "ok": ok,
+        "schema_version": "phase0_scientific_validate_all_v1",
+        "phase": "Phase 0 — Strip & Fix",
+        "omitted_legacy_payloads": [
+            "operational_log_summaries",
+            "sqlite_adapter_scaffolding",
+            "mcp_bootstrap_scaffolding",
+            "synthetic_training_summaries",
+            "scheduler_planning_scaffolding",
+            "benchmark_scaffolding",
+        ],
         "candidates": candidate_results,
         "reports": report_result,
         "schemas": schemas,
         "schema_paths_exist": schema_results,
-        "calibration_summary": calibration,
-        "calibration_track_summary": calibration_by_track,
-        "false_positive_summary": false_positive_analysis,
-        "score_regression_summary": regression,
-        "catalog_cache_validation": catalog_cache,
-        "provider_normalization_summary": provider_normalization,
-        "injection_recovery_summary": injection_recovery,
-        "reliability_summary": reliability,
-        "precision_recall_summary": precision_recall,
-        "review_queue_summary": review_queue,
-        "consensus_summary": consensus,
-        "consensus_export_summary": consensus_exports,
-        "cross_track_summary": cross_track,
-        "reproducibility_verification": reproducibility,
-        "validation_dataset_summary": validation_datasets,
-        "validation_promotion_summary": validation_promotions,
-        "validation_readiness_summary": validation_readiness,
-        "benchmark_metadata_summary": benchmark_metadata,
-        "benchmark_run_summary": benchmark_runs,
-        "target_priority_summary": target_priorities,
-        "background_ledger_summary": background_ledger,
-        "background_review_workflow_summary": background_review_workflow,
-        "background_reviewed_log_summary": reviewed_log,
-        "background_needs_follow_up_summary": needs_follow_up_log,
-        "background_follow_up_test_summary": follow_up_tests,
-        "background_report_readiness_summary": report_readiness,
-        "background_draft_report_validation": draft_report_validation,
-        "background_draft_follow_up_report_summary": draft_reports,
-        "background_user_decision_summary": user_decisions,
-        "candidate_extraction_handoff_summary": candidate_handoffs,
-        "top_level_sqlite_log_summary": sqlite_logs,
-        "top_level_sqlite_log_integrity_summary": sqlite_integrity,
-        "top_level_sqlite_log_migration_summary": sqlite_migration,
-        "top_level_sqlite_log_export": sqlite_export,
-        "top_level_sqlite_log_backup": sqlite_backup,
-        "top_level_sqlite_log_retention_summary": sqlite_retention,
-        "top_level_sqlite_log_pragmas": sqlite_pragmas,
-        "top_level_sqlite_log_migration_plan": sqlite_migration_plan,
-        "top_level_sqlite_log_weekly_digest": sqlite_weekly_digest,
-        "top_level_sqlite_log_validation": sqlite_log_validation,
-        "top_level_sqlite_log_consistency_summary": sqlite_log_consistency,
+        "artifact_hygiene": {
+            "catalog_cache_validation": catalog_cache_public,
+            "top_level_sqlite_log_commit_guard": sqlite_commit_guard,
+        },
+        "catalog_cache_validation": catalog_cache_public,
         "top_level_sqlite_log_commit_guard": sqlite_commit_guard,
-        "target_watchlist_summary": watchlist,
-        "baseline_eval_summary": baseline_eval,
-        "baseline_pathway_drift_summary": drift_result,
-        "candidate_lifecycle_summary": lifecycle,
-        "observation_schedule_summary": schedule,
-        "false_negative_summary": fn_sum,
-        "scoring_config_summary": scoring_cfg,
-        "route_coverage_summary": route_coverage,
-        "lifecycle_transition_summary": lifecycle_transitions,
-        "observation_efficiency_summary": observation_efficiency,
-        "sensitivity_config_summary": sensitivity_cfg,
-        "triage_summary": triage_notes,
-        "signal_registry_summary": signal_registry,
-        "audit_trail_summary": audit_trail,
-        "multi_epoch_summary": multi_epoch,
-        "target_recalibration_summary": recalibration,
-        "operator_coverage_summary": operator_coverage,
-        "triage_label_completeness": label_completeness,
-        "classifier_rule_coverage_summary": rule_coverage,
-        "provenance_chain_validation": provenance_chain,
-        "observation_gap_analysis": obs_gap,
-        "schema_drift_summary": schema_drift,
-        "observation_notes_summary": obs_notes,
-        "epoch_plan_summary": epoch_plan,
-        "aggregate_blockers_summary": aggregate_blockers,
-        "score_history_summary": score_history,
-        "operator_assignment_summary": op_assignments,
-        "pipeline_health_summary": pipeline_health,
-        "candidate_flags_summary": candidate_flags,
-        "review_deadlines_summary": review_deadlines,
-        "pipeline_throughput_summary": pipeline_throughput,
-        "candidate_retention_summary": candidate_retention,
-        "operator_performance_summary": operator_perf,
-        "track_comparison_summary": track_comparison,
-        "candidate_resolution_summary": candidate_resolution,
-        "escalation_log_summary": escalations,
-        "quality_control_summary": qc_summary,
-        "observation_campaign_summary": obs_campaigns,
-        "data_quality_log_summary": dq_log,
-        "pipeline_audit_summary": pipeline_audit,
-        "follow_up_request_summary": follow_up_reqs,
-        "pipeline_bottleneck_summary": pipeline_bottleneck,
-        "candidate_annotation_summary": candidate_annotations,
-        "session_log_summary": session_log_data,
-        "priority_queue_summary": priority_queue_data,
-        "pipeline_capacity_summary": pipeline_capacity_data,
-        "feature_vector_summary": feature_vector_data,
-        "ml_model_registry_summary": ml_registry_data,
-        "ml_pipeline_diagnostics_summary": ml_diagnostics_data,
-        "feature_normalization_summary": feat_norm_data,
-        "feature_importance_summary": feat_imp_data,
-        "ml_training_data_summary": ml_training_data,
-        "model_architecture_summary": arch_data,
-        "model_evaluation_summary": eval_data,
-        "model_performance_history_summary": perf_history_data,
-        "model_serving_summary": serving_data,
-        "scoring_audit_log_summary": audit_log_data,
-        "curated_dataset_intake_summary": intake_data,
-        "curated_dataset_admission_summary": curated_dataset_admission_data,
-        "project_status_consistency_summary": project_status_consistency,
-        "ai_hardening_gate_summary": ai_hardening_gate,
-        "mcp_bootstrap_consistency_summary": mcp_bootstrap_consistency,
-        "mcp_server_policy_summary": mcp_server_policy,
-        "production_blocker_consistency_summary": production_blocker_consistency,
-        "real_data_admission_preflight_summary": real_data_admission_preflight,
-        "sqlite_operational_log_registry_summary": sqlite_operational_log_registry,
-        "sqlite_operational_log_adapter_plan_summary": (
-            sqlite_operational_log_adapter_plan
-        ),
-        "sqlite_operational_log_adapter_contract_summary": (
-            sqlite_operational_log_adapter_contract
-        ),
-        "sqlite_operational_log_adapter_ddl_preview_summary": (
-            sqlite_operational_log_adapter_ddl_preview
-        ),
-        "sqlite_operational_log_adapter_row_preview_summary": (
-            sqlite_operational_log_adapter_row_preview
-        ),
-        "sqlite_operational_log_adapter_insert_preview_summary": (
-            sqlite_operational_log_adapter_insert_preview
-        ),
-        "sqlite_operational_log_adapter_execution_preview_summary": (
-            sqlite_operational_log_adapter_execution_preview
-        ),
-        "sqlite_operational_log_adapter_dry_run_manifest_summary": (
-            sqlite_operational_log_adapter_dry_run_manifest
-        ),
-        "sqlite_operational_log_adapter_readiness_preflight_summary": (
-            sqlite_operational_log_adapter_readiness_preflight
-        ),
-        "sqlite_operational_log_adapter_authorization_gate_summary": (
-            sqlite_operational_log_adapter_authorization_gate
-        ),
-        "operations_alert_review_consistency_summary": (
-            operations_alert_review_consistency
-        ),
-        "candidate_rescore_summary": rescore_data,
-        "operator_handoff_summary": handoff_data,
-        "pipeline_config_summary": pipeline_cfg_data,
-        "submission_readiness_summary": submission_data,
-        "candidate_comparison_summary": comparison_data,
-        "pipeline_telemetry_summary": telemetry_data,
-        "provenance_audit_summary": audit_data,
-        "candidate_alert_summary": alert_data,
-        "pipeline_replay_summary": replay_data,
-        "scoring_threshold_audit_summary": threshold_audit_data,
-        "alert_resolution_summary": alert_resolution_data,
-        "candidate_deduplication_summary": dedup_data,
-        "config_version_history_summary": config_history_data,
-        "intake_queue_summary": intake_queue_data,
-        "operator_escalation_summary": escalation_data,
-        "workflow_state_summary": workflow_data,
-        "data_gap_summary": data_gap_data,
-        "candidate_match_summary": candidate_match_data,
-        "pipeline_error_summary": pipeline_error_data,
-        "observation_request_summary": obs_request_data,
-        "candidate_export_summary": candidate_export_data,
-        "quality_gate_summary": quality_gate_data,
-        "instrument_log_summary": instrument_log_data,
-        "archival_query_summary": archival_query_data,
-        "candidate_linkage_summary": candidate_linkage_data,
-        "signal_classification_summary": signal_classification_data,
-        "rfi_database_summary": rfi_database_data,
-        "rfi_database_admission_summary": rfi_database_admission_data,
-        "calibration_corpus_admission_summary": cal_corpus_admission_data,
-        "rfi_mitigation_summary": rfi_mitigation_data,
-        "candidate_annotation_log_summary": candidate_annotation_log_data,
-        "frequency_channel_log_summary": frequency_channel_data,
-        "pipeline_checkpoint_log_summary": pipeline_checkpoint_data,
-        "candidate_status_log_summary": candidate_status_log_data,
-        "beam_configuration_log_summary": beam_configuration_data,
-        "calibration_event_log_summary": calibration_event_data,
-        "pipeline_run_log_summary": pipeline_run_data,
-        "source_catalog_log_summary": source_catalog_data,
-        "noise_measurement_log_summary": noise_measurement_data,
-        "spectral_feature_log_summary": spectral_feature_data,
-        "polarization_log_summary": polarization_data,
-        "telescope_status_log_summary": telescope_status_data,
-        "observation_parameter_log_summary": obs_parameter_data,
-        "target_selection_log_summary": target_selection_data,
-        "doppler_correction_log_summary": doppler_correction_data,
-        "data_archival_log_summary": data_archival_data,
-        "interference_environment_log_summary": interference_env_data,
-        "receiver_health_log_summary": receiver_health_data,
-        "pipeline_version_log_summary": pipeline_version_data,
-        "data_transfer_log_summary": data_transfer_data,
-        "scheduling_conflict_log_summary": scheduling_conflict_data,
-        "system_health_log_summary": system_health_data,
-        "instrument_configuration_log_summary": instrument_config_data,
-        "scan_log_summary": scan_data,
-        "time_synchronization_log_summary": time_sync_data,
-        "antenna_pointing_log_summary": antenna_pointing_data,
-        "weather_log_summary": weather_data,
-        "power_log_summary": power_data,
-        "cooling_system_log_summary": cooling_data,
-        "network_connectivity_log_summary": network_data,
-        "software_update_log_summary": sw_update_data,
-        "hardware_fault_log_summary": hw_fault_data,
-        "maintenance_log_summary": maintenance_data,
-        "environmental_log_summary": env_data,
-        "access_log_summary": access_data,
-        "security_event_log_summary": sec_event_data,
-        "audit_trail_log_summary": audit_trail_log_data,
-        "incident_response_log_summary": incident_response_data,
-        "change_management_log_summary": change_mgmt_data,
-        "compliance_report_log_summary": compliance_report_data,
-        "risk_assessment_log_summary": risk_assessment_data,
-        "backup_recovery_log_summary": backup_recovery_data,
-        "capacity_planning_log_summary": capacity_planning_data,
-        "software_deployment_log_summary": software_deployment_data,
-        "performance_monitoring_log_summary": performance_monitoring_data,
-        "user_activity_log_summary": user_activity_data,
-        "health_check_log_summary": health_check_data,
-        "license_management_log_summary": license_management_data,
-        "storage_management_log_summary": storage_management_data,
-        "firmware_update_log_summary": firmware_update_data,
-        "configuration_audit_log_summary": configuration_audit_data,
-        "event_correlation_log_summary": event_correlation_data,
-        "system_diagnostics_log_summary": system_diagnostics_data,
-        "resource_allocation_log_summary": resource_allocation_data,
-        "access_control_log_summary": access_control_data,
-        "incident_log_summary": incident_data,
-        "patch_management_log_summary": patch_mgmt_data,
-        "vulnerability_scan_log_summary": vuln_scan_data,
-        "compliance_audit_log_summary": compliance_audit_data,
-        "disaster_recovery_log_summary": dr_data,
-        "service_level_log_summary": sl_data,
-        "asset_management_log_summary": am_data,
-        "network_monitoring_log_summary": nm_data,
-        "identity_management_log_summary": im_data,
-        "certificate_management_log_summary": certm_data,
-        "alert_escalation_log_summary": ae_data,
-        "configuration_change_log_summary": cc_data,
-        "data_retention_log_summary": dr_ret_data,
-        "contract_management_log_summary": cm_data,
-        "knowledge_management_log_summary": km_data,
-        "problem_management_log_summary": pm_data,
-        "release_management_log_summary": rm_data,
-        "service_request_log_summary": sr_data,
-        "supplier_management_log_summary": supp_data,
-        "audit_finding_log_summary": af_data,
-        "budget_log_summary": budget_data,
-        "training_log_summary": train_data,
-        "change_request_log_summary": cr_data,
-        "project_milestone_log_summary": pml_data,
-        "vendor_assessment_log_summary": va_data,
-        "communication_log_summary": comm_data,
-        "document_management_log_summary": doc_mgmt_data,
-        "procurement_log_summary": proc_data,
-        "labeled_dataset_summary": labeled_data,
-        "eval_against_labels_summary": label_eval_data,
+        "radio_science_summary": {
+            "cross_band_feature_count": cross_band_feature_count,
+            "globular_feature_count": globular_feature_count,
+            "semisupervised_feature_count": semisupervised_feature_count,
+            "semisupervised_is_fitted": bool(
+                semisupervised_scorer.get("is_fitted", False)
+            ),
+            "semisupervised_train_hit_count": int(
+                semisupervised_scorer.get("train_hit_count", 0)
+            ),
+        },
+        "cross_band_features_summary": cross_band_features,
+        "globular_filter_summary": globular_filter,
+        "semisupervised_scorer_summary": semisupervised_scorer,
+        "eval_against_labels_summary": label_eval_public,
         "real_label_accuracy": real_label_accuracy,
         "real_label_accuracy_gate_ok": real_label_accuracy_gate_ok,
         "real_label_entry_count": real_label_entry_count,
-        "learned_scoring_model_v1_ok": real_labels_model_ok,
-        "learned_scoring_model_v1_trained": real_labels_model_trained,
-        "learned_scoring_model_v1_cv_accuracy": real_labels_model_cv_accuracy,
-        "data_release_snapshot_count": data_release_snapshot_count,
-        "data_release_snapshot_summary": data_release_snap_data,
-        "synthetic_training_summary": synthetic_training_data,
-        "operations_readiness_summary": operations_readiness,
-        "operations_action_plan_summary": operations_action_plan,
-        "operations_action_resolution_summary": operations_action_resolution,
-        "operations_action_resolution_consistency_summary": (
-            operations_action_resolution_consistency
-        ),
-        "operations_blocker_detail_summary": operations_blocker_detail,
-        "operations_blocker_review_summary": operations_blocker_review,
-        "operations_blocker_followup_summary": operations_blocker_followup,
-        "operations_blocker_followup_progress_summary": (
-            operations_blocker_followup_progress
-        ),
-        "operations_blocker_progress_review_summary": (
-            operations_blocker_progress_review
-        ),
-        "operations_blocker_progress_next_actions_summary": (
-            operations_blocker_progress_next_actions
-        ),
-        "operations_blocker_progress_execution_summary": (
-            operations_blocker_progress_execution
-        ),
-        "operations_blocker_progress_execution_review_summary": (
-            operations_blocker_progress_execution_review
-        ),
-        "operations_blocker_progress_execution_followup_summary": (
-            operations_blocker_progress_execution_followup
-        ),
-        "operations_blocker_progress_consistency_summary": (
-            operations_blocker_progress_consistency
-        ),
-        "cross_band_features_summary": cross_band_feat_data,
-        "globular_filter_summary": {
-            "feature_count": globular_feature_count,
-            "schema_version": "globular_filter_v1",
-        },
-        "semisupervised_scorer_summary": semisup_data,
+        "learned_scoring_model_v1_summary": real_labels_model,
+        "learned_scoring_model_v1_ok": learned_model_ok,
+        "learned_scoring_model_v1_trained": learned_model_trained,
+        "learned_scoring_model_v1_cv_accuracy": learned_model_cv_accuracy,
+        "provenance_chain_validation": provenance_chain,
+        "project_status_consistency_summary": project_status,
+        "ai_hardening_gate_summary": ai_hardening_gate,
+        "real_data_admission_preflight_summary": real_data_preflight,
     }
 
 

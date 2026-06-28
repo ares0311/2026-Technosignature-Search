@@ -26,9 +26,6 @@ candidate routing. DECISION-134 is closed for local citizen-science production p
 **Current milestone:** Milestone 79 (Production Scan Hardening And Artifact Hygiene)
 
 **Current phase work (Phase 0):**
-- Delete ~141 misaligned overhead modules (log schemas, operational adapters, MCP bootstrap)
-- Delete synthetic training data files
-- Harden ON/OFF cadence RFI rejection (ABACAB standard)
 - Train semisupervised_scorer on real MeerKAT BLUSE corpus (Sheikh et al. 2025)
 
 ---
@@ -36,8 +33,9 @@ candidate routing. DECISION-134 is closed for local citizen-science production p
 ## Current Capability (Honest Assessment)
 
 **Radio pipeline:** Functional for BL/GBT `.dat` files. Produces non-detection
-manifests and candidate manifests. ON/OFF cadence rejection partial — needs hardening
-to ABACAB standard. Semi-supervised scorer unfitted (zero real training hits).
+manifests and candidate manifests. ON/OFF cadence scoring follows the ABACAB
+feature added in Phase 0; raw-file ABACAB verification remains Phase 1 hardening.
+Semi-supervised scorer unfitted (zero real training hits).
 
 **Photometry, IR, spectroscopy:** Not implemented. No `lightkurve`, no WISE SED
 fitting, no JWST spectral ingest.
@@ -80,11 +78,11 @@ Step 3 blocked pending surviving candidates.
 
 | Task | Status |
 |---|---|
-| Delete ~141 misaligned overhead modules | ❌ Not started |
-| Delete synthetic training data files | ❌ Not started |
-| Harden ON/OFF cadence RFI rejection (Enriquez 2017 ABACAB) | ❌ Not started |
+| Delete ~141 misaligned overhead modules | ✅ Done (PR #124) |
+| Delete synthetic training data files | ✅ Done (PR #127) |
+| Harden ON/OFF cadence RFI rejection (Enriquez 2017 ABACAB) | ✅ Done (PR #125) |
 | Train `semisupervised_scorer` on real MeerKAT BLUSE corpus | ❌ Unfitted |
-| Update `validate-all` to scientific-only gates | ❌ Not started |
+| Update `validate-all` to scientific-only gates | ✅ Done — public gate is Phase 0 science-only |
 | Storage cleanup documented in runbook | ✅ Done |
 
 ---
@@ -153,11 +151,10 @@ Step 3 blocked pending surviving candidates.
 
 ## Next 3 Actions
 
-1. Start Phase 0: identify and delete the ~141 misaligned overhead modules listed in
-   `docs/PRODUCTION_READINESS.md` under "What Must Be Deleted".
-2. Update `validate-all` to finish removing synthetic and operational overhead
-   summaries from the Phase 0 gate output.
-3. Begin ON/OFF cadence RFI rejection hardening to ABACAB standard (Enriquez et al. 2017).
+1. Train `semisupervised_scorer` on real MeerKAT BLUSE data; do not use synthetic data.
+2. Implement Phase 1 raw-file ABACAB cadence verification from `.fil`/`.h5` inputs.
+3. Expand cross-target RFI suppression and drift-rate checks across the stratified
+   real GBT corpus.
 
 ---
 
