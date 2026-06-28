@@ -252,8 +252,10 @@ The project was redirected in session on 2026-06-26. Key changes:
   Zero-hit evidence ✅ (PR #126). Synthetic fixture deletion ✅ (PR #127).
   Remaining after this PR: real MeerKAT BLUSE training for
   `semisupervised_scorer`.
-- **semisupervised_scorer:** `is_fitted: false`, `train_hit_count: 0` — must be
-  trained on real MeerKAT BLUSE data (not synthetic) when Phase 1 begins.
+- **semisupervised_scorer:** `is_fitted: false`, `train_hit_count: 0`.
+  `techno-search semisupervised-scorer-train` is now the intended trainer, but
+  `data/meerkat_hits/` is empty locally; train only after real MeerKAT BLUSE
+  data is ingested.
 - DECISION-134/139: AI hardening gate closed for local operations only.
 - DECISION-140: `prod-scan` and `scripts/run_production_scan.sh` are canonical UX.
 - DECISION-141: prod-target-queue, continuous loop, SIGINT trap active.
@@ -267,9 +269,11 @@ The project was redirected in session on 2026-06-26. Key changes:
 **PR #125 merged.** ABACAB cadence rejection score implemented.
 **PR #126 merged.** Zero-hit `.dat` observations are preserved as negative evidence.
 **PR #127 merged.** Synthetic training/calibration fixtures removed.
+**PR #128 merged.** Public `validate-all` is now Phase 0 science-only and the
+legacy validate-all payload was deleted.
 Next Phase 0 items:
-1. Finish and merge `validate-all` science-only gate cleanup.
-2. Train `semisupervised_scorer` on real MeerKAT BLUSE data.
+1. Ingest real MeerKAT BLUSE data into `data/meerkat_hits/`, then train
+   `semisupervised_scorer` with `techno-search semisupervised-scorer-train`.
 
 ### turboSETI / pipeline status (as of 2026-06-21):
 

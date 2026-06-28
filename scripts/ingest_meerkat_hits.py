@@ -218,8 +218,9 @@ def main() -> None:
     print(f"  {MEERKAT_DISCLAIMER}")
     print("")
     print("Next step: train the semi-supervised scorer on this corpus:")
-    print("  .venv/bin/techno-search semisupervised-scorer-train \\")
-    print(f"      --corpus {out_path}")
+    print("  caffeinate -i .venv/bin/techno-search semisupervised-scorer-train \\")
+    print(f"      --corpus {out_path} \\")
+    print("      --workers 12")
 
 
 if __name__ == "__main__":

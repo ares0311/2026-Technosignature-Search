@@ -20,8 +20,10 @@ Tier 1 and Tier 2 engineering blockers are closed for local radio pipeline opera
 local citizen-science production promotion via the injection-recovery closure evidence
 bundle (DECISION-139). Radio pipeline functional for BL/GBT `.dat` files.
 Semi-supervised scorer is structurally correct but unfitted (`train_hit_count: 0`,
-`is_fitted: false`) — must be trained on real MeerKAT BLUSE corpus before use in
-candidate routing. DECISION-134 is closed for local citizen-science production promotion.
+`is_fitted: false`). The `semisupervised-scorer-train` CLI is available, but
+`data/meerkat_hits/` is empty locally; the scorer must be trained on the real
+MeerKAT BLUSE corpus before use in candidate routing. DECISION-134 is closed for
+local citizen-science production promotion.
 
 **Current milestone:** Milestone 79 (Production Scan Hardening And Artifact Hygiene)
 
@@ -81,7 +83,7 @@ Step 3 blocked pending surviving candidates.
 | Delete ~141 misaligned overhead modules | ✅ Done (PR #124) |
 | Delete synthetic training data files | ✅ Done (PR #127) |
 | Harden ON/OFF cadence RFI rejection (Enriquez 2017 ABACAB) | ✅ Done (PR #125) |
-| Train `semisupervised_scorer` on real MeerKAT BLUSE corpus | ❌ Unfitted |
+| Train `semisupervised_scorer` on real MeerKAT BLUSE corpus | ❌ Unfitted — trainer CLI ready; real corpus payload absent locally |
 | Update `validate-all` to scientific-only gates | ✅ Done — public gate is Phase 0 science-only |
 | Storage cleanup documented in runbook | ✅ Done |
 
@@ -151,7 +153,8 @@ Step 3 blocked pending surviving candidates.
 
 ## Next 3 Actions
 
-1. Train `semisupervised_scorer` on real MeerKAT BLUSE data; do not use synthetic data.
+1. Download/ingest the real MeerKAT BLUSE corpus into `data/meerkat_hits/`, then
+   train `semisupervised_scorer` with `semisupervised-scorer-train`.
 2. Implement Phase 1 raw-file ABACAB cadence verification from `.fil`/`.h5` inputs.
 3. Expand cross-target RFI suppression and drift-rate checks across the stratified
    real GBT corpus.

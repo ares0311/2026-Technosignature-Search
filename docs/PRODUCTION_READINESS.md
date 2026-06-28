@@ -123,7 +123,7 @@ gaps are closed. The project now pivots to multi-modal science (Phases 0–4).
 | Delete ~141 misaligned overhead modules | ✅ Done (PR #124, 2026-06-27) — 74 modules deleted, stubs in place |
 | Delete synthetic training data files | ✅ Done — synthetic calibration, score-regression, and labeled-training fixtures removed |
 | Harden ON/OFF cadence RFI rejection (Enriquez 2017 ABACAB) | ✅ Done (PR #125, 2026-06-27) — abacab_cadence_score feature, source_artifact tracking |
-| Train `semisupervised_scorer` on real MeerKAT BLUSE corpus | ❌ Unfitted |
+| Train `semisupervised_scorer` on real MeerKAT BLUSE corpus | ❌ Unfitted — trainer CLI wired; `data/meerkat_hits/` still needs real corpus payload |
 | Update `validate-all` to scientific-only gates | ✅ Done — public gate now omits legacy operational/synthetic payloads and checks Phase 0 science gates |
 | Add "delete synthetic training data" to production scan runbook | ✅ Done |
 
