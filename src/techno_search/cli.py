@@ -1378,6 +1378,22 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(result, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "semisupervised-corpus-build":
+        from techno_search.semisupervised_scorer import build_training_corpus_from_dat_files
+
+        try:
+            result = build_training_corpus_from_dat_files(
+                Path(args.dat_dir),
+                Path(args.output),
+                max_hits=args.max_hits,
+            )
+        except (FileNotFoundError, ValueError) as exc:
+            result = {"ok": False, "error": str(exc)}
+            print(json.dumps(result, indent=2, sort_keys=True), file=out)
+            return 1
+        print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "semisupervised-scorer-train":
         import joblib  # type: ignore[import-untyped]
 
@@ -5278,6 +5294,29 @@ def validate_all() -> dict[str, object]:
         "feature_count": globular_feature_count,
     }
     semisupervised_scorer = _semisupervised_scorer_summary()
+    local_semisupervised_metadata_path = (
+        root / "data" / "meerkat_hits" / "semisupervised_scorer_metadata.json"
+    )
+    local_semisupervised_model_path = (
+        root / "data" / "meerkat_hits" / "semisupervised_scorer.joblib"
+    )
+    if local_semisupervised_metadata_path.exists():
+        try:
+            local_metadata = json.loads(
+                local_semisupervised_metadata_path.read_text(encoding="utf-8")
+            )
+        except (OSError, json.JSONDecodeError):
+            local_metadata = {}
+        if isinstance(local_metadata, dict):
+            train_hit_count = int(local_metadata.get("train_hit_count", 0) or 0)
+            semisupervised_scorer = {
+                **semisupervised_scorer,
+                "is_fitted": train_hit_count > 0,
+                "train_hit_count": train_hit_count,
+                "local_metadata_path": str(local_semisupervised_metadata_path),
+                "local_model_path": str(local_semisupervised_model_path),
+                "local_model_exists": local_semisupervised_model_path.exists(),
+            }
     semisupervised_feature_count = int(
         semisupervised_scorer.get("feature_count", 0)
     )
@@ -9073,6 +9112,30 @@ def _build_parser() -> argparse.ArgumentParser:
             "Print semi-supervised anomaly scorer provenance summary "
             "(PCA + IsolationForest; local triage aid only)."
         ),
+    )
+
+    semisupervised_corpus_parser = subparsers.add_parser(
+        "semisupervised-corpus-build",
+        help=(
+            "Build a normalized real-hit NDJSON training corpus from "
+            "turboSETI .dat files."
+        ),
+    )
+    semisupervised_corpus_parser.add_argument(
+        "--dat-dir",
+        required=True,
+        help="Directory or file containing real turboSETI .dat hit tables.",
+    )
+    semisupervised_corpus_parser.add_argument(
+        "--output",
+        required=True,
+        help="Output NDJSON corpus path; use an ignored data/ path for payloads.",
+    )
+    semisupervised_corpus_parser.add_argument(
+        "--max-hits",
+        type=int,
+        default=None,
+        help="Maximum number of hits to write to the training corpus.",
     )
 
     semisupervised_train_parser = subparsers.add_parser(

@@ -2,8 +2,8 @@
 """
 ingest_meerkat_hits.py
 
-Downloads and ingests the MeerKAT BLUSE 2-million-hit turboSETI dataset
-(Sheikh et al. 2025) as a false-positive corpus for generalisation.
+Ingests a verified MeerKAT BLUSE turboSETI hit table as a false-positive
+corpus for generalisation.
 
 This dataset covers 900–1670 MHz from MeerKAT and provides ~2 million
 turboSETI hits that are almost entirely RFI.  It is an ideal training
@@ -17,8 +17,19 @@ Scientific guardrail:
   No hit in this dataset is claimed to be a technosignature.  Ingested
   hits are stored locally and not committed to the repository.
 
+Important source guardrail:
+  No verified public MeerKAT BLUSE hit-table URL is currently committed. Earlier
+  iterations pointed at Zenodo concept record 10987642, but that concept resolves
+  to unrelated content and must not be used. Until a real source URL is verified,
+  use:
+
+    .venv/bin/techno-search semisupervised-corpus-build \
+        --dat-dir data/extended_corpus \
+        --output data/meerkat_hits/real_turboseti_training.ndjson
+
 Usage:
-  .venv/bin/python scripts/ingest_meerkat_hits.py [--output-dir data/meerkat_hits]
+  .venv/bin/python scripts/ingest_meerkat_hits.py --source-url URL
+                                                   [--output-dir data/meerkat_hits]
                                                    [--max-hits 200000]
                                                    [--dry-run]
 """
@@ -38,11 +49,12 @@ MEERKAT_DISCLAIMER = (
     "submission. This dataset is stored locally and not committed."
 )
 
-# Public URL for the MeerKAT BLUSE turboSETI hit table (Sheikh et al. 2025)
-# ~90 MB gzipped JSON; ~2 million hits covering 900–1670 MHz
-MEERKAT_URL = (
-    "https://zenodo.org/record/10987642/files/"
-    "meerkat_bluse_turboseti_hits.json.gz"
+MEERKAT_SOURCE_BLOCKER = (
+    "No verified public MeerKAT BLUSE turboSETI hit-table URL is configured. "
+    "Do not use Zenodo concept 10987642; current metadata resolves to unrelated "
+    "content. Provide --source-url only after independently verifying the data "
+    "release, or build a scorer corpus from real local turboSETI .dat files "
+    "with .venv/bin/techno-search semisupervised-corpus-build."
 )
 
 # turboSETI field mapping for MeerKAT → standard field names
@@ -80,7 +92,7 @@ def _normalise_hit(raw: dict) -> dict:
     return h
 
 
-def download_meerkat_hits(output_dir: Path, max_hits: int) -> Path:
+def download_meerkat_hits(output_dir: Path, max_hits: int, source_url: str) -> Path:
     """Download the MeerKAT hit table and return the local path."""
     import gzip
     import urllib.request
@@ -91,10 +103,10 @@ def download_meerkat_hits(output_dir: Path, max_hits: int) -> Path:
 
     if not gz_path.exists():
         print("[START] Downloading MeerKAT BLUSE hits from:")
-        print(f"        {MEERKAT_URL}")
-        print("[INFO]  This file is ~90 MB; download may take several minutes.")
+        print(f"        {source_url}")
+        print("[INFO]  Download may take several minutes.")
         t0 = time.time()
-        urllib.request.urlretrieve(MEERKAT_URL, gz_path)
+        urllib.request.urlretrieve(source_url, gz_path)
         elapsed = time.time() - t0
         size = gz_path.stat().st_size / 1e6
         print(f"[OK]    Downloaded: {gz_path} ({size:.1f} MB in {elapsed:.0f}s)")
@@ -157,13 +169,18 @@ def ingest_hits(json_path: Path, output_dir: Path, max_hits: int) -> Path:
     return out_path
 
 
-def write_provenance(output_dir: Path, out_path: Path, max_hits: int) -> None:
+def write_provenance(
+    output_dir: Path,
+    out_path: Path,
+    max_hits: int,
+    source_url: str,
+) -> None:
     """Write a provenance JSON file alongside the normalised hits."""
     prov = {
         "schema_version": "meerkat_ingest_provenance_v1",
         "disclaimer": MEERKAT_DISCLAIMER,
         "source": "MeerKAT BLUSE turboSETI hits (Sheikh et al. 2025)",
-        "url": MEERKAT_URL,
+        "url": source_url,
         "frequency_range_mhz": "900–1670",
         "telescope": "MeerKAT",
         "use": "false_positive_training_corpus",
@@ -178,6 +195,14 @@ def write_provenance(output_dir: Path, out_path: Path, max_hits: int) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--source-url",
+        default=None,
+        help=(
+            "Verified MeerKAT BLUSE hit-table URL. Required for network ingest; "
+            "no default is committed because the previous Zenodo source was invalid."
+        ),
+    )
     parser.add_argument(
         "--output-dir",
         type=Path,
@@ -199,19 +224,24 @@ def main() -> None:
 
     if args.dry_run:
         print("[DRY-RUN] Would download:")
-        print(f"  URL: {MEERKAT_URL}")
+        print(f"  URL: {args.source_url or '(blocked: no verified source URL)'}")
         print(f"  Output dir: {args.output_dir}")
         print(f"  Max hits: {args.max_hits:,}")
         print(f"  Disclaimer: {MEERKAT_DISCLAIMER}")
+        if not args.source_url:
+            print(f"  Blocker: {MEERKAT_SOURCE_BLOCKER}")
         return
+
+    if not args.source_url:
+        raise SystemExit(MEERKAT_SOURCE_BLOCKER)
 
     print("[START] MeerKAT BLUSE hit ingestion")
     print(f"[INFO]  Output dir: {args.output_dir}")
     print(f"[INFO]  Max hits: {args.max_hits:,}")
 
-    json_path = download_meerkat_hits(args.output_dir, args.max_hits)
+    json_path = download_meerkat_hits(args.output_dir, args.max_hits, args.source_url)
     out_path = ingest_hits(json_path, args.output_dir, args.max_hits)
-    write_provenance(args.output_dir, out_path, args.max_hits)
+    write_provenance(args.output_dir, out_path, args.max_hits, args.source_url)
 
     print("")
     print("Scientific guardrail:")

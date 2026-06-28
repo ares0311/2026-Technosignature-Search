@@ -244,18 +244,18 @@ The project was redirected in session on 2026-06-26. Key changes:
   `docs/fermi_paradox_technosignatures_brief.md` is tracked on GitHub.
 - **PR #127 merged to `main`** (2026-06-27): synthetic training/calibration
   fixtures removed and the runbook storage cleanup is tracked.
-- **Current PR in progress:** Phase 0 `validate-all` science-only gate cleanup.
-  The public `validate-all` output must omit legacy operational-log, scheduler,
-  MCP, benchmark, and synthetic-training summaries while retaining the scientific
-  gates that still affect production readiness.
+- **Current PR in progress:** Phase 0 real-corpus semi-supervised scorer
+  source hardening. The stale MeerKAT BLUSE ingest URL was invalid; do not use
+  Zenodo concept record 10987642 for this project.
 - **Phase 0 status:** Module deletion ✅ (PR #124). ABACAB ✅ (PR #125).
   Zero-hit evidence ✅ (PR #126). Synthetic fixture deletion ✅ (PR #127).
-  Remaining after this PR: real MeerKAT BLUSE training for
-  `semisupervised_scorer`.
-- **semisupervised_scorer:** `is_fitted: false`, `train_hit_count: 0`.
-  `techno-search semisupervised-scorer-train` is now the intended trainer, but
-  `data/meerkat_hits/` is empty locally; train only after real MeerKAT BLUSE
-  data is ingested.
+  Remaining after this PR: verified MeerKAT BLUSE source discovery, or broader
+  real-corpus expansion beyond the small local GBT/turboSETI sample.
+- **semisupervised_scorer:** local training path verified. Use
+  `techno-search semisupervised-corpus-build --dat-dir data --output data/meerkat_hits/real_turboseti_training.ndjson`
+  and then `techno-search semisupervised-scorer-train --corpus data/meerkat_hits/real_turboseti_training.ndjson --workers 12`.
+  This fit an ignored local model on 259 real GBT/turboSETI hits. The public
+  MeerKAT BLUSE hit-table source remains unverified/blocked.
 - DECISION-134/139: AI hardening gate closed for local operations only.
 - DECISION-140: `prod-scan` and `scripts/run_production_scan.sh` are canonical UX.
 - DECISION-141: prod-target-queue, continuous loop, SIGINT trap active.
@@ -272,8 +272,10 @@ The project was redirected in session on 2026-06-26. Key changes:
 **PR #128 merged.** Public `validate-all` is now Phase 0 science-only and the
 legacy validate-all payload was deleted.
 Next Phase 0 items:
-1. Ingest real MeerKAT BLUSE data into `data/meerkat_hits/`, then train
-   `semisupervised_scorer` with `techno-search semisupervised-scorer-train`.
+1. Expand the real scorer corpus beyond the current 259-hit local GBT/turboSETI
+   sample, preferably with a verified MeerKAT BLUSE hit-table source if one can
+   be located from primary sources. Do not fabricate or reuse the invalid
+   Zenodo 10987642 source.
 
 ### turboSETI / pipeline status (as of 2026-06-21):
 

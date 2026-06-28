@@ -27,7 +27,7 @@ schemas, checksums, manifests, small fixtures, and tests.
 | `data/bl_hits/` | `scripts/download_bl_hits.sh`, `scripts/fetch_bl_alternative.sh`, `scripts/ingest_gbt_cadence.py` | Breakthrough Listen / GBT HDF5 inputs and turboSETI hit tables | Ignored payloads |
 | `data/calibration_corpus/` | `scripts/download_calibration_corpus.sh`, `scripts/fetch_bl_calibration_targets.sh`, `scripts/run_calibration_corpus_pipeline.sh` | Real `.dat` hit tables, provenance sidecars, calibration gate outputs | Ignored payloads; commit sanitized summaries only |
 | `data/extended_corpus/` | `scripts/download_bl_extended_corpus.sh` | Held-out GBT evidence inputs from current BL Open Data HDF5 records and any derived hit tables for DECISION-134 hardening | Ignored payloads; commit review-safe manifests only |
-| `data/meerkat_hits/` | `scripts/ingest_meerkat_hits.py` | MeerKAT BLUSE false-positive corpus and normalized local derivatives | Ignored payloads; commit methodology only |
+| `data/meerkat_hits/` | `scripts/ingest_meerkat_hits.py`, `techno-search semisupervised-corpus-build`, `techno-search semisupervised-scorer-train` | Verified MeerKAT BLUSE false-positive corpus when available, real turboSETI `.dat` normalized training corpora, and local scorer model/metadata payloads | Ignored payloads; commit methodology only |
 | `data/injection_grid/` | `scripts/setigen_injection_grid.py` | Setigen injection-recovery HDF5 files, derived hit tables, and local grid manifests | Ignored payloads; commit review-safe summaries only |
 | `results/` | Pipeline CLIs and scan workflows | Local pipeline reports, manifests, scan outputs, and candidate artifacts | Ignored except `results/scans/` |
 | `results/scans/` | `.github/workflows/weekly_scan.yml` | Review-safe scheduled scan summaries | Tracked by workflow when intentionally committed |
@@ -61,7 +61,9 @@ Expected ignored local evidence streams:
 
 1. Extended GBT corpus: `data/extended_corpus/<target>/` HDF5 inputs and any
    derived hit tables
-2. MeerKAT BLUSE corpus: `data/meerkat_hits/`
+2. Semi-supervised scorer corpus/model payloads: `data/meerkat_hits/`
+   (verified MeerKAT BLUSE when available, or normalized real turboSETI `.dat`
+   corpora built locally)
 3. Injection-recovery grid: `data/injection_grid/`
 4. Calibration corpus holdouts: `data/calibration_corpus/*.dat`
 
