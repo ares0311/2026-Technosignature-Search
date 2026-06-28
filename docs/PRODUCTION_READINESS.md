@@ -123,7 +123,7 @@ gaps are closed. The project now pivots to multi-modal science (Phases 0–4).
 | Delete ~141 misaligned overhead modules | ✅ Done (PR #124, 2026-06-27) — 74 modules deleted, stubs in place |
 | Delete synthetic training data files | ✅ Done — synthetic calibration, score-regression, and labeled-training fixtures removed |
 | Harden ON/OFF cadence RFI rejection (Enriquez 2017 ABACAB) | ✅ Done (PR #125, 2026-06-27) — abacab_cadence_score feature, source_artifact tracking |
-| Train `semisupervised_scorer` on real corpus | ⚠️ Partially done — trainer CLI and real turboSETI `.dat` corpus builder are wired; local GBT/turboSETI training path verified on 259 real hits; public MeerKAT BLUSE hit-table source remains unverified/blocked |
+| Train `semisupervised_scorer` on real corpus | ⚠️ Partially done — trainer CLI and real turboSETI `.dat` corpus builder are wired; local GBT/turboSETI training path verified on 259 real hits; radio pipeline now injects fitted local scorer anomaly features into candidate packets; public MeerKAT BLUSE hit-table source remains unverified/blocked |
 | Update `validate-all` to scientific-only gates | ✅ Done — public gate now omits legacy operational/synthetic payloads and checks Phase 0 science gates |
 | Add "delete synthetic training data" to production scan runbook | ✅ Done |
 
@@ -137,7 +137,7 @@ and scan history records."
 | Task | Status |
 |---|---|
 | Proper ON/OFF cadence verification (ABACAB from raw files) | ❌ Not started |
-| Real training corpus loaded into semisupervised_scorer | ⚠️ Partial — local GBT/turboSETI `.dat` corpus can fit the scorer; verified MeerKAT BLUSE corpus still unavailable |
+| Real training corpus loaded into semisupervised_scorer | ⚠️ Partial — local GBT/turboSETI `.dat` corpus can fit the scorer and production radio packets can carry fitted-model anomaly scores; verified MeerKAT BLUSE corpus still unavailable |
 | Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial |
 | Cross-target RFI suppression on full stratified corpus | ⚠️ Partial |
 | Ranked candidate/non-detection output ready for Phase 5 | ⚠️ Partial — zero-hit observations are preserved as negative evidence ledgers |
@@ -201,9 +201,13 @@ artifacts; raw-file ABACAB verification remains a Phase 1 hardening task.
 Semi-supervised scorer training is executable from real turboSETI `.dat` files
 via `techno-search semisupervised-corpus-build` and
 `techno-search semisupervised-scorer-train`; the local ignored model was verified
-on 259 real GBT/turboSETI hits. The claimed public MeerKAT BLUSE hit-table URL
-was invalid, so MeerKAT-specific training remains blocked pending a verified
-source.
+on 259 real GBT/turboSETI hits. `run-pipeline` now injects fitted local
+semi-supervised anomaly-score features and provenance into radio candidate
+packets when `data/meerkat_hits/semisupervised_scorer.joblib` exists, or when a
+model is provided with `--semisupervised-model`. These scores are local triage
+evidence only and do not alter external-claim guardrails. The claimed public
+MeerKAT BLUSE hit-table URL was invalid, so MeerKAT-specific training remains
+blocked pending a verified source.
 
 **Photometry, IR, spectroscopy:** Not implemented. No `lightkurve`, no WISE SED
 fitting, no JWST spectral ingest.

@@ -57,6 +57,7 @@ def run_pipeline(
     *,
     candidate_id: str | None = None,
     epoch_dat_files: list[Path] | None = None,
+    semisupervised_model_path: Path | None = None,
 ) -> PipelineRunResult:
     """Run the full pipeline on a real input file.
 
@@ -81,7 +82,11 @@ def run_pipeline(
             msg = "Input validation failed: " + "; ".join(validation.issues)
             raise ValueError(msg)
         candidate = _build_candidate(
-            input_path, track_enum, cid, epoch_dat_files=epoch_dat_files
+            input_path,
+            track_enum,
+            cid,
+            epoch_dat_files=epoch_dat_files,
+            semisupervised_model_path=semisupervised_model_path,
         )
         scored = score_candidate(candidate)
         paths = write_candidate_reports(scored, output_dir)
@@ -165,9 +170,15 @@ def _build_candidate(
     candidate_id: str,
     *,
     epoch_dat_files: list[Path] | None = None,
+    semisupervised_model_path: Path | None = None,
 ) -> Candidate:
     if track == Track.RADIO:
-        return _build_radio_candidate(path, candidate_id, epoch_dat_files=epoch_dat_files)
+        return _build_radio_candidate(
+            path,
+            candidate_id,
+            epoch_dat_files=epoch_dat_files,
+            semisupervised_model_path=semisupervised_model_path,
+        )
     if track == Track.INFRARED:
         return _build_infrared_candidate(path, candidate_id)
     return _build_anomaly_candidate(path, candidate_id)
@@ -178,6 +189,7 @@ def _build_radio_candidate(
     candidate_id: str,
     *,
     epoch_dat_files: list[Path] | None = None,
+    semisupervised_model_path: Path | None = None,
 ) -> Candidate:
     from techno_search.catalog_crossmatch import catalog_crossmatch
     from techno_search.gbt_cadence import cadence_candidate_context
@@ -265,6 +277,15 @@ def _build_radio_candidate(
             me_result.max_persistence_score
         )
 
+    semisupervised_features, semisupervised_provenance = (
+        _semisupervised_model_context(
+            rows,
+            model_path=semisupervised_model_path,
+        )
+    )
+    extra_features.update(semisupervised_features)
+    extra_provenance.update(semisupervised_provenance)
+
     if extra_features:
         candidate = Candidate(
             candidate_id=candidate.candidate_id,
@@ -275,6 +296,118 @@ def _build_radio_candidate(
         )
 
     return candidate
+
+
+def _default_semisupervised_model_path() -> Path:
+    return (
+        Path(__file__).resolve().parents[2]
+        / "data"
+        / "meerkat_hits"
+        / "semisupervised_scorer.joblib"
+    )
+
+
+def _semisupervised_model_context(
+    rows: list[dict[str, Any]],
+    *,
+    model_path: Path | None,
+) -> tuple[dict[str, FeatureValue], dict[str, FeatureValue]]:
+    resolved_model = (
+        Path(model_path) if model_path is not None else _default_semisupervised_model_path()
+    )
+    if not resolved_model.exists():
+        return {}, {}
+
+    from techno_search.semisupervised_scorer import load_fitted_scorer_joblib
+
+    try:
+        scorer = load_fitted_scorer_joblib(resolved_model)
+        enriched_rows = [_semisupervised_hit_features(row, rows) for row in rows]
+        scores = scorer.score_hits(enriched_rows)
+    except Exception as exc:  # noqa: BLE001
+        return {}, {
+            "semisupervised_model_path": str(resolved_model),
+            "semisupervised_model_error": str(exc),
+        }
+
+    if not scores:
+        return {}, {}
+    max_score = max(scores)
+    mean_score = sum(scores) / len(scores)
+    features: dict[str, FeatureValue] = {
+        "semisupervised_anomaly_score": max_score,
+        "semisupervised_mean_anomaly_score": mean_score,
+        "semisupervised_scored_hit_count": len(scores),
+        "semisupervised_model_used": True,
+    }
+    provenance: dict[str, FeatureValue] = {
+        "semisupervised_model_path": str(resolved_model),
+        "semisupervised_scored_hit_count": len(scores),
+        "semisupervised_score_policy": "max_hit_score_local_triage_only",
+    }
+    return features, provenance
+
+
+def _semisupervised_hit_features(
+    row: dict[str, Any],
+    all_rows: list[dict[str, Any]],
+) -> dict[str, FeatureValue]:
+    frequency_hz = _float_feature(row, "frequency_hz")
+    drift = _float_feature(row, "drift_rate_hz_per_sec")
+    snr = _float_feature(row, "snr")
+    same_frequency_rows = [
+        other
+        for other in all_rows
+        if abs(_float_feature(other, "frequency_hz") - frequency_hz)
+        <= 5.0
+    ]
+    scan_roles = [str(other.get("scan_role", "")).lower() for other in same_frequency_rows]
+    on_hit_count = sum(1 for role in scan_roles if not role.startswith("off"))
+    off_hit_count = sum(1 for role in scan_roles if role.startswith("off"))
+    total_role_hits = max(1, on_hit_count + off_hit_count)
+    median_snr = _median_positive_snr(all_rows)
+    normalized_drift = drift / (frequency_hz / 1e9) if frequency_hz > 0 else 0.0
+    return {
+        "snr": snr,
+        "drift_rate_hz_per_sec": drift,
+        "frequency_hz": frequency_hz,
+        "bandwidth_hz": _float_feature(row, "bandwidth_hz"),
+        "normalized_drift_hz_s_per_ghz": normalized_drift,
+        "relative_snr": snr / median_snr,
+        "on_off_consistency_score": off_hit_count / total_role_hits,
+        "is_earth_drift_consistent": 1.0 if abs(normalized_drift) <= 0.44 else 0.0,
+        "rfi_band_overlap_score": 0.0,
+        "frequency_persistence_score": _clamp(
+            max(0, len(same_frequency_rows) - 1) / max(1, len(all_rows) - 1)
+        ),
+        "on_hit_count": on_hit_count,
+        "off_hit_count": off_hit_count,
+    }
+
+
+def _float_feature(row: dict[str, Any], key: str) -> float:
+    try:
+        return float(row.get(key, 0.0) or 0.0)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _median_positive_snr(rows: list[dict[str, Any]]) -> float:
+    values = sorted(
+        _float_feature(row, "snr")
+        for row in rows
+        if _float_feature(row, "snr") > 0
+    )
+    if not values:
+        return 1.0
+    midpoint = len(values) // 2
+    if len(values) % 2 == 1:
+        return values[midpoint]
+    return (values[midpoint - 1] + values[midpoint]) / 2.0
+
+
+def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
+    return max(low, min(high, value))
 
 
 def _local_radio_known_object_score(

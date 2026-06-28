@@ -276,6 +276,22 @@ def load_training_hits_ndjson(
     return hits
 
 
+def load_fitted_scorer_joblib(path: Path) -> SemisupervisedScorer:
+    """Load a fitted semi-supervised scorer from a local joblib payload."""
+
+    import joblib  # type: ignore[import-untyped]
+
+    loaded = joblib.load(Path(path))
+    if not isinstance(loaded, SemisupervisedScorer):
+        raise TypeError(
+            f"Expected SemisupervisedScorer in {Path(path)}; "
+            f"got {type(loaded).__name__}"
+        )
+    if not loaded.summary().get("is_fitted", False):
+        raise ValueError(f"SemisupervisedScorer at {Path(path)} is not fitted")
+    return loaded
+
+
 def discover_training_dat_files(dat_dir: Path) -> list[Path]:
     """Return real turboSETI .dat files below ``dat_dir`` in stable order."""
 

@@ -4959,6 +4959,7 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             Path(args.output_dir),
             candidate_id=getattr(args, "candidate_id", None),
             epoch_dat_files=_epoch_files,
+            semisupervised_model_path=getattr(args, "semisupervised_model", None),
         )
         print(json.dumps(pipeline_result.as_dict(), indent=2, sort_keys=True), file=out)
         return 0 if pipeline_result.ok else 1
@@ -8916,6 +8917,14 @@ def _build_parser() -> argparse.ArgumentParser:
             "Additional turboSETI .dat files from separate observation sessions "
             "(radio track only). When provided, multi-epoch persistence scores are "
             "injected into candidate features before scoring."
+        ),
+    )
+    run_pipeline_parser.add_argument(
+        "--semisupervised-model",
+        type=Path,
+        help=(
+            "Optional fitted SemisupervisedScorer joblib model. Defaults to "
+            "data/meerkat_hits/semisupervised_scorer.joblib when present."
         ),
     )
 

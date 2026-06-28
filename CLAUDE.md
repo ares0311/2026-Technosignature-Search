@@ -254,8 +254,11 @@ The project was redirected in session on 2026-06-26. Key changes:
 - **semisupervised_scorer:** local training path verified. Use
   `techno-search semisupervised-corpus-build --dat-dir data --output data/meerkat_hits/real_turboseti_training.ndjson`
   and then `techno-search semisupervised-scorer-train --corpus data/meerkat_hits/real_turboseti_training.ndjson --workers 12`.
-  This fit an ignored local model on 259 real GBT/turboSETI hits. The public
-  MeerKAT BLUSE hit-table source remains unverified/blocked.
+  This fit an ignored local model on 259 real GBT/turboSETI hits. `run-pipeline`
+  now injects fitted local scorer anomaly-score features into radio candidate
+  packets when `data/meerkat_hits/semisupervised_scorer.joblib` exists, or when
+  `--semisupervised-model` is provided. The public MeerKAT BLUSE hit-table
+  source remains unverified/blocked.
 - DECISION-134/139: AI hardening gate closed for local operations only.
 - DECISION-140: `prod-scan` and `scripts/run_production_scan.sh` are canonical UX.
 - DECISION-141: prod-target-queue, continuous loop, SIGINT trap active.
@@ -276,6 +279,10 @@ Next Phase 0 items:
    sample, preferably with a verified MeerKAT BLUSE hit-table source if one can
    be located from primary sources. Do not fabricate or reuse the invalid
    Zenodo 10987642 source.
+2. Calibrate how `semisupervised_anomaly_score` should affect pathway routing
+   after a larger independent real corpus exists. It is currently recorded as
+   local triage evidence in candidate packets, not used as an external-claim
+   trigger.
 
 ### turboSETI / pipeline status (as of 2026-06-21):
 
