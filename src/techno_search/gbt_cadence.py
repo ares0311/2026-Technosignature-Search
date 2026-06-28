@@ -28,6 +28,7 @@ CADENCE_SCHEMA_VERSION = "gbt_observation_cadence_v1"
 CADENCE_DERIVATION_SCHEMA_VERSION = "observation_cadence_derivation_v1"
 RAW_CADENCE_STATUS_SCHEMA_VERSION = "gbt_raw_cadence_status_v1"
 EXPECTED_ROLES = ("on", "off", "on", "off", "on", "off")
+HDF5_MAGIC = b"\x89HDF"
 TURBOSETI_NUMPY_PATCH_OLD = '" is: %i" % max_val.total_n_hits)'
 TURBOSETI_NUMPY_PATCH_NEW = '" is: %i" % int(max_val.total_n_hits[0]))'
 
@@ -82,6 +83,12 @@ def md5_file(path: Path) -> str:
         for block in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def has_hdf5_magic(path: Path) -> bool:
+    """Return True when a file starts with the HDF5 file signature."""
+    with path.open("rb") as handle:
+        return handle.read(len(HDF5_MAGIC)) == HDF5_MAGIC
 
 
 def apply_turboseti_numpy_compatibility(package_dir: Path) -> bool:
@@ -158,6 +165,7 @@ def raw_cadence_status(manifest: Mapping[str, Any], raw_dir: Path) -> dict[str, 
             "expected_size_bytes": int(scan["size_bytes"]),
             "expected_md5": str(scan["md5"]).lower(),
             "verified": False,
+            "hdf5_signature_verified": False,
         }
         if not path.exists():
             missing_count += 1
@@ -178,6 +186,12 @@ def raw_cadence_status(manifest: Mapping[str, Any], raw_dir: Path) -> dict[str, 
             entry["issue"] = "md5_mismatch"
             scan_entries.append(entry)
             continue
+        if not has_hdf5_magic(path):
+            mismatch_count += 1
+            entry["issue"] = "hdf5_signature_mismatch"
+            scan_entries.append(entry)
+            continue
+        entry["hdf5_signature_verified"] = True
         entry["verified"] = True
         verified_count += 1
         scan_entries.append(entry)
