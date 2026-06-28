@@ -100,8 +100,32 @@ class TestScanSummary:
         result = scan_summary([_cand("c1", 0.5, "human_review_queue", "A")])
         top = result["top_candidates"][0]
 
+        assert top["drift_rate_hz_per_sec"] == 0.5
         assert top["normalized_drift_hz_s_per_ghz"] == 0.352112676056338
         assert top["is_earth_drift_consistent"] is True
+        assert top["drift_evidence_available"] is True
+        assert top["drift_evidence_limitation"] == ""
+
+    def test_top_candidates_flag_missing_drift_evidence(self) -> None:
+        result = scan_summary(
+            [
+                {
+                    "candidate_id": "legacy-cand",
+                    "score": 0.5,
+                    "recommended_pathway": "human_review_queue",
+                    "target_name": "HIP99427",
+                    "frequency_hz": 1420e6,
+                    "snr": 55.0,
+                }
+            ]
+        )
+        top = result["top_candidates"][0]
+
+        assert top["drift_rate_hz_per_sec"] == 0.0
+        assert top["normalized_drift_hz_s_per_ghz"] == 0.0
+        assert top["is_earth_drift_consistent"] is False
+        assert top["drift_evidence_available"] is False
+        assert "did not include drift-rate evidence" in top["drift_evidence_limitation"]
 
 
 class TestScanSummaryFromBatchDir:
@@ -112,16 +136,19 @@ class TestScanSummaryFromBatchDir:
             "recommended_pathway": "human_review_queue",
             "frequency_hz": 1420e6,
             "snr": 55.0,
+            "drift_rate_hz_per_sec": 0.4,
             "normalized_drift_hz_s_per_ghz": 0.28169014084507044,
             "is_earth_drift_consistent": True,
         }
         (tmp_path / "test_manifest.json").write_text(json.dumps(manifest))
         result = scan_summary_from_batch_dir(tmp_path)
         assert result["total_candidates"] == 1
+        assert result["top_candidates"][0]["drift_rate_hz_per_sec"] == 0.4
         assert result["top_candidates"][0]["normalized_drift_hz_s_per_ghz"] == (
             0.28169014084507044
         )
         assert result["top_candidates"][0]["is_earth_drift_consistent"] is True
+        assert result["top_candidates"][0]["drift_evidence_available"] is True
 
     def test_empty_dir_returns_zero(self, tmp_path: Path) -> None:
         result = scan_summary_from_batch_dir(tmp_path)

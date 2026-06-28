@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -70,12 +71,7 @@ def scan_summary(
                 "pathway": cand.get("recommended_pathway", "unknown"),
                 "frequency_hz": float(cand.get("frequency_hz", 0.0)),
                 "snr": float(cand.get("snr", 0.0)),
-                "normalized_drift_hz_s_per_ghz": float(
-                    cand.get("normalized_drift_hz_s_per_ghz", 0.0)
-                ),
-                "is_earth_drift_consistent": bool(
-                    cand.get("is_earth_drift_consistent", False)
-                ),
+                **_drift_fields(cand),
             }
         )
 
@@ -150,7 +146,7 @@ def load_candidates_from_batch_dir(batch_dir: Path) -> list[dict[str, Any]]:
                 merged.get("score", merged.get("candidate_score", 0.0)),
             )
         )
-        features = report_data.get("features", {})
+        features = _mapping(report_data.get("features", {}))
         snr = float(features.get("snr", merged.get("snr", 0.0)))
         freq = float(features.get("frequency_hz", merged.get("frequency_hz", 0.0)))
         drift = float(
@@ -162,12 +158,13 @@ def load_candidates_from_batch_dir(batch_dir: Path) -> list[dict[str, Any]]:
                 merged.get("normalized_drift_hz_s_per_ghz", 0.0),
             )
         )
-        earth_drift_consistent = bool(
+        earth_drift_consistent = _boolish(
             features.get(
                 "is_earth_drift_consistent",
                 merged.get("is_earth_drift_consistent", False),
             )
         )
+        drift_available = _drift_evidence_available(features, merged)
         candidates.append(
             {
                 "candidate_id": merged.get("candidate_id", target_name),
@@ -179,6 +176,8 @@ def load_candidates_from_batch_dir(batch_dir: Path) -> list[dict[str, Any]]:
                 "drift_rate_hz_per_sec": drift,
                 "normalized_drift_hz_s_per_ghz": normalized_drift,
                 "is_earth_drift_consistent": earth_drift_consistent,
+                "drift_evidence_available": drift_available,
+                "drift_evidence_limitation": "" if drift_available else _NO_DRIFT_LIMITATION,
                 "track": merged.get("track", "unknown"),
             }
         )
@@ -209,6 +208,10 @@ def _zero_hit_observation_candidate(
         "drift_rate_hz_per_sec": 0.0,
         "normalized_drift_hz_s_per_ghz": 0.0,
         "is_earth_drift_consistent": False,
+        "drift_evidence_available": False,
+        "drift_evidence_limitation": (
+            "Zero-hit observation has no turboSETI hit-row drift evidence."
+        ),
         "track": str(manifest.get("track", "radio")),
         "observation_only": True,
         "hit_row_count": int(manifest.get("hit_row_count", 0)),
@@ -220,3 +223,54 @@ def _zero_hit_observation_candidate(
 def scan_summary_from_batch_dir(batch_dir: Path) -> dict[str, Any]:
     """Build a scan summary from manifest JSON files in a results directory."""
     return scan_summary(load_candidates_from_batch_dir(batch_dir))
+
+
+_DRIFT_KEYS = {
+    "drift_rate_hz_per_sec",
+    "normalized_drift_hz_s_per_ghz",
+    "is_earth_drift_consistent",
+}
+_NO_DRIFT_LIMITATION = (
+    "Candidate packet did not include drift-rate evidence; numeric drift fields "
+    "are compatibility defaults, not measured values."
+)
+
+
+def _drift_fields(candidate: Mapping[str, Any]) -> dict[str, Any]:
+    available = _candidate_has_drift_evidence(candidate)
+    return {
+        "drift_rate_hz_per_sec": float(candidate.get("drift_rate_hz_per_sec", 0.0)),
+        "normalized_drift_hz_s_per_ghz": float(
+            candidate.get("normalized_drift_hz_s_per_ghz", 0.0)
+        ),
+        "is_earth_drift_consistent": _boolish(
+            candidate.get("is_earth_drift_consistent", False)
+        ),
+        "drift_evidence_available": available,
+        "drift_evidence_limitation": "" if available else _NO_DRIFT_LIMITATION,
+    }
+
+
+def _candidate_has_drift_evidence(candidate: Mapping[str, Any]) -> bool:
+    if bool(candidate.get("observation_only")):
+        return False
+    if "drift_evidence_available" in candidate:
+        return _boolish(candidate["drift_evidence_available"])
+    return any(key in candidate for key in _DRIFT_KEYS)
+
+
+def _drift_evidence_available(
+    features: Mapping[str, Any],
+    merged: Mapping[str, Any],
+) -> bool:
+    return any(key in features or key in merged for key in _DRIFT_KEYS)
+
+
+def _boolish(value: Any) -> bool:
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "y"}
+    return bool(value)
+
+
+def _mapping(value: Any) -> Mapping[str, Any]:
+    return value if isinstance(value, Mapping) else {}

@@ -122,9 +122,12 @@ def test_build_production_outcomes_splits_non_detections_and_follow_ups() -> Non
         0.28169014084507044
     )
     assert follow_ups["entries"][0]["is_earth_drift_consistent"] is True
+    assert follow_ups["entries"][0]["drift_evidence_available"] is True
+    assert follow_ups["entries"][0]["drift_evidence_limitation"] == ""
     assert outcomes["target_status"]["entries"][0]["normalized_drift_hz_s_per_ghz"] == (
         0.28169014084507044
     )
+    assert outcomes["target_status"]["entries"][0]["drift_evidence_available"] is True
     assert manifest["detection_claimed"] is False
     assert follow_ups["external_submission_allowed"] is False
     assert "detection" in PRODUCTION_OUTCOME_DISCLAIMER
@@ -142,6 +145,33 @@ def test_build_production_outcomes_records_scan_level_negative_result() -> None:
     assert outcomes["non_detections"]["scan_level_negative_result"]["reason"] == (
         "no_follow_up_pathway_candidates"
     )
+
+
+def test_build_production_outcomes_flags_missing_drift_evidence() -> None:
+    legacy_candidate = {
+        "candidate_id": "legacy-cand",
+        "target_name": "HIP99427",
+        "track": "radio",
+        "recommended_pathway": "candidate_review_packet",
+        "score": 0.9,
+        "frequency_hz": 1420000000.0,
+        "snr": 44.0,
+    }
+    outcomes = build_production_outcomes(
+        [legacy_candidate],
+        run_id=RUN_ID,
+        started_at_utc="2026-06-18T20:13:25Z",
+        completed_at_utc="2026-06-18T20:13:30Z",
+    )
+
+    follow_up = outcomes["follow_ups"]["entries"][0]
+    target_status = outcomes["target_status"]["entries"][0]
+    assert follow_up["drift_rate_hz_per_sec"] == 0.0
+    assert follow_up["normalized_drift_hz_s_per_ghz"] == 0.0
+    assert follow_up["is_earth_drift_consistent"] is False
+    assert follow_up["drift_evidence_available"] is False
+    assert "did not include drift-rate evidence" in follow_up["drift_evidence_limitation"]
+    assert target_status["drift_evidence_available"] is False
 
 
 def test_build_production_outcomes_carries_cross_target_rfi_flags() -> None:

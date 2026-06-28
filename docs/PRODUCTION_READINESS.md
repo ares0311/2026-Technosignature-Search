@@ -201,9 +201,10 @@ artifacts. `techno-search gbt-cadence-raw-status` verifies the approved
 HIP99427 six-scan raw HDF5 cadence against manifest size and MD5 evidence before
 processing; completing raw-file ABACAB validation requires the six approved raw
 HDF5 files to be present locally.
-Radio candidate packets, ranked summaries, and production ledgers expose
-cross-band normalized drift and Earth-drift consistency features for the best
-hit, making the drift-rate evidence visible through candidate review and
+Radio candidate packets, ranked summaries, and production ledgers expose raw
+drift, cross-band normalized drift, Earth-drift consistency, and explicit
+drift-evidence availability flags for the best hit, making measured drift-rate
+evidence distinguishable from compatibility defaults in candidate review and
 operator triage artifacts.
 Semi-supervised scorer training is executable from real turboSETI `.dat` files
 via `techno-search semisupervised-corpus-build` and

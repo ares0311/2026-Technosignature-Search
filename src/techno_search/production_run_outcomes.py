@@ -500,6 +500,10 @@ def _non_detection_entry(
             "drift_rate_hz_per_sec": 0.0,
             "normalized_drift_hz_s_per_ghz": 0.0,
             "is_earth_drift_consistent": False,
+            "drift_evidence_available": False,
+            "drift_evidence_limitation": (
+                "Zero-hit observation has no turboSETI hit-row drift evidence."
+            ),
             "hit_row_count": int(candidate.get("hit_row_count", 0)),
             "source_data_path": str(candidate.get("source_data_path", "")),
             "status": "reviewed_zero_hit_observation",
@@ -531,15 +535,43 @@ def _non_detection_entry(
 
 
 def _drift_fields(candidate: Mapping[str, Any]) -> dict[str, Any]:
+    available = _candidate_has_drift_evidence(candidate)
     return {
         "drift_rate_hz_per_sec": float(candidate.get("drift_rate_hz_per_sec", 0.0)),
         "normalized_drift_hz_s_per_ghz": float(
             candidate.get("normalized_drift_hz_s_per_ghz", 0.0)
         ),
-        "is_earth_drift_consistent": bool(
+        "is_earth_drift_consistent": _boolish(
             candidate.get("is_earth_drift_consistent", False)
         ),
+        "drift_evidence_available": available,
+        "drift_evidence_limitation": "" if available else _NO_DRIFT_LIMITATION,
     }
+
+
+_DRIFT_KEYS = {
+    "drift_rate_hz_per_sec",
+    "normalized_drift_hz_s_per_ghz",
+    "is_earth_drift_consistent",
+}
+_NO_DRIFT_LIMITATION = (
+    "Candidate packet did not include drift-rate evidence; numeric drift fields "
+    "are compatibility defaults, not measured values."
+)
+
+
+def _candidate_has_drift_evidence(candidate: Mapping[str, Any]) -> bool:
+    if bool(candidate.get("observation_only")):
+        return False
+    if "drift_evidence_available" in candidate:
+        return _boolish(candidate["drift_evidence_available"])
+    return any(key in candidate for key in _DRIFT_KEYS)
+
+
+def _boolish(value: Any) -> bool:
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "y"}
+    return bool(value)
 
 
 def _cross_target_rfi_flags_by_candidate(
