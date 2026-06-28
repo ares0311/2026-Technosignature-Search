@@ -4,14 +4,42 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import joblib
+
 from techno_search.cli import main
 from techno_search.pipeline_runner import PipelineRunResult, run_pipeline
+from techno_search.semisupervised_scorer import SemisupervisedScorer
 
 RADIO_FIXTURE = Path(__file__).parent / "fixtures" / "radio" / "sample_hits.csv"
 INFRARED_FIXTURE = Path(__file__).parent / "fixtures" / "infrared" / "sample_gaia_wise.csv"
 ANOMALY_FIXTURE = (
     Path(__file__).parent / "fixtures" / "anomaly" / "sample_archival_anomaly.csv"
 )
+
+
+def _semisupervised_training_hit(index: int) -> dict[str, float]:
+    frequency_hz = 1.42e9 + index * 10.0
+    drift = 0.0 if index % 2 == 0 else 0.1
+    return {
+        "snr": 6.0 + (index % 5),
+        "drift_rate_hz_per_sec": drift,
+        "frequency_hz": frequency_hz,
+        "bandwidth_hz": 2.79,
+        "normalized_drift_hz_s_per_ghz": drift / (frequency_hz / 1e9),
+        "relative_snr": 1.0,
+        "on_off_consistency_score": 0.5,
+        "is_earth_drift_consistent": 1.0,
+        "rfi_band_overlap_score": 0.0,
+        "frequency_persistence_score": 0.2,
+        "on_hit_count": 1.0,
+        "off_hit_count": 0.0,
+    }
+
+
+def _write_fitted_semisupervised_model(path: Path) -> None:
+    scorer = SemisupervisedScorer(n_estimators=10, n_components=4, n_jobs=1)
+    scorer.fit([_semisupervised_training_hit(i) for i in range(20)])
+    joblib.dump(scorer, path)
 
 
 def test_radio_pipeline_runs_successfully(tmp_path: Path) -> None:
@@ -60,6 +88,29 @@ def test_radio_pipeline_records_rfi_database_evidence(tmp_path: Path) -> None:
     assert features["rfi_database_match_count"] == 1
     assert features["rfi_database_match_ids"] == "rfi-db-001"
     assert features["rfi_database_validation_ok"] is True
+
+
+def test_radio_pipeline_injects_semisupervised_model_score(tmp_path: Path) -> None:
+    model_path = tmp_path / "semisupervised_scorer.joblib"
+    _write_fitted_semisupervised_model(model_path)
+
+    result = run_pipeline(
+        RADIO_FIXTURE,
+        "radio",
+        tmp_path / "reports",
+        candidate_id="radio-semisupervised",
+        semisupervised_model_path=model_path,
+    )
+
+    assert result.ok, f"Pipeline failed: {result.error}"
+    packet = json.loads(result.report_paths.json_path.read_text(encoding="utf-8"))
+    features = packet["features"]
+    provenance = packet["provenance"]
+    assert features["semisupervised_model_used"] is True
+    assert features["semisupervised_scored_hit_count"] == 5
+    assert isinstance(features["semisupervised_anomaly_score"], float)
+    assert provenance["semisupervised_model_path"] == str(model_path)
+    assert provenance["semisupervised_score_policy"] == "max_hit_score_local_triage_only"
 
 
 def test_radio_pipeline_routes_known_spacecraft_to_annotation(tmp_path: Path) -> None:

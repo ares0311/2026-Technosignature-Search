@@ -114,7 +114,7 @@ These CLI commands implement the runbook rules:
 | `techno-search prod-record-scan --target-stem T --run-id R --score S --pathway P --dat-file F --history-file H [--parent-run-id ID]` | Append a completed scan record to the history NDJSON |
 | `techno-search scan-history-summary [--history-file H] [--dat-dir D]` | Show all prior scans; count pending targets |
 | `techno-search prod-scan INPUT_DIR OUTPUT_DIR [--track radio] [--force]` | Single-run batch scan with Rich spinner (does not use history) |
-| `techno-search run-pipeline FILE TRACK OUTPUT_DIR` | Process one input file through the pipeline |
+| `techno-search run-pipeline FILE TRACK OUTPUT_DIR [--semisupervised-model PATH]` | Process one input file through the pipeline; radio packets use the default local fitted scorer model when present |
 | `techno-search validate-all` | Must pass before any scan proceeds |
 
 ---
@@ -187,6 +187,13 @@ Zero-hit turboSETI `.dat` files are still evidence. `scripts/bl_fetch.py run-pip
 writes `zero_hit_observation_manifest_v1` records for hit tables with no non-comment
 rows, and `prod-scan` turns those records into non-detection ledger entries with
 score `0.0`, no follow-up requirement, and explicit negative evidence.
+
+When `data/meerkat_hits/semisupervised_scorer.joblib` exists, radio
+`run-pipeline` packets include local semi-supervised anomaly-score features and
+provenance. Override the model with `--semisupervised-model PATH` when testing a
+new fitted scorer. These scores are local triage evidence only; they do not
+constitute detection, discovery, external validation, or external-submission
+approval.
 
 ---
 
