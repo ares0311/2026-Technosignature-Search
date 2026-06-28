@@ -12,6 +12,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, TextIO
 
+from techno_search import __version__
 from techno_search.ai_hardening_gate import ai_hardening_gate_summary
 from techno_search.artifact_cleanup import (
     apply_artifact_cleanup,
@@ -1230,6 +1231,10 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
     out = stdout or sys.stdout
+
+    if args.command == "version":
+        print(f"techno-search {__version__}", file=out)
+        return 0
 
     if args.command == "score":
         candidate = load_candidate_json(args.input)
@@ -5582,13 +5587,20 @@ def _project_health_summary(out: TextIO | None = None) -> dict[str, object]:
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="techno-search",
-        description="Score synthetic technosignature-interest candidate packets.",
+        description="Run conservative technosignature-interest candidate tooling.",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"techno-search {__version__}",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    subparsers.add_parser("version", help="Print the installed techno-search version.")
+
     score_parser = subparsers.add_parser(
         "score",
-        help="Score a normalized synthetic candidate JSON file.",
+        help="Score a normalized candidate JSON file.",
     )
     score_parser.add_argument("input", type=Path, help="Input candidate JSON path.")
     score_parser.add_argument(
