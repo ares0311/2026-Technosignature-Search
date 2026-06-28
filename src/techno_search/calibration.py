@@ -59,9 +59,16 @@ def default_calibration_fixture_path() -> Path:
 
 
 def load_calibration_fixtures(path: Path | None = None) -> tuple[CalibrationFixture, ...]:
-    """Load synthetic false-positive calibration fixtures."""
+    """Load synthetic false-positive calibration fixtures when legacy files exist.
+
+    Phase 0 removes these fixtures from the repository because synthetic training
+    data must not be used as production evidence. The empty tuple keeps legacy
+    CLI summaries from crashing while making the absence explicit.
+    """
 
     fixture_path = path or default_calibration_fixture_path()
+    if not fixture_path.exists():
+        return ()
     with fixture_path.open(encoding="utf-8") as handle:
         data = json.load(handle)
 
@@ -90,6 +97,12 @@ def false_positive_class_summary(path: Path | None = None) -> dict[str, object]:
 
     fixture_path = path or default_calibration_fixture_path()
     fixtures = load_calibration_fixtures(fixture_path)
+    if not fixtures:
+        return _removed_summary(
+            fixture_path=fixture_path,
+            schema_version=FALSE_POSITIVE_ANALYSIS_SCHEMA_VERSION,
+            disclaimer=FALSE_POSITIVE_ANALYSIS_DISCLAIMER,
+        )
     by_track_and_class: dict[str, Counter[str]] = defaultdict(Counter)
     fixture_names_by_class: dict[str, list[str]] = defaultdict(list)
     candidate_ids_by_class: dict[str, list[str]] = defaultdict(list)
@@ -130,6 +143,12 @@ def calibration_track_summary(path: Path | None = None) -> dict[str, object]:
 
     fixture_path = path or default_calibration_fixture_path()
     fixtures = load_calibration_fixtures(fixture_path)
+    if not fixtures:
+        return _removed_summary(
+            fixture_path=fixture_path,
+            schema_version=CALIBRATION_TRACK_SCHEMA_VERSION,
+            disclaimer=CALIBRATION_TRACK_DISCLAIMER,
+        )
     by_track: dict[str, list[CalibrationFixture]] = defaultdict(list)
     for fixture in fixtures:
         by_track[fixture.candidate.track.value].append(fixture)
@@ -183,3 +202,31 @@ def _calibration_track_detail(fixtures: list[CalibrationFixture]) -> dict[str, o
 
 def _counter_to_dict(counter: Counter[str]) -> dict[str, int]:
     return dict(sorted(counter.items()))
+
+
+def _removed_summary(
+    *,
+    fixture_path: Path,
+    schema_version: str,
+    disclaimer: str,
+) -> dict[str, object]:
+    return {
+        "fixture_path": str(fixture_path),
+        "schema_version": schema_version,
+        "disclaimer": disclaimer,
+        "removed_in_phase_0": True,
+        "removal_reason": (
+            "Synthetic calibration fixtures were deleted in Phase 0; use real "
+            "labeled corpora and real turboSETI output for production evidence."
+        ),
+        "case_count": 0,
+        "class_count": 0,
+        "track_count": 0,
+        "minimum_track_case_count": 0,
+        "by_track": {},
+        "by_class": {},
+        "by_expected_pathway": {},
+        "by_track_and_class": {},
+        "fixture_names_by_class": {},
+        "candidate_ids_by_class": {},
+    }

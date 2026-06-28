@@ -991,7 +991,6 @@ SCHEMA_FILENAMES = {
     "rfi_database": "rfi_database.schema.json",
     "labeled_candidates": "labeled_candidates.schema.json",
     "labeled_candidates_citizen_science_v1": "labeled_candidates_citizen_science_v1.schema.json",
-    "labeled_candidates_synthetic_v1": "labeled_candidates_synthetic_v1.schema.json",
     "calibration_corpus_admission": "calibration_corpus_admission.schema.json",
     "data_release_snapshot": "data_release_snapshot.schema.json",
     "multi_target_scan": "multi_target_scan.schema.json",
@@ -5045,6 +5044,20 @@ def score_regression_summary(snapshot_path: Path | None = None) -> dict[str, obj
     """Summarize score regression snapshot coverage."""
 
     path = snapshot_path or default_score_regression_snapshot_path()
+    if not path.exists():
+        return {
+            "snapshot_path": str(path),
+            "removed_in_phase_0": True,
+            "removal_reason": (
+                "Synthetic score regression snapshots were deleted in Phase 0; "
+                "production validation must use real observations or realistic "
+                "non-training fixtures."
+            ),
+            "candidate_count": 0,
+            "by_track": {},
+            "by_recommended_pathway": {},
+            "candidate_ids": [],
+        }
     with path.open(encoding="utf-8") as handle:
         data = json.load(handle)
 
@@ -5757,7 +5770,7 @@ def validate_all() -> dict[str, object]:
         synthetic_v1_training_summary as _svts,
     )
     synthetic_training_data = _svts()
-    synthetic_training_data.get("ok", False)
+    synthetic_training_data.get("removed_in_phase_0", False)
     # Learned scoring model v1 on real HIP99427 labels (Tier 2 gap closure)
     real_labels_model_data = _rlms()
     real_labels_model_ok = bool(real_labels_model_data.get("ok", False))
@@ -10194,17 +10207,15 @@ def _build_parser() -> argparse.ArgumentParser:
     synthetic_training_parser = subparsers.add_parser(
         "synthetic-training-summary",
         help=(
-            "Train logistic regression on the setigen synthetic v1 dataset "
-            "(Ma et al. 2023 methodology) and report test accuracy. "
-            "Synthetic data only — not a validated production model."
+            "Report that synthetic training was removed in Phase 0. "
+            "Production scoring must use real labeled corpora."
         ),
     )
     synthetic_training_parser.add_argument(
         "--dataset-path",
         type=Path,
         help=(
-            "Path to labeled_candidates_synthetic_v1.json "
-            "(defaults to built-in fixture)."
+            "Legacy synthetic dataset path; retained only for compatibility."
         ),
     )
 
