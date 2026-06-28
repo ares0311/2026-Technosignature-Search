@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+import techno_search
 from techno_search.cli import main, score_batch
 from techno_search.gbt_cadence import load_cadence_manifest, md5_file
 
@@ -63,6 +64,15 @@ def _write_tiny_cli_cadence(tmp_path: Path) -> tuple[Path, Path]:
     manifest_path = tmp_path / "manifest.json"
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
     return manifest_path, raw_dir
+
+
+def test_cli_version_command_reports_package_version() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["version"], stdout=stdout)
+
+    assert exit_code == 0
+    assert stdout.getvalue().strip() == f"techno-search {techno_search.__version__}"
 
 
 def test_cli_scores_candidate_json_to_stdout(tmp_path) -> None:

@@ -25,6 +25,8 @@ git diff --check
 
 Before release, verify:
 
+- `pyproject.toml`, `techno_search.__version__`, and `techno-search version`
+  agree, and the app version is monotonic relative to the latest release tag
 - candidate packet schemas parse
 - report manifest schemas parse
 - batch manifest schemas parse

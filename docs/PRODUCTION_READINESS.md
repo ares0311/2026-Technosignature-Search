@@ -3,6 +3,7 @@
 **Last updated:** 2026-06-28
 **Current milestone:** 79 (Production Scan Hardening And Artifact Hygiene)
 **Current phase:** Phase 0 — Strip & Fix (multi-modal realignment)
+**Current app version:** 1.1.0
 
 ---
 
