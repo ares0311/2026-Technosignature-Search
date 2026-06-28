@@ -136,7 +136,7 @@ and scan history records."
 
 | Task | Status |
 |---|---|
-| Proper ON/OFF cadence verification (ABACAB from raw files) | ❌ Not started |
+| Proper ON/OFF cadence verification (ABACAB from raw files) | ⚠️ Partial — `gbt-cadence-raw-status` verifies approved raw HDF5 presence, size, and MD5 before cadence processing; local HIP99427 raw files are not currently present under repo data paths |
 | Real training corpus loaded into semisupervised_scorer | ⚠️ Partial — local GBT/turboSETI `.dat` corpus can fit the scorer and production radio packets can carry fitted-model anomaly scores; verified MeerKAT BLUSE corpus still unavailable |
 | Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial — radio candidate packets, ranked summaries, and production ledgers now carry normalized drift and Earth-drift consistency features; full real-corpus validation remains open |
 | Cross-target RFI suppression on full stratified corpus | ⚠️ Partial — production ledgers now carry per-candidate cross-target RFI flags from independent target recurrence; full stratified-corpus validation remains open |
@@ -197,7 +197,10 @@ and scan history records."
 manifests and candidate manifests. Zero-hit turboSETI observations are preserved
 as negative-evidence ledger entries instead of being dropped as empty scans.
 ON/OFF cadence rejection now exposes an ABACAB cadence score from cadence source
-artifacts; raw-file ABACAB verification remains a Phase 1 hardening task.
+artifacts. `techno-search gbt-cadence-raw-status` verifies the approved
+HIP99427 six-scan raw HDF5 cadence against manifest size and MD5 evidence before
+processing; completing raw-file ABACAB validation requires the six approved raw
+HDF5 files to be present locally.
 Radio candidate packets, ranked summaries, and production ledgers expose
 cross-band normalized drift and Earth-drift consistency features for the best
 hit, making the drift-rate evidence visible through candidate review and

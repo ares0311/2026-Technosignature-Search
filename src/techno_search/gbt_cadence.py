@@ -26,6 +26,7 @@ from techno_search.radio.hit_table_reader import read_hit_table_csv
 
 CADENCE_SCHEMA_VERSION = "gbt_observation_cadence_v1"
 CADENCE_DERIVATION_SCHEMA_VERSION = "observation_cadence_derivation_v1"
+RAW_CADENCE_STATUS_SCHEMA_VERSION = "gbt_raw_cadence_status_v1"
 EXPECTED_ROLES = ("on", "off", "on", "off", "on", "off")
 TURBOSETI_NUMPY_PATCH_OLD = '" is: %i" % max_val.total_n_hits)'
 TURBOSETI_NUMPY_PATCH_NEW = '" is: %i" % int(max_val.total_n_hits[0]))'
@@ -134,6 +135,70 @@ def download_archive_file(scan: Mapping[str, Any], destination: Path) -> Path:
         partial.unlink(missing_ok=True)
         raise
     return destination
+
+
+def raw_cadence_status(manifest: Mapping[str, Any], raw_dir: Path) -> dict[str, Any]:
+    """Return local raw HDF5 presence/checksum status for an approved cadence."""
+    validate_cadence_manifest(manifest)
+    raw_path = Path(raw_dir)
+    scan_entries: list[dict[str, Any]] = []
+    verified_count = 0
+    missing_count = 0
+    mismatch_count = 0
+    for scan in _sequence(manifest["scans"]):
+        filename = str(scan["filename"])
+        path = raw_path / filename
+        entry: dict[str, Any] = {
+            "sequence_index": int(scan["sequence_index"]),
+            "scan_role": str(scan["scan_role"]),
+            "source_name": str(scan["source_name"]),
+            "filename": filename,
+            "path": str(path),
+            "exists": path.exists(),
+            "expected_size_bytes": int(scan["size_bytes"]),
+            "expected_md5": str(scan["md5"]).lower(),
+            "verified": False,
+        }
+        if not path.exists():
+            missing_count += 1
+            entry["issue"] = "missing_raw_file"
+            scan_entries.append(entry)
+            continue
+        actual_size = path.stat().st_size
+        entry["actual_size_bytes"] = actual_size
+        if actual_size != int(scan["size_bytes"]):
+            mismatch_count += 1
+            entry["issue"] = "size_mismatch"
+            scan_entries.append(entry)
+            continue
+        actual_md5 = md5_file(path)
+        entry["actual_md5"] = actual_md5
+        if actual_md5 != str(scan["md5"]).lower():
+            mismatch_count += 1
+            entry["issue"] = "md5_mismatch"
+            scan_entries.append(entry)
+            continue
+        entry["verified"] = True
+        verified_count += 1
+        scan_entries.append(entry)
+
+    return {
+        "schema_version": RAW_CADENCE_STATUS_SCHEMA_VERSION,
+        "cadence_id": str(manifest["cadence_id"]),
+        "target_name": str(manifest["target_name"]),
+        "raw_dir": str(raw_path),
+        "expected_scan_count": len(EXPECTED_ROLES),
+        "scan_count": len(scan_entries),
+        "verified_count": verified_count,
+        "missing_count": missing_count,
+        "mismatch_count": mismatch_count,
+        "ok": verified_count == len(EXPECTED_ROLES)
+        and missing_count == 0
+        and mismatch_count == 0,
+        "external_submission_authorized": False,
+        "detection_claimed": False,
+        "scans": scan_entries,
+    }
 
 
 def write_hit_provenance(
@@ -332,3 +397,14 @@ def _mapping(value: object) -> Mapping[str, Any]:
     if not isinstance(value, Mapping):
         raise ValueError("Expected a JSON object.")
     return value
+
+
+def _sequence(value: object) -> Sequence[Mapping[str, Any]]:
+    if not isinstance(value, Sequence):
+        raise ValueError("Expected a JSON array.")
+    scans: list[Mapping[str, Any]] = []
+    for item in value:
+        if not isinstance(item, Mapping):
+            raise ValueError("Expected a JSON object.")
+        scans.append(item)
+    return scans

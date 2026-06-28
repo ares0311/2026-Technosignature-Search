@@ -1351,6 +1351,19 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(result, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "gbt-cadence-raw-status":
+        from techno_search.gbt_cadence import load_cadence_manifest, raw_cadence_status
+
+        manifest = load_cadence_manifest(Path(args.manifest))
+        raw_dir = (
+            Path(args.raw_dir)
+            if args.raw_dir
+            else Path(args.data_root) / "bl_observations" / str(manifest["cadence_id"])
+        )
+        result = raw_cadence_status(manifest, raw_dir)
+        print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        return 0 if result["ok"] else 1
+
     if args.command == "globular-filter-summary":
         from techno_search.globular_filter import (
             GLOBULAR_FEATURE_NAMES,
@@ -6559,6 +6572,31 @@ def _build_parser() -> argparse.ArgumentParser:
         "batch_dir",
         type=str,
         help="Directory containing *manifest.json files from a batch scan.",
+    )
+    gbt_cadence_raw_parser = subparsers.add_parser(
+        "gbt-cadence-raw-status",
+        help=(
+            "Check local raw HDF5 files for an approved GBT ABACAB cadence "
+            "against manifest size and MD5 evidence."
+        ),
+    )
+    gbt_cadence_raw_parser.add_argument(
+        "--manifest",
+        type=str,
+        default="configs/gbt_hip99427_cadence_v1.json",
+        help="Approved GBT cadence manifest JSON.",
+    )
+    gbt_cadence_raw_parser.add_argument(
+        "--data-root",
+        type=str,
+        default=str(Path.home() / "technosignature-data"),
+        help="Root containing bl_observations/<cadence_id>/ raw HDF5 files.",
+    )
+    gbt_cadence_raw_parser.add_argument(
+        "--raw-dir",
+        type=str,
+        default=None,
+        help="Explicit raw HDF5 directory; overrides --data-root.",
     )
     prod_run_id_parser = subparsers.add_parser(
         "prod-run-id",

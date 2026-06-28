@@ -11,6 +11,8 @@ from techno_search.gbt_cadence import (
     build_cadence_csv,
     cadence_candidate_context,
     load_cadence_manifest,
+    md5_file,
+    raw_cadence_status,
     validate_cadence_manifest,
     verify_archive_file,
     write_hit_provenance,
@@ -40,6 +42,18 @@ def _write_dat(path: Path, source: str) -> Path:
         encoding="utf-8",
     )
     return path
+
+
+def _tiny_manifest(tmp_path: Path) -> dict:
+    manifest = json.loads(json.dumps(load_cadence_manifest(MANIFEST)))
+    raw_dir = tmp_path / "raw"
+    raw_dir.mkdir()
+    for scan in manifest["scans"]:
+        path = raw_dir / scan["filename"]
+        path.write_bytes(f"raw scan {scan['sequence_index']}".encode())
+        scan["size_bytes"] = path.stat().st_size
+        scan["md5"] = md5_file(path)
+    return manifest
 
 
 def test_approved_manifest_has_complete_abacad_order() -> None:
@@ -75,6 +89,49 @@ def test_archive_verification_rejects_wrong_size(tmp_path: Path) -> None:
             artifact,
             {"size_bytes": 999, "md5": "00000000000000000000000000000000"},
         )
+
+
+def test_raw_cadence_status_reports_missing_files(tmp_path: Path) -> None:
+    manifest = load_cadence_manifest(MANIFEST)
+    result = raw_cadence_status(manifest, tmp_path / "missing")
+
+    assert result["ok"] is False
+    assert result["scan_count"] == 6
+    assert result["missing_count"] == 6
+    assert result["verified_count"] == 0
+    assert {scan["issue"] for scan in result["scans"]} == {"missing_raw_file"}
+    assert result["external_submission_authorized"] is False
+
+
+def test_raw_cadence_status_verifies_complete_manifest(tmp_path: Path) -> None:
+    manifest = _tiny_manifest(tmp_path)
+    result = raw_cadence_status(manifest, tmp_path / "raw")
+
+    assert result["ok"] is True
+    assert result["verified_count"] == 6
+    assert result["missing_count"] == 0
+    assert result["mismatch_count"] == 0
+    assert [scan["scan_role"] for scan in result["scans"]] == [
+        "on",
+        "off",
+        "on",
+        "off",
+        "on",
+        "off",
+    ]
+
+
+def test_raw_cadence_status_reports_checksum_mismatch(tmp_path: Path) -> None:
+    manifest = _tiny_manifest(tmp_path)
+    first = manifest["scans"][0]
+    (tmp_path / "raw" / first["filename"]).write_bytes(b"changed")
+    first["size_bytes"] = len(b"changed")
+
+    result = raw_cadence_status(manifest, tmp_path / "raw")
+
+    assert result["ok"] is False
+    assert result["mismatch_count"] == 1
+    assert result["scans"][0]["issue"] == "md5_mismatch"
 
 
 def test_turboseti_numpy_compatibility_patch_is_idempotent(tmp_path: Path) -> None:
