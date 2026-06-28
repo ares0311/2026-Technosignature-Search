@@ -81,9 +81,8 @@ Every commit must advance one of Phases 0–4 in `docs/PRODUCTION_READINESS.md`.
 If a commit does not close a named gap in Phases 0–4, it should not be merged.
 
 Current Phase 0 open gaps:
-- Delete synthetic training data files
-- Train `semisupervised_scorer` on real MeerKAT BLUSE corpus (Sheikh et al. 2025)
-- Update `validate-all` to scientific-only gates
+ - Train `semisupervised_scorer` on real MeerKAT BLUSE corpus (Sheikh et al. 2025)
+ - Update `validate-all` to scientific-only gates
 
 ### Anti-doom-loop rule (hard)
 
@@ -246,8 +245,8 @@ The project was redirected in session on 2026-06-26. Key changes:
   manifests and production non-detection ledger entries, and
   `docs/fermi_paradox_technosignatures_brief.md` is tracked on GitHub.
 - **Phase 0 status:** Module deletion ✅ (PR #124). ABACAB ✅ (PR #125). Remaining:
-  synthetic training data deletion, validate-all science-only gates, real MeerKAT
-  BLUSE training for `semisupervised_scorer`.
+  validate-all science-only gate cleanup and real MeerKAT BLUSE training for
+  `semisupervised_scorer`.
 - **semisupervised_scorer:** `is_fitted: false`, `train_hit_count: 0` — must be
   trained on real MeerKAT BLUSE data (not synthetic) when Phase 1 begins.
 - DECISION-134/139: AI hardening gate closed for local operations only.
@@ -262,11 +261,9 @@ The project was redirected in session on 2026-06-26. Key changes:
 **PR #124 merged.** Deleted 74 overhead modules.
 **PR #125 merged.** ABACAB cadence rejection score implemented.
 Next Phase 0 items:
-1. Delete synthetic training data files (`tests/fixtures/calibration_false_positives.json`,
-   `tests/fixtures/score_regressions.json`) — complex: calibration.py and baseline_eval.py
-   reference calibration_false_positives.json; test_score_regressions.py tests example candidate
-   scoring against score_regressions.json snapshots. Requires careful coordination.
-2. Update `validate-all` to science-only gates (remove overhead stub checks)
+1. Update `validate-all` to science-only gates (remove overhead stub checks and
+   leftover synthetic summary payloads).
+2. Train `semisupervised_scorer` on real MeerKAT BLUSE data.
 
 ### turboSETI / pipeline status (as of 2026-06-21):
 

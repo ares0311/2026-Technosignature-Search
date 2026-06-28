@@ -1,61 +1,7 @@
 {
   "schema_version": "validation_dataset_manifest_v1",
-  "description": "Small synthetic validation dataset manifest for future false-positive suite tracking.",
+  "description": "Phase 0 placeholder: synthetic validation datasets were removed and must not be used as production evidence.",
   "disclaimer": "Validation dataset manifests describe dataset coverage and readiness only; they are not calibrated survey performance claims.",
-  "datasets": [
-    {
-      "dataset_id": "synthetic-radio-false-positive-v0",
-      "track": "radio",
-      "dataset_kind": "synthetic_false_positive_suite",
-      "readiness": "synthetic_scaffold",
-      "source_fixture_path": "tests/fixtures/calibration_false_positives.json",
-      "case_count": 4,
-      "false_positive_classes": [
-        "radio_band_edge_artifact",
-        "radio_instrumental_artifact",
-        "rfi",
-        "satellite_like_recurrence"
-      ],
-      "expected_pathways": [
-        "do_not_submit_false_positive"
-      ]
-    },
-    {
-      "dataset_id": "synthetic-infrared-false-positive-v0",
-      "track": "infrared",
-      "dataset_kind": "synthetic_false_positive_suite",
-      "readiness": "synthetic_scaffold",
-      "source_fixture_path": "tests/fixtures/calibration_false_positives.json",
-      "case_count": 5,
-      "false_positive_classes": [
-        "agb_like_colors",
-        "agn_blend",
-        "bad_photometry",
-        "dust_or_yso",
-        "extragalactic_contaminant"
-      ],
-      "expected_pathways": [
-        "do_not_submit_false_positive"
-      ]
-    },
-    {
-      "dataset_id": "synthetic-anomaly-false-positive-v0",
-      "track": "anomaly",
-      "dataset_kind": "synthetic_false_positive_suite",
-      "readiness": "synthetic_scaffold",
-      "source_fixture_path": "tests/fixtures/calibration_false_positives.json",
-      "case_count": 6,
-      "false_positive_classes": [
-        "catalog_mismatch",
-        "image_artifact",
-        "moving_object",
-        "proper_motion",
-        "survey_depth",
-        "variable_star"
-      ],
-      "expected_pathways": [
-        "do_not_submit_false_positive"
-      ]
-    }
-  ]
+  "removed_in_phase_0": true,
+  "datasets": []
 }

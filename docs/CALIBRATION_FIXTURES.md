@@ -1,22 +1,24 @@
 # CALIBRATION FIXTURES
 
-## Purpose
+## Phase 0 Status
 
-Document the synthetic false-positive fixture set used by v0 calibration sanity tests.
+The synthetic false-positive fixture set was deleted in Phase 0. It must not be
+used for production model training, calibration claims, or validation evidence.
 
-These fixtures are not empirical calibration data. They are conservative regression examples that ensure obvious false-positive classes do not route as strong candidates.
+Future calibration work must use real labeled corpora, real turboSETI output, or
+realistic non-training fixtures with explicit provenance and limitations.
 
 ---
 
 ## Fixture File
 
-Current fixture set:
+Removed fixture set:
 
 ```text
 tests/fixtures/calibration_false_positives.json
 ```
 
-Validation test:
+Removed validation test:
 
 ```bash
 .venv/bin/python -m pytest tests/test_calibration_fixtures.py
@@ -24,7 +26,7 @@ Validation test:
 
 ---
 
-## Covered False-Positive Classes
+## Historical Covered False-Positive Classes
 
 | Fixture | Track | Expected pathway |
 |---|---|---|
@@ -43,14 +45,14 @@ Validation test:
 
 ---
 
-## Fixture Requirements
+## Future Real-Data Requirements
 
 Each fixture should include:
 
 - stable fixture name
 - expected pathway
 - normalized candidate JSON packet
-- synthetic provenance
+- real-data provenance
 - explicit false-positive class
 - enough feature evidence to make the rejection scientifically understandable
 
@@ -58,24 +60,25 @@ Every fixture should preserve negative evidence. Do not use a fixture that only 
 
 ---
 
-## Adding New Fixtures
+## Adding New Real-Data Fixtures
 
-1. Add a new entry to `tests/fixtures/calibration_false_positives.json`.
-2. Include `provenance.false_positive_class`.
-3. Make the expected pathway explicit.
-4. Run:
+1. Do not restore `tests/fixtures/calibration_false_positives.json`.
+2. Add new real-data fixture sources only after documenting provenance,
+   admission criteria, and whether they are training or held-out validation data.
+3. Include `provenance.false_positive_class` when applicable.
+4. Make the expected pathway explicit.
+5. Add or update a real-data test that names the source dataset and verifies
+   conservative routing without using synthetic training data.
 
-   ```bash
-   .venv/bin/python -m pytest tests/test_calibration_fixtures.py
-   ```
-
-5. If a fixture fails, first inspect whether the feature packet contains enough false-positive evidence. Only adjust model weights when multiple fixtures reveal a systematic scoring weakness.
+If a fixture fails, first inspect whether the feature packet contains enough
+false-positive evidence. Only adjust model weights when multiple real-data
+fixtures reveal a systematic scoring weakness.
 
 ---
 
 ## Future Calibration Expansion
 
-Near-term fixture classes to add:
+Near-term real-data fixture classes to add:
 
 - infrared saturation or duplicate source association
 - archival crowded-field catalog mismatches with multiple plausible counterparts
@@ -85,7 +88,6 @@ Near-term fixture classes to add:
 
 Longer-term calibration should use:
 
-- synthetic injection and recovery
 - known RFI examples
 - known catalog artifacts
 - known infrared contaminants

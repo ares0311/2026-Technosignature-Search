@@ -141,9 +141,9 @@ def test_cli_calibration_summary_outputs_fixture_counts() -> None:
     summary = json.loads(stdout.getvalue())
 
     assert exit_code == 0
-    assert summary["total"] == 15
-    assert summary["by_track"] == {"anomaly": 6, "infrared": 5, "radio": 4}
-    assert summary["by_expected_pathway"] == {"do_not_submit_false_positive": 15}
+    assert summary["total"] == 0
+    assert summary["by_track"] == {}
+    assert summary["by_expected_pathway"] == {}
 
 
 def test_cli_false_positive_summary_outputs_class_counts() -> None:
@@ -154,10 +154,11 @@ def test_cli_false_positive_summary_outputs_class_counts() -> None:
 
     assert exit_code == 0
     assert result["schema_version"] == "synthetic_false_positive_analysis_v1"
-    assert result["case_count"] == 15
-    assert result["class_count"] == 15
-    assert result["by_track"] == {"anomaly": 6, "infrared": 5, "radio": 4}
-    assert result["by_class"]["rfi"] == 1
+    assert result["removed_in_phase_0"] is True
+    assert result["case_count"] == 0
+    assert result["class_count"] == 0
+    assert result["by_track"] == {}
+    assert result["by_class"] == {}
 
 
 def test_cli_rfi_database_summary_outputs_guardrail_counts() -> None:
@@ -233,12 +234,11 @@ def test_cli_calibration_track_summary_outputs_track_counts() -> None:
 
     assert exit_code == 0
     assert result["schema_version"] == "synthetic_calibration_by_track_v1"
-    assert result["case_count"] == 15
-    assert result["track_count"] == 3
-    assert result["minimum_track_case_count"] == 4
-    assert result["by_track"]["radio"]["case_count"] == 4
-    assert result["by_track"]["infrared"]["case_count"] == 5
-    assert result["by_track"]["anomaly"]["case_count"] == 6
+    assert result["removed_in_phase_0"] is True
+    assert result["case_count"] == 0
+    assert result["track_count"] == 0
+    assert result["minimum_track_case_count"] == 0
+    assert result["by_track"] == {}
     assert "not calibrated per-track survey performance" in result["disclaimer"]
 
 
@@ -339,7 +339,6 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "follow_up_request",
         "labeled_candidates",
         "labeled_candidates_citizen_science_v1",
-        "labeled_candidates_synthetic_v1",
         "calibration_corpus_admission",
         "mcp_bootstrap_consistency",
         "mcp_server_policy",
@@ -457,9 +456,10 @@ def test_cli_score_regression_summary_outputs_snapshot_counts() -> None:
     result = json.loads(stdout.getvalue())
 
     assert exit_code == 0
-    assert result["candidate_count"] == 3
-    assert result["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 1}
-    assert result["by_recommended_pathway"] == {"candidate_review_packet": 3}
+    assert result["removed_in_phase_0"] is True
+    assert result["candidate_count"] == 0
+    assert result["by_track"] == {}
+    assert result["by_recommended_pathway"] == {}
 
 
 def test_cli_injection_recovery_summary_outputs_fixture_counts() -> None:
@@ -534,11 +534,11 @@ def test_cli_validation_dataset_summary_outputs_manifest_counts() -> None:
 
     assert exit_code == 0
     assert result["schema_version"] == "validation_dataset_manifest_v1"
-    assert result["dataset_count"] == 3
-    assert result["total_case_count"] == 15
-    assert result["false_positive_class_count"] == 15
-    assert result["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 1}
-    assert result["by_readiness"] == {"synthetic_scaffold": 3}
+    assert result["dataset_count"] == 0
+    assert result["total_case_count"] == 0
+    assert result["false_positive_class_count"] == 0
+    assert result["by_track"] == {}
+    assert result["by_readiness"] == {}
     assert "not calibrated survey performance claims" in result["disclaimer"]
 
 
@@ -1226,20 +1226,15 @@ def test_cli_validate_all_outputs_local_summary() -> None:
 
     assert exit_code == 0
     assert result["ok"] is True
-    assert result["calibration_summary"]["total"] == 15
-    assert result["calibration_track_summary"]["track_count"] == 3
-    assert result["calibration_track_summary"]["minimum_track_case_count"] == 4
-    assert result["calibration_track_summary"]["by_track"]["radio"]["case_count"] == 4
-    assert result["false_positive_summary"]["case_count"] == 15
-    assert result["false_positive_summary"]["class_count"] == 15
-    assert result["false_positive_summary"]["by_track_and_class"]["infrared"] == {
-        "agb_like_colors": 1,
-        "agn_blend": 1,
-        "bad_photometry": 1,
-        "dust_or_yso": 1,
-        "extragalactic_contaminant": 1,
-    }
-    assert result["score_regression_summary"]["candidate_count"] == 3
+    assert result["calibration_summary"]["total"] == 0
+    assert result["calibration_track_summary"]["removed_in_phase_0"] is True
+    assert result["calibration_track_summary"]["track_count"] == 0
+    assert result["calibration_track_summary"]["minimum_track_case_count"] == 0
+    assert result["false_positive_summary"]["removed_in_phase_0"] is True
+    assert result["false_positive_summary"]["case_count"] == 0
+    assert result["false_positive_summary"]["class_count"] == 0
+    assert result["score_regression_summary"]["removed_in_phase_0"] is True
+    assert result["score_regression_summary"]["candidate_count"] == 0
     assert result["catalog_cache_validation"]["ok"] is True
     assert result["provider_normalization_summary"]["case_count"] == 5
     assert result["provider_normalization_summary"]["by_provider"] == {

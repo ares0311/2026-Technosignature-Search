@@ -55,7 +55,6 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "follow_up_request.schema.json",
         "labeled_candidates.schema.json",
         "labeled_candidates_citizen_science_v1.schema.json",
-        "labeled_candidates_synthetic_v1.schema.json",
         "calibration_corpus_admission.schema.json",
         "mcp_bootstrap_consistency.schema.json",
         "mcp_server_policy.schema.json",
@@ -391,7 +390,8 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     assert consensus_export["schema_version"] == "human_review_consensus_export_v1"
     assert len(consensus_export["exports"]) == 5
     assert validation_dataset["schema_version"] == "validation_dataset_manifest_v1"
-    assert len(validation_dataset["datasets"]) == 3
+    assert validation_dataset["removed_in_phase_0"] is True
+    assert validation_dataset["datasets"] == []
     assert validation_promotion["schema_version"] == "validation_dataset_promotion_rules_v1"
     assert len(validation_promotion["rules"]) == 3
     assert validation_readiness["schema_version"] == "validation_readiness_v1"

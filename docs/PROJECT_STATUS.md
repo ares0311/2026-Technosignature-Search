@@ -155,8 +155,8 @@ Step 3 blocked pending surviving candidates.
 
 1. Start Phase 0: identify and delete the ~141 misaligned overhead modules listed in
    `docs/PRODUCTION_READINESS.md` under "What Must Be Deleted".
-2. Delete synthetic training data files (`tests/fixtures/calibration_false_positives.json`,
-   `tests/fixtures/score_regressions.json`).
+2. Update `validate-all` to finish removing synthetic and operational overhead
+   summaries from the Phase 0 gate output.
 3. Begin ON/OFF cadence RFI rejection hardening to ABACAB standard (Enriquez et al. 2017).
 
 ---

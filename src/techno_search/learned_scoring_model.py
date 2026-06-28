@@ -3,10 +3,8 @@
 This module trains and evaluates a logistic regression classifier on the
 labeled candidate dataset.  It is a local scheduling/calibration tool only.
 
-IMPORTANT: A logistic regression trained on 10 synthetic labeled candidates
-is NOT a validated or production-ready scoring model.  It must not be used
-for external submission decisions or claimed as a scientific result.  It is
-a development scaffold only.
+IMPORTANT: Synthetic labeled training data was removed in Phase 0 and must not
+be used for production model training.
 
 Production use requires:
   1. Admitted real labeled datasets with reproducible review evidence
@@ -225,10 +223,10 @@ SYNTHETIC_DATASET_METHODOLOGY = (
 )
 
 SYNTHETIC_DATASET_DISCLAIMER = (
-    "LEARNED MODEL SCORES ARE NOT DETECTION PROBABILITIES. "
-    "Scores are local triage aids trained on synthetic data only. "
-    "No model output authorizes external submission or constitutes a detection claim. "
-    "Independent citizen-science review is required before any action."
+    "Synthetic training data was removed in Phase 0. Models for production "
+    "triage must use real labeled corpora, real turboSETI output, or real "
+    "MeerKAT BLUSE data. No synthetic model output authorizes external "
+    "submission or constitutes a detection claim."
 )
 
 _LABEL_MAP = {
@@ -265,69 +263,31 @@ def train_on_synthetic_v1(
     max_iter: int = 1000,
     random_state: int = 42,
 ) -> dict[str, Any]:
-    """Train logistic regression on the synthetic v1 dataset; report test accuracy."""
-    try:
-        from sklearn.linear_model import LogisticRegression
-        from sklearn.metrics import classification_report
-        from sklearn.model_selection import train_test_split
-    except ImportError as exc:
-        raise ImportError(
-            "scikit-learn is required. Install with: pip install 'scikit-learn>=1.4'"
-        ) from exc
-
-    path = dataset_path or SYNTHETIC_DATASET_V1_PATH
-    X, y = _load_synthetic_v1(path)
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=test_fraction, random_state=random_state, stratify=y,
+    """Synthetic training is disabled by Phase 0 production directives."""
+    raise RuntimeError(
+        "Synthetic training data was removed in Phase 0. Use real labeled "
+        "corpora or real turboSETI/MeerKAT evidence instead."
     )
-
-    clf = LogisticRegression(max_iter=max_iter, random_state=random_state)
-    clf.fit(X_train, y_train)
-
-    y_pred = clf.predict(X_test)
-    test_accuracy = float(
-        sum(a == b for a, b in zip(y_test, y_pred, strict=True)) / len(y_test)
-    )
-
-    report = classification_report(
-        y_test, y_pred, target_names=_LABEL_NAMES, output_dict=True
-    )
-
-    return {
-        "disclaimer": SYNTHETIC_DATASET_DISCLAIMER,
-        "methodology": SYNTHETIC_DATASET_METHODOLOGY,
-        "train_size": len(X_train),
-        "test_size": len(X_test),
-        "test_accuracy": round(test_accuracy, 4),
-        "classification_report": report,
-        "feature_columns": FEATURE_COLUMNS,
-        "label_names": _LABEL_NAMES,
-    }
 
 
 def synthetic_v1_training_summary(
     dataset_path: Path | None = None,
 ) -> dict[str, Any]:
-    """CLI-facing wrapper for train_on_synthetic_v1."""
+    """CLI-facing summary that records Phase 0 synthetic-training removal."""
     path = dataset_path or SYNTHETIC_DATASET_V1_PATH
-    if not path.exists():
-        return {
-            "ok": False,
-            "disclaimer": SYNTHETIC_DATASET_DISCLAIMER,
-            "error": f"Dataset not found: {path}",
-            "methodology": SYNTHETIC_DATASET_METHODOLOGY,
-        }
-    try:
-        result = train_on_synthetic_v1(dataset_path=path)
-        return {"ok": True, "schema_version": "labeled_candidates_synthetic_v1", **result}
-    except Exception as exc:
-        return {
-            "ok": False,
-            "disclaimer": SYNTHETIC_DATASET_DISCLAIMER,
-            "error": str(exc),
-            "methodology": SYNTHETIC_DATASET_METHODOLOGY,
-        }
+    return {
+        "ok": True,
+        "schema_version": "synthetic_training_removed_v1",
+        "removed_in_phase_0": True,
+        "dataset_path": str(path),
+        "dataset_exists": path.exists(),
+        "disclaimer": SYNTHETIC_DATASET_DISCLAIMER,
+        "methodology": SYNTHETIC_DATASET_METHODOLOGY,
+        "recommended_next_step": (
+            "Train production scorers on real MeerKAT BLUSE data, real GBT hits, "
+            "or admitted real labeled corpora."
+        ),
+    }
 
 
 # ---------------------------------------------------------------------------

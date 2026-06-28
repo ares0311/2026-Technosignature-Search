@@ -307,7 +307,7 @@ only and does not approve external follow-up.
 
 Top-level SQLite logs under `logs/` are the operational source of truth for local background automation. Validation checks that each run has exactly one outcome, metadata is present, migrations are not required, PRAGMA integrity is healthy, timestamped backups can be written under ignored `logs/backups/`, retention state is inspectable, vacuum maintenance is runnable, network access remains disabled by default, generated databases are not committed, and no external submission approval is present unless explicitly recorded by the user. JSON files remain fixtures, compatibility artifacts, or review-safe exports.
 
-Snapshot fixture:
+Removed synthetic score snapshot fixture:
 
 ```text
 tests/fixtures/score_regressions.json
@@ -331,7 +331,7 @@ Precision-recall fixture:
 tests/fixtures/precision_recall_summary.json
 ```
 
-False-positive class diagnostics currently reuse:
+Removed synthetic false-positive class diagnostics previously reused:
 
 ```text
 tests/fixtures/calibration_false_positives.json
@@ -461,7 +461,9 @@ Examples should be regenerated when:
 - plot artifact manifest fields change
 - example candidate inputs change
 
-Stable score, evidence, and pathway changes should be reviewed against `tests/fixtures/score_regressions.json`.
+Stable score, evidence, and pathway changes should be reviewed against real or
+realistic non-training fixtures. Do not restore
+`tests/fixtures/score_regressions.json`.
 
 ---
 
