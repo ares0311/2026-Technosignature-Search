@@ -1,6 +1,6 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-06-26
+**Last updated:** 2026-06-28
 **Current milestone:** 79 (Production Scan Hardening And Artifact Hygiene)
 **Current phase:** Phase 0 — Strip & Fix (multi-modal realignment)
 
@@ -139,7 +139,7 @@ and scan history records."
 | Proper ON/OFF cadence verification (ABACAB from raw files) | ❌ Not started |
 | Real training corpus loaded into semisupervised_scorer | ⚠️ Partial — local GBT/turboSETI `.dat` corpus can fit the scorer and production radio packets can carry fitted-model anomaly scores; verified MeerKAT BLUSE corpus still unavailable |
 | Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial |
-| Cross-target RFI suppression on full stratified corpus | ⚠️ Partial |
+| Cross-target RFI suppression on full stratified corpus | ⚠️ Partial — production ledgers now carry per-candidate cross-target RFI flags from independent target recurrence; full stratified-corpus validation remains open |
 | Ranked candidate/non-detection output ready for Phase 5 | ⚠️ Partial — zero-hit observations are preserved as negative evidence ledgers |
 
 ### Phase 2 — Transit Photometry: Kepler/TESS
@@ -214,7 +214,10 @@ fitting, no JWST spectral ingest.
 
 **Candidate output:** The radio pipeline can produce candidate manifests and
 zero-hit non-detection ledgers from real GBT data (stratified sample of 31
-targets, 18 strata). No multi-modal candidates have been produced.
+targets, 18 strata). Production follow-up, non-detection, and target-status
+ledgers now expose per-candidate cross-target RFI recurrence flags so repeated
+frequencies across independent targets are visible at the operator review row.
+No multi-modal candidates have been produced.
 
 **Review chain:** Steps 1 (automated) and 2 (adversarial agent) not yet
 functional for real candidates. Step 3 (expert review) blocked pending
