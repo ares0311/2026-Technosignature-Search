@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from techno_search.cli import main, score_batch
+from techno_search.gbt_cadence import load_cadence_manifest, md5_file
 
 
 def _candidate_json() -> dict[str, object]:
@@ -46,6 +47,24 @@ def _write_cli_turboseti_dat(path: Path) -> None:
     )
 
 
+def _write_tiny_cli_cadence(tmp_path: Path) -> tuple[Path, Path]:
+    manifest = json.loads(
+        json.dumps(
+            load_cadence_manifest(Path("configs/gbt_hip99427_cadence_v1.json"))
+        )
+    )
+    raw_dir = tmp_path / "raw"
+    raw_dir.mkdir()
+    for scan in manifest["scans"]:
+        raw_path = raw_dir / scan["filename"]
+        raw_path.write_bytes(f"raw cli scan {scan['sequence_index']}".encode())
+        scan["size_bytes"] = raw_path.stat().st_size
+        scan["md5"] = md5_file(raw_path)
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    return manifest_path, raw_dir
+
+
 def test_cli_scores_candidate_json_to_stdout(tmp_path) -> None:
     input_path = tmp_path / "candidate.json"
     input_path.write_text(json.dumps(_candidate_json()), encoding="utf-8")
@@ -59,6 +78,48 @@ def test_cli_scores_candidate_json_to_stdout(tmp_path) -> None:
     assert packet["schema_version"] == "techno_search_packet_v1"
     assert packet["recommended_pathway"]
     assert packet["disclaimer"]
+
+
+def test_cli_gbt_cadence_raw_status_reports_missing_files(tmp_path) -> None:
+    manifest_path, _raw_dir = _write_tiny_cli_cadence(tmp_path)
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "gbt-cadence-raw-status",
+            "--manifest",
+            str(manifest_path),
+            "--raw-dir",
+            str(tmp_path / "missing"),
+        ],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 1
+    assert result["ok"] is False
+    assert result["missing_count"] == 6
+
+
+def test_cli_gbt_cadence_raw_status_verifies_files(tmp_path) -> None:
+    manifest_path, raw_dir = _write_tiny_cli_cadence(tmp_path)
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "gbt-cadence-raw-status",
+            "--manifest",
+            str(manifest_path),
+            "--raw-dir",
+            str(raw_dir),
+        ],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["ok"] is True
+    assert result["verified_count"] == 6
 
 
 def test_cli_writes_reports(tmp_path) -> None:
