@@ -70,6 +70,12 @@ def scan_summary(
                 "pathway": cand.get("recommended_pathway", "unknown"),
                 "frequency_hz": float(cand.get("frequency_hz", 0.0)),
                 "snr": float(cand.get("snr", 0.0)),
+                "normalized_drift_hz_s_per_ghz": float(
+                    cand.get("normalized_drift_hz_s_per_ghz", 0.0)
+                ),
+                "is_earth_drift_consistent": bool(
+                    cand.get("is_earth_drift_consistent", False)
+                ),
             }
         )
 
@@ -150,6 +156,18 @@ def load_candidates_from_batch_dir(batch_dir: Path) -> list[dict[str, Any]]:
         drift = float(
             features.get("drift_rate_hz_per_sec", merged.get("drift_rate_hz_per_sec", 0.0))
         )
+        normalized_drift = float(
+            features.get(
+                "normalized_drift_hz_s_per_ghz",
+                merged.get("normalized_drift_hz_s_per_ghz", 0.0),
+            )
+        )
+        earth_drift_consistent = bool(
+            features.get(
+                "is_earth_drift_consistent",
+                merged.get("is_earth_drift_consistent", False),
+            )
+        )
         candidates.append(
             {
                 "candidate_id": merged.get("candidate_id", target_name),
@@ -159,6 +177,8 @@ def load_candidates_from_batch_dir(batch_dir: Path) -> list[dict[str, Any]]:
                 "frequency_hz": freq,
                 "snr": snr,
                 "drift_rate_hz_per_sec": drift,
+                "normalized_drift_hz_s_per_ghz": normalized_drift,
+                "is_earth_drift_consistent": earth_drift_consistent,
                 "track": merged.get("track", "unknown"),
             }
         )
@@ -187,6 +207,8 @@ def _zero_hit_observation_candidate(
         "frequency_hz": 0.0,
         "snr": 0.0,
         "drift_rate_hz_per_sec": 0.0,
+        "normalized_drift_hz_s_per_ghz": 0.0,
+        "is_earth_drift_consistent": False,
         "track": str(manifest.get("track", "radio")),
         "observation_only": True,
         "hit_row_count": int(manifest.get("hit_row_count", 0)),

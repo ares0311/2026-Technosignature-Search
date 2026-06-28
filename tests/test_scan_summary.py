@@ -21,6 +21,8 @@ def _cand(cid: str, score: float, pathway: str, target: str, snr: float = 50.0) 
         "frequency_hz": 1420e6,
         "snr": snr,
         "drift_rate_hz_per_sec": 0.5,
+        "normalized_drift_hz_s_per_ghz": 0.352112676056338,
+        "is_earth_drift_consistent": True,
     }
 
 
@@ -94,6 +96,13 @@ class TestScanSummary:
         result = scan_summary(cands)
         assert result["top_candidates"][0]["rank"] == 1
 
+    def test_top_candidates_preserve_normalized_drift_evidence(self) -> None:
+        result = scan_summary([_cand("c1", 0.5, "human_review_queue", "A")])
+        top = result["top_candidates"][0]
+
+        assert top["normalized_drift_hz_s_per_ghz"] == 0.352112676056338
+        assert top["is_earth_drift_consistent"] is True
+
 
 class TestScanSummaryFromBatchDir:
     def test_reads_manifest_files(self, tmp_path: Path) -> None:
@@ -103,10 +112,16 @@ class TestScanSummaryFromBatchDir:
             "recommended_pathway": "human_review_queue",
             "frequency_hz": 1420e6,
             "snr": 55.0,
+            "normalized_drift_hz_s_per_ghz": 0.28169014084507044,
+            "is_earth_drift_consistent": True,
         }
         (tmp_path / "test_manifest.json").write_text(json.dumps(manifest))
         result = scan_summary_from_batch_dir(tmp_path)
         assert result["total_candidates"] == 1
+        assert result["top_candidates"][0]["normalized_drift_hz_s_per_ghz"] == (
+            0.28169014084507044
+        )
+        assert result["top_candidates"][0]["is_earth_drift_consistent"] is True
 
     def test_empty_dir_returns_zero(self, tmp_path: Path) -> None:
         result = scan_summary_from_batch_dir(tmp_path)

@@ -40,6 +40,9 @@ def _candidate(
         "score": score,
         "frequency_hz": 1420000000.0,
         "snr": 44.0,
+        "drift_rate_hz_per_sec": 0.4,
+        "normalized_drift_hz_s_per_ghz": 0.28169014084507044,
+        "is_earth_drift_consistent": True,
     }
 
 
@@ -58,6 +61,8 @@ def _write_result_pair(
                     "frequency_hz": 1420000000.0,
                     "snr": 44.0,
                     "drift_rate_hz_per_sec": 0.1,
+                    "normalized_drift_hz_s_per_ghz": 0.07042253521126761,
+                    "is_earth_drift_consistent": True,
                 },
                 "scores": {"followup_value": score},
                 "track": "radio",
@@ -112,6 +117,13 @@ def test_build_production_outcomes_splits_non_detections_and_follow_ups() -> Non
     )
     assert follow_ups["entries"][0]["follow_up_id"] == (
         "FU-2026-06-18_201325Z-A7K4-001"
+    )
+    assert follow_ups["entries"][0]["normalized_drift_hz_s_per_ghz"] == (
+        0.28169014084507044
+    )
+    assert follow_ups["entries"][0]["is_earth_drift_consistent"] is True
+    assert outcomes["target_status"]["entries"][0]["normalized_drift_hz_s_per_ghz"] == (
+        0.28169014084507044
     )
     assert manifest["detection_claimed"] is False
     assert follow_ups["external_submission_allowed"] is False
@@ -190,6 +202,10 @@ def test_write_and_read_production_outcomes(tmp_path) -> None:
     target_status = production_run_file(run_dir, "target_status")
     assert target_status["target_count"] == 2
     assert target_status["entries"][0]["score_basis"] == "pipeline_score"
+    assert target_status["entries"][0]["normalized_drift_hz_s_per_ghz"] == (
+        0.07042253521126761
+    )
+    assert target_status["entries"][0]["is_earth_drift_consistent"] is True
     assert target_status["external_submission_allowed"] is False
     assert production_run_list(results_dir / "scans")["run_count"] == 1
     assert latest_production_run_dir(results_dir / "scans") == run_dir

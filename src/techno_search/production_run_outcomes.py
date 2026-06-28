@@ -363,6 +363,7 @@ def build_target_status_summary(
                 "cross_target_rfi_matched_targets": list(
                     rfi_flag.get("matched_target_names", [])
                 ),
+                **_drift_fields(best_candidate),
                 "track": str(best_candidate.get("track", "unknown")),
                 "detection_claimed": False,
                 "external_submission_allowed": False,
@@ -463,6 +464,7 @@ def _follow_up_entry(
         "score": float(candidate.get("score", 0.0)),
         "frequency_hz": float(candidate.get("frequency_hz", 0.0)),
         "snr": float(candidate.get("snr", 0.0)),
+        **_drift_fields(candidate),
         "status": "needs_local_citizen_science_review",
         "reason": "candidate_entered_follow_up_pathway",
         "detection_claimed": False,
@@ -495,6 +497,9 @@ def _non_detection_entry(
             "score": 0.0,
             "frequency_hz": 0.0,
             "snr": 0.0,
+            "drift_rate_hz_per_sec": 0.0,
+            "normalized_drift_hz_s_per_ghz": 0.0,
+            "is_earth_drift_consistent": False,
             "hit_row_count": int(candidate.get("hit_row_count", 0)),
             "source_data_path": str(candidate.get("source_data_path", "")),
             "status": "reviewed_zero_hit_observation",
@@ -513,6 +518,7 @@ def _non_detection_entry(
         "score": float(candidate.get("score", 0.0)),
         "frequency_hz": float(candidate.get("frequency_hz", 0.0)),
         "snr": float(candidate.get("snr", 0.0)),
+        **_drift_fields(candidate),
         "status": "reviewed_no_follow_up_required",
         "reason": "candidate_did_not_enter_follow_up_pathway",
         "negative_evidence": [
@@ -522,6 +528,18 @@ def _non_detection_entry(
         "external_submission_allowed": False,
     }
     return _with_cross_target_rfi(entry, rfi_flag)
+
+
+def _drift_fields(candidate: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "drift_rate_hz_per_sec": float(candidate.get("drift_rate_hz_per_sec", 0.0)),
+        "normalized_drift_hz_s_per_ghz": float(
+            candidate.get("normalized_drift_hz_s_per_ghz", 0.0)
+        ),
+        "is_earth_drift_consistent": bool(
+            candidate.get("is_earth_drift_consistent", False)
+        ),
+    }
 
 
 def _cross_target_rfi_flags_by_candidate(
