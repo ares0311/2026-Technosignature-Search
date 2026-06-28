@@ -1378,6 +1378,67 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(result, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "semisupervised-scorer-train":
+        import joblib  # type: ignore[import-untyped]
+
+        from techno_search.semisupervised_scorer import (
+            DEFAULT_CONTAMINATION,
+            DEFAULT_N_COMPONENTS,
+            DEFAULT_N_ESTIMATORS,
+            DEFAULT_WORKERS,
+            SemisupervisedScorer,
+            load_training_hits_ndjson,
+        )
+
+        corpus_path = Path(args.corpus)
+        max_hits = int(args.max_hits) if args.max_hits is not None else None
+        workers = int(args.workers or DEFAULT_WORKERS)
+        n_components = int(args.n_components or DEFAULT_N_COMPONENTS)
+        n_estimators = int(args.n_estimators or DEFAULT_N_ESTIMATORS)
+        contamination = float(args.contamination or DEFAULT_CONTAMINATION)
+
+        metadata_path = (
+            Path(args.output_metadata)
+            if args.output_metadata
+            else corpus_path.parent / "semisupervised_scorer_metadata.json"
+        )
+        model_path = (
+            Path(args.output_model)
+            if args.output_model
+            else corpus_path.parent / "semisupervised_scorer.joblib"
+        )
+
+        hits = load_training_hits_ndjson(corpus_path, max_hits=max_hits)
+        scorer = SemisupervisedScorer(
+            n_components=n_components,
+            n_estimators=n_estimators,
+            contamination=contamination,
+            n_jobs=workers,
+        ).fit(hits)
+        scorer.save(metadata_path)
+        model_path.parent.mkdir(parents=True, exist_ok=True)
+        joblib.dump(scorer, model_path)
+
+        result = {
+            **scorer.summary(),
+            "ok": True,
+            "corpus_path": str(corpus_path),
+            "metadata_path": str(metadata_path),
+            "model_path": str(model_path),
+            "max_hits_requested": max_hits,
+            "accelerator": {
+                "requested": "auto",
+                "used": "sklearn_cpu",
+                "reason": (
+                    "This scorer uses sklearn IsolationForest/PCA; no tested "
+                    "Apple Metal/MPS or MLX backend exists for this estimator "
+                    "in the project yet."
+                ),
+            },
+        }
+        print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "calibration-summary":
         fixtures = load_calibration_fixtures(args.fixture_path)
         cal_summary = summarize_calibration_fixtures(fixtures)
@@ -9011,6 +9072,65 @@ def _build_parser() -> argparse.ArgumentParser:
         help=(
             "Print semi-supervised anomaly scorer provenance summary "
             "(PCA + IsolationForest; local triage aid only)."
+        ),
+    )
+
+    semisupervised_train_parser = subparsers.add_parser(
+        "semisupervised-scorer-train",
+        help=(
+            "Train the semi-supervised anomaly scorer from a normalized real "
+            "hit NDJSON corpus such as data/meerkat_hits/*.ndjson."
+        ),
+    )
+    semisupervised_train_parser.add_argument(
+        "--corpus",
+        required=True,
+        help="Path to normalized NDJSON training hits.",
+    )
+    semisupervised_train_parser.add_argument(
+        "--max-hits",
+        type=int,
+        default=None,
+        help="Maximum number of hits to load from the corpus.",
+    )
+    semisupervised_train_parser.add_argument(
+        "--workers",
+        type=int,
+        default=12,
+        help="IsolationForest worker count; default 12 for local M4 Max headroom.",
+    )
+    semisupervised_train_parser.add_argument(
+        "--n-components",
+        type=int,
+        default=8,
+        help="PCA component count.",
+    )
+    semisupervised_train_parser.add_argument(
+        "--n-estimators",
+        type=int,
+        default=200,
+        help="IsolationForest tree count.",
+    )
+    semisupervised_train_parser.add_argument(
+        "--contamination",
+        type=float,
+        default=0.01,
+        help="Expected outlier fraction in the RFI-dominated training corpus.",
+    )
+    semisupervised_train_parser.add_argument(
+        "--output-metadata",
+        default=None,
+        help=(
+            "Metadata JSON path; defaults beside the corpus as "
+            "semisupervised_scorer_metadata.json."
+        ),
+    )
+    semisupervised_train_parser.add_argument(
+        "--output-model",
+        default=None,
+        help=(
+            "Joblib model payload path; defaults beside the corpus as "
+            "semisupervised_scorer.joblib."
         ),
     )
 

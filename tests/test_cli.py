@@ -1262,6 +1262,68 @@ def test_cli_validate_all_outputs_local_summary() -> None:
     assert all(result["schema_paths_exist"].values())
 
 
+def test_cli_semisupervised_scorer_train_writes_local_artifacts(tmp_path) -> None:
+    corpus_path = tmp_path / "meerkat_sample.ndjson"
+    rows = []
+    for index in range(12):
+        rows.append(
+            {
+                "snr": 8.0 + index,
+                "drift_rate_hz_per_sec": 0.0,
+                "frequency_hz": 1.0e9 + index * 1.0e6,
+                "bandwidth_hz": 2.0,
+                "normalized_drift_hz_s_per_ghz": 0.0,
+                "relative_snr": 1.0,
+                "on_off_consistency_score": 0.8,
+                "is_earth_drift_consistent": 1.0,
+                "rfi_band_overlap_score": 0.2,
+                "frequency_persistence_score": 0.6,
+                "on_hit_count": 1,
+                "off_hit_count": 1,
+            }
+        )
+    corpus_path.write_text(
+        "\n".join(json.dumps(row) for row in rows) + "\n",
+        encoding="utf-8",
+    )
+    metadata_path = tmp_path / "semisupervised_scorer_metadata.json"
+    model_path = tmp_path / "semisupervised_scorer.joblib"
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "semisupervised-scorer-train",
+            "--corpus",
+            str(corpus_path),
+            "--max-hits",
+            "12",
+            "--workers",
+            "1",
+            "--n-estimators",
+            "10",
+            "--n-components",
+            "4",
+            "--output-metadata",
+            str(metadata_path),
+            "--output-model",
+            str(model_path),
+        ],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["ok"] is True
+    assert result["is_fitted"] is True
+    assert result["train_hit_count"] == 12
+    assert result["n_jobs"] == 1
+    assert result["accelerator"]["used"] == "sklearn_cpu"
+    assert metadata_path.exists()
+    assert model_path.exists()
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    assert metadata["train_hit_count"] == 12
+
+
 def test_cli_regenerate_examples_writes_relative_example_outputs(tmp_path, monkeypatch) -> None:
     candidate_dir = tmp_path / "examples" / "candidates"
     candidate_dir.mkdir(parents=True)

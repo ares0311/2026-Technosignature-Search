@@ -12,10 +12,12 @@ from techno_search.semisupervised_scorer import (
     DEFAULT_CONTAMINATION,
     DEFAULT_N_COMPONENTS,
     DEFAULT_N_ESTIMATORS,
+    DEFAULT_WORKERS,
     SEMISUPERVISED_FEATURE_NAMES,
     SEMISUPERVISED_SCORER_DISCLAIMER,
     SEMISUPERVISED_SCORER_VERSION,
     SemisupervisedScorer,
+    load_training_hits_ndjson,
     semisupervised_scorer_summary,
 )
 
@@ -206,7 +208,7 @@ def test_save_requires_fitted() -> None:
 
 
 def test_load_restores_hyperparameters() -> None:
-    s = SemisupervisedScorer(n_components=4, n_estimators=50)
+    s = SemisupervisedScorer(n_components=4, n_estimators=50, n_jobs=3)
     s.fit(_training_corpus(20))
     with tempfile.TemporaryDirectory() as tmp:
         p = Path(tmp) / "scorer.json"
@@ -214,6 +216,7 @@ def test_load_restores_hyperparameters() -> None:
         s2 = SemisupervisedScorer.load(p)
         assert s2.n_components == 4
         assert s2.n_estimators == 50
+        assert s2.n_jobs == 3
 
 
 def test_load_restores_train_hit_count() -> None:
@@ -250,6 +253,7 @@ def test_semisupervised_scorer_summary_module_level() -> None:
     assert s["schema_version"] == SEMISUPERVISED_SCORER_VERSION
     assert "disclaimer" in s
     assert s["feature_count"] == len(SEMISUPERVISED_FEATURE_NAMES)
+    assert s["default_workers"] == DEFAULT_WORKERS
 
 
 def test_semisupervised_scorer_summary_with_fitted_scorer() -> None:
@@ -278,3 +282,25 @@ def test_default_n_components() -> None:
 
 def test_default_n_estimators() -> None:
     assert DEFAULT_N_ESTIMATORS >= 100
+
+
+def test_load_training_hits_ndjson_streams_records(tmp_path) -> None:
+    path = tmp_path / "hits.ndjson"
+    rows = [_make_hit(freq=1.0e9 + i) for i in range(12)]
+    path.write_text(
+        "\n".join(json.dumps(row) for row in rows) + "\n",
+        encoding="utf-8",
+    )
+
+    loaded = load_training_hits_ndjson(path, max_hits=5)
+
+    assert len(loaded) == 5
+    assert loaded[0]["frequency_hz"] == rows[0]["frequency_hz"]
+
+
+def test_load_training_hits_ndjson_rejects_non_object(tmp_path) -> None:
+    path = tmp_path / "hits.ndjson"
+    path.write_text("[1, 2, 3]\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Expected object"):
+        load_training_hits_ndjson(path)

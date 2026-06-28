@@ -15,7 +15,7 @@ Scientific guardrail: anomaly scores are local triage aids only.  A high
 anomaly score means "unusual given the training corpus"; it does not mean
 "technosignature".  This module does not constitute a detection claim,
 does not authorize external submission, and requires independent-method
-citizen-science review before any use in production scoring.
+review before any use in production scoring.
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ SEMISUPERVISED_SCORER_DISCLAIMER = (
     "A high anomaly score indicates the hit is unusual relative to the "
     "training corpus; it does not constitute a technosignature detection "
     "or authorize external submission. "
-    "Independent-method citizen-science review is required before any "
+    "Independent-method review is required before any "
     "use of this scorer in production pathway routing."
 )
 
@@ -56,6 +56,7 @@ SEMISUPERVISED_FEATURE_NAMES = [
 DEFAULT_CONTAMINATION = 0.01
 DEFAULT_N_COMPONENTS = 8   # PCA components; captures >95% variance in GBT data
 DEFAULT_N_ESTIMATORS = 200  # IsolationForest trees
+DEFAULT_WORKERS = 12
 
 
 class SemisupervisedScorer:
@@ -77,12 +78,14 @@ class SemisupervisedScorer:
         n_estimators: int = DEFAULT_N_ESTIMATORS,
         contamination: float = DEFAULT_CONTAMINATION,
         random_state: int = 42,
+        n_jobs: int | None = 1,
     ) -> None:
         self.feature_names = feature_names or SEMISUPERVISED_FEATURE_NAMES
         self.n_components = n_components
         self.n_estimators = n_estimators
         self.contamination = contamination
         self.random_state = random_state
+        self.n_jobs = n_jobs
         self._pipeline: Any = None
         self._is_fitted: bool = False
         self._train_hit_count: int = 0
@@ -142,6 +145,7 @@ class SemisupervisedScorer:
                 n_estimators=self.n_estimators,
                 contamination=self.contamination,
                 random_state=self.random_state,
+                n_jobs=self.n_jobs,
             )),
         ])
         self._pipeline.fit(X)
@@ -191,6 +195,7 @@ class SemisupervisedScorer:
             "n_estimators": self.n_estimators,
             "contamination": self.contamination,
             "random_state": self.random_state,
+            "n_jobs": self.n_jobs,
             "train_hit_count": self._train_hit_count,
         }
         path = Path(path)
@@ -212,6 +217,7 @@ class SemisupervisedScorer:
             n_estimators=data.get("n_estimators", DEFAULT_N_ESTIMATORS),
             contamination=data.get("contamination", DEFAULT_CONTAMINATION),
             random_state=data.get("random_state", 42),
+            n_jobs=data.get("n_jobs", 1),
         )
         scorer._train_hit_count = data.get("train_hit_count", 0)
         return scorer
@@ -226,9 +232,39 @@ class SemisupervisedScorer:
             "n_components": self.n_components,
             "n_estimators": self.n_estimators,
             "contamination": self.contamination,
+            "n_jobs": self.n_jobs,
             "is_fitted": self._is_fitted,
             "train_hit_count": self._train_hit_count,
         }
+
+
+def load_training_hits_ndjson(
+    path: Path,
+    *,
+    max_hits: int | None = None,
+) -> list[dict[str, Any]]:
+    """Load normalized training hits from an NDJSON corpus.
+
+    The loader streams records so a large real corpus can be capped without
+    first materializing every row in memory.
+    """
+
+    hits: list[dict[str, Any]] = []
+    with Path(path).open(encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, start=1):
+            if max_hits is not None and len(hits) >= max_hits:
+                break
+            stripped = line.strip()
+            if not stripped:
+                continue
+            record = json.loads(stripped)
+            if not isinstance(record, dict):
+                raise ValueError(
+                    f"Expected object at {path}:{line_number}; "
+                    f"got {type(record).__name__}"
+                )
+            hits.append(record)
+    return hits
 
 
 def semisupervised_scorer_summary(scorer: SemisupervisedScorer | None = None) -> dict[str, Any]:
@@ -243,6 +279,7 @@ def semisupervised_scorer_summary(scorer: SemisupervisedScorer | None = None) ->
         "default_n_components": DEFAULT_N_COMPONENTS,
         "default_n_estimators": DEFAULT_N_ESTIMATORS,
         "default_contamination": DEFAULT_CONTAMINATION,
+        "default_workers": DEFAULT_WORKERS,
         "is_fitted": False,
         "train_hit_count": 0,
     }
