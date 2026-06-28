@@ -67,7 +67,34 @@ def test_build_radio_candidate_extracts_on_off_features() -> None:
     assert candidate.features["off_target_presence_score"] == 0.2
     assert candidate.features["rfi_band_overlap_score"] == 0.0
     assert candidate.features["hit_count"] == 2
+    assert candidate.features["normalized_drift_hz_s_per_ghz"] == pytest.approx(
+        1.8 / 1.42
+    )
+    assert candidate.features["is_earth_drift_consistent"] is False
+    assert candidate.features["relative_snr"] == pytest.approx(36.0 / 21.0)
+    assert candidate.features["on_off_consistency_score"] == 1.0
     assert candidate.provenance["source_dataset"] == "synthetic-radio"
+
+
+def test_radio_candidate_flags_earth_drift_consistent_signal() -> None:
+    candidate = build_radio_candidate(
+        "radio-earth-drift-budget",
+        [
+            {
+                "frequency_hz": 1_420_000_000.0,
+                "drift_rate_hz_per_sec": 0.4,
+                "snr": 30.0,
+                "bandwidth_hz": 1.5,
+                "scan_role": "on",
+                "target_id": "target-a",
+            }
+        ],
+    )
+
+    assert candidate.features["normalized_drift_hz_s_per_ghz"] == pytest.approx(
+        0.4 / 1.42
+    )
+    assert candidate.features["is_earth_drift_consistent"] is True
 
 
 def test_radio_candidate_accepts_diagnostic_placeholders() -> None:

@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from techno_search.config import TrackConfig, load_track_config
+from techno_search.radio.cross_band_features import extract_cross_band_features
 from techno_search.schemas import Candidate, FeatureValue, Track
 
 
@@ -126,11 +127,16 @@ def build_radio_candidate(
     abacab_score, on_src_count, off_src_count = _abacab_cadence_score(
         matched_on_hits, matched_off_hits
     )
+    cross_band_features = extract_cross_band_features(
+        _hit_feature_row(best_hit),
+        [_hit_feature_row(hit) for hit in hits],
+    ).as_dict()
     features: dict[str, FeatureValue] = {
         "frequency_hz": best_hit.frequency_hz,
         "drift_rate_hz_per_sec": best_hit.drift_rate_hz_per_sec,
         "snr": best_hit.snr,
         "bandwidth_hz": best_hit.bandwidth_hz,
+        **cross_band_features,
         "on_target_presence_score": _presence_score(max_on_snr),
         "off_target_presence_score": _presence_score(max_off_snr),
         "abacab_cadence_score": abacab_score,
@@ -199,6 +205,16 @@ def _best_hit(hits: Sequence[RadioHit]) -> RadioHit:
     if not hits:
         raise ValueError("At least one radio hit is required.")
     return max(hits, key=lambda hit: hit.snr)
+
+
+def _hit_feature_row(hit: RadioHit) -> dict[str, FeatureValue]:
+    return {
+        "frequency_hz": hit.frequency_hz,
+        "drift_rate_hz_per_sec": hit.drift_rate_hz_per_sec,
+        "snr": hit.snr,
+        "scan_role": hit.scan_role,
+        "target_id": hit.target_id,
+    }
 
 
 def _frequency_persistence_score(hits: Sequence[RadioHit], best_hit: RadioHit) -> float:

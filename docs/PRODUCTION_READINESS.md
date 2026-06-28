@@ -138,7 +138,7 @@ and scan history records."
 |---|---|
 | Proper ON/OFF cadence verification (ABACAB from raw files) | ❌ Not started |
 | Real training corpus loaded into semisupervised_scorer | ⚠️ Partial — local GBT/turboSETI `.dat` corpus can fit the scorer and production radio packets can carry fitted-model anomaly scores; verified MeerKAT BLUSE corpus still unavailable |
-| Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial |
+| Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial — radio candidate packets now carry normalized drift and Earth-drift consistency features; full real-corpus validation remains open |
 | Cross-target RFI suppression on full stratified corpus | ⚠️ Partial — production ledgers now carry per-candidate cross-target RFI flags from independent target recurrence; full stratified-corpus validation remains open |
 | Ranked candidate/non-detection output ready for Phase 5 | ⚠️ Partial — zero-hit observations are preserved as negative evidence ledgers |
 
@@ -198,6 +198,9 @@ manifests and candidate manifests. Zero-hit turboSETI observations are preserved
 as negative-evidence ledger entries instead of being dropped as empty scans.
 ON/OFF cadence rejection now exposes an ABACAB cadence score from cadence source
 artifacts; raw-file ABACAB verification remains a Phase 1 hardening task.
+Radio candidate packets expose cross-band normalized drift and Earth-drift
+consistency features for the best hit, making the drift-rate evidence visible
+in every candidate review packet.
 Semi-supervised scorer training is executable from real turboSETI `.dat` files
 via `techno-search semisupervised-corpus-build` and
 `techno-search semisupervised-scorer-train`; the local ignored model was verified
