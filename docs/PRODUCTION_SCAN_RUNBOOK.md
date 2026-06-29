@@ -179,7 +179,7 @@ Each line in `results/scan_history.ndjson` is one JSON object:
 | Directory | Contents | Source |
 |---|---|---|
 | `data/bl_hits/` | Voyager 1 GBT `.dat` hit table (pipeline calibration) | `scripts/download_bl_hits.sh` |
-| `data/extended_corpus/<TARGET>/` | GBT L-band HDF5 files for 5 HIP targets | `scripts/download_bl_extended_corpus.sh` |
+| `data/extended_corpus/<TARGET>/` | GBT L-band HDF5 files from the stratified HPRC manifest | `scripts/download_bl_extended_corpus.sh --manifest data/target_sample_manifest.json` |
 
 HDF5 files in `data/extended_corpus/` must be processed with turboSETI before they can
 enter the production scan queue.  Use `scripts/run_turboseti_on_extended_corpus.sh` (idempotent).

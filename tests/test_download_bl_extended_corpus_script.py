@@ -37,6 +37,23 @@ def test_extended_corpus_downloader_has_non_networked_inspection_mode() -> None:
     assert "Dry run complete; no network download attempted" in script
 
 
+def test_extended_corpus_downloader_reads_stratified_manifest() -> None:
+    script = _script_text()
+
+    assert "--manifest" in script
+    assert "data/target_sample_manifest.json" in script
+    assert "load_manifest_targets" in script
+    assert 'manifest.get("targets", [])' in script
+    assert 'f"HIP{hip}"' in script
+
+
+def test_extended_corpus_downloader_keeps_legacy_targets_as_fallback_only() -> None:
+    script = _script_text()
+
+    assert "Falling back to legacy 5-target list" in script
+    assert "Production runs should use the stratified manifest" in script
+
+
 def test_extended_corpus_downloader_preserves_scientific_guardrails() -> None:
     script = _script_text()
 
