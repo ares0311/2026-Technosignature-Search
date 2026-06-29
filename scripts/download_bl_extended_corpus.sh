@@ -13,7 +13,8 @@
 # reproducibility aids only — no hit constitutes a detection claim.
 #
 # Usage:
-#   caffeinate -i bash scripts/download_bl_extended_corpus.sh
+#   caffeinate -i bash scripts/download_bl_extended_corpus.sh \
+#       --manifest data/target_sample_manifest.json
 #   bash scripts/download_bl_extended_corpus.sh --dry-run
 #
 # Output: data/extended_corpus/<target_name>/<filename>.h5
@@ -27,23 +28,34 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT_DIR="${REPO_ROOT}/data/extended_corpus"
+VENV_PYTHON="${REPO_ROOT}/.venv/bin/python"
+MANIFEST="${REPO_ROOT}/data/target_sample_manifest.json"
 MAX_TARGETS="${TECHNO_EXTENDED_CORPUS_MAX_TARGETS:-0}"
 DRY_RUN=0
 
-for arg in "$@"; do
-  case "${arg}" in
+while [[ $# -gt 0 ]]; do
+  case "$1" in
     --dry-run)
       DRY_RUN=1
+      shift
+      ;;
+    --manifest)
+      MANIFEST="$2"
+      shift 2
       ;;
     -h|--help)
       cat <<'EOF'
-Usage: bash scripts/download_bl_extended_corpus.sh [--dry-run]
+Usage: bash scripts/download_bl_extended_corpus.sh [--manifest PATH] [--dry-run]
 
 Downloads current Breakthrough Open Data HDF5 evidence inputs into:
   data/extended_corpus/<target>/
 
 Environment:
   TECHNO_EXTENDED_CORPUS_MAX_TARGETS=N  Limit target count; 0 means all.
+
+Options:
+  --manifest PATH  Stratified target manifest JSON. Default:
+                   data/target_sample_manifest.json
 
 Scientific guardrail:
   Outputs are local calibration/generalisation aids only. They do not
@@ -52,17 +64,15 @@ EOF
       exit 0
       ;;
     *)
-      echo "[ERROR] Unknown argument: ${arg}" >&2
+      echo "[ERROR] Unknown argument: $1" >&2
       exit 2
       ;;
   esac
 done
 
 # ---------------------------------------------------------------------------
-# Target list: non-Cygnus GBT cadences from the BL Open Data Archive.
-#
-# These are from the BL GBT survey (MacMahon et al. 2018) covering
-# galactic latitudes |b| > 0 and spanning multiple RA hours.
+# Fallback target list: pre-DECISION-143 non-Cygnus GBT cadences from the BL
+# Open Data Archive. Production runs should use the stratified manifest.
 # ---------------------------------------------------------------------------
 
 TARGETS=(
@@ -78,6 +88,38 @@ TARGETS=(
 # ---------------------------------------------------------------------------
 
 log() { echo "[$(date -u '+%Y-%m-%dT%H:%M:%SZ')] $*" >&2; }
+
+load_manifest_targets() {
+  local manifest_path="$1"
+  if [[ ! -f "${manifest_path}" ]]; then
+    log "[WARN]  Manifest not found: ${manifest_path}"
+    log "[WARN]  Falling back to legacy 5-target list"
+    return 1
+  fi
+  if [[ ! -x "${VENV_PYTHON}" ]]; then
+    log "[ERROR] Python environment not found: ${VENV_PYTHON}"
+    log "[ERROR] Use .venv/bin/python per project environment rules."
+    return 2
+  fi
+  "${VENV_PYTHON}" -c '
+import json
+import sys
+from pathlib import Path
+
+manifest = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+targets = manifest.get("targets", [])
+seen = set()
+for row in targets:
+    hip = str(row.get("hip", "")).strip()
+    if not hip:
+        continue
+    name = hip if hip.upper().startswith("HIP") else f"HIP{hip}"
+    if name in seen:
+        continue
+    seen.add(name)
+    print(name)
+' "${manifest_path}"
+}
 
 discover_hdf5_url() {
   local name="$1"
@@ -157,9 +199,20 @@ download_hdf5() {
 
 log "[START] BL extended corpus download"
 log "[INFO]  Output directory: ${OUT_DIR}"
+log "[INFO]  Manifest: ${MANIFEST}"
 log "[INFO]  Target limit: ${MAX_TARGETS:-0} (0 means all configured targets)"
 log "[INFO]  Dry run: ${DRY_RUN}"
 mkdir -p "${OUT_DIR}"
+
+if manifest_targets="$(load_manifest_targets "${MANIFEST}")"; then
+  mapfile -t TARGETS <<< "${manifest_targets}"
+  log "[INFO]  Loaded ${#TARGETS[@]} target(s) from manifest"
+else
+  status=$?
+  if [[ "${status}" -eq 2 ]]; then
+    exit 1
+  fi
+fi
 
 count=0
 total=${#TARGETS[@]}
