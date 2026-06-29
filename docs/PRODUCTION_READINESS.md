@@ -1,6 +1,6 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-06-28
+**Last updated:** 2026-06-29
 **Current milestone:** 79 (Production Scan Hardening And Artifact Hygiene)
 **Current phase:** Phase 0 — Strip & Fix (multi-modal realignment)
 **Current app version:** 1.1.0
@@ -124,7 +124,7 @@ gaps are closed. The project now pivots to multi-modal science (Phases 0–4).
 | Delete ~141 misaligned overhead modules | ✅ Done (PR #124, 2026-06-27) — 74 modules deleted, stubs in place |
 | Delete synthetic training data files | ✅ Done — synthetic calibration, score-regression, and labeled-training fixtures removed |
 | Harden ON/OFF cadence RFI rejection (Enriquez 2017 ABACAB) | ✅ Done (PR #125, 2026-06-27) — abacab_cadence_score feature, source_artifact tracking |
-| Train `semisupervised_scorer` on real corpus | ⚠️ Partially done — trainer CLI and real turboSETI `.dat` corpus builder are wired; local GBT/turboSETI training path verified on 259 real hits; radio pipeline now injects fitted local scorer anomaly features into candidate packets; public MeerKAT BLUSE hit-table source remains unverified/blocked; see `docs/meerkat_bluse_hit_table_research.md` |
+| Train `semisupervised_scorer` on real corpus | ✅ Done locally — trainer CLI and real turboSETI `.dat` corpus builder are wired; local GBT/turboSETI training path verified on 259 real hits; verified MeerKAT BLUSE/SETICORE source ingested to ignored local storage and scorer trained on 200,000 real rows; radio pipeline injects fitted local scorer anomaly features into candidate packets; see `docs/meerkat_bluse_hit_table_research.md` |
 | Update `validate-all` to scientific-only gates | ✅ Done — public gate now omits legacy operational/synthetic payloads and checks Phase 0 science gates |
 | Add "delete synthetic training data" to production scan runbook | ✅ Done |
 
@@ -138,7 +138,7 @@ and scan history records."
 | Task | Status |
 |---|---|
 | Proper ON/OFF cadence verification (ABACAB from raw files) | ⚠️ Partial — `gbt-cadence-raw-status` verifies approved raw HDF5 presence, size, MD5, and HDF5 signature before cadence processing; local HIP99427 raw files are present under `~/technosignature-data`, the official ingest reproduces the 213-row cadence CSV, and `gbt-cadence-abacab-review` summarizes candidate-level ON/OFF outcomes |
-| Real training corpus loaded into semisupervised_scorer | ⚠️ Partial — local GBT/turboSETI `.dat` corpus can fit the scorer and production radio packets can carry fitted-model anomaly scores; verified MeerKAT BLUSE corpus still unavailable; current source-research note is `docs/meerkat_bluse_hit_table_research.md` |
+| Real training corpus loaded into semisupervised_scorer | ✅ Done locally — local GBT/turboSETI `.dat` corpus can fit the scorer and production radio packets can carry fitted-model anomaly scores; verified MeerKAT BLUSE/SETICORE JSON source is documented, `scripts/ingest_meerkat_hits.py` supports its schema, and `data/meerkat_hits/semisupervised_scorer_metadata.json` records `train_hit_count: 200000`; payload/model artifacts remain ignored and non-redistributed |
 | Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial — radio candidate packets, ranked summaries, and production ledgers now carry normalized drift and Earth-drift consistency features; full real-corpus validation remains open |
 | Cross-target RFI suppression on full stratified corpus | ⚠️ Partial — production ledgers now carry per-candidate cross-target RFI flags from independent target recurrence; full stratified-corpus validation remains open |
 | Ranked candidate/non-detection output ready for Phase 5 | ⚠️ Partial — zero-hit observations are preserved as negative evidence ledgers |
@@ -224,11 +224,18 @@ IsolationForest in this project yet. `run-pipeline` now injects fitted local
 semi-supervised anomaly-score features and provenance into radio candidate
 packets when `data/meerkat_hits/semisupervised_scorer.joblib` exists, or when a
 model is provided with `--semisupervised-model`. These scores are local triage
-evidence only and do not alter external-claim guardrails. The claimed public
-MeerKAT BLUSE hit-table URL was invalid, and `docs/meerkat_bluse_hit_table_research.md`
-records that a likely Berkeley SETI / Breakthrough Listen 3I/ATLAS JSON release
-exists but still lacks a verified direct URL, checksum, license, and schema. So
-MeerKAT-specific training remains blocked pending a verified source.
+evidence only and do not alter external-claim guardrails. The earlier claimed
+MeerKAT BLUSE hit-table URL was invalid, but
+`docs/meerkat_bluse_hit_table_research.md` now records the verified Berkeley
+SETI / Breakthrough Listen 3I/ATLAS MeerKAT BLUSE/SETICORE JSON source,
+including direct URL, size, SHA256, and schema notes. `scripts/ingest_meerkat_hits.py`
+now maps the verified schema into scorer-ready features and fails loudly if the
+required schema keys are absent. On 2026-06-29, the verified 94,246,793-byte
+payload was downloaded to ignored `data/meerkat_hits/`, checksum
+`f0ba629077825097b1c247cf94131858992636d5bf8cea3b5bfde23b0384ea17` was
+verified, 200,000 rows were normalized, and the local semi-supervised scorer was
+trained with 12 workers. The payload and fitted model must not be redistributed
+or committed unless explicit license terms are identified.
 
 **Photometry, IR, spectroscopy:** Not implemented. No `lightkurve`, no WISE SED
 fitting, no JWST spectral ingest.

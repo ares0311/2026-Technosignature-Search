@@ -102,6 +102,7 @@ attempts must not receive review credit.
 ```bash
 git pull origin main
 caffeinate -i .venv/bin/python scripts/ingest_meerkat_hits.py \
+  --use-verified-atlas-source \
   --output-dir data/meerkat_hits \
   --max-hits 200000
 ```
