@@ -115,6 +115,7 @@ These CLI commands implement the runbook rules:
 | `techno-search scan-history-summary [--history-file H] [--dat-dir D]` | Show all prior scans; count pending targets |
 | `techno-search prod-scan INPUT_DIR OUTPUT_DIR [--track radio] [--force]` | Single-run batch scan with Rich spinner (does not use history) |
 | `techno-search run-pipeline FILE TRACK OUTPUT_DIR [--semisupervised-model PATH]` | Process one input file through the pipeline; radio packets use the default local fitted scorer model when present |
+| `techno-search radio-real-corpus-summary --dat-dir PATH [--dat-dir PATH2]` | Summarize local real `.dat` evidence for drift, cross-target RFI recurrence, and fitted scorer integration |
 | `techno-search validate-all` | Must pass before any scan proceeds |
 
 ---
@@ -194,6 +195,18 @@ provenance. Override the model with `--semisupervised-model PATH` when testing a
 new fitted scorer. These scores are local triage evidence only; they do not
 constitute detection, discovery, external validation, or external-submission
 approval.
+
+Use the real-corpus summary after local radio data changes or scorer retraining:
+
+```bash
+git pull origin main
+caffeinate -i .venv/bin/techno-search radio-real-corpus-summary \
+  --dat-dir data/extended_corpus \
+  --dat-dir data/bl_hits
+```
+
+The command reads ignored local `.dat` payloads and fitted models but writes no
+payload files. Treat its output as local validation evidence only.
 
 ---
 
