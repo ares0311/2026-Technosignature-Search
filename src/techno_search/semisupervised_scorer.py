@@ -1,7 +1,9 @@
 """Semi-supervised anomaly scorer using PCA + IsolationForest.
 
 Adapts the reconstruction-error approach from Ma et al. 2023 (Nature
-Astronomy, β-CVAE) using sklearn primitives only — no PyTorch, no GPU.
+Astronomy, β-CVAE) using sklearn primitives only.  Training uses bounded
+CPU parallelism by default because this project does not yet have a tested
+Apple Metal/MPS or MLX backend for PCA + IsolationForest.
 
 Workflow:
   1. Train on an unlabeled corpus dominated by RFI (e.g., MeerKAT BLUSE
@@ -66,6 +68,15 @@ DEFAULT_N_COMPONENTS = 8   # PCA components; captures >95% variance in GBT data
 DEFAULT_N_ESTIMATORS = 200  # IsolationForest trees
 DEFAULT_WORKERS = 12
 DEFAULT_FREQUENCY_BIN_HZ = 1.0
+ACCELERATOR_POLICY = {
+    "requested": "auto",
+    "used": "sklearn_cpu",
+    "reason": (
+        "SemisupervisedScorer uses sklearn PCA and IsolationForest; no tested "
+        "Apple Metal/MPS or MLX backend exists for this estimator in the project yet."
+    ),
+    "default_workers": DEFAULT_WORKERS,
+}
 
 
 class SemisupervisedScorer:
@@ -87,7 +98,7 @@ class SemisupervisedScorer:
         n_estimators: int = DEFAULT_N_ESTIMATORS,
         contamination: float = DEFAULT_CONTAMINATION,
         random_state: int = 42,
-        n_jobs: int | None = 1,
+        n_jobs: int | None = DEFAULT_WORKERS,
     ) -> None:
         self.feature_names = feature_names or SEMISUPERVISED_FEATURE_NAMES
         self.n_components = n_components
@@ -205,6 +216,7 @@ class SemisupervisedScorer:
             "contamination": self.contamination,
             "random_state": self.random_state,
             "n_jobs": self.n_jobs,
+            "accelerator": ACCELERATOR_POLICY,
             "train_hit_count": self._train_hit_count,
         }
         path = Path(path)
@@ -242,6 +254,7 @@ class SemisupervisedScorer:
             "n_estimators": self.n_estimators,
             "contamination": self.contamination,
             "n_jobs": self.n_jobs,
+            "accelerator": ACCELERATOR_POLICY,
             "is_fitted": self._is_fitted,
             "train_hit_count": self._train_hit_count,
         }
@@ -464,6 +477,7 @@ def semisupervised_scorer_summary(scorer: SemisupervisedScorer | None = None) ->
         "default_n_estimators": DEFAULT_N_ESTIMATORS,
         "default_contamination": DEFAULT_CONTAMINATION,
         "default_workers": DEFAULT_WORKERS,
+        "accelerator": ACCELERATOR_POLICY,
         "is_fitted": False,
         "train_hit_count": 0,
     }
