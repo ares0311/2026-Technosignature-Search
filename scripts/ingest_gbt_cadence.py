@@ -52,7 +52,6 @@ def _install_pkg_resources_compatibility() -> None:
             warnings.filterwarnings(
                 "ignore",
                 message="pkg_resources is deprecated as an API.*",
-                category=UserWarning,
             )
             import pkg_resources  # noqa: F401
     except ImportError:
