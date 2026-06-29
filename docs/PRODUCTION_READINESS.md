@@ -245,9 +245,12 @@ now summarizes local real `.dat` evidence without writing payloads. On the
 current local corpus it scanned 6 `.dat` files, found 5 zero-hit observations and
 1 hit-bearing Voyager calibration file, preserved 3 drift rows, reported 3
 Earth-consistent drift rows, found 0 cross-target RFI recurrence flags, and
-confirmed the MeerKAT-trained scorer scored 3 hits. This is local validation
-evidence only; the current corpus is not a full hit-bearing stratified validation
-set.
+confirmed the MeerKAT-trained scorer scored 3 hits. The summary now marks
+`phase1_radio_validation_ready: false` for the current local corpus because only
+1 independent hit-bearing target is available; cross-target RFI suppression
+needs at least 2 independent hit-bearing targets before a zero-recurrence result
+can be treated as validation evidence. This is local validation evidence only;
+the current corpus is not a full hit-bearing stratified validation set.
 
 **Photometry, IR, spectroscopy:** Not implemented. No `lightkurve`, no WISE SED
 fitting, no JWST spectral ingest.
