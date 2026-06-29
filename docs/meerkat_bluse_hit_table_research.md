@@ -20,13 +20,18 @@ Production status:
 
 - The source URL is real, stable enough to document, and reproducible.
 - The file is gzip-compressed JSON, top-level JSON array.
-- The current `scripts/ingest_meerkat_hits.py` field map does not match this file's actual schema. Do not simply pass this URL to the current script and assume useful features will be produced.
+- `scripts/ingest_meerkat_hits.py` now supports this schema through `--use-verified-atlas-source`, validates required fields, and records source checksum/provenance.
 - Explicit license text for this exact JSON artifact was not identified. Treat as public Breakthrough Listen research data for local, non-redistributed training/evaluation with attribution unless/until a clearer license is found.
 - No detections, discoveries, expert review, or external validation are implied by this dataset.
 
-Recommended production action:
+Implementation status:
 
-Update `scripts/ingest_meerkat_hits.py` to support this verified schema, add schema validation that fails loudly if required fields are missing, then train/evaluate `semisupervised_scorer` on locally downloaded ignored data. Do not commit the payload.
+`scripts/ingest_meerkat_hits.py` supports the verified schema, validates
+required fields, maps SETICORE-style fields into scorer-ready normalized
+features, and records source checksum/provenance. On 2026-06-29, the verified
+payload was downloaded to ignored local storage, 200,000 rows were normalized,
+and `semisupervised_scorer` was trained locally with 12 workers. Do not commit
+the payload or fitted model.
 
 ## Repo Files Read
 
@@ -40,8 +45,8 @@ Per repo instructions, these files were read first:
 Relevant repo state:
 
 - Local GBT/turboSETI training is already working and fitted on 259 real hits.
-- MeerKAT-specific training was blocked because no verified public MeerKAT BLUSE source URL was committed.
-- `scripts/ingest_meerkat_hits.py` currently requires `--source-url` and intentionally has no default.
+- MeerKAT-specific training is no longer blocked on source discovery or schema mapping; the next work is real-corpus evaluation and downstream candidate-packet validation.
+- `scripts/ingest_meerkat_hits.py` intentionally has no implicit network default; use `--use-verified-atlas-source` to select the verified URL and SHA256.
 - The earlier Zenodo concept `10987642` must not be used; the repo states it resolves to unrelated content.
 
 ## Verified File Metadata
@@ -141,7 +146,8 @@ Important schema notes:
 
 ## Mapping to `scripts/ingest_meerkat_hits.py`
 
-The current script will not map this schema correctly. Current `MEERKAT_FIELD_MAP` expects fields such as:
+Earlier script versions did not map this schema correctly. The old
+turboSETI-style field map expected fields such as:
 
 | Current expected field | Verified file field |
 |---|---|
@@ -153,7 +159,9 @@ The current script will not map this schema correctly. Current `MEERKAT_FIELD_MA
 | no current mapping | `sourceName` |
 | no current mapping | `foff`, `numChannels` |
 
-If the current script ingests this file unchanged, it will likely emit low-information records with fallback zeros for key features such as frequency and drift. That would poison training.
+If an older branch ingests this file without the schema-specific mapper, it will
+likely emit low-information records with fallback zeros for key features such as
+frequency and drift. That would poison training.
 
 Recommended normalization:
 
@@ -215,11 +223,12 @@ Conservative production policy:
 
 ## Recommended Next Production Task
 
-The next production task should now depend on MeerKAT, because the source URL is found:
+The next production task should now evaluate the trained MeerKAT scorer in the
+radio pipeline:
 
-1. Patch `scripts/ingest_meerkat_hits.py` to support the verified `atlas_hits_2025_11_dups.json.gz` schema.
-2. Add a schema validator and a small unit test using a tiny hand-authored fixture that mirrors the verified public schema shape. Do not use synthetic training data; this fixture is parser contract data only.
-3. Add provenance output fields:
+1. Keep the patched `scripts/ingest_meerkat_hits.py` support for the verified `atlas_hits_2025_11_dups.json.gz` schema.
+2. Keep the schema validator and parser-contract test in place. Do not use synthetic training data; the fixture is parser contract data only.
+3. Preserve provenance output fields:
    - `source_url`
    - `sha256`
    - `content_length_bytes`
@@ -227,9 +236,9 @@ The next production task should now depend on MeerKAT, because the source URL is
    - `last_modified`
    - `retrieved_at_utc`
    - `source_page`
-4. Ingest locally to ignored `data/meerkat_hits/`.
-5. Train/evaluate `semisupervised_scorer` with clear provenance and no external claims.
-6. Update `docs/PRODUCTION_READINESS.md` from "source unverified/blocked" to "source verified; schema-specific ingest/training pending" or to "MeerKAT training complete" only after a successful local run.
+4. Evaluate `run-pipeline` on real GBT candidate packets with the local MeerKAT-trained scorer.
+5. Compare scorer outputs against existing drift/cadence/RFI evidence and ensure no claim language changes.
+6. Update `docs/PRODUCTION_READINESS.md` only with measured validation results.
 
 Suggested local verification commands:
 
@@ -240,6 +249,11 @@ curl -L -o data/meerkat_hits/atlas_hits_2025_11_dups.json.gz \
 
 shasum -a 256 data/meerkat_hits/atlas_hits_2025_11_dups.json.gz
 gzip -dc data/meerkat_hits/atlas_hits_2025_11_dups.json.gz | head -c 2000
+
+caffeinate -i .venv/bin/python scripts/ingest_meerkat_hits.py \
+  --use-verified-atlas-source \
+  --output-dir data/meerkat_hits \
+  --max-hits 200000
 ```
 
 Expected SHA256:
@@ -256,5 +270,7 @@ The remaining Phase 0/1 blocker is no longer "find a public MeerKAT URL." A veri
 https://bldata.berkeley.edu/ATLAS/MeerKAT/atlas_hits_2025_11_dups.json.gz
 ```
 
-The remaining production work is to update the MeerKAT ingest script for the verified JSON schema, preserve checksum/provenance, apply conservative non-redistribution/attribution handling because explicit license text was not found, and then train/evaluate `semisupervised_scorer` locally without making detection or validation claims.
-
+The remaining production work is to evaluate the locally trained MeerKAT scorer
+against real radio pipeline outputs, preserve checksum/provenance, apply
+conservative non-redistribution/attribution handling because explicit license
+text was not found, and avoid detection or external-validation claims.
