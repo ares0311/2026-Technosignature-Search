@@ -236,6 +236,10 @@ payload was downloaded to ignored `data/meerkat_hits/`, checksum
 verified, 200,000 rows were normalized, and the local semi-supervised scorer was
 trained with 12 workers. The payload and fitted model must not be redistributed
 or committed unless explicit license terms are identified.
+`techno-search semisupervised-scorer-summary` now reads the ignored local
+metadata/model artifacts by default and reports `model_ready: true` only when the
+real-corpus metadata and fitted joblib model are both present; on the current
+local system it reports `train_hit_count: 200000`.
 `techno-search radio-real-corpus-summary --dat-dir data/extended_corpus --dat-dir data/bl_hits`
 now summarizes local real `.dat` evidence without writing payloads. On the
 current local corpus it scanned 6 `.dat` files, found 5 zero-hit observations and
