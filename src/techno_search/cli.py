@@ -1484,6 +1484,22 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(result, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "radio-real-corpus-summary":
+        from techno_search.radio_real_corpus_summary import radio_real_corpus_summary
+
+        result = radio_real_corpus_summary(
+            [Path(path) for path in args.dat_dir],
+            semisupervised_model_path=(
+                Path(args.semisupervised_model)
+                if args.semisupervised_model is not None
+                else None
+            ),
+            max_files=args.max_files,
+            freq_tolerance_hz=args.freq_tolerance_hz,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "calibration-summary":
         fixtures = load_calibration_fixtures(args.fixture_path)
         cal_summary = summarize_calibration_fixtures(fixtures)
@@ -9294,6 +9310,41 @@ def _build_parser() -> argparse.ArgumentParser:
         help=(
             "Joblib model payload path; defaults beside the corpus as "
             "semisupervised_scorer.joblib."
+        ),
+    )
+
+    radio_real_corpus_parser = subparsers.add_parser(
+        "radio-real-corpus-summary",
+        help=(
+            "Summarize local real turboSETI .dat corpus evidence for drift, "
+            "cross-target RFI, and semi-supervised scorer integration."
+        ),
+    )
+    radio_real_corpus_parser.add_argument(
+        "--dat-dir",
+        action="append",
+        required=True,
+        help="Directory or .dat file to include; may be repeated.",
+    )
+    radio_real_corpus_parser.add_argument(
+        "--max-files",
+        type=int,
+        default=None,
+        help="Optional cap on .dat files scanned, after stable sorting.",
+    )
+    radio_real_corpus_parser.add_argument(
+        "--freq-tolerance-hz",
+        type=float,
+        default=500.0,
+        help="Cross-target RFI frequency tolerance in Hz.",
+    )
+    radio_real_corpus_parser.add_argument(
+        "--semisupervised-model",
+        type=Path,
+        default=None,
+        help=(
+            "Optional fitted SemisupervisedScorer joblib model. Defaults to "
+            "data/meerkat_hits/semisupervised_scorer.joblib when present."
         ),
     )
 
