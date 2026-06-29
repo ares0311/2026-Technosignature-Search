@@ -16,6 +16,8 @@
 #   caffeinate -i bash scripts/download_bl_extended_corpus.sh \
 #       --manifest data/target_sample_manifest.json
 #   bash scripts/download_bl_extended_corpus.sh --dry-run
+#   bash scripts/download_bl_extended_corpus.sh --discover-only \
+#       --manifest data/target_sample_manifest.json
 #
 # Output: data/extended_corpus/<target_name>/<filename>.h5
 #
@@ -28,15 +30,20 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT_DIR="${REPO_ROOT}/data/extended_corpus"
-VENV_PYTHON="${REPO_ROOT}/.venv/bin/python"
+VENV_PYTHON="${TECHNO_EXTENDED_CORPUS_PYTHON:-${REPO_ROOT}/.venv/bin/python}"
 MANIFEST="${REPO_ROOT}/data/target_sample_manifest.json"
 MAX_TARGETS="${TECHNO_EXTENDED_CORPUS_MAX_TARGETS:-0}"
 DRY_RUN=0
+DISCOVER_ONLY=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --dry-run)
       DRY_RUN=1
+      shift
+      ;;
+    --discover-only|--availability-report)
+      DISCOVER_ONLY=1
       shift
       ;;
     --manifest)
@@ -45,17 +52,21 @@ while [[ $# -gt 0 ]]; do
       ;;
     -h|--help)
       cat <<'EOF'
-Usage: bash scripts/download_bl_extended_corpus.sh [--manifest PATH] [--dry-run]
+Usage: bash scripts/download_bl_extended_corpus.sh [--manifest PATH] [--dry-run] [--discover-only]
 
 Downloads current Breakthrough Open Data HDF5 evidence inputs into:
   data/extended_corpus/<target>/
 
 Environment:
-  TECHNO_EXTENDED_CORPUS_MAX_TARGETS=N  Limit target count; 0 means all.
+  TECHNO_EXTENDED_CORPUS_MAX_TARGETS=N  Limit URL-available targets processed;
+                                        0 means all available manifest targets.
 
 Options:
   --manifest PATH  Stratified target manifest JSON. Default:
                    data/target_sample_manifest.json
+  --dry-run        Enumerate manifest targets without network access.
+  --discover-only  Query BL search pages and print target<TAB>URL rows for
+                   URL-available HDF5 records without downloading payloads.
 
 Scientific guardrail:
   Outputs are local calibration/generalisation aids only. They do not
@@ -200,8 +211,9 @@ download_hdf5() {
 log "[START] BL extended corpus download"
 log "[INFO]  Output directory: ${OUT_DIR}"
 log "[INFO]  Manifest: ${MANIFEST}"
-log "[INFO]  Target limit: ${MAX_TARGETS:-0} (0 means all configured targets)"
+log "[INFO]  Target limit: ${MAX_TARGETS:-0} URL-available target(s) (0 means all available targets)"
 log "[INFO]  Dry run: ${DRY_RUN}"
+log "[INFO]  Discover only: ${DISCOVER_ONLY}"
 mkdir -p "${OUT_DIR}"
 
 if manifest_targets="$(load_manifest_targets "${MANIFEST}")"; then
@@ -214,23 +226,34 @@ else
   fi
 fi
 
-count=0
+checked=0
 total=${#TARGETS[@]}
 downloaded=0
 skipped=0
+available=0
 
 for name in "${TARGETS[@]}"; do
-  if [[ "${MAX_TARGETS}" != "0" && "${count}" -ge "${MAX_TARGETS}" ]]; then
-    log "[INFO]  Target limit reached (${MAX_TARGETS}); stopping early"
+  if [[ "${MAX_TARGETS}" != "0" && "${available}" -ge "${MAX_TARGETS}" ]]; then
+    log "[INFO]  URL-available target limit reached (${MAX_TARGETS}); stopping early"
     break
   fi
-  count=$((count + 1))
-  log "[${count}/${total}] Target: ${name}"
+  checked=$((checked + 1))
+  log "[${checked}/${total}] Target: ${name}"
   if [[ "${DRY_RUN}" -eq 1 ]]; then
     log "[DRY-RUN] Would discover and download current HDF5 evidence for ${name}"
+    available=$((available + 1))
     continue
   fi
-  if url="$(discover_hdf5_url "${name}")" && download_hdf5 "${name}" "${url}"; then
+  if ! url="$(discover_hdf5_url "${name}")"; then
+    skipped=$((skipped + 1))
+    continue
+  fi
+  available=$((available + 1))
+  if [[ "${DISCOVER_ONLY}" -eq 1 ]]; then
+    printf '%s\t%s\n' "${name}" "${url}"
+    continue
+  fi
+  if download_hdf5 "${name}" "${url}"; then
     downloaded=$((downloaded + 1))
   else
     skipped=$((skipped + 1))
@@ -242,15 +265,28 @@ if [[ "${DRY_RUN}" -eq 1 ]]; then
   exit 0
 fi
 
+if [[ "${DISCOVER_ONLY}" -eq 1 ]]; then
+  log "[DONE]  Discovery complete; no HDF5 payloads downloaded."
+  log "[INFO]  Manifest targets checked: ${checked}/${total}"
+  log "[INFO]  URL-available HDF5 targets: ${available}"
+  log "[INFO]  Targets without a discovered HDF5 URL: ${skipped}"
+  if [[ "${available}" -eq 0 ]]; then
+    log "[ERROR] No URL-available HDF5 targets were found."
+    exit 1
+  fi
+  exit 0
+fi
+
 log "[DONE]  Extended corpus download complete"
 log "[INFO]  Successful target downloads/reuses: ${downloaded}"
-log "[INFO]  Skipped or failed targets: ${skipped}"
+log "[INFO]  URL-available HDF5 targets processed: ${available}"
+log "[INFO]  Skipped unavailable or failed targets: ${skipped}"
 log "[INFO]  Files in ${OUT_DIR}:"
 find "${OUT_DIR}" -name "*.h5" -exec du -sh {} \; 2>/dev/null || log "[INFO]  (none downloaded)"
 
 if [[ "${downloaded}" -eq 0 ]]; then
   log "[ERROR] No held-out evidence files were downloaded or reused."
-  log "[ERROR] DECISION-134 remains blocked; empty directories are not evidence."
+  log "[ERROR] This command did not add usable extended-corpus evidence; empty directories are not evidence."
   exit 1
 fi
 

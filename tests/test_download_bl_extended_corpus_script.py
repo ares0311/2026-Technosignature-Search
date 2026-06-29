@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+import json
+import os
+import stat
+import subprocess
+import sys
 from pathlib import Path
 
 SCRIPT_PATH = Path(__file__).resolve().parents[1] / "scripts" / (
@@ -37,6 +42,24 @@ def test_extended_corpus_downloader_has_non_networked_inspection_mode() -> None:
     assert "Dry run complete; no network download attempted" in script
 
 
+def test_extended_corpus_downloader_has_discovery_only_availability_mode() -> None:
+    script = _script_text()
+
+    assert "--discover-only" in script
+    assert "--availability-report" in script
+    assert "Discovery complete; no HDF5 payloads downloaded" in script
+    assert "URL-available HDF5 targets" in script
+
+
+def test_extended_corpus_downloader_limits_url_available_targets() -> None:
+    script = _script_text()
+
+    assert "URL-available target limit reached" in script
+    assert 'if ! url="$(discover_hdf5_url "${name}")"; then' in script
+    assert 'available=$((available + 1))' in script
+    assert '"${available}" -ge "${MAX_TARGETS}"' in script
+
+
 def test_extended_corpus_downloader_reads_stratified_manifest() -> None:
     script = _script_text()
 
@@ -60,3 +83,70 @@ def test_extended_corpus_downloader_preserves_scientific_guardrails() -> None:
     assert "No file or hit table entry constitutes a" in script
     assert "technosignature detection" in script
     assert "authorizes external submission" in script
+
+
+def test_extended_corpus_downloader_does_not_misstate_decision_134_status() -> None:
+    script = _script_text()
+
+    assert "DECISION-134 remains blocked" not in script
+    assert "This command did not add usable extended-corpus evidence" in script
+
+
+def test_extended_corpus_available_target_limit_skips_unavailable_manifest_rows(
+    tmp_path: Path,
+) -> None:
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "targets": [
+                    {"hip": "111"},
+                    {"hip": "222"},
+                    {"hip": "333"},
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    fake_curl = fake_bin / "curl"
+    fake_curl.write_text(
+        """#!/usr/bin/env bash
+set -euo pipefail
+url="${@: -1}"
+case "${url}" in
+  *target=HIP111*) printf '<html>No HDF5 here</html>' ;;
+  *target=HIP222*) printf 'https://bldata.berkeley.edu/test/HIP222.gpuspec.0002.h5' ;;
+  *target=HIP333*) printf 'https://bldata.berkeley.edu/test/HIP333.gpuspec.0002.h5' ;;
+  *) printf 'unexpected-url=%s' "${url}" >&2; exit 22 ;;
+esac
+""",
+        encoding="utf-8",
+    )
+    fake_curl.chmod(fake_curl.stat().st_mode | stat.S_IXUSR)
+
+    env = os.environ.copy()
+    env["PATH"] = f"{fake_bin}{os.pathsep}{env['PATH']}"
+    env["TECHNO_EXTENDED_CORPUS_MAX_TARGETS"] = "2"
+    env["TECHNO_EXTENDED_CORPUS_PYTHON"] = sys.executable
+
+    result = subprocess.run(
+        [
+            "bash",
+            str(SCRIPT_PATH),
+            "--manifest",
+            str(manifest),
+            "--discover-only",
+        ],
+        check=True,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "HIP111" not in result.stdout
+    assert "HIP222\thttps://bldata.berkeley.edu/test/HIP222.gpuspec.0002.h5" in result.stdout
+    assert "HIP333\thttps://bldata.berkeley.edu/test/HIP333.gpuspec.0002.h5" in result.stdout
+    assert "URL-available HDF5 targets: 2" in result.stderr
+    assert "Targets without a discovered HDF5 URL: 1" in result.stderr

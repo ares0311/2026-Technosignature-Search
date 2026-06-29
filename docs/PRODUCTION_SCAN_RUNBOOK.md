@@ -219,6 +219,27 @@ caffeinate -i .venv/bin/techno-search radio-real-corpus-summary \
 The command reads ignored local `.dat` payloads and fitted models but writes no
 payload files. Treat its output as local validation evidence only.
 
+Before expanding `data/extended_corpus/`, verify current BL Open Data
+availability from the committed manifest. This command queries the official
+search pages, prints only target-to-HDF5 URL rows, and downloads no payloads:
+
+```bash
+git pull origin main
+caffeinate -i bash scripts/download_bl_extended_corpus.sh \
+  --manifest data/target_sample_manifest.json \
+  --discover-only
+```
+
+For a bounded download, the target limit applies to URL-available targets, not
+raw manifest position. This prevents runs from stopping on unavailable manifest
+entries before any HDF5 evidence is obtained:
+
+```bash
+git pull origin main
+TECHNO_EXTENDED_CORPUS_MAX_TARGETS=5 caffeinate -i bash scripts/download_bl_extended_corpus.sh \
+  --manifest data/target_sample_manifest.json
+```
+
 ---
 
 ## Running the Script
