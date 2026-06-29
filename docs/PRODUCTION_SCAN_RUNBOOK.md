@@ -287,24 +287,33 @@ caffeinate -i bash scripts/run_production_scan.sh \
 ## Storage Cleanup — Non-Negotiable
 
 Large intermediate files accumulate quickly. Before each new download batch,
-clean up files from prior runs to free storage space.
+plan cleanup for prior converted or ledgered runs to free storage space.
 
-### What to delete between batches
+### Plan cleanup between batches
 
 ```bash
-# Delete raw HDF5 files after turboSETI has run (keep .dat outputs)
-# Only delete if the .dat file exists and is non-empty
-rm -f data/extended_corpus/<TARGET>/*.h5
+git pull origin main
+.venv/bin/techno-search radio-corpus-cleanup
+```
 
-# Delete .dat files from targets that produced zero-hit non-detections
-# (the manifests are already committed; the raw .dat is no longer needed)
-rm -f data/extended_corpus/<TARGET>/*.dat
+This dry run only proposes:
 
-# Delete SQLite log backups older than 30 days (they accumulate ~2 MB/run)
-find logs/backups/ -name "*.db" -mtime +30 -delete
+- HDF5 files under `data/extended_corpus/` after a same-stem non-empty `.dat`
+  exists.
+- Zero-hit `.dat` files under `data/extended_corpus/` after a zero-hit manifest
+  in `results/` records the file's relative `source_data_path`.
 
-# Verify the pipeline output is in results/ before deleting source files
-ls results/<TARGET>/
+Hit-bearing `.dat` files are never cleanup candidates.
+
+### Apply cleanup
+
+Review the dry-run JSON first. If the plan is correct:
+
+```bash
+git pull origin main
+.venv/bin/techno-search radio-corpus-cleanup \
+  --apply \
+  --acknowledge-local-apply
 ```
 
 ### What to keep

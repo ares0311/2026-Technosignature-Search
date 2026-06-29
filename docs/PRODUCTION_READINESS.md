@@ -128,10 +128,11 @@ gaps are closed. The project now pivots to multi-modal science (Phases 0–4).
 | Update `validate-all` to scientific-only gates | ✅ Done — public gate now omits legacy operational/synthetic payloads and checks Phase 0 science gates |
 | Add "delete synthetic training data" to production scan runbook | ✅ Done |
 
-**Runbook maintenance task (from user):** Add to `docs/PRODUCTION_SCAN_RUNBOOK.md`:
-"Before each new download batch, delete old `.dat` files and intermediate
-results from prior zero-hit targets to free storage space. Only keep manifests
-and scan history records."
+**Runbook maintenance task (from user):** ✅ Done — `techno-search
+radio-corpus-cleanup` dry-runs and applies local storage cleanup for
+`data/extended_corpus/` payloads only after converted `.dat` or zero-hit manifest
+evidence exists; `docs/PRODUCTION_SCAN_RUNBOOK.md` now uses exact cleanup
+commands instead of placeholder `rm` recipes.
 
 ### Phase 1 — Radio: GBT/MeerKAT Hardening
 

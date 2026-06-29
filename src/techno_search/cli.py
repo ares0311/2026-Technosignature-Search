@@ -90,6 +90,10 @@ from techno_search.observation_campaign import observation_campaign_summary
 from techno_search.pipeline_config import pipeline_config_summary
 from techno_search.plotting import plot_artifact_summary
 from techno_search.provenance import provenance_chain_validator
+from techno_search.radio_corpus_cleanup import (
+    apply_radio_corpus_cleanup,
+    plan_radio_corpus_cleanup,
+)
 from techno_search.real_data_admission_preflight import (
     real_data_admission_preflight_summary,
 )
@@ -3268,6 +3272,23 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         else:
             cleanup_result = plan_artifact_cleanup(
                 args.artifacts_dir,
+                project_root=default_project_root(),
+            )
+        print(json.dumps(cleanup_result, indent=2, sort_keys=True), file=out)
+        return 0 if cleanup_result.get("ok", False) else 1
+
+    if args.command == "radio-corpus-cleanup":
+        if args.apply:
+            cleanup_result = apply_radio_corpus_cleanup(
+                args.corpus_dir,
+                results_dir=args.results_dir,
+                project_root=default_project_root(),
+                acknowledge_local_apply=args.acknowledge_local_apply,
+            )
+        else:
+            cleanup_result = plan_radio_corpus_cleanup(
+                args.corpus_dir,
+                results_dir=args.results_dir,
                 project_root=default_project_root(),
             )
         print(json.dumps(cleanup_result, indent=2, sort_keys=True), file=out)
@@ -7353,6 +7374,36 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     artifacts_cleanup_parser.add_argument(
+        "--acknowledge-local-apply",
+        action="store_true",
+        help="Required acknowledgement to perform local file deletion.",
+    )
+    radio_corpus_cleanup_parser = subparsers.add_parser(
+        "radio-corpus-cleanup",
+        help=(
+            "Plan or apply storage cleanup for ignored data/extended_corpus "
+            "radio payloads after derived evidence exists."
+        ),
+    )
+    radio_corpus_cleanup_parser.add_argument(
+        "--corpus-dir",
+        type=Path,
+        help="Optional corpus directory override; must be under data/extended_corpus.",
+    )
+    radio_corpus_cleanup_parser.add_argument(
+        "--results-dir",
+        type=Path,
+        help="Optional results directory containing zero-hit manifests.",
+    )
+    radio_corpus_cleanup_parser.add_argument(
+        "--apply",
+        action="store_true",
+        help=(
+            "Apply the plan and delete eligible local payloads. Requires "
+            "--acknowledge-local-apply."
+        ),
+    )
+    radio_corpus_cleanup_parser.add_argument(
         "--acknowledge-local-apply",
         action="store_true",
         help="Required acknowledgement to perform local file deletion.",
