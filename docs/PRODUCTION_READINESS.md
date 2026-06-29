@@ -217,7 +217,10 @@ operator triage artifacts.
 Semi-supervised scorer training is executable from real turboSETI `.dat` files
 via `techno-search semisupervised-corpus-build` and
 `techno-search semisupervised-scorer-train`; the local ignored model was verified
-on 259 real GBT/turboSETI hits. `run-pipeline` now injects fitted local
+on 259 real GBT/turboSETI hits. `SemisupervisedScorer` now defaults to bounded
+12-worker sklearn CPU training and records an explicit accelerator fallback
+policy because no tested Apple Metal/MPS or MLX backend exists for PCA +
+IsolationForest in this project yet. `run-pipeline` now injects fitted local
 semi-supervised anomaly-score features and provenance into radio candidate
 packets when `data/meerkat_hits/semisupervised_scorer.joblib` exists, or when a
 model is provided with `--semisupervised-model`. These scores are local triage

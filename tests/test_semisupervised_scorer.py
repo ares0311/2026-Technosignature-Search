@@ -93,6 +93,11 @@ def test_scorer_default_features() -> None:
     assert s.feature_names == SEMISUPERVISED_FEATURE_NAMES
 
 
+def test_scorer_default_workers_match_local_profile() -> None:
+    s = SemisupervisedScorer()
+    assert s.n_jobs == DEFAULT_WORKERS
+
+
 def test_scorer_custom_features() -> None:
     custom = ["snr", "frequency_hz"]
     s = SemisupervisedScorer(feature_names=custom)
@@ -223,6 +228,8 @@ def test_save_creates_json_file() -> None:
         assert p.exists()
         data = json.loads(p.read_text())
         assert data["schema_version"] == SEMISUPERVISED_SCORER_VERSION
+        assert data["accelerator"]["used"] == "sklearn_cpu"
+        assert data["accelerator"]["default_workers"] == DEFAULT_WORKERS
 
 
 def test_save_requires_fitted() -> None:
@@ -278,6 +285,8 @@ def test_semisupervised_scorer_summary_module_level() -> None:
     assert "disclaimer" in s
     assert s["feature_count"] == len(SEMISUPERVISED_FEATURE_NAMES)
     assert s["default_workers"] == DEFAULT_WORKERS
+    assert s["accelerator"]["used"] == "sklearn_cpu"
+    assert s["accelerator"]["default_workers"] == DEFAULT_WORKERS
 
 
 def test_semisupervised_scorer_summary_with_fitted_scorer() -> None:
