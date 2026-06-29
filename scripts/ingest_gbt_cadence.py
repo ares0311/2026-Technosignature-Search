@@ -15,6 +15,7 @@ import ssl
 import sys
 import types
 import urllib.request
+import warnings
 from pathlib import Path
 from typing import Any
 
@@ -47,7 +48,12 @@ def _configure_matplotlib_cache(cache_dir: Path | None = None) -> Path:
 
 def _install_pkg_resources_compatibility() -> None:
     try:
-        import pkg_resources  # noqa: F401
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message="pkg_resources is deprecated as an API.*",
+            )
+            import pkg_resources  # noqa: F401
     except ImportError:
         module = types.ModuleType("pkg_resources")
 

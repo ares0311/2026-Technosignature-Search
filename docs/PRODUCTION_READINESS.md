@@ -137,7 +137,7 @@ and scan history records."
 
 | Task | Status |
 |---|---|
-| Proper ON/OFF cadence verification (ABACAB from raw files) | ⚠️ Partial — `gbt-cadence-raw-status` verifies approved raw HDF5 presence, size, MD5, and HDF5 signature before cadence processing; local HIP99427 raw files are not currently present under repo data paths |
+| Proper ON/OFF cadence verification (ABACAB from raw files) | ⚠️ Partial — `gbt-cadence-raw-status` verifies approved raw HDF5 presence, size, MD5, and HDF5 signature before cadence processing; local HIP99427 raw files are present under `~/technosignature-data` and the official ingest reproduces the 213-row cadence CSV |
 | Real training corpus loaded into semisupervised_scorer | ⚠️ Partial — local GBT/turboSETI `.dat` corpus can fit the scorer and production radio packets can carry fitted-model anomaly scores; verified MeerKAT BLUSE corpus still unavailable |
 | Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial — radio candidate packets, ranked summaries, and production ledgers now carry normalized drift and Earth-drift consistency features; full real-corpus validation remains open |
 | Cross-target RFI suppression on full stratified corpus | ⚠️ Partial — production ledgers now carry per-candidate cross-target RFI flags from independent target recurrence; full stratified-corpus validation remains open |
@@ -200,8 +200,12 @@ as negative-evidence ledger entries instead of being dropped as empty scans.
 ON/OFF cadence rejection now exposes an ABACAB cadence score from cadence source
 artifacts. `techno-search gbt-cadence-raw-status` verifies the approved
 HIP99427 six-scan raw HDF5 cadence against manifest size, MD5, and HDF5
-signature evidence before processing; completing raw-file ABACAB validation
-requires the six approved raw HDF5 files to be present locally.
+signature evidence before processing. The six approved raw HDF5 files are
+present locally under `~/technosignature-data/bl_observations/`, and
+`scripts/ingest_gbt_cadence.py` reproduces the 213-row ABACAD cadence CSV with
+clean JSON output. Full scientific raw-file ABACAB validation still requires
+candidate-level review against the ON/OFF cadence semantics, not just file
+presence and processing.
 Radio candidate packets, ranked summaries, and production ledgers expose raw
 drift, cross-band normalized drift, Earth-drift consistency, and explicit
 drift-evidence availability flags for the best hit, making measured drift-rate
