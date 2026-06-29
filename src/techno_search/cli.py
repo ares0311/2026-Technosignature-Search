@@ -1403,7 +1403,20 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
     if args.command == "semisupervised-scorer-summary":
         from techno_search.semisupervised_scorer import semisupervised_scorer_summary
 
-        result = semisupervised_scorer_summary()
+        metadata_path = (
+            Path(args.metadata)
+            if args.metadata is not None
+            else Path("data/meerkat_hits/semisupervised_scorer_metadata.json")
+        )
+        model_path = (
+            Path(args.model)
+            if args.model is not None
+            else Path("data/meerkat_hits/semisupervised_scorer.joblib")
+        )
+        result = semisupervised_scorer_summary(
+            metadata_path=metadata_path,
+            model_path=model_path,
+        )
         print(json.dumps(result, indent=2, sort_keys=True), file=out)
         return 0
 
@@ -9222,11 +9235,27 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    subparsers.add_parser(
+    semisupervised_summary_parser = subparsers.add_parser(
         "semisupervised-scorer-summary",
         help=(
             "Print semi-supervised anomaly scorer provenance summary "
             "(PCA + IsolationForest; local triage aid only)."
+        ),
+    )
+    semisupervised_summary_parser.add_argument(
+        "--metadata",
+        default=None,
+        help=(
+            "Local scorer metadata path; defaults to "
+            "data/meerkat_hits/semisupervised_scorer_metadata.json."
+        ),
+    )
+    semisupervised_summary_parser.add_argument(
+        "--model",
+        default=None,
+        help=(
+            "Local fitted joblib model path; defaults to "
+            "data/meerkat_hits/semisupervised_scorer.joblib."
         ),
     )
 

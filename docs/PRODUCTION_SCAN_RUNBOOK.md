@@ -196,6 +196,17 @@ new fitted scorer. These scores are local triage evidence only; they do not
 constitute detection, discovery, external validation, or external-submission
 approval.
 
+Check local scorer readiness with:
+
+```bash
+git pull origin main
+.venv/bin/techno-search semisupervised-scorer-summary
+```
+
+The summary reads ignored local metadata/model artifacts by default and reports
+`model_ready: true` only when both the real-corpus training metadata and fitted
+joblib model are present.
+
 Use the real-corpus summary after local radio data changes or scorer retraining:
 
 ```bash

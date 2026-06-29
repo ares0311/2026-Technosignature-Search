@@ -1460,6 +1460,45 @@ def test_cli_semisupervised_scorer_train_writes_local_artifacts(tmp_path) -> Non
     assert metadata["train_hit_count"] == 12
 
 
+def test_cli_semisupervised_scorer_summary_reads_local_artifacts(tmp_path) -> None:
+    metadata_path = tmp_path / "semisupervised_scorer_metadata.json"
+    model_path = tmp_path / "semisupervised_scorer.joblib"
+    metadata_path.write_text(
+        json.dumps({
+            "schema_version": "semisupervised_scorer_v1",
+            "feature_names": ["snr", "frequency_hz"],
+            "n_components": 2,
+            "n_estimators": 10,
+            "contamination": 0.01,
+            "random_state": 42,
+            "n_jobs": 1,
+            "train_hit_count": 200000,
+        }),
+        encoding="utf-8",
+    )
+    model_path.write_bytes(b"local fitted model placeholder")
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "semisupervised-scorer-summary",
+            "--metadata",
+            str(metadata_path),
+            "--model",
+            str(model_path),
+        ],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["metadata_loaded"] is True
+    assert result["model_ready"] is True
+    assert result["is_fitted"] is True
+    assert result["train_hit_count"] == 200000
+    assert result["feature_count"] == 2
+
+
 def test_cli_semisupervised_corpus_build_from_dat_files(tmp_path) -> None:
     dat_dir = tmp_path / "dat"
     dat_dir.mkdir()

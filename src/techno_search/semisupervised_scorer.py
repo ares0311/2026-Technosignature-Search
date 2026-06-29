@@ -464,20 +464,75 @@ def build_training_corpus_from_dat_files(
     return summary
 
 
-def semisupervised_scorer_summary(scorer: SemisupervisedScorer | None = None) -> dict[str, Any]:
-    """Return provenance summary for the semi-supervised scorer module."""
+def semisupervised_scorer_summary(
+    scorer: SemisupervisedScorer | None = None,
+    *,
+    metadata_path: Path | None = None,
+    model_path: Path | None = None,
+) -> dict[str, Any]:
+    """Return provenance summary for the semi-supervised scorer module.
+
+    When local metadata/model paths are supplied, the summary reports whether a
+    fitted real-corpus scorer is actually usable by production radio scans.
+    """
     if scorer is not None:
-        return scorer.summary()
-    return {
-        "schema_version": SEMISUPERVISED_SCORER_VERSION,
-        "disclaimer": SEMISUPERVISED_SCORER_DISCLAIMER,
-        "feature_names": SEMISUPERVISED_FEATURE_NAMES,
-        "feature_count": len(SEMISUPERVISED_FEATURE_NAMES),
-        "default_n_components": DEFAULT_N_COMPONENTS,
-        "default_n_estimators": DEFAULT_N_ESTIMATORS,
-        "default_contamination": DEFAULT_CONTAMINATION,
-        "default_workers": DEFAULT_WORKERS,
-        "accelerator": ACCELERATOR_POLICY,
-        "is_fitted": False,
-        "train_hit_count": 0,
-    }
+        summary = scorer.summary()
+    else:
+        summary = {
+            "schema_version": SEMISUPERVISED_SCORER_VERSION,
+            "disclaimer": SEMISUPERVISED_SCORER_DISCLAIMER,
+            "feature_names": SEMISUPERVISED_FEATURE_NAMES,
+            "feature_count": len(SEMISUPERVISED_FEATURE_NAMES),
+            "default_n_components": DEFAULT_N_COMPONENTS,
+            "default_n_estimators": DEFAULT_N_ESTIMATORS,
+            "default_contamination": DEFAULT_CONTAMINATION,
+            "default_workers": DEFAULT_WORKERS,
+            "accelerator": ACCELERATOR_POLICY,
+            "is_fitted": False,
+            "train_hit_count": 0,
+        }
+
+    if metadata_path is None and model_path is None:
+        return summary
+
+    metadata = {}
+    metadata_exists = metadata_path is not None and Path(metadata_path).exists()
+    if metadata_exists and metadata_path is not None:
+        try:
+            loaded = json.loads(Path(metadata_path).read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            loaded = {}
+        if isinstance(loaded, dict):
+            metadata = loaded
+
+    model_exists = model_path is not None and Path(model_path).exists()
+    train_hit_count = int(metadata.get("train_hit_count", 0) or 0)
+    model_ready = bool(train_hit_count > 0 and model_exists)
+
+    if metadata:
+        for key in (
+            "feature_names",
+            "n_components",
+            "n_estimators",
+            "contamination",
+            "random_state",
+            "n_jobs",
+            "accelerator",
+        ):
+            if key in metadata:
+                summary[key] = metadata[key]
+        feature_names = summary.get("feature_names", [])
+        if isinstance(feature_names, list):
+            summary["feature_count"] = len(feature_names)
+
+    summary.update({
+        "metadata_path": str(metadata_path) if metadata_path is not None else None,
+        "metadata_exists": metadata_exists,
+        "metadata_loaded": bool(metadata),
+        "model_path": str(model_path) if model_path is not None else None,
+        "model_exists": model_exists,
+        "model_ready": model_ready,
+        "is_fitted": model_ready,
+        "train_hit_count": train_hit_count,
+    })
+    return summary

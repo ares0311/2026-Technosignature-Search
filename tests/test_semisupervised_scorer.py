@@ -296,6 +296,46 @@ def test_semisupervised_scorer_summary_with_fitted_scorer() -> None:
     assert s["is_fitted"] is True
 
 
+def test_semisupervised_scorer_summary_reads_local_model_metadata(tmp_path) -> None:
+    scorer = SemisupervisedScorer(n_components=4, n_estimators=10, n_jobs=1)
+    scorer.fit(_training_corpus(15))
+    metadata_path = tmp_path / "semisupervised_scorer_metadata.json"
+    model_path = tmp_path / "semisupervised_scorer.joblib"
+    scorer.save(metadata_path)
+    model_path.write_bytes(b"local fitted model placeholder")
+
+    s = semisupervised_scorer_summary(
+        metadata_path=metadata_path,
+        model_path=model_path,
+    )
+
+    assert s["metadata_loaded"] is True
+    assert s["model_exists"] is True
+    assert s["model_ready"] is True
+    assert s["is_fitted"] is True
+    assert s["train_hit_count"] == 15
+    assert s["n_jobs"] == 1
+
+
+def test_semisupervised_scorer_summary_requires_model_for_ready_state(tmp_path) -> None:
+    scorer = SemisupervisedScorer()
+    scorer.fit(_training_corpus(15))
+    metadata_path = tmp_path / "semisupervised_scorer_metadata.json"
+    model_path = tmp_path / "missing.joblib"
+    scorer.save(metadata_path)
+
+    s = semisupervised_scorer_summary(
+        metadata_path=metadata_path,
+        model_path=model_path,
+    )
+
+    assert s["metadata_loaded"] is True
+    assert s["model_exists"] is False
+    assert s["model_ready"] is False
+    assert s["is_fitted"] is False
+    assert s["train_hit_count"] == 15
+
+
 def test_semisupervised_scorer_disclaimer_conservative() -> None:
     assert "detection" in SEMISUPERVISED_SCORER_DISCLAIMER
     assert "external submission" in SEMISUPERVISED_SCORER_DISCLAIMER
