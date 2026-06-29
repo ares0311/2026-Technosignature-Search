@@ -99,6 +99,11 @@ def radio_real_corpus_summary(
         semisupervised_model_path=semisupervised_model_path,
     )
     hit_count = len(hit_rows_for_scorer)
+    validation_readiness = _validation_readiness(
+        hit_bearing_target_count=len(unique_targets),
+        drift_row_count=drift_rows,
+        semisupervised_scorer=scorer_summary,
+    )
 
     return {
         "schema_version": RADIO_REAL_CORPUS_SCHEMA_VERSION,
@@ -111,10 +116,14 @@ def radio_real_corpus_summary(
         "unreadable_dat_files": unreadable_files,
         "hit_count": hit_count,
         "unique_target_count": len(unique_targets),
+        "hit_bearing_target_count": len(unique_targets),
+        "validation_readiness": validation_readiness,
+        "limitations": validation_readiness["limitations"],
         "drift_evidence": {
             "drift_row_count": drift_rows,
             "earth_consistent_row_count": earth_consistent_rows,
             "earth_inconsistent_row_count": max(0, drift_rows - earth_consistent_rows),
+            "validation_ready": validation_readiness["drift_validation_ready"],
             "max_abs_normalized_drift_hz_s_per_ghz": max_abs_normalized_drift,
         },
         "cross_target_rfi": {
@@ -122,11 +131,51 @@ def radio_real_corpus_summary(
             "flagged_candidate_count": len(cross_target_flags),
             "flagged_candidate_ids": sorted(cross_target_flags)[:20],
             "flagged_candidate_id_count_returned": min(20, len(cross_target_flags)),
+            "hit_bearing_target_count": len(unique_targets),
+            "validation_ready": validation_readiness["cross_target_rfi_validation_ready"],
         },
         "semisupervised_scorer": scorer_summary,
         "sample_dat_files": [str(path) for path in dat_files[:10]],
         "sample_hit_bearing_dat_files": hit_bearing_files[:10],
         "sample_zero_hit_dat_files": zero_hit_files[:10],
+    }
+
+
+def _validation_readiness(
+    *,
+    hit_bearing_target_count: int,
+    drift_row_count: int,
+    semisupervised_scorer: dict[str, Any],
+) -> dict[str, Any]:
+    limitations: list[str] = []
+    cross_target_ready = hit_bearing_target_count >= 2
+    drift_ready = drift_row_count > 0
+    scorer_ready = bool(semisupervised_scorer.get("model_used", False))
+
+    if not cross_target_ready:
+        limitations.append(
+            "Cross-target RFI suppression needs at least 2 independent "
+            "hit-bearing targets; current corpus cannot validate recurrence "
+            "suppression."
+        )
+    if not drift_ready:
+        limitations.append(
+            "Drift validation needs at least 1 hit row with a positive frequency."
+        )
+    if not scorer_ready:
+        limitations.append(
+            "Semi-supervised scorer integration was not exercised by this corpus "
+            "summary."
+        )
+
+    return {
+        "cross_target_rfi_validation_ready": cross_target_ready,
+        "drift_validation_ready": drift_ready,
+        "semisupervised_scorer_validation_ready": scorer_ready,
+        "phase1_radio_validation_ready": (
+            cross_target_ready and drift_ready and scorer_ready
+        ),
+        "limitations": limitations,
     }
 
 

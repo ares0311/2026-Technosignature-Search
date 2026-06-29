@@ -93,9 +93,15 @@ def test_radio_real_corpus_summary_counts_drift_rfi_and_scorer(tmp_path: Path) -
     assert result["zero_hit_dat_file_count"] == 1
     assert result["hit_count"] == 2
     assert result["unique_target_count"] == 2
+    assert result["hit_bearing_target_count"] == 2
+    assert result["validation_readiness"]["phase1_radio_validation_ready"] is True
+    assert result["validation_readiness"]["cross_target_rfi_validation_ready"] is True
+    assert result["limitations"] == []
     assert result["drift_evidence"]["drift_row_count"] == 2
     assert result["drift_evidence"]["earth_consistent_row_count"] == 2
+    assert result["drift_evidence"]["validation_ready"] is True
     assert result["cross_target_rfi"]["flagged_candidate_count"] == 2
+    assert result["cross_target_rfi"]["validation_ready"] is True
     assert result["semisupervised_scorer"]["model_used"] is True
     assert result["semisupervised_scorer"]["scored_hit_count"] == 2
     assert "detections" in result["disclaimer"]
@@ -123,4 +129,9 @@ def test_cli_radio_real_corpus_summary_outputs_json(tmp_path: Path, capsys) -> N
     assert result["schema_version"] == "radio_real_corpus_summary_v1"
     assert result["dat_file_count"] == 1
     assert result["hit_count"] == 1
+    assert result["hit_bearing_target_count"] == 1
+    assert result["validation_readiness"]["phase1_radio_validation_ready"] is False
+    assert result["validation_readiness"]["cross_target_rfi_validation_ready"] is False
+    assert result["cross_target_rfi"]["validation_ready"] is False
     assert result["semisupervised_scorer"]["model_used"] is False
+    assert len(result["limitations"]) == 2
