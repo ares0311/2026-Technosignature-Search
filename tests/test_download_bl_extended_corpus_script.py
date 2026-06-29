@@ -4,6 +4,7 @@ import json
 import os
 import stat
 import subprocess
+import sys
 from pathlib import Path
 
 SCRIPT_PATH = Path(__file__).resolve().parents[1] / "scripts" / (
@@ -128,6 +129,7 @@ esac
     env = os.environ.copy()
     env["PATH"] = f"{fake_bin}{os.pathsep}{env['PATH']}"
     env["TECHNO_EXTENDED_CORPUS_MAX_TARGETS"] = "2"
+    env["TECHNO_EXTENDED_CORPUS_PYTHON"] = sys.executable
 
     result = subprocess.run(
         [

@@ -30,7 +30,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT_DIR="${REPO_ROOT}/data/extended_corpus"
-VENV_PYTHON="${REPO_ROOT}/.venv/bin/python"
+VENV_PYTHON="${TECHNO_EXTENDED_CORPUS_PYTHON:-${REPO_ROOT}/.venv/bin/python}"
 MANIFEST="${REPO_ROOT}/data/target_sample_manifest.json"
 MAX_TARGETS="${TECHNO_EXTENDED_CORPUS_MAX_TARGETS:-0}"
 DRY_RUN=0
