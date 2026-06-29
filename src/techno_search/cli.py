@@ -1369,6 +1369,17 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(result, indent=2, sort_keys=True), file=out)
         return 0 if result["ok"] else 1
 
+    if args.command == "gbt-cadence-abacab-review":
+        from techno_search.citizen_science_labels import cadence_abacab_review_summary
+
+        result = cadence_abacab_review_summary(
+            Path(args.cadence_csv),
+            limit=int(args.limit),
+            cadence_id=args.cadence_id,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        return 0 if result["ok"] else 1
+
     if args.command == "globular-filter-summary":
         from techno_search.globular_filter import (
             GLOBULAR_FEATURE_NAMES,
@@ -6609,6 +6620,36 @@ def _build_parser() -> argparse.ArgumentParser:
         type=str,
         default=None,
         help="Explicit raw HDF5 directory; overrides --data-root.",
+    )
+    gbt_cadence_review_parser = subparsers.add_parser(
+        "gbt-cadence-abacab-review",
+        help=(
+            "Summarize candidate-level ON/OFF ABACAB outcomes from a derived "
+            "GBT cadence CSV. Local triage evidence only."
+        ),
+    )
+    gbt_cadence_review_parser.add_argument(
+        "--cadence-csv",
+        type=str,
+        default=str(
+            Path.home()
+            / "technosignature-data"
+            / "bl_hits"
+            / "GBT_HIP99427_2016-12-30_ABACAD.csv"
+        ),
+        help="Derived GBT cadence CSV produced by scripts/ingest_gbt_cadence.py.",
+    )
+    gbt_cadence_review_parser.add_argument(
+        "--cadence-id",
+        type=str,
+        default=None,
+        help="Optional cadence identifier override for candidate IDs.",
+    )
+    gbt_cadence_review_parser.add_argument(
+        "--limit",
+        type=int,
+        default=10,
+        help="Maximum follow-up candidate rows to include (default: 10).",
     )
     prod_run_id_parser = subparsers.add_parser(
         "prod-run-id",

@@ -137,7 +137,7 @@ and scan history records."
 
 | Task | Status |
 |---|---|
-| Proper ON/OFF cadence verification (ABACAB from raw files) | ⚠️ Partial — `gbt-cadence-raw-status` verifies approved raw HDF5 presence, size, MD5, and HDF5 signature before cadence processing; local HIP99427 raw files are present under `~/technosignature-data` and the official ingest reproduces the 213-row cadence CSV |
+| Proper ON/OFF cadence verification (ABACAB from raw files) | ⚠️ Partial — `gbt-cadence-raw-status` verifies approved raw HDF5 presence, size, MD5, and HDF5 signature before cadence processing; local HIP99427 raw files are present under `~/technosignature-data`, the official ingest reproduces the 213-row cadence CSV, and `gbt-cadence-abacab-review` summarizes candidate-level ON/OFF outcomes |
 | Real training corpus loaded into semisupervised_scorer | ⚠️ Partial — local GBT/turboSETI `.dat` corpus can fit the scorer and production radio packets can carry fitted-model anomaly scores; verified MeerKAT BLUSE corpus still unavailable |
 | Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial — radio candidate packets, ranked summaries, and production ledgers now carry normalized drift and Earth-drift consistency features; full real-corpus validation remains open |
 | Cross-target RFI suppression on full stratified corpus | ⚠️ Partial — production ledgers now carry per-candidate cross-target RFI flags from independent target recurrence; full stratified-corpus validation remains open |
@@ -203,9 +203,12 @@ HIP99427 six-scan raw HDF5 cadence against manifest size, MD5, and HDF5
 signature evidence before processing. The six approved raw HDF5 files are
 present locally under `~/technosignature-data/bl_observations/`, and
 `scripts/ingest_gbt_cadence.py` reproduces the 213-row ABACAD cadence CSV with
-clean JSON output. Full scientific raw-file ABACAB validation still requires
-candidate-level review against the ON/OFF cadence semantics, not just file
-presence and processing.
+clean JSON output. `techno-search gbt-cadence-abacab-review` now summarizes
+candidate-level ON/OFF cadence outcomes from that derived CSV: the local HIP99427
+review has 124 evidence groups, 81 false positives, 41 insufficient-evidence
+groups, and 2 local follow-up candidates, with zero primary/audit disagreements.
+These follow-up rows are triage candidates only; they are not detections,
+discoveries, expert review, external validation, or external-submission approval.
 Radio candidate packets, ranked summaries, and production ledgers expose raw
 drift, cross-band normalized drift, Earth-drift consistency, and explicit
 drift-evidence availability flags for the best hit, making measured drift-rate
