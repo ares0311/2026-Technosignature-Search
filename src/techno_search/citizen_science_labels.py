@@ -16,6 +16,7 @@ from techno_search.radio.prototype import build_radio_candidate
 from techno_search.schemas import FeatureValue
 
 CITIZEN_SCIENCE_LABEL_SCHEMA_VERSION = "labeled_candidates_citizen_science_v1"
+CITIZEN_SCIENCE_ABACAB_REVIEW_SCHEMA_VERSION = "gbt_cadence_abacab_review_v1"
 CITIZEN_SCIENCE_REVIEW_POLICY = "citizen_science_reproducibility_v1"
 FIXED_REVIEW_TIMESTAMP = "2026-06-10T00:00:00Z"
 
@@ -23,6 +24,12 @@ CITIZEN_SCIENCE_LABEL_DISCLAIMER = (
     "These labels are conservative citizen-science operational annotations "
     "derived from cadence behavior. They are not expert labels, external "
     "validation, detections, discoveries, or authorization for external submission."
+)
+
+CITIZEN_SCIENCE_ABACAB_REVIEW_DISCLAIMER = (
+    "GBT cadence ABACAB review summaries are local candidate-triage evidence "
+    "only. They do not constitute detections, discoveries, expert review, "
+    "external validation, or authorization for external submission."
 )
 
 
@@ -144,6 +151,112 @@ def _candidate_mapping(
         "source_ids": list(candidate.source_ids),
         "features": dict(candidate.features),
         "provenance": dict(candidate.provenance),
+    }
+
+
+def cadence_abacab_review_summary(
+    cadence_csv: Path,
+    *,
+    limit: int = 10,
+    cadence_id: str | None = None,
+) -> dict[str, Any]:
+    """Summarize candidate-level ON/OFF cadence outcomes for a real GBT cadence."""
+    source_ids, cadence_provenance = cadence_candidate_context(cadence_csv)
+    hits = load_cadence_hits(cadence_csv)
+    ordered_artifacts = tuple(dict.fromkeys(hit.source_artifact for hit in hits))
+    if len(ordered_artifacts) != 6:
+        raise ValueError("GBT ABACAB review requires exactly six cadence scans.")
+
+    source_csv_sha256 = _sha256(cadence_csv)
+    resolved_cadence_id = (
+        cadence_id
+        or str(cadence_provenance.get("source_dataset") or cadence_csv.stem)
+    )
+    groups = group_cadence_hits(hits)
+    counts: dict[str, int] = defaultdict(int)
+    false_positive_classes: dict[str, int] = defaultdict(int)
+    disagreements = 0
+    follow_up_candidates: list[dict[str, Any]] = []
+
+    for index, group in enumerate(groups, start=1):
+        primary_label, false_positive_class, confidence = _primary_label(group)
+        audit_label = _audit_label(group, ordered_artifacts)
+        agreement = primary_label == audit_label
+        if not agreement:
+            disagreements += 1
+            final_label = "insufficient_evidence"
+            false_positive_class = None
+            confidence = 0.50
+        else:
+            final_label = primary_label
+        counts[final_label] += 1
+        if false_positive_class:
+            false_positive_classes[false_positive_class] += 1
+        if final_label != "follow_up":
+            continue
+
+        frequency_hz = group[0].frequency_hz
+        drift_rate = group[0].drift_rate_hz_per_sec
+        follow_up_candidates.append(
+            {
+                "candidate_id": (
+                    f"{resolved_cadence_id}-group-{index:03d}-"
+                    f"{frequency_hz:.3f}-{drift_rate:.6f}"
+                ),
+                "follow_up_candidate_score": confidence,
+                "frequency_hz": frequency_hz,
+                "drift_rate_hz_per_sec": drift_rate,
+                "measurement_count": len(group),
+                "on_scan_count": len(
+                    {hit.source_artifact for hit in group if hit.scan_role == "on"}
+                ),
+                "off_scan_count": len(
+                    {hit.source_artifact for hit in group if hit.scan_role == "off"}
+                ),
+                "targets": sorted({hit.target_id for hit in group}),
+                "source_artifacts": sorted({hit.source_artifact for hit in group}),
+                "primary_label": primary_label,
+                "audit_label": audit_label,
+                "review_agreement": agreement,
+            }
+        )
+
+    ranked_follow_ups = sorted(
+        follow_up_candidates,
+        key=lambda item: (
+            -float(item["follow_up_candidate_score"]),
+            float(item["frequency_hz"]),
+            float(item["drift_rate_hz_per_sec"]),
+        ),
+    )
+    return {
+        "schema_version": CITIZEN_SCIENCE_ABACAB_REVIEW_SCHEMA_VERSION,
+        "disclaimer": CITIZEN_SCIENCE_ABACAB_REVIEW_DISCLAIMER,
+        "cadence_id": resolved_cadence_id,
+        "cadence_csv": str(cadence_csv),
+        "source_csv_sha256": source_csv_sha256,
+        "row_count": len(hits),
+        "evidence_group_count": len(groups),
+        "source_artifact_count": len(ordered_artifacts),
+        "source_artifacts": list(source_ids or ordered_artifacts),
+        "label_counts": dict(sorted(counts.items())),
+        "false_positive_class_counts": dict(sorted(false_positive_classes.items())),
+        "follow_up_candidate_count": counts.get("follow_up", 0),
+        "false_positive_count": counts.get("false_positive", 0),
+        "insufficient_evidence_count": counts.get("insufficient_evidence", 0),
+        "top_follow_up_candidates": ranked_follow_ups[: max(0, limit)],
+        "review_summary": {
+            "primary_method": "on_off_count_rule_v1",
+            "audit_method": "six_position_scan_signature_v1",
+            "agreement_count": len(groups) - disagreements,
+            "disagreement_count": disagreements,
+            "disagreements_forced_to_insufficient_evidence": True,
+        },
+        "ok": disagreements == 0,
+        "expert_review_claimed": False,
+        "external_validation_claimed": False,
+        "external_submission_authorized": False,
+        "detection_claimed": False,
     }
 
 

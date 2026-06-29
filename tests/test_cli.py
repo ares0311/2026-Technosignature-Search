@@ -68,6 +68,25 @@ def _write_tiny_cli_cadence(tmp_path: Path) -> tuple[Path, Path]:
     return manifest_path, raw_dir
 
 
+def _write_tiny_cli_cadence_csv(path: Path) -> None:
+    path.write_text(
+        "\n".join(
+            [
+                "Corrected_Frequency,Drift_Rate,SNR,scan_role,target_id,source_artifact",
+                "1420.0,1.0,21.0,on,HIP99427,a.dat",
+                "1420.0,1.0,22.0,on,HIP99427,c.dat",
+                "1420.0,1.0,23.0,on,HIP99427,e.dat",
+                "1421.0,-2.0,31.0,on,HIP99427,a.dat",
+                "1421.0,-2.0,32.0,off,HIP100670,b.dat",
+                "1421.0,-2.0,33.0,off,HIP99560,d.dat",
+                "1421.0,-2.0,34.0,off,HIP99759,f.dat",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def test_cli_version_command_reports_package_version() -> None:
     stdout = StringIO()
 
@@ -132,6 +151,33 @@ def test_cli_gbt_cadence_raw_status_verifies_files(tmp_path) -> None:
     assert exit_code == 0
     assert result["ok"] is True
     assert result["verified_count"] == 6
+
+
+def test_cli_gbt_cadence_abacab_review_summarizes_candidate_outcomes(tmp_path) -> None:
+    cadence_csv = tmp_path / "cadence.csv"
+    _write_tiny_cli_cadence_csv(cadence_csv)
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "gbt-cadence-abacab-review",
+            "--cadence-csv",
+            str(cadence_csv),
+            "--cadence-id",
+            "test-cadence",
+            "--limit",
+            "1",
+        ],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["ok"] is True
+    assert result["label_counts"] == {"false_positive": 1, "follow_up": 1}
+    assert result["top_follow_up_candidates"][0]["on_scan_count"] == 3
+    assert result["top_follow_up_candidates"][0]["off_scan_count"] == 0
+    assert result["detection_claimed"] is False
 
 
 def test_cli_writes_reports(tmp_path) -> None:
