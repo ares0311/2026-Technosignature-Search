@@ -253,16 +253,20 @@ independent hit-bearing targets before a zero-recurrence result can be treated a
 validation evidence. `radio-real-corpus-summary` now also accepts
 `--hit-ndjson data/meerkat_hits/meerkat_normalised_200000.ndjson` and
 `--max-hit-rows` so the verified real MeerKAT BLUSE hit corpus can exercise
-cross-target RFI recurrence, drift-evidence, and fitted-scorer integration
-without redistributing or committing the payload. A bounded 5,000-row local
-review with `--candidate-sample-limit 5` reviewed 5,003 candidate rows, reported
-65 hit-bearing targets, 4,954 cross-target RFI recurrence flags, 3 known Voyager
-control rows, 4,871 stationary-drift rows, 0 automated follow-up survivors, and
-`phase1_radio_validation_ready: true`. Known control targets are preserved as
-positive controls, and stationary-frequency rows are separated from nonstationary
-review survivors rather than promoted as follow-up candidates. These summaries
-are local validation evidence only; they are not detections, discoveries, expert
-review, external validation, or external-submission approval.
+cross-target RFI recurrence, drift-evidence, fitted-scorer integration, and
+bounded candidate-review samples without redistributing or committing the
+payload. `SemisupervisedScorer.score_hits` now scores batches with one vectorized
+sklearn `decision_function` call, so the full 200,000-row local MeerKAT review is
+practical. A full local review with `--candidate-sample-limit 5` reviewed
+200,003 candidate rows, reported 799 hit-bearing targets, 195,469 cross-target
+RFI recurrence flags, 3 known Voyager control rows, 148,215 stationary-drift
+rows, 4,887 drift-inconsistent rows, 1,072 automated nonstationary review
+survivors, and `phase1_radio_validation_ready: true`. Known control targets are
+preserved as positive controls, and stationary-frequency rows are separated from
+nonstationary review survivors rather than promoted as follow-up candidates.
+These summaries are local validation evidence only; they are not detections,
+discoveries, expert review, external validation, or external-submission
+approval.
 
 **Photometry, IR, spectroscopy:** Not implemented. No `lightkurve`, no WISE SED
 fitting, no JWST spectral ingest.
