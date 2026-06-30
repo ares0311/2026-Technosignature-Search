@@ -272,16 +272,16 @@ artifact. The group now emits explicit review flags for single-beam survivor
 context, multi-backend survivor context, multi-coarse-channel survivor context,
 and single-sky-position survivor context; candidate escalation is explicitly
 blocked until that source-context review is resolved. The current local summary
-separates 1,065 source-context-blocked automated survivor rows from 7
+separates 1,069 source-context-blocked automated survivor rows from 3
 escalation-ready automated survivor rows and emits separate top
-escalation-ready target groups (`ex_LEDA_976081`, `ex_NSVS_15969565`,
-`Gaia_3578686357276468608`, `Gaia_3578732025664620800`) so blocked Atlas rows
-are not mixed with ready rows in operator triage. Known control targets are
-preserved as positive controls, and stationary-frequency rows are separated from
-nonstationary review survivors rather than promoted as follow-up candidates.
-These summaries are local validation evidence only; they are not detections,
-discoveries, expert review, external validation, or external-submission
-approval.
+escalation-ready target groups (`ex_NSVS_15969565`,
+`Gaia_3578686357276468608`, `Gaia_3578732025664620800`) so blocked Atlas and
+`ex_LEDA_976081` rows are not mixed with ready rows in operator triage. Known
+control targets are preserved as positive controls, and stationary-frequency
+rows are separated from nonstationary review survivors rather than promoted as
+follow-up candidates. These summaries are local validation evidence only; they
+are not detections, discoveries, expert review, external validation, or
+external-submission approval.
 
 **Photometry, IR, spectroscopy:** Not implemented. No `lightkurve`, no WISE SED
 fitting, no JWST spectral ingest.

@@ -435,18 +435,18 @@ def _candidate_review_summary(
         review_targets,
         follow_up_candidate_count=follow_up_candidate_count,
     )
-    escalation_blocked_candidate_count = (
-        int(target_concentration["dominant_target_candidate_count"])
-        if bool(target_concentration["candidate_escalation_blocked"])
-        else 0
-    )
-    blocked_target_name = (
-        str(target_concentration["dominant_target_name"])
-        if bool(target_concentration["candidate_escalation_blocked"])
-        else ""
+    blocked_target_names = {
+        str(target["target_name"])
+        for target in review_targets
+        if _target_group_blocks_escalation(target)
+    }
+    escalation_blocked_candidate_count = sum(
+        int(target["candidate_count"])
+        for target in review_targets
+        if str(target["target_name"]) in blocked_target_names
     )
     escalation_ready_survivors = [
-        row for row in ranked_survivors if str(row["target_name"]) != blocked_target_name
+        row for row in ranked_survivors if str(row["target_name"]) not in blocked_target_names
     ]
     escalation_ready_targets = _review_target_groups(
         escalation_ready_survivors,
@@ -550,6 +550,7 @@ def _source_context_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
         flags.append("multi_coarse_channel_survivor_context")
     if len(set(ra_values)) == 1 and len(set(dec_values)) == 1:
         flags.append("single_sky_position_survivor_context")
+    escalation_blocked = len(rows) > 1 and bool(flags)
 
     return {
         "beam_count": len(beams),
@@ -565,6 +566,8 @@ def _source_context_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "min_dec_deg": min(dec_values) if dec_values else None,
         "max_dec_deg": max(dec_values) if dec_values else None,
         "review_flags": flags,
+        "candidate_escalation_blocked": escalation_blocked,
+        "blocking_review_flags": flags if escalation_blocked else [],
     }
 
 
@@ -592,7 +595,9 @@ def _target_concentration_summary(
         else []
     )
     context_review_needed = dominant_fraction > 0.5
-    escalation_blocked = context_review_needed and bool(review_flags)
+    escalation_blocked = context_review_needed and bool(
+        source_context.get("candidate_escalation_blocked", False)
+    )
     return {
         "dominant_target_name": dominant["target_name"],
         "dominant_target_candidate_count": dominant_count,
@@ -608,6 +613,13 @@ def _target_concentration_summary(
         if context_review_needed
         else "",
     }
+
+
+def _target_group_blocks_escalation(target: dict[str, Any]) -> bool:
+    source_context = target.get("source_context", {})
+    if not isinstance(source_context, dict):
+        return False
+    return bool(source_context.get("candidate_escalation_blocked", False))
 
 
 def _is_known_control_candidate(candidate: dict[str, Any]) -> bool:
