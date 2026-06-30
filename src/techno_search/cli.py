@@ -1518,6 +1518,7 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             ),
             max_files=args.max_files,
             max_hit_rows=args.max_hit_rows,
+            candidate_sample_limit=args.candidate_sample_limit,
             freq_tolerance_hz=args.freq_tolerance_hz,
         )
         print(json.dumps(result, indent=2, sort_keys=True), file=out)
@@ -9433,6 +9434,15 @@ def _build_parser() -> argparse.ArgumentParser:
         type=int,
         default=None,
         help="Optional cap on hit-NDJSON rows scanned, after stable file sorting.",
+    )
+    radio_real_corpus_parser.add_argument(
+        "--candidate-sample-limit",
+        type=int,
+        default=20,
+        help=(
+            "Maximum candidate-review rows to return in the JSON summary. "
+            "Use 0 for counts only."
+        ),
     )
     radio_real_corpus_parser.add_argument(
         "--freq-tolerance-hz",
