@@ -554,21 +554,33 @@ def _target_concentration_summary(
             "dominant_target_candidate_count": 0,
             "dominant_target_fraction": 0.0,
             "source_context_review_needed": False,
+            "candidate_escalation_blocked": False,
+            "blocking_review_flags": [],
         }
     dominant = review_targets[0]
     dominant_count = int(dominant["candidate_count"])
     dominant_fraction = dominant_count / follow_up_candidate_count
+    source_context = dominant.get("source_context", {})
+    review_flags = (
+        source_context.get("review_flags", [])
+        if isinstance(source_context, dict)
+        else []
+    )
+    context_review_needed = dominant_fraction > 0.5
+    escalation_blocked = context_review_needed and bool(review_flags)
     return {
         "dominant_target_name": dominant["target_name"],
         "dominant_target_candidate_count": dominant_count,
         "dominant_target_fraction": dominant_fraction,
-        "source_context_review_needed": dominant_fraction > 0.5,
+        "source_context_review_needed": context_review_needed,
+        "candidate_escalation_blocked": escalation_blocked,
+        "blocking_review_flags": list(review_flags) if escalation_blocked else [],
         "reason": (
             "More than half of automated survivor rows come from one target; "
             "review source context and instrumental explanations before treating "
             "the rows as independent follow-up evidence."
         )
-        if dominant_fraction > 0.5
+        if context_review_needed
         else "",
     }
 

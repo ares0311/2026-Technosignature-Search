@@ -270,8 +270,9 @@ only, with a single RA/DEC and MJD range 61006.0897-61006.2975, so the next
 review question is source and instrumental context rather than a single-file
 artifact. The group now emits explicit review flags for single-beam survivor
 context, multi-backend survivor context, multi-coarse-channel survivor context,
-and single-sky-position survivor context. Known control targets are preserved as
-positive controls, and stationary-frequency rows are separated from
+and single-sky-position survivor context; candidate escalation is explicitly
+blocked until that source-context review is resolved. Known control targets are
+preserved as positive controls, and stationary-frequency rows are separated from
 nonstationary review survivors rather than promoted as follow-up candidates.
 These summaries are local validation evidence only; they are not detections,
 discoveries, expert review, external validation, or external-submission
