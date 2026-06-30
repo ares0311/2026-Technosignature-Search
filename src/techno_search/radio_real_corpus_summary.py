@@ -440,6 +440,18 @@ def _candidate_review_summary(
         if bool(target_concentration["candidate_escalation_blocked"])
         else 0
     )
+    blocked_target_name = (
+        str(target_concentration["dominant_target_name"])
+        if bool(target_concentration["candidate_escalation_blocked"])
+        else ""
+    )
+    escalation_ready_survivors = [
+        row for row in ranked_survivors if str(row["target_name"]) != blocked_target_name
+    ]
+    escalation_ready_targets = _review_target_groups(
+        escalation_ready_survivors,
+        sample_limit=None,
+    )
     return {
         "reviewed_candidate_count": len(reviewed),
         "follow_up_candidate_count": follow_up_candidate_count,
@@ -456,6 +468,8 @@ def _candidate_review_summary(
         "sample_limit": limited_sample,
         "top_review_candidates": ranked_survivors[:limited_sample],
         "top_review_targets": review_targets[:limited_sample],
+        "top_escalation_ready_candidates": escalation_ready_survivors[:limited_sample],
+        "top_escalation_ready_targets": escalation_ready_targets[:limited_sample],
         "target_concentration": target_concentration,
         "top_rejected_or_control_candidates": ranked_rejected_or_controls[:limited_sample],
         "claim_guardrail": (
