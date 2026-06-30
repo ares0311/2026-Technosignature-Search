@@ -51,6 +51,33 @@ def _write_zero_hit_dat(path: Path, *, source: str) -> None:
     )
 
 
+def _write_hit_ndjson(path: Path, rows: list[dict[str, object]]) -> None:
+    path.write_text(
+        "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _normalized_hit(*, target_id: str, frequency_hz: float, drift: float) -> dict[str, object]:
+    return {
+        "snr": 25.0,
+        "drift_rate_hz_per_sec": drift,
+        "frequency_hz": frequency_hz,
+        "bandwidth_hz": 2.793968,
+        "normalized_drift_hz_s_per_ghz": drift / (frequency_hz / 1e9),
+        "relative_snr": 1.0,
+        "on_off_consistency_score": 0.0,
+        "is_earth_drift_consistent": 1.0,
+        "rfi_band_overlap_score": 0.0,
+        "frequency_persistence_score": 0.0,
+        "on_hit_count": 1,
+        "off_hit_count": 0,
+        "target_id": target_id,
+        "source_artifact": f"{target_id}.h5",
+        "corpus_source": "meerkat_bluse_seticore_atlas_2025_11",
+    }
+
+
 def _training_hit(index: int) -> dict[str, float]:
     frequency_hz = 1.0e9 + index * 1.0e6
     drift = 0.01 * index
@@ -107,6 +134,39 @@ def test_radio_real_corpus_summary_counts_drift_rfi_and_scorer(tmp_path: Path) -
     assert "detections" in result["disclaimer"]
 
 
+def test_radio_real_corpus_summary_includes_real_hit_ndjson(tmp_path: Path) -> None:
+    dat_dir = tmp_path / "dat"
+    dat_dir.mkdir()
+    _write_zero_hit_dat(dat_dir / "zero_hit.dat", source="ZERO_HIT_TARGET")
+    hit_ndjson = tmp_path / "meerkat_normalised_sample.ndjson"
+    _write_hit_ndjson(
+        hit_ndjson,
+        [
+            _normalized_hit(target_id="MKT_A", frequency_hz=1_420_000_000.0, drift=0.1),
+            _normalized_hit(target_id="MKT_B", frequency_hz=1_420_000_100.0, drift=0.2),
+        ],
+    )
+    model_path = tmp_path / "semisupervised_scorer.joblib"
+    _write_model(model_path)
+
+    result = radio_real_corpus_summary(
+        [dat_dir],
+        hit_ndjson_paths=[hit_ndjson],
+        semisupervised_model_path=model_path,
+    )
+
+    assert result["ok"] is True
+    assert result["dat_file_count"] == 1
+    assert result["hit_ndjson_file_count"] == 1
+    assert result["hit_ndjson_row_count"] == 2
+    assert result["hit_ndjson_row_limit"] is None
+    assert result["hit_count"] == 2
+    assert result["hit_bearing_target_count"] == 2
+    assert result["validation_readiness"]["phase1_radio_validation_ready"] is True
+    assert result["cross_target_rfi"]["flagged_candidate_count"] == 2
+    assert result["semisupervised_scorer"]["model_used"] is True
+
+
 def test_cli_radio_real_corpus_summary_outputs_json(tmp_path: Path, capsys) -> None:
     dat_dir = tmp_path / "dat"
     dat_dir.mkdir()
@@ -135,3 +195,39 @@ def test_cli_radio_real_corpus_summary_outputs_json(tmp_path: Path, capsys) -> N
     assert result["cross_target_rfi"]["validation_ready"] is False
     assert result["semisupervised_scorer"]["model_used"] is False
     assert len(result["limitations"]) == 2
+
+
+def test_cli_radio_real_corpus_summary_accepts_hit_ndjson(tmp_path: Path, capsys) -> None:
+    dat_dir = tmp_path / "dat"
+    dat_dir.mkdir()
+    _write_zero_hit_dat(dat_dir / "zero_hit.dat", source="ZERO_HIT_TARGET")
+    hit_ndjson = tmp_path / "meerkat_normalised_sample.ndjson"
+    _write_hit_ndjson(
+        hit_ndjson,
+        [
+            _normalized_hit(target_id="MKT_A", frequency_hz=1_420_000_000.0, drift=0.1),
+            _normalized_hit(target_id="MKT_B", frequency_hz=1_420_000_100.0, drift=0.2),
+        ],
+    )
+
+    exit_code = main(
+        [
+            "radio-real-corpus-summary",
+            "--dat-dir",
+            str(dat_dir),
+            "--hit-ndjson",
+            str(hit_ndjson),
+            "--max-hit-rows",
+            "2",
+            "--semisupervised-model",
+            str(tmp_path / "missing_model.joblib"),
+        ]
+    )
+    result = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert result["hit_ndjson_file_count"] == 1
+    assert result["hit_ndjson_row_count"] == 2
+    assert result["hit_ndjson_row_limit"] == 2
+    assert result["hit_bearing_target_count"] == 2
+    assert result["validation_readiness"]["cross_target_rfi_validation_ready"] is True

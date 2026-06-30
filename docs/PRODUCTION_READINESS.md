@@ -140,8 +140,8 @@ commands instead of placeholder `rm` recipes.
 |---|---|
 | Proper ON/OFF cadence verification (ABACAB from raw files) | ⚠️ Partial — `gbt-cadence-raw-status` verifies approved raw HDF5 presence, size, MD5, and HDF5 signature before cadence processing; local HIP99427 raw files are present under `~/technosignature-data`, the official ingest reproduces the 213-row cadence CSV, and `gbt-cadence-abacab-review` summarizes candidate-level ON/OFF outcomes |
 | Real training corpus loaded into semisupervised_scorer | ✅ Done locally — local GBT/turboSETI `.dat` corpus can fit the scorer and production radio packets can carry fitted-model anomaly scores; verified MeerKAT BLUSE/SETICORE JSON source is documented, `scripts/ingest_meerkat_hits.py` supports its schema, and `data/meerkat_hits/semisupervised_scorer_metadata.json` records `train_hit_count: 200000`; payload/model artifacts remain ignored and non-redistributed |
-| Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial — radio candidate packets, ranked summaries, and production ledgers now carry normalized drift and Earth-drift consistency features; `radio-real-corpus-summary` validated the current local 6-file real `.dat` corpus with 3 drift rows and 3 Earth-consistent rows; broader hit-bearing stratified-corpus validation remains open |
-| Cross-target RFI suppression on full stratified corpus | ⚠️ Partial — production ledgers now carry per-candidate cross-target RFI flags from independent target recurrence; `radio-real-corpus-summary` reported 0 cross-target recurrence flags in the current local 7-file corpus, which has only 1 hit-bearing target, so broader hit-bearing validation remains open; `scripts/download_bl_extended_corpus.sh --manifest data/target_sample_manifest.json` now follows the 31-target stratified manifest, supports `--discover-only` live availability preflight, can write a target-to-HDF5 URL availability TSV, and applies `TECHNO_EXTENDED_CORPUS_MAX_TARGETS` to new URL-available HDF5 downloads rather than raw manifest position or already-downloaded evidence |
+| Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial — radio candidate packets, ranked summaries, and production ledgers now carry normalized drift and Earth-drift consistency features; `radio-real-corpus-summary` validates drift rows from local `.dat` files and can now include real normalized hit-NDJSON evidence from the verified MeerKAT BLUSE corpus; broader candidate-level stratified-corpus review remains open |
+| Cross-target RFI suppression on full stratified corpus | ⚠️ Partial — production ledgers now carry per-candidate cross-target RFI flags from independent target recurrence; current local GBT `.dat` evidence has 10 files, 9 zero-hit observations, and only 1 hit-bearing target, so `.dat`-only recurrence validation remains blocked; `radio-real-corpus-summary --hit-ndjson data/meerkat_hits/meerkat_normalised_200000.ndjson` now admits the verified real MeerKAT BLUSE hit corpus as hit-bearing Phase 1 validation evidence without committing payloads; `scripts/download_bl_extended_corpus.sh --manifest data/target_sample_manifest.json` follows the 31-target stratified manifest, supports `--discover-only` live availability preflight, can write a target-to-HDF5 URL availability TSV, and applies `TECHNO_EXTENDED_CORPUS_MAX_TARGETS` to new URL-available HDF5 downloads rather than raw manifest position or already-downloaded evidence |
 | Ranked candidate/non-detection output ready for Phase 5 | ⚠️ Partial — zero-hit observations are preserved as negative evidence ledgers |
 
 ### Phase 2 — Transit Photometry: Kepler/TESS
@@ -242,16 +242,23 @@ metadata/model artifacts by default and reports `model_ready: true` only when th
 real-corpus metadata and fitted joblib model are both present; on the current
 local system it reports `train_hit_count: 200000`.
 `techno-search radio-real-corpus-summary --dat-dir data/extended_corpus --dat-dir data/bl_hits`
-now summarizes local real `.dat` evidence without writing payloads. On the
-current local corpus it scanned 7 `.dat` files, found 6 zero-hit observations and
-1 hit-bearing Voyager calibration file, preserved 3 drift rows, reported 3
+summarizes local real `.dat` evidence without writing payloads. On the current
+local GBT `.dat` corpus it scanned 10 `.dat` files, found 9 zero-hit observations
+and 1 hit-bearing Voyager calibration file, preserved 3 drift rows, reported 3
 Earth-consistent drift rows, found 0 cross-target RFI recurrence flags, and
-confirmed the MeerKAT-trained scorer scored 3 hits. The summary now marks
-`phase1_radio_validation_ready: false` for the current local corpus because only
-1 independent hit-bearing target is available; cross-target RFI suppression
-needs at least 2 independent hit-bearing targets before a zero-recurrence result
-can be treated as validation evidence. This is local validation evidence only;
-the current corpus is not a full hit-bearing stratified validation set.
+confirmed the MeerKAT-trained scorer scored 3 hits. The `.dat`-only summary
+marks `phase1_radio_validation_ready: false` because only 1 independent
+hit-bearing target is available; cross-target RFI suppression needs at least 2
+independent hit-bearing targets before a zero-recurrence result can be treated as
+validation evidence. `radio-real-corpus-summary` now also accepts
+`--hit-ndjson data/meerkat_hits/meerkat_normalised_200000.ndjson` and
+`--max-hit-rows` so the verified real MeerKAT BLUSE hit corpus can exercise
+cross-target RFI recurrence, drift-evidence, and fitted-scorer integration
+without redistributing or committing the payload. A bounded 5,000-row local
+review reported 65 hit-bearing targets, 4,954 cross-target RFI recurrence flags,
+and `phase1_radio_validation_ready: true`. These summaries are local validation
+evidence only; they are not detections, discoveries, expert review, external
+validation, or external-submission approval.
 
 **Photometry, IR, spectroscopy:** Not implemented. No `lightkurve`, no WISE SED
 fitting, no JWST spectral ingest.

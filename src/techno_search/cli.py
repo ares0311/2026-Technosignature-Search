@@ -1506,12 +1506,18 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
 
         result = radio_real_corpus_summary(
             [Path(path) for path in args.dat_dir],
+            hit_ndjson_paths=(
+                [Path(path) for path in args.hit_ndjson]
+                if args.hit_ndjson is not None
+                else None
+            ),
             semisupervised_model_path=(
                 Path(args.semisupervised_model)
                 if args.semisupervised_model is not None
                 else None
             ),
             max_files=args.max_files,
+            max_hit_rows=args.max_hit_rows,
             freq_tolerance_hz=args.freq_tolerance_hz,
         )
         print(json.dumps(result, indent=2, sort_keys=True), file=out)
@@ -9411,6 +9417,22 @@ def _build_parser() -> argparse.ArgumentParser:
         type=int,
         default=None,
         help="Optional cap on .dat files scanned, after stable sorting.",
+    )
+    radio_real_corpus_parser.add_argument(
+        "--hit-ndjson",
+        action="append",
+        default=None,
+        help=(
+            "Real normalized hit-corpus NDJSON file or directory to include; "
+            "may be repeated. Intended for ignored local corpora such as "
+            "data/meerkat_hits/meerkat_normalised_200000.ndjson."
+        ),
+    )
+    radio_real_corpus_parser.add_argument(
+        "--max-hit-rows",
+        type=int,
+        default=None,
+        help="Optional cap on hit-NDJSON rows scanned, after stable file sorting.",
     )
     radio_real_corpus_parser.add_argument(
         "--freq-tolerance-hz",

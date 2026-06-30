@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -34,19 +35,40 @@ def discover_dat_files(paths: list[Path]) -> list[Path]:
     return sorted(dict.fromkeys(dat_files))
 
 
+def discover_hit_ndjson_files(paths: list[Path]) -> list[Path]:
+    """Return NDJSON hit-corpus files from explicit files or directories."""
+    hit_files: list[Path] = []
+    for item in paths:
+        path = Path(item)
+        if not path.exists():
+            raise FileNotFoundError(f"Radio hit-NDJSON path does not exist: {path}")
+        if path.is_file():
+            if path.suffix == ".ndjson":
+                hit_files.append(path)
+            continue
+        hit_files.extend(
+            sorted(candidate for candidate in path.rglob("*.ndjson") if candidate.is_file())
+        )
+    return sorted(dict.fromkeys(hit_files))
+
+
 def radio_real_corpus_summary(
     dat_paths: list[Path],
     *,
+    hit_ndjson_paths: list[Path] | None = None,
     semisupervised_model_path: Path | None = None,
     max_files: int | None = None,
+    max_hit_rows: int | None = None,
     freq_tolerance_hz: float = DEFAULT_RFI_TOLERANCE_HZ,
 ) -> dict[str, Any]:
-    """Summarize local real radio `.dat` evidence without writing payloads."""
+    """Summarize local real radio hit evidence without writing payloads."""
     dat_files = discover_dat_files(dat_paths)
     if max_files is not None:
         dat_files = dat_files[:max_files]
+    hit_ndjson_files = discover_hit_ndjson_files(hit_ndjson_paths or [])
 
     unreadable_files: list[str] = []
+    unreadable_hit_ndjson_files: list[str] = []
     zero_hit_files: list[str] = []
     hit_bearing_files: list[str] = []
     candidate_lists: list[list[dict[str, Any]]] = []
@@ -93,6 +115,59 @@ def radio_real_corpus_summary(
             hit_rows_for_scorer.append(_scorer_features(row, rows))
         candidate_lists.append(per_file_candidates)
 
+    hit_ndjson_row_count = 0
+    for hit_ndjson_file in hit_ndjson_files:
+        try:
+            rows = _load_hit_ndjson_rows(
+                hit_ndjson_file,
+                remaining_rows=(
+                    None
+                    if max_hit_rows is None
+                    else max(0, max_hit_rows - hit_ndjson_row_count)
+                ),
+            )
+        except Exception as exc:  # pragma: no cover - defensive local payload report
+            unreadable_hit_ndjson_files.append(f"{hit_ndjson_file}: {exc}")
+            continue
+        if not rows:
+            continue
+        per_file_candidates = []
+        for index, row in enumerate(rows, start=1):
+            target_name = str(
+                row.get("target_id")
+                or row.get("target_name")
+                or row.get("source_name")
+                or hit_ndjson_file.stem
+            )
+            unique_targets.add(target_name)
+            frequency_hz = _float(row, "frequency_hz")
+            drift = _float(row, "drift_rate_hz_per_sec")
+            normalized_drift = _float(
+                row,
+                "normalized_drift_hz_s_per_ghz",
+                _normalised_drift(drift, frequency_hz),
+            )
+            if frequency_hz > 0:
+                drift_rows += 1
+                max_abs_normalized_drift = max(max_abs_normalized_drift, abs(normalized_drift))
+                if abs(normalized_drift) <= 0.44:
+                    earth_consistent_rows += 1
+            enriched = {
+                **row,
+                "candidate_id": str(
+                    row.get("candidate_id") or f"{hit_ndjson_file.stem}:{index}"
+                ),
+                "target_name": target_name,
+                "normalized_drift_hz_s_per_ghz": normalized_drift,
+                "is_earth_drift_consistent": abs(normalized_drift) <= 0.44,
+            }
+            per_file_candidates.append(enriched)
+            hit_rows_for_scorer.append(_scorer_features_from_normalized_hit(row))
+        candidate_lists.append(per_file_candidates)
+        hit_ndjson_row_count += len(rows)
+        if max_hit_rows is not None and hit_ndjson_row_count >= max_hit_rows:
+            break
+
     cross_target_flags = flag_cross_target_rfi(candidate_lists, freq_tolerance_hz)
     scorer_summary = _score_with_local_model(
         hit_rows_for_scorer,
@@ -108,12 +183,17 @@ def radio_real_corpus_summary(
     return {
         "schema_version": RADIO_REAL_CORPUS_SCHEMA_VERSION,
         "disclaimer": RADIO_REAL_CORPUS_DISCLAIMER,
-        "ok": not unreadable_files,
+        "ok": not unreadable_files and not unreadable_hit_ndjson_files,
         "dat_file_count": len(dat_files),
+        "hit_ndjson_file_count": len(hit_ndjson_files),
+        "hit_ndjson_row_count": hit_ndjson_row_count,
+        "hit_ndjson_row_limit": max_hit_rows,
         "hit_bearing_dat_file_count": len(hit_bearing_files),
         "zero_hit_dat_file_count": len(zero_hit_files),
         "unreadable_dat_file_count": len(unreadable_files),
         "unreadable_dat_files": unreadable_files,
+        "unreadable_hit_ndjson_file_count": len(unreadable_hit_ndjson_files),
+        "unreadable_hit_ndjson_files": unreadable_hit_ndjson_files,
         "hit_count": hit_count,
         "unique_target_count": len(unique_targets),
         "hit_bearing_target_count": len(unique_targets),
@@ -136,6 +216,7 @@ def radio_real_corpus_summary(
         },
         "semisupervised_scorer": scorer_summary,
         "sample_dat_files": [str(path) for path in dat_files[:10]],
+        "sample_hit_ndjson_files": [str(path) for path in hit_ndjson_files[:10]],
         "sample_hit_bearing_dat_files": hit_bearing_files[:10],
         "sample_zero_hit_dat_files": zero_hit_files[:10],
     }
@@ -231,6 +312,56 @@ def _score_with_local_model(
     }
 
 
+def _load_hit_ndjson_rows(
+    path: Path,
+    *,
+    remaining_rows: int | None,
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    with path.open("r", encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, start=1):
+            if remaining_rows is not None and len(rows) >= remaining_rows:
+                break
+            stripped = line.strip()
+            if not stripped:
+                continue
+            raw = json.loads(stripped)
+            if not isinstance(raw, dict):
+                raise ValueError(f"{path}:{line_number}: NDJSON row must be an object")
+            if _float(raw, "frequency_hz") <= 0:
+                raise ValueError(f"{path}:{line_number}: missing positive frequency_hz")
+            rows.append(raw)
+    return rows
+
+
+def _scorer_features_from_normalized_hit(row: dict[str, Any]) -> dict[str, Any]:
+    frequency_hz = _float(row, "frequency_hz")
+    drift = _float(row, "drift_rate_hz_per_sec")
+    normalized_drift = _float(
+        row,
+        "normalized_drift_hz_s_per_ghz",
+        _normalised_drift(drift, frequency_hz),
+    )
+    return {
+        "snr": _float(row, "snr"),
+        "drift_rate_hz_per_sec": drift,
+        "frequency_hz": frequency_hz,
+        "bandwidth_hz": _float(row, "bandwidth_hz"),
+        "normalized_drift_hz_s_per_ghz": normalized_drift,
+        "relative_snr": _float(row, "relative_snr", 1.0),
+        "on_off_consistency_score": _float(row, "on_off_consistency_score"),
+        "is_earth_drift_consistent": _float(
+            row,
+            "is_earth_drift_consistent",
+            1.0 if abs(normalized_drift) <= 0.44 else 0.0,
+        ),
+        "rfi_band_overlap_score": _float(row, "rfi_band_overlap_score"),
+        "frequency_persistence_score": _float(row, "frequency_persistence_score"),
+        "on_hit_count": _float(row, "on_hit_count", 1.0),
+        "off_hit_count": _float(row, "off_hit_count"),
+    }
+
+
 def _scorer_features(row: dict[str, Any], all_rows: list[dict[str, Any]]) -> dict[str, Any]:
     frequency_hz = _float(row, "frequency_hz")
     drift = _float(row, "drift_rate_hz_per_sec")
@@ -279,8 +410,8 @@ def _median_positive_snr(rows: list[dict[str, Any]]) -> float:
     return (values[midpoint - 1] + values[midpoint]) / 2.0
 
 
-def _float(row: dict[str, Any], key: str) -> float:
+def _float(row: dict[str, Any], key: str, default: float = 0.0) -> float:
     try:
-        return float(row.get(key, 0.0) or 0.0)
+        return float(row.get(key, default) or default)
     except (TypeError, ValueError):
-        return 0.0
+        return default
