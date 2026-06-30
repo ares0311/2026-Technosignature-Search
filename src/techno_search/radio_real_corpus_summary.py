@@ -374,6 +374,13 @@ def _candidate_review_summary(
                 "candidate_id": candidate_id,
                 "target_name": str(candidate.get("target_name", "")),
                 "source_artifact": str(candidate.get("source_artifact", "")),
+                "backend_host": str(candidate.get("backend_host", "")),
+                "beam": _int(candidate, "beam", default=-1),
+                "coarse_channel": _int(candidate, "coarse_channel", default=-1),
+                "tstart_mjd": _float(candidate, "tstart_mjd"),
+                "ra_deg": _float(candidate, "ra_deg"),
+                "dec_deg": _float(candidate, "dec_deg"),
+                "corpus_source": str(candidate.get("corpus_source", "")),
                 "frequency_hz": _float(candidate, "frequency_hz"),
                 "snr": _float(candidate, "snr"),
                 "drift_rate_hz_per_sec": _float(candidate, "drift_rate_hz_per_sec"),
@@ -471,6 +478,12 @@ def _review_target_groups(
         source_artifacts = sorted(
             {str(row["source_artifact"]) for row in rows if str(row["source_artifact"])}
         )
+        backend_hosts = _sorted_nonempty_strings(rows, "backend_host")
+        beams = _sorted_nonnegative_ints(rows, "beam")
+        coarse_channels = _sorted_nonnegative_ints(rows, "coarse_channel")
+        tstarts = _positive_floats(rows, "tstart_mjd")
+        ra_values = _positive_floats(rows, "ra_deg")
+        dec_values = _finite_floats(rows, "dec_deg")
         summaries.append(
             {
                 "target_name": target_name,
@@ -484,6 +497,20 @@ def _review_target_groups(
                 "max_frequency_hz": max(frequencies),
                 "source_artifact_count": len(source_artifacts),
                 "sample_source_artifacts": source_artifacts[:3],
+                "source_context": {
+                    "beam_count": len(beams),
+                    "beams": beams[:10],
+                    "backend_host_count": len(backend_hosts),
+                    "backend_hosts": backend_hosts[:10],
+                    "coarse_channel_count": len(coarse_channels),
+                    "coarse_channels": coarse_channels[:10],
+                    "min_tstart_mjd": min(tstarts) if tstarts else None,
+                    "max_tstart_mjd": max(tstarts) if tstarts else None,
+                    "min_ra_deg": min(ra_values) if ra_values else None,
+                    "max_ra_deg": max(ra_values) if ra_values else None,
+                    "min_dec_deg": min(dec_values) if dec_values else None,
+                    "max_dec_deg": max(dec_values) if dec_values else None,
+                },
             }
         )
 
@@ -642,3 +669,38 @@ def _float(row: dict[str, Any], key: str, default: float = 0.0) -> float:
         return float(row.get(key, default) or default)
     except (TypeError, ValueError):
         return default
+
+
+def _int(row: dict[str, Any], key: str, *, default: int = 0) -> int:
+    try:
+        return int(row.get(key, default))
+    except (TypeError, ValueError):
+        return default
+
+
+def _sorted_nonempty_strings(rows: list[dict[str, Any]], key: str) -> list[str]:
+    return sorted({str(row.get(key, "")) for row in rows if str(row.get(key, ""))})
+
+
+def _sorted_nonnegative_ints(rows: list[dict[str, Any]], key: str) -> list[int]:
+    values: set[int] = set()
+    for row in rows:
+        value = _int(row, key, default=-1)
+        if value >= 0:
+            values.add(value)
+    return sorted(values)
+
+
+def _positive_floats(rows: list[dict[str, Any]], key: str) -> list[float]:
+    return [value for value in _finite_floats(rows, key) if value > 0]
+
+
+def _finite_floats(rows: list[dict[str, Any]], key: str) -> list[float]:
+    values: list[float] = []
+    for row in rows:
+        if key not in row or row.get(key) in {None, ""}:
+            continue
+        value = _float(row, key)
+        if value == value and value not in {float("inf"), float("-inf")}:
+            values.append(value)
+    return values

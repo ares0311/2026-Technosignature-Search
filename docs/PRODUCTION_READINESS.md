@@ -265,13 +265,14 @@ survivors across 5 survivor targets, and `phase1_radio_validation_ready: true`.
 The target-level summary shows 1,065 of those survivor rows concentrated on
 `Atlas` (`dominant_target_fraction: 0.9934701492537313`), so
 `source_context_review_needed` is true before any escalation. The Atlas survivor
-group spans 36 source artifacts, so the next review question is source and
-instrument context rather than a single-file artifact. Known control targets are
-preserved as positive controls, and stationary-frequency rows are separated from
-nonstationary review survivors rather than promoted as follow-up candidates.
-These summaries are local validation evidence only; they are not detections,
-discoveries, expert review, external validation, or external-submission
-approval.
+group spans 36 source artifacts, 4 backend hosts, 58 coarse channels, and beam 0
+only, with a single RA/DEC and MJD range 61006.0897-61006.2975, so the next
+review question is source and instrumental context rather than a single-file
+artifact. Known control targets are preserved as positive controls, and
+stationary-frequency rows are separated from nonstationary review survivors
+rather than promoted as follow-up candidates. These summaries are local
+validation evidence only; they are not detections, discoveries, expert review,
+external validation, or external-submission approval.
 
 **Photometry, IR, spectroscopy:** Not implemented. No `lightkurve`, no WISE SED
 fitting, no JWST spectral ingest.
