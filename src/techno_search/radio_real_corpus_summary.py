@@ -59,6 +59,7 @@ def radio_real_corpus_summary(
     semisupervised_model_path: Path | None = None,
     max_files: int | None = None,
     max_hit_rows: int | None = None,
+    candidate_sample_limit: int = 20,
     freq_tolerance_hz: float = DEFAULT_RFI_TOLERANCE_HZ,
 ) -> dict[str, Any]:
     """Summarize local real radio hit evidence without writing payloads."""
@@ -72,6 +73,7 @@ def radio_real_corpus_summary(
     zero_hit_files: list[str] = []
     hit_bearing_files: list[str] = []
     candidate_lists: list[list[dict[str, Any]]] = []
+    review_candidates: list[dict[str, Any]] = []
     hit_rows_for_scorer: list[dict[str, Any]] = []
     drift_rows = 0
     earth_consistent_rows = 0
@@ -112,6 +114,7 @@ def radio_real_corpus_summary(
                 "is_earth_drift_consistent": abs(normalized_drift) <= 0.44,
             }
             per_file_candidates.append(enriched)
+            review_candidates.append(enriched)
             hit_rows_for_scorer.append(_scorer_features(row, rows))
         candidate_lists.append(per_file_candidates)
 
@@ -162,6 +165,7 @@ def radio_real_corpus_summary(
                 "is_earth_drift_consistent": abs(normalized_drift) <= 0.44,
             }
             per_file_candidates.append(enriched)
+            review_candidates.append(enriched)
             hit_rows_for_scorer.append(_scorer_features_from_normalized_hit(row))
         candidate_lists.append(per_file_candidates)
         hit_ndjson_row_count += len(rows)
@@ -169,7 +173,7 @@ def radio_real_corpus_summary(
             break
 
     cross_target_flags = flag_cross_target_rfi(candidate_lists, freq_tolerance_hz)
-    scorer_summary = _score_with_local_model(
+    scorer_summary, anomaly_scores = _score_with_local_model(
         hit_rows_for_scorer,
         semisupervised_model_path=semisupervised_model_path,
     )
@@ -215,6 +219,12 @@ def radio_real_corpus_summary(
             "validation_ready": validation_readiness["cross_target_rfi_validation_ready"],
         },
         "semisupervised_scorer": scorer_summary,
+        "candidate_review": _candidate_review_summary(
+            review_candidates,
+            cross_target_flags=cross_target_flags,
+            anomaly_scores=anomaly_scores,
+            sample_limit=candidate_sample_limit,
+        ),
         "sample_dat_files": [str(path) for path in dat_files[:10]],
         "sample_hit_ndjson_files": [str(path) for path in hit_ndjson_files[:10]],
         "sample_hit_bearing_dat_files": hit_bearing_files[:10],
@@ -264,7 +274,7 @@ def _score_with_local_model(
     hit_rows: list[dict[str, Any]],
     *,
     semisupervised_model_path: Path | None,
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], list[float | None]]:
     if semisupervised_model_path is None:
         semisupervised_model_path = (
             Path(__file__).resolve().parents[2]
@@ -274,20 +284,26 @@ def _score_with_local_model(
         )
     model_path = Path(semisupervised_model_path)
     if not model_path.exists():
-        return {
-            "model_path": str(model_path),
-            "model_exists": False,
-            "model_used": False,
-            "scored_hit_count": 0,
-        }
+        return (
+            {
+                "model_path": str(model_path),
+                "model_exists": False,
+                "model_used": False,
+                "scored_hit_count": 0,
+            },
+            [None] * len(hit_rows),
+        )
     if not hit_rows:
-        return {
-            "model_path": str(model_path),
-            "model_exists": True,
-            "model_used": False,
-            "scored_hit_count": 0,
-            "limitation": "No hit-bearing rows were available to score.",
-        }
+        return (
+            {
+                "model_path": str(model_path),
+                "model_exists": True,
+                "model_used": False,
+                "scored_hit_count": 0,
+                "limitation": "No hit-bearing rows were available to score.",
+            },
+            [],
+        )
 
     from techno_search.semisupervised_scorer import load_fitted_scorer_joblib
 
@@ -295,21 +311,122 @@ def _score_with_local_model(
         scorer = load_fitted_scorer_joblib(model_path)
         scores = scorer.score_hits(hit_rows)
     except Exception as exc:  # noqa: BLE001
-        return {
+        return (
+            {
+                "model_path": str(model_path),
+                "model_exists": True,
+                "model_used": False,
+                "scored_hit_count": 0,
+                "error": str(exc),
+            },
+            [None] * len(hit_rows),
+        )
+    return (
+        {
             "model_path": str(model_path),
             "model_exists": True,
-            "model_used": False,
-            "scored_hit_count": 0,
-            "error": str(exc),
-        }
+            "model_used": True,
+            "scored_hit_count": len(scores),
+            "max_anomaly_score": max(scores),
+            "mean_anomaly_score": sum(scores) / len(scores),
+        },
+        list(scores),
+    )
+
+
+def _candidate_review_summary(
+    candidates: list[dict[str, Any]],
+    *,
+    cross_target_flags: dict[str, dict[str, Any]],
+    anomaly_scores: list[float | None],
+    sample_limit: int,
+) -> dict[str, Any]:
+    reviewed: list[dict[str, Any]] = []
+    drift_inconsistent_count = 0
+    follow_up_candidate_count = 0
+    known_control_candidate_count = 0
+    score_values = list(anomaly_scores)
+    if len(score_values) < len(candidates):
+        score_values.extend([None] * (len(candidates) - len(score_values)))
+
+    for candidate, anomaly_score in zip(candidates, score_values, strict=False):
+        candidate_id = str(candidate.get("candidate_id", ""))
+        rfi_flag = cross_target_flags.get(candidate_id)
+        known_control = _is_known_control_candidate(candidate)
+        normalized_drift = _float(candidate, "normalized_drift_hz_s_per_ghz")
+        drift_consistent = bool(candidate.get("is_earth_drift_consistent", False))
+        if not drift_consistent:
+            drift_inconsistent_count += 1
+        if known_control:
+            known_control_candidate_count += 1
+        survives_current_filters = rfi_flag is None and drift_consistent and not known_control
+        if survives_current_filters:
+            follow_up_candidate_count += 1
+        reviewed.append(
+            {
+                "candidate_id": candidate_id,
+                "target_name": str(candidate.get("target_name", "")),
+                "source_artifact": str(candidate.get("source_artifact", "")),
+                "frequency_hz": _float(candidate, "frequency_hz"),
+                "snr": _float(candidate, "snr"),
+                "drift_rate_hz_per_sec": _float(candidate, "drift_rate_hz_per_sec"),
+                "normalized_drift_hz_s_per_ghz": normalized_drift,
+                "is_earth_drift_consistent": drift_consistent,
+                "known_control_target": known_control,
+                "cross_target_rfi_flagged": rfi_flag is not None,
+                "cross_target_match_count": int(rfi_flag.get("match_count", 0))
+                if rfi_flag is not None
+                else 0,
+                "semisupervised_anomaly_score": anomaly_score,
+                "survives_current_automated_filters": survives_current_filters,
+                "review_label": (
+                    "needs_follow_up_review"
+                    if survives_current_filters
+                    else (
+                        "known_spacecraft_or_calibration_control"
+                        if known_control
+                        else (
+                            "likely_cross_target_rfi"
+                            if rfi_flag is not None
+                            else "drift_inconsistent_review"
+                        )
+                    )
+                ),
+            }
+        )
+
+    ranked = sorted(
+        reviewed,
+        key=lambda row: (
+            1 if row["survives_current_automated_filters"] else 0,
+            float(row["semisupervised_anomaly_score"] or 0.0),
+            float(row["snr"]),
+        ),
+        reverse=True,
+    )
+    limited_sample = max(0, sample_limit)
     return {
-        "model_path": str(model_path),
-        "model_exists": True,
-        "model_used": True,
-        "scored_hit_count": len(scores),
-        "max_anomaly_score": max(scores),
-        "mean_anomaly_score": sum(scores) / len(scores),
+        "reviewed_candidate_count": len(reviewed),
+        "follow_up_candidate_count": follow_up_candidate_count,
+        "rfi_rejected_candidate_count": len(cross_target_flags),
+        "drift_inconsistent_candidate_count": drift_inconsistent_count,
+        "known_control_candidate_count": known_control_candidate_count,
+        "sample_limit": limited_sample,
+        "top_review_candidates": ranked[:limited_sample],
+        "claim_guardrail": (
+            "Rows labeled needs_follow_up_review are automated triage survivors "
+            "only, not detections, discoveries, expert review, external validation, "
+            "or external-submission approval."
+        ),
     }
+
+
+def _is_known_control_candidate(candidate: dict[str, Any]) -> bool:
+    joined = " ".join(
+        str(candidate.get(key, "")).lower()
+        for key in ("candidate_id", "target_name", "source_artifact", "source_name")
+    )
+    return "voyager" in joined
 
 
 def _load_hit_ndjson_rows(

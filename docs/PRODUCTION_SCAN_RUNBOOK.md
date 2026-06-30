@@ -115,7 +115,7 @@ These CLI commands implement the runbook rules:
 | `techno-search scan-history-summary [--history-file H] [--dat-dir D]` | Show all prior scans; count pending targets |
 | `techno-search prod-scan INPUT_DIR OUTPUT_DIR [--track radio] [--force]` | Single-run batch scan with Rich spinner (does not use history) |
 | `techno-search run-pipeline FILE TRACK OUTPUT_DIR [--semisupervised-model PATH]` | Process one input file through the pipeline; radio packets use the default local fitted scorer model when present |
-| `techno-search radio-real-corpus-summary --dat-dir PATH [--dat-dir PATH2] [--hit-ndjson PATH]` | Summarize local real `.dat` and normalized hit-NDJSON evidence for drift, cross-target RFI recurrence, and fitted scorer integration |
+| `techno-search radio-real-corpus-summary --dat-dir PATH [--dat-dir PATH2] [--hit-ndjson PATH] [--candidate-sample-limit N]` | Summarize local real `.dat` and normalized hit-NDJSON evidence for drift, cross-target RFI recurrence, fitted scorer integration, and bounded candidate-review survivors |
 | `techno-search validate-all` | Must pass before any scan proceeds |
 
 ---
@@ -218,7 +218,8 @@ caffeinate -i .venv/bin/techno-search radio-real-corpus-summary \
   --dat-dir data/extended_corpus \
   --dat-dir data/bl_hits \
   --hit-ndjson data/meerkat_hits/meerkat_normalised_200000.ndjson \
-  --max-hit-rows 5000
+  --max-hit-rows 5000 \
+  --candidate-sample-limit 5
 ```
 
 The command reads ignored local `.dat` payloads, the verified normalized
@@ -228,7 +229,12 @@ files. Treat its output as local validation evidence only. If the
 useful negative evidence but has only one hit-bearing target, so cross-target
 RFI recurrence validation is expected to remain blocked.
 Use a bounded `--max-hit-rows` value for routine operator checks; omit it only
-for an overnight/full-corpus review.
+for an overnight/full-corpus review. Use `--candidate-sample-limit 0` for
+counts-only overnight checks, or a small value such as 5 to inspect the top
+automated review survivors. Rows labeled `needs_follow_up_review` are triage
+survivors only, not detections or external-submission candidates. Known control
+targets such as Voyager are counted separately and are not promoted as
+follow-up candidates.
 
 Before expanding `data/extended_corpus/`, verify current BL Open Data
 availability from the committed manifest. This command queries the official

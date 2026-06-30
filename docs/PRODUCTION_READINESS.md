@@ -255,10 +255,13 @@ validation evidence. `radio-real-corpus-summary` now also accepts
 `--max-hit-rows` so the verified real MeerKAT BLUSE hit corpus can exercise
 cross-target RFI recurrence, drift-evidence, and fitted-scorer integration
 without redistributing or committing the payload. A bounded 5,000-row local
-review reported 65 hit-bearing targets, 4,954 cross-target RFI recurrence flags,
-and `phase1_radio_validation_ready: true`. These summaries are local validation
-evidence only; they are not detections, discoveries, expert review, external
-validation, or external-submission approval.
+review with `--candidate-sample-limit 5` reviewed 5,003 candidate rows, reported
+65 hit-bearing targets, 4,954 cross-target RFI recurrence flags, 3 known Voyager
+control rows, 46 automated review survivors, and
+`phase1_radio_validation_ready: true`. Known control targets are preserved as
+positive controls and are not promoted as follow-up candidates. These summaries
+are local validation evidence only; they are not detections, discoveries, expert
+review, external validation, or external-submission approval.
 
 **Photometry, IR, spectroscopy:** Not implemented. No `lightkurve`, no WISE SED
 fitting, no JWST spectral ingest.

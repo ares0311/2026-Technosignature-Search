@@ -165,6 +165,61 @@ def test_radio_real_corpus_summary_includes_real_hit_ndjson(tmp_path: Path) -> N
     assert result["validation_readiness"]["phase1_radio_validation_ready"] is True
     assert result["cross_target_rfi"]["flagged_candidate_count"] == 2
     assert result["semisupervised_scorer"]["model_used"] is True
+    assert result["candidate_review"]["reviewed_candidate_count"] == 2
+    assert result["candidate_review"]["follow_up_candidate_count"] == 0
+    assert result["candidate_review"]["rfi_rejected_candidate_count"] == 2
+    assert result["candidate_review"]["top_review_candidates"][0]["review_label"] == (
+        "likely_cross_target_rfi"
+    )
+
+
+def test_radio_real_corpus_summary_reports_review_survivor(tmp_path: Path) -> None:
+    dat_dir = tmp_path / "dat"
+    dat_dir.mkdir()
+    _write_zero_hit_dat(dat_dir / "zero_hit.dat", source="ZERO_HIT_TARGET")
+    hit_ndjson = tmp_path / "meerkat_normalised_sample.ndjson"
+    _write_hit_ndjson(
+        hit_ndjson,
+        [
+            _normalized_hit(target_id="MKT_A", frequency_hz=1_420_000_000.0, drift=0.1),
+            _normalized_hit(target_id="MKT_B", frequency_hz=1_421_000_000.0, drift=0.2),
+        ],
+    )
+
+    result = radio_real_corpus_summary(
+        [dat_dir],
+        hit_ndjson_paths=[hit_ndjson],
+        semisupervised_model_path=tmp_path / "missing_model.joblib",
+        candidate_sample_limit=1,
+    )
+
+    assert result["cross_target_rfi"]["flagged_candidate_count"] == 0
+    assert result["candidate_review"]["reviewed_candidate_count"] == 2
+    assert result["candidate_review"]["follow_up_candidate_count"] == 2
+    assert result["candidate_review"]["sample_limit"] == 1
+    assert len(result["candidate_review"]["top_review_candidates"]) == 1
+    candidate = result["candidate_review"]["top_review_candidates"][0]
+    assert candidate["survives_current_automated_filters"] is True
+    assert candidate["review_label"] == "needs_follow_up_review"
+    assert "not detections" in result["candidate_review"]["claim_guardrail"]
+
+
+def test_radio_real_corpus_summary_keeps_voyager_as_control(tmp_path: Path) -> None:
+    dat_dir = tmp_path / "dat"
+    dat_dir.mkdir()
+    _write_dat(dat_dir / "voyager1_hits.dat", source="Voyager1", frequency_mhz=8419.0, drift=-0.3)
+
+    result = radio_real_corpus_summary(
+        [dat_dir],
+        semisupervised_model_path=tmp_path / "missing_model.joblib",
+    )
+
+    assert result["candidate_review"]["known_control_candidate_count"] == 1
+    assert result["candidate_review"]["follow_up_candidate_count"] == 0
+    candidate = result["candidate_review"]["top_review_candidates"][0]
+    assert candidate["known_control_target"] is True
+    assert candidate["survives_current_automated_filters"] is False
+    assert candidate["review_label"] == "known_spacecraft_or_calibration_control"
 
 
 def test_cli_radio_real_corpus_summary_outputs_json(tmp_path: Path, capsys) -> None:
@@ -219,6 +274,8 @@ def test_cli_radio_real_corpus_summary_accepts_hit_ndjson(tmp_path: Path, capsys
             str(hit_ndjson),
             "--max-hit-rows",
             "2",
+            "--candidate-sample-limit",
+            "0",
             "--semisupervised-model",
             str(tmp_path / "missing_model.joblib"),
         ]
@@ -231,3 +288,5 @@ def test_cli_radio_real_corpus_summary_accepts_hit_ndjson(tmp_path: Path, capsys
     assert result["hit_ndjson_row_limit"] == 2
     assert result["hit_bearing_target_count"] == 2
     assert result["validation_readiness"]["cross_target_rfi_validation_ready"] is True
+    assert result["candidate_review"]["sample_limit"] == 0
+    assert result["candidate_review"]["top_review_candidates"] == []
