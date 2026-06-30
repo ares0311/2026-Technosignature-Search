@@ -31,7 +31,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OUT_DIR="${REPO_ROOT}/data/extended_corpus"
+OUT_DIR="${TECHNO_EXTENDED_CORPUS_OUT_DIR:-${REPO_ROOT}/data/extended_corpus}"
 VENV_PYTHON="${TECHNO_EXTENDED_CORPUS_PYTHON:-${REPO_ROOT}/.venv/bin/python}"
 MANIFEST="${REPO_ROOT}/data/target_sample_manifest.json"
 MAX_TARGETS="${TECHNO_EXTENDED_CORPUS_MAX_TARGETS:-0}"
@@ -65,8 +65,12 @@ Downloads current Breakthrough Open Data HDF5 evidence inputs into:
   data/extended_corpus/<target>/
 
 Environment:
-  TECHNO_EXTENDED_CORPUS_MAX_TARGETS=N  Limit URL-available targets processed;
-                                        0 means all available manifest targets.
+  TECHNO_EXTENDED_CORPUS_MAX_TARGETS=N  Limit new URL-available downloads;
+                                        existing HDF5 evidence is reused without
+                                        consuming the limit. 0 means all
+                                        available manifest targets.
+  TECHNO_EXTENDED_CORPUS_OUT_DIR=PATH   Override output directory for tests or
+                                        isolated local runs.
 
 Options:
   --manifest PATH  Stratified target manifest JSON. Default:
@@ -223,6 +227,16 @@ download_hdf5() {
   log "[OK]   Downloaded: ${out_path} (${size})"
 }
 
+target_hdf5_exists() {
+  local name="$1"
+  local url="$2"
+  local target_dir="${OUT_DIR}/${name}"
+  local filename
+  filename="$(basename "${url}")"
+
+  [[ -f "${target_dir}/${filename}" ]]
+}
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -230,7 +244,7 @@ download_hdf5() {
 log "[START] BL extended corpus download"
 log "[INFO]  Output directory: ${OUT_DIR}"
 log "[INFO]  Manifest: ${MANIFEST}"
-log "[INFO]  Target limit: ${MAX_TARGETS:-0} URL-available target(s) (0 means all available targets)"
+log "[INFO]  Target limit: ${MAX_TARGETS:-0} new URL-available download(s) (0 means all available targets)"
 log "[INFO]  Dry run: ${DRY_RUN}"
 log "[INFO]  Discover only: ${DISCOVER_ONLY}"
 if [[ -n "${AVAILABILITY_OUTPUT}" ]]; then
@@ -253,11 +267,12 @@ fi
 checked=0
 total=${#TARGETS[@]}
 downloaded=0
+reused=0
 skipped=0
 available=0
 
 for name in "${TARGETS[@]}"; do
-  if [[ "${MAX_TARGETS}" != "0" && "${available}" -ge "${MAX_TARGETS}" ]]; then
+  if [[ "${DISCOVER_ONLY}" -eq 1 && "${MAX_TARGETS}" != "0" && "${available}" -ge "${MAX_TARGETS}" ]]; then
     log "[INFO]  URL-available target limit reached (${MAX_TARGETS}); stopping early"
     break
   fi
@@ -276,6 +291,15 @@ for name in "${TARGETS[@]}"; do
   if [[ "${DISCOVER_ONLY}" -eq 1 ]]; then
     record_available_url "${name}" "${url}"
     continue
+  fi
+  if target_hdf5_exists "${name}" "${url}"; then
+    log "[SKIP] Reusing existing HDF5 evidence for ${name}; does not consume new-download limit"
+    reused=$((reused + 1))
+    continue
+  fi
+  if [[ "${MAX_TARGETS}" != "0" && "${downloaded}" -ge "${MAX_TARGETS}" ]]; then
+    log "[INFO]  New-download target limit reached (${MAX_TARGETS}); stopping early"
+    break
   fi
   if download_hdf5 "${name}" "${url}"; then
     downloaded=$((downloaded + 1))
@@ -302,13 +326,14 @@ if [[ "${DISCOVER_ONLY}" -eq 1 ]]; then
 fi
 
 log "[DONE]  Extended corpus download complete"
-log "[INFO]  Successful target downloads/reuses: ${downloaded}"
+log "[INFO]  Successful new downloads: ${downloaded}"
+log "[INFO]  Reused existing HDF5 targets: ${reused}"
 log "[INFO]  URL-available HDF5 targets processed: ${available}"
 log "[INFO]  Skipped unavailable or failed targets: ${skipped}"
 log "[INFO]  Files in ${OUT_DIR}:"
 find "${OUT_DIR}" -name "*.h5" -exec du -sh {} \; 2>/dev/null || log "[INFO]  (none downloaded)"
 
-if [[ "${downloaded}" -eq 0 ]]; then
+if [[ "$((downloaded + reused))" -eq 0 ]]; then
   log "[ERROR] No held-out evidence files were downloaded or reused."
   log "[ERROR] This command did not add usable extended-corpus evidence; empty directories are not evidence."
   exit 1

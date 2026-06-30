@@ -29,7 +29,7 @@ def test_extended_corpus_downloader_fails_closed_on_zero_evidence() -> None:
     script = _script_text()
 
     assert "downloaded=0" in script
-    assert 'if [[ "${downloaded}" -eq 0 ]]' in script
+    assert 'if [[ "$((downloaded + reused))" -eq 0 ]]' in script
     assert "empty directories are not evidence" in script
     assert "exit 1" in script
 
@@ -55,9 +55,10 @@ def test_extended_corpus_downloader_limits_url_available_targets() -> None:
     script = _script_text()
 
     assert "URL-available target limit reached" in script
+    assert "New-download target limit reached" in script
     assert 'if ! url="$(discover_hdf5_url "${name}")"; then' in script
     assert 'available=$((available + 1))' in script
-    assert '"${available}" -ge "${MAX_TARGETS}"' in script
+    assert '"${downloaded}" -ge "${MAX_TARGETS}"' in script
 
 
 def test_extended_corpus_downloader_reads_stratified_manifest() -> None:
@@ -157,3 +158,93 @@ esac
         "HIP222\thttps://bldata.berkeley.edu/test/HIP222.gpuspec.0002.h5",
         "HIP333\thttps://bldata.berkeley.edu/test/HIP333.gpuspec.0002.h5",
     ]
+
+
+def test_extended_corpus_download_limit_skips_existing_hdf5_targets(
+    tmp_path: Path,
+) -> None:
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "targets": [
+                    {"hip": "111"},
+                    {"hip": "222"},
+                    {"hip": "333"},
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    out_dir = tmp_path / "extended_corpus"
+    existing_dir = out_dir / "HIP111"
+    existing_dir.mkdir(parents=True)
+    existing_file = existing_dir / "HIP111.gpuspec.0002.h5"
+    existing_file.write_text("existing evidence\n", encoding="utf-8")
+
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    fake_curl = fake_bin / "curl"
+    fake_curl.write_text(
+        """#!/usr/bin/env bash
+set -euo pipefail
+url="${@: -1}"
+if [[ "${url}" == *breakthroughinitiatives.org* ]]; then
+  case "${url}" in
+    *target=HIP111*) printf 'https://bldata.berkeley.edu/test/HIP111.gpuspec.0002.h5' ;;
+    *target=HIP222*) printf 'https://bldata.berkeley.edu/test/HIP222.gpuspec.0002.h5' ;;
+    *target=HIP333*) printf 'https://bldata.berkeley.edu/test/HIP333.gpuspec.0002.h5' ;;
+    *) printf 'unexpected-discovery-url=%s' "${url}" >&2; exit 22 ;;
+  esac
+  exit 0
+fi
+out_path=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --output) out_path="$2"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+if [[ "${url}" == *HIP111.gpuspec.0002.h5 ]]; then
+  printf 'unexpected redownload of HIP111' >&2
+  exit 44
+fi
+if [[ -z "${out_path}" ]]; then
+  printf 'missing --output for %s' "${url}" >&2
+  exit 45
+fi
+printf 'downloaded %s\n' "${url}" > "${out_path}"
+""",
+        encoding="utf-8",
+    )
+    fake_curl.chmod(fake_curl.stat().st_mode | stat.S_IXUSR)
+
+    env = os.environ.copy()
+    env["PATH"] = f"{fake_bin}{os.pathsep}{env['PATH']}"
+    env["TECHNO_EXTENDED_CORPUS_MAX_TARGETS"] = "1"
+    env["TECHNO_EXTENDED_CORPUS_OUT_DIR"] = str(out_dir)
+    env["TECHNO_EXTENDED_CORPUS_PYTHON"] = sys.executable
+
+    result = subprocess.run(
+        [
+            "bash",
+            str(SCRIPT_PATH),
+            "--manifest",
+            str(manifest),
+        ],
+        check=True,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert existing_file.read_text(encoding="utf-8") == "existing evidence\n"
+    assert not (out_dir / "HIP333" / "HIP333.gpuspec.0002.h5").exists()
+    assert (
+        out_dir / "HIP222" / "HIP222.gpuspec.0002.h5"
+    ).read_text(encoding="utf-8").startswith(
+        "downloaded https://bldata.berkeley.edu/test/HIP222"
+    )
+    assert "Reused existing HDF5 targets: 1" in result.stderr
+    assert "Successful new downloads: 1" in result.stderr
+    assert "New-download target limit reached (1)" in result.stderr
