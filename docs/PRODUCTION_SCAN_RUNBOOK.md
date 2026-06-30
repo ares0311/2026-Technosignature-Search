@@ -236,7 +236,9 @@ to inspect the top automated review survivors plus a bounded rejected/control
 sample. Rows labeled `needs_follow_up_review` are triage survivors only, not
 detections or external-submission candidates. Known control targets such as
 Voyager and stationary-frequency rows are counted separately and are not
-promoted as follow-up candidates.
+promoted as follow-up candidates. Inspect `candidate_review.top_review_targets`
+before individual rows; a survivor set concentrated on one target is a
+source-context and instrumental-vetting task, not a discovery claim.
 
 Before expanding `data/extended_corpus/`, verify current BL Open Data
 availability from the committed manifest. This command queries the official

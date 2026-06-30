@@ -426,12 +426,16 @@ def _candidate_review_summary(
     return {
         "reviewed_candidate_count": len(reviewed),
         "follow_up_candidate_count": follow_up_candidate_count,
+        "follow_up_target_count": len(
+            {row["target_name"] for row in ranked_survivors}
+        ),
         "rfi_rejected_candidate_count": len(cross_target_flags),
         "drift_inconsistent_candidate_count": drift_inconsistent_count,
         "stationary_drift_candidate_count": stationary_drift_candidate_count,
         "known_control_candidate_count": known_control_candidate_count,
         "sample_limit": limited_sample,
         "top_review_candidates": ranked_survivors[:limited_sample],
+        "top_review_targets": _review_target_groups(ranked_survivors, limited_sample),
         "top_rejected_or_control_candidates": ranked_rejected_or_controls[:limited_sample],
         "claim_guardrail": (
             "Rows labeled needs_follow_up_review are automated triage survivors "
@@ -439,6 +443,56 @@ def _candidate_review_summary(
             "or external-submission approval."
         ),
     }
+
+
+def _review_target_groups(
+    survivors: list[dict[str, Any]],
+    sample_limit: int,
+) -> list[dict[str, Any]]:
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for row in survivors:
+        grouped.setdefault(str(row["target_name"]), []).append(row)
+
+    summaries: list[dict[str, Any]] = []
+    for target_name, rows in grouped.items():
+        ranked_rows = sorted(
+            rows,
+            key=lambda row: (
+                float(row["semisupervised_anomaly_score"] or 0.0),
+                float(row["snr"]),
+            ),
+            reverse=True,
+        )
+        top_row = ranked_rows[0]
+        frequencies = [float(row["frequency_hz"]) for row in rows]
+        source_artifacts = sorted(
+            {str(row["source_artifact"]) for row in rows if str(row["source_artifact"])}
+        )
+        summaries.append(
+            {
+                "target_name": target_name,
+                "candidate_count": len(rows),
+                "top_candidate_id": str(top_row["candidate_id"]),
+                "max_semisupervised_anomaly_score": top_row[
+                    "semisupervised_anomaly_score"
+                ],
+                "max_snr": max(float(row["snr"]) for row in rows),
+                "min_frequency_hz": min(frequencies),
+                "max_frequency_hz": max(frequencies),
+                "sample_source_artifacts": source_artifacts[:3],
+            }
+        )
+
+    ranked_summaries = sorted(
+        summaries,
+        key=lambda row: (
+            int(row["candidate_count"]),
+            float(row["max_semisupervised_anomaly_score"] or 0.0),
+            float(row["max_snr"]),
+        ),
+        reverse=True,
+    )
+    return ranked_summaries[:sample_limit]
 
 
 def _is_known_control_candidate(candidate: dict[str, Any]) -> bool:
