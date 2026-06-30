@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import joblib
+import pytest
 
 from techno_search.cli import main
 from techno_search.radio_real_corpus_summary import radio_real_corpus_summary
@@ -208,7 +209,39 @@ def test_radio_real_corpus_summary_reports_review_survivor(tmp_path: Path) -> No
     assert target_group["candidate_count"] == 1
     assert target_group["target_name"] in {"MKT_A", "MKT_B"}
     assert target_group["top_candidate_id"] == candidate["candidate_id"]
+    concentration = result["candidate_review"]["target_concentration"]
+    assert concentration["dominant_target_candidate_count"] == 1
+    assert concentration["dominant_target_fraction"] == 0.5
+    assert concentration["source_context_review_needed"] is False
     assert "not detections" in result["candidate_review"]["claim_guardrail"]
+
+
+def test_radio_real_corpus_summary_flags_target_concentration(tmp_path: Path) -> None:
+    dat_dir = tmp_path / "dat"
+    dat_dir.mkdir()
+    _write_zero_hit_dat(dat_dir / "zero_hit.dat", source="ZERO_HIT_TARGET")
+    hit_ndjson = tmp_path / "concentrated_sample.ndjson"
+    _write_hit_ndjson(
+        hit_ndjson,
+        [
+            _normalized_hit(target_id="TARGET_DENSE", frequency_hz=1_420_000_000.0, drift=0.1),
+            _normalized_hit(target_id="TARGET_DENSE", frequency_hz=1_421_000_000.0, drift=0.2),
+            _normalized_hit(target_id="TARGET_SINGLE", frequency_hz=1_422_000_000.0, drift=0.3),
+        ],
+    )
+
+    result = radio_real_corpus_summary(
+        [dat_dir],
+        hit_ndjson_paths=[hit_ndjson],
+        semisupervised_model_path=tmp_path / "missing_model.joblib",
+    )
+
+    concentration = result["candidate_review"]["target_concentration"]
+    assert concentration["dominant_target_name"] == "TARGET_DENSE"
+    assert concentration["dominant_target_candidate_count"] == 2
+    assert concentration["dominant_target_fraction"] == pytest.approx(2 / 3)
+    assert concentration["source_context_review_needed"] is True
+    assert "one target" in concentration["reason"]
 
 
 def test_radio_real_corpus_summary_keeps_voyager_as_control(tmp_path: Path) -> None:

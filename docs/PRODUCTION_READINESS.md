@@ -263,9 +263,9 @@ RFI recurrence flags, 3 known Voyager control rows, 148,215 stationary-drift
 rows, 4,887 drift-inconsistent rows, 1,072 automated nonstationary review
 survivors across 5 survivor targets, and `phase1_radio_validation_ready: true`.
 The target-level summary shows 1,065 of those survivor rows concentrated on
-`Atlas`, which is triage evidence that needs ordinary-instrumental and
-source-context review before any escalation. Known control targets are preserved
-as positive controls, and stationary-frequency rows are separated from
+`Atlas` (`dominant_target_fraction: 0.9934701492537313`), so
+`source_context_review_needed` is true before any escalation. Known control
+targets are preserved as positive controls, and stationary-frequency rows are separated from
 nonstationary review survivors rather than promoted as follow-up candidates.
 These summaries are local validation evidence only; they are not detections,
 discoveries, expert review, external validation, or external-submission
