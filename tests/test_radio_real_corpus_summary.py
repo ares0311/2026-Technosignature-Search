@@ -227,6 +227,11 @@ def test_radio_real_corpus_summary_reports_review_survivor(tmp_path: Path) -> No
     assert result["candidate_review"]["top_escalation_ready_targets"] == (
         result["candidate_review"]["top_review_targets"]
     )
+    ready_context = result["candidate_review"]["escalation_ready_context"]
+    assert ready_context["candidate_count"] == 2
+    assert ready_context["target_count"] == 2
+    assert ready_context["source_artifact_count"] == 2
+    assert ready_context["shared_artifact_review_needed"] is False
     candidate = result["candidate_review"]["top_review_candidates"][0]
     assert candidate["survives_current_automated_filters"] is True
     assert candidate["review_label"] == "needs_follow_up_review"
@@ -292,6 +297,10 @@ def test_radio_real_corpus_summary_flags_target_concentration(tmp_path: Path) ->
     assert ready_candidates[0]["target_name"] == "TARGET_SINGLE"
     assert len(ready_targets) == 1
     assert ready_targets[0]["target_name"] == "TARGET_SINGLE"
+    ready_context = result["candidate_review"]["escalation_ready_context"]
+    assert ready_context["candidate_count"] == 1
+    assert ready_context["target_count"] == 1
+    assert ready_context["shared_artifact_review_needed"] is False
     dense_group = result["candidate_review"]["top_review_targets"][0]
     assert dense_group["source_artifact_count"] == 2
     assert dense_group["source_context"] == {
