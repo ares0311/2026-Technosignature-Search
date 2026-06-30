@@ -231,6 +231,8 @@ def test_radio_real_corpus_summary_reports_review_survivor(tmp_path: Path) -> No
     assert concentration["dominant_target_candidate_count"] == 1
     assert concentration["dominant_target_fraction"] == 0.5
     assert concentration["source_context_review_needed"] is False
+    assert concentration["candidate_escalation_blocked"] is False
+    assert concentration["blocking_review_flags"] == []
     assert "not detections" in result["candidate_review"]["claim_guardrail"]
 
 
@@ -266,6 +268,13 @@ def test_radio_real_corpus_summary_flags_target_concentration(tmp_path: Path) ->
     assert concentration["dominant_target_candidate_count"] == 2
     assert concentration["dominant_target_fraction"] == pytest.approx(2 / 3)
     assert concentration["source_context_review_needed"] is True
+    assert concentration["candidate_escalation_blocked"] is True
+    assert concentration["blocking_review_flags"] == [
+        "single_beam_survivor_context",
+        "multi_backend_survivor_context",
+        "multi_coarse_channel_survivor_context",
+        "single_sky_position_survivor_context",
+    ]
     assert "one target" in concentration["reason"]
     dense_group = result["candidate_review"]["top_review_targets"][0]
     assert dense_group["source_artifact_count"] == 2
