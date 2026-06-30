@@ -423,19 +423,22 @@ def _candidate_review_summary(
         row for row in ranked if not bool(row["survives_current_automated_filters"])
     ]
     limited_sample = max(0, sample_limit)
+    review_targets = _review_target_groups(ranked_survivors, sample_limit=None)
     return {
         "reviewed_candidate_count": len(reviewed),
         "follow_up_candidate_count": follow_up_candidate_count,
-        "follow_up_target_count": len(
-            {row["target_name"] for row in ranked_survivors}
-        ),
+        "follow_up_target_count": len(review_targets),
         "rfi_rejected_candidate_count": len(cross_target_flags),
         "drift_inconsistent_candidate_count": drift_inconsistent_count,
         "stationary_drift_candidate_count": stationary_drift_candidate_count,
         "known_control_candidate_count": known_control_candidate_count,
         "sample_limit": limited_sample,
         "top_review_candidates": ranked_survivors[:limited_sample],
-        "top_review_targets": _review_target_groups(ranked_survivors, limited_sample),
+        "top_review_targets": review_targets[:limited_sample],
+        "target_concentration": _target_concentration_summary(
+            review_targets,
+            follow_up_candidate_count=follow_up_candidate_count,
+        ),
         "top_rejected_or_control_candidates": ranked_rejected_or_controls[:limited_sample],
         "claim_guardrail": (
             "Rows labeled needs_follow_up_review are automated triage survivors "
@@ -447,7 +450,7 @@ def _candidate_review_summary(
 
 def _review_target_groups(
     survivors: list[dict[str, Any]],
-    sample_limit: int,
+    sample_limit: int | None,
 ) -> list[dict[str, Any]]:
     grouped: dict[str, list[dict[str, Any]]] = {}
     for row in survivors:
@@ -492,7 +495,39 @@ def _review_target_groups(
         ),
         reverse=True,
     )
+    if sample_limit is None:
+        return ranked_summaries
     return ranked_summaries[:sample_limit]
+
+
+def _target_concentration_summary(
+    review_targets: list[dict[str, Any]],
+    *,
+    follow_up_candidate_count: int,
+) -> dict[str, Any]:
+    if follow_up_candidate_count <= 0 or not review_targets:
+        return {
+            "dominant_target_name": None,
+            "dominant_target_candidate_count": 0,
+            "dominant_target_fraction": 0.0,
+            "source_context_review_needed": False,
+        }
+    dominant = review_targets[0]
+    dominant_count = int(dominant["candidate_count"])
+    dominant_fraction = dominant_count / follow_up_candidate_count
+    return {
+        "dominant_target_name": dominant["target_name"],
+        "dominant_target_candidate_count": dominant_count,
+        "dominant_target_fraction": dominant_fraction,
+        "source_context_review_needed": dominant_fraction > 0.5,
+        "reason": (
+            "More than half of automated survivor rows come from one target; "
+            "review source context and instrumental explanations before treating "
+            "the rows as independent follow-up evidence."
+        )
+        if dominant_fraction > 0.5
+        else "",
+    }
 
 
 def _is_known_control_candidate(candidate: dict[str, Any]) -> bool:
