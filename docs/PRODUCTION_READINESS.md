@@ -276,12 +276,15 @@ separates 1,069 source-context-blocked automated survivor rows from 3
 escalation-ready automated survivor rows and emits separate top
 escalation-ready target groups (`ex_NSVS_15969565`,
 `Gaia_3578686357276468608`, `Gaia_3578732025664620800`) so blocked Atlas and
-`ex_LEDA_976081` rows are not mixed with ready rows in operator triage. Known
-control targets are preserved as positive controls, and stationary-frequency
-rows are separated from nonstationary review survivors rather than promoted as
-follow-up candidates. These summaries are local validation evidence only; they
-are not detections, discoveries, expert review, external validation, or
-external-submission approval.
+`ex_LEDA_976081` rows are not mixed with ready rows in operator triage. The
+ready cohort summary shows those 3 rows span 3 targets but only 2 source
+artifacts across MJD 60997.4465-60997.4905, so it also flags shared-artifact
+review before treating them as independent evidence. Known control targets are
+preserved as positive controls, and stationary-frequency rows are separated from
+nonstationary review survivors rather than promoted as follow-up candidates.
+These summaries are local validation evidence only; they are not detections,
+discoveries, expert review, external validation, or external-submission
+approval.
 
 **Photometry, IR, spectroscopy:** Not implemented. No `lightkurve`, no WISE SED
 fitting, no JWST spectral ingest.

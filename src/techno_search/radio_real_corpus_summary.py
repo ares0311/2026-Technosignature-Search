@@ -470,6 +470,7 @@ def _candidate_review_summary(
         "top_review_targets": review_targets[:limited_sample],
         "top_escalation_ready_candidates": escalation_ready_survivors[:limited_sample],
         "top_escalation_ready_targets": escalation_ready_targets[:limited_sample],
+        "escalation_ready_context": _ready_context_summary(escalation_ready_survivors),
         "target_concentration": target_concentration,
         "top_rejected_or_control_candidates": ranked_rejected_or_controls[:limited_sample],
         "claim_guardrail": (
@@ -568,6 +569,35 @@ def _source_context_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "review_flags": flags,
         "candidate_escalation_blocked": escalation_blocked,
         "blocking_review_flags": flags if escalation_blocked else [],
+    }
+
+
+def _ready_context_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    targets = _sorted_nonempty_strings(rows, "target_name")
+    source_artifacts = _sorted_nonempty_strings(rows, "source_artifact")
+    backend_hosts = _sorted_nonempty_strings(rows, "backend_host")
+    beams = _sorted_nonnegative_ints(rows, "beam")
+    tstarts = _positive_floats(rows, "tstart_mjd")
+    shared_artifact_review_needed = len(rows) > 1 and len(source_artifacts) < len(rows)
+    return {
+        "candidate_count": len(rows),
+        "target_count": len(targets),
+        "targets": targets[:10],
+        "source_artifact_count": len(source_artifacts),
+        "sample_source_artifacts": source_artifacts[:5],
+        "backend_host_count": len(backend_hosts),
+        "backend_hosts": backend_hosts[:10],
+        "beam_count": len(beams),
+        "beams": beams[:10],
+        "min_tstart_mjd": min(tstarts) if tstarts else None,
+        "max_tstart_mjd": max(tstarts) if tstarts else None,
+        "shared_artifact_review_needed": shared_artifact_review_needed,
+        "reason": (
+            "Multiple escalation-ready rows share source artifacts; review common "
+            "observation context before treating them as independent evidence."
+        )
+        if shared_artifact_review_needed
+        else "",
     }
 
 
