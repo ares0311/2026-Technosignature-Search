@@ -20,6 +20,24 @@ machine and GitHub in sync:
 The agent always develops on `claude/general-session-Bb2dZ`. The user always
 stays on `main` and pulls after each PR is merged.
 
+### PR LINK + CONTINUATION DIRECTIVE — NON-NEGOTIABLE
+
+PR links are mandatory progress signals, not automatic stopping points.
+
+When an agent opens or updates a PR:
+
+1. Report the PR URL clearly in the user-visible progress stream.
+2. Continue to monitor CI/checks, inspect failures, fix root causes, push fixes,
+   and recheck until the PR is mergeable or a real blocker appears.
+3. If the PR is mergeable and repository policy permits agent merge, merge it,
+   sync `main`, reset `claude/general-session-Bb2dZ` to `origin/main`, and
+   continue the production loop.
+4. Stop after giving a PR link only when human review/approval is actually
+   required, GitHub blocks the merge, credentials are unavailable, or the user
+   explicitly asks the agent to stop at the PR.
+
+Do not leave a green, mergeable PR open just because the link was reported.
+
 ### AGENT BRANCH SYNC — NON-NEGOTIABLE (prevents recurring merge conflicts)
 
 At the START of each session, before making any new commits, the agent must:
