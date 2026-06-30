@@ -32,6 +32,11 @@ docs/LOCAL_DATA_INVENTORY.local.md
 results/*
 !results/scans/
 !results/scans/**
+# Local production RUN-* directories are generated artifacts. Existing tracked
+# review fixtures remain tracked, but new local runs must not be staged by the
+# user's standard `git add .` cadence.
+results/scans/RUN-*/
+results/scans/RUN-*/**
 # Scan history NDJSON (local operational log, not committed)
 results/scan_history.ndjson
 *.h5

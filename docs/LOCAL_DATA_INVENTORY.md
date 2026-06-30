@@ -29,8 +29,8 @@ schemas, checksums, manifests, small fixtures, and tests.
 | `data/extended_corpus/` | `scripts/download_bl_extended_corpus.sh` | Held-out GBT evidence inputs from current BL Open Data HDF5 records and any derived hit tables for DECISION-134 hardening | Ignored payloads; commit review-safe manifests only |
 | `data/meerkat_hits/` | `scripts/ingest_meerkat_hits.py`, `techno-search semisupervised-corpus-build`, `techno-search semisupervised-scorer-train` | Verified MeerKAT BLUSE false-positive corpus when available, real turboSETI `.dat` normalized training corpora, and local scorer model/metadata payloads | Ignored payloads; commit methodology only |
 | `data/injection_grid/` | `scripts/setigen_injection_grid.py` | Setigen injection-recovery HDF5 files, derived hit tables, and local grid manifests | Ignored payloads; commit review-safe summaries only |
-| `results/` | Pipeline CLIs and scan workflows | Local pipeline reports, manifests, scan outputs, and candidate artifacts | Ignored except `results/scans/` |
-| `results/scans/` | `.github/workflows/weekly_scan.yml` | Review-safe scheduled scan summaries | Tracked by workflow when intentionally committed |
+| `results/` | Pipeline CLIs and scan workflows | Local pipeline reports, manifests, scan outputs, and candidate artifacts | Ignored except curated scan summaries |
+| `results/scans/` | `.github/workflows/weekly_scan.yml` | Review-safe scheduled scan summaries; generated local `RUN-*` directories stay ignored unless deliberately reviewed and force-added | Commit curated summaries/manifests only |
 | `logs/` | SQLite operational log CLIs | Local top-level SQLite operational logs and backups | Ignored payloads |
 | `cache/` | Live-provider and catalog-cache helpers | Local provider metadata caches | Ignored payloads |
 | `artifacts/` | Local validation, export, and scratch workflows | Generated intermediate products | Ignored payloads |

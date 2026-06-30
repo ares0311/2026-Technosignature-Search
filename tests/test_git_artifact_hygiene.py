@@ -29,6 +29,8 @@ def test_gitignore_blocks_generated_science_payloads() -> None:
         "results/*",
         "!results/scans/",
         "!results/scans/**",
+        "results/scans/RUN-*/",
+        "results/scans/RUN-*/**",
         "docs/LOCAL_DATA_INVENTORY.local.md",
         "*.h5",
         "*.hdf5",
@@ -84,6 +86,9 @@ def test_gitignore_effectively_blocks_payloads_but_allows_review_safe_exceptions
 
     assert [path for path in ignored_paths if not _is_ignored(path)] == []
     assert [path for path in not_ignored_paths if _is_ignored(path)] == []
+    assert _is_ignored(
+        "results/scans/RUN-2026-06-30_030350Z-8MGP-prod-scan/validate_all.json"
+    )
 
 
 def test_local_data_inventory_is_sanitized_github_visible_map() -> None:

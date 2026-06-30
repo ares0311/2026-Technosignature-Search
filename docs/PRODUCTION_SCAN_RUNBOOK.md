@@ -145,8 +145,11 @@ results/
         HIP17147__zero.manifest.json ← zero-hit observation manifest
 ```
 
-The `results/scans/` subtree is committed to GitHub as the durable audit trail.
-Everything else under `results/` is local-only (gitignored).
+Curated `results/scans/` summaries can be committed to GitHub as a durable
+audit trail. Generated local `results/scans/RUN-*` directories are ignored by
+default so the user's standard `git add .` cadence does not stage
+machine-specific scan outputs accidentally. Commit only reviewed, sanitized
+summaries/manifests deliberately.
 
 ---
 
@@ -343,7 +346,7 @@ git pull origin main
 
 | Keep | Reason |
 |---|---|
-| `results/scans/PROD-RUN-*/` | Durable audit trail — committed to GitHub |
+| `results/scans/RUN-*/` | Local generated production run artifacts — ignored unless deliberately reviewed and force-added |
 | `data/target_sample_manifest.json` | Reproduces the download list |
 | `data/bl_hprc_seed_targets.csv` | Source of stratified sample |
 | `data/meerkat_hits/*.ndjson` | Real MeerKAT corpus used for model training |
