@@ -59,7 +59,18 @@ def _write_hit_ndjson(path: Path, rows: list[dict[str, object]]) -> None:
     )
 
 
-def _normalized_hit(*, target_id: str, frequency_hz: float, drift: float) -> dict[str, object]:
+def _normalized_hit(
+    *,
+    target_id: str,
+    frequency_hz: float,
+    drift: float,
+    beam: int = 0,
+    backend_host: str = "blpn37",
+    coarse_channel: int = 10,
+    tstart_mjd: float = 60984.176537959574,
+    ra_deg: float = 13.255836111111112,
+    dec_deg: float = -5.825555555555555,
+) -> dict[str, object]:
     return {
         "snr": 25.0,
         "drift_rate_hz_per_sec": drift,
@@ -74,7 +85,13 @@ def _normalized_hit(*, target_id: str, frequency_hz: float, drift: float) -> dic
         "on_hit_count": 1,
         "off_hit_count": 0,
         "target_id": target_id,
-        "source_artifact": f"{target_id}.h5",
+        "beam": beam,
+        "backend_host": backend_host,
+        "coarse_channel": coarse_channel,
+        "tstart_mjd": tstart_mjd,
+        "ra_deg": ra_deg,
+        "dec_deg": dec_deg,
+        "source_artifact": f"{target_id}_{beam}_{coarse_channel}.hits",
         "corpus_source": "meerkat_bluse_seticore_atlas_2025_11",
     }
 
@@ -226,7 +243,17 @@ def test_radio_real_corpus_summary_flags_target_concentration(tmp_path: Path) ->
         hit_ndjson,
         [
             _normalized_hit(target_id="TARGET_DENSE", frequency_hz=1_420_000_000.0, drift=0.1),
-            _normalized_hit(target_id="TARGET_DENSE", frequency_hz=1_421_000_000.0, drift=0.2),
+            _normalized_hit(
+                target_id="TARGET_DENSE",
+                frequency_hz=1_421_000_000.0,
+                drift=0.2,
+                beam=1,
+                backend_host="blpn38",
+                coarse_channel=11,
+                tstart_mjd=60984.25,
+                ra_deg=13.3,
+                dec_deg=-5.7,
+            ),
             _normalized_hit(target_id="TARGET_SINGLE", frequency_hz=1_422_000_000.0, drift=0.3),
         ],
     )
@@ -243,6 +270,22 @@ def test_radio_real_corpus_summary_flags_target_concentration(tmp_path: Path) ->
     assert concentration["dominant_target_fraction"] == pytest.approx(2 / 3)
     assert concentration["source_context_review_needed"] is True
     assert "one target" in concentration["reason"]
+    dense_group = result["candidate_review"]["top_review_targets"][0]
+    assert dense_group["source_artifact_count"] == 2
+    assert dense_group["source_context"] == {
+        "beam_count": 2,
+        "beams": [0, 1],
+        "backend_host_count": 2,
+        "backend_hosts": ["blpn37", "blpn38"],
+        "coarse_channel_count": 2,
+        "coarse_channels": [10, 11],
+        "min_tstart_mjd": 60984.176537959574,
+        "max_tstart_mjd": 60984.25,
+        "min_ra_deg": 13.255836111111112,
+        "max_ra_deg": 13.3,
+        "min_dec_deg": -5.825555555555555,
+        "max_dec_deg": -5.7,
+    }
 
 
 def test_radio_real_corpus_summary_keeps_voyager_as_control(tmp_path: Path) -> None:
