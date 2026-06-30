@@ -231,9 +231,10 @@ caffeinate -i bash scripts/download_bl_extended_corpus.sh \
   --availability-output /tmp/bl_hdf5_availability.tsv
 ```
 
-For a bounded download, the target limit applies to URL-available targets, not
-raw manifest position. This prevents runs from stopping on unavailable manifest
-entries before any HDF5 evidence is obtained:
+For a bounded download, the target limit applies to new URL-available downloads,
+not raw manifest position and not already-downloaded HDF5 evidence. This
+prevents resumed runs from stopping on unavailable manifest entries or evidence
+that is already present locally:
 
 ```bash
 git pull origin main

@@ -120,8 +120,9 @@ caffeinate -i bash scripts/download_bl_extended_corpus.sh \
 Targets without a discoverable BL open-data HDF5 URL are skipped with a
 warning.  The download script reports the fraction of manifest targets that
 had available data.  When `TECHNO_EXTENDED_CORPUS_MAX_TARGETS` is set, the
-limit applies to URL-available HDF5 targets rather than raw manifest position,
-so unavailable manifest entries do not consume the bounded download budget.
+limit applies to new URL-available HDF5 downloads rather than raw manifest
+position or already-downloaded evidence, so unavailable manifest entries and
+local reuses do not consume the bounded download budget.
 The optional `/tmp/bl_hdf5_availability.tsv` file is a local, no-payload map of
 verified target-to-HDF5 URLs for the current BL search-page state.
 
