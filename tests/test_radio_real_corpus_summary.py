@@ -209,6 +209,7 @@ def test_radio_real_corpus_summary_reports_review_survivor(tmp_path: Path) -> No
     assert target_group["candidate_count"] == 1
     assert target_group["target_name"] in {"MKT_A", "MKT_B"}
     assert target_group["top_candidate_id"] == candidate["candidate_id"]
+    assert target_group["source_artifact_count"] == 1
     concentration = result["candidate_review"]["target_concentration"]
     assert concentration["dominant_target_candidate_count"] == 1
     assert concentration["dominant_target_fraction"] == 0.5

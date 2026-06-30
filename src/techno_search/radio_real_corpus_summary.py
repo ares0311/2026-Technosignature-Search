@@ -482,6 +482,7 @@ def _review_target_groups(
                 "max_snr": max(float(row["snr"]) for row in rows),
                 "min_frequency_hz": min(frequencies),
                 "max_frequency_hz": max(frequencies),
+                "source_artifact_count": len(source_artifacts),
                 "sample_source_artifacts": source_artifacts[:3],
             }
         )
