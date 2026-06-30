@@ -231,9 +231,10 @@ RFI recurrence validation is expected to remain blocked.
 Use a bounded `--max-hit-rows` value for routine operator checks; omit it only
 for an overnight/full-corpus review. Use `--candidate-sample-limit 0` for
 counts-only overnight checks, or a small value such as 5 to inspect the top
-automated review survivors. Rows labeled `needs_follow_up_review` are triage
-survivors only, not detections or external-submission candidates. Known control
-targets such as Voyager are counted separately and are not promoted as
+automated review survivors plus a bounded rejected/control sample. Rows labeled
+`needs_follow_up_review` are triage survivors only, not detections or
+external-submission candidates. Known control targets such as Voyager and
+stationary-frequency rows are counted separately and are not promoted as
 follow-up candidates.
 
 Before expanding `data/extended_corpus/`, verify current BL Open Data

@@ -16,6 +16,7 @@ RADIO_REAL_CORPUS_DISCLAIMER = (
     "expert review, external validation, or authorization for external submission."
 )
 DEFAULT_RFI_TOLERANCE_HZ = 500.0
+DEFAULT_STATIONARY_DRIFT_EPSILON = 1e-9
 
 
 def discover_dat_files(paths: list[Path]) -> list[Path]:
@@ -345,6 +346,7 @@ def _candidate_review_summary(
     drift_inconsistent_count = 0
     follow_up_candidate_count = 0
     known_control_candidate_count = 0
+    stationary_drift_candidate_count = 0
     score_values = list(anomaly_scores)
     if len(score_values) < len(candidates):
         score_values.extend([None] * (len(candidates) - len(score_values)))
@@ -354,12 +356,17 @@ def _candidate_review_summary(
         rfi_flag = cross_target_flags.get(candidate_id)
         known_control = _is_known_control_candidate(candidate)
         normalized_drift = _float(candidate, "normalized_drift_hz_s_per_ghz")
+        stationary_drift = abs(normalized_drift) <= DEFAULT_STATIONARY_DRIFT_EPSILON
         drift_consistent = bool(candidate.get("is_earth_drift_consistent", False))
         if not drift_consistent:
             drift_inconsistent_count += 1
         if known_control:
             known_control_candidate_count += 1
-        survives_current_filters = rfi_flag is None and drift_consistent and not known_control
+        if stationary_drift:
+            stationary_drift_candidate_count += 1
+        survives_current_filters = (
+            rfi_flag is None and drift_consistent and not stationary_drift and not known_control
+        )
         if survives_current_filters:
             follow_up_candidate_count += 1
         reviewed.append(
@@ -372,6 +379,7 @@ def _candidate_review_summary(
                 "drift_rate_hz_per_sec": _float(candidate, "drift_rate_hz_per_sec"),
                 "normalized_drift_hz_s_per_ghz": normalized_drift,
                 "is_earth_drift_consistent": drift_consistent,
+                "stationary_drift": stationary_drift,
                 "known_control_target": known_control,
                 "cross_target_rfi_flagged": rfi_flag is not None,
                 "cross_target_match_count": int(rfi_flag.get("match_count", 0))
@@ -386,9 +394,13 @@ def _candidate_review_summary(
                         "known_spacecraft_or_calibration_control"
                         if known_control
                         else (
-                            "likely_cross_target_rfi"
-                            if rfi_flag is not None
-                            else "drift_inconsistent_review"
+                            "stationary_frequency_review"
+                            if stationary_drift
+                            else (
+                                "likely_cross_target_rfi"
+                                if rfi_flag is not None
+                                else "drift_inconsistent_review"
+                            )
                         )
                     )
                 ),
@@ -404,15 +416,23 @@ def _candidate_review_summary(
         ),
         reverse=True,
     )
+    ranked_survivors = [
+        row for row in ranked if bool(row["survives_current_automated_filters"])
+    ]
+    ranked_rejected_or_controls = [
+        row for row in ranked if not bool(row["survives_current_automated_filters"])
+    ]
     limited_sample = max(0, sample_limit)
     return {
         "reviewed_candidate_count": len(reviewed),
         "follow_up_candidate_count": follow_up_candidate_count,
         "rfi_rejected_candidate_count": len(cross_target_flags),
         "drift_inconsistent_candidate_count": drift_inconsistent_count,
+        "stationary_drift_candidate_count": stationary_drift_candidate_count,
         "known_control_candidate_count": known_control_candidate_count,
         "sample_limit": limited_sample,
-        "top_review_candidates": ranked[:limited_sample],
+        "top_review_candidates": ranked_survivors[:limited_sample],
+        "top_rejected_or_control_candidates": ranked_rejected_or_controls[:limited_sample],
         "claim_guardrail": (
             "Rows labeled needs_follow_up_review are automated triage survivors "
             "only, not detections, discoveries, expert review, external validation, "
