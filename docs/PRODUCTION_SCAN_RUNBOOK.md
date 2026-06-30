@@ -229,13 +229,14 @@ files. Treat its output as local validation evidence only. If the
 useful negative evidence but has only one hit-bearing target, so cross-target
 RFI recurrence validation is expected to remain blocked.
 Use a bounded `--max-hit-rows` value for routine operator checks; omit it only
-for an overnight/full-corpus review. Use `--candidate-sample-limit 0` for
-counts-only overnight checks, or a small value such as 5 to inspect the top
-automated review survivors plus a bounded rejected/control sample. Rows labeled
-`needs_follow_up_review` are triage survivors only, not detections or
-external-submission candidates. Known control targets such as Voyager and
-stationary-frequency rows are counted separately and are not promoted as
-follow-up candidates.
+for a full-corpus review. The scorer uses vectorized batch scoring, so the
+current local 200,000-row MeerKAT review is practical as a diagnostic. Use
+`--candidate-sample-limit 0` for counts-only checks, or a small value such as 5
+to inspect the top automated review survivors plus a bounded rejected/control
+sample. Rows labeled `needs_follow_up_review` are triage survivors only, not
+detections or external-submission candidates. Known control targets such as
+Voyager and stationary-frequency rows are counted separately and are not
+promoted as follow-up candidates.
 
 Before expanding `data/extended_corpus/`, verify current BL Open Data
 availability from the committed manifest. This command queries the official

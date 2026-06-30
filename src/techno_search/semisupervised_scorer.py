@@ -194,7 +194,16 @@ class SemisupervisedScorer:
 
     def score_hits(self, hits: list[dict[str, Any]]) -> list[float]:
         """Score a batch of hits. Returns scores in the same order."""
-        return [self.score_hit(h) for h in hits]
+        if not self._is_fitted or self._pipeline is None:
+            raise RuntimeError("SemisupervisedScorer must be fitted before scoring.")
+        if not hits:
+            return []
+
+        rows = [self._extract_row(hit) for hit in hits]
+        # decision_function returns negative for outliers in sklearn's convention;
+        # we negate so that higher = more anomalous.
+        scores = self._pipeline.decision_function(rows)
+        return [float(-score) for score in scores]
 
     def save(self, path: Path) -> None:
         """Persist model metadata to a JSON file (not the model weights).

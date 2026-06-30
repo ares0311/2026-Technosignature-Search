@@ -215,6 +215,29 @@ def test_score_hits_consistent_with_score_hit() -> None:
     assert s.score_hits([hit])[0] == pytest.approx(s.score_hit(hit))
 
 
+def test_score_hits_uses_single_vectorized_pipeline_call() -> None:
+    class FakePipeline:
+        def __init__(self) -> None:
+            self.call_count = 0
+            self.row_counts: list[int] = []
+
+        def decision_function(self, rows: list[list[float]]) -> list[float]:
+            self.call_count += 1
+            self.row_counts.append(len(rows))
+            return [-float(index) for index, _row in enumerate(rows)]
+
+    s = SemisupervisedScorer()
+    fake_pipeline = FakePipeline()
+    s._pipeline = fake_pipeline
+    s._is_fitted = True
+
+    scores = s.score_hits([_make_hit(freq=1e9 + index) for index in range(4)])
+
+    assert scores == [0.0, 1.0, 2.0, 3.0]
+    assert fake_pipeline.call_count == 1
+    assert fake_pipeline.row_counts == [4]
+
+
 # ---------------------------------------------------------------------------
 # save / load
 # ---------------------------------------------------------------------------
