@@ -168,7 +168,8 @@ def test_radio_real_corpus_summary_includes_real_hit_ndjson(tmp_path: Path) -> N
     assert result["candidate_review"]["reviewed_candidate_count"] == 2
     assert result["candidate_review"]["follow_up_candidate_count"] == 0
     assert result["candidate_review"]["rfi_rejected_candidate_count"] == 2
-    assert result["candidate_review"]["top_review_candidates"][0]["review_label"] == (
+    assert result["candidate_review"]["top_review_candidates"] == []
+    assert result["candidate_review"]["top_rejected_or_control_candidates"][0]["review_label"] == (
         "likely_cross_target_rfi"
     )
 
@@ -216,10 +217,37 @@ def test_radio_real_corpus_summary_keeps_voyager_as_control(tmp_path: Path) -> N
 
     assert result["candidate_review"]["known_control_candidate_count"] == 1
     assert result["candidate_review"]["follow_up_candidate_count"] == 0
-    candidate = result["candidate_review"]["top_review_candidates"][0]
+    assert result["candidate_review"]["top_review_candidates"] == []
+    candidate = result["candidate_review"]["top_rejected_or_control_candidates"][0]
     assert candidate["known_control_target"] is True
     assert candidate["survives_current_automated_filters"] is False
     assert candidate["review_label"] == "known_spacecraft_or_calibration_control"
+
+
+def test_radio_real_corpus_summary_separates_stationary_drift(tmp_path: Path) -> None:
+    dat_dir = tmp_path / "dat"
+    dat_dir.mkdir()
+    _write_zero_hit_dat(dat_dir / "zero_hit.dat", source="ZERO_HIT_TARGET")
+    hit_ndjson = tmp_path / "stationary_sample.ndjson"
+    _write_hit_ndjson(
+        hit_ndjson,
+        [_normalized_hit(target_id="MKT_STATIONARY", frequency_hz=1_421_000_000.0, drift=0.0)],
+    )
+
+    result = radio_real_corpus_summary(
+        [dat_dir],
+        hit_ndjson_paths=[hit_ndjson],
+        semisupervised_model_path=tmp_path / "missing_model.joblib",
+    )
+
+    assert result["candidate_review"]["stationary_drift_candidate_count"] == 1
+    assert result["candidate_review"]["follow_up_candidate_count"] == 0
+    assert result["candidate_review"]["top_review_candidates"] == []
+    candidate = result["candidate_review"]["top_rejected_or_control_candidates"][0]
+    assert candidate["is_earth_drift_consistent"] is True
+    assert candidate["stationary_drift"] is True
+    assert candidate["survives_current_automated_filters"] is False
+    assert candidate["review_label"] == "stationary_frequency_review"
 
 
 def test_cli_radio_real_corpus_summary_outputs_json(tmp_path: Path, capsys) -> None:
@@ -290,3 +318,4 @@ def test_cli_radio_real_corpus_summary_accepts_hit_ndjson(tmp_path: Path, capsys
     assert result["validation_readiness"]["cross_target_rfi_validation_ready"] is True
     assert result["candidate_review"]["sample_limit"] == 0
     assert result["candidate_review"]["top_review_candidates"] == []
+    assert result["candidate_review"]["top_rejected_or_control_candidates"] == []
