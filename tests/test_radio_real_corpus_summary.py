@@ -313,6 +313,13 @@ def test_radio_real_corpus_summary_flags_target_concentration(tmp_path: Path) ->
             "multi_coarse_channel_survivor_context",
             "single_sky_position_survivor_context",
         ],
+        "candidate_escalation_blocked": True,
+        "blocking_review_flags": [
+            "single_beam_survivor_context",
+            "multi_backend_survivor_context",
+            "multi_coarse_channel_survivor_context",
+            "single_sky_position_survivor_context",
+        ],
     }
 
 
