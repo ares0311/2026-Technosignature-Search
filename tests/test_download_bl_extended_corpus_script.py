@@ -130,6 +130,7 @@ esac
     env["PATH"] = f"{fake_bin}{os.pathsep}{env['PATH']}"
     env["TECHNO_EXTENDED_CORPUS_MAX_TARGETS"] = "2"
     env["TECHNO_EXTENDED_CORPUS_PYTHON"] = sys.executable
+    availability_output = tmp_path / "availability.tsv"
 
     result = subprocess.run(
         [
@@ -138,6 +139,8 @@ esac
             "--manifest",
             str(manifest),
             "--discover-only",
+            "--availability-output",
+            str(availability_output),
         ],
         check=True,
         env=env,
@@ -150,3 +153,7 @@ esac
     assert "HIP333\thttps://bldata.berkeley.edu/test/HIP333.gpuspec.0002.h5" in result.stdout
     assert "URL-available HDF5 targets: 2" in result.stderr
     assert "Targets without a discovered HDF5 URL: 1" in result.stderr
+    assert availability_output.read_text(encoding="utf-8").splitlines() == [
+        "HIP222\thttps://bldata.berkeley.edu/test/HIP222.gpuspec.0002.h5",
+        "HIP333\thttps://bldata.berkeley.edu/test/HIP333.gpuspec.0002.h5",
+    ]

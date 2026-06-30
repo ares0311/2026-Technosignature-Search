@@ -227,7 +227,8 @@ search pages, prints only target-to-HDF5 URL rows, and downloads no payloads:
 git pull origin main
 caffeinate -i bash scripts/download_bl_extended_corpus.sh \
   --manifest data/target_sample_manifest.json \
-  --discover-only
+  --discover-only \
+  --availability-output /tmp/bl_hdf5_availability.tsv
 ```
 
 For a bounded download, the target limit applies to URL-available targets, not

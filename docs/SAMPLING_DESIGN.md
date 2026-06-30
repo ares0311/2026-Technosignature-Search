@@ -109,7 +109,8 @@ The download script reads from the manifest:
 git pull origin main
 caffeinate -i bash scripts/download_bl_extended_corpus.sh \
     --manifest data/target_sample_manifest.json \
-    --discover-only
+    --discover-only \
+    --availability-output /tmp/bl_hdf5_availability.tsv
 
 git pull origin main
 caffeinate -i bash scripts/download_bl_extended_corpus.sh \
@@ -121,6 +122,8 @@ warning.  The download script reports the fraction of manifest targets that
 had available data.  When `TECHNO_EXTENDED_CORPUS_MAX_TARGETS` is set, the
 limit applies to URL-available HDF5 targets rather than raw manifest position,
 so unavailable manifest entries do not consume the bounded download budget.
+The optional `/tmp/bl_hdf5_availability.tsv` file is a local, no-payload map of
+verified target-to-HDF5 URLs for the current BL search-page state.
 
 ---
 

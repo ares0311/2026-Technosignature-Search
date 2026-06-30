@@ -20,6 +20,24 @@ machine and GitHub in sync:
 The agent always develops on `claude/general-session-Bb2dZ`. The user always
 stays on `main` and pulls after each PR is merged.
 
+### PR LINK + CONTINUATION DIRECTIVE — NON-NEGOTIABLE
+
+PR links are mandatory progress signals, not automatic stopping points.
+
+When an agent opens or updates a PR:
+
+1. Report the PR URL clearly in the user-visible progress stream.
+2. Continue to monitor CI/checks, inspect failures, fix root causes, push fixes,
+   and recheck until the PR is mergeable or a real blocker appears.
+3. If the PR is mergeable and repository policy permits agent merge, merge it,
+   sync `main`, reset `claude/general-session-Bb2dZ` to `origin/main`, and
+   continue the production loop.
+4. Stop after giving a PR link only when human review/approval is actually
+   required, GitHub blocks the merge, credentials are unavailable, or the user
+   explicitly asks the agent to stop at the PR.
+
+Do not leave a green, mergeable PR open just because the link was reported.
+
 ### AGENT BRANCH SYNC — NON-NEGOTIABLE (prevents recurring merge conflicts)
 
 At the START of each session, before making any new commits, the agent must:
@@ -80,8 +98,11 @@ confirmation is ever made without that external validation.
 Every commit must advance one of Phases 0–4 in `docs/PRODUCTION_READINESS.md`.
 If a commit does not close a named gap in Phases 0–4, it should not be merged.
 
-Current Phase 0 open gaps:
- - Train `semisupervised_scorer` on real MeerKAT BLUSE corpus (Sheikh et al. 2025)
+Current Phase 0 status:
+ - Real MeerKAT BLUSE/SETICORE scorer training is locally complete from the
+   verified Berkeley source documented in `docs/meerkat_bluse_hit_table_research.md`.
+ - Continue Phase 1 radio hardening: broader hit-bearing stratified-corpus
+   validation remains open for cross-target RFI suppression and drift evidence.
 
 ### Anti-doom-loop rule (hard)
 
@@ -244,13 +265,18 @@ The project was redirected in session on 2026-06-26. Key changes:
   `docs/fermi_paradox_technosignatures_brief.md` is tracked on GitHub.
 - **PR #127 merged to `main`** (2026-06-27): synthetic training/calibration
   fixtures removed and the runbook storage cleanup is tracked.
-- **Current PR in progress:** Phase 0 real-corpus semi-supervised scorer
-  source hardening. The stale MeerKAT BLUSE ingest URL was invalid; do not use
-  Zenodo concept record 10987642 for this project.
+- **PR #148 merged to `main`** (2026-06-29): BL extended-corpus downloader now
+  has verified no-payload `--discover-only` / `--availability-report` mode and
+  `TECHNO_EXTENDED_CORPUS_MAX_TARGETS` counts URL-available HDF5 targets rather
+  than raw manifest rows. CI passed after fixing the executable test to use an
+  explicit interpreter override in GitHub Actions.
+- **Current PR in progress:** none after PR #148 merge. Before new work, reset
+  `claude/general-session-Bb2dZ` to `origin/main`.
 - **Phase 0 status:** Module deletion ✅ (PR #124). ABACAB ✅ (PR #125).
   Zero-hit evidence ✅ (PR #126). Synthetic fixture deletion ✅ (PR #127).
-  Remaining after this PR: verified MeerKAT BLUSE source discovery, or broader
-  real-corpus expansion beyond the small local GBT/turboSETI sample.
+  Verified MeerKAT BLUSE/SETICORE source ingest ✅ (PR #142). Remaining
+  production work is Phase 1 radio hardening and broader real-corpus expansion
+  beyond the small local GBT/turboSETI sample.
 - **semisupervised_scorer:** local training path verified. Use
   `techno-search semisupervised-corpus-build --dat-dir data --output data/meerkat_hits/real_turboseti_training.ndjson`
   and then `techno-search semisupervised-scorer-train --corpus data/meerkat_hits/real_turboseti_training.ndjson --workers 12`.
@@ -275,11 +301,13 @@ The project was redirected in session on 2026-06-26. Key changes:
 **PR #128 merged.** Public `validate-all` is now Phase 0 science-only and the
 legacy validate-all payload was deleted.
 Next Phase 0 items:
-1. Expand the real scorer corpus beyond the current 259-hit local GBT/turboSETI
-   sample, preferably with a verified MeerKAT BLUSE hit-table source if one can
-   be located from primary sources. Do not fabricate or reuse the invalid
-   Zenodo 10987642 source.
-2. Calibrate how `semisupervised_anomaly_score` should affect pathway routing
+1. Expand the real stratified GBT corpus with URL-available HDF5 targets from
+   `data/target_sample_manifest.json`; use `--discover-only` first and never
+   assume manifest-order targets have live archive URLs.
+2. Run turboSETI and `radio-real-corpus-summary --dat-dir data/extended_corpus
+   --dat-dir data/bl_hits`; Phase 1 cross-target RFI validation remains blocked
+   until at least 2 independent hit-bearing targets exist.
+3. Calibrate how `semisupervised_anomaly_score` should affect pathway routing
    after a larger independent real corpus exists. It is currently recorded as
    local triage evidence in candidate packets, not used as an external-claim
    trigger.
@@ -305,8 +333,12 @@ Next Phase 0 items:
 git pull origin main
 ```
 
-**Step 2 — Download the stratified corpus (31 targets):**
+**Step 2 — Verify current BL availability, then download URL-available targets:**
 ```bash
+caffeinate -i bash scripts/download_bl_extended_corpus.sh \
+    --manifest data/target_sample_manifest.json \
+    --discover-only
+
 caffeinate -i bash scripts/download_bl_extended_corpus.sh \
     --manifest data/target_sample_manifest.json
 ```

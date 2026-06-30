@@ -18,6 +18,8 @@
 #   bash scripts/download_bl_extended_corpus.sh --dry-run
 #   bash scripts/download_bl_extended_corpus.sh --discover-only \
 #       --manifest data/target_sample_manifest.json
+#   bash scripts/download_bl_extended_corpus.sh --discover-only \
+#       --availability-output /tmp/bl_hdf5_availability.tsv
 #
 # Output: data/extended_corpus/<target_name>/<filename>.h5
 #
@@ -35,6 +37,7 @@ MANIFEST="${REPO_ROOT}/data/target_sample_manifest.json"
 MAX_TARGETS="${TECHNO_EXTENDED_CORPUS_MAX_TARGETS:-0}"
 DRY_RUN=0
 DISCOVER_ONLY=0
+AVAILABILITY_OUTPUT=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -50,9 +53,13 @@ while [[ $# -gt 0 ]]; do
       MANIFEST="$2"
       shift 2
       ;;
+    --availability-output)
+      AVAILABILITY_OUTPUT="$2"
+      shift 2
+      ;;
     -h|--help)
       cat <<'EOF'
-Usage: bash scripts/download_bl_extended_corpus.sh [--manifest PATH] [--dry-run] [--discover-only]
+Usage: bash scripts/download_bl_extended_corpus.sh [--manifest PATH] [--dry-run] [--discover-only] [--availability-output PATH]
 
 Downloads current Breakthrough Open Data HDF5 evidence inputs into:
   data/extended_corpus/<target>/
@@ -67,6 +74,9 @@ Options:
   --dry-run        Enumerate manifest targets without network access.
   --discover-only  Query BL search pages and print target<TAB>URL rows for
                    URL-available HDF5 records without downloading payloads.
+  --availability-output PATH
+                   Write URL-available target<TAB>URL rows to PATH. Use with
+                   --discover-only for a durable, verified availability map.
 
 Scientific guardrail:
   Outputs are local calibration/generalisation aids only. They do not
@@ -99,6 +109,15 @@ TARGETS=(
 # ---------------------------------------------------------------------------
 
 log() { echo "[$(date -u '+%Y-%m-%dT%H:%M:%SZ')] $*" >&2; }
+
+record_available_url() {
+  local name="$1"
+  local url="$2"
+  printf '%s\t%s\n' "${name}" "${url}"
+  if [[ -n "${AVAILABILITY_OUTPUT}" ]]; then
+    printf '%s\t%s\n' "${name}" "${url}" >> "${AVAILABILITY_OUTPUT}"
+  fi
+}
 
 load_manifest_targets() {
   local manifest_path="$1"
@@ -214,6 +233,11 @@ log "[INFO]  Manifest: ${MANIFEST}"
 log "[INFO]  Target limit: ${MAX_TARGETS:-0} URL-available target(s) (0 means all available targets)"
 log "[INFO]  Dry run: ${DRY_RUN}"
 log "[INFO]  Discover only: ${DISCOVER_ONLY}"
+if [[ -n "${AVAILABILITY_OUTPUT}" ]]; then
+  log "[INFO]  Availability output: ${AVAILABILITY_OUTPUT}"
+  mkdir -p "$(dirname "${AVAILABILITY_OUTPUT}")"
+  : > "${AVAILABILITY_OUTPUT}"
+fi
 mkdir -p "${OUT_DIR}"
 
 if manifest_targets="$(load_manifest_targets "${MANIFEST}")"; then
@@ -250,7 +274,7 @@ for name in "${TARGETS[@]}"; do
   fi
   available=$((available + 1))
   if [[ "${DISCOVER_ONLY}" -eq 1 ]]; then
-    printf '%s\t%s\n' "${name}" "${url}"
+    record_available_url "${name}" "${url}"
     continue
   fi
   if download_hdf5 "${name}" "${url}"; then
