@@ -431,9 +431,23 @@ def _candidate_review_summary(
     ]
     limited_sample = max(0, sample_limit)
     review_targets = _review_target_groups(ranked_survivors, sample_limit=None)
+    target_concentration = _target_concentration_summary(
+        review_targets,
+        follow_up_candidate_count=follow_up_candidate_count,
+    )
+    escalation_blocked_candidate_count = (
+        int(target_concentration["dominant_target_candidate_count"])
+        if bool(target_concentration["candidate_escalation_blocked"])
+        else 0
+    )
     return {
         "reviewed_candidate_count": len(reviewed),
         "follow_up_candidate_count": follow_up_candidate_count,
+        "escalation_blocked_candidate_count": escalation_blocked_candidate_count,
+        "escalation_ready_candidate_count": max(
+            0,
+            follow_up_candidate_count - escalation_blocked_candidate_count,
+        ),
         "follow_up_target_count": len(review_targets),
         "rfi_rejected_candidate_count": len(cross_target_flags),
         "drift_inconsistent_candidate_count": drift_inconsistent_count,
@@ -442,10 +456,7 @@ def _candidate_review_summary(
         "sample_limit": limited_sample,
         "top_review_candidates": ranked_survivors[:limited_sample],
         "top_review_targets": review_targets[:limited_sample],
-        "target_concentration": _target_concentration_summary(
-            review_targets,
-            follow_up_candidate_count=follow_up_candidate_count,
-        ),
+        "target_concentration": target_concentration,
         "top_rejected_or_control_candidates": ranked_rejected_or_controls[:limited_sample],
         "claim_guardrail": (
             "Rows labeled needs_follow_up_review are automated triage survivors "

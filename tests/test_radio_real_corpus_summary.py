@@ -215,6 +215,8 @@ def test_radio_real_corpus_summary_reports_review_survivor(tmp_path: Path) -> No
     assert result["cross_target_rfi"]["flagged_candidate_count"] == 0
     assert result["candidate_review"]["reviewed_candidate_count"] == 2
     assert result["candidate_review"]["follow_up_candidate_count"] == 2
+    assert result["candidate_review"]["escalation_blocked_candidate_count"] == 0
+    assert result["candidate_review"]["escalation_ready_candidate_count"] == 2
     assert result["candidate_review"]["follow_up_target_count"] == 2
     assert result["candidate_review"]["sample_limit"] == 1
     assert len(result["candidate_review"]["top_review_candidates"]) == 1
@@ -267,6 +269,8 @@ def test_radio_real_corpus_summary_flags_target_concentration(tmp_path: Path) ->
     assert concentration["dominant_target_name"] == "TARGET_DENSE"
     assert concentration["dominant_target_candidate_count"] == 2
     assert concentration["dominant_target_fraction"] == pytest.approx(2 / 3)
+    assert result["candidate_review"]["escalation_blocked_candidate_count"] == 2
+    assert result["candidate_review"]["escalation_ready_candidate_count"] == 1
     assert concentration["source_context_review_needed"] is True
     assert concentration["candidate_escalation_blocked"] is True
     assert concentration["blocking_review_flags"] == [
