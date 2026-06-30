@@ -12,6 +12,9 @@ from techno_search.production_scan import (
 )
 
 RUN_ID = "RUN-2026-06-18_201325Z-A7K4-prod-scan"
+RUN_PRODUCTION_SCAN_SCRIPT = (
+    Path(__file__).resolve().parents[1] / "scripts" / "run_production_scan.sh"
+)
 
 
 def _write_result_pair(
@@ -296,3 +299,33 @@ def test_production_diagnostics_compact_output(tmp_path: Path) -> None:
     assert diagnostics["validate_all_ok"] is True
     assert diagnostics["review_dashboard_needs_attention"] is False
     assert "Diagnostics: validate_all_ok=True needs_attention=False" in stdout.getvalue()
+
+
+def test_run_production_scan_script_keeps_validate_all_output_compact() -> None:
+    script = RUN_PRODUCTION_SCAN_SCRIPT.read_text(encoding="utf-8")
+
+    assert 'tee "${SCAN_DIR}/validate_all.json"' not in script
+    assert 'echo "${VALIDATE_JSON}"' not in script
+    assert "VALIDATE_JSON_PATH" in script
+    assert "_review_safe_json" in script
+    assert "validate-all: PASSED (artifact:" in script
+
+
+def test_run_production_scan_script_bounds_force_rescan_to_one_pass() -> None:
+    script = RUN_PRODUCTION_SCAN_SCRIPT.read_text(encoding="utf-8")
+
+    assert "force_rescan_session_history.ndjson" in script
+    assert "each currently queued target will be rescanned once" in script
+    assert 'QUEUE_HISTORY_FILE="${SCAN_DIR}/force_rescan_session_history.ndjson"' in script
+    initial_queue_call = (
+        'prod-target-queue \\\n'
+        '    --dat-dir "${DAT_DIR}" \\\n'
+        '    --history-file "${QUEUE_HISTORY_FILE}"'
+    )
+    loop_queue_call = (
+        'prod-target-queue \\\n'
+        '        --dat-dir "${DAT_DIR}" \\\n'
+        '        --history-file "${QUEUE_HISTORY_FILE}"'
+    )
+    assert initial_queue_call in script
+    assert loop_queue_call in script

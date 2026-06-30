@@ -98,6 +98,7 @@ RUN_ID=$(echo "${RUN_ID_JSON}" | "${PYTHON}" \
 SCAN_DIR="${RESULTS_BASE}/scans/${RUN_ID}"
 SCAN_SUMMARY_PATH="${SCAN_DIR}/${RUN_ID}_scan_summary.json"
 REVIEW_DASHBOARD_PATH="${SCAN_DIR}/${RUN_ID}_review_dashboard.json"
+VALIDATE_JSON_PATH="${SCAN_DIR}/validate_all.json"
 mkdir -p "${SCAN_DIR}" "${OUTPUT_DIR}"
 
 echo ""
@@ -126,30 +127,60 @@ VALIDATE_JSON=$("${TECHNO_SEARCH}" validate-all 2>&1)
 VALIDATE_EXIT=$?
 set -e
 
-echo "${VALIDATE_JSON}" | tee "${SCAN_DIR}/validate_all.json"
+VALIDATE_RAW_PATH="${SCAN_DIR}/validate_all.raw.json"
+printf '%s\n' "${VALIDATE_JSON}" > "${VALIDATE_RAW_PATH}"
+if ! "${PYTHON}" - "${REPO_ROOT}" "${VALIDATE_RAW_PATH}" "${VALIDATE_JSON_PATH}" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+from techno_search.production_run_outcomes import _review_safe_json
+
+repo_root = Path(sys.argv[1])
+raw_path = Path(sys.argv[2])
+dest_path = Path(sys.argv[3])
+payload = json.loads(raw_path.read_text(encoding="utf-8"))
+dest_path.write_text(
+    json.dumps(
+        _review_safe_json(payload, project_root=repo_root),
+        indent=2,
+        sort_keys=True,
+    )
+    + "\n",
+    encoding="utf-8",
+)
+PY
+then
+    warn "validate-all output could not be sanitized as JSON; preserving raw artifact."
+    mv "${VALIDATE_RAW_PATH}" "${VALIDATE_JSON_PATH}"
+else
+    rm -f "${VALIDATE_RAW_PATH}"
+fi
 
 if [[ ${VALIDATE_EXIT} -ne 0 ]]; then
     error "validate-all FAILED — scan aborted."
+    error "Validation artifact: ${VALIDATE_JSON_PATH}"
     error "Fix all validation failures before running a production scan."
     exit 1
 fi
-info "validate-all: PASSED"
+info "validate-all: PASSED (artifact: ${VALIDATE_JSON_PATH})"
 
 # ---------------------------------------------------------------------------
 # Step 2: Show initial target queue
 # ---------------------------------------------------------------------------
 step "Step 2: Target queue (selection rationale)"
 
-FORCE_ARG=""
+QUEUE_HISTORY_FILE="${HISTORY_FILE}"
 if [[ "${FORCE_RESCAN}" == "true" ]]; then
-    FORCE_ARG="--force"
+    QUEUE_HISTORY_FILE="${SCAN_DIR}/force_rescan_session_history.ndjson"
+    : > "${QUEUE_HISTORY_FILE}"
+    info "Force-rescan: each currently queued target will be rescanned once this run."
 fi
 
 set +e
 QUEUE_JSON=$("${TECHNO_SEARCH}" prod-target-queue \
     --dat-dir "${DAT_DIR}" \
-    --history-file "${HISTORY_FILE}" \
-    ${FORCE_ARG} 2>&1)
+    --history-file "${QUEUE_HISTORY_FILE}" 2>&1)
 QUEUE_EXIT=$?
 set -e
 
@@ -194,8 +225,7 @@ while true; do
     set +e
     QUEUE_JSON=$("${TECHNO_SEARCH}" prod-target-queue \
         --dat-dir "${DAT_DIR}" \
-        --history-file "${HISTORY_FILE}" \
-        ${FORCE_ARG} 2>/dev/null)
+        --history-file "${QUEUE_HISTORY_FILE}" 2>/dev/null)
     QUEUE_EXIT=$?
     set -e
 
@@ -288,6 +318,16 @@ while true; do
             --dat-file "${DAT_FILE}" \
             --history-file "${HISTORY_FILE}" \
             ${PARENT_RUN_ID_ARG} >/dev/null 2>&1 || true
+        if [[ "${QUEUE_HISTORY_FILE}" != "${HISTORY_FILE}" ]]; then
+            "${TECHNO_SEARCH}" prod-record-scan \
+                --target-stem "${TARGET_STEM}" \
+                --run-id "${RUN_ID}" \
+                --score 0.0 \
+                --pathway "pipeline_failed" \
+                --dat-file "${DAT_FILE}" \
+                --history-file "${QUEUE_HISTORY_FILE}" \
+                ${PARENT_RUN_ID_ARG} >/dev/null 2>&1 || true
+        fi
         continue
     fi
 
@@ -326,6 +366,17 @@ except Exception:
         --history-file "${HISTORY_FILE}" \
         ${PARENT_RUN_ID_ARG} >/dev/null 2>&1 || \
         warn "Failed to record scan for ${TARGET_STEM}"
+    if [[ "${QUEUE_HISTORY_FILE}" != "${HISTORY_FILE}" ]]; then
+        "${TECHNO_SEARCH}" prod-record-scan \
+            --target-stem "${TARGET_STEM}" \
+            --run-id "${RUN_ID}" \
+            --score "${SCORE}" \
+            --pathway "${PATHWAY}" \
+            --dat-file "${DAT_FILE}" \
+            --history-file "${QUEUE_HISTORY_FILE}" \
+            ${PARENT_RUN_ID_ARG} >/dev/null 2>&1 || \
+            warn "Failed to record force-rescan session state for ${TARGET_STEM}"
+    fi
 done
 
 # ---------------------------------------------------------------------------
