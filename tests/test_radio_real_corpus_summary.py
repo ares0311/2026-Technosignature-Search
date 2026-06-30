@@ -247,12 +247,9 @@ def test_radio_real_corpus_summary_flags_target_concentration(tmp_path: Path) ->
                 target_id="TARGET_DENSE",
                 frequency_hz=1_421_000_000.0,
                 drift=0.2,
-                beam=1,
                 backend_host="blpn38",
                 coarse_channel=11,
                 tstart_mjd=60984.25,
-                ra_deg=13.3,
-                dec_deg=-5.7,
             ),
             _normalized_hit(target_id="TARGET_SINGLE", frequency_hz=1_422_000_000.0, drift=0.3),
         ],
@@ -273,8 +270,8 @@ def test_radio_real_corpus_summary_flags_target_concentration(tmp_path: Path) ->
     dense_group = result["candidate_review"]["top_review_targets"][0]
     assert dense_group["source_artifact_count"] == 2
     assert dense_group["source_context"] == {
-        "beam_count": 2,
-        "beams": [0, 1],
+        "beam_count": 1,
+        "beams": [0],
         "backend_host_count": 2,
         "backend_hosts": ["blpn37", "blpn38"],
         "coarse_channel_count": 2,
@@ -282,9 +279,15 @@ def test_radio_real_corpus_summary_flags_target_concentration(tmp_path: Path) ->
         "min_tstart_mjd": 60984.176537959574,
         "max_tstart_mjd": 60984.25,
         "min_ra_deg": 13.255836111111112,
-        "max_ra_deg": 13.3,
+        "max_ra_deg": 13.255836111111112,
         "min_dec_deg": -5.825555555555555,
-        "max_dec_deg": -5.7,
+        "max_dec_deg": -5.825555555555555,
+        "review_flags": [
+            "single_beam_survivor_context",
+            "multi_backend_survivor_context",
+            "multi_coarse_channel_survivor_context",
+            "single_sky_position_survivor_context",
+        ],
     }
 
 
