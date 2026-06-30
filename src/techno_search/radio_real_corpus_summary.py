@@ -478,12 +478,6 @@ def _review_target_groups(
         source_artifacts = sorted(
             {str(row["source_artifact"]) for row in rows if str(row["source_artifact"])}
         )
-        backend_hosts = _sorted_nonempty_strings(rows, "backend_host")
-        beams = _sorted_nonnegative_ints(rows, "beam")
-        coarse_channels = _sorted_nonnegative_ints(rows, "coarse_channel")
-        tstarts = _positive_floats(rows, "tstart_mjd")
-        ra_values = _positive_floats(rows, "ra_deg")
-        dec_values = _finite_floats(rows, "dec_deg")
         summaries.append(
             {
                 "target_name": target_name,
@@ -497,20 +491,7 @@ def _review_target_groups(
                 "max_frequency_hz": max(frequencies),
                 "source_artifact_count": len(source_artifacts),
                 "sample_source_artifacts": source_artifacts[:3],
-                "source_context": {
-                    "beam_count": len(beams),
-                    "beams": beams[:10],
-                    "backend_host_count": len(backend_hosts),
-                    "backend_hosts": backend_hosts[:10],
-                    "coarse_channel_count": len(coarse_channels),
-                    "coarse_channels": coarse_channels[:10],
-                    "min_tstart_mjd": min(tstarts) if tstarts else None,
-                    "max_tstart_mjd": max(tstarts) if tstarts else None,
-                    "min_ra_deg": min(ra_values) if ra_values else None,
-                    "max_ra_deg": max(ra_values) if ra_values else None,
-                    "min_dec_deg": min(dec_values) if dec_values else None,
-                    "max_dec_deg": max(dec_values) if dec_values else None,
-                },
+                "source_context": _source_context_summary(rows),
             }
         )
 
@@ -526,6 +507,40 @@ def _review_target_groups(
     if sample_limit is None:
         return ranked_summaries
     return ranked_summaries[:sample_limit]
+
+
+def _source_context_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    backend_hosts = _sorted_nonempty_strings(rows, "backend_host")
+    beams = _sorted_nonnegative_ints(rows, "beam")
+    coarse_channels = _sorted_nonnegative_ints(rows, "coarse_channel")
+    tstarts = _positive_floats(rows, "tstart_mjd")
+    ra_values = _positive_floats(rows, "ra_deg")
+    dec_values = _finite_floats(rows, "dec_deg")
+    flags: list[str] = []
+    if len(rows) > 1 and len(beams) == 1:
+        flags.append("single_beam_survivor_context")
+    if len(backend_hosts) > 1:
+        flags.append("multi_backend_survivor_context")
+    if len(coarse_channels) > 1:
+        flags.append("multi_coarse_channel_survivor_context")
+    if len(set(ra_values)) == 1 and len(set(dec_values)) == 1:
+        flags.append("single_sky_position_survivor_context")
+
+    return {
+        "beam_count": len(beams),
+        "beams": beams[:10],
+        "backend_host_count": len(backend_hosts),
+        "backend_hosts": backend_hosts[:10],
+        "coarse_channel_count": len(coarse_channels),
+        "coarse_channels": coarse_channels[:10],
+        "min_tstart_mjd": min(tstarts) if tstarts else None,
+        "max_tstart_mjd": max(tstarts) if tstarts else None,
+        "min_ra_deg": min(ra_values) if ra_values else None,
+        "max_ra_deg": max(ra_values) if ra_values else None,
+        "min_dec_deg": min(dec_values) if dec_values else None,
+        "max_dec_deg": max(dec_values) if dec_values else None,
+        "review_flags": flags,
+    }
 
 
 def _target_concentration_summary(
