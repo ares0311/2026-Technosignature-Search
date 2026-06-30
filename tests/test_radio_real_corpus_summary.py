@@ -197,11 +197,17 @@ def test_radio_real_corpus_summary_reports_review_survivor(tmp_path: Path) -> No
     assert result["cross_target_rfi"]["flagged_candidate_count"] == 0
     assert result["candidate_review"]["reviewed_candidate_count"] == 2
     assert result["candidate_review"]["follow_up_candidate_count"] == 2
+    assert result["candidate_review"]["follow_up_target_count"] == 2
     assert result["candidate_review"]["sample_limit"] == 1
     assert len(result["candidate_review"]["top_review_candidates"]) == 1
+    assert len(result["candidate_review"]["top_review_targets"]) == 1
     candidate = result["candidate_review"]["top_review_candidates"][0]
     assert candidate["survives_current_automated_filters"] is True
     assert candidate["review_label"] == "needs_follow_up_review"
+    target_group = result["candidate_review"]["top_review_targets"][0]
+    assert target_group["candidate_count"] == 1
+    assert target_group["target_name"] in {"MKT_A", "MKT_B"}
+    assert target_group["top_candidate_id"] == candidate["candidate_id"]
     assert "not detections" in result["candidate_review"]["claim_guardrail"]
 
 
@@ -318,4 +324,5 @@ def test_cli_radio_real_corpus_summary_accepts_hit_ndjson(tmp_path: Path, capsys
     assert result["validation_readiness"]["cross_target_rfi_validation_ready"] is True
     assert result["candidate_review"]["sample_limit"] == 0
     assert result["candidate_review"]["top_review_candidates"] == []
+    assert result["candidate_review"]["top_review_targets"] == []
     assert result["candidate_review"]["top_rejected_or_control_candidates"] == []
