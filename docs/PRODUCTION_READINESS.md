@@ -257,36 +257,20 @@ cross-target RFI recurrence, drift-evidence, fitted-scorer integration, and
 bounded candidate-review samples without redistributing or committing the
 payload. `SemisupervisedScorer.score_hits` now scores batches with one vectorized
 sklearn `decision_function` call, so the full 200,000-row local MeerKAT review is
-practical. A full local review with `--candidate-sample-limit 5` reviewed
+practical. A full local review with `--candidate-sample-limit 0` reviewed
 200,003 candidate rows, reported 799 hit-bearing targets, 195,469 cross-target
 RFI recurrence flags, 3 known Voyager control rows, 148,215 stationary-drift
-rows, 4,887 drift-inconsistent rows, 1,072 automated nonstationary review
-survivors across 5 survivor targets, and `phase1_radio_validation_ready: true`.
-The target-level summary shows 1,065 of those survivor rows concentrated on
-`Atlas` (`dominant_target_fraction: 0.9934701492537313`), so
-`source_context_review_needed` is true before any escalation. The Atlas survivor
-group spans 36 source artifacts, 4 backend hosts, 58 coarse channels, and beam 0
-only, with a single RA/DEC and MJD range 61006.0897-61006.2975, so the next
-review question is source and instrumental context rather than a single-file
-artifact. The group now emits explicit review flags for single-beam survivor
-context, multi-backend survivor context, multi-coarse-channel survivor context,
-and single-sky-position survivor context; candidate escalation is explicitly
-blocked until that source-context review is resolved. The current local summary
-separates 1,069 source-context-blocked automated survivor rows from 3
-escalation-ready automated survivor rows and emits separate top
-escalation-ready target groups (`ex_NSVS_15969565`,
-`Gaia_3578686357276468608`, `Gaia_3578732025664620800`) so blocked Atlas and
-`ex_LEDA_976081` rows are not mixed with ready rows in operator triage. The
-ready cohort summary shows those 3 rows span 3 targets but only 2 source
-artifacts across MJD 60997.4465-60997.4905, so it also flags shared-artifact
-review before treating them as independent evidence. The summary now reports
-`independent_escalation_ready_candidate_count: 0` and
-`independence_blocked_candidate_count: 3` until that shared-artifact context is
-resolved, and emits per-artifact review groups showing that two ready rows share
-one SETICORE source artifact while the third row comes from a second artifact.
-Known control targets are
+rows, 4,887 drift-inconsistent rows, and `phase1_radio_validation_ready: true`.
+The verified MeerKAT BLUSE/SETICORE ATLAS corpus is now treated as public
+null-search context because the public Breakthrough Listen 3I/ATLAS summary
+reports no technosignatures detected and ATel #17499 reports the detected
+MeerKAT signals were spatially inconsistent with 3I/ATLAS and likely RFI. The
+current local summary therefore reports
+`public_null_search_context_candidate_count: 200000`,
+`follow_up_candidate_count: 0`, `escalation_ready_candidate_count: 0`, and
+`independent_escalation_ready_candidate_count: 0`. Known control targets are
 preserved as positive controls, and stationary-frequency rows are separated from
-nonstationary review survivors rather than promoted as follow-up candidates.
+nonstationary rows rather than promoted as follow-up candidates.
 These summaries are local validation evidence only; they are not detections,
 discoveries, expert review, external validation, or external-submission
 approval.

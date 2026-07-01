@@ -71,6 +71,7 @@ def _normalized_hit(
     ra_deg: float = 13.255836111111112,
     dec_deg: float = -5.825555555555555,
     source_artifact: str | None = None,
+    corpus_source: str = "unit_test_realistic_meerkat_rows",
 ) -> dict[str, object]:
     return {
         "snr": 25.0,
@@ -93,7 +94,7 @@ def _normalized_hit(
         "ra_deg": ra_deg,
         "dec_deg": dec_deg,
         "source_artifact": source_artifact or f"{target_id}_{beam}_{coarse_channel}.hits",
-        "corpus_source": "meerkat_bluse_seticore_atlas_2025_11",
+        "corpus_source": corpus_source,
     }
 
 
@@ -426,6 +427,41 @@ def test_radio_real_corpus_summary_keeps_voyager_as_control(tmp_path: Path) -> N
     assert candidate["known_control_target"] is True
     assert candidate["survives_current_automated_filters"] is False
     assert candidate["review_label"] == "known_spacecraft_or_calibration_control"
+
+
+def test_radio_real_corpus_summary_rejects_public_null_search_context(
+    tmp_path: Path,
+) -> None:
+    dat_dir = tmp_path / "dat"
+    dat_dir.mkdir()
+    _write_zero_hit_dat(dat_dir / "zero_hit.dat", source="ZERO_HIT_TARGET")
+    hit_ndjson = tmp_path / "atlas_public_null_sample.ndjson"
+    _write_hit_ndjson(
+        hit_ndjson,
+        [
+            _normalized_hit(
+                target_id="ATLAS_PUBLIC_NULL",
+                frequency_hz=1_420_000_000.0,
+                drift=0.1,
+                corpus_source="meerkat_bluse_seticore_atlas_2025_11",
+            ),
+        ],
+    )
+
+    result = radio_real_corpus_summary(
+        [dat_dir],
+        hit_ndjson_paths=[hit_ndjson],
+        semisupervised_model_path=tmp_path / "missing_model.joblib",
+    )
+
+    review = result["candidate_review"]
+    assert review["public_null_search_context_candidate_count"] == 1
+    assert review["follow_up_candidate_count"] == 0
+    assert review["escalation_ready_candidate_count"] == 0
+    candidate = review["top_rejected_or_control_candidates"][0]
+    assert candidate["public_null_search_context"] is True
+    assert candidate["survives_current_automated_filters"] is False
+    assert candidate["review_label"] == "public_null_search_context"
 
 
 def test_radio_real_corpus_summary_separates_stationary_drift(tmp_path: Path) -> None:
