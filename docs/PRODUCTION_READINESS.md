@@ -282,7 +282,9 @@ artifacts across MJD 60997.4465-60997.4905, so it also flags shared-artifact
 review before treating them as independent evidence. The summary now reports
 `independent_escalation_ready_candidate_count: 0` and
 `independence_blocked_candidate_count: 3` until that shared-artifact context is
-resolved. Known control targets are
+resolved, and emits per-artifact review groups showing that two ready rows share
+one SETICORE source artifact while the third row comes from a second artifact.
+Known control targets are
 preserved as positive controls, and stationary-frequency rows are separated from
 nonstationary review survivors rather than promoted as follow-up candidates.
 These summaries are local validation evidence only; they are not detections,

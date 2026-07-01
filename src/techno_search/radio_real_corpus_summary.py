@@ -595,6 +595,7 @@ def _ready_context_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "targets": targets[:10],
         "source_artifact_count": len(source_artifacts),
         "sample_source_artifacts": source_artifacts[:5],
+        "source_artifact_groups": _ready_source_artifact_groups(rows)[:10],
         "backend_host_count": len(backend_hosts),
         "backend_hosts": backend_hosts[:10],
         "beam_count": len(beams),
@@ -610,6 +611,48 @@ def _ready_context_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
         if shared_artifact_review_needed
         else "",
     }
+
+
+def _ready_source_artifact_groups(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for row in rows:
+        source_artifact = str(row.get("source_artifact") or "")
+        if not source_artifact:
+            continue
+        grouped.setdefault(source_artifact, []).append(row)
+
+    summaries: list[dict[str, Any]] = []
+    for source_artifact, artifact_rows in grouped.items():
+        targets = _sorted_nonempty_strings(artifact_rows, "target_name")
+        candidate_ids = _sorted_nonempty_strings(artifact_rows, "candidate_id")
+        backend_hosts = _sorted_nonempty_strings(artifact_rows, "backend_host")
+        beams = _sorted_nonnegative_ints(artifact_rows, "beam")
+        tstarts = _positive_floats(artifact_rows, "tstart_mjd")
+        summaries.append(
+            {
+                "source_artifact": source_artifact,
+                "candidate_count": len(artifact_rows),
+                "target_count": len(targets),
+                "targets": targets[:10],
+                "candidate_ids": candidate_ids[:10],
+                "backend_host_count": len(backend_hosts),
+                "backend_hosts": backend_hosts[:10],
+                "beam_count": len(beams),
+                "beams": beams[:10],
+                "min_tstart_mjd": min(tstarts) if tstarts else None,
+                "max_tstart_mjd": max(tstarts) if tstarts else None,
+            }
+        )
+
+    return sorted(
+        summaries,
+        key=lambda row: (
+            int(row["candidate_count"]),
+            int(row["target_count"]),
+            str(row["source_artifact"]),
+        ),
+        reverse=True,
+    )
 
 
 def _target_concentration_summary(
