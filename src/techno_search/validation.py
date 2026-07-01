@@ -12,7 +12,6 @@ from techno_search.background_search import (
     BACKGROUND_DRAFT_REPORT_DISCLAIMER,
     BACKGROUND_DRAFT_REPORT_MANIFEST_SCHEMA_VERSION,
 )
-from techno_search.log_store import sqlite_log_validation_errors
 from techno_search.reporting import REQUIRED_DISCLAIMER
 from techno_search.schemas import PosteriorClass, Track, candidate_from_mapping
 
@@ -336,6 +335,8 @@ def validate_draft_report_directory(path: Path | str) -> ValidationResult:
 
 def validate_sqlite_log_database(path: Path | str) -> ValidationResult:
     """Validate top-level SQLite operational log invariants."""
+
+    from techno_search.log_store import sqlite_log_validation_errors
 
     return ValidationResult(errors=sqlite_log_validation_errors(Path(path)))
 

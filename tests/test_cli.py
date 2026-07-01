@@ -1,4 +1,6 @@
 import json
+import subprocess
+import sys
 from io import StringIO
 from pathlib import Path
 
@@ -94,6 +96,30 @@ def test_cli_version_command_reports_package_version() -> None:
 
     assert exit_code == 0
     assert stdout.getvalue().strip() == f"techno-search {techno_search.__version__}"
+
+
+def test_cli_version_does_not_import_sqlite_in_fresh_process() -> None:
+    code = (
+        "import io, sys; "
+        "from techno_search.cli import main; "
+        "out = io.StringIO(); "
+        "code = main(['version'], stdout=out); "
+        "print(out.getvalue().strip()); "
+        "print('sqlite3' in sys.modules); "
+        "raise SystemExit(code)"
+    )
+
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.stdout.splitlines() == [
+        f"techno-search {techno_search.__version__}",
+        "False",
+    ]
 
 
 def test_cli_scores_candidate_json_to_stdout(tmp_path) -> None:
