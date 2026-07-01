@@ -14,21 +14,22 @@ Phase 0 — Delete misaligned overhead, harden radio pipeline, prepare for multi
 
 ## Current Production Gate
 
-Tier 1 and Tier 2 engineering blockers are closed for local radio pipeline operations.
+Tier 1 and Tier 2 engineering blockers are closed for local radio pipeline
+operations.
 
-**AI hardening gate:** The AI hardening production blocker (DECISION-134) is closed for
-local citizen-science production promotion via the injection-recovery closure evidence
-bundle (DECISION-139). Radio pipeline functional for BL/GBT `.dat` files.
-Semi-supervised scorer is structurally correct but unfitted (`train_hit_count: 0`,
-`is_fitted: false`). The `semisupervised-scorer-train` CLI is available, but
-`data/meerkat_hits/` is empty locally; the scorer must be trained on the real
-MeerKAT BLUSE corpus before use in candidate routing. DECISION-134 is closed for
-local citizen-science production promotion.
+**AI hardening gate:** The AI hardening production blocker (DECISION-134) is
+closed for local operations via the injection-recovery closure evidence bundle
+(DECISION-139). Radio pipeline functional for BL/GBT `.dat` files. The verified
+Berkeley SETI / Breakthrough Listen MeerKAT BLUSE/SETICORE JSON source has been
+normalized into ignored local storage, and the local semi-supervised scorer is
+trained on 200,000 real rows. The payload and fitted model remain ignored local
+artifacts and must not be redistributed without explicit license terms.
 
 **Current milestone:** Milestone 79 (Production Scan Hardening And Artifact Hygiene)
 
-**Current phase work (Phase 0):**
-- Train semisupervised_scorer on real MeerKAT BLUSE corpus (Sheikh et al. 2025)
+**Current phase work:** Phase 1 radio hardening. The current local real-corpus
+review has 3 automated escalation-ready rows, but all 3 are blocked from
+independent readiness pending shared-artifact context review.
 
 ---
 
@@ -37,7 +38,10 @@ local citizen-science production promotion.
 **Radio pipeline:** Functional for BL/GBT `.dat` files. Produces non-detection
 manifests and candidate manifests. ON/OFF cadence scoring follows the ABACAB
 feature added in Phase 0; raw-file ABACAB verification remains Phase 1 hardening.
-Semi-supervised scorer unfitted (zero real training hits).
+Semi-supervised scorer integration is locally fitted on the verified real
+MeerKAT BLUSE/SETICORE corpus. The current local summary reports
+`independent_escalation_ready_candidate_count: 0`; no candidate is ready for
+external escalation.
 
 **Photometry, IR, spectroscopy:** Not implemented. No `lightkurve`, no WISE SED
 fitting, no JWST spectral ingest.
@@ -58,7 +62,7 @@ Step 3 blocked pending surviving candidates.
 - [x] ON/OFF cadence RFI rejection (partial — needs ABACAB hardening)
 - [x] Cross-band feature normalization
 - [x] GLOBULAR density pre-filter (HDBSCAN)
-- [x] Semi-supervised anomaly scorer (IsolationForest — unfitted)
+- [x] Semi-supervised anomaly scorer (IsolationForest — fitted locally on real MeerKAT rows)
 - [x] Multi-epoch hit comparison
 - [x] Cross-target RFI suppression
 - [x] Candidate escalation gate
@@ -83,7 +87,7 @@ Step 3 blocked pending surviving candidates.
 | Delete ~141 misaligned overhead modules | ✅ Done (PR #124) |
 | Delete synthetic training data files | ✅ Done (PR #127) |
 | Harden ON/OFF cadence RFI rejection (Enriquez 2017 ABACAB) | ✅ Done (PR #125) |
-| Train `semisupervised_scorer` on real MeerKAT BLUSE corpus | ❌ Unfitted — trainer CLI ready; real corpus payload absent locally |
+| Train `semisupervised_scorer` on real MeerKAT BLUSE corpus | ✅ Done locally — verified MeerKAT BLUSE/SETICORE source normalized and fitted on 200,000 real rows |
 | Update `validate-all` to scientific-only gates | ✅ Done — public gate is Phase 0 science-only |
 | Storage cleanup documented in runbook | ✅ Done |
 
@@ -93,11 +97,11 @@ Step 3 blocked pending surviving candidates.
 
 | Task | Status |
 |---|---|
-| Proper ON/OFF cadence verification (ABACAB from raw files) | ❌ Not started |
-| MeerKAT BLUSE real training corpus loaded into semisupervised_scorer | ❌ Not started |
-| Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial |
-| Cross-target RFI suppression on full stratified corpus | ⚠️ Partial |
-| Ranked candidate list output ready for Phase 5 | ❌ Not started |
+| Proper ON/OFF cadence verification (ABACAB from raw files) | ⚠️ Partial — HIP99427 raw HDF5 status and derived cadence review are wired locally |
+| MeerKAT BLUSE real training corpus loaded into semisupervised_scorer | ✅ Done locally — 200,000 verified real rows train the ignored local scorer |
+| Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial — real-corpus summary exposes stationary, Earth-consistent, and inconsistent rows |
+| Cross-target RFI suppression on full stratified corpus | ⚠️ Partial — verified real corpus exercises recurrence, but shared-artifact context still blocks independence |
+| Ranked candidate list output ready for Phase 5 | ⚠️ Partial — blocked and automated-ready rows are separated; independent-ready count is currently 0 |
 
 ---
 
@@ -153,11 +157,11 @@ Step 3 blocked pending surviving candidates.
 
 ## Next 3 Actions
 
-1. Download/ingest the real MeerKAT BLUSE corpus into `data/meerkat_hits/`, then
-   train `semisupervised_scorer` with `semisupervised-scorer-train`.
-2. Implement Phase 1 raw-file ABACAB cadence verification from `.fil`/`.h5` inputs.
-3. Expand cross-target RFI suppression and drift-rate checks across the stratified
-   real GBT corpus.
+1. Resolve the shared-artifact context for the 3 automated-ready radio rows before
+   treating them as independent follow-up evidence.
+2. Broaden raw-file ABACAB cadence verification beyond HIP99427 where approved
+   public raw files are locally available.
+3. Expand Phase 2/3/4 archive-first data paths so the project is not radio-only.
 
 ---
 
