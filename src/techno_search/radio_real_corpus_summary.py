@@ -452,6 +452,7 @@ def _candidate_review_summary(
         escalation_ready_survivors,
         sample_limit=None,
     )
+    ready_context = _ready_context_summary(escalation_ready_survivors)
     return {
         "reviewed_candidate_count": len(reviewed),
         "follow_up_candidate_count": follow_up_candidate_count,
@@ -460,6 +461,12 @@ def _candidate_review_summary(
             0,
             follow_up_candidate_count - escalation_blocked_candidate_count,
         ),
+        "independent_escalation_ready_candidate_count": ready_context[
+            "independent_candidate_count"
+        ],
+        "independence_blocked_candidate_count": ready_context[
+            "independence_blocked_candidate_count"
+        ],
         "follow_up_target_count": len(review_targets),
         "rfi_rejected_candidate_count": len(cross_target_flags),
         "drift_inconsistent_candidate_count": drift_inconsistent_count,
@@ -470,7 +477,7 @@ def _candidate_review_summary(
         "top_review_targets": review_targets[:limited_sample],
         "top_escalation_ready_candidates": escalation_ready_survivors[:limited_sample],
         "top_escalation_ready_targets": escalation_ready_targets[:limited_sample],
-        "escalation_ready_context": _ready_context_summary(escalation_ready_survivors),
+        "escalation_ready_context": ready_context,
         "target_concentration": target_concentration,
         "top_rejected_or_control_candidates": ranked_rejected_or_controls[:limited_sample],
         "claim_guardrail": (
@@ -579,8 +586,11 @@ def _ready_context_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
     beams = _sorted_nonnegative_ints(rows, "beam")
     tstarts = _positive_floats(rows, "tstart_mjd")
     shared_artifact_review_needed = len(rows) > 1 and len(source_artifacts) < len(rows)
+    independent_candidate_count = 0 if shared_artifact_review_needed else len(rows)
     return {
         "candidate_count": len(rows),
+        "independent_candidate_count": independent_candidate_count,
+        "independence_blocked_candidate_count": len(rows) - independent_candidate_count,
         "target_count": len(targets),
         "targets": targets[:10],
         "source_artifact_count": len(source_artifacts),
@@ -592,6 +602,7 @@ def _ready_context_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "min_tstart_mjd": min(tstarts) if tstarts else None,
         "max_tstart_mjd": max(tstarts) if tstarts else None,
         "shared_artifact_review_needed": shared_artifact_review_needed,
+        "independent_escalation_ready": not shared_artifact_review_needed,
         "reason": (
             "Multiple escalation-ready rows share source artifacts; review common "
             "observation context before treating them as independent evidence."

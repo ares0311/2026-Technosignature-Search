@@ -70,6 +70,7 @@ def _normalized_hit(
     tstart_mjd: float = 60984.176537959574,
     ra_deg: float = 13.255836111111112,
     dec_deg: float = -5.825555555555555,
+    source_artifact: str | None = None,
 ) -> dict[str, object]:
     return {
         "snr": 25.0,
@@ -91,7 +92,7 @@ def _normalized_hit(
         "tstart_mjd": tstart_mjd,
         "ra_deg": ra_deg,
         "dec_deg": dec_deg,
-        "source_artifact": f"{target_id}_{beam}_{coarse_channel}.hits",
+        "source_artifact": source_artifact or f"{target_id}_{beam}_{coarse_channel}.hits",
         "corpus_source": "meerkat_bluse_seticore_atlas_2025_11",
     }
 
@@ -217,6 +218,8 @@ def test_radio_real_corpus_summary_reports_review_survivor(tmp_path: Path) -> No
     assert result["candidate_review"]["follow_up_candidate_count"] == 2
     assert result["candidate_review"]["escalation_blocked_candidate_count"] == 0
     assert result["candidate_review"]["escalation_ready_candidate_count"] == 2
+    assert result["candidate_review"]["independent_escalation_ready_candidate_count"] == 2
+    assert result["candidate_review"]["independence_blocked_candidate_count"] == 0
     assert result["candidate_review"]["follow_up_target_count"] == 2
     assert result["candidate_review"]["sample_limit"] == 1
     assert len(result["candidate_review"]["top_review_candidates"]) == 1
@@ -232,6 +235,9 @@ def test_radio_real_corpus_summary_reports_review_survivor(tmp_path: Path) -> No
     assert ready_context["target_count"] == 2
     assert ready_context["source_artifact_count"] == 2
     assert ready_context["shared_artifact_review_needed"] is False
+    assert ready_context["independent_escalation_ready"] is True
+    assert ready_context["independent_candidate_count"] == 2
+    assert ready_context["independence_blocked_candidate_count"] == 0
     candidate = result["candidate_review"]["top_review_candidates"][0]
     assert candidate["survives_current_automated_filters"] is True
     assert candidate["review_label"] == "needs_follow_up_review"
@@ -282,6 +288,8 @@ def test_radio_real_corpus_summary_flags_target_concentration(tmp_path: Path) ->
     assert concentration["dominant_target_fraction"] == pytest.approx(2 / 3)
     assert result["candidate_review"]["escalation_blocked_candidate_count"] == 2
     assert result["candidate_review"]["escalation_ready_candidate_count"] == 1
+    assert result["candidate_review"]["independent_escalation_ready_candidate_count"] == 1
+    assert result["candidate_review"]["independence_blocked_candidate_count"] == 0
     assert concentration["source_context_review_needed"] is True
     assert concentration["candidate_escalation_blocked"] is True
     assert concentration["blocking_review_flags"] == [
@@ -301,6 +309,9 @@ def test_radio_real_corpus_summary_flags_target_concentration(tmp_path: Path) ->
     assert ready_context["candidate_count"] == 1
     assert ready_context["target_count"] == 1
     assert ready_context["shared_artifact_review_needed"] is False
+    assert ready_context["independent_escalation_ready"] is True
+    assert ready_context["independent_candidate_count"] == 1
+    assert ready_context["independence_blocked_candidate_count"] == 0
     dense_group = result["candidate_review"]["top_review_targets"][0]
     assert dense_group["source_artifact_count"] == 2
     assert dense_group["source_context"] == {
@@ -330,6 +341,59 @@ def test_radio_real_corpus_summary_flags_target_concentration(tmp_path: Path) ->
             "single_sky_position_survivor_context",
         ],
     }
+
+
+def test_radio_real_corpus_summary_blocks_shared_artifact_independence(
+    tmp_path: Path,
+) -> None:
+    dat_dir = tmp_path / "dat"
+    dat_dir.mkdir()
+    _write_zero_hit_dat(dat_dir / "zero_hit.dat", source="ZERO_HIT_TARGET")
+    hit_ndjson = tmp_path / "shared_artifact_sample.ndjson"
+    _write_hit_ndjson(
+        hit_ndjson,
+        [
+            _normalized_hit(
+                target_id="READY_A",
+                frequency_hz=1_420_000_000.0,
+                drift=0.1,
+                source_artifact="shared_source_a.hits",
+            ),
+            _normalized_hit(
+                target_id="READY_B",
+                frequency_hz=1_421_000_000.0,
+                drift=0.2,
+                source_artifact="shared_source_a.hits",
+            ),
+            _normalized_hit(
+                target_id="READY_C",
+                frequency_hz=1_422_000_000.0,
+                drift=0.3,
+                source_artifact="unique_source_c.hits",
+            ),
+        ],
+    )
+
+    result = radio_real_corpus_summary(
+        [dat_dir],
+        hit_ndjson_paths=[hit_ndjson],
+        semisupervised_model_path=tmp_path / "missing_model.joblib",
+    )
+
+    review = result["candidate_review"]
+    assert review["escalation_blocked_candidate_count"] == 0
+    assert review["escalation_ready_candidate_count"] == 3
+    assert review["independent_escalation_ready_candidate_count"] == 0
+    assert review["independence_blocked_candidate_count"] == 3
+    ready_context = review["escalation_ready_context"]
+    assert ready_context["candidate_count"] == 3
+    assert ready_context["target_count"] == 3
+    assert ready_context["source_artifact_count"] == 2
+    assert ready_context["shared_artifact_review_needed"] is True
+    assert ready_context["independent_escalation_ready"] is False
+    assert ready_context["independent_candidate_count"] == 0
+    assert ready_context["independence_blocked_candidate_count"] == 3
+    assert "share source artifacts" in ready_context["reason"]
 
 
 def test_radio_real_corpus_summary_keeps_voyager_as_control(tmp_path: Path) -> None:
