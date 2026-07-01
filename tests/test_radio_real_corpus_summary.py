@@ -238,6 +238,10 @@ def test_radio_real_corpus_summary_reports_review_survivor(tmp_path: Path) -> No
     assert ready_context["independent_escalation_ready"] is True
     assert ready_context["independent_candidate_count"] == 2
     assert ready_context["independence_blocked_candidate_count"] == 0
+    assert [group["candidate_count"] for group in ready_context["source_artifact_groups"]] == [
+        1,
+        1,
+    ]
     candidate = result["candidate_review"]["top_review_candidates"][0]
     assert candidate["survives_current_automated_filters"] is True
     assert candidate["review_label"] == "needs_follow_up_review"
@@ -312,6 +316,7 @@ def test_radio_real_corpus_summary_flags_target_concentration(tmp_path: Path) ->
     assert ready_context["independent_escalation_ready"] is True
     assert ready_context["independent_candidate_count"] == 1
     assert ready_context["independence_blocked_candidate_count"] == 0
+    assert ready_context["source_artifact_groups"][0]["targets"] == ["TARGET_SINGLE"]
     dense_group = result["candidate_review"]["top_review_targets"][0]
     assert dense_group["source_artifact_count"] == 2
     assert dense_group["source_context"] == {
@@ -394,6 +399,14 @@ def test_radio_real_corpus_summary_blocks_shared_artifact_independence(
     assert ready_context["independent_candidate_count"] == 0
     assert ready_context["independence_blocked_candidate_count"] == 3
     assert "share source artifacts" in ready_context["reason"]
+    artifact_groups = ready_context["source_artifact_groups"]
+    assert artifact_groups[0]["source_artifact"] == "shared_source_a.hits"
+    assert artifact_groups[0]["candidate_count"] == 2
+    assert artifact_groups[0]["target_count"] == 2
+    assert artifact_groups[0]["targets"] == ["READY_A", "READY_B"]
+    assert artifact_groups[1]["source_artifact"] == "unique_source_c.hits"
+    assert artifact_groups[1]["candidate_count"] == 1
+    assert artifact_groups[1]["targets"] == ["READY_C"]
 
 
 def test_radio_real_corpus_summary_keeps_voyager_as_control(tmp_path: Path) -> None:
