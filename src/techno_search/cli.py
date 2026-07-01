@@ -66,25 +66,6 @@ from techno_search.live_data import (
     provider_adapters,
     validate_catalog_cache_commit_paths,
 )
-from techno_search.log_store import (
-    TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION,
-    apply_sqlite_log_migration,
-    default_sqlite_log_path,
-    init_sqlite_log_db,
-    sqlite_log_backup,
-    sqlite_log_export,
-    sqlite_log_integrity_summary,
-    sqlite_log_migration_plan,
-    sqlite_log_migration_summary,
-    sqlite_log_pragmas,
-    sqlite_log_retention_summary,
-    sqlite_log_summary,
-    sqlite_log_vacuum,
-    sqlite_log_weekly_digest,
-    sqlite_needs_follow_up,
-    sqlite_recent_runs,
-    validate_sqlite_log_commit_paths,
-)
 from techno_search.multi_epoch_summary import multi_epoch_summary
 from techno_search.observation_campaign import observation_campaign_summary
 from techno_search.pipeline_config import pipeline_config_summary
@@ -126,6 +107,106 @@ from techno_search.validation_datasets import (
     validation_promotion_summary,
     validation_readiness_summary,
 )
+
+TOP_LEVEL_SQLITE_LOG_SCHEMA_VERSION = "top_level_sqlite_logs_v2"
+DEFAULT_SQLITE_LOG_PATH = Path("logs/techno_search.sqlite3")
+
+
+def default_sqlite_log_path(project_root: Path | None = None) -> Path:
+    """Return the default SQLite log path without importing SQLite at CLI startup."""
+
+    root = project_root or Path.cwd()
+    return root / DEFAULT_SQLITE_LOG_PATH
+
+
+def init_sqlite_log_db(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    from techno_search.log_store import init_sqlite_log_db as _impl
+
+    return _impl(*args, **kwargs)
+
+
+def sqlite_log_summary(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    from techno_search.log_store import sqlite_log_summary as _impl
+
+    return _impl(*args, **kwargs)
+
+
+def sqlite_log_integrity_summary(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    from techno_search.log_store import sqlite_log_integrity_summary as _impl
+
+    return _impl(*args, **kwargs)
+
+
+def sqlite_log_weekly_digest(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    from techno_search.log_store import sqlite_log_weekly_digest as _impl
+
+    return _impl(*args, **kwargs)
+
+
+def sqlite_log_export(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    from techno_search.log_store import sqlite_log_export as _impl
+
+    return _impl(*args, **kwargs)
+
+
+def sqlite_recent_runs(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    from techno_search.log_store import sqlite_recent_runs as _impl
+
+    return _impl(*args, **kwargs)
+
+
+def sqlite_needs_follow_up(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    from techno_search.log_store import sqlite_needs_follow_up as _impl
+
+    return _impl(*args, **kwargs)
+
+
+def sqlite_log_migration_summary(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    from techno_search.log_store import sqlite_log_migration_summary as _impl
+
+    return _impl(*args, **kwargs)
+
+
+def sqlite_log_migration_plan(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    from techno_search.log_store import sqlite_log_migration_plan as _impl
+
+    return _impl(*args, **kwargs)
+
+
+def apply_sqlite_log_migration(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    from techno_search.log_store import apply_sqlite_log_migration as _impl
+
+    return _impl(*args, **kwargs)
+
+
+def sqlite_log_pragmas(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    from techno_search.log_store import sqlite_log_pragmas as _impl
+
+    return _impl(*args, **kwargs)
+
+
+def sqlite_log_retention_summary(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    from techno_search.log_store import sqlite_log_retention_summary as _impl
+
+    return _impl(*args, **kwargs)
+
+
+def sqlite_log_backup(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    from techno_search.log_store import sqlite_log_backup as _impl
+
+    return _impl(*args, **kwargs)
+
+
+def sqlite_log_vacuum(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    from techno_search.log_store import sqlite_log_vacuum as _impl
+
+    return _impl(*args, **kwargs)
+
+
+def validate_sqlite_log_commit_paths(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    from techno_search.log_store import validate_sqlite_log_commit_paths as _impl
+
+    return _impl(*args, **kwargs)
 
 
 class _StubDict(dict):  # type: ignore[type-arg]
