@@ -17,6 +17,9 @@ RADIO_REAL_CORPUS_DISCLAIMER = (
 )
 DEFAULT_RFI_TOLERANCE_HZ = 500.0
 DEFAULT_STATIONARY_DRIFT_EPSILON = 1e-9
+PUBLIC_NULL_SEARCH_CORPUS_SOURCES = frozenset(
+    {"meerkat_bluse_seticore_atlas_2025_11"}
+)
 
 
 def discover_dat_files(paths: list[Path]) -> list[Path]:
@@ -346,6 +349,7 @@ def _candidate_review_summary(
     drift_inconsistent_count = 0
     follow_up_candidate_count = 0
     known_control_candidate_count = 0
+    public_null_search_context_count = 0
     stationary_drift_candidate_count = 0
     score_values = list(anomaly_scores)
     if len(score_values) < len(candidates):
@@ -355,6 +359,7 @@ def _candidate_review_summary(
         candidate_id = str(candidate.get("candidate_id", ""))
         rfi_flag = cross_target_flags.get(candidate_id)
         known_control = _is_known_control_candidate(candidate)
+        public_null_search_context = _has_public_null_search_context(candidate)
         normalized_drift = _float(candidate, "normalized_drift_hz_s_per_ghz")
         stationary_drift = abs(normalized_drift) <= DEFAULT_STATIONARY_DRIFT_EPSILON
         drift_consistent = bool(candidate.get("is_earth_drift_consistent", False))
@@ -362,10 +367,16 @@ def _candidate_review_summary(
             drift_inconsistent_count += 1
         if known_control:
             known_control_candidate_count += 1
+        if public_null_search_context:
+            public_null_search_context_count += 1
         if stationary_drift:
             stationary_drift_candidate_count += 1
         survives_current_filters = (
-            rfi_flag is None and drift_consistent and not stationary_drift and not known_control
+            rfi_flag is None
+            and drift_consistent
+            and not stationary_drift
+            and not known_control
+            and not public_null_search_context
         )
         if survives_current_filters:
             follow_up_candidate_count += 1
@@ -388,6 +399,7 @@ def _candidate_review_summary(
                 "is_earth_drift_consistent": drift_consistent,
                 "stationary_drift": stationary_drift,
                 "known_control_target": known_control,
+                "public_null_search_context": public_null_search_context,
                 "cross_target_rfi_flagged": rfi_flag is not None,
                 "cross_target_match_count": int(rfi_flag.get("match_count", 0))
                 if rfi_flag is not None
@@ -401,12 +413,16 @@ def _candidate_review_summary(
                         "known_spacecraft_or_calibration_control"
                         if known_control
                         else (
-                            "stationary_frequency_review"
-                            if stationary_drift
+                            "public_null_search_context"
+                            if public_null_search_context
                             else (
-                                "likely_cross_target_rfi"
-                                if rfi_flag is not None
-                                else "drift_inconsistent_review"
+                                "stationary_frequency_review"
+                                if stationary_drift
+                                else (
+                                    "likely_cross_target_rfi"
+                                    if rfi_flag is not None
+                                    else "drift_inconsistent_review"
+                                )
                             )
                         )
                     )
@@ -472,6 +488,7 @@ def _candidate_review_summary(
         "drift_inconsistent_candidate_count": drift_inconsistent_count,
         "stationary_drift_candidate_count": stationary_drift_candidate_count,
         "known_control_candidate_count": known_control_candidate_count,
+        "public_null_search_context_candidate_count": public_null_search_context_count,
         "sample_limit": limited_sample,
         "top_review_candidates": ranked_survivors[:limited_sample],
         "top_review_targets": review_targets[:limited_sample],
@@ -712,6 +729,11 @@ def _is_known_control_candidate(candidate: dict[str, Any]) -> bool:
         for key in ("candidate_id", "target_name", "source_artifact", "source_name")
     )
     return "voyager" in joined
+
+
+def _has_public_null_search_context(candidate: dict[str, Any]) -> bool:
+    corpus_source = str(candidate.get("corpus_source", "")).strip().lower()
+    return corpus_source in PUBLIC_NULL_SEARCH_CORPUS_SOURCES
 
 
 def _load_hit_ndjson_rows(

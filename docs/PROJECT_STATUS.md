@@ -28,8 +28,8 @@ artifacts and must not be redistributed without explicit license terms.
 **Current milestone:** Milestone 79 (Production Scan Hardening And Artifact Hygiene)
 
 **Current phase work:** Phase 1 radio hardening. The current local real-corpus
-review has 3 automated escalation-ready rows, but all 3 are blocked from
-independent readiness pending shared-artifact context review.
+review treats the verified MeerKAT BLUSE/SETICORE ATLAS rows as public
+null-search context and reports zero follow-up candidates.
 
 ---
 
@@ -40,6 +40,8 @@ manifests and candidate manifests. ON/OFF cadence scoring follows the ABACAB
 feature added in Phase 0; raw-file ABACAB verification remains Phase 1 hardening.
 Semi-supervised scorer integration is locally fitted on the verified real
 MeerKAT BLUSE/SETICORE corpus. The current local summary reports
+`public_null_search_context_candidate_count: 200000`,
+`follow_up_candidate_count: 0`, and
 `independent_escalation_ready_candidate_count: 0`; no candidate is ready for
 external escalation.
 
@@ -100,8 +102,8 @@ Step 3 blocked pending surviving candidates.
 | Proper ON/OFF cadence verification (ABACAB from raw files) | ⚠️ Partial — HIP99427 raw HDF5 status and derived cadence review are wired locally |
 | MeerKAT BLUSE real training corpus loaded into semisupervised_scorer | ✅ Done locally — 200,000 verified real rows train the ignored local scorer |
 | Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial — real-corpus summary exposes stationary, Earth-consistent, and inconsistent rows |
-| Cross-target RFI suppression on full stratified corpus | ⚠️ Partial — verified real corpus exercises recurrence, but shared-artifact context still blocks independence |
-| Ranked candidate list output ready for Phase 5 | ⚠️ Partial — blocked and automated-ready rows are separated; independent-ready count is currently 0 |
+| Cross-target RFI suppression on full stratified corpus | ⚠️ Partial — verified real corpus exercises recurrence and public-null context; broader independent hit-bearing GBT validation remains open |
+| Ranked candidate list output ready for Phase 5 | ⚠️ Partial — public-null context, controls, and RFI rows are separated; independent-ready count is currently 0 |
 
 ---
 
@@ -157,10 +159,10 @@ Step 3 blocked pending surviving candidates.
 
 ## Next 3 Actions
 
-1. Resolve the shared-artifact context for the 3 automated-ready radio rows before
-   treating them as independent follow-up evidence.
-2. Broaden raw-file ABACAB cadence verification beyond HIP99427 where approved
+1. Broaden raw-file ABACAB cadence verification beyond HIP99427 where approved
    public raw files are locally available.
+2. Expand independent hit-bearing GBT validation beyond the current local zero-hit
+   extended corpus.
 3. Expand Phase 2/3/4 archive-first data paths so the project is not radio-only.
 
 ---
