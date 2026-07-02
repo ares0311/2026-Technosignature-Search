@@ -163,7 +163,7 @@ discover_hdf5_url() {
   log "[URL]   ${search_url}"
 
   local page
-  if ! page="$(curl -fsSL --retry 3 --retry-delay 5 --location "${search_url}")"; then
+  if ! page="$(curl -fsSL --connect-timeout 15 --max-time 60 --retry 3 --retry-delay 5 --location "${search_url}")"; then
     log "[WARN]  Discovery failed for ${name}"
     return 1
   fi
@@ -212,6 +212,7 @@ download_hdf5() {
   # --retry 3 for transient failures
   curl --progress-bar \
        --continue-at - \
+       --connect-timeout 15 \
        --retry 3 \
        --retry-delay 5 \
        --location \
