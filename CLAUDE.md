@@ -518,7 +518,7 @@ The user pasted a completed run of:
 
 ```bash
 git pull origin main
-caffeinate -i bash scripts/download_bl_extended_corpus.sh --manifest data/target_sample_manifest.json
+caffeinate -i bash scripts/download_bl_extended_corpus.sh --manifest data/target_sample_manifest.json 2>&1 | tee /tmp/bl_extended_corpus_download.log
 ```
 
 Measured result: 31 manifest targets checked, 11 new URL-available HDF5
@@ -528,6 +528,41 @@ payload targets included `HIP113421`, `HIP26779`, `HIP67275`, `HIP74981`,
 `HIP16852`, `HIP99427`, `HIP66704`, `HIP39826`, `HIP23311`, `HIP82860`, and
 `HIP17147`. These payloads are ignored under `data/extended_corpus/`; commit the
 map and method, never the HDF5 payloads.
+
+### Extended-Corpus Production Processing Result — 2026-07-02
+
+Local ignored evidence processing completed after PR #192:
+
+```bash
+caffeinate -i bash scripts/run_turboseti_on_extended_corpus.sh
+caffeinate -i bash scripts/run_pipeline_on_bl_data.sh --dat-dir data/extended_corpus
+caffeinate -i bash scripts/run_production_scan.sh --dat-dir data/extended_corpus
+.venv/bin/techno-search ai-hardening-gate-summary
+caffeinate -i .venv/bin/techno-search radio-real-corpus-summary --dat-dir data/extended_corpus --dat-dir data/bl_hits --hit-ndjson data/meerkat_hits/meerkat_normalised_200000.ndjson --max-hit-rows 5000 --candidate-sample-limit 5
+```
+
+Measured results:
+- turboSETI processed 8 newly downloaded HDF5 files, skipped 9 already-converted
+  targets, and failed 0 targets.
+- Candidate-report generation completed 17/17 extended-corpus `.dat` files with
+  0 failures.
+- Production scan `RUN-2026-07-02_130330Z-3ZNT-prod-scan` scanned 11 pending
+  targets, failed 0, flagged 0 escalations, and left 0 pending targets.
+- Follow-up ledger entry count was 0; non-detection/no-follow-up ledger entry
+  count was 39 across the current local result set.
+- `ai-hardening-gate-summary`: `status: closed`, `issue_count: 0`,
+  `production_promotion_allowed: true`, populated evidence paths
+  `data/extended_corpus`, `data/meerkat_hits`, and `data/injection_grid`, total
+  evidence file count 285.
+- `radio-real-corpus-summary`: 18 `.dat` files counted across `data/bl_hits` and
+  `data/extended_corpus`, 17 zero-hit `.dat` files, 1 hit-bearing `.dat` file
+  (Voyager control), 5,000 bounded MeerKAT hit rows admitted, 65 unique targets,
+  and `phase1_radio_validation_ready: true`.
+
+No result is a detection, discovery, expert review, external validation, or
+external-submission authorization. The durable conclusion is narrower: the newly
+downloaded extended corpus produced negative evidence, and the current local
+radio validation evidence is cleanly processed and queue-drained.
 
 ### Mission Realignment — 2026-06-26
 

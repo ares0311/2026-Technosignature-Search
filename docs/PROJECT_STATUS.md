@@ -174,12 +174,15 @@ Step 3 blocked pending surviving candidates.
 
 ## Next 3 Actions
 
-1. Run the Track B gate against real radio candidate packets with explicit
-   Track A crossmatch and satellite-match JSON evidence.
-2. Calibrate the semi-supervised anomaly/OOD threshold from real held-out
-   evidence before allowing condition 8 to resolve true.
-3. Broaden raw-file ABACAB cadence verification beyond HIP99427 where approved
+1. Resolve the remaining Track B blocker by replacing the naive high-anomaly
+   threshold with a same-instrument GBT-native calibration plan, or document why
+   the current real evidence still cannot support a threshold.
+2. Broaden raw-file ABACAB cadence verification beyond HIP99427 where approved
    public raw files are locally available.
+3. Use the fully converted 17-file extended corpus as negative evidence for
+   regression checks while prioritizing acquisition of real hit-bearing GBT
+   examples; the 2026-07-02 extended-corpus production scan produced 0
+   follow-ups and left 0 pending targets.
 
 ---
 
