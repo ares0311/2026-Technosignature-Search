@@ -435,6 +435,42 @@ known explanations vs. known artifacts/RFI), not an invented cutoff. No
 shortcut exists for this — it is genuine unstarted scientific work, not an
 implementation gap.
 
+### Real Anomaly-Score Distribution — Calibration Attempt, 2026-07-02
+
+Wired `semisupervised_anomaly_score` into `citizen_science_labels.py`'s
+candidate path (PR #189, reusing `pipeline_runner.py`'s existing injection
+pattern) and ran the user's real fitted MeerKAT-trained scorer against all
+124 real HIP99427 evidence groups. Real distribution by label:
+
+| Label | n | min | mean | max |
+|---|---|---|---|---|
+| `false_positive` | 81 | 0.0227 | 0.0755 | 0.0979 |
+| `follow_up` | 2 | 0.0238 | 0.0456 | 0.0673 |
+| `insufficient_evidence` | 41 | 0.0657 | 0.0907 | 0.0973 |
+
+**This real evidence rules out a naive threshold, and confirms the earlier
+caution against inventing one was correct.** The two real `follow_up`
+candidates score *lower* on average (0.0456) than the confirmed
+`false_positive` population (0.0755) — the opposite of what a
+"high score = interesting" threshold would assume. A percentile-of-
+false_positive threshold applied to this data would filter out the very
+candidates it should flag. Two real, non-implementation reasons, not a
+coding gap:
+1. `follow_up` sample size is 2 — far too small to estimate any percentile
+   or cutoff from.
+2. The scorer was trained on real **MeerKAT** BLUSE data; this corpus is
+   real **GBT** L-band data from a different telescope/instrument/frequency
+   range. The feature distributions likely don't transfer well
+   cross-instrument, which would explain why the model doesn't discriminate
+   meaningfully between these labels here.
+
+**Blocker 1 remains open, now with a documented reason why the obvious
+first approach doesn't work on available real data.** A real calibration
+either needs (a) a same-instrument (GBT) semisupervised scorer trained on
+GBT-native data, or (b) a substantially larger real `follow_up`-equivalent
+positive sample than n=2 before any threshold estimate would be
+statistically meaningful. Neither exists yet.
+
 ### Dataset Brief Integration — 2026-07-01
 
 `docs/technosignature_datasets_agent_brief.md` is a required project input, not
