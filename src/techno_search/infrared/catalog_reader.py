@@ -14,6 +14,10 @@ _W1_ALIASES = ("w1mpro", "W1mpro", "w1_mpro", "mag_w1")
 _W2_ALIASES = ("w2mpro", "W2mpro", "w2_mpro", "mag_w2")
 _W3_ALIASES = ("w3mpro", "W3mpro", "w3_mpro", "mag_w3")
 _W4_ALIASES = ("w4mpro", "W4mpro", "w4_mpro", "mag_w4")
+# AllWISE profile-fit photometric uncertainty columns (verified against the
+# AllWISE Explanatory Supplement: Source Catalog and Reject Table).
+_W3_ERR_ALIASES = ("w3sigmpro", "W3sigmpro", "w3_sigmpro")
+_W4_ERR_ALIASES = ("w4sigmpro", "W4sigmpro", "w4_sigmpro")
 _PARALLAX_ALIASES = ("parallax", "plx", "parallax_mas")
 _PARALLAX_ERR_ALIASES = ("parallax_error", "e_parallax", "parallax_err")
 
@@ -63,6 +67,8 @@ def read_gaia_wise_csv(path: Path) -> list[dict[str, Any]]:
             "w2_mag": _float_or_none(_get(raw, _W2_ALIASES)),
             "w3_mag": _float_or_none(_get(raw, _W3_ALIASES)),
             "w4_mag": _float_or_none(_get(raw, _W4_ALIASES)),
+            "w3_mag_err": _float_or_none(_get(raw, _W3_ERR_ALIASES)),
+            "w4_mag_err": _float_or_none(_get(raw, _W4_ERR_ALIASES)),
             "parallax_mas": _float_or_none(_get(raw, _PARALLAX_ALIASES)),
             "parallax_error": _float_or_none(_get(raw, _PARALLAX_ERR_ALIASES)),
         })
@@ -89,6 +95,8 @@ def catalog_rows_to_infrared_source_dicts(path: Path) -> list[dict[str, Any]]:
             "w2": r["w2_mag"],
             "w3": r["w3_mag"],
             "w4": r["w4_mag"],
+            "w3_mag_err": r["w3_mag_err"],
+            "w4_mag_err": r["w4_mag_err"],
             "parallax": r["parallax_mas"],
             "parallax_error": r["parallax_error"],
         })

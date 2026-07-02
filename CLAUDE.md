@@ -625,6 +625,72 @@ a real downloaded Kepler/TESS light curve (e.g. KIC 8462852 / Boyajian's
 Star, or a target from the existing stratified sample) through this new
 pipeline for a first real (not self-constructed) result.
 
+**PR #194 merged, then PR #195 merged same session** (2026-07-02): wired the
+already-existing `catalog_crossmatch()` (SIMBAD+Gaia, opt-in via
+`TECHNO_SEARCH_ENABLE_LIVE_DATA=1`) into `_build_photometry_candidate()`,
+closing the hardcoded `known_object_score=0.0` gap the same way radio/
+infrared already handle it.
+
+### Phase 3 Infrared — Real WISE Photospheric Blackbody Excess Check, 2026-07-02
+
+With both remaining Phase 1 blockers (anomaly-threshold calibration,
+cross-target RFI corpus) and the Phase 2 real-corpus run all requiring the
+user's machine, this session opened Phase 3 (WISE Dyson-sphere candidates),
+also entirely unstarted. New `src/techno_search/infrared_wise/
+photosphere_excess.py`:
+
+- Real, verified WISE zero-point flux densities and effective wavelengths
+  (Wright et al. 2010 WISE mission paper Table 1: 309.54/171.79/31.676/
+  8.3635 Jy at 3.4/4.6/12/22 um for W1-W4) — cross-checked 2026-07-02 via
+  live web search against the WISE explanatory supplement and multiple
+  independent citing arXiv papers converging on the same four numbers, not
+  from memory.
+- Fits a single-temperature blackbody (Planck's law via
+  `astropy.modeling.physical_models.BlackBody`, real API verified via
+  `inspect.signature`/a live forward-model smoke test in this session, not
+  memory) to the real W1/W2 color to estimate the star's photospheric
+  continuum temperature, then predicts W3/W4 flux from that temperature and
+  reports the observed-vs-predicted significance in real per-source
+  uncertainty units.
+- `infrared/catalog_reader.py` now also parses the real AllWISE
+  `w3sigmpro`/`w4sigmpro` profile-fit magnitude-uncertainty columns (verified
+  column names via live web search against the AllWISE Explanatory
+  Supplement, not guessed) for real per-source uncertainty; falls back to a
+  documented 10% relative uncertainty when absent.
+- **This is explicitly a single-temperature blackbody approximation, not a
+  full Kurucz/BT-Settl stellar-atmosphere grid fit** (which would require
+  downloading external model grids, unavailable from this sandbox) — the
+  same first-pass simplification used in the IR-excess literature (e.g.
+  Wright et al. 2014, already cited in `PRODUCTION_READINESS.md`'s Phase 3
+  references) before deeper SED follow-up. Documented as a partial/honest
+  gap, not claimed as the eventual full grid-fit target.
+- Wired into `pipeline_runner._build_infrared_candidate()`: overrides the
+  prior color-heuristic `ir_excess_score`/`sed_fit_residual_score` fallback
+  in `infrared/prototype.py` when real W1-W4 photometry is present, and
+  attaches `wise_photosphere_temperature_k`/`wise_w3_excess_significance`/
+  `wise_w4_excess_significance` features plus a `wise_excess_method`
+  provenance tag.
+
+**Verified with a real forward-modeled-blackbody test fixture** (not
+training data — a code-correctness fixture, same category as the existing
+Fermi FITS regression test): a pure 5778 K blackbody photosphere recovers
+its own temperature exactly and reports ~0 excess significance at both W3
+and W4; injecting a 5x W4 flux excess recovers exactly 8.0-sigma
+significance (matches the hand-computed expected value); real per-source
+magnitude uncertainty correctly narrows/widens the reported significance.
+1462 tests pass (up from 1456), ruff/mypy clean (added `scipy.*` to the
+mypy ignore-missing-imports overrides, matching the existing pattern for
+other optional/typed-stub-less dependencies), `validate-all` ok,
+`git add --dry-run .` staged only the intended files. Also verified clean
+in a from-scratch venv with only `.[dev,science]` installed (scipy is a
+core dependency, so all new tests ran rather than skipped: 1438 passed, 30
+skipped, 0 failed).
+
+**Not done:** a real downloaded IRSA Gaia+AllWISE cross-match corpus has not
+been run through this — same live-network restriction as Track A catalogs
+and Phase 2 photometry. Natural-contaminant rejection (dust/debris-disk/AGN)
+remains entirely caller-supplied, not computed from real data.
+
 ### Mission Realignment — 2026-06-26
 
 The project was redirected in session on 2026-06-26. Key changes:
