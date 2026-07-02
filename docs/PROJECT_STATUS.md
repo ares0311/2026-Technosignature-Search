@@ -30,6 +30,9 @@ artifacts and must not be redistributed without explicit license terms.
 **Current phase work:** Phase 1 radio hardening. The current local real-corpus
 review treats the verified MeerKAT BLUSE/SETICORE ATLAS rows as public
 null-search context and reports zero follow-up candidates.
+`docs/technosignature_datasets_agent_brief.md` is now the formal Track A dataset
+handoff for known-explanation classification before any Track B
+`unknown_candidate` routing.
 
 ---
 
@@ -99,6 +102,7 @@ Step 3 blocked pending surviving candidates.
 
 | Task | Status |
 |---|---|
+| Track A known-explanation classifier before Track B `unknown_candidate` routing | ❌ Not started — brief is merged locally and must be implemented next with real catalog/corpus sources only |
 | Proper ON/OFF cadence verification (ABACAB from raw files) | ⚠️ Partial — HIP99427 raw HDF5 status and derived cadence review are wired locally |
 | MeerKAT BLUSE real training corpus loaded into semisupervised_scorer | ✅ Done locally — 200,000 verified real rows train the ignored local scorer |
 | Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial — real-corpus summary exposes stationary, Earth-consistent, and inconsistent rows |
@@ -159,11 +163,12 @@ Step 3 blocked pending surviving candidates.
 
 ## Next 3 Actions
 
-1. Broaden raw-file ABACAB cadence verification beyond HIP99427 where approved
+1. Implement the Track A known-explanation acquisition/classifier baseline from
+   `docs/technosignature_datasets_agent_brief.md`.
+2. Broaden raw-file ABACAB cadence verification beyond HIP99427 where approved
    public raw files are locally available.
-2. Expand independent hit-bearing GBT validation beyond the current local zero-hit
+3. Expand independent hit-bearing GBT validation beyond the current local zero-hit
    extended corpus.
-3. Expand Phase 2/3/4 archive-first data paths so the project is not radio-only.
 
 ---
 

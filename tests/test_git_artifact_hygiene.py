@@ -24,8 +24,13 @@ def test_gitignore_blocks_generated_science_payloads() -> None:
 
     required_patterns = {
         "data/",
+        "data_cache/",
+        "tmp_training/",
+        "tmp_features/",
         "cache/",
         "artifacts/",
+        "models/",
+        "metrics/",
         "results/*",
         "!results/scans/",
         "!results/scans/**",
@@ -67,6 +72,11 @@ def test_gitignore_effectively_blocks_payloads_but_allows_review_safe_exceptions
     ignored_paths = [
         "docs/LOCAL_DATA_INVENTORY.local.md",
         "data/extended_corpus/HIP17147/hits.dat",
+        "data_cache/raw/htru2/htru2_features.parquet",
+        "tmp_training/htru2/work.parquet",
+        "tmp_features/htru2/features.parquet",
+        "models/track_a_known_explanations.joblib",
+        "metrics/track_a_known_explanations.json",
         "random.h5",
         "random.hdf5",
         "random.fil",

@@ -120,10 +120,38 @@ These CLI commands implement the runbook rules:
 
 ---
 
+## Track A Known-Explanation Gate
+
+`docs/technosignature_datasets_agent_brief.md` is the authoritative handoff for
+the next model-hardening milestone. Before any production path emits a Track B
+`unknown_candidate` label, the project must have a tested Track A baseline that
+classifies or rejects known explanations: pulsars, FRBs, blazars/AGN, known
+gamma-ray sources, satellite/transmitter matches, terrestrial RFI, instrument
+artifacts, and noise.
+
+Current status: no Track A acquisition or classifier command exists yet. Until
+that command exists and is validated, production radio runs may produce
+non-detection ledgers, follow-up-review triage rows, public-null context
+summaries, and `low_confidence` known-explanation outcomes, but not Track B
+`unknown_candidate` records.
+
+Track A acquisition work must follow the brief's source order and disk cap. Raw
+downloads and temporary extraction products stay local in ignored paths:
+`data_cache/`, `tmp_training/`, `tmp_features/`, `artifacts/`, `models/`, and
+`metrics/`. GitHub-visible continuity belongs in sanitized manifests,
+checksums, schemas, tests, and documentation. Do not download Kaggle SETI,
+install/use Setigen, or depend on pretrained models for the first Track A
+milestone.
+
+---
+
 ## File Layout
 
 ```
 data/bl_hits/                  ← raw turboSETI .dat input files
+data_cache/                    ← ignored Track A raw/catalog cache
+tmp_training/                  ← ignored temporary training workspace
+tmp_features/                  ← ignored temporary feature extraction workspace
 results/
   scan_history.ndjson          ← append-only cross-run scan log (gitignored)
   scans/
@@ -183,6 +211,8 @@ Each line in `results/scan_history.ndjson` is one JSON object:
 |---|---|---|
 | `data/bl_hits/` | Voyager 1 GBT `.dat` hit table (pipeline calibration) | `scripts/download_bl_hits.sh` |
 | `data/extended_corpus/<TARGET>/` | GBT L-band HDF5 files from the stratified HPRC manifest | `scripts/download_bl_extended_corpus.sh --manifest data/target_sample_manifest.json` |
+| `data_cache/raw/<SOURCE>/` | Ignored Track A source cache from `docs/technosignature_datasets_agent_brief.md` | Future Track A acquisition CLI |
+| `tmp_training/`, `tmp_features/` | Ignored temporary Track A training/feature workspaces | Future Track A acquisition/training CLI |
 
 HDF5 files in `data/extended_corpus/` must be processed with turboSETI before they can
 enter the production scan queue.  Use `scripts/run_turboseti_on_extended_corpus.sh` (idempotent).

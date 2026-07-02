@@ -18,6 +18,9 @@ htmlcov/
 # Local data and generated products (large payloads stay local)
 # Use data/* (not data/) so that specific file exceptions below can work.
 data/*
+data_cache/
+tmp_training/
+tmp_features/
 data/raw/
 data/interim/
 data/external/
@@ -27,6 +30,8 @@ data/processed/
 !data/target_sample_manifest.json
 cache/
 artifacts/
+models/
+metrics/
 docs/SYSTEM_PROFILE.md
 docs/LOCAL_DATA_INVENTORY.local.md
 results/*

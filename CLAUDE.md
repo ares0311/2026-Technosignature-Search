@@ -101,6 +101,9 @@ If a commit does not close a named gap in Phases 0–4, it should not be merged.
 Current Phase 0 status:
  - Real MeerKAT BLUSE/SETICORE scorer training is locally complete from the
    verified Berkeley source documented in `docs/meerkat_bluse_hit_table_research.md`.
+ - `docs/technosignature_datasets_agent_brief.md` is now the formal Track A
+   dataset handoff: build known-explanation rejection before Track B
+   `unknown_candidate` routing.
  - Continue Phase 1 radio hardening: broader hit-bearing stratified-corpus
    validation remains open for cross-target RFI suppression and drift evidence.
 
@@ -219,6 +222,27 @@ Mandatory requirements:
 ---
 
 ## Current Live Handoff — 2026-06-27
+
+### Dataset Brief Integration — 2026-07-01
+
+`docs/technosignature_datasets_agent_brief.md` is a required project input, not
+an optional note. It formalizes the next model-hardening milestone as Track A:
+an auditable known-explanation classifier for pulsars, FRBs, blazars/AGN,
+known gamma-ray sources, satellite/transmitter matches, terrestrial RFI,
+instrument artifacts, and noise.
+
+Do not advance Track B `unknown_candidate` routing until Track A has a tested,
+reproducible baseline and source-specific catalog/provenance manifests. Track A
+may emit `low_confidence`; only Track B may emit `unknown_candidate`, and that
+label is a local triage queue state only. There are no positive
+technosignature labels, so do not train a binary "technosignature versus not"
+classifier. Do not use Kaggle SETI, Setigen, pretrained models, or synthetic
+training data for the first Track A milestone.
+
+Track A raw downloads and temporary extraction products belong in ignored local
+paths (`data_cache/`, `tmp_training/`, `tmp_features/`, `artifacts/`, `models/`,
+and `metrics/`). Preserve GitHub-visible continuity in sanitized docs,
+manifests, schemas, checksums, tests, and source-acquisition code.
 
 ### RESULT RECORDING RULE — NON-NEGOTIABLE
 
