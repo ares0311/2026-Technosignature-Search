@@ -1522,7 +1522,7 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         return 0
 
     if args.command == "semisupervised-scorer-train":
-        import joblib  # type: ignore[import-untyped]
+        import joblib
 
         from techno_search.semisupervised_scorer import (
             DEFAULT_CONTAMINATION,
@@ -5191,6 +5191,44 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             "issues": [],
         }
         print(json.dumps(noise_cal_result, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "track-a-disk-usage":
+        from techno_search.track_a_data_guard import track_a_disk_usage
+
+        report = track_a_disk_usage(project_root=default_project_root())
+        print(json.dumps(report.as_dict(), indent=2, sort_keys=True), file=out)
+        return 0 if report.within_budget else 1
+
+    if args.command == "track-a-htru2-acquire":
+        from techno_search.track_a_htru2 import acquire_htru2
+
+        try:
+            htru2_record = acquire_htru2(project_root=default_project_root())
+        except RuntimeError as exc:
+            print(json.dumps({"ok": False, "error": str(exc)}, indent=2, sort_keys=True), file=out)
+            return 1
+        result = {"ok": True, **htru2_record.as_dict()}
+        print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "track-a-htru2-train":
+        from techno_search.track_a_htru2 import default_htru2_cache_dir, train_htru2_baseline
+
+        root = default_project_root()
+        cache_dir = default_htru2_cache_dir(root)
+        try:
+            summary = train_htru2_baseline(
+                features_path=cache_dir / "htru2_features.parquet",
+                labels_path=cache_dir / "htru2_labels.parquet",
+                model_out_dir=root / "models" / "track_a",
+                metrics_out_path=root / "metrics" / "track_a" / "htru2_baseline_metrics.json",
+                schema_out_path=root / "schemas" / "track_a_htru2_schema.json",
+            )
+        except (FileNotFoundError, ValueError) as exc:
+            print(json.dumps({"ok": False, "error": str(exc)}, indent=2, sort_keys=True), file=out)
+            return 1
+        print(json.dumps({"ok": True, **summary}, indent=2, sort_keys=True), file=out)
         return 0
 
     parser.error(f"Unknown command: {args.command}")
@@ -9627,6 +9665,29 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         default=False,
         help="Reprocess all targets even if output already exists (disables resume).",
+    )
+
+    subparsers.add_parser(
+        "track-a-disk-usage",
+        help=(
+            "Report current data_cache/tmp_training/tmp_features disk usage against "
+            "the ~100 GB Track A budget from docs/technosignature_datasets_agent_brief.md."
+        ),
+    )
+    subparsers.add_parser(
+        "track-a-htru2-acquire",
+        help=(
+            "Download the real HTRU2 pulsar-candidate dataset (CC BY 4.0) via "
+            "ucimlrepo and record an acquisition manifest entry. Requires network "
+            "access to archive-beta.ics.uci.edu and the ucimlrepo package."
+        ),
+    )
+    subparsers.add_parser(
+        "track-a-htru2-train",
+        help=(
+            "Train and evaluate the Track A HTRU2 pulsar vs RFI/noise baseline "
+            "classifier from the locally acquired data_cache/raw/htru2 parquet files."
+        ),
     )
 
     return parser
