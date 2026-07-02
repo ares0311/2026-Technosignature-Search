@@ -9,7 +9,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from techno_search.photometry.lightcurve_search import search_and_download_lightcurves
+import pytest
+
+lightkurve = pytest.importorskip("lightkurve")
+
+from techno_search.photometry.lightcurve_search import search_and_download_lightcurves  # noqa: E402
 
 
 class _FakeSearchResult:
@@ -32,12 +36,10 @@ class _FakeSearchResult:
 
 
 def test_zero_results_reports_no_download(tmp_path: Path, monkeypatch) -> None:
-    import lightkurve as lk
-
     def _fake_search_lightcurve(target: str, **kwargs: object) -> _FakeSearchResult:
         return _FakeSearchResult(0, tmp_path, [])
 
-    monkeypatch.setattr(lk, "search_lightcurve", _fake_search_lightcurve)
+    monkeypatch.setattr(lightkurve, "search_lightcurve", _fake_search_lightcurve)
 
     result = search_and_download_lightcurves(
         "nonexistent-target", download_dir=tmp_path / "dl"
@@ -49,8 +51,6 @@ def test_zero_results_reports_no_download(tmp_path: Path, monkeypatch) -> None:
 
 
 def test_download_counts_only_new_fits_files(tmp_path: Path, monkeypatch) -> None:
-    import lightkurve as lk
-
     download_dir = tmp_path / "dl"
     download_dir.mkdir()
     (download_dir / "already_here.fits").write_bytes(b"pre-existing")
@@ -58,7 +58,7 @@ def test_download_counts_only_new_fits_files(tmp_path: Path, monkeypatch) -> Non
     def _fake_search_lightcurve(target: str, **kwargs: object) -> _FakeSearchResult:
         return _FakeSearchResult(3, download_dir, ["new_a.fits", "new_b.fits"])
 
-    monkeypatch.setattr(lk, "search_lightcurve", _fake_search_lightcurve)
+    monkeypatch.setattr(lightkurve, "search_lightcurve", _fake_search_lightcurve)
 
     result = search_and_download_lightcurves(
         "TIC 12345", download_dir=download_dir, limit=2
@@ -71,8 +71,6 @@ def test_download_counts_only_new_fits_files(tmp_path: Path, monkeypatch) -> Non
 
 
 def test_search_criteria_are_forwarded(tmp_path: Path, monkeypatch) -> None:
-    import lightkurve as lk
-
     captured: dict[str, object] = {}
 
     def _fake_search_lightcurve(target: str, **kwargs: object) -> _FakeSearchResult:
@@ -80,7 +78,7 @@ def test_search_criteria_are_forwarded(tmp_path: Path, monkeypatch) -> None:
         captured.update(kwargs)
         return _FakeSearchResult(0, tmp_path, [])
 
-    monkeypatch.setattr(lk, "search_lightcurve", _fake_search_lightcurve)
+    monkeypatch.setattr(lightkurve, "search_lightcurve", _fake_search_lightcurve)
 
     search_and_download_lightcurves(
         "KIC 8462852",

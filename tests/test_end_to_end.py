@@ -171,6 +171,7 @@ def test_anomaly_pipeline_runs_successfully(tmp_path: Path) -> None:
 
 
 def test_photometry_pipeline_runs_successfully(tmp_path: Path) -> None:
+    pytest.importorskip("lightkurve")
     result = run_pipeline(PHOTOMETRY_FIXTURE, "photometry", tmp_path)
     assert isinstance(result, PipelineRunResult)
     assert result.ok, f"Pipeline failed: {result.error}"
@@ -180,6 +181,7 @@ def test_photometry_pipeline_runs_successfully(tmp_path: Path) -> None:
 
 
 def test_photometry_pipeline_recovers_injected_transit(tmp_path: Path) -> None:
+    pytest.importorskip("lightkurve")
     result = run_pipeline(PHOTOMETRY_FIXTURE, "photometry", tmp_path)
     assert result.ok
     payload = json.loads(result.report_paths.json_path.read_text(encoding="utf-8"))
@@ -190,6 +192,7 @@ def test_photometry_pipeline_recovers_injected_transit(tmp_path: Path) -> None:
 
 
 def test_photometry_pipeline_writes_report_files(tmp_path: Path) -> None:
+    pytest.importorskip("lightkurve")
     result = run_pipeline(PHOTOMETRY_FIXTURE, "photometry", tmp_path)
     assert result.ok
     assert result.report_paths.markdown_path.exists()
