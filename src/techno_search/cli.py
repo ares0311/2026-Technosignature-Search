@@ -5231,6 +5231,33 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps({"ok": True, **summary}, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "track-a-catalog-acquire":
+        from techno_search.track_a_catalogs import CATALOG_ACQUISITION_SPECS
+
+        acquire_fn = CATALOG_ACQUISITION_SPECS[args.catalog]
+        try:
+            catalog_record = acquire_fn(project_root=default_project_root())
+        except RuntimeError as exc:
+            print(json.dumps({"ok": False, "error": str(exc)}, indent=2, sort_keys=True), file=out)
+            return 1
+        print(
+            json.dumps({"ok": True, **catalog_record.as_dict()}, indent=2, sort_keys=True),
+            file=out,
+        )
+        return 0
+
+    if args.command == "track-a-crossmatch":
+        from techno_search.track_a_crossmatch import cross_match_known_sources
+
+        crossmatch_result = cross_match_known_sources(
+            args.ra_deg,
+            args.dec_deg,
+            radius_arcsec=args.radius_arcsec,
+            project_root=default_project_root(),
+        )
+        print(json.dumps(crossmatch_result, indent=2, sort_keys=True), file=out)
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -9688,6 +9715,37 @@ def _build_parser() -> argparse.ArgumentParser:
             "Train and evaluate the Track A HTRU2 pulsar vs RFI/noise baseline "
             "classifier from the locally acquired data_cache/raw/htru2 parquet files."
         ),
+    )
+    catalog_acquire_parser = subparsers.add_parser(
+        "track-a-catalog-acquire",
+        help=(
+            "Download and normalize one Track A known-source catalog (ATNF, "
+            "CHIME/FRB, Roma-BZCAT, or Fermi 4FGL-DR4) for cross-matching."
+        ),
+    )
+    catalog_acquire_parser.add_argument(
+        "catalog",
+        choices=["atnf", "chime_frb", "romabzcat", "fermi_4fgl"],
+        help="Which known-source catalog to acquire and normalize.",
+    )
+    crossmatch_parser = subparsers.add_parser(
+        "track-a-crossmatch",
+        help=(
+            "Cross-match a candidate sky position against locally normalized "
+            "Track A known-source catalogs (pulsar/FRB/blazar-AGN/gamma-ray)."
+        ),
+    )
+    crossmatch_parser.add_argument(
+        "ra_deg", type=float, help="Candidate right ascension, ICRS degrees."
+    )
+    crossmatch_parser.add_argument(
+        "dec_deg", type=float, help="Candidate declination, ICRS degrees."
+    )
+    crossmatch_parser.add_argument(
+        "--radius-arcsec",
+        type=float,
+        default=30.0,
+        help="Cone search radius in arcseconds (default: 30.0).",
     )
 
     return parser
