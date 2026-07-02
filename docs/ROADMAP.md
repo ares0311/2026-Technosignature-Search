@@ -7,7 +7,12 @@ Technosignature Search
 
 Build a multi-modal technosignature candidate search platform.
 
-Do not start with live large-scale data. Start with the shared scoring and pathway core using synthetic data, then build track-specific ingestion and search modules.
+Current production direction supersedes the original synthetic-first bootstrap:
+do not train production models on synthetic data. `docs/technosignature_datasets_agent_brief.md`
+is the Track A handoff for an auditable known-explanation classifier. Track A
+must classify or reject pulsars, FRBs, blazars/AGN, known gamma-ray sources,
+satellite/transmitter matches, terrestrial RFI, instrument artifacts, and noise
+before Track B can emit `unknown_candidate` triage labels.
 
 ---
 

@@ -203,6 +203,24 @@ def test_publishing_docs_reference_current_validation_commands() -> None:
     assert "git diff --check" in doc
 
 
+def test_dataset_brief_is_wired_into_authoritative_docs() -> None:
+    required_docs = (
+        "AGENTS.md",
+        "CLAUDE.md",
+        "docs/PRODUCTION_READINESS.md",
+        "docs/PRODUCTION_SCAN_RUNBOOK.md",
+        "docs/PROJECT_STATUS.md",
+        "docs/ROADMAP.md",
+    )
+
+    assert Path("docs/technosignature_datasets_agent_brief.md").exists()
+    for doc_path in required_docs:
+        doc = Path(doc_path).read_text(encoding="utf-8")
+        assert "docs/technosignature_datasets_agent_brief.md" in doc
+        assert "Track A" in doc
+        assert "unknown_candidate" in doc
+
+
 def test_background_scheduler_templates_use_ignored_artifact_paths() -> None:
     cron = Path("docs/templates/background-search.cron").read_text(encoding="utf-8")
     launchd = Path("docs/templates/background-search.launchd.plist").read_text(

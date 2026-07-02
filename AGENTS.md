@@ -83,7 +83,8 @@ pipeline-output, or scan-output changes, agents must verify:
 
 The continuity rule is: **ignore the payloads, commit the map.** Raw or
 generated data belongs in ignored paths such as `data/` (large files),
-`results/` outside the review-safe subtree, `logs/`, `cache/`, or `artifacts/`.
+`data_cache/`, `tmp_training/`, `tmp_features/`, `results/` outside the
+review-safe subtree, `logs/`, `cache/`, `artifacts/`, `models/`, or `metrics/`.
 GitHub-visible continuity belongs in sanitized documentation, scripts,
 manifests, checksums, schemas, and tests.
 
@@ -150,6 +151,28 @@ confirmation is ever made without that external validation.
 **No candidate advances to step 3 without surviving step 2.**
 **No detection or discovery claim is ever made without step 3 confirmation.**
 
+### Track A Known-Explanation Gate — NON-NEGOTIABLE
+
+`docs/technosignature_datasets_agent_brief.md` is the authoritative dataset and
+training handoff for the first model-hardening milestone. It defines Track A as
+the required known-explanation classifier before Track B unknown-candidate
+ranking.
+
+Track A must classify or reject known explanations first: pulsars, FRBs,
+blazars/AGN, known gamma-ray sources, satellites/transmitters, terrestrial RFI,
+instrument artifacts, and noise. Track A may emit `low_confidence` when no known
+class is reliable. It must not emit `unknown_candidate`.
+
+Track B may emit `unknown_candidate` only after a tested, reproducible Track A
+baseline exists and the specific event has failed known-source, satellite,
+RFI, cadence, and instrument-artifact checks. `unknown_candidate` is a local
+triage queue state, not a detection or discovery claim.
+
+Never train a binary "technosignature versus non-technosignature" classifier.
+There are no confirmed positive technosignature labels. Do not use pretrained
+models, Kaggle SETI, Setigen, or any synthetic training set for the first Track A
+milestone unless the user explicitly approves a later synthetic benchmark.
+
 ---
 
 ## ANTI-DOOM-LOOP DIRECTIVES — NON-NEGOTIABLE
@@ -200,6 +223,11 @@ with operational status, with zero scientific progress. This must never recur.
 - Update `validate-all` to reflect the correct scientific gates only
 
 ### Phase 1 — Radio: GBT/MeerKAT Hardening
+- Implement the Track A known-explanation classifier from
+  `docs/technosignature_datasets_agent_brief.md` before any Track B
+  `unknown_candidate` routing
+- Build catalog cross-matches for pulsars, FRBs, blazars/AGN, gamma-ray sources,
+  satellites/transmitters, terrestrial RFI, instrument artifacts, and noise
 - Implement proper ON/OFF cadence verification from raw `.fil`/`.h5` files
 - Cross-target RFI suppression (signal in ≥2 independent pointings = RFI)
 - Drift rate analysis: Earth-rotation consistent drift is a candidate signal
@@ -389,6 +417,10 @@ Minimum validation before any PR:
 Do not commit:
 - Large data files (HDF5, FITS, raw `.dat`, `.fil`)
 - Catalog caches
+- Track A raw cache or temporary extraction paths (`data_cache/`,
+  `tmp_training/`, `tmp_features/`)
+- Local fitted models and metric payloads unless they are tiny, explicitly
+  reviewed, and safe to redistribute
 - API keys or credentials
 - `.venv/`
 - Generated SQLite databases

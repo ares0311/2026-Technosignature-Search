@@ -38,6 +38,7 @@ These modules do real science or directly support it:
 | Multi-epoch hit comparison | `pipeline_runner.py` | ✅ Keep |
 | Cross-target RFI suppression | existing CLI | ✅ Keep |
 | Candidate escalation gate | `prod_scan_queue.py` | ✅ Keep (simplified) |
+| Track A known-explanation dataset brief | `docs/technosignature_datasets_agent_brief.md` | ✅ Keep — now production gate input |
 | Production scan queue + history | `prod_scan_queue.py` | ✅ Keep |
 | BL extended corpus download script | `scripts/download_bl_extended_corpus.sh` | ✅ Keep |
 | turboSETI batch script | `scripts/run_turboseti_on_extended_corpus.sh` | ✅ Keep |
@@ -138,6 +139,7 @@ commands instead of placeholder `rm` recipes.
 
 | Task | Status |
 |---|---|
+| Track A known-explanation classifier before Track B `unknown_candidate` routing | ❌ Not started — `docs/technosignature_datasets_agent_brief.md` is now the formal dataset and training handoff; first implementation must classify or reject pulsar, FRB, blazar/AGN, gamma-ray, satellite/transmitter, terrestrial RFI, instrument-artifact, and noise explanations with `low_confidence` fallback |
 | Proper ON/OFF cadence verification (ABACAB from raw files) | ⚠️ Partial — `gbt-cadence-raw-status` verifies approved raw HDF5 presence, size, MD5, and HDF5 signature before cadence processing; local HIP99427 raw files are present under `~/technosignature-data`, the official ingest reproduces the 213-row cadence CSV, and `gbt-cadence-abacab-review` summarizes candidate-level ON/OFF outcomes |
 | Real training corpus loaded into semisupervised_scorer | ✅ Done locally — local GBT/turboSETI `.dat` corpus can fit the scorer and production radio packets can carry fitted-model anomaly scores; verified MeerKAT BLUSE/SETICORE JSON source is documented, `scripts/ingest_meerkat_hits.py` supports its schema, and `data/meerkat_hits/semisupervised_scorer_metadata.json` records `train_hit_count: 200000`; payload/model artifacts remain ignored and non-redistributed |
 | Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial — radio candidate packets, ranked summaries, and production ledgers now carry normalized drift and Earth-drift consistency features; `radio-real-corpus-summary` validates drift rows from local `.dat` files and can now include real normalized hit-NDJSON evidence from the verified MeerKAT BLUSE corpus; broader candidate-level stratified-corpus review remains open |
@@ -284,6 +286,10 @@ targets, 18 strata). Production follow-up, non-detection, and target-status
 ledgers now expose per-candidate cross-target RFI recurrence flags so repeated
 frequencies across independent targets are visible at the operator review row.
 No multi-modal candidates have been produced.
+No candidate should be labeled `unknown_candidate` until the Track A
+known-explanation classifier from `docs/technosignature_datasets_agent_brief.md`
+has a tested, reproducible baseline and the event has failed known-source,
+satellite/transmitter, RFI, cadence, and instrument-artifact checks.
 
 **Review chain:** Steps 1 (automated) and 2 (adversarial agent) not yet
 functional for real candidates. Step 3 (expert review) blocked pending
@@ -298,11 +304,14 @@ surviving candidates.
 3. All external catalog queries remain opt-in via `TECHNO_SEARCH_ENABLE_LIVE_DATA=1`.
 4. No synthetic training data. Models trained on synthetic data are not used for
    real signal detection.
-5. Expert review and external validation remain unclaimed unless they actually
+5. Track A known-explanation classification must precede Track B
+   `unknown_candidate` routing. `unknown_candidate` is a local triage queue
+   state only.
+6. Expert review and external validation remain unclaimed unless they actually
    occur and are documented here.
-6. A candidate that the adversarial agent cannot refute goes to third-party
+7. A candidate that the adversarial agent cannot refute goes to third-party
    expert review — not to public disclosure.
-7. Negative results are valuable. Document them with full provenance.
+8. Negative results are valuable. Document them with full provenance.
 
 ---
 
