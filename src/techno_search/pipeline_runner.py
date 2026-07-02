@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +17,7 @@ PIPELINE_RUN_DISCLAIMER = (
     "authorization for external submission."
 )
 KNOWN_SPACECRAFT_TOKENS = ("voyager", "spacecraft", "probe")
+MJD_EPOCH = datetime(1858, 11, 17, tzinfo=UTC)
 
 
 @dataclass
@@ -236,6 +238,10 @@ def _build_radio_candidate(
     if mjd is not None:
         extra_features["observation_mjd"] = float(mjd)
         extra_provenance["observation_mjd"] = float(mjd)
+        observation_time_utc = _mjd_to_utc_iso(float(mjd))
+        if observation_time_utc is not None:
+            extra_features["observation_time_utc"] = observation_time_utc
+            extra_provenance["observation_time_utc"] = observation_time_utc
     if xmatch.get("query_attempted"):
         extra_features["known_object_score"] = known_score
         extra_features["catalog_crossmatch_provider"] = str(xmatch.get("provider", ""))
@@ -310,6 +316,14 @@ def _build_radio_candidate(
         )
 
     return candidate
+
+
+def _mjd_to_utc_iso(mjd: float) -> str | None:
+    try:
+        observed_at = MJD_EPOCH + timedelta(days=mjd)
+    except OverflowError:
+        return None
+    return observed_at.isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
 def _default_semisupervised_model_path() -> Path:

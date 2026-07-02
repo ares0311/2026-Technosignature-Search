@@ -100,6 +100,7 @@ def test_radio_pipeline_preserves_track_b_position_metadata(tmp_path: Path) -> N
     assert packet["features"]["ra_deg"] == 83.8221
     assert packet["features"]["dec_deg"] == 22.0145
     assert packet["features"]["observation_mjd"] == 59000.5
+    assert packet["features"]["observation_time_utc"] == "2020-05-31T12:00:00Z"
 
 
 def test_radio_pipeline_injects_semisupervised_model_score(tmp_path: Path) -> None:

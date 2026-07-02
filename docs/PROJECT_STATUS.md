@@ -38,7 +38,10 @@ implemented. The Track B Phase 4 gate exists and has CLI wiring; calibrated
 anomaly/OOD threshold work remains open. Real-candidate validation now has a
 fail-closed packet-readiness audit so missing coordinates, observation time,
 telescope location, crossmatch evidence, or satellite evidence are reported
-explicitly instead of being guessed.
+explicitly instead of being guessed. Real turboSETI headers with tabbed
+sexagesimal RA/Dec now populate packet RA/Dec, MJD, and derived UTC timestamps;
+the remaining measured packet-level satellite blocker is verified observer-site
+coordinates.
 
 ---
 
