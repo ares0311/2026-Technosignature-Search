@@ -35,7 +35,10 @@ handoff for known-explanation classification before any Track B
 `unknown_candidate` routing. Track A baseline training, known-source catalog
 cross-match, satellite-transmitter matching, and small historical replay are
 implemented. The Track B Phase 4 gate exists and has CLI wiring; calibrated
-anomaly/OOD threshold work and end-to-end real-candidate validation remain open.
+anomaly/OOD threshold work remains open. Real-candidate validation now has a
+fail-closed packet-readiness audit so missing coordinates, observation time,
+telescope location, crossmatch evidence, or satellite evidence are reported
+explicitly instead of being guessed.
 
 ---
 
@@ -107,7 +110,7 @@ Step 3 blocked pending surviving candidates.
 
 | Task | Status |
 |---|---|
-| Track A known-explanation classifier before Track B `unknown_candidate` routing | ⚠️ Partial — Track A HTRU2 baseline, known-source catalogs, satellite-transmitter matching, historical replay, and Track B gate CLI are implemented; calibrated anomaly/OOD threshold and end-to-end real-candidate validation remain open |
+| Track A known-explanation classifier before Track B `unknown_candidate` routing | ⚠️ Partial — Track A HTRU2 baseline, known-source catalogs, satellite-transmitter matching, historical replay, Track B gate CLI, and fail-closed real-packet readiness audit are implemented; calibrated anomaly/OOD threshold and hit-bearing real-candidate gate review remain open |
 | Proper ON/OFF cadence verification (ABACAB from raw files) | ⚠️ Partial — HIP99427 raw HDF5 status and derived cadence review are wired locally |
 | MeerKAT BLUSE real training corpus loaded into semisupervised_scorer | ✅ Done locally — 200,000 verified real rows train the ignored local scorer |
 | Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial — real-corpus summary exposes stationary, Earth-consistent, and inconsistent rows |

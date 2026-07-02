@@ -57,6 +57,25 @@ INSTRUMENTAL_ARTIFACT_MAX_SCORE = 0.3
 RFI_OVERLAP_MAX_SCORE = 0.5
 CADENCE_PASS_SCORE = 1.0
 
+TRACK_B_PACKET_READINESS_SCHEMA_VERSION = "track_b_candidate_packet_readiness_v1"
+
+TRACK_B_CANDIDATE_FIELD_ALIASES: dict[str, tuple[str, ...]] = {
+    "ra_deg": ("ra_deg", "best_hit_ra_deg", "target_ra_deg"),
+    "dec_deg": ("dec_deg", "best_hit_dec_deg", "target_dec_deg"),
+    "frequency_hz": ("frequency_hz", "best_hit_frequency_hz"),
+    "observation_time_utc": ("observation_time_utc", "timestamp_utc", "time_utc"),
+    "observer_lat_deg": ("observer_lat_deg", "telescope_lat_deg"),
+    "observer_lon_deg": ("observer_lon_deg", "telescope_lon_deg"),
+    "observer_elevation_m": ("observer_elevation_m", "telescope_elevation_m"),
+}
+
+TRACK_B_REQUIRED_CANDIDATE_FEATURES = (
+    "rfi_band_overlap_score",
+    "instrumental_artifact_score",
+    "abacab_cadence_score",
+    "semisupervised_anomaly_score",
+)
+
 
 @dataclass(frozen=True)
 class GateCondition:
@@ -263,4 +282,131 @@ def track_b_unknown_candidate_gate(
         "unresolved_count": unresolved_count,
         "eligible_for_unknown_candidate": eligible,
         "conditions": [c.as_dict() for c in conditions],
+    }
+
+
+def _candidate_evidence_value(candidate: Candidate, field_id: str) -> Any:
+    aliases = TRACK_B_CANDIDATE_FIELD_ALIASES[field_id]
+    for mapping in (candidate.features, candidate.provenance):
+        for alias in aliases:
+            value = mapping.get(alias)
+            if value not in (None, ""):
+                return value
+    return None
+
+
+def _missing_candidate_fields(candidate: Candidate, field_ids: tuple[str, ...]) -> list[str]:
+    return [
+        field_id
+        for field_id in field_ids
+        if _candidate_evidence_value(candidate, field_id) is None
+    ]
+
+
+def _evidence_status(*, provided: bool, missing_inputs: list[str]) -> str:
+    if provided:
+        return "provided"
+    if missing_inputs:
+        return "missing_inputs"
+    return "ready_to_run"
+
+
+def track_b_candidate_packet_readiness(
+    candidate: Candidate,
+    *,
+    crossmatch_result: dict[str, Any] | None = None,
+    satellite_result: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Audit whether a real candidate packet is ready for Track B evaluation.
+
+    This function is deliberately fail-closed. It reports the exact packet
+    metadata and evidence JSON needed to evaluate the gate, but it does not
+    infer sky position, observation time, telescope location, or catalog
+    classifications. When crossmatch evidence is supplied, it also runs the
+    existing Track B gate so operators can see the concrete blocking
+    conditions for the same packet.
+    """
+
+    missing_crossmatch_inputs = _missing_candidate_fields(candidate, ("ra_deg", "dec_deg"))
+    missing_satellite_inputs = _missing_candidate_fields(
+        candidate,
+        (
+            "frequency_hz",
+            "observation_time_utc",
+            "ra_deg",
+            "dec_deg",
+            "observer_lat_deg",
+            "observer_lon_deg",
+            "observer_elevation_m",
+        ),
+    )
+    missing_candidate_features = [
+        field for field in TRACK_B_REQUIRED_CANDIDATE_FEATURES if field not in candidate.features
+    ]
+    provenance_ready = bool(candidate.source_ids) and bool(candidate.provenance)
+    is_radio = candidate.track.value == "radio"
+    is_zero_hit_non_detection = bool(candidate.features.get("zero_hit_non_detection"))
+
+    blocking_reasons: list[str] = []
+    if not is_radio:
+        blocking_reasons.append("candidate_track_is_not_radio")
+    if is_zero_hit_non_detection:
+        blocking_reasons.append("zero_hit_non_detection_is_not_a_track_b_candidate")
+    if missing_candidate_features:
+        blocking_reasons.append("missing_track_b_candidate_features")
+    if not provenance_ready:
+        blocking_reasons.append("missing_source_ids_or_provenance")
+    if crossmatch_result is None:
+        blocking_reasons.append("missing_track_a_crossmatch_json")
+    if satellite_result is None:
+        blocking_reasons.append("missing_satellite_match_json")
+
+    gate_result = None
+    if crossmatch_result is not None:
+        gate_result = track_b_unknown_candidate_gate(
+            candidate,
+            crossmatch_result=crossmatch_result,
+            satellite_result=satellite_result,
+        )
+
+    return {
+        "schema_version": TRACK_B_PACKET_READINESS_SCHEMA_VERSION,
+        "disclaimer": TRACK_B_GATE_DISCLAIMER,
+        "candidate_id": candidate.candidate_id,
+        "candidate_track": candidate.track.value,
+        "zero_hit_non_detection": is_zero_hit_non_detection,
+        "provenance_ready": provenance_ready,
+        "missing_candidate_feature_ids": missing_candidate_features,
+        "track_a_crossmatch": {
+            "status": _evidence_status(
+                provided=crossmatch_result is not None,
+                missing_inputs=missing_crossmatch_inputs,
+            ),
+            "provided": crossmatch_result is not None,
+            "missing_candidate_fields": missing_crossmatch_inputs,
+            "required_candidate_fields": ["ra_deg", "dec_deg"],
+        },
+        "satellite_match": {
+            "status": _evidence_status(
+                provided=satellite_result is not None,
+                missing_inputs=missing_satellite_inputs,
+            ),
+            "provided": satellite_result is not None,
+            "missing_candidate_fields": missing_satellite_inputs,
+            "required_candidate_fields": [
+                "frequency_hz",
+                "observation_time_utc",
+                "ra_deg",
+                "dec_deg",
+                "observer_lat_deg",
+                "observer_lon_deg",
+                "observer_elevation_m",
+            ],
+        },
+        "gate_evaluated": gate_result is not None,
+        "eligible_for_unknown_candidate": (
+            gate_result["eligible_for_unknown_candidate"] if gate_result else False
+        ),
+        "blocking_reason_ids": blocking_reasons,
+        "gate_result": gate_result,
     }

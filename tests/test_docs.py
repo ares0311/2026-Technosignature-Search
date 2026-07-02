@@ -226,7 +226,8 @@ def test_project_status_tracks_track_b_gate_progress() -> None:
     status = Path("docs/PROJECT_STATUS.md").read_text(encoding="utf-8")
 
     assert "Track B Phase 4 gate exists and has CLI wiring" in status
-    assert "end-to-end real-candidate validation remain open" in status
+    assert "fail-closed packet-readiness audit" in status
+    assert "hit-bearing real-candidate gate review remain open" in status
     assert "Not started — brief is merged locally" not in status
 
 

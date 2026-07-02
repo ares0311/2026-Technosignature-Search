@@ -201,6 +201,10 @@ def _build_radio_candidate(
 
     rows = hit_table_to_radio_hit_dicts(path)
     source_ids, provenance = cadence_candidate_context(path)
+    if not source_ids:
+        source_ids = (str(path),)
+    if "source_file" not in provenance:
+        provenance = {**provenance, "source_file": str(path), "reader_type": "turboSETI_csv"}
     if not rows:
         return _build_radio_non_detection_candidate(path, candidate_id, source_ids, provenance)
     candidate = build_radio_candidate(
@@ -214,6 +218,7 @@ def _build_radio_candidate(
     raw_rows = read_hit_table_csv(path)
     ra = next((r["ra_deg"] for r in raw_rows if r.get("ra_deg") is not None), None)
     dec = next((r["dec_deg"] for r in raw_rows if r.get("dec_deg") is not None), None)
+    mjd = next((r["mjd"] for r in raw_rows if r.get("mjd") is not None), None)
     xmatch = catalog_crossmatch(ra, dec)
     known_score = float(xmatch.get("known_object_score", 0.0))
 
@@ -222,6 +227,15 @@ def _build_radio_candidate(
     # a zero-match result (no known object) is also recorded as evidence.
     extra_features: dict[str, FeatureValue] = {}
     extra_provenance: dict[str, FeatureValue] = {}
+    if ra is not None:
+        extra_features["ra_deg"] = float(ra)
+        extra_provenance["ra_deg"] = float(ra)
+    if dec is not None:
+        extra_features["dec_deg"] = float(dec)
+        extra_provenance["dec_deg"] = float(dec)
+    if mjd is not None:
+        extra_features["observation_mjd"] = float(mjd)
+        extra_provenance["observation_mjd"] = float(mjd)
     if xmatch.get("query_attempted"):
         extra_features["known_object_score"] = known_score
         extra_features["catalog_crossmatch_provider"] = str(xmatch.get("provider", ""))
