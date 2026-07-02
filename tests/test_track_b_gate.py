@@ -1,5 +1,8 @@
 from techno_search.schemas import Candidate, Track
-from techno_search.track_b_gate import track_b_unknown_candidate_gate
+from techno_search.track_b_gate import (
+    track_b_candidate_packet_readiness,
+    track_b_unknown_candidate_gate,
+)
 
 
 def _radio_candidate(**feature_overrides) -> Candidate:
@@ -191,3 +194,67 @@ def test_gate_satellite_result_optional() -> None:
         c for c in result["conditions"] if c["condition_id"] == "not_known_satellite_transmitter"
     )
     assert satellite_condition["satisfied"] is None
+
+
+def test_candidate_packet_readiness_reports_missing_evidence_without_guessing() -> None:
+    candidate = _radio_candidate(frequency_hz=1_420_000_000.0, ra_deg=83.0, dec_deg=22.0)
+
+    result = track_b_candidate_packet_readiness(candidate)
+
+    assert result["gate_evaluated"] is False
+    assert result["track_a_crossmatch"]["status"] == "ready_to_run"
+    assert result["track_a_crossmatch"]["missing_candidate_fields"] == []
+    assert result["satellite_match"]["status"] == "missing_inputs"
+    assert "observation_time_utc" in result["satellite_match"]["missing_candidate_fields"]
+    assert "missing_track_a_crossmatch_json" in result["blocking_reason_ids"]
+    assert result["eligible_for_unknown_candidate"] is False
+
+
+def test_candidate_packet_readiness_runs_gate_when_crossmatch_is_supplied() -> None:
+    candidate = _radio_candidate(
+        frequency_hz=1_420_000_000.0,
+        ra_deg=83.0,
+        dec_deg=22.0,
+        observation_time_utc="2026-01-01T00:00:00Z",
+        observer_lat_deg=38.4331,
+        observer_lon_deg=-79.8398,
+        observer_elevation_m=807.0,
+    )
+
+    result = track_b_candidate_packet_readiness(
+        candidate,
+        crossmatch_result=_no_known_match_crossmatch(),
+        satellite_result={"classification": "no_known_match"},
+    )
+
+    assert result["gate_evaluated"] is True
+    assert result["track_a_crossmatch"]["status"] == "provided"
+    assert result["satellite_match"]["status"] == "provided"
+    assert result["gate_result"]["unresolved_count"] == 1
+    assert result["eligible_for_unknown_candidate"] is False
+
+
+def test_candidate_packet_readiness_blocks_zero_hit_non_detection() -> None:
+    candidate = Candidate(
+        candidate_id="zero-hit-realistic",
+        track=Track.RADIO,
+        features={
+            "zero_hit_non_detection": True,
+            "rfi_band_overlap_score": 0.0,
+            "instrumental_artifact_score": 0.0,
+            "abacab_cadence_score": 0.0,
+        },
+        source_ids=("zero-hit.dat",),
+        provenance={"source_file": "zero-hit.dat"},
+    )
+
+    result = track_b_candidate_packet_readiness(
+        candidate,
+        crossmatch_result=_no_known_match_crossmatch(),
+    )
+
+    assert "zero_hit_non_detection_is_not_a_track_b_candidate" in result[
+        "blocking_reason_ids"
+    ]
+    assert "semisupervised_anomaly_score" in result["missing_candidate_feature_ids"]
+    assert result["eligible_for_unknown_candidate"] is False

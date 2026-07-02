@@ -90,6 +90,18 @@ def test_radio_pipeline_records_rfi_database_evidence(tmp_path: Path) -> None:
     assert features["rfi_database_validation_ok"] is True
 
 
+def test_radio_pipeline_preserves_track_b_position_metadata(tmp_path: Path) -> None:
+    result = run_pipeline(RADIO_FIXTURE, "radio", tmp_path, candidate_id="radio-track-b-meta")
+    assert result.ok
+    packet = json.loads(result.report_paths.json_path.read_text(encoding="utf-8"))
+
+    assert packet["source_ids"]
+    assert packet["provenance"]["source_file"] == str(RADIO_FIXTURE)
+    assert packet["features"]["ra_deg"] == 83.8221
+    assert packet["features"]["dec_deg"] == 22.0145
+    assert packet["features"]["observation_mjd"] == 59000.5
+
+
 def test_radio_pipeline_injects_semisupervised_model_score(tmp_path: Path) -> None:
     model_path = tmp_path / "semisupervised_scorer.joblib"
     _write_fitted_semisupervised_model(model_path)

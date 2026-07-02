@@ -5367,6 +5367,32 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps({"ok": True, **gate_result}, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "track-b-candidate-readiness":
+        from techno_search.track_b_gate import track_b_candidate_packet_readiness
+
+        try:
+            candidate = load_candidate_json(args.candidate_json)
+            readiness_crossmatch_result = (
+                json.loads(Path(args.crossmatch_json).read_text(encoding="utf-8"))
+                if args.crossmatch_json
+                else None
+            )
+            readiness_satellite_result = (
+                json.loads(Path(args.satellite_json).read_text(encoding="utf-8"))
+                if args.satellite_json
+                else None
+            )
+        except (OSError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+            print(json.dumps({"ok": False, "error": str(exc)}, indent=2, sort_keys=True), file=out)
+            return 1
+        readiness = track_b_candidate_packet_readiness(
+            candidate,
+            crossmatch_result=readiness_crossmatch_result,
+            satellite_result=readiness_satellite_result,
+        )
+        print(json.dumps({"ok": True, **readiness}, indent=2, sort_keys=True), file=out)
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -9963,6 +9989,33 @@ def _build_parser() -> argparse.ArgumentParser:
         help=(
             "Optional JSON output from track-a-satellite-match for the same observation. "
             "Omitting it leaves the satellite condition unresolved and blocks eligibility."
+        ),
+    )
+    track_b_readiness_parser = subparsers.add_parser(
+        "track-b-candidate-readiness",
+        help=(
+            "Fail-closed audit of whether a real candidate packet has the metadata "
+            "and explicit Track A/ satellite evidence needed for Track B gate review."
+        ),
+    )
+    track_b_readiness_parser.add_argument(
+        "candidate_json",
+        help="Candidate JSON packet to audit.",
+    )
+    track_b_readiness_parser.add_argument(
+        "--crossmatch-json",
+        default=None,
+        help=(
+            "Optional JSON output from track-a-crossmatch. When supplied, the Track B "
+            "gate is evaluated; otherwise the audit reports required packet inputs."
+        ),
+    )
+    track_b_readiness_parser.add_argument(
+        "--satellite-json",
+        default=None,
+        help=(
+            "Optional JSON output from track-a-satellite-match. Missing satellite "
+            "evidence remains an explicit unresolved blocker."
         ),
     )
 

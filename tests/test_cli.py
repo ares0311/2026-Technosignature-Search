@@ -250,6 +250,37 @@ def test_cli_track_b_unknown_candidate_gate_combines_explicit_evidence(tmp_path)
     assert "local triage queue state only" in result["disclaimer"]
 
 
+def test_cli_track_b_candidate_readiness_reports_missing_inputs(tmp_path) -> None:
+    candidate = _candidate_json()
+    candidate["source_ids"] = []
+    candidate["features"] = {
+        **candidate["features"],
+        "abacab_cadence_score": 1.0,
+        "semisupervised_anomaly_score": 0.91,
+        "frequency_hz": 1_420_000_000.0,
+    }
+    candidate_path = tmp_path / "candidate.json"
+    candidate_path.write_text(json.dumps(candidate), encoding="utf-8")
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "track-b-candidate-readiness",
+            str(candidate_path),
+        ],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["ok"] is True
+    assert result["gate_evaluated"] is False
+    assert result["track_a_crossmatch"]["status"] == "missing_inputs"
+    assert result["track_a_crossmatch"]["missing_candidate_fields"] == ["ra_deg", "dec_deg"]
+    assert "missing_source_ids_or_provenance" in result["blocking_reason_ids"]
+    assert result["eligible_for_unknown_candidate"] is False
+
+
 def test_cli_writes_reports(tmp_path) -> None:
     input_path = tmp_path / "candidate.json"
     output_dir = tmp_path / "reports"
