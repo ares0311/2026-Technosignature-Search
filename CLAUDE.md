@@ -661,14 +661,34 @@ transitive dependency ceiling) and `fsspec`, consistent with the same
 downgrade already observed and accepted in this sandbox earlier the same
 day (still satisfies `pandas>=2.2`).
 
-**Not yet done:** interpret the real BLS period/depth/odd-even-mismatch and
-aperiodic-dip features from the actual `artifacts/pipeline_smoke/
-kplr008462852-2009131105131_llc.json` file once pasted — Q0 is a short
-early-mission quarter (~473 cadences), so a first-quarter, single-file run
-is not expected to reproduce Boyajian's Star's well-known deep aperiodic
-dips (those occurred in later quarters, e.g. Q8 and Q16); downloading and
-running additional quarters (`--limit` >1 or a specific quarter) would be
-needed to reach the quarters containing the known dip events.
+**Real feature interpretation (user pasted the full candidate JSON,
+2026-07-02):** BLS recovered a 0.8986-day period, 0.0123% depth signal
+(`bls_depth_snr: 21.09`, 12 recovered transits across the Q0 baseline).
+Critically, `harmonic_delta_log_likelihood: +10.71` →
+`sinusoidal_variable_preferred_score: 1.0` — the real vetting statistic
+correctly determined a sinusoidal (pulsating/rotating star) model fits this
+signal better than a discrete-transit model, and the packet's own
+`negative_evidence` says so explicitly ("A sinusoidal ... model is
+preferred over the transit model."). This is the physically expected
+outcome for an ultra-shallow, sub-day-period periodic signal in raw Kepler
+SAP flux (more consistent with stellar variability or unremoved spacecraft
+systematics than a real transiting body) and is exactly the kind of
+real-data case this vetting statistic exists to catch.
+`aperiodic_dip_count: 0` — the Boyajian's Star-style dip detector correctly
+found no significant events in this quarter; Q0 predates the star's
+well-documented deep dimming events (which occurred in later quarters, e.g.
+~Q8 and ~Q16), so this is expected, not a detector miss. Net posterior:
+`natural_source` 0.513 > `technosignature_interest` 0.261,
+`false_positive_probability: 0.7394`, `pathway: human_review_queue` — the
+conservative middle tier, neither dismissed nor escalated. `known_object_score:
+0.0` because `TECHNO_SEARCH_ENABLE_LIVE_DATA` was not set for this run
+(live SIMBAD/Gaia cross-match, wired in PR #195, was not exercised).
+
+**Not yet done:** downloading and running additional real quarters
+(`--limit` >1 or a specific `--quarter`) to reach the quarters containing
+Boyajian's Star's actual known dip events, to give the aperiodic-dip
+detector a real positive case to exercise against (still requires the
+user's live MAST access).
 
 ### Phase 3 Infrared — Real WISE Photospheric Blackbody Excess Check, 2026-07-02
 
