@@ -101,7 +101,7 @@ The user ran the System-Directive-compliant download command:
 
 ```bash
 git pull origin main
-caffeinate -i bash scripts/download_bl_extended_corpus.sh --manifest data/target_sample_manifest.json
+caffeinate -i bash scripts/download_bl_extended_corpus.sh --manifest data/target_sample_manifest.json 2>&1 | tee /tmp/bl_extended_corpus_download.log
 ```
 
 Measured result from pasted terminal output:
@@ -117,6 +117,35 @@ New ignored local HDF5 payload targets included `HIP113421`, `HIP26779`,
 `HIP23311`, `HIP82860`, and `HIP17147`. These are local calibration and
 generalization aids only. They are ignored payloads under `data/extended_corpus/`
 and must not be committed by `git add .`.
+
+### 2026-07-02 Extended-Corpus turboSETI + Production Scan
+
+After the download above, local processing completed with:
+
+```bash
+caffeinate -i bash scripts/run_turboseti_on_extended_corpus.sh
+caffeinate -i bash scripts/run_pipeline_on_bl_data.sh --dat-dir data/extended_corpus
+caffeinate -i bash scripts/run_production_scan.sh --dat-dir data/extended_corpus
+```
+
+Measured result:
+
+- turboSETI processed 8 newly downloaded HDF5 files, skipped 9 existing `.dat`
+  files, and failed 0 targets.
+- `data/extended_corpus/` now has 17 local `.dat` files; all 17 are zero-hit
+  observations at the configured turboSETI threshold.
+- Candidate-report generation completed 17/17 `.dat` files with 0 failures.
+- Production scan `RUN-2026-07-02_130330Z-3ZNT-prod-scan` scanned 11 pending
+  targets, failed 0, flagged 0 escalations, and left 0 pending targets.
+- The run produced 0 follow-up entries and 39 non-detection/no-follow-up ledger
+  entries across the current local result set.
+- `ai-hardening-gate-summary` remained closed with `production_promotion_allowed:
+  true` for local operations only; no detection, discovery, expert-review,
+  external-validation, or external-submission claim was made.
+
+These `.dat`, `.log`, production-run, and report artifacts remain ignored local
+payloads. GitHub-visible continuity is this measured map plus the committed
+scripts and tests, not the payloads.
 
 ## Local Inventory Snapshot
 
