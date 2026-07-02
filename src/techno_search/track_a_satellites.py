@@ -76,7 +76,13 @@ def acquire_celestrak_satcat(
 
     out_dir = default_satellite_cache_dir(root, source="celestrak")
     out_dir.mkdir(parents=True, exist_ok=True)
-    url = "https://celestrak.org/satcat/records.php?FORMAT=CSV"
+    # The brief's documented "records.php?FORMAT=CSV" endpoint rejects that
+    # query with "Invalid query" (confirmed against the live host) -- it
+    # requires an actual query key (CATNR/INTDES/GROUP/NAME/SPECIAL), not
+    # just a format flag, and "GROUP=all" does not exist either (also
+    # confirmed against the live host). This static full-catalog CSV dump
+    # was confirmed working with a real header row and real data.
+    url = "https://celestrak.org/pub/satcat.csv"
     csv_path = out_dir / "satcat.csv"
 
     log_progress(f"[START] Downloading CelesTrak SATCAT from {url}")
