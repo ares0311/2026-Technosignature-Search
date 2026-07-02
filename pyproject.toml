@@ -52,6 +52,8 @@ track_a = [
     "psrqpy>=1.2",
     "astroquery>=0.4",
     "requests>=2.31",
+    "skyfield>=1.49",
+    "sgp4>=2.23",
 ]
 
 [tool.setuptools.packages.find]
@@ -93,5 +95,7 @@ module = [
     "psrqpy.*",
     "astroquery.*",
     "requests.*",
+    "skyfield.*",
+    "sgp4.*",
 ]
 ignore_missing_imports = true

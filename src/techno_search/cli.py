@@ -5281,6 +5281,70 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0 if replay_report["all_recovered"] else 1
 
+    if args.command == "track-a-satellite-acquire":
+        from techno_search.track_a_satellites import (
+            SATNOGS_ENDPOINTS,
+            acquire_celestrak_gp_active,
+            acquire_celestrak_satcat,
+            acquire_satnogs_endpoint,
+        )
+
+        try:
+            if args.source == "celestrak_satcat":
+                satellite_record = acquire_celestrak_satcat(project_root=default_project_root())
+            elif args.source == "celestrak_gp_active":
+                satellite_record = acquire_celestrak_gp_active(
+                    project_root=default_project_root()
+                )
+            else:
+                endpoint = args.source.removeprefix("satnogs_")
+                if endpoint not in SATNOGS_ENDPOINTS:
+                    msg = f"Unknown satellite source: {args.source!r}"
+                    raise RuntimeError(msg)
+                satellite_record = acquire_satnogs_endpoint(
+                    endpoint, project_root=default_project_root()
+                )
+        except RuntimeError as exc:
+            print(json.dumps({"ok": False, "error": str(exc)}, indent=2, sort_keys=True), file=out)
+            return 1
+        print(
+            json.dumps({"ok": True, **satellite_record.as_dict()}, indent=2, sort_keys=True),
+            file=out,
+        )
+        return 0
+
+    if args.command == "track-a-satellite-match":
+        from techno_search.track_a_satellites import match_satellite_transmitter
+
+        try:
+            observation_time = datetime.fromisoformat(args.observation_time_utc)
+            if observation_time.tzinfo is None:
+                observation_time = observation_time.replace(tzinfo=UTC)
+        except ValueError as exc:
+            print(
+                json.dumps(
+                    {"ok": False, "error": f"Invalid --observation-time-utc: {exc}"},
+                    indent=2,
+                    sort_keys=True,
+                ),
+                file=out,
+            )
+            return 1
+
+        satellite_match_result = match_satellite_transmitter(
+            frequency_hz=args.frequency_hz,
+            observation_time_utc=observation_time,
+            ra_deg=args.ra_deg,
+            dec_deg=args.dec_deg,
+            observer_lat_deg=args.observer_lat_deg,
+            observer_lon_deg=args.observer_lon_deg,
+            observer_elevation_m=args.observer_elevation_m,
+            beam_radius_deg=args.beam_radius_deg,
+            project_root=default_project_root(),
+        )
+        print(json.dumps(satellite_match_result, indent=2, sort_keys=True), file=out)
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -9784,6 +9848,75 @@ def _build_parser() -> argparse.ArgumentParser:
         type=int,
         default=1,
         help="Number of rows to sample per catalog as replay cases (default: 1).",
+    )
+    satellite_acquire_parser = subparsers.add_parser(
+        "track-a-satellite-acquire",
+        help=(
+            "Download and normalize one satellite/transmitter data source "
+            "(CelesTrak SATCAT, CelesTrak active GP orbital elements, or a "
+            "SatNOGS DB endpoint) for satellite-transmitter matching."
+        ),
+    )
+    satellite_acquire_parser.add_argument(
+        "source",
+        choices=[
+            "celestrak_satcat",
+            "celestrak_gp_active",
+            "satnogs_satellites",
+            "satnogs_transmitters",
+            "satnogs_tle",
+            "satnogs_modes",
+        ],
+        help="Which satellite/transmitter data source to acquire.",
+    )
+    satellite_match_parser = subparsers.add_parser(
+        "track-a-satellite-match",
+        help=(
+            "Check whether an event is explained by a known satellite "
+            "transmitter: frequency must overlap a SatNOGS transmitter range "
+            "AND SGP4-propagated position at the observation time must fall "
+            "within the beam radius of the candidate sky position."
+        ),
+    )
+    satellite_match_parser.add_argument(
+        "frequency_hz", type=float, help="Event frequency in Hz."
+    )
+    satellite_match_parser.add_argument(
+        "observation_time_utc",
+        help=(
+            "Observation timestamp, ISO 8601 (e.g. 2026-01-01T00:00:00). "
+            "Assumed UTC if no offset."
+        ),
+    )
+    satellite_match_parser.add_argument(
+        "ra_deg", type=float, help="Candidate right ascension, ICRS degrees."
+    )
+    satellite_match_parser.add_argument(
+        "dec_deg", type=float, help="Candidate declination, ICRS degrees."
+    )
+    satellite_match_parser.add_argument(
+        "--observer-lat-deg",
+        type=float,
+        required=True,
+        help="Observer (telescope) geodetic latitude in degrees. No default — must be supplied.",
+    )
+    satellite_match_parser.add_argument(
+        "--observer-lon-deg",
+        type=float,
+        required=True,
+        help="Observer (telescope) geodetic longitude in degrees. No default — must be supplied.",
+    )
+    satellite_match_parser.add_argument(
+        "--observer-elevation-m",
+        type=float,
+        required=True,
+        help="Observer (telescope) elevation in meters. No default — must be supplied.",
+    )
+    satellite_match_parser.add_argument(
+        "--beam-radius-deg",
+        type=float,
+        default=0.5,
+        help="Beam coincidence radius in degrees (default: 0.5).",
     )
 
     return parser
