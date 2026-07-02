@@ -5258,6 +5258,29 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(crossmatch_result, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "track-a-historical-replay":
+        from techno_search.track_a_replay import (
+            run_historical_replay,
+            save_historical_replay_report,
+        )
+
+        replay_report = run_historical_replay(
+            project_root=default_project_root(),
+            sample_size=args.sample_size,
+        )
+        saved_path = save_historical_replay_report(
+            replay_report, project_root=default_project_root()
+        )
+        print(
+            json.dumps(
+                {**replay_report, "saved_report_path": str(saved_path)},
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0 if replay_report["all_recovered"] else 1
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -9746,6 +9769,21 @@ def _build_parser() -> argparse.ArgumentParser:
         type=float,
         default=30.0,
         help="Cone search radius in arcseconds (default: 30.0).",
+    )
+    replay_parser = subparsers.add_parser(
+        "track-a-historical-replay",
+        help=(
+            "Phase 3 Small Historical Replay: sample real rows from locally "
+            "acquired Track A catalogs, confirm cross-match recovers each "
+            "object's own known class, and confirm a fixed empty-sky position "
+            "reports no_known_match instead of a false positive."
+        ),
+    )
+    replay_parser.add_argument(
+        "--sample-size",
+        type=int,
+        default=1,
+        help="Number of rows to sample per catalog as replay cases (default: 1).",
     )
 
     return parser
