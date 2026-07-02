@@ -581,6 +581,7 @@ def _build_anomaly_candidate(path: Path, candidate_id: str) -> Candidate:
 
 
 def _build_photometry_candidate(path: Path, candidate_id: str) -> Candidate:
+    from techno_search.catalog_crossmatch import catalog_crossmatch
     from techno_search.photometry.aperiodic_dip import detect_aperiodic_dips
     from techno_search.photometry.bls_detection import run_bls_transit_search
     from techno_search.photometry.lightcurve_io import load_lightcurve_file
@@ -610,7 +611,11 @@ def _build_photometry_candidate(path: Path, candidate_id: str) -> Candidate:
     flattened_lc = clean_lc.flatten()
     bls_result = run_bls_transit_search(flattened_lc)
 
-    return build_transit_photometry_candidate(
+    # Optional live catalog cross-match (requires TECHNO_SEARCH_ENABLE_LIVE_DATA=1)
+    xmatch = catalog_crossmatch(ra_deg, dec_deg)
+    known_score = float(xmatch.get("known_object_score", 0.0))
+
+    candidate = build_transit_photometry_candidate(
         candidate_id,
         bls_result=bls_result,
         dip_events=dip_events,
@@ -619,9 +624,36 @@ def _build_photometry_candidate(path: Path, candidate_id: str) -> Candidate:
         dec_deg=dec_deg,
         cadence_count=int(len(clean_lc.time)),
         finite_cadence_fraction=finite_fraction,
+        known_object_score=known_score,
         source_ids=(target_id,),
         provenance={"source_file": str(path), "reader_type": "lightkurve_fits"},
     )
+
+    if xmatch.get("query_attempted"):
+        extra_features: dict[str, FeatureValue] = {
+            "catalog_crossmatch_provider": str(xmatch.get("provider", "")),
+        }
+        extra_provenance: dict[str, FeatureValue] = {
+            "catalog_crossmatch_provider": str(xmatch.get("provider", "")),
+            "catalog_crossmatch_known_object_score": known_score,
+        }
+        simbad_count = int(xmatch.get("simbad_match_count", 0))
+        extra_features["simbad_match_count"] = simbad_count
+        extra_provenance["simbad_match_count"] = simbad_count
+        simbad_names: list[str] = list(xmatch.get("simbad_match_names") or [])
+        extra_provenance["simbad_match_names"] = ", ".join(simbad_names[:5]) or "none"
+        gaia_count = int(xmatch.get("gaia_match_count", 0))
+        extra_features["gaia_match_count"] = gaia_count
+        extra_provenance["gaia_match_count"] = gaia_count
+        candidate = Candidate(
+            candidate_id=candidate.candidate_id,
+            track=candidate.track,
+            features={**candidate.features, **extra_features},
+            source_ids=candidate.source_ids,
+            provenance={**candidate.provenance, **extra_provenance},
+        )
+
+    return candidate
 
 
 def _lightcurve_coordinate(lc: Any, name: str) -> float | None:
