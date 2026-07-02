@@ -362,6 +362,7 @@ def _transit_photometry_scores(
     aliasing = _score(f, "period_aliasing_score")
     sinusoidal = _score(f, "sinusoidal_variable_preferred_score")
     shape_irregularity = _score(f, "transit_shape_irregularity_score", default=0.0)
+    grazing_eclipse = _score(f, "grazing_eclipse_score", default=0.0)
     dip_significance = _score(f, "max_dip_significance_score")
     asymmetric_dip = _score(f, "asymmetric_ingress_egress_score", default=0.0)
     data_quality = _score(f, "data_quality_score", default=0.7)
@@ -376,10 +377,11 @@ def _transit_photometry_scores(
         + 1.00 * dip_significance
         + 0.85 * asymmetric_dip
         + 0.45 * shape_irregularity
+        + 0.90 * (1.0 - grazing_eclipse)
         + 0.50 * data_quality
     )
     raw_scores[PosteriorClass.NATURAL_SOURCE] += (
-        2.20 * blended_eb + 2.00 * sinusoidal + 0.60 * aliasing
+        2.20 * blended_eb + 2.00 * sinusoidal + 0.60 * aliasing + 1.80 * grazing_eclipse
     )
     raw_scores[PosteriorClass.CATALOG_OR_PROCESSING_ERROR] += (
         0.90 * aliasing + 1.10 * (1.0 - data_quality)
@@ -399,6 +401,7 @@ def _transit_photometry_scores(
         aliasing=aliasing,
         sinusoidal=sinusoidal,
         shape_irregularity=shape_irregularity,
+        grazing_eclipse=grazing_eclipse,
         dip_significance=dip_significance,
         asymmetric_dip=asymmetric_dip,
         data_quality=data_quality,
@@ -697,6 +700,7 @@ def _transit_photometry_evidence(
     aliasing: float,
     sinusoidal: float,
     shape_irregularity: float,
+    grazing_eclipse: float,
     dip_significance: float,
     asymmetric_dip: float,
     data_quality: float,
@@ -718,14 +722,21 @@ def _transit_photometry_evidence(
     )
     _append_if(
         positive,
-        blended_eb <= 0.2 and aliasing <= 0.2 and sinusoidal <= 0.0,
-        "No blended-eclipsing-binary, aliasing, or sinusoidal-variable indicators are present.",
+        blended_eb <= 0.2 and aliasing <= 0.2 and sinusoidal <= 0.0 and grazing_eclipse <= 0.2,
+        "No blended-eclipsing-binary, aliasing, sinusoidal-variable, or "
+        "grazing-eclipse indicators are present.",
     )
 
     _append_if(
         negative,
         blended_eb >= 0.4,
         "Odd/even transit depth mismatch suggests a blended eclipsing binary.",
+    )
+    _append_if(
+        negative,
+        grazing_eclipse >= 0.5,
+        "Phase-folded transit shape is V-shaped, consistent with a grazing "
+        "or blended eclipsing binary rather than a full transit.",
     )
     _append_if(
         negative,

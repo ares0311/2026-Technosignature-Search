@@ -3,6 +3,7 @@ from __future__ import annotations
 from techno_search.photometry.aperiodic_dip import DipEvent
 from techno_search.photometry.bls_detection import BlsTransitResult
 from techno_search.photometry.prototype import build_transit_photometry_candidate
+from techno_search.photometry.transit_shape import TransitShapeResult
 from techno_search.schemas import Track
 
 
@@ -108,3 +109,41 @@ def test_blended_eclipsing_binary_signature_is_flagged() -> None:
     assert candidate.features["blended_eclipsing_binary_score"] > 0.5
     assert candidate.features["sinusoidal_variable_preferred_score"] == 1.0
     assert candidate.features["period_aliasing_score"] > 0.5
+
+
+def test_transit_shape_features_injected_when_computable() -> None:
+    shape_result = TransitShapeResult(
+        computable=True,
+        in_transit_point_count=42,
+        box_model_depth=0.01,
+        box_model_rss=0.001,
+        triangular_model_depth=0.008,
+        triangular_model_rss=0.004,
+    )
+
+    candidate = build_transit_photometry_candidate(
+        "tic-shape-1",
+        bls_result=_clean_bls_result(),
+        shape_result=shape_result,
+        target_id="TIC Shape",
+    )
+
+    assert candidate.features["transit_shape_flat_bottom_score"] == (
+        shape_result.flat_bottom_score()
+    )
+    assert candidate.features["grazing_eclipse_score"] == shape_result.grazing_eclipse_score()
+    assert candidate.features["transit_shape_in_transit_point_count"] == 42
+
+
+def test_transit_shape_features_omitted_when_not_computable() -> None:
+    shape_result = TransitShapeResult(computable=False, reason="too few points")
+
+    candidate = build_transit_photometry_candidate(
+        "tic-shape-2",
+        bls_result=_clean_bls_result(),
+        shape_result=shape_result,
+        target_id="TIC Shape 2",
+    )
+
+    assert "transit_shape_flat_bottom_score" not in candidate.features
+    assert "grazing_eclipse_score" not in candidate.features

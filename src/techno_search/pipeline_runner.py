@@ -512,6 +512,7 @@ def _build_infrared_candidate(path: Path, candidate_id: str) -> Candidate:
     from techno_search.catalog_crossmatch import catalog_crossmatch
     from techno_search.infrared.catalog_reader import catalog_rows_to_infrared_source_dicts
     from techno_search.infrared.prototype import build_infrared_candidate
+    from techno_search.infrared_wise.agn_indicator import wise_agn_indicator
     from techno_search.infrared_wise.photosphere_excess import wise_ir_excess_result
 
     rows = catalog_rows_to_infrared_source_dicts(path)
@@ -536,6 +537,18 @@ def _build_infrared_candidate(path: Path, candidate_id: str) -> Candidate:
         row["ir_excess_score"] = wise_excess.ir_excess_score()
         row["sed_fit_residual_score"] = wise_excess.ir_excess_score()
 
+    # Real WISE W1-W2 AGN color indicator (Stern et al. 2012 / Assef et al.
+    # 2013 literature thresholds, not an invented cutoff). Overrides the
+    # caller-supplied default galaxy_agn_indicator_score when W1/W2 are
+    # present.
+    agn_indicator = wise_agn_indicator(
+        row.get("w1"),
+        row.get("w2"),
+        w2_mag_for_reliability_limit=row.get("w2"),
+    )
+    if agn_indicator.computable:
+        row["galaxy_agn_indicator_score"] = agn_indicator.agn_indicator_score()
+
     candidate = build_infrared_candidate(candidate_id, row)
 
     if wise_excess.computable:
@@ -552,6 +565,24 @@ def _build_infrared_candidate(path: Path, candidate_id: str) -> Candidate:
             provenance={
                 **candidate.provenance,
                 "wise_excess_method": "single_temperature_blackbody_w1w2_photosphere",
+            },
+        )
+
+    if agn_indicator.computable:
+        candidate = Candidate(
+            candidate_id=candidate.candidate_id,
+            track=candidate.track,
+            features={
+                **candidate.features,
+                "wise_w1_minus_w2": agn_indicator.w1_minus_w2,
+                "wise_agn_meets_stern_2012_threshold": (
+                    agn_indicator.meets_stern_2012_reliable_threshold
+                ),
+            },
+            source_ids=candidate.source_ids,
+            provenance={
+                **candidate.provenance,
+                "wise_agn_indicator_method": "stern_2012_assef_2013_w1w2_color",
             },
         )
 
@@ -622,6 +653,7 @@ def _build_photometry_candidate(path: Path, candidate_id: str) -> Candidate:
     from techno_search.photometry.bls_detection import run_bls_transit_search
     from techno_search.photometry.lightcurve_io import load_lightcurve_file
     from techno_search.photometry.prototype import build_transit_photometry_candidate
+    from techno_search.photometry.transit_shape import classify_transit_shape
 
     raw_lc = load_lightcurve_file(path)
     raw_cadence_count = int(len(raw_lc.time))
@@ -646,6 +678,9 @@ def _build_photometry_candidate(path: Path, candidate_id: str) -> Candidate:
     # unremoved stellar variability degrades period/depth recovery.
     flattened_lc = clean_lc.flatten()
     bls_result = run_bls_transit_search(flattened_lc)
+    shape_result = classify_transit_shape(
+        flattened_lc.time.value, flattened_lc.flux.value, bls_result
+    )
 
     # Optional live catalog cross-match (requires TECHNO_SEARCH_ENABLE_LIVE_DATA=1)
     xmatch = catalog_crossmatch(ra_deg, dec_deg)
@@ -655,6 +690,7 @@ def _build_photometry_candidate(path: Path, candidate_id: str) -> Candidate:
         candidate_id,
         bls_result=bls_result,
         dip_events=dip_events,
+        shape_result=shape_result,
         target_id=target_id,
         ra_deg=ra_deg,
         dec_deg=dec_deg,
