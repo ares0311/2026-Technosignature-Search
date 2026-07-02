@@ -1,6 +1,6 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-06-29
+**Last updated:** 2026-07-02
 **Current milestone:** 79 (Production Scan Hardening And Artifact Hygiene)
 **Current phase:** Phase 0 — Strip & Fix (multi-modal realignment)
 **Current app version:** 1.1.0
@@ -139,7 +139,7 @@ commands instead of placeholder `rm` recipes.
 
 | Task | Status |
 |---|---|
-| Track A known-explanation classifier before Track B `unknown_candidate` routing | ❌ Not started — `docs/technosignature_datasets_agent_brief.md` is now the formal dataset and training handoff; first implementation must classify or reject pulsar, FRB, blazar/AGN, gamma-ray, satellite/transmitter, terrestrial RFI, instrument-artifact, and noise explanations with `low_confidence` fallback |
+| Track A known-explanation classifier before Track B `unknown_candidate` routing | ⚠️ Partial — Phase 0 disk-budget guardrails (`techno-search track-a-disk-usage`, `src/techno_search/track_a_data_guard.py`) and the first Track A baseline (HTRU2 pulsar vs RFI/noise; `src/techno_search/track_a_htru2.py`, `techno-search track-a-htru2-acquire`/`track-a-htru2-train`) are implemented and tested against real-schema fixtures. Acquisition requires network access to `archive-beta.ics.uci.edu` via `ucimlrepo`, which this sandbox cannot reach — the user must run `track-a-htru2-acquire` then `track-a-htru2-train` locally. Catalog cross-match classes (FRB, blazar/AGN, gamma-ray, satellite/transmitter) from the brief's dataset stack remain not started. |
 | Proper ON/OFF cadence verification (ABACAB from raw files) | ⚠️ Partial — `gbt-cadence-raw-status` verifies approved raw HDF5 presence, size, MD5, and HDF5 signature before cadence processing; local HIP99427 raw files are present under `~/technosignature-data`, the official ingest reproduces the 213-row cadence CSV, and `gbt-cadence-abacab-review` summarizes candidate-level ON/OFF outcomes |
 | Real training corpus loaded into semisupervised_scorer | ✅ Done locally — local GBT/turboSETI `.dat` corpus can fit the scorer and production radio packets can carry fitted-model anomaly scores; verified MeerKAT BLUSE/SETICORE JSON source is documented, `scripts/ingest_meerkat_hits.py` supports its schema, and `data/meerkat_hits/semisupervised_scorer_metadata.json` records `train_hit_count: 200000`; payload/model artifacts remain ignored and non-redistributed |
 | Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial — radio candidate packets, ranked summaries, and production ledgers now carry normalized drift and Earth-drift consistency features; `radio-real-corpus-summary` validates drift rows from local `.dat` files and can now include real normalized hit-NDJSON evidence from the verified MeerKAT BLUSE corpus; broader candidate-level stratified-corpus review remains open |

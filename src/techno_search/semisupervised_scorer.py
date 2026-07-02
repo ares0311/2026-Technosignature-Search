@@ -301,7 +301,7 @@ def load_training_hits_ndjson(
 def load_fitted_scorer_joblib(path: Path) -> SemisupervisedScorer:
     """Load a fitted semi-supervised scorer from a local joblib payload."""
 
-    import joblib  # type: ignore[import-untyped]
+    import joblib
 
     loaded = joblib.load(Path(path))
     if not isinstance(loaded, SemisupervisedScorer):
