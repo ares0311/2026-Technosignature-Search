@@ -223,6 +223,62 @@ Mandatory requirements:
 
 ## Current Live Handoff — 2026-06-27
 
+### Track A Real Baseline Results — 2026-07-02
+
+PRs #170-#176 merged (Track A implementation + fixes). `main` is at commit
+`f94e403`. The user ran the full Track A acquisition/training sequence
+locally against real hosts (this sandbox cannot reach any of them) and it
+now has a real, executed, tested baseline — closing the brief's
+"tested, reproducible baseline" gate for Phase 0-2.
+
+**HTRU2 (Phase 1 baseline):** 17,898 rows acquired (`ucimlrepo`, exact match
+to the documented dataset size). Trained 3 candidate models, held out 20%
+(3,580 rows):
+- `logistic_regression`: F1=0.883, precision=0.948, recall=0.826
+- `hist_gradient_boosting`: F1=0.895, precision=0.920, recall=0.872
+- `random_forest`: F1=0.896, precision=0.925, recall=0.869 — **best model,
+  selected automatically**, saved to `models/track_a/htru2_random_forest.joblib`
+  (local, gitignored, not redistributed)
+
+**Catalog acquisition (Phase 2):** all four fixed-sky-position catalogs
+acquired from live hosts:
+- ATNF pulsars via `psrqpy`: 4,393 rows
+- CHIME/FRB Catalog 1 via VizieR: 600 rows (exceeds the brief's 536-burst
+  snapshot — catalog has grown)
+- Roma-BZCAT blazars/AGN via VizieR: 3,561 rows (exact match)
+- Fermi 4FGL-DR4 gamma-ray sources via FSSC FITS: 7,195 rows (one more than
+  the brief's 7,194-row snapshot — real catalog drift, not a bug)
+
+**Two real bugs found and fixed live (PR #176):**
+1. Roma-BZCAT's VizieR `RAJ2000`/`DEJ2000` columns are sexagesimal text
+   (`'00 00 20.39'`), not decimal degrees like CHIME/FRB's identically-named
+   columns — `normalize_romabzcat`/`normalize_chime_frb` now try decimal
+   float first and fall back to `astropy.coordinates.Angle` sexagesimal
+   parsing.
+2. Fermi 4FGL-DR4's FITS table has multidimensional per-energy-band flux
+   columns (`Flux_Band`, `Sqrt_TS_Band`, etc.) that crash
+   `astropy.Table.to_pandas()` directly — `fits_table_to_pandas()` now drops
+   non-scalar columns before conversion.
+
+Also fixed live: a stale `.venv/bin/pip` shim bound to a leftover
+`python3.13` site-packages directory from before this venv's Python was
+upgraded to 3.14.3 (packages "successfully installed" were never importable
+from the actual interpreter `techno-search` runs under) — use
+`.venv/bin/python -m pip install` going forward, documented in `AGENTS.md`.
+An `SSL_CERT_FILE` macOS python.org-installer certificate issue was also
+resolved by pointing at the already-installed `certifi` bundle (not a TLS
+verification bypass).
+
+**Not done:** CelesTrak/SatNOGS satellite-transmitter matching (needs SGP4
+orbital propagation against an observation timestamp, not a static sky
+position — deliberately deferred, documented in `PRODUCTION_READINESS.md`).
+
+**Next step per the brief:** Phase 3 (Small Historical Replay) — re-run the
+pipeline end-to-end on a small set of known historical events/candidates and
+confirm known explanations are recovered. The brief explicitly forbids
+starting Track B (`unknown_candidate` routing) until Track A + historical
+replay are both done — do not skip ahead to that.
+
 ### Dataset Brief Integration — 2026-07-01
 
 `docs/technosignature_datasets_agent_brief.md` is a required project input, not
