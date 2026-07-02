@@ -631,6 +631,45 @@ already-existing `catalog_crossmatch()` (SIMBAD+Gaia, opt-in via
 closing the hardcoded `known_object_score=0.0` gap the same way radio/
 infrared already handle it.
 
+### First Real Downloaded Photometry Result — KIC 8462852, 2026-07-02
+
+The user ran the full real pipeline for the first time against a live MAST
+download (not the self-constructed test fixture):
+
+```bash
+.venv/bin/python -m pip install -e '.[photometry]'
+techno-search photometry-lightcurve-search "KIC 8462852" --mission Kepler --limit 1
+techno-search run-pipeline "data/photometry_lightcurves/mastDownload/Kepler/kplr008462852_lc_Q111111111111111111/kplr008462852-2009131105131_llc.fits" --track photometry --output-dir artifacts/pipeline_smoke
+```
+
+**Real result:** `photometry-lightcurve-search` found 18 real Kepler quarters
+available for KIC 8462852 (Boyajian's Star) and downloaded 1 (Q0,
+`kplr008462852-2009131105131_llc.fits`). `run-pipeline` processed it cleanly:
+`ok: true`, 473 real cadences, `track: transit_photometry`,
+`reader_type: lightkurve_fits`, `pathway: human_review_queue` (a plausible
+middle-tier result — not `do_not_submit_false_positive`, not the top-tier
+`candidate_review_packet`). Full BLS/dip feature values not yet pasted back
+by the user (only the top-level `run-pipeline` summary was pasted); the
+detailed features live in `artifacts/pipeline_smoke/
+kplr008462852-2009131105131_llc.json` on the user's machine.
+
+**Real environment note surfaced by this run, not a bug:** the user's
+machine is on Python 3.14 with `.venv` under `python3.14/site-packages`
+(matching prior session notes about this venv's interpreter), and the
+`.[photometry]` install upgraded `pandas` 3.0.3→2.3.3 (a `lightkurve`
+transitive dependency ceiling) and `fsspec`, consistent with the same
+downgrade already observed and accepted in this sandbox earlier the same
+day (still satisfies `pandas>=2.2`).
+
+**Not yet done:** interpret the real BLS period/depth/odd-even-mismatch and
+aperiodic-dip features from the actual `artifacts/pipeline_smoke/
+kplr008462852-2009131105131_llc.json` file once pasted — Q0 is a short
+early-mission quarter (~473 cadences), so a first-quarter, single-file run
+is not expected to reproduce Boyajian's Star's well-known deep aperiodic
+dips (those occurred in later quarters, e.g. Q8 and Q16); downloading and
+running additional quarters (`--limit` >1 or a specific quarter) would be
+needed to reach the quarters containing the known dip events.
+
 ### Phase 3 Infrared — Real WISE Photospheric Blackbody Excess Check, 2026-07-02
 
 With both remaining Phase 1 blockers (anomaly-threshold calibration,
