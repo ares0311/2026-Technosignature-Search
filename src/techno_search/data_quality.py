@@ -58,7 +58,7 @@ def validate_input(path: Path, track: str) -> DataQualityResult:
         )
 
     track_lower = track.lower()
-    valid_tracks = {"radio", "infrared", "anomaly"}
+    valid_tracks = {"radio", "infrared", "anomaly", "photometry"}
     if track_lower not in valid_tracks:
         msg = f"Unknown track '{track}'. Expected: {sorted(valid_tracks)}"
         return DataQualityResult(
@@ -70,7 +70,10 @@ def validate_input(path: Path, track: str) -> DataQualityResult:
         )
 
     suffix = path.suffix.lower()
-    if suffix not in {".csv", ".txt", ".dat"}:
+    if track_lower == "photometry":
+        if suffix not in {".fits", ".fit"}:
+            warnings.append(f"Unexpected file suffix '{suffix}'; expected .fits or .fit")
+    elif suffix not in {".csv", ".txt", ".dat"}:
         warnings.append(f"Unexpected file suffix '{suffix}'; expected .csv, .txt, or .dat")
 
     try:
@@ -78,6 +81,8 @@ def validate_input(path: Path, track: str) -> DataQualityResult:
             row_count, issues, warnings = _validate_radio(path, issues, warnings)
         elif track_lower == "infrared":
             row_count, issues, warnings = _validate_infrared(path, issues, warnings)
+        elif track_lower == "photometry":
+            row_count, issues, warnings = _validate_photometry(path, issues, warnings)
         else:
             row_count, issues, warnings = _validate_anomaly(path, issues, warnings)
     except Exception as exc:  # noqa: BLE001
@@ -245,3 +250,30 @@ def _validate_anomaly(
                 except ValueError:
                     issues.append(f"Non-numeric anomaly value in column '{key}': '{value}'")
     return len(rows), issues, warnings
+
+
+def _validate_photometry(
+    path: Path, issues: list[str], warnings: list[str]
+) -> tuple[int, list[str], list[str]]:
+    try:
+        from techno_search.photometry.lightcurve_io import load_lightcurve_file
+    except Exception as exc:  # noqa: BLE001
+        issues.append(f"Failed to import photometry reader: {exc}")
+        return 0, issues, warnings
+
+    try:
+        lc = load_lightcurve_file(path)
+    except RuntimeError as exc:
+        issues.append(str(exc))
+        return 0, issues, warnings
+    except Exception as exc:  # noqa: BLE001
+        issues.append(f"Failed to read light curve file: {exc}")
+        return 0, issues, warnings
+
+    row_count = int(len(lc.time))
+    if row_count == 0:
+        issues.append("Light curve file has zero cadences.")
+    elif row_count < 10:
+        warnings.append(f"Very short light curve: {row_count} cadences.")
+
+    return row_count, issues, warnings

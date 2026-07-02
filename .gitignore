@@ -50,6 +50,8 @@ results/scan_history.ndjson
 *.fits
 *.fit
 *.fits.gz
+!tests/fixtures/**/*.fits
+!tests/fixtures/**/*.fit
 *.dat
 !tests/fixtures/**/*.dat
 *.npy

@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 import joblib
+import pytest
 
 from techno_search.cli import main
 from techno_search.pipeline_runner import PipelineRunResult, run_pipeline
@@ -14,6 +15,9 @@ RADIO_FIXTURE = Path(__file__).parent / "fixtures" / "radio" / "sample_hits.csv"
 INFRARED_FIXTURE = Path(__file__).parent / "fixtures" / "infrared" / "sample_gaia_wise.csv"
 ANOMALY_FIXTURE = (
     Path(__file__).parent / "fixtures" / "anomaly" / "sample_archival_anomaly.csv"
+)
+PHOTOMETRY_FIXTURE = (
+    Path(__file__).parent / "fixtures" / "photometry" / "sample_lightcurve.fits"
 )
 
 
@@ -163,6 +167,35 @@ def test_anomaly_pipeline_runs_successfully(tmp_path: Path) -> None:
     assert result.track.value == "anomaly"
     assert result.reader_type == "archival_anomaly_csv"
     assert result.row_count == 2
+    assert result.report_paths.json_path.exists()
+
+
+def test_photometry_pipeline_runs_successfully(tmp_path: Path) -> None:
+    pytest.importorskip("lightkurve")
+    result = run_pipeline(PHOTOMETRY_FIXTURE, "photometry", tmp_path)
+    assert isinstance(result, PipelineRunResult)
+    assert result.ok, f"Pipeline failed: {result.error}"
+    assert result.track.value == "transit_photometry"
+    assert result.reader_type == "lightkurve_fits"
+    assert result.pathway != "unknown"
+
+
+def test_photometry_pipeline_recovers_injected_transit(tmp_path: Path) -> None:
+    pytest.importorskip("lightkurve")
+    result = run_pipeline(PHOTOMETRY_FIXTURE, "photometry", tmp_path)
+    assert result.ok
+    payload = json.loads(result.report_paths.json_path.read_text(encoding="utf-8"))
+    features = payload["features"]
+    assert features["bls_period_days"] == pytest.approx(2.2, abs=0.05)
+    assert features["bls_depth_snr"] > 10.0
+    assert features["blended_eclipsing_binary_score"] < 0.3
+
+
+def test_photometry_pipeline_writes_report_files(tmp_path: Path) -> None:
+    pytest.importorskip("lightkurve")
+    result = run_pipeline(PHOTOMETRY_FIXTURE, "photometry", tmp_path)
+    assert result.ok
+    assert result.report_paths.markdown_path.exists()
     assert result.report_paths.json_path.exists()
 
 
