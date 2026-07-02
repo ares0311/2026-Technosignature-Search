@@ -273,11 +273,42 @@ verification bypass).
 orbital propagation against an observation timestamp, not a static sky
 position — deliberately deferred, documented in `PRODUCTION_READINESS.md`).
 
-**Next step per the brief:** Phase 3 (Small Historical Replay) — re-run the
-pipeline end-to-end on a small set of known historical events/candidates and
-confirm known explanations are recovered. The brief explicitly forbids
-starting Track B (`unknown_candidate` routing) until Track A + historical
-replay are both done — do not skip ahead to that.
+### Phase 3 Historical Replay — Real Results, 2026-07-02
+
+PR #178 merged (`track-a-historical-replay` CLI + `track_a_replay.py`). The
+user ran `techno-search track-a-historical-replay --sample-size 3` against
+their real locally-acquired catalogs. **Result: 13/13 recovered,
+`all_recovered: true`:**
+- 3 real ATNF pulsars (J0002+6216, J0006+1834, J0007+7303) — all
+  `known_pulsar`
+- 3 real CHIME/FRB bursts (FRB20180725A, FRB20180727A, FRB20180729A) — all
+  `known_frb`
+- 3 real Roma-BZCAT blazars (5BZQ J0000-3221, 5BZQ J0001-1551,
+  5BZQ J0001+1914) — all `known_blazar_agn`
+- 3 real Fermi 4FGL gamma-ray sources (4FGL J0000.3-7355, 4FGL J0000.5+0743,
+  4FGL J0000.7+2530) — all `known_gamma_ray_source`
+- negative control (RA=180.0, Dec=-89.5) correctly reported `no_known_match`
+  with all 4 catalogs loaded (not a false positive)
+
+**This satisfies the brief's explicit gate.** Both conditions the brief
+requires before Track B can start are now genuinely met with real data:
+"Track A has a tested, reproducible baseline" (Phase 1/2, PR #171-177) and
+"historical replay work" (Phase 3, this result).
+
+**Track B (`unknown_candidate` routing) itself is still not started.**
+Before implementing it:
+1. CelesTrak/SatNOGS satellite-transmitter matching is still the one missing
+   Phase 2 catalog (needs SGP4 propagation against an observation timestamp).
+2. The brief's Phase 4 gate requires 9 conditions, most of which already
+   exist as separate, unwired radio-pipeline features from earlier Phase 0/1
+   work: RFI database overlap (`rfi_database.py`), instrumental artifact
+   score, ABACAB cadence score (PR #125), semisupervised anomaly scorer
+   (trained on 200k real MeerKAT rows). These need to be combined into one
+   gate function alongside the Track A catalog cross-match.
+3. How `unknown_candidate` integrates with the existing `Pathway` enum /
+   `score_candidate()` routing in `schemas.py`/`scoring.py`/`pathway.py` is
+   an architecturally significant decision — get explicit user direction
+   before touching that shared, already-tested code path.
 
 ### Dataset Brief Integration — 2026-07-01
 
