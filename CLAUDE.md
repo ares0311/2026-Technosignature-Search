@@ -499,6 +499,36 @@ you MUST record the key results in this handoff section before responding.
 Do NOT ask the user to run a command again if they have already run it and
 pasted the results — even across sessions. This file is the memory between sessions.**
 
+### Git-Add-Safe Label Regeneration — 2026-07-02
+
+The user reminded agents that their standard cadence is `git add .`; scripts
+must work around that design feature. Root cause found: the normal
+`scripts/build_citizen_science_labels.py` default overwrote the tracked
+`examples/real_labeled/hip99427_citizen_science_labels_v1.json` fixture, so
+routine local diagnostic regeneration made `git add .` stage a generated diff.
+Fix: normal runs now default to ignored
+`tmp_training/real_labeled/hip99427_citizen_science_labels_v1.local.json`.
+Refreshing the committed fixture requires explicit `--update-committed-fixture`
+or an explicit `--output` path. Keep this pattern for any future scripts that
+produce both local diagnostics and committed reference fixtures.
+
+### Extended-Corpus Download Result — 2026-07-02
+
+The user pasted a completed run of:
+
+```bash
+git pull origin main
+caffeinate -i bash scripts/download_bl_extended_corpus.sh --manifest data/target_sample_manifest.json
+```
+
+Measured result: 31 manifest targets checked, 11 new URL-available HDF5
+downloads completed, 6 existing HDF5 targets reused, 17 URL-available HDF5
+targets processed, and 14 unavailable/skipped targets. New ignored local HDF5
+payload targets included `HIP113421`, `HIP26779`, `HIP67275`, `HIP74981`,
+`HIP16852`, `HIP99427`, `HIP66704`, `HIP39826`, `HIP23311`, `HIP82860`, and
+`HIP17147`. These payloads are ignored under `data/extended_corpus/`; commit the
+map and method, never the HDF5 payloads.
+
 ### Mission Realignment — 2026-06-26
 
 The project was redirected in session on 2026-06-26. Key changes:
