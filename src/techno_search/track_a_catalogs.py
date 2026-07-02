@@ -25,6 +25,7 @@ from techno_search.track_a_data_guard import (
     AcquisitionManifestRecord,
     append_acquisition_manifest,
     check_disk_budget_or_raise,
+    log_progress,
 )
 
 NORMALIZED_CATALOG_SCHEMA_VERSION = "track_a_normalized_catalog_v1"
@@ -186,8 +187,10 @@ def acquire_atnf_pulsars(
     root = project_root or Path(__file__).resolve().parents[2]
     check_disk_budget_or_raise(project_root=root, additional_expected_bytes=5 * 1024 * 1024)
 
+    log_progress("[START] Querying ATNF pulsar catalog via psrqpy")
     query = QueryATNF(params=["PSRJ", "RAJ", "DECJ", "P0", "P1", "DM", "BINARY", "DIST"])
     df = query.table.to_pandas()
+    log_progress(f"[INFO] Downloaded {len(df)} rows, verifying row count")
     if len(df) <= ATNF_EXPECTED_MIN_ROW_COUNT:
         msg = (
             f"ATNF catalog row count too low: expected >{ATNF_EXPECTED_MIN_ROW_COUNT}, "
@@ -197,6 +200,7 @@ def acquire_atnf_pulsars(
 
     normalized = normalize_atnf_pulsars(df)
     out_path = _write_normalized(normalized, project_root=root, catalog_name="atnf")
+    log_progress(f"[OK] Wrote {len(df)} verified rows -> {out_path}")
 
     record = AcquisitionManifestRecord(
         source_name="atnf_pulsars",
@@ -231,10 +235,12 @@ def acquire_chime_frb(
     root = project_root or Path(__file__).resolve().parents[2]
     check_disk_budget_or_raise(project_root=root, additional_expected_bytes=5 * 1024 * 1024)
 
+    log_progress("[START] Querying CHIME/FRB Catalog 1 via VizieR (J/ApJS/257/59)")
     Vizier.ROW_LIMIT = -1
     tables = Vizier.get_catalogs("J/ApJS/257/59")
     table = tables["J/ApJS/257/59/table2"]
     df = table.to_pandas()
+    log_progress(f"[INFO] Downloaded {len(df)} rows, verifying row count")
     if len(df) < CHIME_FRB_EXPECTED_MIN_ROW_COUNT:
         msg = (
             f"CHIME/FRB catalog row count too low: expected >={CHIME_FRB_EXPECTED_MIN_ROW_COUNT}, "
@@ -244,6 +250,7 @@ def acquire_chime_frb(
 
     normalized = normalize_chime_frb(df)
     out_path = _write_normalized(normalized, project_root=root, catalog_name="chime_frb")
+    log_progress(f"[OK] Wrote {len(df)} verified rows -> {out_path}")
 
     record = AcquisitionManifestRecord(
         source_name="chime_frb_catalog1",
@@ -278,10 +285,12 @@ def acquire_romabzcat(
     root = project_root or Path(__file__).resolve().parents[2]
     check_disk_budget_or_raise(project_root=root, additional_expected_bytes=5 * 1024 * 1024)
 
+    log_progress("[START] Querying Roma-BZCAT via VizieR (VII/274)")
     Vizier.ROW_LIMIT = -1
     tables = Vizier.get_catalogs("VII/274")
     table = tables["VII/274/bzcat5"]
     df = table.to_pandas()
+    log_progress(f"[INFO] Downloaded {len(df)} rows, verifying row count")
     if len(df) != ROMABZCAT_EXPECTED_ROW_COUNT:
         msg = (
             f"Roma-BZCAT row count mismatch: expected {ROMABZCAT_EXPECTED_ROW_COUNT}, "
@@ -291,6 +300,7 @@ def acquire_romabzcat(
 
     normalized = normalize_romabzcat(df)
     out_path = _write_normalized(normalized, project_root=root, catalog_name="romabzcat")
+    log_progress(f"[OK] Wrote {len(df)} verified rows -> {out_path}")
 
     record = AcquisitionManifestRecord(
         source_name="romabzcat",
@@ -328,12 +338,15 @@ def acquire_fermi_4fgl(
     url = "https://fermi.gsfc.nasa.gov/ssc/data/access/lat/14yr_catalog/gll_psc_v32.fit"
     fits_path = out_dir / "gll_psc_v32.fit"
 
+    log_progress(f"[START] Downloading Fermi 4FGL-DR4 FITS from {url}")
     response = requests.get(url, timeout=120)
     response.raise_for_status()
     fits_path.write_bytes(response.content)
+    log_progress(f"[INFO] Downloaded {len(response.content)} bytes, parsing FITS table")
 
     table = Table.read(fits_path)
     df = table.to_pandas()
+    log_progress(f"[INFO] Parsed {len(df)} rows, verifying row count")
     if len(df) != FERMI_4FGL_EXPECTED_ROW_COUNT:
         msg = (
             f"Fermi 4FGL-DR4 row count mismatch: expected {FERMI_4FGL_EXPECTED_ROW_COUNT}, "
@@ -343,6 +356,7 @@ def acquire_fermi_4fgl(
 
     normalized = normalize_fermi_4fgl(df)
     out_path = _write_normalized(normalized, project_root=root, catalog_name="fermi_4fgl")
+    log_progress(f"[OK] Wrote {len(df)} verified rows -> {out_path}")
 
     record = AcquisitionManifestRecord(
         source_name="fermi_4fgl_dr4",

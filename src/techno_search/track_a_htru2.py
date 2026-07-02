@@ -22,6 +22,7 @@ from techno_search.track_a_data_guard import (
     AcquisitionManifestRecord,
     append_acquisition_manifest,
     check_disk_budget_or_raise,
+    log_progress,
 )
 
 HTRU2_SOURCE_URL = "https://archive-beta.ics.uci.edu/dataset/372/htru2"
@@ -84,9 +85,11 @@ def acquire_htru2(
     )
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    log_progress(f"[START] Downloading HTRU2 via ucimlrepo (id=372) -> {out_dir}")
     htru2 = fetch_ucirepo(id=372)
     features = htru2.data.features
     labels = htru2.data.targets
+    log_progress(f"[INFO] Downloaded {len(features)} rows, verifying row count")
 
     if len(features) != HTRU2_EXPECTED_ROW_COUNT:
         msg = (
@@ -101,6 +104,7 @@ def acquire_htru2(
     labels_path = out_dir / "htru2_labels.parquet"
     features.to_parquet(features_path, index=False)
     labels.rename(columns={label_col: HTRU2_LABEL_COLUMN}).to_parquet(labels_path, index=False)
+    log_progress(f"[OK] Wrote {len(features)} verified rows -> {features_path}")
 
     record = AcquisitionManifestRecord(
         source_name="htru2",
@@ -211,9 +215,11 @@ def train_htru2_baseline(
     results: dict[str, TrackAHtru2Metrics] = {}
     fitted_models: dict[str, Any] = {}
     for model_name in _CANDIDATE_MODEL_NAMES:
+        log_progress(f"[START] Training {model_name} on {len(x_train)} rows")
         model = _build_model(model_name, random_state=random_state)
         model.fit(x_train, y_train)
         predictions = model.predict(x_test)
+        log_progress(f"[OK] {model_name} evaluated on {len(x_test)} held-out rows")
 
         from sklearn.metrics import (
             accuracy_score,
