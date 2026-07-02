@@ -310,6 +310,59 @@ Before implementing it:
    an architecturally significant decision — get explicit user direction
    before touching that shared, already-tested code path.
 
+### Track B Real End-to-End Run — 2026-07-02
+
+PRs #180-#184 merged (all by another concurrent session, discovered when
+this session's own local, unpushed CLI-wiring commit turned out to duplicate
+already-merged, better-designed work — discarded rather than pushed, per the
+SUMMARY SKEPTICISM / PRIOR TASK VALIDITY rules):
+- #180: CelesTrak/SatNOGS satellite-transmitter matching
+  (`track_a_satellites.py`, SGP4 propagation via `skyfield.EarthSatellite.
+  from_omm()`)
+- #181: Track B Phase 4 gate (`track_b_gate.py`,
+  `track_b_unknown_candidate_gate()`) as a separate, additive function — not
+  wired into the shared `Pathway` enum/`score_candidate()` — plus a real
+  CelesTrak SATCAT URL bug fix (`records.php?FORMAT=CSV` is rejected by the
+  live API; fixed to the verified working `https://celestrak.org/pub/
+  satcat.csv`)
+- #182: `techno-search track-b-unknown-candidate-gate` CLI (explicit
+  `--crossmatch-json`/`--satellite-json` evidence files, no inline network
+  lookups)
+- #183: `techno-search track-b-candidate-readiness` — fail-closed audit of
+  packet metadata/evidence completeness; also fixed radio candidate packets
+  to preserve real RA/Dec/provenance (closing a gap this session had
+  flagged as needing bigger architectural work)
+- #184: fixed real turboSETI tabbed-sexagesimal RA/Dec header parsing bug,
+  added `observation_time_utc` derived from MJD to candidate packets
+
+**First real end-to-end Track B run, 2026-07-02:** `data/bl_hits/
+voyager1_hits.dat` (real Voyager 1 X-band downlink hit, 8.419 GHz,
+2016-09-19T18:46:13Z) run through the full pipeline → real Track A
+crossmatch → real satellite match (using NRAO's own published GBT reference
+point: 38.4331211, -79.8398350, 807.43m — verified via GBT Proposer's Guide
++ National Radio Quiet Zone reference point page, not memory) →
+`track-b-candidate-readiness`. Result: **7 of 9 conditions satisfied**, 2
+correctly left unresolved (`abacab_cadence_score=0.5` — single file,
+insufficient cadence evidence; `semisupervised_anomaly_score=0.058` — low,
+but no calibrated "high" threshold exists yet), `eligible_for_unknown_
+candidate: false`. No false claim was made either way — the gate correctly
+did not label a known human spacecraft signal `unknown_candidate`.
+
+**Real scope gap surfaced by this test, not a bug:** Voyager 1 is a
+deep-space probe, not an Earth-orbiting satellite, so SatNOGS/CelesTrak
+(Earth-orbit catalogs) correctly report no match. None of the 9 Phase 4
+conditions currently has a "known human deep-space spacecraft" category, so
+Voyager-class signals fall through to "unresolved" rather than being
+confidently attributed. Worth a small dedicated check in future work, not
+urgent — the gate's conservative-by-construction design means this doesn't
+cause any wrong claim, just an unresolved condition.
+
+**Two blockers remain before Track B eligibility can ever resolve true:**
+1. Calibrate the semisupervised anomaly/OOD threshold from real held-out
+   evidence — no invented cutoff.
+2. Get real ABACAB 6-scan cadence evidence (this Voyager file is a single
+   observation, not a full ON/OFF cadence).
+
 ### Dataset Brief Integration — 2026-07-01
 
 `docs/technosignature_datasets_agent_brief.md` is a required project input, not
