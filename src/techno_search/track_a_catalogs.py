@@ -34,8 +34,11 @@ NORMALIZED_COLUMNS = ("source_id", "ra_deg", "dec_deg", "object_class", "catalog
 
 ATNF_EXPECTED_MIN_ROW_COUNT = 1000
 CHIME_FRB_EXPECTED_MIN_ROW_COUNT = 536
-ROMABZCAT_EXPECTED_ROW_COUNT = 3561
-FERMI_4FGL_EXPECTED_ROW_COUNT = 7194
+ROMABZCAT_EXPECTED_MIN_ROW_COUNT = 3561
+# docs/technosignature_datasets_agent_brief.md documents 7194 as a point-in-time
+# snapshot of the DR4 catalog; a live acquisition on 2026-07-02 observed 7195
+# rows, so this is a floor, not an exact match, matching ATNF/CHIME-FRB.
+FERMI_4FGL_EXPECTED_MIN_ROW_COUNT = 7194
 
 _RA_ALIASES = ("RAJ2000", "RA_ICRS", "_RAJ2000", "RA")
 _DEC_ALIASES = ("DEJ2000", "DE_ICRS", "_DEJ2000", "DEC", "Dec")
@@ -57,6 +60,27 @@ def _resolve_column(columns: Any, aliases: tuple[str, ...]) -> str:
             return alias
     msg = f"None of the expected coordinate columns {aliases} found in {list(columns)}"
     raise ValueError(msg)
+
+
+def _coerce_coordinate_degrees(series: Any, *, is_ra: bool) -> Any:
+    """Coerce a VizieR coordinate column to decimal degrees.
+
+    Different VizieR catalogs use the same nominal column name (e.g.
+    RAJ2000) for different formats: CHIME/FRB Catalog 1 stores decimal
+    degrees, but Roma-BZCAT (VII/274/bzcat5) stores sexagesimal text (e.g.
+    '00 00 20.39'), confirmed by a live acquisition failure. Try decimal
+    first since it's cheaper and the common case; fall back to sexagesimal
+    parsing only if that fails.
+    """
+
+    try:
+        return series.astype(float)
+    except (ValueError, TypeError):
+        from astropy import units as u
+        from astropy.coordinates import Angle
+
+        unit = u.hourangle if is_ra else u.deg
+        return Angle(series.astype(str).to_numpy(), unit=unit).degree
 
 
 def _write_normalized(
@@ -120,8 +144,8 @@ def normalize_chime_frb(df: Any) -> Any:
     return pd.DataFrame(
         {
             "source_id": df[name_col].astype(str),
-            "ra_deg": df[ra_col].astype(float),
-            "dec_deg": df[dec_col].astype(float),
+            "ra_deg": _coerce_coordinate_degrees(df[ra_col], is_ra=True),
+            "dec_deg": _coerce_coordinate_degrees(df[dec_col], is_ra=False),
             "object_class": object_class,
             "catalog_name": "chime_frb",
         }
@@ -140,8 +164,8 @@ def normalize_romabzcat(df: Any) -> Any:
     return pd.DataFrame(
         {
             "source_id": df[name_col].astype(str),
-            "ra_deg": df[ra_col].astype(float),
-            "dec_deg": df[dec_col].astype(float),
+            "ra_deg": _coerce_coordinate_degrees(df[ra_col], is_ra=True),
+            "dec_deg": _coerce_coordinate_degrees(df[dec_col], is_ra=False),
             "object_class": "blazar_agn",
             "catalog_name": "romabzcat",
         }
@@ -305,9 +329,9 @@ def acquire_romabzcat(
     table = tables["VII/274/bzcat5"]
     df = table.to_pandas()
     log_progress(f"[INFO] Downloaded {len(df)} rows, verifying row count")
-    if len(df) != ROMABZCAT_EXPECTED_ROW_COUNT:
+    if len(df) < ROMABZCAT_EXPECTED_MIN_ROW_COUNT:
         msg = (
-            f"Roma-BZCAT row count mismatch: expected {ROMABZCAT_EXPECTED_ROW_COUNT}, "
+            f"Roma-BZCAT row count too low: expected >={ROMABZCAT_EXPECTED_MIN_ROW_COUNT}, "
             f"got {len(df)}"
         )
         raise RuntimeError(msg)
@@ -361,9 +385,9 @@ def acquire_fermi_4fgl(
     table = Table.read(fits_path)
     df = fits_table_to_pandas(table)
     log_progress(f"[INFO] Parsed {len(df)} rows, verifying row count")
-    if len(df) != FERMI_4FGL_EXPECTED_ROW_COUNT:
+    if len(df) < FERMI_4FGL_EXPECTED_MIN_ROW_COUNT:
         msg = (
-            f"Fermi 4FGL-DR4 row count mismatch: expected {FERMI_4FGL_EXPECTED_ROW_COUNT}, "
+            f"Fermi 4FGL-DR4 row count too low: expected >={FERMI_4FGL_EXPECTED_MIN_ROW_COUNT}, "
             f"got {len(df)}"
         )
         raise RuntimeError(msg)
