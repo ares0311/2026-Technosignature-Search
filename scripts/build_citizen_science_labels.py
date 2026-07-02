@@ -10,6 +10,29 @@ from pathlib import Path
 from techno_search.citizen_science_labels import write_citizen_science_dataset
 from techno_search.gbt_cadence import load_cadence_manifest
 
+COMMITTED_FIXTURE_OUTPUT = (
+    Path("examples")
+    / "real_labeled"
+    / "hip99427_citizen_science_labels_v1.json"
+)
+LOCAL_DEFAULT_OUTPUT = (
+    Path("tmp_training")
+    / "real_labeled"
+    / "hip99427_citizen_science_labels_v1.local.json"
+)
+
+
+def resolve_output_path(
+    explicit_output: Path | None,
+    *,
+    update_committed_fixture: bool,
+) -> Path:
+    if explicit_output is not None:
+        return explicit_output
+    if update_committed_fixture:
+        return COMMITTED_FIXTURE_OUTPUT
+    return LOCAL_DEFAULT_OUTPUT
+
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -31,10 +54,18 @@ def main() -> int:
     parser.add_argument(
         "--output",
         type=Path,
-        default=(
-            Path("examples")
-            / "real_labeled"
-            / "hip99427_citizen_science_labels_v1.json"
+        default=None,
+        help=(
+            "Output path. Defaults to an ignored local file under tmp_training/ "
+            "so normal operator runs remain safe under `git add .`."
+        ),
+    )
+    parser.add_argument(
+        "--update-committed-fixture",
+        action="store_true",
+        help=(
+            "Deliberately refresh the committed examples/real_labeled fixture. "
+            "Use only when the fixture change is intended for GitHub review."
         ),
     )
     parser.add_argument(
@@ -47,11 +78,15 @@ def main() -> int:
         ),
     )
     args = parser.parse_args()
+    output_path = resolve_output_path(
+        args.output,
+        update_committed_fixture=args.update_committed_fixture,
+    )
 
     manifest = load_cadence_manifest(args.manifest)
     dataset = write_citizen_science_dataset(
         args.cadence_csv,
-        args.output,
+        output_path,
         manifest=manifest,
         semisupervised_model_path=args.semisupervised_model,
     )
@@ -75,7 +110,8 @@ def main() -> int:
     print(
         json.dumps(
             {
-                "output": str(args.output),
+                "output": str(output_path),
+                "committed_fixture_update": output_path == COMMITTED_FIXTURE_OUTPUT,
                 "entry_count": dataset["total_entries"],
                 "label_counts": dataset["label_counts"],
                 "review_summary": dataset["review_summary"],

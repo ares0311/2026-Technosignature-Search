@@ -95,6 +95,29 @@ Current committed review-safe DECISION-134 evidence map:
   the same closure evidence for future GitHub-only agents. Raw HDF5, generated
   injected HDF5, `.dat`, and `.log` payloads remain ignored local artifacts.
 
+### 2026-07-02 Extended-Corpus Download
+
+The user ran the System-Directive-compliant download command:
+
+```bash
+git pull origin main
+caffeinate -i bash scripts/download_bl_extended_corpus.sh --manifest data/target_sample_manifest.json
+```
+
+Measured result from pasted terminal output:
+
+- 31 manifest targets checked.
+- 11 new URL-available HDF5 downloads completed.
+- 6 existing HDF5 targets were reused.
+- 17 URL-available HDF5 targets were processed.
+- 14 targets had no current HDF5 URL or were otherwise skipped.
+
+New ignored local HDF5 payload targets included `HIP113421`, `HIP26779`,
+`HIP67275`, `HIP74981`, `HIP16852`, `HIP99427`, `HIP66704`, `HIP39826`,
+`HIP23311`, `HIP82860`, and `HIP17147`. These are local calibration and
+generalization aids only. They are ignored payloads under `data/extended_corpus/`
+and must not be committed by `git add .`.
+
 ## Local Inventory Snapshot
 
 To inspect the current workstation without committing local paths:
