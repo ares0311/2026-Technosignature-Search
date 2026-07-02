@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 
 from techno_search.track_a_catalogs import (
+    fits_table_to_pandas,
     normalize_atnf_pulsars,
     normalize_chime_frb,
     normalize_fermi_4fgl,
@@ -84,3 +85,24 @@ def test_normalize_rejects_missing_coordinate_columns() -> None:
 
     with pytest.raises(ValueError, match="coordinate columns"):
         normalize_romabzcat(df)
+
+
+def test_fits_table_to_pandas_drops_multidimensional_columns() -> None:
+    """Regression test: Fermi 4FGL-DR4 has per-band array columns that crash
+    astropy.Table.to_pandas() directly (real failure observed acquiring the
+    live catalog: 'Cannot convert a table with multidimensional columns')."""
+    astropy_table = pytest.importorskip("astropy.table")
+    table = astropy_table.Table(
+        {
+            "Source_Name": ["4FGL J0000.3+7218"],
+            "RAJ2000": [0.85],
+            "DEJ2000": [72.31],
+            "Flux_Band": [[1.0, 2.0, 3.0]],
+            "Sqrt_TS_Band": [[0.1, 0.2, 0.3]],
+        }
+    )
+
+    df = fits_table_to_pandas(table)
+
+    assert list(df.columns) == ["Source_Name", "RAJ2000", "DEJ2000"]
+    assert len(df) == 1
