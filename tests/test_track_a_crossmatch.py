@@ -1,9 +1,11 @@
 import pandas as pd
+import pytest
 
 from techno_search.track_a_crossmatch import cross_match_known_sources
 
 
 def _write_catalog(tmp_path, *, name, rows):
+    pytest.importorskip("pyarrow")
     out_dir = tmp_path / "data_cache" / "normalized"
     out_dir.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(rows).to_parquet(out_dir / f"{name}.parquet", index=False)
