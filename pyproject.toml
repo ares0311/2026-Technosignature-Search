@@ -55,6 +55,9 @@ track_a = [
     "skyfield>=1.49",
     "sgp4>=2.23",
 ]
+photometry = [
+    "lightkurve>=2.4",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -97,5 +100,6 @@ module = [
     "requests.*",
     "skyfield.*",
     "sgp4.*",
+    "lightkurve.*",
 ]
 ignore_missing_imports = true

@@ -132,6 +132,8 @@ def _track_scores(
         return _infrared_scores(candidate)
     if candidate.track == Track.ANOMALY:
         return _anomaly_scores(candidate)
+    if candidate.track == Track.TRANSIT_PHOTOMETRY:
+        return _transit_photometry_scores(candidate)
     msg = f"Unsupported track: {candidate.track}"
     raise ValueError(msg)
 
@@ -347,6 +349,59 @@ def _anomaly_scores(candidate: Candidate) -> tuple[dict[PosteriorClass, float], 
         variability=variability,
         mismatch=mismatch,
         crossmatch_confidence=crossmatch_confidence,
+    )
+    return raw_scores, evidence
+
+
+def _transit_photometry_scores(
+    candidate: Candidate,
+) -> tuple[dict[PosteriorClass, float], EvidenceSummary]:
+    f = candidate.features
+    depth_snr = _score(f, "bls_depth_snr_score")
+    blended_eb = _score(f, "blended_eclipsing_binary_score")
+    aliasing = _score(f, "period_aliasing_score")
+    sinusoidal = _score(f, "sinusoidal_variable_preferred_score")
+    shape_irregularity = _score(f, "transit_shape_irregularity_score", default=0.0)
+    dip_significance = _score(f, "max_dip_significance_score")
+    asymmetric_dip = _score(f, "asymmetric_ingress_egress_score", default=0.0)
+    data_quality = _score(f, "data_quality_score", default=0.7)
+    known = _score(f, "known_object_score")
+
+    raw_scores = _empty_scores()
+    raw_scores[PosteriorClass.TECHNOSIGNATURE_INTEREST] += (
+        1.30 * depth_snr
+        + 1.10 * (1.0 - blended_eb)
+        + 0.80 * (1.0 - aliasing)
+        + 0.90 * (1.0 - sinusoidal)
+        + 1.00 * dip_significance
+        + 0.85 * asymmetric_dip
+        + 0.45 * shape_irregularity
+        + 0.50 * data_quality
+    )
+    raw_scores[PosteriorClass.NATURAL_SOURCE] += (
+        2.20 * blended_eb + 2.00 * sinusoidal + 0.60 * aliasing
+    )
+    raw_scores[PosteriorClass.CATALOG_OR_PROCESSING_ERROR] += (
+        0.90 * aliasing + 1.10 * (1.0 - data_quality)
+    )
+    raw_scores[PosteriorClass.INSTRUMENTAL_ARTIFACT] += (
+        1.00 * (1.0 - data_quality) + 0.50 * shape_irregularity
+    )
+    raw_scores[PosteriorClass.NOISE_OR_LOW_CONFIDENCE] += (
+        1.20 * (1.0 - depth_snr) + 0.70 * (1.0 - data_quality)
+    )
+    raw_scores[PosteriorClass.KNOWN_OBJECT] += 8.00 * known
+    raw_scores[PosteriorClass.HUMAN_INTERFERENCE] += 0.05
+
+    evidence = _transit_photometry_evidence(
+        depth_snr=depth_snr,
+        blended_eb=blended_eb,
+        aliasing=aliasing,
+        sinusoidal=sinusoidal,
+        shape_irregularity=shape_irregularity,
+        dip_significance=dip_significance,
+        asymmetric_dip=asymmetric_dip,
+        data_quality=data_quality,
     )
     return raw_scores, evidence
 
@@ -631,6 +686,64 @@ def _anomaly_evidence(
 
     _append_if(blocking, crossmatch_confidence < 0.5, "Cross-match confidence is too low.")
     _append_if(blocking, historical < 0.5, "Historical detection strength is insufficient.")
+
+    return EvidenceSummary(tuple(positive), tuple(negative), tuple(blocking))
+
+
+def _transit_photometry_evidence(
+    *,
+    depth_snr: float,
+    blended_eb: float,
+    aliasing: float,
+    sinusoidal: float,
+    shape_irregularity: float,
+    dip_significance: float,
+    asymmetric_dip: float,
+    data_quality: float,
+) -> EvidenceSummary:
+    positive: list[str] = []
+    negative: list[str] = []
+    blocking: list[str] = []
+
+    _append_if(positive, depth_snr >= 0.6, "BLS transit depth SNR is high.")
+    _append_if(
+        positive,
+        dip_significance >= 0.5,
+        "A statistically significant aperiodic dimming event is present.",
+    )
+    _append_if(
+        positive,
+        asymmetric_dip >= 0.4,
+        "The most significant dip shows asymmetric ingress/egress.",
+    )
+    _append_if(
+        positive,
+        blended_eb <= 0.2 and aliasing <= 0.2 and sinusoidal <= 0.0,
+        "No blended-eclipsing-binary, aliasing, or sinusoidal-variable indicators are present.",
+    )
+
+    _append_if(
+        negative,
+        blended_eb >= 0.4,
+        "Odd/even transit depth mismatch suggests a blended eclipsing binary.",
+    )
+    _append_if(
+        negative,
+        aliasing >= 0.6,
+        "Half-period model fits nearly as well; recovered period may be aliased.",
+    )
+    _append_if(
+        negative,
+        sinusoidal >= 1.0,
+        "A sinusoidal (pulsating/rotating star) model is preferred over the transit model.",
+    )
+    _append_if(
+        negative,
+        shape_irregularity >= 0.5,
+        "Per-transit fit quality is inconsistent across transits.",
+    )
+
+    _append_if(blocking, data_quality < 0.5, "Light curve data quality is too weak for review.")
 
     return EvidenceSummary(tuple(positive), tuple(negative), tuple(blocking))
 

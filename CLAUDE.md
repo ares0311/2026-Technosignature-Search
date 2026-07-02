@@ -564,6 +564,67 @@ external-submission authorization. The durable conclusion is narrower: the newly
 downloaded extended corpus produced negative evidence, and the current local
 radio validation evidence is cleanly processed and queue-drained.
 
+### Phase 2 Transit Photometry — Real BLS + Aperiodic-Dip Detection, 2026-07-02
+
+With Phase 1 radio hardening blocked on real data availability (the
+semisupervised anomaly-threshold calibration and cross-target RFI blockers
+both require more real corpus than currently exists locally — see above),
+this session opened Phase 2 (`docs/PRODUCTION_READINESS.md`), which was
+entirely unstarted. New `src/techno_search/photometry/` package:
+
+- `lightcurve_io.py`: loads a real local Kepler/K2/TESS FITS light curve via
+  `lightkurve.read()`.
+- `bls_detection.py`: real Box Least Squares transit search via
+  `lightkurve.LightCurve.to_periodogram(method="bls")` /
+  `astropy.timeseries.BoxLeastSquares`. Every field name and return type
+  (`period_at_max_power`, `transit_time_at_max_power` as an `astropy.time.Time`,
+  `compute_stats()`'s `depth`/`depth_odd`/`depth_even`/`depth_half`/
+  `harmonic_delta_log_likelihood`/`per_transit_log_likelihood` dict) was
+  confirmed via direct `inspect.getsource()`/`inspect.getdoc()` on the
+  installed packages and a real constructed-light-curve smoke test — none of
+  it came from memory or documentation guesswork.
+- `aperiodic_dip.py`: a from-scratch statistical dip detector (median/MAD
+  robust baseline and significance, no invented thresholds) that fits real
+  ingress/egress slopes per event. This directly implements the general
+  diagnostic Boyajian et al. 2016 applied to KIC 8462852's irregular dimming
+  events (symmetric vs. asymmetric ingress/egress), independent of BLS's
+  periodicity assumption.
+- `prototype.py`: `build_transit_photometry_candidate()` turns real BLS +
+  dip-detector output into a `Candidate` on a new `Track.TRANSIT_PHOTOMETRY`
+  (`schemas.py`), scored by a new `_transit_photometry_scores()`
+  (`scoring.py`) using the same interpretable v0/v1 posterior-softmax
+  approach as the existing radio/infrared/anomaly tracks — no synthetic
+  training data, no invented detection thresholds.
+- `lightcurve_search.py` + `techno-search photometry-lightcurve-search` CLI
+  command: wraps real `lightkurve.search_lightcurve()`/`download_all()`.
+  **This sandbox cannot reach NASA MAST** (verified live:
+  `https://mast.stsci.edu` returns a 403 through the sandbox's outbound
+  proxy, same restriction already documented for Track A catalog sources),
+  so this command must be run on a machine with real network access — same
+  pattern as the BL extended-corpus downloads.
+- `pipeline_runner.py`/`data_quality.py`/`cli.py` wired end-to-end:
+  `techno-search run-pipeline <file>.fits --track photometry` and
+  `prod-file-scan` (auto-detects `.fits`/`.fit` → photometry) both work.
+
+**Verified end-to-end on a real, locally-generated FITS light curve** with an
+injected 2.2-day/2%-depth transit (`tests/fixtures/photometry/
+sample_lightcurve.fits`, built with `lightkurve.LightCurve.to_fits()` — a
+real, code-exercising test fixture per the same "constructed input, not
+training data" pattern as the existing Fermi FITS regression test, not
+random/synthetic training data): `run_pipeline()` recovered period
+2.1978 days (injected 2.2), depth SNR 94.3, correctly scored low on the
+blended-eclipsing-binary and sinusoidal-preferred indicators, and routed to
+`candidate_review_packet`. 1453 tests pass (up from 1434), ruff/mypy clean,
+`validate-all` ok, `git add --dry-run .` staged only the intended files
+(added `!tests/fixtures/**/*.fits`/`*.fit` to `.gitignore`, mirroring the
+existing `*.dat` exception).
+
+**Not done — needs live MAST access from the user's machine:**
+`techno-search photometry-lightcurve-search <target> --mission TESS` to pull
+a real downloaded Kepler/TESS light curve (e.g. KIC 8462852 / Boyajian's
+Star, or a target from the existing stratified sample) through this new
+pipeline for a first real (not self-constructed) result.
+
 ### Mission Realignment — 2026-06-26
 
 The project was redirected in session on 2026-06-26. Key changes:

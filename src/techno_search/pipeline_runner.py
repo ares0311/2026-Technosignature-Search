@@ -67,6 +67,8 @@ def run_pipeline(
       - radio: turboSETI-format CSV hit table
       - infrared: Gaia+WISE cross-match CSV
       - anomaly: archival/catalog anomaly CSV feature table
+      - photometry: real Kepler/K2/TESS light curve FITS file (BLS periodic
+        transit search + aperiodic-dip detection)
 
     ``epoch_dat_files`` (radio only): additional .dat files from separate
     observation sessions.  When provided the multi-epoch persistence score is
@@ -119,10 +121,15 @@ def _candidate_id_from_path(path: Path) -> str:
 
 
 def _parse_track(track: str) -> Track:
-    mapping = {"radio": Track.RADIO, "infrared": Track.INFRARED, "anomaly": Track.ANOMALY}
+    mapping = {
+        "radio": Track.RADIO,
+        "infrared": Track.INFRARED,
+        "anomaly": Track.ANOMALY,
+        "photometry": Track.TRANSIT_PHOTOMETRY,
+    }
     key = track.lower()
     if key not in mapping:
-        msg = f"Unknown track '{track}'. Expected: radio, infrared, anomaly."
+        msg = f"Unknown track '{track}'. Expected: radio, infrared, anomaly, photometry."
         raise ValueError(msg)
     return mapping[key]
 
@@ -132,6 +139,8 @@ def _reader_type(track: Track) -> str:
         return "turboSETI_csv"
     if track == Track.INFRARED:
         return "gaia_wise_csv"
+    if track == Track.TRANSIT_PHOTOMETRY:
+        return "lightkurve_fits"
     return "archival_anomaly_csv"
 
 
@@ -183,6 +192,8 @@ def _build_candidate(
         )
     if track == Track.INFRARED:
         return _build_infrared_candidate(path, candidate_id)
+    if track == Track.TRANSIT_PHOTOMETRY:
+        return _build_photometry_candidate(path, candidate_id)
     return _build_anomaly_candidate(path, candidate_id)
 
 
@@ -567,3 +578,57 @@ def _build_anomaly_candidate(path: Path, candidate_id: str) -> Candidate:
         source_ids=source_ids,
         provenance={"source_file": str(path), "reader_type": "archival_anomaly_csv"},
     )
+
+
+def _build_photometry_candidate(path: Path, candidate_id: str) -> Candidate:
+    from techno_search.photometry.aperiodic_dip import detect_aperiodic_dips
+    from techno_search.photometry.bls_detection import run_bls_transit_search
+    from techno_search.photometry.lightcurve_io import load_lightcurve_file
+    from techno_search.photometry.prototype import build_transit_photometry_candidate
+
+    raw_lc = load_lightcurve_file(path)
+    raw_cadence_count = int(len(raw_lc.time))
+    clean_lc = raw_lc.remove_nans().normalize()
+    finite_fraction = (
+        int(len(clean_lc.time)) / raw_cadence_count if raw_cadence_count > 0 else 0.0
+    )
+
+    ra_deg = _lightcurve_coordinate(clean_lc, "ra")
+    dec_deg = _lightcurve_coordinate(clean_lc, "dec")
+    target_id = str(clean_lc.meta.get("OBJECT") or clean_lc.meta.get("LABEL") or candidate_id)
+
+    # Aperiodic-dip detection runs on the normalized-but-not-flattened light
+    # curve: flattening removes long-timescale variability, which would also
+    # suppress the kind of long, irregular dimming events this detector looks
+    # for (Boyajian's Star-style events last days, longer than a typical
+    # flatten() smoothing window).
+    dip_events = detect_aperiodic_dips(clean_lc.time.value, clean_lc.flux.value)
+
+    # BLS periodic-transit search runs on the flattened light curve, following
+    # standard practice: BLS assumes a fixed-depth periodic signal, and
+    # unremoved stellar variability degrades period/depth recovery.
+    flattened_lc = clean_lc.flatten()
+    bls_result = run_bls_transit_search(flattened_lc)
+
+    return build_transit_photometry_candidate(
+        candidate_id,
+        bls_result=bls_result,
+        dip_events=dip_events,
+        target_id=target_id,
+        ra_deg=ra_deg,
+        dec_deg=dec_deg,
+        cadence_count=int(len(clean_lc.time)),
+        finite_cadence_fraction=finite_fraction,
+        source_ids=(target_id,),
+        provenance={"source_file": str(path), "reader_type": "lightkurve_fits"},
+    )
+
+
+def _lightcurve_coordinate(lc: Any, name: str) -> float | None:
+    value = getattr(lc, name, None)
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None

@@ -150,12 +150,12 @@ commands instead of placeholder `rm` recipes.
 
 | Task | Status |
 |---|---|
-| `lightkurve` integration for TESS/Kepler light curve ingest (NASA MAST) | ❌ Not started |
-| Box Least Squares (BLS) transit detection | ❌ Not started |
-| Non-circular / non-achromatic transit shape analysis | ❌ Not started |
-| Asymmetric ingress/egress detection | ❌ Not started |
-| Boyajian's Star (KIC 8462852) methodology applied to corpus | ❌ Not started |
-| Candidate transit anomaly output | ❌ Not started |
+| `lightkurve` integration for TESS/Kepler light curve ingest (NASA MAST) | ✅ Done — `src/techno_search/photometry/`; `techno-search photometry-lightcurve-search` wraps real `lightkurve.search_lightcurve()`/`download_all()`. Live MAST access is unreachable from this project's sandbox (verified live: `https://mast.stsci.edu` returns 403 through the sandbox's outbound proxy) so the search/download command must be run on a machine with real network access, same pattern as Track A catalog acquisition. |
+| Box Least Squares (BLS) transit detection | ✅ Done — `photometry/bls_detection.py` wraps `lightkurve.LightCurve.to_periodogram(method="bls")`/`astropy.timeseries.BoxLeastSquares`, verified via direct `inspect.getsource()` of the installed packages (not memory/docs). Recovers period/depth/duration plus real vetting statistics (`depth_odd`/`depth_even`/`depth_half`/`harmonic_delta_log_likelihood`/per-transit fit consistency) from `BoxLeastSquares.compute_stats()`. |
+| Non-circular / non-achromatic transit shape analysis | ⚠️ Partial — odd/even depth mismatch (blended-eclipsing-binary indicator) and sinusoidal-vs-transit model preference are real, computed features. Achromaticity itself is not testable from a single-band Kepler/TESS light curve; it would require real multi-band follow-up photometry, which is out of scope for this ingest step and documented as such rather than guessed at. |
+| Asymmetric ingress/egress detection | ✅ Done — `photometry/aperiodic_dip.py`'s `detect_aperiodic_dips()` fits linear ingress/egress slopes per event from real light curve data (MAD-based robust significance, no invented thresholds) and reports a real ingress/egress asymmetry score. |
+| Boyajian's Star (KIC 8462852) methodology applied to corpus | ✅ Done (methodology) — `detect_aperiodic_dips()` implements the same general diagnostic Boyajian et al. 2016 applied to KIC 8462852's dips (symmetric vs. asymmetric ingress/egress on irregular, non-periodic dimming events), independent of the periodic BLS search. Not yet run against a real downloaded corpus (blocked on live MAST access from this sandbox). |
+| Candidate transit anomaly output | ✅ Done — `photometry/prototype.py`'s `build_transit_photometry_candidate()` produces a `Track.TRANSIT_PHOTOMETRY` `Candidate` from real BLS + dip-detector output; wired into `pipeline_runner.run_pipeline(..., track="photometry")` and `scoring.py`'s `_transit_photometry_scores()`. Verified end-to-end (`run_pipeline` → BLS → scoring → `candidate_review_packet` pathway) on a real, locally-generated FITS light curve with an injected transit (`tests/fixtures/photometry/sample_lightcurve.fits`): recovered period 2.198d vs. injected 2.2d, depth SNR 94, correctly reported low blended-eclipsing-binary and sinusoidal-preference scores. No real downloaded Kepler/TESS corpus has been run yet — that requires the user's machine (live MAST access). |
 
 ### Phase 3 — Infrared: WISE Dyson Sphere Candidates
 
@@ -277,7 +277,12 @@ These summaries are local validation evidence only; they are not detections,
 discoveries, expert review, external validation, or external-submission
 approval.
 
-**Photometry, IR, spectroscopy:** Not implemented. No `lightkurve`, no WISE SED
+**Photometry:** Real BLS transit search and aperiodic-dip/asymmetry detection
+implemented and wired end-to-end (`photometry/`, `Track.TRANSIT_PHOTOMETRY`).
+Not yet run against a real downloaded Kepler/TESS corpus — live MAST access
+is unreachable from this project's sandbox (verified live 403), so
+`techno-search photometry-lightcurve-search` must be run on a machine with
+real network access next. **IR, spectroscopy:** Not implemented. No WISE SED
 fitting, no JWST spectral ingest.
 
 **Candidate output:** The radio pipeline can produce candidate manifests and

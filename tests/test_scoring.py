@@ -261,3 +261,87 @@ def test_score_candidate_uses_supplied_pathway_thresholds() -> None:
     )
 
     assert scored.recommended_pathway == Pathway.DO_NOT_SUBMIT_FALSE_POSITIVE
+
+
+def test_clean_transit_signal_scores_above_blended_eclipsing_binary() -> None:
+    clean = Candidate(
+        candidate_id="transit-clean",
+        track=Track.TRANSIT_PHOTOMETRY,
+        features={
+            "bls_depth_snr_score": 0.9,
+            "blended_eclipsing_binary_score": 0.02,
+            "period_aliasing_score": 0.05,
+            "sinusoidal_variable_preferred_score": 0.0,
+            "max_dip_significance_score": 0.0,
+            "asymmetric_ingress_egress_score": 0.0,
+            "transit_shape_irregularity_score": 0.05,
+            "data_quality_score": 0.95,
+        },
+    )
+    blended_eb = Candidate(
+        candidate_id="transit-blended-eb",
+        track=Track.TRANSIT_PHOTOMETRY,
+        features={
+            "bls_depth_snr_score": 0.9,
+            "blended_eclipsing_binary_score": 0.85,
+            "period_aliasing_score": 0.7,
+            "sinusoidal_variable_preferred_score": 1.0,
+            "max_dip_significance_score": 0.0,
+            "asymmetric_ingress_egress_score": 0.0,
+            "transit_shape_irregularity_score": 0.2,
+            "data_quality_score": 0.9,
+        },
+    )
+
+    clean_score = score_candidate(clean)
+    blend_score = score_candidate(blended_eb)
+
+    assert (
+        clean_score.posterior[PosteriorClass.TECHNOSIGNATURE_INTEREST]
+        > blend_score.posterior[PosteriorClass.TECHNOSIGNATURE_INTEREST]
+    )
+    assert (
+        blend_score.scores.false_positive_probability
+        > clean_score.scores.false_positive_probability
+    )
+    assert (
+        "Odd/even transit depth mismatch suggests a blended eclipsing binary."
+        in blend_score.evidence.negative_evidence
+    )
+
+
+def test_significant_asymmetric_dip_boosts_technosignature_interest() -> None:
+    baseline = Candidate(
+        candidate_id="transit-no-dip",
+        track=Track.TRANSIT_PHOTOMETRY,
+        features={
+            "bls_depth_snr_score": 0.3,
+            "blended_eclipsing_binary_score": 0.05,
+            "period_aliasing_score": 0.05,
+            "sinusoidal_variable_preferred_score": 0.0,
+            "max_dip_significance_score": 0.0,
+            "asymmetric_ingress_egress_score": 0.0,
+            "data_quality_score": 0.9,
+        },
+    )
+    with_dip = Candidate(
+        candidate_id="transit-with-dip",
+        track=Track.TRANSIT_PHOTOMETRY,
+        features={
+            "bls_depth_snr_score": 0.3,
+            "blended_eclipsing_binary_score": 0.05,
+            "period_aliasing_score": 0.05,
+            "sinusoidal_variable_preferred_score": 0.0,
+            "max_dip_significance_score": 0.9,
+            "asymmetric_ingress_egress_score": 0.8,
+            "data_quality_score": 0.9,
+        },
+    )
+
+    baseline_score = score_candidate(baseline)
+    dip_score = score_candidate(with_dip)
+
+    assert (
+        dip_score.posterior[PosteriorClass.TECHNOSIGNATURE_INTEREST]
+        > baseline_score.posterior[PosteriorClass.TECHNOSIGNATURE_INTEREST]
+    )

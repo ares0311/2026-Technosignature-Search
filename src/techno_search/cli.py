@@ -1093,10 +1093,13 @@ _TRACK_EXTENSIONS: dict[str, list[str]] = {
     "radio": [".dat", ".csv"],
     "infrared": [".csv", ".fits"],
     "anomaly": [".csv", ".json"],
+    "photometry": [".fits", ".fit"],
 }
 
 _EXTENSION_TRACK: dict[str, str] = {
     ".dat": "radio",
+    ".fits": "photometry",
+    ".fit": "photometry",
 }
 
 
@@ -5313,6 +5316,31 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
+    if args.command == "photometry-lightcurve-search":
+        from techno_search.photometry.lightcurve_search import search_and_download_lightcurves
+
+        try:
+            mission = tuple(m.strip() for m in args.mission.split(",")) if args.mission else None
+            search_record = search_and_download_lightcurves(
+                args.target,
+                download_dir=Path(args.download_dir),
+                mission=mission,
+                author=args.author,
+                sector=args.sector,
+                quarter=args.quarter,
+                campaign=args.campaign,
+                exptime=args.exptime,
+                limit=args.limit,
+            )
+        except RuntimeError as exc:
+            print(json.dumps({"ok": False, "error": str(exc)}, indent=2, sort_keys=True), file=out)
+            return 1
+        print(
+            json.dumps({"ok": True, **search_record.as_dict()}, indent=2, sort_keys=True),
+            file=out,
+        )
+        return 0 if search_record.result_count > 0 else 1
+
     if args.command == "track-a-satellite-match":
         from techno_search.track_a_satellites import match_satellite_transmitter
 
@@ -6335,7 +6363,7 @@ def _build_parser() -> argparse.ArgumentParser:
     user_decision_record_parser.add_argument(
         "--track",
         required=True,
-        choices=["radio", "infrared", "anomaly"],
+        choices=["radio", "infrared", "anomaly", "photometry"],
     )
     user_decision_record_parser.add_argument(
         "--decision",
@@ -9340,7 +9368,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     validate_input_parser.add_argument("input", type=Path, help="Input CSV file path.")
     validate_input_parser.add_argument(
-        "--track", required=True, choices=["radio", "infrared", "anomaly"],
+        "--track", required=True, choices=["radio", "infrared", "anomaly", "photometry"],
         help="Track type for validation.",
     )
 
@@ -9355,7 +9383,7 @@ def _build_parser() -> argparse.ArgumentParser:
     run_pipeline_parser.add_argument(
         "--track",
         required=True,
-        choices=["radio", "infrared", "anomaly"],
+        choices=["radio", "infrared", "anomaly", "photometry"],
         help="Track type for the input file.",
     )
     run_pipeline_parser.add_argument(
@@ -9810,7 +9838,10 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     prod_file_scan_parser.add_argument(
         "input_dir",
-        help="Directory containing input files (.dat for radio, .csv for infrared/anomaly).",
+        help=(
+            "Directory containing input files (.dat for radio, .csv for "
+            "infrared/anomaly, .fits/.fit for photometry)."
+        ),
     )
     prod_file_scan_parser.add_argument(
         "output_dir",
@@ -9819,8 +9850,11 @@ def _build_parser() -> argparse.ArgumentParser:
     prod_file_scan_parser.add_argument(
         "--track",
         default=None,
-        choices=["radio", "infrared", "anomaly"],
-        help="Pipeline track. Auto-detected from file extension if omitted (.dat → radio).",
+        choices=["radio", "infrared", "anomaly", "photometry"],
+        help=(
+            "Pipeline track. Auto-detected from file extension if omitted "
+            "(.dat → radio, .fits/.fit → photometry)."
+        ),
     )
     prod_file_scan_parser.add_argument(
         "--force",
@@ -9896,6 +9930,39 @@ def _build_parser() -> argparse.ArgumentParser:
         type=int,
         default=1,
         help="Number of rows to sample per catalog as replay cases (default: 1).",
+    )
+    photometry_search_parser = subparsers.add_parser(
+        "photometry-lightcurve-search",
+        help=(
+            "Search NASA MAST for real Kepler/K2/TESS light curves and "
+            "download up to --limit results. Requires real MAST network "
+            "access (not available from this project's sandbox)."
+        ),
+    )
+    photometry_search_parser.add_argument(
+        "target",
+        help="Target name or identifier (e.g. 'KIC 8462852', 'TIC 200322593').",
+    )
+    photometry_search_parser.add_argument(
+        "--mission",
+        default=None,
+        help="Comma-separated mission filter, e.g. 'TESS' or 'Kepler,K2'.",
+    )
+    photometry_search_parser.add_argument("--author", default=None)
+    photometry_search_parser.add_argument("--sector", type=int, default=None)
+    photometry_search_parser.add_argument("--quarter", type=int, default=None)
+    photometry_search_parser.add_argument("--campaign", type=int, default=None)
+    photometry_search_parser.add_argument("--exptime", type=float, default=None)
+    photometry_search_parser.add_argument(
+        "--limit",
+        type=int,
+        default=1,
+        help="Maximum number of light curves to download (default: 1).",
+    )
+    photometry_search_parser.add_argument(
+        "--download-dir",
+        default="data/photometry_lightcurves",
+        help="Local directory to download FITS files into.",
     )
     satellite_acquire_parser = subparsers.add_parser(
         "track-a-satellite-acquire",
