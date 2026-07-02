@@ -690,6 +690,59 @@ Boyajian's Star's actual known dip events, to give the aperiodic-dip
 detector a real positive case to exercise against (still requires the
 user's live MAST access).
 
+### All 18 Real Kepler Quarters Processed — KIC 8462852, 2026-07-02
+
+The user downloaded and ran all 18 real Kepler long-cadence quarters
+available for KIC 8462852 (`--limit 20`, 17 new + the existing Q0 file) —
+`ok: true` on every quarter, 0 pipeline failures. Pathways split
+`candidate_review_packet` (7 quarters) vs. `human_review_queue` (11
+quarters); none hit `do_not_submit_false_positive`.
+
+A compact cross-quarter summary (`bls_period_days`, `bls_depth_snr`,
+`aperiodic_dip_count` per quarter) surfaced two real, independently
+significant findings:
+
+1. **12 of 18 quarters independently recovered a period clustered at
+   0.88-0.95 days**, every one of them correctly flagged
+   `sinusoidal_variable_preferred_score: 1.0` (harmonic model preferred over
+   transit). Verified via live web search (not memory) that this is a real,
+   previously published feature of KIC 8462852's actual Kepler photometry —
+   the well-documented ~0.88-day periodicity, generally attributed to
+   starspot rotational modulation (though Makarov & Goldin 2016 argued for
+   field-star contamination instead; the *existence* of the real signal in
+   the data is not in dispute, only its physical origin). **This pipeline
+   independently rediscovered a real, previously known feature of this
+   star's actual light curve on its first real corpus run, and correctly
+   classified it as non-transit every time.** This is a real, meaningful
+   validation of the harmonic-vs-transit vetting statistic on genuine data —
+   not a detection claim of anything new.
+2. **Three quarters show physically implausible `bls_depth_snr` values in
+   the thousands** (3981.1, 7373.3, 2151.6) at longer recovered periods
+   (19.79, 20.80, 7.67 days). SNR that high for a shallow dip is not
+   consistent with a real transiting companion at Kepler's precision (an
+   object that obvious would already be a known giant transiting companion,
+   which does not exist for this star) — almost certainly a data artifact
+   (e.g. a safe-mode gap, momentum-dump discontinuity, or `flatten()`
+   behaving badly across a large data gap). **Root cause not yet
+   determined** — flagged as an open real-data investigation, not asserted
+   without checking the actual Kepler quality flags/gap structure for those
+   three quarters.
+
+A real, unrelated bug was root-caused and fixed live during this session
+via direct code inspection (not assumption): the user's first attempt at a
+cross-quarter summary script used `glob.glob('kplr008462852-*.json')`,
+which also matched each candidate's own `<id>.manifest.json` file (a
+different, smaller schema from `reporting.py`'s `report_manifest()` with no
+`features` key) — `.manifest.json` also ends in `.json`, so the wildcard
+swallowed it. Confirmed by reading `reporting.py` directly. Fixed by
+narrowing the glob to `kplr008462852-*_llc.json`, which manifest files
+(ending `.manifest.json`, not `_llc.json`) don't match.
+
+**Not yet done:** determine the root cause of the three anomalous
+high-SNR quarters (needs inspection of Kepler quality flags / gap structure
+for `2011073133259`, `2013098041711`, and `2013131215648` — the three
+longer-period, extreme-SNR quarters).
+
 ### Phase 3 Infrared — Real WISE Photospheric Blackbody Excess Check, 2026-07-02
 
 With both remaining Phase 1 blockers (anomaly-threshold calibration,
