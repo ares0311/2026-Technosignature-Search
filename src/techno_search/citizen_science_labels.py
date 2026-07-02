@@ -131,6 +131,7 @@ def _candidate_mapping(
             "bandwidth_hz": 2.79,
             "scan_role": hit.scan_role,
             "target_id": hit.target_id,
+            "source_artifact": hit.source_artifact,
         }
         for hit in group
     ]

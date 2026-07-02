@@ -7,6 +7,7 @@ from techno_search.citizen_science_labels import (
     CadenceHit,
     _audit_label,
     _primary_label,
+    build_citizen_science_dataset,
     cadence_abacab_review_summary,
     group_cadence_hits,
 )
@@ -140,6 +141,33 @@ def test_committed_real_dataset_is_reviewed_and_conservative() -> None:
         entry["primary_label"] == entry["audit_label"]
         for entry in payload["entries"]
     )
+
+
+def test_follow_up_candidate_features_carry_real_abacab_cadence_pass(
+    tmp_path: Path,
+) -> None:
+    """Regression test: _candidate_mapping() omitted source_artifact when
+    building rows for build_radio_candidate, so _abacab_cadence_score() saw
+    zero distinct ON sources (every hit's source_artifact silently defaulted
+    to "") and reported the neutral 0.5 instead of the correct 1.0 pass for
+    a genuine 3-distinct-file ON/0-OFF cadence group. Confirmed against the
+    real committed HIP99427 dataset before this fix."""
+    cadence_csv = tmp_path / "cadence.csv"
+    _write_review_csv(cadence_csv)
+
+    dataset = build_citizen_science_dataset(
+        cadence_csv,
+        cadence_id="test-cadence",
+        data_license="CC BY 4.0",
+        data_use_url="https://example.invalid/data",
+    )
+
+    follow_ups = [e for e in dataset["entries"] if e["label"] == "follow_up"]
+    assert len(follow_ups) == 1
+    features = follow_ups[0]["candidate"]["features"]
+    assert features["abacab_cadence_score"] == 1.0
+    assert features["on_scan_distinct_source_count"] == 3
+    assert features["off_scan_distinct_source_count"] == 0
 
 
 def test_real_labeled_dataset_summary_preserves_review_limits() -> None:
