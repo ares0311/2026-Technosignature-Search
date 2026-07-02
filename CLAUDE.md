@@ -738,10 +738,42 @@ swallowed it. Confirmed by reading `reporting.py` directly. Fixed by
 narrowing the glob to `kplr008462852-*_llc.json`, which manifest files
 (ending `.manifest.json`, not `_llc.json`) don't match.
 
-**Not yet done:** determine the root cause of the three anomalous
-high-SNR quarters (needs inspection of Kepler quality flags / gap structure
-for `2011073133259`, `2013098041711`, and `2013131215648` — the three
-longer-period, extreme-SNR quarters).
+**Root cause of the three anomalous high-SNR quarters — found, 2026-07-02:**
+the user ran three further real diagnostics directly against the already-
+downloaded FITS files and the saved candidate JSON reports (no new
+downloads needed), each ruling out a hypothesis in turn:
+1. Large data gaps: ruled out — `big_gaps=0` for all three quarters
+   (checked via real `TIME` array diffs against 3x median cadence).
+2. Elevated Kepler `SAP_QUALITY` flagged-cadence fraction: ruled out —
+   compared across all 18 quarters directly; two completely normal-SNR
+   quarters (`2010078095331` frac=0.270, `2009259160929` frac=0.261) have
+   *higher* flagged fractions than the three anomalous ones (0.188, 0.247,
+   0.248), so flagged-fraction does not correlate with the extreme SNR
+   values.
+3. Degenerate/underestimated `bls_depth_err`: ruled out — `depth_err` is
+   comparable (~0.9-1.2e-5) across all 5 long-period quarters checked, both
+   anomalous and normal.
+
+**Real distinguishing factor, confirmed:** the three anomalous quarters
+have genuinely large BLS-fitted depths (3.7%, 7.15%, 2.43%) vs. tiny depths
+(0.084%, 0.142%) for two comparison long-period quarters with normal SNR —
+`depth_err` is behaving correctly; the underlying fitted signal really is
+that large. **The real methodological catch:** all 5 long-period quarters
+independently recovered `bls_transit_count=3` — a structural limit of
+running BLS on a single ~90-day Kepler quarter in isolation, since periods
+near 20-30 days can only ever show ~3 cycles within one quarter's baseline
+regardless of which period is found. With only 3 cycles, a BLS "periodic"
+fit cannot distinguish a genuinely periodic signal from 3 real,
+non-recurring dips that happen to be spaced coincidentally. This matters
+specifically for KIC 8462852 because it is real-world documented to have
+large (up to ~20%), non-periodic, one-off dimming events — exactly the
+kind of signal a single-quarter BLS search could misidentify as "3
+significant periodic transits." All three anomalous quarters also have
+nonzero `aperiodic_dip_count` (1, 2, 2) from this pipeline's own separate,
+non-periodicity-assuming dip detector, which is the methodologically
+correct tool to characterize these events rather than the BLS periodic
+fit. Per-dip detail (depth/duration/asymmetry) for these three quarters has
+not yet been pulled and reviewed.
 
 ### Phase 3 Infrared — Real WISE Photospheric Blackbody Excess Check, 2026-07-02
 
