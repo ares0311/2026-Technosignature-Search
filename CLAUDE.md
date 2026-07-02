@@ -363,6 +363,39 @@ cause any wrong claim, just an unresolved condition.
 2. Get real ABACAB 6-scan cadence evidence (this Voyager file is a single
    observation, not a full ON/OFF cadence).
 
+### Second Track B Blocker Closed — Real Cadence Bug, 2026-07-02
+
+Blocker 2 above turned out to already have real evidence sitting unused: the
+committed `examples/real_labeled/hip99427_citizen_science_labels_v1.json`
+(124 real HIP99427 evidence groups, 2 labeled `follow_up`) was generated
+before PR #125 added `abacab_cadence_score`, so it predated the feature
+entirely. Re-running the existing `scripts/build_citizen_science_labels.py`
+against the real local cadence CSV surfaced a real bug (PR #186, not a data
+gap): `_candidate_mapping()` in `citizen_science_labels.py` built row dicts
+for `build_radio_candidate()` without a `source_artifact` key, so
+`_abacab_cadence_score()` saw every hit's source collapse to `""` (falsy)
+and reported the neutral `0.5` instead of `1.0` for both real 3-distinct-ON/
+0-OFF follow-up candidates. Fixed by adding the missing field.
+
+**User re-ran the regeneration script after the fix — confirmed real:**
+both follow-up candidates now report `abacab_cadence_score: 1.0,
+on_scan_distinct_source_count: 3, off_scan_distinct_source_count: 0`.
+Blocker 2 is closed with real data.
+
+`track-b-candidate-readiness` on the fixed
+`GBT_HIP99427_2016-12-30_ABACAD-group-021-...` candidate now reports only
+`missing_track_b_candidate_features: [semisupervised_anomaly_score]` plus
+missing `ra_deg`/`dec_deg` (needed for crossmatch/satellite match) as
+remaining blockers — `citizen_science_labels.py`'s candidate-building path
+never wired in the semisupervised scorer or HIP99427's real sky position,
+unlike `pipeline_runner.py`'s path (fixed by PR #183/184 for the general
+radio pipeline). Next candidate steps: (a) wire the semisupervised anomaly
+score into `_candidate_mapping()` the same way `pipeline_runner.py` does,
+(b) add HIP99427's real, catalog-verified RA/Dec (not memory-guessed) so
+crossmatch/satellite conditions can resolve. Blocker 1 (calibrated anomaly
+threshold) remains fully open — needs a real calibration study, not
+progress from this fix.
+
 ### Dataset Brief Integration — 2026-07-01
 
 `docs/technosignature_datasets_agent_brief.md` is a required project input, not
