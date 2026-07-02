@@ -69,6 +69,25 @@ def test_normalize_romabzcat_assigns_blazar_agn_class() -> None:
     assert normalized.loc[0, "catalog_name"] == "romabzcat"
 
 
+def test_normalize_romabzcat_parses_sexagesimal_coordinates() -> None:
+    """Regression test: the live VII/274/bzcat5 VizieR table stores RAJ2000/
+    DEJ2000 as sexagesimal text ('00 00 20.39'), not decimal degrees, even
+    though CHIME/FRB uses the same column names for decimal degrees. This
+    reproduces the exact failure observed acquiring the real catalog."""
+    df = pd.DataFrame(
+        {
+            "Name": ["5BZQJ0000+0000"],
+            "RAJ2000": ["00 00 20.39"],
+            "DEJ2000": ["+00 00 00.0"],
+        }
+    )
+
+    normalized = normalize_romabzcat(df)
+
+    assert normalized.loc[0, "ra_deg"] == pytest.approx(0.0849583, abs=1e-4)
+    assert normalized.loc[0, "dec_deg"] == pytest.approx(0.0, abs=1e-4)
+
+
 def test_normalize_fermi_4fgl_assigns_gamma_ray_source_class() -> None:
     df = pd.DataFrame(
         {"Source_Name": ["4FGL J0000.3+7218"], "RAJ2000": [0.85], "DEJ2000": [72.31]}
