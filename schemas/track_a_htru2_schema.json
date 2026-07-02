@@ -1,0 +1,18 @@
+{
+  "feature_columns": [
+    "Profile_mean",
+    "Profile_stdev",
+    "Profile_skewness",
+    "Profile_kurtosis",
+    "DM_mean",
+    "DM_stdev",
+    "DM_skewness",
+    "DM_kurtosis"
+  ],
+  "label_column": "class",
+  "label_meaning": {
+    "0": "rfi_or_noise",
+    "1": "pulsar"
+  },
+  "schema_version": "track_a_htru2_baseline_v1"
+}

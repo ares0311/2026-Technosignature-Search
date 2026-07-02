@@ -206,6 +206,50 @@ def test_cli_gbt_cadence_abacab_review_summarizes_candidate_outcomes(tmp_path) -
     assert result["detection_claimed"] is False
 
 
+def test_cli_track_b_unknown_candidate_gate_combines_explicit_evidence(tmp_path) -> None:
+    candidate = _candidate_json()
+    candidate["features"] = {
+        **candidate["features"],
+        "abacab_cadence_score": 1.0,
+        "semisupervised_anomaly_score": 0.91,
+    }
+    candidate_path = tmp_path / "candidate.json"
+    crossmatch_path = tmp_path / "crossmatch.json"
+    satellite_path = tmp_path / "satellite.json"
+    candidate_path.write_text(json.dumps(candidate), encoding="utf-8")
+    crossmatch_path.write_text(
+        json.dumps({"classification": "no_known_match"}), encoding="utf-8"
+    )
+    satellite_path.write_text(
+        json.dumps({"classification": "no_known_match"}), encoding="utf-8"
+    )
+    stdout = StringIO()
+
+    exit_code = main(
+        [
+            "track-b-unknown-candidate-gate",
+            str(candidate_path),
+            "--crossmatch-json",
+            str(crossmatch_path),
+            "--satellite-json",
+            str(satellite_path),
+        ],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["ok"] is True
+    assert result["candidate_id"] == "cli-radio"
+    assert result["eligible_for_unknown_candidate"] is False
+    assert result["unresolved_count"] == 1
+    anomaly_condition = next(
+        c for c in result["conditions"] if c["condition_id"] == "has_high_anomaly_score"
+    )
+    assert anomaly_condition["satisfied"] is None
+    assert "local triage queue state only" in result["disclaimer"]
+
+
 def test_cli_writes_reports(tmp_path) -> None:
     input_path = tmp_path / "candidate.json"
     output_dir = tmp_path / "reports"

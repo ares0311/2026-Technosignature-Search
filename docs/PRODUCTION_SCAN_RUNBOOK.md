@@ -116,6 +116,7 @@ These CLI commands implement the runbook rules:
 | `techno-search prod-scan INPUT_DIR OUTPUT_DIR [--track radio] [--force]` | Single-run batch scan with Rich spinner (does not use history) |
 | `techno-search run-pipeline FILE TRACK OUTPUT_DIR [--semisupervised-model PATH]` | Process one input file through the pipeline; radio packets use the default local fitted scorer model when present |
 | `techno-search radio-real-corpus-summary --dat-dir PATH [--dat-dir PATH2] [--hit-ndjson PATH] [--candidate-sample-limit N]` | Summarize local real `.dat` and normalized hit-NDJSON evidence for drift, cross-target RFI recurrence, fitted scorer integration, and bounded candidate-review survivors |
+| `techno-search track-b-unknown-candidate-gate CANDIDATE_JSON --crossmatch-json CROSSMATCH_JSON [--satellite-json SATELLITE_JSON]` | Combine explicit Track A crossmatch, optional satellite-match, RFI/artifact/cadence/anomaly/provenance evidence into the Phase 4 `unknown_candidate` gate without network lookups |
 | `techno-search validate-all` | Must pass before any scan proceeds |
 
 ---
@@ -129,11 +130,15 @@ classifies or rejects known explanations: pulsars, FRBs, blazars/AGN, known
 gamma-ray sources, satellite/transmitter matches, terrestrial RFI, instrument
 artifacts, and noise.
 
-Current status: no Track A acquisition or classifier command exists yet. Until
-that command exists and is validated, production radio runs may produce
-non-detection ledgers, follow-up-review triage rows, public-null context
-summaries, and `low_confidence` known-explanation outcomes, but not Track B
-`unknown_candidate` records.
+Current status: Track A HTRU2 baseline training, known-source catalog
+cross-matching, satellite-transmitter matching, and small historical replay are
+implemented. Track B's Phase 4 gate is available as
+`track-b-unknown-candidate-gate`, but the unresolved anomaly/OOD threshold still
+blocks `eligible_for_unknown_candidate` by construction. Production radio runs
+may produce non-detection ledgers, follow-up-review triage rows, public-null
+context summaries, and `low_confidence` known-explanation outcomes. They must
+not treat an unresolved or ineligible Track B gate result as a detection,
+discovery, expert-review, external-validation, or external-submission claim.
 
 Track A acquisition work must follow the brief's source order and disk cap. Raw
 downloads and temporary extraction products stay local in ignored paths:

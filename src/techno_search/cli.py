@@ -5345,6 +5345,28 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(satellite_match_result, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "track-b-unknown-candidate-gate":
+        from techno_search.track_b_gate import track_b_unknown_candidate_gate
+
+        try:
+            candidate = load_candidate_json(args.candidate_json)
+            crossmatch_result = json.loads(Path(args.crossmatch_json).read_text(encoding="utf-8"))
+            satellite_result = (
+                json.loads(Path(args.satellite_json).read_text(encoding="utf-8"))
+                if args.satellite_json
+                else None
+            )
+        except (OSError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+            print(json.dumps({"ok": False, "error": str(exc)}, indent=2, sort_keys=True), file=out)
+            return 1
+        gate_result = track_b_unknown_candidate_gate(
+            candidate,
+            crossmatch_result=crossmatch_result,
+            satellite_result=satellite_result,
+        )
+        print(json.dumps({"ok": True, **gate_result}, indent=2, sort_keys=True), file=out)
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -9917,6 +9939,31 @@ def _build_parser() -> argparse.ArgumentParser:
         type=float,
         default=0.5,
         help="Beam coincidence radius in degrees (default: 0.5).",
+    )
+    track_b_gate_parser = subparsers.add_parser(
+        "track-b-unknown-candidate-gate",
+        help=(
+            "Evaluate the Track B Phase 4 unknown_candidate gate from an explicit "
+            "candidate packet, Track A crossmatch JSON, and optional satellite-match JSON. "
+            "This combines already-computed evidence only; it performs no network lookups."
+        ),
+    )
+    track_b_gate_parser.add_argument(
+        "candidate_json",
+        help="Candidate JSON packet to evaluate.",
+    )
+    track_b_gate_parser.add_argument(
+        "--crossmatch-json",
+        required=True,
+        help="JSON output from track-a-crossmatch for the same candidate sky position.",
+    )
+    track_b_gate_parser.add_argument(
+        "--satellite-json",
+        default=None,
+        help=(
+            "Optional JSON output from track-a-satellite-match for the same observation. "
+            "Omitting it leaves the satellite condition unresolved and blocks eligibility."
+        ),
     )
 
     return parser

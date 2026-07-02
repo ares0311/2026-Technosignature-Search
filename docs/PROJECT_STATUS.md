@@ -32,7 +32,10 @@ review treats the verified MeerKAT BLUSE/SETICORE ATLAS rows as public
 null-search context and reports zero follow-up candidates.
 `docs/technosignature_datasets_agent_brief.md` is now the formal Track A dataset
 handoff for known-explanation classification before any Track B
-`unknown_candidate` routing.
+`unknown_candidate` routing. Track A baseline training, known-source catalog
+cross-match, satellite-transmitter matching, and small historical replay are
+implemented. The Track B Phase 4 gate exists and has CLI wiring; calibrated
+anomaly/OOD threshold work and end-to-end real-candidate validation remain open.
 
 ---
 
@@ -46,7 +49,9 @@ MeerKAT BLUSE/SETICORE corpus. The current local summary reports
 `public_null_search_context_candidate_count: 200000`,
 `follow_up_candidate_count: 0`, and
 `independent_escalation_ready_candidate_count: 0`; no candidate is ready for
-external escalation.
+external escalation. Track B `unknown_candidate` eligibility remains blocked by
+the intentionally unresolved anomaly/OOD threshold unless and until a real
+calibration study sets one.
 
 **Photometry, IR, spectroscopy:** Not implemented. No `lightkurve`, no WISE SED
 fitting, no JWST spectral ingest.
@@ -102,7 +107,7 @@ Step 3 blocked pending surviving candidates.
 
 | Task | Status |
 |---|---|
-| Track A known-explanation classifier before Track B `unknown_candidate` routing | ❌ Not started — brief is merged locally and must be implemented next with real catalog/corpus sources only |
+| Track A known-explanation classifier before Track B `unknown_candidate` routing | ⚠️ Partial — Track A HTRU2 baseline, known-source catalogs, satellite-transmitter matching, historical replay, and Track B gate CLI are implemented; calibrated anomaly/OOD threshold and end-to-end real-candidate validation remain open |
 | Proper ON/OFF cadence verification (ABACAB from raw files) | ⚠️ Partial — HIP99427 raw HDF5 status and derived cadence review are wired locally |
 | MeerKAT BLUSE real training corpus loaded into semisupervised_scorer | ✅ Done locally — 200,000 verified real rows train the ignored local scorer |
 | Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial — real-corpus summary exposes stationary, Earth-consistent, and inconsistent rows |
@@ -163,12 +168,12 @@ Step 3 blocked pending surviving candidates.
 
 ## Next 3 Actions
 
-1. Implement the Track A known-explanation acquisition/classifier baseline from
-   `docs/technosignature_datasets_agent_brief.md`.
-2. Broaden raw-file ABACAB cadence verification beyond HIP99427 where approved
+1. Run the Track B gate against real radio candidate packets with explicit
+   Track A crossmatch and satellite-match JSON evidence.
+2. Calibrate the semi-supervised anomaly/OOD threshold from real held-out
+   evidence before allowing condition 8 to resolve true.
+3. Broaden raw-file ABACAB cadence verification beyond HIP99427 where approved
    public raw files are locally available.
-3. Expand independent hit-bearing GBT validation beyond the current local zero-hit
-   extended corpus.
 
 ---
 
