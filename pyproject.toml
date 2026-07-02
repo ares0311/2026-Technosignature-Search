@@ -101,5 +101,6 @@ module = [
     "skyfield.*",
     "sgp4.*",
     "lightkurve.*",
+    "scipy.*",
 ]
 ignore_missing_imports = true

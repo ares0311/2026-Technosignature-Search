@@ -512,16 +512,52 @@ def _build_infrared_candidate(path: Path, candidate_id: str) -> Candidate:
     from techno_search.catalog_crossmatch import catalog_crossmatch
     from techno_search.infrared.catalog_reader import catalog_rows_to_infrared_source_dicts
     from techno_search.infrared.prototype import build_infrared_candidate
+    from techno_search.infrared_wise.photosphere_excess import wise_ir_excess_result
 
     rows = catalog_rows_to_infrared_source_dicts(path)
     if not rows:
         msg = f"No valid catalog rows found in {path}"
         raise ValueError(msg)
-    candidate = build_infrared_candidate(candidate_id, rows[0])
+    row = dict(rows[0])
+
+    # Real WISE W1/W2-photosphere vs. W3/W4 excess check (Planck's-law
+    # blackbody, not a synthetic heuristic). Overrides the fallback
+    # color-based ir_excess_score/sed_fit_residual_score in
+    # infrared/prototype.py when W1-W4 photometry is present.
+    wise_excess = wise_ir_excess_result(
+        row.get("w1"),
+        row.get("w2"),
+        row.get("w3"),
+        row.get("w4"),
+        w3_mag_err=row.get("w3_mag_err"),
+        w4_mag_err=row.get("w4_mag_err"),
+    )
+    if wise_excess.computable:
+        row["ir_excess_score"] = wise_excess.ir_excess_score()
+        row["sed_fit_residual_score"] = wise_excess.ir_excess_score()
+
+    candidate = build_infrared_candidate(candidate_id, row)
+
+    if wise_excess.computable:
+        candidate = Candidate(
+            candidate_id=candidate.candidate_id,
+            track=candidate.track,
+            features={
+                **candidate.features,
+                "wise_photosphere_temperature_k": wise_excess.photosphere_temperature_k,
+                "wise_w3_excess_significance": wise_excess.w3_excess_significance,
+                "wise_w4_excess_significance": wise_excess.w4_excess_significance,
+            },
+            source_ids=candidate.source_ids,
+            provenance={
+                **candidate.provenance,
+                "wise_excess_method": "single_temperature_blackbody_w1w2_photosphere",
+            },
+        )
 
     # Optional live catalog cross-match (requires TECHNO_SEARCH_ENABLE_LIVE_DATA=1)
-    ra = rows[0].get("ra_deg")
-    dec = rows[0].get("dec_deg")
+    ra = row.get("ra_deg")
+    dec = row.get("dec_deg")
     xmatch = catalog_crossmatch(ra, dec)
     known_score = float(xmatch.get("known_object_score", 0.0))
 
