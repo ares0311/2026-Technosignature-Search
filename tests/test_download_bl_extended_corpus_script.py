@@ -25,6 +25,22 @@ def test_extended_corpus_downloader_discovers_current_bl_urls() -> None:
     assert "blpd0.ssl.berkeley.edu" not in script
 
 
+def test_extended_corpus_downloader_bounds_curl_connection_time() -> None:
+    """Regression test: the discovery curl call had no --connect-timeout/
+    --max-time, so a slow or unresponsive breakthroughinitiatives.org left
+    the whole script hanging indefinitely with no error and no visible
+    progress. The download curl call had no --connect-timeout either
+    (though --max-time is intentionally omitted there since large real HDF5
+    transfers legitimately take a long time once connected)."""
+    script = _script_text()
+
+    assert (
+        "curl -fsSL --connect-timeout 15 --max-time 60 --retry 3 --retry-delay 5 "
+        '--location "${search_url}"'
+    ) in script
+    assert "--continue-at - \\\n       --connect-timeout 15 \\\n       --retry 3" in script
+
+
 def test_extended_corpus_downloader_fails_closed_on_zero_evidence() -> None:
     script = _script_text()
 
