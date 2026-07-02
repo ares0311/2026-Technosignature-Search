@@ -345,3 +345,47 @@ def test_significant_asymmetric_dip_boosts_technosignature_interest() -> None:
         dip_score.posterior[PosteriorClass.TECHNOSIGNATURE_INTEREST]
         > baseline_score.posterior[PosteriorClass.TECHNOSIGNATURE_INTEREST]
     )
+
+
+def test_v_shaped_grazing_eclipse_scores_below_flat_bottomed_transit() -> None:
+    flat_bottomed = Candidate(
+        candidate_id="transit-flat-bottom",
+        track=Track.TRANSIT_PHOTOMETRY,
+        features={
+            "bls_depth_snr_score": 0.8,
+            "blended_eclipsing_binary_score": 0.05,
+            "period_aliasing_score": 0.05,
+            "sinusoidal_variable_preferred_score": 0.0,
+            "grazing_eclipse_score": 0.0,
+            "max_dip_significance_score": 0.0,
+            "asymmetric_ingress_egress_score": 0.0,
+            "data_quality_score": 0.9,
+        },
+    )
+    v_shaped = Candidate(
+        candidate_id="transit-v-shaped",
+        track=Track.TRANSIT_PHOTOMETRY,
+        features={
+            "bls_depth_snr_score": 0.8,
+            "blended_eclipsing_binary_score": 0.05,
+            "period_aliasing_score": 0.05,
+            "sinusoidal_variable_preferred_score": 0.0,
+            "grazing_eclipse_score": 0.9,
+            "max_dip_significance_score": 0.0,
+            "asymmetric_ingress_egress_score": 0.0,
+            "data_quality_score": 0.9,
+        },
+    )
+
+    flat_score = score_candidate(flat_bottomed)
+    v_score = score_candidate(v_shaped)
+
+    assert (
+        flat_score.posterior[PosteriorClass.TECHNOSIGNATURE_INTEREST]
+        > v_score.posterior[PosteriorClass.TECHNOSIGNATURE_INTEREST]
+    )
+    assert (
+        v_score.posterior[PosteriorClass.NATURAL_SOURCE]
+        > flat_score.posterior[PosteriorClass.NATURAL_SOURCE]
+    )
+    assert any("grazing" in issue.lower() for issue in v_score.evidence.negative_evidence)

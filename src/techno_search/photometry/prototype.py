@@ -12,6 +12,7 @@ from collections.abc import Mapping, Sequence
 
 from techno_search.photometry.aperiodic_dip import DipEvent
 from techno_search.photometry.bls_detection import BlsTransitResult
+from techno_search.photometry.transit_shape import TransitShapeResult
 from techno_search.schemas import Candidate, FeatureValue, Track
 
 # Heuristic scaling constants for combining real statistics into the
@@ -30,6 +31,7 @@ def build_transit_photometry_candidate(
     *,
     bls_result: BlsTransitResult,
     dip_events: Sequence[DipEvent] = (),
+    shape_result: TransitShapeResult | None = None,
     target_id: str = "unknown",
     ra_deg: float | None = None,
     dec_deg: float | None = None,
@@ -78,6 +80,13 @@ def build_transit_photometry_candidate(
         features["ra_deg"] = ra_deg
     if dec_deg is not None:
         features["dec_deg"] = dec_deg
+
+    if shape_result is not None and shape_result.computable:
+        features["transit_shape_flat_bottom_score"] = shape_result.flat_bottom_score()
+        features["grazing_eclipse_score"] = shape_result.grazing_eclipse_score()
+        features["transit_shape_in_transit_point_count"] = (
+            shape_result.in_transit_point_count
+        )
 
     _add_dip_features(features, dip_events)
 

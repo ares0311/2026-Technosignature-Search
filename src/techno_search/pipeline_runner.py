@@ -622,6 +622,7 @@ def _build_photometry_candidate(path: Path, candidate_id: str) -> Candidate:
     from techno_search.photometry.bls_detection import run_bls_transit_search
     from techno_search.photometry.lightcurve_io import load_lightcurve_file
     from techno_search.photometry.prototype import build_transit_photometry_candidate
+    from techno_search.photometry.transit_shape import classify_transit_shape
 
     raw_lc = load_lightcurve_file(path)
     raw_cadence_count = int(len(raw_lc.time))
@@ -646,6 +647,9 @@ def _build_photometry_candidate(path: Path, candidate_id: str) -> Candidate:
     # unremoved stellar variability degrades period/depth recovery.
     flattened_lc = clean_lc.flatten()
     bls_result = run_bls_transit_search(flattened_lc)
+    shape_result = classify_transit_shape(
+        flattened_lc.time.value, flattened_lc.flux.value, bls_result
+    )
 
     # Optional live catalog cross-match (requires TECHNO_SEARCH_ENABLE_LIVE_DATA=1)
     xmatch = catalog_crossmatch(ra_deg, dec_deg)
@@ -655,6 +659,7 @@ def _build_photometry_candidate(path: Path, candidate_id: str) -> Candidate:
         candidate_id,
         bls_result=bls_result,
         dip_events=dip_events,
+        shape_result=shape_result,
         target_id=target_id,
         ra_deg=ra_deg,
         dec_deg=dec_deg,
