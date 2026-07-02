@@ -354,6 +354,15 @@ A summary cannot authorize:
 - Always assume a local `.venv` environment — **Python 3.14.3**
 - **NEVER invoke bare `python3` or `python`. Always use `.venv/bin/python` or
   `.venv/bin/techno-search` explicitly.**
+- **Install packages with `.venv/bin/python -m pip install ...`, never
+  `.venv/bin/pip install ...`.** If the venv's Python was ever upgraded in
+  place, the `.venv/bin/pip` script can keep pointing at the old
+  interpreter's site-packages (confirmed on the local machine: `.venv/bin/pip
+  --version` reported `python 3.13` while `.venv/bin/python --version`
+  reported `3.14.3`), so packages "successfully installed" via `pip` silently
+  never become importable from the interpreter `techno-search` actually runs
+  under. `python -m pip` ties installation to `sys.executable` and sidesteps
+  this class of bug entirely.
 - Never commit `.venv/`
 - All tests must run inside the virtual environment: `.venv/bin/python -m pytest`
 - Use `docs/LOCAL_SYSTEM_PROFILE.md` for local performance defaults
