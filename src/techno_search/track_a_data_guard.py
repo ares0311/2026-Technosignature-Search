@@ -9,12 +9,27 @@ lose provenance for a downloaded file.
 from __future__ import annotations
 
 import json
+import sys
 from collections.abc import Iterable
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 TRACK_A_DISK_GUARD_SCHEMA_VERSION = "track_a_disk_guard_v1"
+
+
+def log_progress(message: str) -> None:
+    """Print a timestamped progress line to stderr.
+
+    Acquisition functions call this around network operations so a slow
+    download proves it is alive without polluting the JSON emitted on stdout
+    by the `techno-search` CLI, matching the [INFO]/[OK] convention used by
+    scripts/ingest_meerkat_hits.py and scripts/download_bl_extended_corpus.sh.
+    """
+
+    timestamp = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    print(f"[{timestamp}] {message}", file=sys.stderr, flush=True)
 DEFAULT_DISK_BUDGET_BYTES = 100 * 1024**3
 
 DEFAULT_GUARDED_DIRS: tuple[str, ...] = ("data_cache", "tmp_training", "tmp_features")
