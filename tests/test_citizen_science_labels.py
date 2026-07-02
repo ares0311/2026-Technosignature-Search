@@ -143,6 +143,74 @@ def test_committed_real_dataset_is_reviewed_and_conservative() -> None:
     )
 
 
+def test_candidate_mapping_injects_semisupervised_anomaly_score_when_model_given(
+    tmp_path: Path,
+) -> None:
+    import joblib
+
+    from techno_search.semisupervised_scorer import SemisupervisedScorer
+
+    def _training_hit(index: int) -> dict[str, float]:
+        frequency_hz = 1.42e9 + index * 10.0
+        drift = 0.0 if index % 2 == 0 else 0.1
+        return {
+            "snr": 6.0 + (index % 5),
+            "drift_rate_hz_per_sec": drift,
+            "frequency_hz": frequency_hz,
+            "bandwidth_hz": 2.79,
+            "normalized_drift_hz_s_per_ghz": drift / (frequency_hz / 1e9),
+            "relative_snr": 1.0,
+            "on_off_consistency_score": 0.5,
+            "is_earth_drift_consistent": 1.0,
+            "rfi_band_overlap_score": 0.0,
+            "frequency_persistence_score": 0.2,
+            "on_hit_count": 1.0,
+            "off_hit_count": 0.0,
+        }
+
+    model_path = tmp_path / "semisupervised_scorer.joblib"
+    scorer = SemisupervisedScorer(n_estimators=10, n_components=4, n_jobs=1)
+    scorer.fit([_training_hit(i) for i in range(20)])
+    joblib.dump(scorer, model_path)
+
+    cadence_csv = tmp_path / "cadence.csv"
+    _write_review_csv(cadence_csv)
+
+    dataset = build_citizen_science_dataset(
+        cadence_csv,
+        cadence_id="test-cadence",
+        data_license="CC BY 4.0",
+        data_use_url="https://example.invalid/data",
+        semisupervised_model_path=model_path,
+    )
+
+    follow_ups = [e for e in dataset["entries"] if e["label"] == "follow_up"]
+    assert len(follow_ups) == 1
+    features = follow_ups[0]["candidate"]["features"]
+    assert features["semisupervised_model_used"] is True
+    assert isinstance(features["semisupervised_anomaly_score"], float)
+    provenance = follow_ups[0]["candidate"]["provenance"]
+    assert provenance["semisupervised_model_path"] == str(model_path)
+
+
+def test_candidate_mapping_omits_semisupervised_score_without_model(
+    tmp_path: Path,
+) -> None:
+    cadence_csv = tmp_path / "cadence.csv"
+    _write_review_csv(cadence_csv)
+
+    dataset = build_citizen_science_dataset(
+        cadence_csv,
+        cadence_id="test-cadence",
+        data_license="CC BY 4.0",
+        data_use_url="https://example.invalid/data",
+        semisupervised_model_path=tmp_path / "does_not_exist.joblib",
+    )
+
+    follow_ups = [e for e in dataset["entries"] if e["label"] == "follow_up"]
+    assert "semisupervised_anomaly_score" not in follow_ups[0]["candidate"]["features"]
+
+
 def test_follow_up_candidate_features_carry_real_abacab_cadence_pass(
     tmp_path: Path,
 ) -> None:

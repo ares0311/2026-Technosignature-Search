@@ -37,6 +37,15 @@ def main() -> int:
             / "hip99427_citizen_science_labels_v1.json"
         ),
     )
+    parser.add_argument(
+        "--semisupervised-model",
+        type=Path,
+        default=None,
+        help=(
+            "Optional fitted SemisupervisedScorer joblib model. Defaults to "
+            "data/meerkat_hits/semisupervised_scorer.joblib when present."
+        ),
+    )
     args = parser.parse_args()
 
     manifest = load_cadence_manifest(args.manifest)
@@ -44,7 +53,25 @@ def main() -> int:
         args.cadence_csv,
         args.output,
         manifest=manifest,
+        semisupervised_model_path=args.semisupervised_model,
     )
+
+    anomaly_scores_by_label: dict[str, list[float]] = {}
+    for entry in dataset["entries"]:
+        score = entry["candidate"]["features"].get("semisupervised_anomaly_score")
+        if score is not None:
+            anomaly_scores_by_label.setdefault(entry["label"], []).append(float(score))
+    anomaly_score_summary = {
+        label: {
+            "count": len(scores),
+            "min": min(scores),
+            "max": max(scores),
+            "mean": sum(scores) / len(scores),
+        }
+        for label, scores in sorted(anomaly_scores_by_label.items())
+        if scores
+    }
+
     print(
         json.dumps(
             {
@@ -52,6 +79,7 @@ def main() -> int:
                 "entry_count": dataset["total_entries"],
                 "label_counts": dataset["label_counts"],
                 "review_summary": dataset["review_summary"],
+                "anomaly_score_summary_by_label": anomaly_score_summary,
                 "external_validation_claimed": False,
                 "external_submission_authorized": False,
             },

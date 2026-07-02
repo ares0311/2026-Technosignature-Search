@@ -122,6 +122,7 @@ def _candidate_mapping(
     candidate_id: str,
     cadence_id: str,
     source_csv_sha256: str,
+    semisupervised_model_path: Path | None = None,
 ) -> dict[str, Any]:
     rows: list[dict[str, FeatureValue]] = [
         {
@@ -146,12 +147,23 @@ def _candidate_mapping(
             "external_submission_authorized": False,
         },
     )
+    features = dict(candidate.features)
+    provenance = dict(candidate.provenance)
+
+    from techno_search.pipeline_runner import _semisupervised_model_context
+
+    semisupervised_features, semisupervised_provenance = _semisupervised_model_context(
+        rows, model_path=semisupervised_model_path
+    )
+    features.update(semisupervised_features)
+    provenance.update(semisupervised_provenance)
+
     return {
         "candidate_id": candidate.candidate_id,
         "track": candidate.track.value,
         "source_ids": list(candidate.source_ids),
-        "features": dict(candidate.features),
-        "provenance": dict(candidate.provenance),
+        "features": features,
+        "provenance": provenance,
     }
 
 
@@ -267,6 +279,7 @@ def build_citizen_science_dataset(
     cadence_id: str,
     data_license: str,
     data_use_url: str,
+    semisupervised_model_path: Path | None = None,
 ) -> dict[str, Any]:
     source_ids, cadence_provenance = cadence_candidate_context(cadence_csv)
     hits = load_cadence_hits(cadence_csv)
@@ -335,6 +348,7 @@ def build_citizen_science_dataset(
                     candidate_id=candidate_id,
                     cadence_id=cadence_id,
                     source_csv_sha256=source_csv_sha256,
+                    semisupervised_model_path=semisupervised_model_path,
                 ),
                 "notes": (
                     "Operational cadence label only; no astrophysical source "
@@ -391,12 +405,14 @@ def write_citizen_science_dataset(
     destination: Path,
     *,
     manifest: Mapping[str, Any],
+    semisupervised_model_path: Path | None = None,
 ) -> dict[str, Any]:
     dataset = build_citizen_science_dataset(
         cadence_csv,
         cadence_id=str(manifest["cadence_id"]),
         data_license=str(manifest["data_license"]),
         data_use_url=str(manifest["data_use_url"]),
+        semisupervised_model_path=semisupervised_model_path,
     )
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(
