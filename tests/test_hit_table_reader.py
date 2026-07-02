@@ -128,6 +128,29 @@ def test_dat_ra_dec_from_metadata_header() -> None:
     assert rows[0]["dec_deg"] == pytest_approx(22.0145)
 
 
+def test_dat_parses_tabbed_sexagesimal_metadata_header(tmp_path: Path) -> None:
+    path = tmp_path / "voyager_style.dat"
+    path.write_text(
+        "\n".join(
+            [
+                "# Source:Voyager1",
+                "# MJD: 57650.782094907408\tRA: 17h10m03.984s\tDEC: 12d10m58.8s",
+                "# DELTAT:  18.253611\tDELTAF(Hz):  -2.793968",
+                "# Top_Hit_# \tDrift_Rate \tSNR \tUncorrected_Frequency \tCorrected_Frequency",
+                "000001\t -0.397966\t 30.612337\t 8419.319368\t 8419.319368",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    rows = read_hit_table_csv(path)
+
+    assert rows[0]["mjd"] == pytest_approx(57650.782094907408)
+    assert rows[0]["ra_deg"] == pytest_approx(257.5166)
+    assert rows[0]["dec_deg"] == pytest_approx(12.183)
+
+
 def test_dat_corrected_frequency_used() -> None:
     """Corrected_Frequency column is preferred when present."""
     rows = read_hit_table_csv(FIXTURE_DAT)

@@ -4,6 +4,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -49,7 +50,10 @@ def _parse_metadata(lines: list[str]) -> dict[str, str]:
             break
         # Strip the leading "# " or "#"
         content = line.lstrip("#").strip()
-        if ":" in content:
+        for segment in content.split("\t"):
+            if ":" not in segment:
+                continue
+            content = segment.strip()
             key, _, value = content.partition(":")
             key = key.strip()
             value = value.strip()
@@ -159,27 +163,58 @@ def _normalize_row(
     target_id = _resolve_col(raw, _TARGET_ALIASES)
     source_artifact = _resolve_col(raw, _SOURCE_ARTIFACT_ALIASES)
 
-    def _float_or_none(s: str | None) -> float | None:
-        if not s:
-            return None
-        try:
-            return float(s)
-        except (ValueError, TypeError):
-            return None
-
     return {
         "frequency_hz": freq_val * 1e6,
         "snr": snr_val,
         "drift_rate_hz_per_sec": drift_val,
         "source_name": source,
         "mjd": _float_or_none(mjd_str),
-        "ra_deg": _float_or_none(ra_str),
-        "dec_deg": _float_or_none(dec_str),
+        "ra_deg": _coordinate_deg_or_none(ra_str, is_ra=True),
+        "dec_deg": _coordinate_deg_or_none(dec_str, is_ra=False),
         "sefd": _float_or_none(sefd_str),
         "scan_role": scan_role.lower() if scan_role else None,
         "target_id": target_id,
         "source_artifact": source_artifact or "",
     }
+
+
+def _float_or_none(s: str | None) -> float | None:
+    if not s:
+        return None
+    try:
+        return float(str(s).strip())
+    except (ValueError, TypeError):
+        return None
+
+
+def _coordinate_deg_or_none(s: str | None, *, is_ra: bool) -> float | None:
+    decimal = _float_or_none(s)
+    if decimal is not None:
+        return decimal
+    if not s:
+        return None
+
+    text = str(s).strip()
+    sign = -1.0 if text.startswith("-") else 1.0
+    cleaned = text.lstrip("+-")
+    parts = [
+        part
+        for part in re.split(r"[hHdDmMsS:\s]+", cleaned)
+        if part
+    ]
+    if len(parts) < 3:
+        return None
+    try:
+        major = float(parts[0])
+        minutes = float(parts[1])
+        seconds = float(parts[2])
+    except ValueError:
+        return None
+
+    value = major + minutes / 60.0 + seconds / 3600.0
+    if is_ra:
+        return value * 15.0
+    return sign * value
 
 
 def hit_table_to_radio_hit_dicts(path: Path) -> list[dict[str, Any]]:
