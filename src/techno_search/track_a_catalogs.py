@@ -148,6 +148,20 @@ def normalize_romabzcat(df: Any) -> Any:
     )
 
 
+def fits_table_to_pandas(table: Any) -> Any:
+    """Convert an astropy FITS Table to pandas, dropping multidimensional columns.
+
+    astropy.table.Table.to_pandas() raises ValueError on any column whose
+    cells are themselves arrays (e.g. the Fermi 4FGL-DR4 per-energy-band flux
+    columns Flux_Band/Unc_Flux_Band/nuFnu_Band/etc.). Those columns aren't
+    needed for sky-position cross-match, so drop them before conversion
+    rather than letting the whole acquisition fail.
+    """
+
+    scalar_column_names = [name for name in table.colnames if len(table[name].shape) <= 1]
+    return table[scalar_column_names].to_pandas()
+
+
 def normalize_fermi_4fgl(df: Any) -> Any:
     """Normalize a Fermi LAT 4FGL-DR4 FITS-derived table to ra_deg/dec_deg."""
 
@@ -345,7 +359,7 @@ def acquire_fermi_4fgl(
     log_progress(f"[INFO] Downloaded {len(response.content)} bytes, parsing FITS table")
 
     table = Table.read(fits_path)
-    df = table.to_pandas()
+    df = fits_table_to_pandas(table)
     log_progress(f"[INFO] Parsed {len(df)} rows, verifying row count")
     if len(df) != FERMI_4FGL_EXPECTED_ROW_COUNT:
         msg = (
