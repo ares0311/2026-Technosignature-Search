@@ -396,6 +396,45 @@ crossmatch/satellite conditions can resolve. Blocker 1 (calibrated anomaly
 threshold) remains fully open — needs a real calibration study, not
 progress from this fix.
 
+### Real 8/9 Track B Result on a Real GBT Candidate — 2026-07-02
+
+Rather than guess or externally look up HIP99427's sky position, the user
+grepped the real raw `.dat` file header directly
+(`~/technosignature-data/bl_hits/spliced_..._HIP99427_0033.gpuspec.0002.dat`):
+`MJD: 57752.960949074077  RA: 20h10m52.584s  DEC: 77d14m28.005s`. Converted
+using this project's own tested functions
+(`hit_table_reader._coordinate_deg_or_none`,
+`pipeline_runner._mjd_to_utc_iso`) rather than hand-computed trig — ra_deg =
+302.7191, dec_deg = 77.2411125, observation_time_utc =
+2016-12-30T23:03:46Z (matches the existing manifest's independently recorded
+`utc_start: 2016-12-30T23:03:45Z` to within 1s, an internal consistency
+check that passed). Injected into the fixed follow-up candidate's features,
+then ran the real crossmatch (`no_known_match` — not a pulsar/FRB/blazar/
+gamma source) and real satellite match (`no_known_match`, using the same
+verified GBT reference-point coordinates as the Voyager run).
+
+**Result: `techno-search track-b-candidate-readiness` reports 8 of 9
+conditions satisfied** — every implemented known-source, RFI,
+instrument-artifact, cadence, and satellite-transmitter check found no
+explanation for this real candidate. `eligible_for_unknown_candidate:
+false`, correctly, because condition 8 (calibrated anomaly/OOD threshold)
+remains the sole unresolved condition. **This is not a signal of interest
+or a step toward a detection claim** — it means the deterministic
+rule-based checks this project has implemented so far have nothing further
+to say about this candidate; the one blocking condition is a calibration
+gap in the tooling, not evidence about the candidate itself. Precise
+language matters here per AGENTS.md's Non-Negotiable Scientific Rules:
+false positive remains the default hypothesis, and this candidate has not
+been evaluated against any anomaly/OOD threshold at all yet, calibrated or
+otherwise.
+
+**Only one Track B blocker remains: calibrate the semisupervised
+anomaly/OOD threshold from real held-out evidence.** This requires a real
+calibration study (e.g. score distributions from a real labeled corpus with
+known explanations vs. known artifacts/RFI), not an invented cutoff. No
+shortcut exists for this — it is genuine unstarted scientific work, not an
+implementation gap.
+
 ### Dataset Brief Integration — 2026-07-01
 
 `docs/technosignature_datasets_agent_brief.md` is a required project input, not
