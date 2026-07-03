@@ -389,3 +389,37 @@ def test_v_shaped_grazing_eclipse_scores_below_flat_bottomed_transit() -> None:
         > flat_score.posterior[PosteriorClass.NATURAL_SOURCE]
     )
     assert any("grazing" in issue.lower() for issue in v_score.evidence.negative_evidence)
+
+
+def test_detected_gas_band_scores_above_flat_spectrum() -> None:
+    flat = Candidate(
+        candidate_id="spectroscopy-flat",
+        track=Track.SPECTROSCOPY,
+        features={
+            "technosignature_gas_score": 0.0,
+            "detected_band_count": 0,
+            "computable_band_count": 5,
+            "data_quality_score": 1.0,
+        },
+    )
+    detected = Candidate(
+        candidate_id="spectroscopy-detected",
+        track=Track.SPECTROSCOPY,
+        features={
+            "technosignature_gas_score": 1.0,
+            "detected_band_count": 1,
+            "computable_band_count": 5,
+            "data_quality_score": 1.0,
+        },
+    )
+
+    flat_score = score_candidate(flat)
+    detected_score = score_candidate(detected)
+
+    assert (
+        detected_score.posterior[PosteriorClass.TECHNOSIGNATURE_INTEREST]
+        > flat_score.posterior[PosteriorClass.TECHNOSIGNATURE_INTEREST]
+    )
+    assert any(
+        "detected" in issue.lower() for issue in detected_score.evidence.positive_evidence
+    )

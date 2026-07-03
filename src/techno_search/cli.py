@@ -1094,6 +1094,7 @@ _TRACK_EXTENSIONS: dict[str, list[str]] = {
     "infrared": [".csv", ".fits"],
     "anomaly": [".csv", ".json"],
     "photometry": [".fits", ".fit"],
+    "spectroscopy": [".fits", ".fit"],
 }
 
 _EXTENSION_TRACK: dict[str, str] = {
@@ -6402,7 +6403,7 @@ def _build_parser() -> argparse.ArgumentParser:
     user_decision_record_parser.add_argument(
         "--track",
         required=True,
-        choices=["radio", "infrared", "anomaly", "photometry"],
+        choices=["radio", "infrared", "anomaly", "photometry", "spectroscopy"],
     )
     user_decision_record_parser.add_argument(
         "--decision",
@@ -9407,7 +9408,9 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     validate_input_parser.add_argument("input", type=Path, help="Input CSV file path.")
     validate_input_parser.add_argument(
-        "--track", required=True, choices=["radio", "infrared", "anomaly", "photometry"],
+        "--track",
+        required=True,
+        choices=["radio", "infrared", "anomaly", "photometry", "spectroscopy"],
         help="Track type for validation.",
     )
 
@@ -9422,7 +9425,7 @@ def _build_parser() -> argparse.ArgumentParser:
     run_pipeline_parser.add_argument(
         "--track",
         required=True,
-        choices=["radio", "infrared", "anomaly", "photometry"],
+        choices=["radio", "infrared", "anomaly", "photometry", "spectroscopy"],
         help="Track type for the input file.",
     )
     run_pipeline_parser.add_argument(
@@ -9919,7 +9922,7 @@ def _build_parser() -> argparse.ArgumentParser:
     prod_file_scan_parser.add_argument(
         "--track",
         default=None,
-        choices=["radio", "infrared", "anomaly", "photometry"],
+        choices=["radio", "infrared", "anomaly", "photometry", "spectroscopy"],
         help=(
             "Pipeline track. Auto-detected from file extension if omitted "
             "(.dat → radio, .fits/.fit → photometry)."

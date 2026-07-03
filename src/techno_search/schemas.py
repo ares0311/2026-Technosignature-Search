@@ -15,6 +15,7 @@ class Track(StrEnum):
     INFRARED = "infrared"
     ANOMALY = "anomaly"
     TRANSIT_PHOTOMETRY = "transit_photometry"
+    SPECTROSCOPY = "spectroscopy"
 
 
 class Pathway(StrEnum):

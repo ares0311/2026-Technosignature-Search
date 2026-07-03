@@ -134,6 +134,8 @@ def _track_scores(
         return _anomaly_scores(candidate)
     if candidate.track == Track.TRANSIT_PHOTOMETRY:
         return _transit_photometry_scores(candidate)
+    if candidate.track == Track.SPECTROSCOPY:
+        return _spectroscopy_scores(candidate)
     msg = f"Unsupported track: {candidate.track}"
     raise ValueError(msg)
 
@@ -405,6 +407,39 @@ def _transit_photometry_scores(
         dip_significance=dip_significance,
         asymmetric_dip=asymmetric_dip,
         data_quality=data_quality,
+    )
+    return raw_scores, evidence
+
+
+def _spectroscopy_scores(
+    candidate: Candidate,
+) -> tuple[dict[PosteriorClass, float], EvidenceSummary]:
+    f = candidate.features
+    gas_score = _score(f, "technosignature_gas_score")
+    detected_count = _float(f, "detected_band_count")
+    computable_count = _float(f, "computable_band_count")
+    data_quality = _score(f, "data_quality_score", default=0.7)
+    known = _score(f, "known_object_score")
+    has_any_coverage = computable_count > 0
+
+    raw_scores = _empty_scores()
+    raw_scores[PosteriorClass.TECHNOSIGNATURE_INTEREST] += (
+        2.00 * gas_score + 0.50 * data_quality
+    )
+    raw_scores[PosteriorClass.NATURAL_SOURCE] += 0.20
+    raw_scores[PosteriorClass.CATALOG_OR_PROCESSING_ERROR] += 1.10 * (1.0 - data_quality)
+    raw_scores[PosteriorClass.INSTRUMENTAL_ARTIFACT] += 0.70 * (1.0 - data_quality)
+    raw_scores[PosteriorClass.NOISE_OR_LOW_CONFIDENCE] += (
+        1.30 * (1.0 - gas_score) + 0.60 * (1.0 - data_quality)
+    )
+    raw_scores[PosteriorClass.KNOWN_OBJECT] += 8.00 * known
+    raw_scores[PosteriorClass.HUMAN_INTERFERENCE] += 0.05
+
+    evidence = _spectroscopy_evidence(
+        gas_score=gas_score,
+        detected_count=detected_count,
+        data_quality=data_quality,
+        has_any_coverage=has_any_coverage,
     )
     return raw_scores, evidence
 
@@ -755,6 +790,40 @@ def _transit_photometry_evidence(
     )
 
     _append_if(blocking, data_quality < 0.5, "Light curve data quality is too weak for review.")
+
+    return EvidenceSummary(tuple(positive), tuple(negative), tuple(blocking))
+
+
+def _spectroscopy_evidence(
+    *,
+    gas_score: float,
+    detected_count: float,
+    data_quality: float,
+    has_any_coverage: bool,
+) -> EvidenceSummary:
+    positive: list[str] = []
+    negative: list[str] = []
+    blocking: list[str] = []
+
+    _append_if(
+        positive,
+        detected_count > 0,
+        "At least one known industrial/artificial-gas absorption band was "
+        "detected at >= 5-sigma significance.",
+    )
+    _append_if(
+        negative,
+        detected_count == 0 and has_any_coverage,
+        "No known industrial/artificial-gas absorption band reached "
+        "detection significance.",
+    )
+    _append_if(
+        blocking,
+        not has_any_coverage,
+        "Spectrum does not cover any known gas absorption band (outside "
+        "MIRI LRS 5-14 um range or insufficient continuum points).",
+    )
+    _append_if(blocking, data_quality < 0.5, "Spectrum data quality is too weak for review.")
 
     return EvidenceSummary(tuple(positive), tuple(negative), tuple(blocking))
 
