@@ -1608,6 +1608,25 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(result, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "multi-modal-crossmatch-summary":
+        from techno_search.multi_modal_crossmatch import multi_modal_crossmatch_summary
+
+        report_dir = Path(args.report_dir)
+        report_paths = sorted(
+            path
+            for path in report_dir.glob("*.json")
+            if not path.name.endswith(".manifest.json")
+        )
+        reports = [json.loads(path.read_text(encoding="utf-8")) for path in report_paths]
+        result = multi_modal_crossmatch_summary(
+            reports,
+            match_radius_arcsec=args.match_radius_arcsec,
+        )
+        result["report_dir"] = str(report_dir)
+        result["report_file_count"] = len(report_paths)
+        print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "calibration-summary":
         fixtures = load_calibration_fixtures(args.fixture_path)
         cal_summary = summarize_calibration_fixtures(fixtures)
@@ -9766,6 +9785,36 @@ def _build_parser() -> argparse.ArgumentParser:
         help=(
             "Optional fitted SemisupervisedScorer joblib model. Defaults to "
             "data/meerkat_hits/semisupervised_scorer.joblib when present."
+        ),
+    )
+
+    multi_modal_crossmatch_parser = subparsers.add_parser(
+        "multi-modal-crossmatch-summary",
+        help=(
+            "Phase 5: real sky-position cross-match of candidate reports "
+            "(radio/photometry/infrared) to find candidates appearing in "
+            ">= 2 independent modalities."
+        ),
+    )
+    multi_modal_crossmatch_parser.add_argument(
+        "--report-dir",
+        required=True,
+        help=(
+            "Directory of written candidate report JSON files (e.g. "
+            "artifacts/pipeline_smoke/ or a results/scans/RUN-*/ directory). "
+            "Only *.json report files are read; *.manifest.json files in "
+            "the same directory are excluded."
+        ),
+    )
+    multi_modal_crossmatch_parser.add_argument(
+        "--match-radius-arcsec",
+        type=float,
+        default=60.0,
+        help=(
+            "Sky-position match radius in arcseconds. 60 arcsec is a "
+            "conservative generic cross-survey default, not a "
+            "per-instrument-calibrated value -- supply a real per-track "
+            "beam/PSF-informed radius when known."
         ),
     )
 

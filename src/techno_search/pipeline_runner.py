@@ -594,6 +594,20 @@ def _build_infrared_candidate(path: Path, candidate_id: str) -> Candidate:
 
     extra_features: dict[str, FeatureValue] = {}
     extra_provenance: dict[str, FeatureValue] = {}
+    # Real, verified fix, 2026-07-03: build_infrared_candidate() (in
+    # infrared/prototype.py) stores the source position under "ra"/"dec",
+    # not "ra_deg"/"dec_deg" like the radio and photometry tracks. Without
+    # this, downstream cross-track consumers of a uniform ra_deg/dec_deg
+    # convention (e.g. multi_modal_crossmatch.py, Phase 5) silently see no
+    # position for every infrared candidate. Inject the same ra_deg/dec_deg
+    # keys unconditionally (not only when a live xmatch query ran), mirroring
+    # exactly how _build_radio_candidate() already does this.
+    if ra is not None:
+        extra_features["ra_deg"] = float(ra)
+        extra_provenance["ra_deg"] = float(ra)
+    if dec is not None:
+        extra_features["dec_deg"] = float(dec)
+        extra_provenance["dec_deg"] = float(dec)
     if xmatch.get("query_attempted"):
         extra_features["known_object_score"] = known_score
         extra_features["catalog_crossmatch_provider"] = str(xmatch.get("provider", ""))
