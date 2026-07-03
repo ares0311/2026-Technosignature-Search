@@ -94,3 +94,4 @@ uv.lock
 
 # Local HITRAN scratch data
 hitran_n2o/
+hitran_xsc_downloads/
