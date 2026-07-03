@@ -5150,6 +5150,7 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             candidate_id=getattr(args, "candidate_id", None),
             epoch_dat_files=_epoch_files,
             semisupervised_model_path=getattr(args, "semisupervised_model", None),
+            jwst_integration_index=getattr(args, "jwst_integration_index", None),
         )
         print(json.dumps(pipeline_result.as_dict(), indent=2, sort_keys=True), file=out)
         return 0 if pipeline_result.ok else 1
@@ -9484,6 +9485,18 @@ def _build_parser() -> argparse.ArgumentParser:
         help=(
             "Optional fitted SemisupervisedScorer joblib model. Defaults to "
             "data/meerkat_hits/semisupervised_scorer.joblib when present."
+        ),
+    )
+    run_pipeline_parser.add_argument(
+        "--jwst-integration-index",
+        type=int,
+        default=None,
+        help=(
+            "1-indexed integration to use (spectroscopy track only). Required "
+            "when the input x1dints file is a multi-integration time-series "
+            "product -- there is no default, since pooling every integration "
+            "together would treat real time-domain flux variation (e.g. an "
+            "orbital phase curve) as spectral noise."
         ),
     )
 

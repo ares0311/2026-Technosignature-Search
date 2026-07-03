@@ -179,7 +179,7 @@ commands instead of placeholder `rm` recipes.
 
 | Task | Status |
 |---|---|
-| JWST NIRSpec/NIRISS transmission spectra ingest (MAST) | ✅ Corrected + done, 2026-07-03 — real research (live web search, not memory) found the actual real-world instrument for the CFC/PFC/SF₆/NF₃ group this project's first gas set targets is **JWST MIRI Low Resolution Spectrometer (5-14 μm, R~40-160)**, not NIRSpec/NIRISS as this roadmap line originally assumed (Schwieterman et al. 2024, ApJ 969, 20, used MIRI LRS specifically for this gas group). `spectroscopy/jwst_spectrum_io.py` ingests the real JWST pipeline `x1d` product format (`EXTRACT1D` FITS table extension with `WAVELENGTH`/`FLUX`/`FLUX_ERROR` columns, verified against the official JWST pipeline docs). The MAST blocker is now resolved: the user's research agent ran a real, live `astroquery.mast.Observations.query_criteria()` call and confirmed the real `instrument_name` values for MIRI LRS observations are `MIRI/SLIT` (1526 real observations) and `MIRI/SLITLESS` (742 real observations), additionally filterable by `filters="P750L"` (the LRS prism disperser); `MIRI/LRS`, `MIRI/SLITLESSPRISM`, and `MIRI/LRS-FIXEDSLIT` were live-tested and definitively return zero results. Full findings recorded in `docs/technosignature_detection_research_answers.md`. A live MAST search/download CLI wrapper now exists: `spectroscopy/jwst_search.py` / `techno-search jwst-miri-lrs-search <target>`, mirroring `photometry/lightcurve_search.py`'s established pattern, filtering downloaded products to the real, already-verified `x1d`/`x1dints` filename suffixes (the same convention `jwst_spectrum_io.py` reads) rather than an unverified MAST product-type column value. **Run for real, 2026-07-03**: found 31 real x1d-like products for target `WASP-43` (MAST proposal 1366, verified via `docs/jwst_miri_lrs_mast_targets.md`) and downloaded a real `x1dints` FITS file; `run-pipeline --track spectroscopy` on that real file succeeded end-to-end (119,892 rows, `pathway: human_review_queue`). |
+| JWST NIRSpec/NIRISS transmission spectra ingest (MAST) | ✅ Corrected + done, 2026-07-03 — real research (live web search, not memory) found the actual real-world instrument for the CFC/PFC/SF₆/NF₃ group this project's first gas set targets is **JWST MIRI Low Resolution Spectrometer (5-14 μm, R~40-160)**, not NIRSpec/NIRISS as this roadmap line originally assumed (Schwieterman et al. 2024, ApJ 969, 20, used MIRI LRS specifically for this gas group). `spectroscopy/jwst_spectrum_io.py` ingests the real JWST pipeline `x1d` product format (`EXTRACT1D` FITS table extension with `WAVELENGTH`/`FLUX`/`FLUX_ERROR` columns, verified against the official JWST pipeline docs). The MAST blocker is now resolved: the user's research agent ran a real, live `astroquery.mast.Observations.query_criteria()` call and confirmed the real `instrument_name` values for MIRI LRS observations are `MIRI/SLIT` (1526 real observations) and `MIRI/SLITLESS` (742 real observations), additionally filterable by `filters="P750L"` (the LRS prism disperser); `MIRI/LRS`, `MIRI/SLITLESSPRISM`, and `MIRI/LRS-FIXEDSLIT` were live-tested and definitively return zero results. Full findings recorded in `docs/technosignature_detection_research_answers.md`. A live MAST search/download CLI wrapper now exists: `spectroscopy/jwst_search.py` / `techno-search jwst-miri-lrs-search <target>`, mirroring `photometry/lightcurve_search.py`'s established pattern, filtering downloaded products to the real, already-verified `x1d`/`x1dints` filename suffixes (the same convention `jwst_spectrum_io.py` reads) rather than an unverified MAST product-type column value. **Run for real, 2026-07-03**: found 31 real x1d-like products for target `WASP-43` (MAST proposal 1366, verified via `docs/jwst_miri_lrs_mast_targets.md`) and downloaded a real `x1dints` FITS file; running it surfaced and fixed a real bug where multi-integration time-series `x1dints` products were silently flattened into a fake static spectrum (see "Current Production Capability" below for the full root cause) -- `load_jwst_x1d_spectrum` now requires an explicit `integration_index` for such files. |
 | NO₂ (combustion) detection in transmission spectra | ❌ Not started — real research found NO₂'s actual diagnostic spectral features are in the UV/visible (0.2-0.7 μm), not JWST's near/mid-infrared range at all; a real implementation would need a different instrument (e.g. a UV-capable spectrograph), not JWST NIRSpec/NIRISS/MIRI. Documented honestly rather than building a JWST-based check that couldn't work. |
 | CFC/HFC (no natural source) detection | ✅ Done, refined 2026-07-03 — `spectroscopy/technosignature_gases.py` checks for real statistically significant absorption at real band centers extracted directly from downloaded HITRAN cross-section files (Sharpe et al. 2004 via Kochanov et al. 2019, the same source family Schwieterman et al. 2024 cite): CF4 7.792935 μm (global max), C2F6 8.002651 μm and 8.960738 μm (global max and second-strongest band). **C3F8 is now included** (see next row) — the earlier exclusion no longer applies. Full peak-extraction method and HITRAN dataset IDs in `docs/technosignature_detection_research_answers.md`. |
 | C3F8 (no natural source) detection | ✅ Done, added 2026-07-03 — real band center 7.923519 μm (1262.065573 cm⁻¹ global max), extracted directly from a real downloaded HITRAN cross-section file (`C3F8_298.1K-760.0Torr_600.0-6500.0_0.11_N2_208_43.xsc`). This closes the earlier gap where C3F8 (the fifth gas in Schwieterman et al. 2024) had no citable band center; see `docs/technosignature_detection_research_answers.md` Q2 for the full derivation. |
@@ -325,12 +325,35 @@ query. **Run for real against live MAST on 2026-07-03**: the user ran
 and it found 31 real x1d-like products and downloaded a real 16MB
 `x1dints` FITS file
 (`jw01366011001_04103_00002-seg003_mirimage_x1dints.fits`). Running that
-real file through `run-pipeline --track spectroscopy` succeeded end-to-end:
-119,892 real rows read, `ok: true`, `reader_type: jwst_x1d_fits`,
-`pathway: human_review_queue` -- a plausible middle tier, neither dismissed
-nor escalated. This is the first real, live-MAST-sourced result for the
-Phase 4 spectroscopy track (previously only exercised against a
-self-constructed test fixture).
+real file through `run-pipeline --track spectroscopy` succeeded end-to-end
+(119,892 rows, `ok: true`, `pathway: human_review_queue`), but this exact
+run surfaced **a real, correctness-affecting bug, found and fixed
+2026-07-03**: `point_count: 119892` was suspiciously large for a MIRI LRS
+spectrum (~hundreds of points expected). Direct `astropy.io.fits`
+inspection of the real file (`hdul.info()`) confirmed the root cause: a
+real x1dints time-series product stores all integrations in a *single*
+`EXTRACT1D` table with one row per integration (309 rows here) and
+`WAVELENGTH`/`FLUX`/`FLUX_ERROR` as per-row 388-element *vector* columns
+(309 x 388 = 119,892, exactly matching the reported count) --
+`jwst_spectrum_io.py` was silently flattening this into what
+`search_gas_absorption_bands` treated as one static spectrum with 119,892
+independent points. WASP-43b is a real full-orbit phase-curve target
+(arXiv:2301.06350), so flux at each wavelength genuinely varies across the
+orbit -- real, correlated time structure, not independent per-wavelength
+noise -- which inflated the apparent significance (the run had reported a
+10.7-sigma CF4 band result that this made scientifically meaningless
+rather than evidence either way). **Fixed**: `load_jwst_x1d_spectrum` now
+detects multi-integration (2D vector-column) `EXTRACT1D` tables and
+requires an explicit `integration_index` (there is no default -- pooling or
+silently picking one would hide a real methodological choice); wired
+through `pipeline_runner.run_pipeline(..., jwst_integration_index=...)` and
+`techno-search run-pipeline --jwst-integration-index`. Single-integration
+`x1d` files are unaffected. This is the first real, live-MAST-sourced
+result for the Phase 4 spectroscopy track (previously only exercised
+against a self-constructed single-integration test fixture, which is why
+this gap wasn't caught earlier), and a real example of this project's
+"false positive is the default hypothesis" discipline catching itself
+before over-interpreting a spurious result.
 
 **Multi-modal:** Real cross-modal candidate matching by sky position
 (`multi_modal_crossmatch.py`, using `astropy.coordinates.SkyCoord.separation()`)
