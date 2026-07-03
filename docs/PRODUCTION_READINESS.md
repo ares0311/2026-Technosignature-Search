@@ -355,6 +355,22 @@ this gap wasn't caught earlier), and a real example of this project's
 "false positive is the default hypothesis" discipline catching itself
 before over-interpreting a spurious result.
 
+**Corrected real result, 2026-07-03**: after the fix, the user re-ran
+`run-pipeline --jwst-integration-index 1` on the same real WASP-43 file,
+selecting one real, coherent 388-wavelength-point integration instead of
+pooling all 309. Result: all 5 real HITRAN-derived gas bands report
+sub-1-sigma significance (`cf4_7p79um`: 0.83σ, `c2f6_8p00um`: 0.47σ,
+`c2f6_8p96um`: 0.40σ, `c3f8_7p92um`: -0.54σ, `sf6_10p55um`: -0.23σ,
+`nf3_10p99um`: 0.03σ) -- `detected_band_count: 0`, `detected_gases: "none"`,
+`false_positive_probability: 0.954`,
+`pathway: do_not_submit_false_positive`. This is real, correctly-computed
+negative evidence from a single real live-MAST-sourced JWST MIRI LRS
+integration: no absorption feature at any of the five known
+artificial-gas band centers in this one exposure. It is not a claim that
+WASP-43b lacks these gases in general (a single 388-point integration is
+not a survey), only that this specific real observed spectrum shows none
+of the five signatures searched for.
+
 **Multi-modal:** Real cross-modal candidate matching by sky position
 (`multi_modal_crossmatch.py`, using `astropy.coordinates.SkyCoord.separation()`)
 and a deterministic adversarial-review dossier (`adversarial_review.py`,
