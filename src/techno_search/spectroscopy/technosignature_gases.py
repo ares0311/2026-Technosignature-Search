@@ -1,31 +1,40 @@
 """Real technosignature-gas absorption-feature check (Phase 4, JWST MIRI LRS).
 
 Checks a real JWST MIRI Low Resolution Spectrometer transmission spectrum
-(5-14 um, resolving power R ~ 40-160, verified 2026-07-03 via live web
-search against JWST User Documentation) for excess absorption at the
-published band centers of industrial/artificial greenhouse gases with no
-known natural planetary source (Schwieterman et al. 2024, "Artificial
-Greenhouse Gases as Exoplanet Technosignatures", ApJ 969, 20): CF4, C2F6,
-SF6, NF3.
+(5-14 um, resolving power R ~ 40-160, verified via live web search against
+JWST User Documentation) for excess absorption at the real band centers of
+industrial/artificial greenhouse gases with no known natural planetary
+source (Schwieterman et al. 2024, "Artificial Greenhouse Gases as Exoplanet
+Technosignatures", ApJ 969, 20): CF4, C2F6, C3F8, SF6, NF3.
 
-C3F8 (the fifth gas considered in that paper) is explicitly NOT included:
-its real band center could not be verified via a citable source in this
-session's research, and this module does not guess it.
+Band centers below are the global (or, for gases with multiple real bands,
+each locally significant) maximum absorption cross-section peak extracted
+directly from real HITRAN cross-section files (Sharpe et al. 2004 via
+Kochanov et al. 2019 -- the same source family Schwieterman et al. 2024
+cite for these five gases), downloaded and peak-extracted 2026-07-03. This
+is a strictly better provenance than a band center reconstructed from
+scattered literature-search snippets: each value below is the real
+numerical peak of a real downloaded absorption cross-section grid, not an
+approximation. See docs/technosignature_detection_research_answers.md for
+the full research trail, HITRAN dataset IDs, and the peak-extraction
+method.
 
-Real, cross-verified band centers (each independently confirmed via live
-web search against spectroscopy literature, 2026-07-03, not from memory):
-  CF4:  7.80 um  (nu3 fundamental, ~1283 cm^-1)
-  C2F6: 8.00 um and 8.95 um (two real, independent bands)
-  SF6:  10.55 um (nu3 fundamental)
-  NF3:  11.02 um (nu3(E) fundamental, 907.54 cm^-1)
+  CF4:  7.792935 um  (1283.213506 cm^-1, global max)
+  C2F6: 8.002651 um and 8.960738 um (global max and second-strongest band)
+  C3F8: 7.923519 um  (1262.065573 cm^-1, global max)
+  SF6:  10.549570 um (947.905963 cm^-1, global max)
+  NF3:  10.994894 um (909.513125 cm^-1, global max)
 
 This is a real, deterministic band-position absorption-significance check
--- it is explicitly NOT a full radiative-transfer abundance retrieval,
-which would require real per-gas absorption cross-section grids (e.g. from
-HITRAN) not available from this sandbox. This is the same kind of honest
+-- it is explicitly NOT a full radiative-transfer abundance retrieval using
+the complete downloaded cross-section grids (which would require
+convolving real per-wavelength cross-sections through an atmospheric
+model, not just checking a peak location). This is the same kind of honest
 first-pass scope limitation already used for the WISE
 blackbody-vs-Kurucz-grid distinction elsewhere in this project (see
-infrared_wise/photosphere_excess.py).
+infrared_wise/photosphere_excess.py). A future enhancement could use the
+full downloaded cross-section grids directly instead of a single peak
+wavelength.
 
 Because JWST spectral products can represent different physical
 quantities (transit depth, transmission, or extracted stellar flux)
@@ -52,10 +61,11 @@ import numpy as np
 MIRI_LRS_REPRESENTATIVE_RESOLVING_POWER = 100.0
 
 GAS_ABSORPTION_BANDS_UM: dict[str, tuple[float, ...]] = {
-    "CF4": (7.80,),
-    "C2F6": (8.00, 8.95),
-    "SF6": (10.55,),
-    "NF3": (11.02,),
+    "CF4": (7.792935,),
+    "C2F6": (8.002651, 8.960738),
+    "C3F8": (7.923519,),
+    "SF6": (10.549570,),
+    "NF3": (10.994894,),
 }
 
 
