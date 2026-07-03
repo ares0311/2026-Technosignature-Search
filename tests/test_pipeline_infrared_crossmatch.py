@@ -121,3 +121,25 @@ class TestInfraredCrossMatch:
         prov = report.get("provenance", {})
         assert "simbad_match_names" in prov
         assert "eps Eri" in str(prov["simbad_match_names"])
+
+    def test_ra_deg_dec_deg_are_injected_even_without_live_query(
+        self, tmp_path: Path
+    ) -> None:
+        """Regression test: build_infrared_candidate() (infrared/prototype.py)
+        stores the source position under "ra"/"dec", not "ra_deg"/"dec_deg"
+        like the radio and photometry tracks. _build_infrared_candidate()
+        only injected ra_deg/dec_deg when a live catalog query ran, so every
+        infrared candidate silently reported no position to any consumer
+        expecting the uniform ra_deg/dec_deg convention (e.g.
+        multi_modal_crossmatch.py, Phase 5) when TECHNO_SEARCH_ENABLE_LIVE_DATA
+        was unset (the default)."""
+        csv_path = tmp_path / "ir.csv"
+        _write_infrared_csv(csv_path)
+
+        result = run_pipeline(csv_path, "infrared", tmp_path / "out")
+        if not result.ok:
+            pytest.skip(f"pipeline failed: {result.error}")
+        report = json.loads((tmp_path / "out" / (csv_path.stem + ".json")).read_text())
+        features = report.get("features", {})
+        assert features.get("ra_deg") == pytest.approx(83.8221)
+        assert features.get("dec_deg") == pytest.approx(22.0145)
