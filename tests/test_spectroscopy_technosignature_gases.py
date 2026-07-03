@@ -55,7 +55,7 @@ def test_all_five_documented_gas_bands_are_searched() -> None:
     results = search_gas_absorption_bands(wavelength, signal, signal_err)
     gases_found = {r.gas for r in results}
 
-    assert gases_found == {"CF4", "C2F6", "SF6", "NF3"}
+    assert gases_found == {"CF4", "C2F6", "C3F8", "SF6", "NF3"}
     # C2F6 has two real, independent bands.
     assert sum(1 for r in results if r.gas == "C2F6") == 2
 

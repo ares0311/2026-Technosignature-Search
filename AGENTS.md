@@ -267,6 +267,12 @@ with operational status, with zero scientific progress. This must never recur.
   - Reference: Lin et al. 2014; Schwieterman et al. 2018
 - Compare to photochemical equilibrium models
 - Output: spectral anomaly candidates with detection significance
+- Real band-center provenance, HITRAN dataset IDs, C3F8 derivation, N2O
+  secondary-band findings, and verified MAST `instrument_name` query values
+  for this phase are recorded in
+  `docs/technosignature_detection_research_answers.md` — read it before
+  changing `spectroscopy/technosignature_gases.py` or building MAST query
+  code for this phase.
 
 ### Phase 5 — Multi-Modal Cross-Correlation
 - Cross-correlate candidates from Phases 1–4 by target position
