@@ -5331,6 +5331,9 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         except RuntimeError as exc:
             print(json.dumps({"ok": False, "error": str(exc)}, indent=2, sort_keys=True), file=out)
             return 1
+        _record_data_collection_status_best_effort(
+            "track-a-satellite-acquire", satellite_record.as_dict()
+        )
         print(
             json.dumps({"ok": True, **satellite_record.as_dict()}, indent=2, sort_keys=True),
             file=out,
@@ -5356,11 +5359,40 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         except RuntimeError as exc:
             print(json.dumps({"ok": False, "error": str(exc)}, indent=2, sort_keys=True), file=out)
             return 1
+        _record_data_collection_status_best_effort(
+            "photometry-lightcurve-search", search_record.as_dict()
+        )
         print(
             json.dumps({"ok": True, **search_record.as_dict()}, indent=2, sort_keys=True),
             file=out,
         )
         return 0 if search_record.result_count > 0 else 1
+
+    if args.command == "record-data-collection-status":
+        from techno_search.data_collection_status import (
+            record_and_publish_data_collection_status,
+        )
+
+        try:
+            summary = json.loads(args.summary_json)
+        except json.JSONDecodeError as exc:
+            print(
+                json.dumps(
+                    {"ok": False, "error": f"Invalid --summary-json: {exc}"},
+                    indent=2,
+                    sort_keys=True,
+                ),
+                file=out,
+            )
+            return 1
+        record_result = record_and_publish_data_collection_status(
+            default_project_root(),
+            args.script,
+            summary,
+            auto_commit=not args.no_commit,
+        )
+        print(json.dumps({"ok": True, **record_result}, indent=2, sort_keys=True), file=out)
+        return 0
 
     if args.command == "jwst-miri-lrs-search":
         from techno_search.spectroscopy.jwst_search import (
@@ -5386,6 +5418,7 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         except RuntimeError as exc:
             print(json.dumps({"ok": False, "error": str(exc)}, indent=2, sort_keys=True), file=out)
             return 1
+        _record_data_collection_status_best_effort("jwst-miri-lrs-search", jwst_record.as_dict())
         print(
             json.dumps({"ok": True, **jwst_record.as_dict()}, indent=2, sort_keys=True),
             file=out,
@@ -5626,6 +5659,25 @@ def default_project_root() -> Path:
     """Return the repository root."""
 
     return Path(__file__).resolve().parents[2]
+
+
+def _record_data_collection_status_best_effort(script: str, summary: dict[str, Any]) -> None:
+    """Best-effort status manifest update + auto-commit after a real acquisition run.
+
+    Never raises -- a status-reporting side effect must not fail the
+    acquisition command's own exit status. Silently does nothing if the
+    manifest/git side effect itself errors (e.g. no network to push); the
+    acquisition result the user sees is unaffected either way.
+    """
+
+    try:
+        from techno_search.data_collection_status import (
+            record_and_publish_data_collection_status,
+        )
+
+        record_and_publish_data_collection_status(default_project_root(), script, summary)
+    except Exception:  # noqa: BLE001
+        pass
 
 
 def _default_example_candidates_dir() -> Path:
@@ -10241,6 +10293,34 @@ def _build_parser() -> argparse.ArgumentParser:
             "Optional JSON output from track-a-satellite-match. Missing satellite "
             "evidence remains an explicit unresolved blocker."
         ),
+    )
+
+    data_collection_status_parser = subparsers.add_parser(
+        "record-data-collection-status",
+        help=(
+            "Update the tracked docs/data_collection_status.json manifest "
+            "for one acquisition script/command and (by default) commit + "
+            "push just that file to main, so progress can be reviewed via "
+            "git pull instead of pasted console output."
+        ),
+    )
+    data_collection_status_parser.add_argument(
+        "--script",
+        required=True,
+        help="Script/command name this status entry is for (e.g. 'download_bl_extended_corpus').",
+    )
+    data_collection_status_parser.add_argument(
+        "--summary-json",
+        required=True,
+        help=(
+            "JSON object of real run counts/outcomes "
+            '(e.g. \'{"downloaded": 3, "skipped": 1}\').'
+        ),
+    )
+    data_collection_status_parser.add_argument(
+        "--no-commit",
+        action="store_true",
+        help="Update the local manifest file only; do not run git commit/push.",
     )
 
     adversarial_review_parser = subparsers.add_parser(
