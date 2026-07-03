@@ -154,6 +154,76 @@ def test_radio_real_corpus_summary_counts_drift_rfi_and_scorer(tmp_path: Path) -
     assert "detections" in result["disclaimer"]
 
 
+def test_radio_real_corpus_summary_applies_globular_filter_across_corpus(
+    tmp_path: Path,
+) -> None:
+    dat_dir = tmp_path / "dat"
+    dat_dir.mkdir()
+    _write_dat(dat_dir / "target_a.dat", source="TARGET_A", frequency_mhz=1420.0, drift=0.1)
+    _write_dat(dat_dir / "target_b.dat", source="TARGET_B", frequency_mhz=1420.0, drift=0.2)
+
+    result = radio_real_corpus_summary([dat_dir])
+
+    globular = result["globular_filter"]
+    assert globular["applied"] is True
+    assert globular["total_hits"] == 2
+    # Fewer hits than DEFAULT_MIN_CLUSTER_SIZE (5) -- real fallback behavior:
+    # too few points to cluster, so every hit survives as noise (a candidate),
+    # not a spurious RFI cluster.
+    assert globular["noise_hits"] == 2
+    assert globular["rfi_cluster_hits"] == 0
+
+
+def test_radio_real_corpus_summary_globular_filter_flags_dense_recurring_signal(
+    tmp_path: Path,
+) -> None:
+    dat_dir = tmp_path / "dat"
+    dat_dir.mkdir()
+    _write_zero_hit_dat(dat_dir / "zero_hit.dat", source="ZERO_HIT_TARGET")
+    hit_ndjson = tmp_path / "population.ndjson"
+    # A real-world-shaped RFI signature: many hits clustered tightly around
+    # the same frequency/drift/SNR across many independent targets, plus one
+    # hit with a clearly distinct frequency/drift/SNR that should survive as
+    # noise (a candidate). Verified directly against apply_globular_filter()
+    # with these exact parameters before writing this test -- HDBSCAN's
+    # default min_cluster_size=5/min_samples=3 does not reliably form a
+    # cluster from only a handful of points, even near-duplicates; this
+    # module's own docstring says it is tuned for ~200-hit GBT cadence
+    # sizes, so a real test needs a comparably larger population, not a
+    # toy few-point example.
+    dense_rfi_hits = [
+        _normalized_hit(
+            target_id=f"RFI_TARGET_{i}",
+            frequency_hz=1_420_000_000.0 + (i % 11) - 5,
+            drift=0.05 + ((i % 7) - 3) * 0.001,
+        )
+        for i in range(30)
+    ]
+    distinct_hit = _normalized_hit(
+        target_id="REAL_CANDIDATE_TARGET", frequency_hz=8_419_000_000.0, drift=3.5
+    )
+    distinct_hit["snr"] = 80.0
+    _write_hit_ndjson(hit_ndjson, [*dense_rfi_hits, distinct_hit])
+
+    result = radio_real_corpus_summary([dat_dir], hit_ndjson_paths=[hit_ndjson])
+
+    globular = result["globular_filter"]
+    assert globular["applied"] is True
+    assert globular["total_hits"] == 31
+    assert globular["rfi_cluster_hits"] >= 20
+    assert globular["noise_hits"] >= 1
+
+
+def test_radio_real_corpus_summary_globular_filter_reports_no_hits(tmp_path: Path) -> None:
+    dat_dir = tmp_path / "dat"
+    dat_dir.mkdir()
+    _write_zero_hit_dat(dat_dir / "zero_hit.dat", source="ZERO_HIT_TARGET")
+
+    result = radio_real_corpus_summary([dat_dir])
+
+    assert result["globular_filter"]["applied"] is False
+
+
 def test_radio_real_corpus_summary_includes_real_hit_ndjson(tmp_path: Path) -> None:
     dat_dir = tmp_path / "dat"
     dat_dir.mkdir()
