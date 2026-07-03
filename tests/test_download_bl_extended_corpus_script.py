@@ -277,8 +277,12 @@ printf 'downloaded %s\n' "${url}" > "${out_path}"
     redirected_status_path = tmp_path / "data_collection_status.json"
     assert redirected_status_path.exists(), "status manifest should be at the redirected path"
     status = json.loads(redirected_status_path.read_text(encoding="utf-8"))
-    assert status["runs"]["download_bl_extended_corpus"]["downloaded"] == 1
-    assert status["runs"]["download_bl_extended_corpus"]["reused"] == 1
+    run_status = status["runs"]["download_bl_extended_corpus"]
+    assert run_status["ok"] is True
+    assert run_status["downloaded"] == 1
+    assert run_status["reused"] == 1
+    assert run_status["downloaded_targets"] == ["HIP222"]
+    assert run_status["reused_targets"] == ["HIP111"]
     assert real_status_path.read_text(encoding="utf-8") == real_status_before, (
         "this test must never write to the real tracked status manifest"
     )

@@ -328,11 +328,23 @@ real machine where `main` is always the real working branch (per
 run from a test/CI/agent-branch invocation.
 
 When adding a new data-acquisition script or CLI command, call
-`record_and_publish_data_collection_status()` (or the CLI wrapper) after a
-real successful run, with a small JSON summary of real counts (found,
-downloaded, skipped, reused, failed) -- not raw payload contents. Also
+`record_and_publish_data_collection_status()` (or the CLI wrapper) both
+on real success and on real failure (an `"ok": false` entry with an error
+message -- a failed run with no manifest entry is invisible and looks
+identical to "never run"), with a JSON summary that names *which* items
+succeeded/failed and why (e.g. `download_bl_extended_corpus`'s
+`downloaded_targets`/`reused_targets`/`skipped_targets` with a `reason`
+per skip) -- not raw payload contents, and not just aggregate counts.
+This is what makes the committed manifest alone sufficient to diagnose a
+real problem without asking the operator to paste console output. Also
 consider the `CLAUDE.md` "DATA COLLECTION PARALLELIZATION DIRECTIVE" when
 building new acquisition scripts.
+
+**The agent must check `docs/data_collection_status.json` via `git pull`
+before asking the user to run or paste output from an acquisition
+script.** Only ask the user to actually run a command when the manifest
+doesn't yet reflect the needed run, or when live interaction with their
+machine is genuinely required.
 
 ---
 
