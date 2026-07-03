@@ -1,8 +1,12 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-07-02
+**Last updated:** 2026-07-03
 **Current milestone:** 79 (Production Scan Hardening And Artifact Hygiene)
-**Current phase:** Phase 0 — Strip & Fix (multi-modal realignment)
+**Current phase:** Phase 0 complete; Phases 1-5 all have real, tested baseline
+implementations as of 2026-07-03 (Phase 4 opened this date). Remaining gaps
+per phase are either genuinely blocked on real data/network access the
+agent's sandbox cannot reach, or correctly deferred pending a surviving
+candidate (see the Phase 1-5 tables below for specifics).
 **Current app version:** 1.1.0
 
 ---
@@ -278,13 +282,41 @@ These summaries are local validation evidence only; they are not detections,
 discoveries, expert review, external validation, or external-submission
 approval.
 
-**Photometry:** Real BLS transit search and aperiodic-dip/asymmetry detection
-implemented and wired end-to-end (`photometry/`, `Track.TRANSIT_PHOTOMETRY`).
-Not yet run against a real downloaded Kepler/TESS corpus — live MAST access
-is unreachable from this project's sandbox (verified live 403), so
-`techno-search photometry-lightcurve-search` must be run on a machine with
-real network access next. **IR, spectroscopy:** Not implemented. No WISE SED
-fitting, no JWST spectral ingest.
+**Photometry:** Real BLS transit search, aperiodic-dip/asymmetry detection, and
+flat-bottom/V-shape transit-shape discrimination implemented and wired
+end-to-end (`photometry/`, `Track.TRANSIT_PHOTOMETRY`). **Run against a real
+downloaded Kepler corpus on 2026-07-02**: all 18 real Kepler quarters for
+KIC 8462852 (Boyajian's Star) processed with 0 failures; 12 of 18 quarters
+independently recovered the real, previously-published ~0.88-day periodicity
+and correctly classified it as sinusoidal/rotational rather than transit-like
+every time (a genuine validation of the vetting logic on real data, not a
+detection claim). Three quarters showed anomalously large BLS-fitted
+depths, root-caused to a structural limitation of running BLS on a single
+Kepler quarter (only ~3 observable cycles at long candidate periods), not a
+code defect.
+
+**Infrared:** Real WISE photospheric blackbody excess check
+(`infrared_wise/photosphere_excess.py`) and WISE W1-W2 AGN color indicator
+(`infrared_wise/agn_indicator.py`) implemented and wired end-to-end into
+`_build_infrared_candidate()`. Verified against real forward-modeled
+blackbody test fixtures. Not yet run against a real downloaded IRSA
+Gaia+AllWISE corpus (same live-network restriction as MAST-based tracks).
+
+**Spectroscopy:** Real JWST MIRI LRS `x1d` spectrum ingest
+(`spectroscopy/jwst_spectrum_io.py`) and technosignature-gas absorption-band
+search (`spectroscopy/technosignature_gases.py`, 4 real verified band
+centers: CF4, C2F6, SF6, NF3) implemented and wired end-to-end into
+`Track.SPECTROSCOPY`. Verified against a real constructed x1d FITS fixture
+with an injected SF6-band dip (61.7σ recovered). Live MAST search/download
+not yet built (the real MAST `instrument_name` field value for MIRI LRS
+could not be confirmed via a citable source, so no query filter was
+guessed).
+
+**Multi-modal:** Real cross-modal candidate matching by sky position
+(`multi_modal_crossmatch.py`, using `astropy.coordinates.SkyCoord.separation()`)
+and a deterministic adversarial-review dossier (`adversarial_review.py`,
+Step 2 of the review chain, grounded in the real Sheikh et al. 2021 BLC1
+verification-framework precedent) are both implemented and wired end-to-end.
 
 **Candidate output:** The radio pipeline can produce candidate manifests and
 zero-hit non-detection ledgers from real GBT data (stratified sample of 31
@@ -297,9 +329,13 @@ known-explanation classifier from `docs/technosignature_datasets_agent_brief.md`
 has a tested, reproducible baseline and the event has failed known-source,
 satellite/transmitter, RFI, cadence, and instrument-artifact checks.
 
-**Review chain:** Steps 1 (automated) and 2 (adversarial agent) not yet
-functional for real candidates. Step 3 (expert review) blocked pending
-surviving candidates.
+**Review chain:** Step 1 (automated multi-modal pipeline) is functional across
+all four tracks (radio, photometry, infrared, spectroscopy). Step 2
+(deterministic adversarial-review dossier, `adversarial_review.py`) is
+implemented and exposed as `techno-search adversarial-review-dossier`, but has
+not yet been exercised against a real candidate that reached an advancing
+pathway from a real (not fixture-constructed) corpus run. Step 3 (expert
+review) remains blocked pending a surviving candidate, as designed.
 
 ---
 
