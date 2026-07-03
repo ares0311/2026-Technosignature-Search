@@ -181,6 +181,7 @@ def radio_real_corpus_summary(
         hit_rows_for_scorer,
         semisupervised_model_path=semisupervised_model_path,
     )
+    globular_summary = _globular_filter_corpus_summary(hit_rows_for_scorer)
     hit_count = len(hit_rows_for_scorer)
     validation_readiness = _validation_readiness(
         hit_bearing_target_count=len(unique_targets),
@@ -223,6 +224,7 @@ def radio_real_corpus_summary(
             "validation_ready": validation_readiness["cross_target_rfi_validation_ready"],
         },
         "semisupervised_scorer": scorer_summary,
+        "globular_filter": globular_summary,
         "candidate_review": _candidate_review_summary(
             review_candidates,
             cross_target_flags=cross_target_flags,
@@ -336,6 +338,40 @@ def _score_with_local_model(
         },
         list(scores),
     )
+
+
+def _globular_filter_corpus_summary(hit_rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Apply the real GLOBULAR density pre-filter across the full corpus.
+
+    Jacobson-Bell et al. 2024's method clusters hits across a large,
+    multi-target hit population to find RFI that recurs densely regardless
+    of target -- it is NOT meaningful applied within a single candidate's
+    own small ON/OFF cadence, where naturally-similar repeated real-signal
+    hits would be mistaken for a dense RFI cluster. ``hit_rows`` here is the
+    full corpus population accumulated across every `.dat`/hit-NDJSON file
+    in this summary, which is the correct granularity for this filter.
+    """
+    try:
+        from techno_search.globular_filter import apply_globular_filter, globular_filter_summary
+    except ImportError:
+        return {
+            "applied": False,
+            "reason": "scikit-learn is not installed.",
+        }
+
+    if not hit_rows:
+        return {
+            "applied": False,
+            "reason": "No hit rows were available to cluster.",
+        }
+
+    rows_with_hit_count = [{**row, "hit_count": len(hit_rows)} for row in hit_rows]
+    results = apply_globular_filter(rows_with_hit_count)
+    if not results:
+        return {"applied": False, "reason": "GLOBULAR filter returned no results."}
+
+    summary = globular_filter_summary(results)
+    return {"applied": True, **summary}
 
 
 def _candidate_review_summary(
