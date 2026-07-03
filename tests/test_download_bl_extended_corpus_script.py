@@ -240,6 +240,13 @@ printf 'downloaded %s\n' "${url}" > "${out_path}"
     env["TECHNO_EXTENDED_CORPUS_MAX_TARGETS"] = "1"
     env["TECHNO_EXTENDED_CORPUS_OUT_DIR"] = str(out_dir)
     env["TECHNO_EXTENDED_CORPUS_PYTHON"] = sys.executable
+    # Regression guard: this test runs the real script end-to-end (with a
+    # faked curl), which reaches the real record-data-collection-status
+    # call on success. Without redirecting the manifest path, this test
+    # would write to (and, without the branch-safety guard, previously
+    # auto-committed and pushed to) this project's own real tracked
+    # docs/data_collection_status.json -- caught in this session.
+    env["TECHNO_DATA_COLLECTION_STATUS_PATH"] = str(tmp_path / "data_collection_status.json")
 
     result = subprocess.run(
         [
@@ -264,3 +271,14 @@ printf 'downloaded %s\n' "${url}" > "${out_path}"
     assert "Reused existing HDF5 targets: 1" in result.stderr
     assert "Successful new downloads: 1" in result.stderr
     assert "New-download target limit reached (1)" in result.stderr
+
+    real_status_path = Path(__file__).resolve().parents[1] / "docs" / "data_collection_status.json"
+    real_status_before = real_status_path.read_text(encoding="utf-8")
+    redirected_status_path = tmp_path / "data_collection_status.json"
+    assert redirected_status_path.exists(), "status manifest should be at the redirected path"
+    status = json.loads(redirected_status_path.read_text(encoding="utf-8"))
+    assert status["runs"]["download_bl_extended_corpus"]["downloaded"] == 1
+    assert status["runs"]["download_bl_extended_corpus"]["reused"] == 1
+    assert real_status_path.read_text(encoding="utf-8") == real_status_before, (
+        "this test must never write to the real tracked status manifest"
+    )

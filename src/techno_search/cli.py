@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from collections import Counter
@@ -5385,10 +5386,14 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                 file=out,
             )
             return 1
+        status_path_override = args.status_path or os.environ.get(
+            "TECHNO_DATA_COLLECTION_STATUS_PATH"
+        )
         record_result = record_and_publish_data_collection_status(
             default_project_root(),
             args.script,
             summary,
+            status_path=Path(status_path_override) if status_path_override else None,
             auto_commit=not args.no_commit,
         )
         print(json.dumps({"ok": True, **record_result}, indent=2, sort_keys=True), file=out)
@@ -10321,6 +10326,16 @@ def _build_parser() -> argparse.ArgumentParser:
         "--no-commit",
         action="store_true",
         help="Update the local manifest file only; do not run git commit/push.",
+    )
+    data_collection_status_parser.add_argument(
+        "--status-path",
+        default=None,
+        help=(
+            "Override the manifest file path (defaults to "
+            "docs/data_collection_status.json under the project root, or "
+            "$TECHNO_DATA_COLLECTION_STATUS_PATH if set). Used by this "
+            "project's own tests to avoid writing to the real tracked file."
+        ),
     )
 
     adversarial_review_parser = subparsers.add_parser(

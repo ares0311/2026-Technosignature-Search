@@ -228,6 +228,60 @@ def test_spectroscopy_pipeline_writes_report_files(tmp_path: Path) -> None:
     assert result.report_paths.json_path.exists()
 
 
+def _write_multi_integration_x1dints(path: Path) -> None:
+    """Mirrors the real WASP-43 x1dints structure confirmed via direct
+    astropy.io.fits inspection: one EXTRACT1D row per integration,
+    WAVELENGTH/FLUX/FLUX_ERROR as per-row vector columns."""
+
+    import numpy as np
+    from astropy.io import fits
+
+    n_integrations, n_wavelengths = 3, 6
+    wavelength = np.tile(np.linspace(7.0, 11.0, n_wavelengths), (n_integrations, 1))
+    flux = np.ones((n_integrations, n_wavelengths))
+    flux_err = np.full((n_integrations, n_wavelengths), 0.01)
+
+    columns = [
+        fits.Column(name="INT_NUM", format="J", array=np.arange(1, n_integrations + 1)),
+        fits.Column(name="WAVELENGTH", format=f"{n_wavelengths}D", array=wavelength),
+        fits.Column(name="FLUX", format=f"{n_wavelengths}D", array=flux),
+        fits.Column(name="FLUX_ERROR", format=f"{n_wavelengths}D", array=flux_err),
+    ]
+    hdu = fits.BinTableHDU.from_columns(columns, name="EXTRACT1D")
+    fits.HDUList([fits.PrimaryHDU(), hdu]).writeto(path)
+
+
+def test_spectroscopy_pipeline_rejects_multi_integration_without_index(
+    tmp_path: Path,
+) -> None:
+    """Regression test for the real WASP-43 bug: run_pipeline must fail
+    closed on a multi-integration x1dints file rather than silently pooling
+    all integrations into a spuriously significant band result."""
+
+    fixture = tmp_path / "multi_integration_x1dints.fits"
+    _write_multi_integration_x1dints(fixture)
+
+    result = run_pipeline(fixture, "spectroscopy", tmp_path / "out")
+
+    assert not result.ok
+    assert result.error is not None
+    assert "multi-integration" in result.error
+
+
+def test_spectroscopy_pipeline_succeeds_with_explicit_integration_index(
+    tmp_path: Path,
+) -> None:
+    fixture = tmp_path / "multi_integration_x1dints.fits"
+    _write_multi_integration_x1dints(fixture)
+
+    result = run_pipeline(
+        fixture, "spectroscopy", tmp_path / "out", jwst_integration_index=1
+    )
+
+    assert result.ok, f"Pipeline failed: {result.error}"
+    assert result.row_count == 6
+
+
 def test_pipeline_invalid_track_returns_error(tmp_path: Path) -> None:
     result = run_pipeline(RADIO_FIXTURE, "invalid_track", tmp_path)
     assert not result.ok
