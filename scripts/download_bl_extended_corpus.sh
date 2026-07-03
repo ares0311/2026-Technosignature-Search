@@ -341,6 +341,9 @@ if [[ "$((downloaded + reused))" -eq 0 ]]; then
 fi
 
 TECHNO_SEARCH_BIN="${REPO_ROOT}/.venv/bin/techno-search"
+if [[ ! -x "${TECHNO_SEARCH_BIN}" ]] && command -v techno-search >/dev/null 2>&1; then
+  TECHNO_SEARCH_BIN="$(command -v techno-search)"
+fi
 if [[ -x "${TECHNO_SEARCH_BIN}" ]]; then
   "${TECHNO_SEARCH_BIN}" record-data-collection-status \
     --script download_bl_extended_corpus \
