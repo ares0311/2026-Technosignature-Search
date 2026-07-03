@@ -5440,6 +5440,26 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps({"ok": True, **readiness}, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "adversarial-review-dossier":
+        from techno_search.adversarial_review import build_adversarial_review_dossier
+
+        try:
+            scored_report = json.loads(Path(args.report_json).read_text(encoding="utf-8"))
+            track_b_gate_result = (
+                json.loads(Path(args.track_b_gate_json).read_text(encoding="utf-8"))
+                if args.track_b_gate_json
+                else None
+            )
+        except (OSError, json.JSONDecodeError) as exc:
+            print(json.dumps({"ok": False, "error": str(exc)}, indent=2, sort_keys=True), file=out)
+            return 1
+        dossier = build_adversarial_review_dossier(
+            scored_report,
+            track_b_gate_result=track_b_gate_result,
+        )
+        print(json.dumps({"ok": True, **dossier.as_dict()}, indent=2, sort_keys=True), file=out)
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -10132,6 +10152,31 @@ def _build_parser() -> argparse.ArgumentParser:
         help=(
             "Optional JSON output from track-a-satellite-match. Missing satellite "
             "evidence remains an explicit unresolved blocker."
+        ),
+    )
+
+    adversarial_review_parser = subparsers.add_parser(
+        "adversarial-review-dossier",
+        help=(
+            "Phase 5 Step 2: deterministic adversarial-review dossier for a "
+            "scored candidate report -- aggregates every refutation check "
+            "already computed by scoring.py (and optionally the Track B "
+            "gate) into one itemized checklist, following the same "
+            "deterministic-checklist design Sheikh et al. 2021 used to "
+            "verify/refute Breakthrough Listen's blc1 signal of interest."
+        ),
+    )
+    adversarial_review_parser.add_argument(
+        "report_json",
+        help="Written candidate report JSON path (run-pipeline's <id>.json output).",
+    )
+    adversarial_review_parser.add_argument(
+        "--track-b-gate-json",
+        default=None,
+        help=(
+            "Optional JSON output from track-b-unknown-candidate-gate for the "
+            "same candidate; any unsatisfied condition is folded in as an "
+            "additional real refutation."
         ),
     )
 
