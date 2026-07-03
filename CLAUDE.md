@@ -38,6 +38,24 @@ When an agent opens or updates a PR:
 
 Do not leave a green, mergeable PR open just because the link was reported.
 
+### DATA COLLECTION PARALLELIZATION DIRECTIVE
+
+Whenever building or extending a data acquisition/download script or CLI
+command (BL extended-corpus downloads, MAST/IRSA/JWST searches, catalog
+acquisitions, HITRAN downloads, etc.), always consider whether sharding the
+work across a small bounded worker pool would meaningfully speed up
+collection, and use it when it would. This applies going forward to new or
+growing corpora, not retroactively to the current small (tens-of-targets)
+corpora where sequential downloads are not the bottleneck.
+
+Before parallelizing against any external archive/API, verify (not guess)
+that archive's documented concurrent-request/rate-limit policy first —
+unchecked concurrency risks throttling or a soft ban, which costs more time
+than sequential downloads would have. Prefer a small bounded pool (e.g.
+4-8 concurrent workers) over unbounded parallelism, and keep it consistent
+with this repo's no-guessing rule: cite the source for whatever concurrency
+limit is chosen.
+
 ### AGENT BRANCH SYNC — NON-NEGOTIABLE (prevents recurring merge conflicts)
 
 At the START of each session, before making any new commits, the agent must:
