@@ -38,6 +38,36 @@ When an agent opens or updates a PR:
 
 Do not leave a green, mergeable PR open just because the link was reported.
 
+### GENERAL PARALLELIZATION DIRECTIVE — NON-NEGOTIABLE
+
+For **any** task/command handed to the user that is expected to take longer
+than ~3 minutes wall-clock, the agent must first consider whether sharding,
+multiprocessing, or parallelism would meaningfully speed it up, and use it
+when it would. This is not limited to data acquisition — it applies to
+test suite runs, model training, corpus-wide processing (turboSETI batch
+runs, pipeline runs across many files), and any other long-running command.
+
+Two different cases require different judgment:
+
+1. **CPU-bound local compute** (test suites, batch pipeline processing,
+   model training/scoring across many files): consider bounded local
+   parallelism (e.g. `pytest-xdist`, `multiprocessing`/`joblib` with a
+   worker count tied to real core count, `--workers N` flags already
+   supported by some CLI commands in this repo). Verify the tool actually
+   supports safe concurrent execution first (e.g. no shared-file races,
+   no non-thread-safe state) rather than assuming it does.
+2. **I/O-bound external requests** (data acquisition/download scripts
+   against BL/MAST/IRSA/JWST/HITRAN/CelesTrak/SatNOGS, etc.): see the
+   data-collection-specific rules below — always verify (not guess) the
+   target archive's documented concurrent-request/rate-limit policy before
+   parallelizing, since unchecked concurrency risks throttling or a soft
+   ban that costs more time than it saves.
+
+If it's genuinely unclear whether a task can be safely parallelized (e.g.
+unknown tool thread-safety, unknown/undocumented rate limits, ambiguous
+whether the user wants the added complexity for a one-off run), ask the
+user rather than guessing either way.
+
 ### DATA COLLECTION PARALLELIZATION DIRECTIVE
 
 Whenever building or extending a data acquisition/download script or CLI

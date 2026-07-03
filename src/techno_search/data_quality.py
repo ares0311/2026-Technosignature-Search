@@ -38,11 +38,18 @@ class DataQualityResult:
         }
 
 
-def validate_input(path: Path, track: str) -> DataQualityResult:
+def validate_input(
+    path: Path, track: str, *, jwst_integration_index: int | None = None
+) -> DataQualityResult:
     """Validate a pipeline input file for the given track.
 
     Returns a DataQualityResult with issues (blocking) and warnings (informational).
     Does not read astronomical data values; only checks structural correctness.
+
+    ``jwst_integration_index`` (spectroscopy only): forwarded to
+    ``load_jwst_x1d_spectrum`` so a multi-integration x1dints file that will
+    be given an explicit integration selection at candidate-build time
+    doesn't fail validation first for lack of one.
     """
     issues: list[str] = []
     warnings: list[str] = []
@@ -84,7 +91,9 @@ def validate_input(path: Path, track: str) -> DataQualityResult:
         elif track_lower == "photometry":
             row_count, issues, warnings = _validate_photometry(path, issues, warnings)
         elif track_lower == "spectroscopy":
-            row_count, issues, warnings = _validate_spectroscopy(path, issues, warnings)
+            row_count, issues, warnings = _validate_spectroscopy(
+                path, issues, warnings, integration_index=jwst_integration_index
+            )
         else:
             row_count, issues, warnings = _validate_anomaly(path, issues, warnings)
     except Exception as exc:  # noqa: BLE001
@@ -282,12 +291,16 @@ def _validate_photometry(
 
 
 def _validate_spectroscopy(
-    path: Path, issues: list[str], warnings: list[str]
+    path: Path,
+    issues: list[str],
+    warnings: list[str],
+    *,
+    integration_index: int | None = None,
 ) -> tuple[int, list[str], list[str]]:
     from techno_search.spectroscopy.jwst_spectrum_io import load_jwst_x1d_spectrum
 
     try:
-        spectrum = load_jwst_x1d_spectrum(path)
+        spectrum = load_jwst_x1d_spectrum(path, integration_index=integration_index)
     except (FileNotFoundError, ValueError) as exc:
         issues.append(str(exc))
         return 0, issues, warnings

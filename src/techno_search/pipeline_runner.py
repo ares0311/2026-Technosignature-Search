@@ -88,7 +88,9 @@ def run_pipeline(
     This is a provenance record only — results do not constitute a detection claim.
     """
     cid = candidate_id or _candidate_id_from_path(input_path)
-    validation = validate_input(input_path, track)
+    validation = validate_input(
+        input_path, track, jwst_integration_index=jwst_integration_index
+    )
     validation_data = validation.as_dict()
     try:
         track_enum = _parse_track(track)
