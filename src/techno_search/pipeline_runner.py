@@ -60,6 +60,7 @@ def run_pipeline(
     candidate_id: str | None = None,
     epoch_dat_files: list[Path] | None = None,
     semisupervised_model_path: Path | None = None,
+    jwst_integration_index: int | None = None,
 ) -> PipelineRunResult:
     """Run the full pipeline on a real input file.
 
@@ -75,6 +76,13 @@ def run_pipeline(
     ``epoch_dat_files`` (radio only): additional .dat files from separate
     observation sessions.  When provided the multi-epoch persistence score is
     injected into the candidate features before scoring.
+
+    ``jwst_integration_index`` (spectroscopy only, 1-indexed): required when
+    the input is a multi-integration time-series ``x1dints`` product (see
+    ``spectroscopy/jwst_spectrum_io.py``) -- selects which single
+    integration's spectrum to search for gas absorption bands. There is no
+    default; pooling every integration together would treat real time-domain
+    flux variation (e.g. an orbital phase curve) as spectral noise.
 
     Returns a PipelineRunResult with report paths and pathway assignment.
     This is a provenance record only — results do not constitute a detection claim.
@@ -93,6 +101,7 @@ def run_pipeline(
             cid,
             epoch_dat_files=epoch_dat_files,
             semisupervised_model_path=semisupervised_model_path,
+            jwst_integration_index=jwst_integration_index,
         )
         scored = score_candidate(candidate)
         paths = write_candidate_reports(scored, output_dir)
@@ -190,6 +199,7 @@ def _build_candidate(
     *,
     epoch_dat_files: list[Path] | None = None,
     semisupervised_model_path: Path | None = None,
+    jwst_integration_index: int | None = None,
 ) -> Candidate:
     if track == Track.RADIO:
         return _build_radio_candidate(
@@ -203,7 +213,9 @@ def _build_candidate(
     if track == Track.TRANSIT_PHOTOMETRY:
         return _build_photometry_candidate(path, candidate_id)
     if track == Track.SPECTROSCOPY:
-        return _build_spectroscopy_candidate(path, candidate_id)
+        return _build_spectroscopy_candidate(
+            path, candidate_id, integration_index=jwst_integration_index
+        )
     return _build_anomaly_candidate(path, candidate_id)
 
 
@@ -762,15 +774,22 @@ def _lightcurve_coordinate(lc: Any, name: str) -> float | None:
         return None
 
 
-def _build_spectroscopy_candidate(path: Path, candidate_id: str) -> Candidate:
+def _build_spectroscopy_candidate(
+    path: Path, candidate_id: str, *, integration_index: int | None = None
+) -> Candidate:
     from techno_search.spectroscopy.jwst_spectrum_io import load_jwst_x1d_spectrum
     from techno_search.spectroscopy.prototype import build_spectroscopy_candidate
     from techno_search.spectroscopy.technosignature_gases import search_gas_absorption_bands
 
-    spectrum = load_jwst_x1d_spectrum(path)
+    spectrum = load_jwst_x1d_spectrum(path, integration_index=integration_index)
     band_results = search_gas_absorption_bands(
         spectrum.wavelength_um, spectrum.flux, spectrum.flux_err
     )
+
+    provenance = {"source_file": str(path), "reader_type": "jwst_x1d_fits"}
+    if spectrum.integration_count > 1:
+        provenance["integration_count"] = str(spectrum.integration_count)
+        provenance["integration_index"] = str(integration_index)
 
     return build_spectroscopy_candidate(
         candidate_id,
@@ -778,5 +797,5 @@ def _build_spectroscopy_candidate(path: Path, candidate_id: str) -> Candidate:
         target_id=candidate_id,
         point_count=int(spectrum.wavelength_um.size),
         source_ids=(candidate_id,),
-        provenance={"source_file": str(path), "reader_type": "jwst_x1d_fits"},
+        provenance=provenance,
     )
