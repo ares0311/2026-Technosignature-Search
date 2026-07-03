@@ -271,6 +271,10 @@ downloaded=0
 reused=0
 skipped=0
 available=0
+DOWNLOADED_NAMES=()
+REUSED_NAMES=()
+SKIPPED_NAMES=()
+SKIPPED_REASONS=()
 
 for name in "${TARGETS[@]}"; do
   if [[ "${DISCOVER_ONLY}" -eq 1 && "${MAX_TARGETS}" != "0" && "${available}" -ge "${MAX_TARGETS}" ]]; then
@@ -286,6 +290,8 @@ for name in "${TARGETS[@]}"; do
   fi
   if ! url="$(discover_hdf5_url "${name}")"; then
     skipped=$((skipped + 1))
+    SKIPPED_NAMES+=("${name}")
+    SKIPPED_REASONS+=("no_hdf5_url_discovered")
     continue
   fi
   available=$((available + 1))
@@ -296,6 +302,7 @@ for name in "${TARGETS[@]}"; do
   if target_hdf5_exists "${name}" "${url}"; then
     log "[SKIP] Reusing existing HDF5 evidence for ${name}; does not consume new-download limit"
     reused=$((reused + 1))
+    REUSED_NAMES+=("${name}")
     continue
   fi
   if [[ "${MAX_TARGETS}" != "0" && "${downloaded}" -ge "${MAX_TARGETS}" ]]; then
@@ -304,8 +311,11 @@ for name in "${TARGETS[@]}"; do
   fi
   if download_hdf5 "${name}" "${url}"; then
     downloaded=$((downloaded + 1))
+    DOWNLOADED_NAMES+=("${name}")
   else
     skipped=$((skipped + 1))
+    SKIPPED_NAMES+=("${name}")
+    SKIPPED_REASONS+=("download_failed")
   fi
 done
 
@@ -334,21 +344,76 @@ log "[INFO]  Skipped unavailable or failed targets: ${skipped}"
 log "[INFO]  Files in ${OUT_DIR}:"
 find "${OUT_DIR}" -name "*.h5" -exec du -sh {} \; 2>/dev/null || log "[INFO]  (none downloaded)"
 
+RUN_OK=1
 if [[ "$((downloaded + reused))" -eq 0 ]]; then
+  RUN_OK=0
   log "[ERROR] No held-out evidence files were downloaded or reused."
   log "[ERROR] This command did not add usable extended-corpus evidence; empty directories are not evidence."
-  exit 1
 fi
 
 TECHNO_SEARCH_BIN="${REPO_ROOT}/.venv/bin/techno-search"
 if [[ ! -x "${TECHNO_SEARCH_BIN}" ]] && command -v techno-search >/dev/null 2>&1; then
   TECHNO_SEARCH_BIN="$(command -v techno-search)"
 fi
-if [[ -x "${TECHNO_SEARCH_BIN}" ]]; then
+STATUS_PYTHON="${VENV_PYTHON}"
+if [[ ! -x "${STATUS_PYTHON}" ]] && command -v python3 >/dev/null 2>&1; then
+  STATUS_PYTHON="$(command -v python3)"
+fi
+if [[ -x "${TECHNO_SEARCH_BIN}" && -x "${STATUS_PYTHON}" ]]; then
+  # Build a JSON summary that names *which* targets were downloaded/reused/
+  # skipped (and why skipped ones failed) -- not just counts -- so this
+  # committed manifest alone is enough to diagnose a real problem without
+  # asking the operator to paste console output. Recorded on both success
+  # and failure (RUN_OK) so a zero-evidence run is diagnosable too.
+  SUMMARY_JSON="$(
+    DOWNLOADED_NAMES="$(printf '%s\n' "${DOWNLOADED_NAMES[@]:-}")" \
+    REUSED_NAMES="$(printf '%s\n' "${REUSED_NAMES[@]:-}")" \
+    SKIPPED_NAMES="$(printf '%s\n' "${SKIPPED_NAMES[@]:-}")" \
+    SKIPPED_REASONS="$(printf '%s\n' "${SKIPPED_REASONS[@]:-}")" \
+    DOWNLOADED_COUNT="${downloaded}" \
+    REUSED_COUNT="${reused}" \
+    AVAILABLE_COUNT="${available}" \
+    SKIPPED_COUNT="${skipped}" \
+    CHECKED_COUNT="${checked}" \
+    TOTAL_COUNT="${total}" \
+    RUN_OK="${RUN_OK}" \
+    "${STATUS_PYTHON}" -c '
+import json
+import os
+
+
+def _lines(name):
+    text = os.environ.get(name, "")
+    return [line for line in text.split("\n") if line]
+
+
+skipped_names = _lines("SKIPPED_NAMES")
+skipped_reasons = _lines("SKIPPED_REASONS")
+summary = {
+    "ok": os.environ["RUN_OK"] == "1",
+    "downloaded": int(os.environ["DOWNLOADED_COUNT"]),
+    "reused": int(os.environ["REUSED_COUNT"]),
+    "available": int(os.environ["AVAILABLE_COUNT"]),
+    "skipped": int(os.environ["SKIPPED_COUNT"]),
+    "checked": int(os.environ["CHECKED_COUNT"]),
+    "total": int(os.environ["TOTAL_COUNT"]),
+    "downloaded_targets": _lines("DOWNLOADED_NAMES"),
+    "reused_targets": _lines("REUSED_NAMES"),
+    "skipped_targets": [
+        {"target": t, "reason": r} for t, r in zip(skipped_names, skipped_reasons)
+    ],
+}
+print(json.dumps(summary))
+'
+  )"
   "${TECHNO_SEARCH_BIN}" record-data-collection-status \
     --script download_bl_extended_corpus \
-    --summary-json "{\"downloaded\":${downloaded},\"reused\":${reused},\"available\":${available},\"skipped\":${skipped},\"checked\":${checked},\"total\":${total}}" \
+    --summary-json "${SUMMARY_JSON}" \
     >/dev/null 2>&1 || log "[INFO]  Status manifest update/commit skipped (non-fatal)."
+fi
+
+if [[ "${RUN_OK}" -eq 0 ]]; then
+  exit 1
 fi
 
 echo ""

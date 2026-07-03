@@ -110,7 +110,28 @@ status entry to whatever branch was checked out (caught and fixed
 `record_and_publish_data_collection_status()` (or the CLI wrapper) after a
 real successful run with a small JSON summary of real counts — not raw
 payload contents — and must not bypass or duplicate the branch-safety
-check.
+check. Status must be recorded on **both success and failure** (an
+`"ok": false` entry with an error message on failure), not just on
+success — a failed run with no manifest entry is invisible and looks
+identical to "never run."
+
+Summaries must include enough per-item detail to diagnose a real problem
+from the committed file alone, not just aggregate counts — e.g.
+`download_bl_extended_corpus`'s summary includes `downloaded_targets`,
+`reused_targets`, and `skipped_targets` (each with a `reason`), not just
+`downloaded`/`reused`/`skipped` counts. When adding a new acquisition
+entrypoint, include the equivalent per-item detail for whatever unit that
+script processes (targets, files, observations, etc.).
+
+**The agent must check this manifest via `git pull` before asking the user
+to run or paste output from an acquisition script.** The user should not
+need to act as a copy-paste intermediary for information the agent can
+already read from `git`. Only ask the user to actually run a command when
+the manifest doesn't yet reflect the needed run, or when live, real-time
+interaction with their machine is genuinely required (e.g. resolving a
+git conflict, confirming a destructive action). If the manifest shows a
+run failed, diagnose and propose a fix from the recorded error/reason
+fields before asking the user anything.
 
 ### AGENT BRANCH SYNC — NON-NEGOTIABLE (prevents recurring merge conflicts)
 

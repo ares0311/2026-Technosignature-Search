@@ -5330,6 +5330,9 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                     endpoint, project_root=default_project_root()
                 )
         except RuntimeError as exc:
+            _record_data_collection_status_best_effort(
+                "track-a-satellite-acquire", {"ok": False, "error": str(exc)}
+            )
             print(json.dumps({"ok": False, "error": str(exc)}, indent=2, sort_keys=True), file=out)
             return 1
         _record_data_collection_status_best_effort(
@@ -5358,6 +5361,9 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                 limit=args.limit,
             )
         except RuntimeError as exc:
+            _record_data_collection_status_best_effort(
+                "photometry-lightcurve-search", {"ok": False, "error": str(exc)}
+            )
             print(json.dumps({"ok": False, "error": str(exc)}, indent=2, sort_keys=True), file=out)
             return 1
         _record_data_collection_status_best_effort(
@@ -5421,6 +5427,9 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                 limit=args.limit,
             )
         except RuntimeError as exc:
+            _record_data_collection_status_best_effort(
+                "jwst-miri-lrs-search", {"ok": False, "error": str(exc)}
+            )
             print(json.dumps({"ok": False, "error": str(exc)}, indent=2, sort_keys=True), file=out)
             return 1
         _record_data_collection_status_best_effort("jwst-miri-lrs-search", jwst_record.as_dict())
