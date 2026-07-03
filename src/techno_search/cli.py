@@ -5361,6 +5361,36 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0 if search_record.result_count > 0 else 1
 
+    if args.command == "jwst-miri-lrs-search":
+        from techno_search.spectroscopy.jwst_search import (
+            MIRI_LRS_INSTRUMENT_NAMES,
+            search_and_download_miri_lrs_spectra,
+        )
+
+        try:
+            instrument_name = (
+                tuple(m.strip() for m in args.instrument_name.split(","))
+                if args.instrument_name
+                else MIRI_LRS_INSTRUMENT_NAMES
+            )
+            filters = args.filters if args.filters else None
+            jwst_record = search_and_download_miri_lrs_spectra(
+                args.target,
+                download_dir=Path(args.download_dir),
+                instrument_name=instrument_name,
+                filters=filters,
+                radius_arcsec=args.radius_arcsec,
+                limit=args.limit,
+            )
+        except RuntimeError as exc:
+            print(json.dumps({"ok": False, "error": str(exc)}, indent=2, sort_keys=True), file=out)
+            return 1
+        print(
+            json.dumps({"ok": True, **jwst_record.as_dict()}, indent=2, sort_keys=True),
+            file=out,
+        )
+        return 0 if jwst_record.x1d_product_count > 0 else 1
+
     if args.command == "track-a-satellite-match":
         from techno_search.track_a_satellites import match_satellite_transmitter
 
@@ -10034,6 +10064,48 @@ def _build_parser() -> argparse.ArgumentParser:
     photometry_search_parser.add_argument(
         "--download-dir",
         default="data/photometry_lightcurves",
+        help="Local directory to download FITS files into.",
+    )
+    jwst_search_parser = subparsers.add_parser(
+        "jwst-miri-lrs-search",
+        help=(
+            "Search NASA MAST for real JWST MIRI LRS x1d transmission "
+            "spectra and download up to --limit results. Requires real "
+            "MAST network access (not available from this project's "
+            "sandbox)."
+        ),
+    )
+    jwst_search_parser.add_argument(
+        "target",
+        help="Target name or identifier resolvable by MAST (e.g. a Simbad-known exoplanet host).",
+    )
+    jwst_search_parser.add_argument(
+        "--instrument-name",
+        default=None,
+        help=(
+            "Comma-separated MAST instrument_name filter. Defaults to the "
+            "real, live-verified MIRI LRS values MIRI/SLIT,MIRI/SLITLESS."
+        ),
+    )
+    jwst_search_parser.add_argument(
+        "--filters",
+        default="P750L",
+        help=(
+            "MAST filters criterion (LRS disperser). Defaults to the real "
+            "verified P750L prism value. Pass an empty string to search all "
+            "MIRI LRS dispersers."
+        ),
+    )
+    jwst_search_parser.add_argument("--radius-arcsec", type=float, default=None)
+    jwst_search_parser.add_argument(
+        "--limit",
+        type=int,
+        default=1,
+        help="Maximum number of x1d products to download (default: 1).",
+    )
+    jwst_search_parser.add_argument(
+        "--download-dir",
+        default="data/jwst_spectra",
         help="Local directory to download FITS files into.",
     )
     satellite_acquire_parser = subparsers.add_parser(
