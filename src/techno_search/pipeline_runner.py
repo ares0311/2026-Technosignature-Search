@@ -69,6 +69,8 @@ def run_pipeline(
       - anomaly: archival/catalog anomaly CSV feature table
       - photometry: real Kepler/K2/TESS light curve FITS file (BLS periodic
         transit search + aperiodic-dip detection)
+      - spectroscopy: real JWST x1d 1D-extracted-spectrum FITS file (MIRI
+        LRS technosignature-gas absorption-band search)
 
     ``epoch_dat_files`` (radio only): additional .dat files from separate
     observation sessions.  When provided the multi-epoch persistence score is
@@ -126,10 +128,14 @@ def _parse_track(track: str) -> Track:
         "infrared": Track.INFRARED,
         "anomaly": Track.ANOMALY,
         "photometry": Track.TRANSIT_PHOTOMETRY,
+        "spectroscopy": Track.SPECTROSCOPY,
     }
     key = track.lower()
     if key not in mapping:
-        msg = f"Unknown track '{track}'. Expected: radio, infrared, anomaly, photometry."
+        msg = (
+            f"Unknown track '{track}'. Expected: radio, infrared, anomaly, "
+            "photometry, spectroscopy."
+        )
         raise ValueError(msg)
     return mapping[key]
 
@@ -141,6 +147,8 @@ def _reader_type(track: Track) -> str:
         return "gaia_wise_csv"
     if track == Track.TRANSIT_PHOTOMETRY:
         return "lightkurve_fits"
+    if track == Track.SPECTROSCOPY:
+        return "jwst_x1d_fits"
     return "archival_anomaly_csv"
 
 
@@ -194,6 +202,8 @@ def _build_candidate(
         return _build_infrared_candidate(path, candidate_id)
     if track == Track.TRANSIT_PHOTOMETRY:
         return _build_photometry_candidate(path, candidate_id)
+    if track == Track.SPECTROSCOPY:
+        return _build_spectroscopy_candidate(path, candidate_id)
     return _build_anomaly_candidate(path, candidate_id)
 
 
@@ -750,3 +760,23 @@ def _lightcurve_coordinate(lc: Any, name: str) -> float | None:
         return float(value)
     except (TypeError, ValueError):
         return None
+
+
+def _build_spectroscopy_candidate(path: Path, candidate_id: str) -> Candidate:
+    from techno_search.spectroscopy.jwst_spectrum_io import load_jwst_x1d_spectrum
+    from techno_search.spectroscopy.prototype import build_spectroscopy_candidate
+    from techno_search.spectroscopy.technosignature_gases import search_gas_absorption_bands
+
+    spectrum = load_jwst_x1d_spectrum(path)
+    band_results = search_gas_absorption_bands(
+        spectrum.wavelength_um, spectrum.flux, spectrum.flux_err
+    )
+
+    return build_spectroscopy_candidate(
+        candidate_id,
+        band_results=band_results,
+        target_id=candidate_id,
+        point_count=int(spectrum.wavelength_um.size),
+        source_ids=(candidate_id,),
+        provenance={"source_file": str(path), "reader_type": "jwst_x1d_fits"},
+    )

@@ -19,6 +19,9 @@ ANOMALY_FIXTURE = (
 PHOTOMETRY_FIXTURE = (
     Path(__file__).parent / "fixtures" / "photometry" / "sample_lightcurve.fits"
 )
+SPECTROSCOPY_FIXTURE = (
+    Path(__file__).parent / "fixtures" / "spectroscopy" / "sample_miri_lrs_x1d.fits"
+)
 
 
 def _semisupervised_training_hit(index: int) -> dict[str, float]:
@@ -194,6 +197,32 @@ def test_photometry_pipeline_recovers_injected_transit(tmp_path: Path) -> None:
 def test_photometry_pipeline_writes_report_files(tmp_path: Path) -> None:
     pytest.importorskip("lightkurve")
     result = run_pipeline(PHOTOMETRY_FIXTURE, "photometry", tmp_path)
+    assert result.ok
+    assert result.report_paths.markdown_path.exists()
+    assert result.report_paths.json_path.exists()
+
+
+def test_spectroscopy_pipeline_runs_successfully(tmp_path: Path) -> None:
+    result = run_pipeline(SPECTROSCOPY_FIXTURE, "spectroscopy", tmp_path)
+    assert isinstance(result, PipelineRunResult)
+    assert result.ok, f"Pipeline failed: {result.error}"
+    assert result.track.value == "spectroscopy"
+    assert result.reader_type == "jwst_x1d_fits"
+    assert result.pathway != "unknown"
+
+
+def test_spectroscopy_pipeline_detects_injected_sf6_band(tmp_path: Path) -> None:
+    result = run_pipeline(SPECTROSCOPY_FIXTURE, "spectroscopy", tmp_path)
+    assert result.ok
+    payload = json.loads(result.report_paths.json_path.read_text(encoding="utf-8"))
+    features = payload["features"]
+    assert features["detected_band_count"] >= 1
+    assert "SF6" in features["detected_gases"]
+    assert features["sf6_10p55um_significance_sigma"] > 5.0
+
+
+def test_spectroscopy_pipeline_writes_report_files(tmp_path: Path) -> None:
+    result = run_pipeline(SPECTROSCOPY_FIXTURE, "spectroscopy", tmp_path)
     assert result.ok
     assert result.report_paths.markdown_path.exists()
     assert result.report_paths.json_path.exists()

@@ -58,7 +58,7 @@ def validate_input(path: Path, track: str) -> DataQualityResult:
         )
 
     track_lower = track.lower()
-    valid_tracks = {"radio", "infrared", "anomaly", "photometry"}
+    valid_tracks = {"radio", "infrared", "anomaly", "photometry", "spectroscopy"}
     if track_lower not in valid_tracks:
         msg = f"Unknown track '{track}'. Expected: {sorted(valid_tracks)}"
         return DataQualityResult(
@@ -70,7 +70,7 @@ def validate_input(path: Path, track: str) -> DataQualityResult:
         )
 
     suffix = path.suffix.lower()
-    if track_lower == "photometry":
+    if track_lower in ("photometry", "spectroscopy"):
         if suffix not in {".fits", ".fit"}:
             warnings.append(f"Unexpected file suffix '{suffix}'; expected .fits or .fit")
     elif suffix not in {".csv", ".txt", ".dat"}:
@@ -83,6 +83,8 @@ def validate_input(path: Path, track: str) -> DataQualityResult:
             row_count, issues, warnings = _validate_infrared(path, issues, warnings)
         elif track_lower == "photometry":
             row_count, issues, warnings = _validate_photometry(path, issues, warnings)
+        elif track_lower == "spectroscopy":
+            row_count, issues, warnings = _validate_spectroscopy(path, issues, warnings)
         else:
             row_count, issues, warnings = _validate_anomaly(path, issues, warnings)
     except Exception as exc:  # noqa: BLE001
@@ -275,5 +277,28 @@ def _validate_photometry(
         issues.append("Light curve file has zero cadences.")
     elif row_count < 10:
         warnings.append(f"Very short light curve: {row_count} cadences.")
+
+    return row_count, issues, warnings
+
+
+def _validate_spectroscopy(
+    path: Path, issues: list[str], warnings: list[str]
+) -> tuple[int, list[str], list[str]]:
+    from techno_search.spectroscopy.jwst_spectrum_io import load_jwst_x1d_spectrum
+
+    try:
+        spectrum = load_jwst_x1d_spectrum(path)
+    except (FileNotFoundError, ValueError) as exc:
+        issues.append(str(exc))
+        return 0, issues, warnings
+    except Exception as exc:  # noqa: BLE001
+        issues.append(f"Failed to read JWST x1d spectrum file: {exc}")
+        return 0, issues, warnings
+
+    row_count = int(spectrum.wavelength_um.size)
+    if row_count == 0:
+        issues.append("JWST x1d spectrum has zero spectral points.")
+    elif row_count < 10:
+        warnings.append(f"Very short spectrum: {row_count} spectral points.")
 
     return row_count, issues, warnings
