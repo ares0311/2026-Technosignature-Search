@@ -1,0 +1,15 @@
+{
+  "disclaimer": "This manifest records real local data-collection run outcomes (counts of items found/downloaded/skipped/failed) for compact progress review. It is not a detection, discovery, external validation, or external-submission claim.",
+  "runs": {
+    "download_bl_extended_corpus": {
+      "available": 3,
+      "checked": 3,
+      "downloaded": 1,
+      "last_run_utc": "2026-07-03T14:04:49.686859+00:00",
+      "reused": 1,
+      "skipped": 0,
+      "total": 3
+    }
+  },
+  "schema_version": "data_collection_status_v1"
+}

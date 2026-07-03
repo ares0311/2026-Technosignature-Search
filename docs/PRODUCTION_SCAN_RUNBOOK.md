@@ -303,6 +303,39 @@ TECHNO_EXTENDED_CORPUS_MAX_TARGETS=5 caffeinate -i bash scripts/download_bl_exte
 
 ---
 
+## Data Collection Status Reporting — Non-Negotiable
+
+Real data-acquisition scripts and CLI commands (BL extended-corpus
+downloads, JWST/MAST searches, photometry light-curve searches,
+satellite/catalog acquisitions, and any future ones) must update the
+tracked `docs/data_collection_status.json` manifest after a real successful
+run, via `techno-search record-data-collection-status --script NAME
+--summary-json '{...}'` (`src/techno_search/data_collection_status.py`).
+This replaces pasting console output for review: the agent reviews progress
+by `git pull`-ing this one small tracked file instead.
+
+By default this also runs `git add`/`git commit`/`git push` for just that
+one file — but **only when the current branch is `main`**
+(`commit_and_push_status()` checks `git branch --show-current` and no-ops
+otherwise). This guard exists because a real integration test in this
+project's own suite runs the real download script end-to-end, and without
+it, running the test suite silently auto-committed and pushed a fake
+status entry to whatever branch happened to be checked out (caught and
+fixed 2026-07-03). Do not remove or weaken this guard without an equally
+strong replacement safeguard — the acquisition scripts run on the user's
+real machine where `main` is always the real working branch (per
+`CLAUDE.md`'s GIT SYNC DIRECTIVES), so this reliably distinguishes a real
+run from a test/CI/agent-branch invocation.
+
+When adding a new data-acquisition script or CLI command, call
+`record_and_publish_data_collection_status()` (or the CLI wrapper) after a
+real successful run, with a small JSON summary of real counts (found,
+downloaded, skipped, reused, failed) -- not raw payload contents. Also
+consider the `CLAUDE.md` "DATA COLLECTION PARALLELIZATION DIRECTIVE" when
+building new acquisition scripts.
+
+---
+
 ## Running the Script
 
 ### Full setup — extended corpus (recommended, 5 targets)

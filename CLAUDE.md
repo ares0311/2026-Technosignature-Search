@@ -56,6 +56,34 @@ than sequential downloads would have. Prefer a small bounded pool (e.g.
 with this repo's no-guessing rule: cite the source for whatever concurrency
 limit is chosen.
 
+### DATA COLLECTION STATUS REPORTING DIRECTIVE — NON-NEGOTIABLE
+
+Every real data-acquisition script or CLI command (BL extended-corpus
+downloads, JWST/MAST searches, photometry light-curve searches,
+satellite/catalog acquisitions, and any future sharded ones) must update
+the tracked `docs/data_collection_status.json` manifest after a real
+successful run, via
+`techno-search record-data-collection-status --script NAME --summary-json
+'{...}'` (`src/techno_search/data_collection_status.py`). This replaces
+pasting console output for review: progress is reviewed via `git pull`
+against this one small tracked file instead, the same way a PR merge is a
+compact, poll-free signal.
+
+By default this also runs `git add`/`git commit`/`git push` for just that
+one file, directly to `main` (the user's own machine, the user's own git
+identity — not the agent's branch/PR flow). This auto-commit **only fires
+when the current branch is `main`** — `commit_and_push_status()` checks
+`git branch --show-current` and no-ops otherwise. Do not remove or weaken
+this guard: this project's own test suite runs a real acquisition script
+end-to-end (`test_download_bl_extended_corpus_script.py`), and without the
+guard, running the test suite alone silently auto-committed and pushed a
+fake status entry to whatever branch was checked out (caught and fixed
+2026-07-03, PR follow-up to #214). Any new acquisition entrypoint must call
+`record_and_publish_data_collection_status()` (or the CLI wrapper) after a
+real successful run with a small JSON summary of real counts — not raw
+payload contents — and must not bypass or duplicate the branch-safety
+check.
+
 ### AGENT BRANCH SYNC — NON-NEGOTIABLE (prevents recurring merge conflicts)
 
 At the START of each session, before making any new commits, the agent must:
