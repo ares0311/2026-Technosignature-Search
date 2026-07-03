@@ -91,3 +91,6 @@ uv.lock
 *.key
 *.pem
 .test_progress/
+
+# Local HITRAN scratch data
+hitran_n2o/
