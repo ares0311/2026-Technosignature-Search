@@ -197,20 +197,29 @@ schema and the real expected row count before writing anything. Run it with:
 .venv/bin/python scripts/acquire_bl_hprc_full_catalog.py
 ```
 
-**Real, honest limitation, not yet closed**: the full VizieR table provides
+**Closed, 2026-07-04**: the full VizieR table provides
 `Star`/`RAJ2000`/`DEJ2000`/`Ep`/`Vmag`/`SpType`/`Dist`/`pmRA`/`pmDE`/`SimbadName`
-only — it does **not** include B-V color or exoplanet-host status, both of
-which the current 48-star seed CSV has (supplemented from other sources for
-that small hand-picked set). `scripts/build_stratified_sample.py`'s
-stratification scheme currently requires both fields for its 24-cell
-distance × spectral-class × exoplanet-host design. Wiring the full
-1,709-row catalog into the stratified sampler therefore still needs one of:
-(a) a real cross-match against a real exoplanet-host catalog (e.g. the NASA
-Exoplanet Archive) to populate the exoplanet-host field for the fields, or
-(b) a revised stratification scheme that drops the exoplanet-host dimension
-for the expanded set. Neither has been decided yet — this is intentionally
-left open rather than fabricated. No B-V/exoplanet-host value should be
-invented for any of the 1,709 stars.
+only — it does not include B-V color or exoplanet-host status directly.
+`scripts/build_bl_hprc_full_seed.py` closes the exoplanet-host gap with a
+real cross-match against the NASA Exoplanet Archive's `pscomppars` table
+(`hip_name` column, confirmed real via `astroquery.ipac.nexsci.
+nasa_exoplanet_archive`, matched by real HIP identifier), and computes real
+galactic latitude via an ICRS-to-Galactic `astropy.coordinates.SkyCoord`
+transform (spot-checked against tau Ceti's already-committed seed-CSV
+value: computed -73.44°, committed value -73.4°). B-V color is left absent
+(the existing seed-loading code already defaults it to 0 when missing,
+which is not a stratification input) rather than fabricated. Run:
+
+```bash
+.venv/bin/python scripts/acquire_bl_hprc_full_catalog.py
+.venv/bin/python scripts/build_bl_hprc_full_seed.py
+```
+
+to produce `data/bl_hprc_full_seed_targets.csv`, a drop-in replacement for
+`--seed-csv` in `scripts/build_stratified_sample.py` at the full real
+1,709-star scale. A star absent from the NASA Exoplanet Archive
+cross-match is recorded as `exoplanet=0`, meaning "no confirmed planet in
+the archive as of the query date" -- not "known to have no planets".
 
 **Real archive policy, verified 2026-07-04, not guessed**: VizieR/CDS
 publishes no documented rate limit for this table endpoint. The
