@@ -176,6 +176,54 @@ esac
     ]
 
 
+def test_extended_corpus_downloader_passes_through_non_numeric_identifiers(
+    tmp_path: Path,
+) -> None:
+    """Regression test: the real HPRC catalog's '60 nearest stars' subset uses
+    Gliese/GJ-format identifiers (e.g. GJ1002), not bare HIP numbers. A bare
+    numeric hip value still gets the real 'HIP' prefix, but a real
+    already-complete identifier must be used verbatim, not mangled into
+    'HIPGJ1002'."""
+
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps({"targets": [{"hip": "8102"}, {"hip": "GJ1002"}]}),
+        encoding="utf-8",
+    )
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    fake_curl = fake_bin / "curl"
+    fake_curl.write_text(
+        """#!/usr/bin/env bash
+set -euo pipefail
+url="${@: -1}"
+case "${url}" in
+  *target=HIP8102*) printf 'https://bldata.berkeley.edu/test/HIP8102.gpuspec.0002.h5' ;;
+  *target=GJ1002*) printf 'https://bldata.berkeley.edu/test/GJ1002.gpuspec.0002.h5' ;;
+  *) printf 'unexpected-url=%s' "${url}" >&2; exit 22 ;;
+esac
+""",
+        encoding="utf-8",
+    )
+    fake_curl.chmod(fake_curl.stat().st_mode | stat.S_IXUSR)
+
+    env = os.environ.copy()
+    env["PATH"] = f"{fake_bin}{os.pathsep}{env['PATH']}"
+    env["TECHNO_EXTENDED_CORPUS_PYTHON"] = sys.executable
+
+    result = subprocess.run(
+        ["bash", str(SCRIPT_PATH), "--manifest", str(manifest), "--discover-only"],
+        check=True,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "HIP8102\thttps://bldata.berkeley.edu/test/HIP8102.gpuspec.0002.h5" in result.stdout
+    assert "GJ1002\thttps://bldata.berkeley.edu/test/GJ1002.gpuspec.0002.h5" in result.stdout
+    assert "HIPGJ1002" not in result.stdout
+
+
 def test_extended_corpus_download_limit_skips_existing_hdf5_targets(
     tmp_path: Path,
 ) -> None:
