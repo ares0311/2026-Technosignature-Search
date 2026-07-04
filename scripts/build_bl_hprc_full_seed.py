@@ -28,6 +28,23 @@ B-V color is intentionally left absent (defaults to 0 in the sampler,
 which is what the existing seed-loading code already does for missing
 values) -- it is not available in the real VizieR table and is not
 fabricated here.
+
+Real, honest limitation, confirmed 2026-07-04 (not a silent cap): the
+paper's real "60 nearest stars" subset uses Gliese/GJ-catalog identifiers
+(e.g. "GJ1002"), not HIP numbers, while the "1,649 Hipparcos stars" subset
+uses HIP numbers throughout. The existing seed schema's `hip` column (and
+the downstream manifest/download pipeline's `f"HIP{hip}"` target-name
+construction in `build_stratified_sample.py`/`download_bl_extended_corpus.
+sh`) assumes a bare HIP number. This script therefore cannot currently
+represent the ~60 GJ-identified nearest stars -- rather than silently
+dropping them, every skipped real row is written to
+`<output>_skipped.csv` with its real `Star` value and reason. Including
+these real, scientifically significant nearest-star targets (highest EIRP
+sensitivity per docs/SAMPLING_DESIGN.md) requires a real design decision:
+either extend the seed/manifest schema to carry a full free-form target
+identifier instead of a bare HIP number, or add a separate GJ-specific
+target-name path through the download script. Neither has been decided or
+implemented yet.
 """
 
 from __future__ import annotations
@@ -108,16 +125,29 @@ def fetch_exoplanet_host_hip_numbers() -> set[str]:
 
 def build_seed_rows(
     vizier_rows: list[dict[str, str]], exoplanet_hip_numbers: set[str]
-) -> list[dict[str, str]]:
-    """Build real seed rows from parsed VizieR rows and a real exoplanet cross-match set."""
+) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+    """Build real seed rows from parsed VizieR rows and a real exoplanet cross-match set.
+
+    Returns ``(seed_rows, skipped_rows)``. ``skipped_rows`` is not a
+    silent cap -- every dropped real VizieR row is reported with its real
+    ``Star`` field and a reason (e.g. the real "60 nearest stars" subset of
+    this catalog uses Gliese/GJ-format identifiers, not HIP numbers, and
+    the current seed schema's ``hip`` column requires a bare HIP number
+    for the existing manifest/download pipeline's ``f"HIP{hip}"`` target
+    construction -- see docs/SAMPLING_DESIGN.md for the real, open
+    follow-up this requires).
+    """
 
     from astropy import units as u
     from astropy.coordinates import SkyCoord
 
     seed_rows: list[dict[str, str]] = []
+    skipped_rows: list[dict[str, str]] = []
     for row in vizier_rows:
-        hip = parse_hip_number(row.get("Star", ""))
+        star = row.get("Star", "")
+        hip = parse_hip_number(star)
         if hip is None:
+            skipped_rows.append({"star": star, "reason": "non_hip_identifier"})
             continue
 
         ra_deg = sexagesimal_to_deg(row.get("RAJ2000", ""), is_ra=True)
@@ -125,6 +155,7 @@ def build_seed_rows(
         try:
             dist_pc = float(row.get("Dist", ""))
         except ValueError:
+            skipped_rows.append({"star": star, "reason": "unparsable_distance"})
             continue
 
         gal_lat = ""
@@ -145,7 +176,7 @@ def build_seed_rows(
                 "bl_paper": "E17",
             }
         )
-    return seed_rows
+    return seed_rows, skipped_rows
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -174,13 +205,32 @@ def main(argv: list[str] | None = None) -> int:
         exoplanet_hip_numbers = fetch_exoplanet_host_hip_numbers()
         print(f"[INFO]  Real exoplanet-host cross-match: {len(exoplanet_hip_numbers)} HIP stars")
 
-    seed_rows = build_seed_rows(vizier_rows, exoplanet_hip_numbers)
+    seed_rows, skipped_rows = build_seed_rows(vizier_rows, exoplanet_hip_numbers)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=SEED_HEADER)
         writer.writeheader()
         writer.writerows(seed_rows)
+
+    if skipped_rows:
+        skipped_path = args.output.with_name(args.output.stem + "_skipped.csv")
+        with skipped_path.open("w", newline="", encoding="utf-8") as handle:
+            writer = csv.DictWriter(handle, fieldnames=["star", "reason"])
+            writer.writeheader()
+            writer.writerows(skipped_rows)
+        non_hip_count = sum(1 for r in skipped_rows if r["reason"] == "non_hip_identifier")
+        print(
+            f"[WARN]  Skipped {len(skipped_rows)} real VizieR rows "
+            f"({non_hip_count} non-HIP identifiers, "
+            f"{len(skipped_rows) - non_hip_count} other) -- full list: {skipped_path}"
+        )
+        if non_hip_count:
+            print(
+                "[WARN]  Non-HIP rows are real stars (e.g. Gliese/GJ-catalog names for the "
+                "paper's '60 nearest stars' subset) that the current seed schema cannot "
+                "represent -- see docs/SAMPLING_DESIGN.md for the open follow-up this needs."
+            )
 
     print(f"[OK]    Wrote {len(seed_rows)} seed rows to {args.output}")
     return 0
