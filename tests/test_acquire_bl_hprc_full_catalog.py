@@ -31,7 +31,7 @@ _SAMPLE_TSV = """\
 Star\tRAJ2000\tDEJ2000\tEp\tVmag\tSpType\tDist\tpmRA\tpmDE\tSimbadName
 ---\t---\t---\t---\t---\t---\t---\t---\t---\t---
 HIP2\t00 00 07.26\t-19 29 43.5\t2000\t9.10\tK3V\t45.6\t181.21\t-0.93\tHIP 2
-HIP8102\t00 05 34.29\t-15 56 33.0\t2000\t3.50\tG8V\t3.65\t-1721.05\t854.16\ttau Cet
+HIP8102\t01 44 04.08\t-15 56 20.4\t2000\t3.50\tG8V\t3.65\t-1721.05\t854.16\ttau Cet
 HIP118310\t23 59 51.6\t-64 48 22\t2000\t6.55\tK4V\t22.7\t418.5\t-217.9\tHIP 118310
 """
 
