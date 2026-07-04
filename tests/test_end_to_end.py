@@ -228,6 +228,42 @@ def test_spectroscopy_pipeline_writes_report_files(tmp_path: Path) -> None:
     assert result.report_paths.json_path.exists()
 
 
+def test_spectroscopy_pipeline_with_hitran_xsc_dir_adds_matched_filter_features(
+    tmp_path: Path,
+) -> None:
+    import numpy as np
+
+    xsc_dir = tmp_path / "hitran_xsc"
+    xsc_dir.mkdir()
+    wavenumber = np.linspace(700.0, 2000.0, 300)
+    # A real-shaped (but synthetic-valued) template near the real SF6 band
+    # center (~947.9 cm^-1 / 10.55 um) used by the existing fixture's
+    # injected dip.
+    template_xs = 5.0 * np.exp(-0.5 * ((wavenumber - 947.9) / 10.0) ** 2)
+    xsc_path = xsc_dir / "SF6_298.1K-760.0Torr_test.xsc"
+    header = f"SF6 700.0 2000.0 {len(template_xs)} 298.1 760.0"
+    body_lines = [
+        " ".join(f"{v:.6e}" for v in template_xs[i : i + 10])
+        for i in range(0, len(template_xs), 10)
+    ]
+    xsc_path.write_text("\n".join([header, *body_lines]) + "\n")
+
+    result = run_pipeline(
+        SPECTROSCOPY_FIXTURE,
+        "spectroscopy",
+        tmp_path / "out",
+        jwst_hitran_xsc_dir=xsc_dir,
+    )
+
+    assert result.ok, f"Pipeline failed: {result.error}"
+    payload = json.loads(result.report_paths.json_path.read_text(encoding="utf-8"))
+    features = payload["features"]
+    assert features["sf6_matched_filter_computable"] is True
+    assert "sf6_matched_filter_significance_sigma" in features
+    assert features["matched_filter_computable_count"] == 1
+    assert payload["provenance"]["hitran_xsc_gases_found"] == "SF6"
+
+
 def _write_multi_integration_x1dints(path: Path) -> None:
     """Mirrors the real WASP-43 x1dints structure confirmed via direct
     astropy.io.fits inspection: one EXTRACT1D row per integration,
