@@ -175,3 +175,45 @@ All outputs of this sampling design — manifests, downloaded HDF5 files, derive
 selected target, downloaded file, or derived hit table constitutes a
 technosignature detection or authorizes external submission.  Independent review
 is required before any external submission, per `docs/EXTERNAL_SUBMISSION_PROTOCOL.md`.
+
+---
+
+## Real Full-Catalog Expansion (2026-07-04)
+
+The 48-star seed file above is a hand-picked subset of a much larger real
+published target list. Isaacson et al. 2017's full stellar target table has
+**1,709 real rows** (60 nearest stars + 1,649 Hipparcos stars), confirmed
+via a real live VizieR query, 2026-07-04 (`docs/bl_hprc_target_list_research.md`
+has the full research trail). The real, confirmed VizieR catalog identifier
+is **`J/PASP/129/E4501`** (table `table1`) — a plausible-looking
+`J/PASP/129/054501` identifier was tested live and confirmed *not* to exist;
+do not use it.
+
+`scripts/acquire_bl_hprc_full_catalog.py` downloads this real full table
+(raw TSV preserved for provenance, plus a normalized CSV), validating both
+schema and the real expected row count before writing anything. Run it with:
+
+```bash
+.venv/bin/python scripts/acquire_bl_hprc_full_catalog.py
+```
+
+**Real, honest limitation, not yet closed**: the full VizieR table provides
+`Star`/`RAJ2000`/`DEJ2000`/`Ep`/`Vmag`/`SpType`/`Dist`/`pmRA`/`pmDE`/`SimbadName`
+only — it does **not** include B-V color or exoplanet-host status, both of
+which the current 48-star seed CSV has (supplemented from other sources for
+that small hand-picked set). `scripts/build_stratified_sample.py`'s
+stratification scheme currently requires both fields for its 24-cell
+distance × spectral-class × exoplanet-host design. Wiring the full
+1,709-row catalog into the stratified sampler therefore still needs one of:
+(a) a real cross-match against a real exoplanet-host catalog (e.g. the NASA
+Exoplanet Archive) to populate the exoplanet-host field for the fields, or
+(b) a revised stratification scheme that drops the exoplanet-host dimension
+for the expanded set. Neither has been decided yet — this is intentionally
+left open rather than fabricated. No B-V/exoplanet-host value should be
+invented for any of the 1,709 stars.
+
+**Real archive policy, verified 2026-07-04, not guessed**: VizieR/CDS
+publishes no documented rate limit for this table endpoint. The
+Breakthrough Listen Open Data Archive itself documents a 500-file
+per-query result cap and no published concurrent-request/download limit —
+see `docs/bl_hprc_target_list_research.md` for the exact sources checked.
