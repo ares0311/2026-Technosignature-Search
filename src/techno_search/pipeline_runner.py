@@ -61,6 +61,7 @@ def run_pipeline(
     epoch_dat_files: list[Path] | None = None,
     semisupervised_model_path: Path | None = None,
     jwst_integration_index: int | None = None,
+    jwst_hitran_xsc_dir: Path | None = None,
 ) -> PipelineRunResult:
     """Run the full pipeline on a real input file.
 
@@ -84,6 +85,14 @@ def run_pipeline(
     default; pooling every integration together would treat real time-domain
     flux variation (e.g. an orbital phase curve) as spectral noise.
 
+    ``jwst_hitran_xsc_dir`` (spectroscopy only, optional): a real local
+    directory containing downloaded HITRAN `.xsc` cross-section files
+    (e.g. ``CF4_298.1K-760.0Torr_....xsc``). When provided, runs the
+    additional full-grid matched-filter check
+    (``hitran_xsc_matched_filter.py``) for whichever of the 5 known gases
+    have a matching file present, attaching informational
+    ``<gas>_matched_filter_*`` features to the candidate.
+
     Returns a PipelineRunResult with report paths and pathway assignment.
     This is a provenance record only — results do not constitute a detection claim.
     """
@@ -104,6 +113,7 @@ def run_pipeline(
             epoch_dat_files=epoch_dat_files,
             semisupervised_model_path=semisupervised_model_path,
             jwst_integration_index=jwst_integration_index,
+            jwst_hitran_xsc_dir=jwst_hitran_xsc_dir,
         )
         scored = score_candidate(candidate)
         paths = write_candidate_reports(scored, output_dir)
@@ -202,6 +212,7 @@ def _build_candidate(
     epoch_dat_files: list[Path] | None = None,
     semisupervised_model_path: Path | None = None,
     jwst_integration_index: int | None = None,
+    jwst_hitran_xsc_dir: Path | None = None,
 ) -> Candidate:
     if track == Track.RADIO:
         return _build_radio_candidate(
@@ -216,7 +227,10 @@ def _build_candidate(
         return _build_photometry_candidate(path, candidate_id)
     if track == Track.SPECTROSCOPY:
         return _build_spectroscopy_candidate(
-            path, candidate_id, integration_index=jwst_integration_index
+            path,
+            candidate_id,
+            integration_index=jwst_integration_index,
+            hitran_xsc_dir=jwst_hitran_xsc_dir,
         )
     return _build_anomaly_candidate(path, candidate_id)
 
@@ -777,11 +791,19 @@ def _lightcurve_coordinate(lc: Any, name: str) -> float | None:
 
 
 def _build_spectroscopy_candidate(
-    path: Path, candidate_id: str, *, integration_index: int | None = None
+    path: Path,
+    candidate_id: str,
+    *,
+    integration_index: int | None = None,
+    hitran_xsc_dir: Path | None = None,
 ) -> Candidate:
+    from techno_search.spectroscopy.hitran_xsc_matched_filter import search_gas_matched_filters
     from techno_search.spectroscopy.jwst_spectrum_io import load_jwst_x1d_spectrum
     from techno_search.spectroscopy.prototype import build_spectroscopy_candidate
-    from techno_search.spectroscopy.technosignature_gases import search_gas_absorption_bands
+    from techno_search.spectroscopy.technosignature_gases import (
+        GAS_ABSORPTION_BANDS_UM,
+        search_gas_absorption_bands,
+    )
 
     spectrum = load_jwst_x1d_spectrum(path, integration_index=integration_index)
     band_results = search_gas_absorption_bands(
@@ -793,6 +815,16 @@ def _build_spectroscopy_candidate(
         provenance["integration_count"] = str(spectrum.integration_count)
         provenance["integration_index"] = str(integration_index)
 
+    matched_filter_results = []
+    if hitran_xsc_dir is not None:
+        xsc_paths = _discover_hitran_xsc_paths(hitran_xsc_dir, GAS_ABSORPTION_BANDS_UM)
+        if xsc_paths:
+            matched_filter_results = search_gas_matched_filters(
+                spectrum.wavelength_um, spectrum.flux, spectrum.flux_err, xsc_paths
+            )
+            provenance["hitran_xsc_dir"] = str(hitran_xsc_dir)
+            provenance["hitran_xsc_gases_found"] = ", ".join(sorted(xsc_paths))
+
     return build_spectroscopy_candidate(
         candidate_id,
         band_results=band_results,
@@ -800,4 +832,28 @@ def _build_spectroscopy_candidate(
         point_count=int(spectrum.wavelength_um.size),
         source_ids=(candidate_id,),
         provenance=provenance,
+        matched_filter_results=matched_filter_results,
     )
+
+
+def _discover_hitran_xsc_paths(
+    hitran_xsc_dir: Path, gases: dict[str, tuple[float, ...]]
+) -> dict[str, Path]:
+    """Find one real local `.xsc` file per gas name in ``hitran_xsc_dir``.
+
+    Matches files named like ``CF4_298.1K-760.0Torr_....xsc`` (the real
+    HITRAN download filename convention) case-insensitively by gas name
+    prefix. Gases with no matching file are simply omitted -- this never
+    guesses at a file that isn't there.
+    """
+
+    paths: dict[str, Path] = {}
+    if not hitran_xsc_dir.is_dir():
+        return paths
+    for gas in gases:
+        matches = sorted(hitran_xsc_dir.glob(f"{gas}_*.xsc")) or sorted(
+            hitran_xsc_dir.glob(f"{gas.lower()}_*.xsc")
+        )
+        if matches:
+            paths[gas] = matches[0]
+    return paths

@@ -5152,6 +5152,7 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             epoch_dat_files=_epoch_files,
             semisupervised_model_path=getattr(args, "semisupervised_model", None),
             jwst_integration_index=getattr(args, "jwst_integration_index", None),
+            jwst_hitran_xsc_dir=getattr(args, "jwst_hitran_xsc_dir", None),
         )
         print(json.dumps(pipeline_result.as_dict(), indent=2, sort_keys=True), file=out)
         return 0 if pipeline_result.ok else 1
@@ -9563,6 +9564,18 @@ def _build_parser() -> argparse.ArgumentParser:
             "product -- there is no default, since pooling every integration "
             "together would treat real time-domain flux variation (e.g. an "
             "orbital phase curve) as spectral noise."
+        ),
+    )
+    run_pipeline_parser.add_argument(
+        "--jwst-hitran-xsc-dir",
+        type=Path,
+        default=None,
+        help=(
+            "Optional real local directory of downloaded HITRAN .xsc "
+            "cross-section files (spectroscopy track only), e.g. "
+            "CF4_298.1K-760.0Torr_....xsc. When provided, runs the "
+            "additional full-grid matched-filter check for whichever of "
+            "the 5 known gases have a matching file present."
         ),
     )
 
