@@ -5440,6 +5440,28 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0 if jwst_record.x1d_product_count > 0 else 1
 
+    if args.command == "wise-photometry-search":
+        from techno_search.infrared_wise.irsa_search import search_and_download_wise_photometry
+
+        try:
+            irsa_record = search_and_download_wise_photometry(
+                args.target,
+                download_dir=Path(args.download_dir),
+                radius_arcsec=args.radius_arcsec,
+            )
+        except RuntimeError as exc:
+            _record_data_collection_status_best_effort(
+                "wise-photometry-search", {"ok": False, "error": str(exc)}
+            )
+            print(json.dumps({"ok": False, "error": str(exc)}, indent=2, sort_keys=True), file=out)
+            return 1
+        _record_data_collection_status_best_effort("wise-photometry-search", irsa_record.as_dict())
+        print(
+            json.dumps({"ok": True, **irsa_record.as_dict()}, indent=2, sort_keys=True),
+            file=out,
+        )
+        return 0 if irsa_record.result_count > 0 else 1
+
     if args.command == "track-a-satellite-match":
         from techno_search.track_a_satellites import match_satellite_transmitter
 
@@ -10199,6 +10221,29 @@ def _build_parser() -> argparse.ArgumentParser:
         "--download-dir",
         default="data/jwst_spectra",
         help="Local directory to download FITS files into.",
+    )
+    wise_search_parser = subparsers.add_parser(
+        "wise-photometry-search",
+        help=(
+            "Search NASA/IPAC IRSA for real AllWISE W1-W4 photometry around "
+            "a target and write it to a CSV. Requires real IRSA network "
+            "access (not available from this project's sandbox)."
+        ),
+    )
+    wise_search_parser.add_argument(
+        "target",
+        help="Target name resolvable by astropy's SkyCoord.from_name (e.g. 'KIC 8462852').",
+    )
+    wise_search_parser.add_argument(
+        "--radius-arcsec",
+        type=float,
+        default=5.0,
+        help="Cone search radius in arcseconds (default: 5.0).",
+    )
+    wise_search_parser.add_argument(
+        "--download-dir",
+        default="data/wise_photometry",
+        help="Local directory to write the AllWISE CSV into.",
     )
     satellite_acquire_parser = subparsers.add_parser(
         "track-a-satellite-acquire",
