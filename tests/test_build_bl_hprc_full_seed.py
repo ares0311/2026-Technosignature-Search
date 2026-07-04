@@ -58,8 +58,9 @@ def test_parse_hip_number_returns_none_for_non_hip() -> None:
 
 
 def test_build_seed_rows_computes_real_galactic_latitude_close_to_known_value() -> None:
-    rows = build_seed_rows([_TAU_CETI_ROW], exoplanet_hip_numbers=set())
+    rows, skipped = build_seed_rows([_TAU_CETI_ROW], exoplanet_hip_numbers=set())
 
+    assert skipped == []
     assert len(rows) == 1
     row = rows[0]
     assert row["hip"] == "8102"
@@ -73,27 +74,31 @@ def test_build_seed_rows_computes_real_galactic_latitude_close_to_known_value() 
 
 
 def test_build_seed_rows_marks_real_exoplanet_hosts() -> None:
-    rows = build_seed_rows([_TAU_CETI_ROW], exoplanet_hip_numbers={"8102"})
+    rows, _skipped = build_seed_rows([_TAU_CETI_ROW], exoplanet_hip_numbers={"8102"})
 
     assert rows[0]["exoplanet"] == "1"
 
 
-def test_build_seed_rows_skips_non_hip_star_field() -> None:
-    bad_row = dict(_TAU_CETI_ROW)
-    bad_row["Star"] = "not-a-real-hip-star"
+def test_build_seed_rows_reports_non_hip_star_field_as_skipped_not_silently_dropped() -> None:
+    # Real case: the paper's "60 nearest stars" subset uses Gliese/GJ-format
+    # identifiers, not HIP numbers -- these must be reported, not silently lost.
+    gj_row = dict(_TAU_CETI_ROW)
+    gj_row["Star"] = "GJ1002"
 
-    rows = build_seed_rows([bad_row], exoplanet_hip_numbers=set())
+    rows, skipped = build_seed_rows([gj_row], exoplanet_hip_numbers=set())
 
     assert rows == []
+    assert skipped == [{"star": "GJ1002", "reason": "non_hip_identifier"}]
 
 
-def test_build_seed_rows_skips_unparsable_distance() -> None:
+def test_build_seed_rows_reports_unparsable_distance_as_skipped() -> None:
     bad_row = dict(_TAU_CETI_ROW)
     bad_row["Dist"] = "not-a-number"
 
-    rows = build_seed_rows([bad_row], exoplanet_hip_numbers=set())
+    rows, skipped = build_seed_rows([bad_row], exoplanet_hip_numbers=set())
 
     assert rows == []
+    assert skipped == [{"star": "HIP8102", "reason": "unparsable_distance"}]
 
 
 def test_main_writes_output_csv(tmp_path: Path, monkeypatch) -> None:
@@ -124,3 +129,40 @@ def test_main_writes_output_csv(tmp_path: Path, monkeypatch) -> None:
     content = output_csv.read_text(encoding="utf-8")
     assert "8102" in content
     assert "tau Cet" in content
+
+
+def test_main_writes_skipped_rows_csv_when_non_hip_stars_present(
+    tmp_path: Path, monkeypatch
+) -> None:
+    import csv
+
+    import scripts.build_bl_hprc_full_seed as module
+
+    gj_row = dict(_TAU_CETI_ROW)
+    gj_row["Star"] = "GJ1002"
+
+    input_csv = tmp_path / "input.csv"
+    with input_csv.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(_TAU_CETI_ROW.keys()))
+        writer.writeheader()
+        writer.writerow(_TAU_CETI_ROW)
+        writer.writerow(gj_row)
+
+    output_csv = tmp_path / "output.csv"
+
+    exit_code = module.main(
+        [
+            "--input",
+            str(input_csv),
+            "--output",
+            str(output_csv),
+            "--skip-exoplanet-crossmatch",
+        ]
+    )
+
+    assert exit_code == 0
+    skipped_path = tmp_path / "output_skipped.csv"
+    assert skipped_path.exists()
+    skipped_content = skipped_path.read_text(encoding="utf-8")
+    assert "GJ1002" in skipped_content
+    assert "non_hip_identifier" in skipped_content

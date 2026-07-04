@@ -216,10 +216,30 @@ which is not a stratification input) rather than fabricated. Run:
 ```
 
 to produce `data/bl_hprc_full_seed_targets.csv`, a drop-in replacement for
-`--seed-csv` in `scripts/build_stratified_sample.py` at the full real
-1,709-star scale. A star absent from the NASA Exoplanet Archive
-cross-match is recorded as `exoplanet=0`, meaning "no confirmed planet in
-the archive as of the query date" -- not "known to have no planets".
+`--seed-csv` in `scripts/build_stratified_sample.py`. A star absent from
+the NASA Exoplanet Archive cross-match is recorded as `exoplanet=0`,
+meaning "no confirmed planet in the archive as of the query date" -- not
+"known to have no planets".
+
+**Real, open follow-up, confirmed 2026-07-04 (not fabricated, not
+silently dropped)**: running the seed generator against the real
+downloaded catalog produced 1,649 seed rows from 1,709 real input rows --
+not a bug, but a real, confirmed gap: the paper's "60 nearest stars"
+subset uses Gliese/GJ-catalog identifiers (e.g. `GJ1002`), not HIP
+numbers, while the "1,649 Hipparcos stars" subset uses HIP numbers
+throughout. The existing seed schema's `hip` column (and the downstream
+manifest/download pipeline's `f"HIP{hip}"` target-name construction)
+assumes a bare HIP number, so these 60 real stars cannot currently be
+represented -- `build_bl_hprc_full_seed.py` writes every skipped real row
+to `<output>_skipped.csv` with its real `Star` value rather than silently
+dropping it. These 60 stars are scientifically significant (highest EIRP
+sensitivity, the `near` distance bin's rationale above) and including
+them requires a real design decision not yet made: either extend the
+seed/manifest schema to a full free-form target identifier instead of a
+bare HIP number, or add a separate GJ-specific target-name path through
+`download_bl_extended_corpus.sh`. This touches the production
+manifest/download pipeline's existing assumptions and should be confirmed
+before implementing.
 
 **Real archive policy, verified 2026-07-04, not guessed**: VizieR/CDS
 publishes no documented rate limit for this table endpoint. The
