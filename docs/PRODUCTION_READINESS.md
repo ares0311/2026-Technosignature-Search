@@ -154,6 +154,38 @@ commands instead of placeholder `rm` recipes.
 | Ranked candidate/non-detection output ready for Phase 5 | ⚠️ Partial — zero-hit observations are preserved as negative evidence ledgers. Production scan `RUN-2026-07-02_130330Z-3ZNT-prod-scan` scanned 11 pending extended-corpus targets, failed 0, flagged 0 escalations, produced 0 follow-up entries, produced 39 non-detection/no-follow-up ledger entries across the current local result set, and left 0 pending targets. This is negative evidence only, not a detection, discovery, expert review, external validation, or external-submission authorization. |
 | GLOBULAR filter (HDBSCAN, Jacobson-Bell et al. 2024) wired to real data | ✅ Done, 2026-07-02 — `globular_filter.py` existed but was never actually applied to a real hit table (only a `globular-filter-summary` metadata CLI command existed). Wired into `radio_real_corpus_summary()`'s corpus-wide `hit_rows_for_scorer` population (already accumulated across every `.dat`/hit-NDJSON file in a summary run), which is the correct granularity for this filter. **Root-caused and reverted one wrong placement first**: an initial attempt wired GLOBULAR into `build_radio_candidate()` itself (per-candidate, i.e. within one target's own small ON/OFF cadence hit list); this caused the real-label accuracy gate to drop from 77.42% to 65.32% and broke golden-example reproducibility, because a real signal's own naturally-similar repeated hits were mistaken for a dense RFI cluster — the opposite of the intended cross-target RFI signature Jacobson-Bell et al. 2024 actually targets. Reverted before committing; re-implemented at the correct (multi-target corpus) granularity, verified via `.venv/bin/python -m pytest -q` (1478 passed, 0 regressions) and a real 30-dense-hit-plus-1-outlier test confirming the outlier survives as noise while the dense recurring signal is flagged. |
 
+### Sandbox network restrictions — archives that require the user's research agent
+
+This agent's sandbox proxy blocks outbound access to most scholarly/data
+hosts. Confirmed via direct `curl` (not just tool failures), 2026-07-04:
+`arxiv.org`, `export.arxiv.org`, `iopscience.iop.org`, `zenodo.org`,
+`ui.adsabs.harvard.edu`, `researchgate.net`, `seti.berkeley.edu`, and
+`vizier.cds.unistra.fr`/`cdsarc.cds.unistra.fr` all return 403 through this
+sandbox's proxy — the same restriction already documented above for
+`mast.stsci.edu`. Only `github.com`/`raw.githubusercontent.com` are
+reachable from here.
+
+**Before concluding any literature-dependent question is unanswerable or a
+real dataset "doesn't exist," this agent must check whether the answer
+requires one of these blocked hosts.** If so, hand the question to the
+user's research agent (running from their own machine with real network
+access) rather than reporting a network-restricted search as a genuine
+negative result. `docs/bl_hprc_full_catalog_source_request.md` and
+`docs/hitran_xsc_temperature_pressure_coverage.md` are the established
+pattern for this: a detailed, self-contained research-question doc the
+user pastes to their research agent, with explicit "do not guess" rules.
+
+**Open item, 2026-07-04**: `docs/bl_hit_calibration_labels_source_request.md`
+asks whether any published BL/SETI paper (Enriquez et al. 2017, Price et
+al. 2020, Sheikh et al. 2021 BLC1, others) hosts real per-hit human-labeled
+classification data usable to calibrate the semisupervised anomaly
+scorer's threshold (see Phase 1 row above — the only real calibration
+evidence found so far is 124 HIP99427 citizen-science labels, with just 2
+in the `follow_up` class, too small to calibrate from). This sandbox could
+not verify any candidate source (every relevant host was blocked); this
+must be re-run from the user's machine before concluding the search for
+more real calibration data is exhausted.
+
 ### Phase 2 — Transit Photometry: Kepler/TESS
 
 | Task | Status |

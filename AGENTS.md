@@ -470,6 +470,28 @@ A summary cannot authorize:
 
 ---
 
+## SANDBOX NETWORK RESTRICTION RULE — NON-NEGOTIABLE
+
+This agent's sandbox proxy blocks most scholarly/data hosts: confirmed via
+direct `curl` (2026-07-04) that `arxiv.org`, `export.arxiv.org`,
+`iopscience.iop.org`, `zenodo.org`, `ui.adsabs.harvard.edu`,
+`researchgate.net`, `seti.berkeley.edu`, `vizier.cds.unistra.fr`/
+`cdsarc.cds.unistra.fr`, and `mast.stsci.edu` all return 403. Only
+`github.com`/`raw.githubusercontent.com` are reachable.
+
+**Before reporting that a real dataset "doesn't exist" or a literature
+question is unanswerable, this agent must first check whether the answer
+depends on one of these blocked hosts.** If so, that is not a genuine
+negative result — hand it to the user's research agent instead, using the
+established pattern (`docs/bl_hprc_full_catalog_source_request.md`,
+`docs/bl_hit_calibration_labels_source_request.md`): a detailed,
+self-contained research-question doc with explicit "do not guess" rules,
+given to the user "in a code box" to paste to their research agent. See
+`docs/PRODUCTION_READINESS.md`'s "Sandbox network restrictions" section for
+the current open item (real per-hit labeled BL/SETI calibration data).
+
+---
+
 ## Local Performance Optimization
 
 Read `docs/LOCAL_SYSTEM_PROFILE.md` for local performance defaults and
