@@ -1,6 +1,15 @@
 {
   "disclaimer": "This manifest records real local data-collection run outcomes (counts of items found/downloaded/skipped/failed) for compact progress review. It is not a detection, discovery, external validation, or external-submission claim.",
   "runs": {
+    "acquire_bl_hprc_full_catalog": {
+      "csv_output": "/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Technosignatures/data/bl_hprc_full_targets_vizier.csv",
+      "first_star": "HIP2",
+      "last_run_utc": "2026-07-04T12:15:45.747569+00:00",
+      "last_star": "HIP118310",
+      "ok": true,
+      "raw_output": "/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Technosignatures/data/bl_hprc_full_targets_vizier_raw.tsv",
+      "row_count": 1709
+    },
     "download_bl_extended_corpus": {
       "available": 17,
       "checked": 31,
