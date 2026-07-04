@@ -147,7 +147,13 @@ for row in targets:
     hip = str(row.get("hip", "")).strip()
     if not hip:
         continue
-    name = hip if hip.upper().startswith("HIP") else f"HIP{hip}"
+    # A bare numeric HIP identifier gets the HIP prefix (matches the
+    # existing seed CSVs); any other real identifier (an already-prefixed
+    # HIP1234, or a real non-HIP catalog name like GJ1002 for the HPRC
+    # list real 60 nearest stars subset) is used verbatim -- see
+    # docs/SAMPLING_DESIGN.md for why non-HIP identifiers exist in the
+    # real full catalog.
+    name = f"HIP{hip}" if hip.isdigit() else hip
     if name in seen:
         continue
     seen.add(name)

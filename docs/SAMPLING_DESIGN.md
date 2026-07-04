@@ -221,25 +221,24 @@ the NASA Exoplanet Archive cross-match is recorded as `exoplanet=0`,
 meaning "no confirmed planet in the archive as of the query date" -- not
 "known to have no planets".
 
-**Real, open follow-up, confirmed 2026-07-04 (not fabricated, not
-silently dropped)**: running the seed generator against the real
-downloaded catalog produced 1,649 seed rows from 1,709 real input rows --
-not a bug, but a real, confirmed gap: the paper's "60 nearest stars"
-subset uses Gliese/GJ-catalog identifiers (e.g. `GJ1002`), not HIP
-numbers, while the "1,649 Hipparcos stars" subset uses HIP numbers
-throughout. The existing seed schema's `hip` column (and the downstream
-manifest/download pipeline's `f"HIP{hip}"` target-name construction)
-assumes a bare HIP number, so these 60 real stars cannot currently be
-represented -- `build_bl_hprc_full_seed.py` writes every skipped real row
-to `<output>_skipped.csv` with its real `Star` value rather than silently
-dropping it. These 60 stars are scientifically significant (highest EIRP
-sensitivity, the `near` distance bin's rationale above) and including
-them requires a real design decision not yet made: either extend the
-seed/manifest schema to a full free-form target identifier instead of a
-bare HIP number, or add a separate GJ-specific target-name path through
-`download_bl_extended_corpus.sh`. This touches the production
-manifest/download pipeline's existing assumptions and should be confirmed
-before implementing.
+**Real "60 nearest stars" gap, closed 2026-07-04**: running the seed
+generator against the real downloaded catalog first produced 1,649 seed
+rows from 1,709 real input rows -- not a bug, but a real, confirmed
+finding: the paper's "60 nearest stars" subset uses Gliese/GJ-catalog
+identifiers (e.g. `GJ1002`), not HIP numbers, while the "1,649 Hipparcos
+stars" subset uses HIP numbers throughout. Resolved by extending the
+target-identifier schema (option (a) from the two considered): the `hip`
+seed column now holds either a bare HIP number or the real VizieR `Star`
+field verbatim for non-HIP stars, and
+`download_bl_extended_corpus.sh`'s real target-name construction now
+passes any non-numeric identifier through verbatim (`hip.isdigit()`
+gates the real "HIP" prefix) instead of assuming every target is
+HIP-numbered. All 1,709 real stars are now representable; rows are only
+skipped (and reported, never silently dropped) for a genuine parse
+failure such as an unparsable real `Dist` value. The real exoplanet-host
+cross-match now also checks the NASA Exoplanet Archive's real `hostname`
+column (normalized) for non-HIP stars, since they have no HIP number to
+match via `hip_name`.
 
 **Real archive policy, verified 2026-07-04, not guessed**: VizieR/CDS
 publishes no documented rate limit for this table endpoint. The
