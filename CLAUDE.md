@@ -320,6 +320,21 @@ Mandatory requirements:
 
 ## Current Live Handoff — 2026-06-27
 
+### Calibration-Data Literature Search Closed — 2026-07-05
+
+PRs #226-#227 merged. The open question "does any published BL/SETI paper
+have real per-hit labeled data to calibrate `semisupervised_anomaly_score`"
+is answered: **no**. The user's research agent checked 8 real sources
+(Enriquez 2017, Price 2020, Sheikh/Smith 2021 BLC1, Jacobson-Bell 2025/
+GLOBULAR, Lacki 2021 Exotica Catalog, Ma 2023, Choza 2024) against a strict
+acceptance rule and none qualified — full findings in
+`docs/seti_labeled_hit_data_research.md`, project record in
+`docs/PRODUCTION_READINESS.md` Phase 1 and `AGENTS.md`'s "CALIBRATION DATA
+STATUS" section. **Do not re-run this search on the same question.** The
+124-row HIP99427 set (2 `follow_up` rows) remains the only real labeled
+data in hand; the real next step is a project-owned human review set
+(≥1,000 rows, ≥50 follow-up-like), not further literature search.
+
 ### Track A Real Baseline Results — 2026-07-02
 
 PRs #170-#176 merged (Track A implementation + fixes). `main` is at commit

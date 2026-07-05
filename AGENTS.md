@@ -447,6 +447,46 @@ A summary cannot authorize:
   review chain above).
 - **No synthetic training data.** Models trained on synthetic data are worthless
   for real signal detection. Use real labeled corpora only.
+- **Never infer a ground-truth label from a paper-level conclusion.** A
+  paper stating "zero candidates survived" or "N events were consistent with
+  RFI" is a summary statistic, not a per-row verdict — do not backfill every
+  row of an unlabeled table with `false_positive` (or any other label) from
+  that sentence. Only treat data as a real label if a downloaded, row-level
+  table has an explicit, independent human-verdict column (see
+  `docs/seti_labeled_hit_data_research.md` for the full acceptance rule and
+  worked rejection examples this was checked against).
+
+---
+
+## CALIBRATION DATA STATUS — DO NOT RE-SEARCH WITHOUT NEW EVIDENCE
+
+**Closed, 2026-07-05**: the search for additional real per-hit labeled
+SETI/BL data to calibrate `semisupervised_anomaly_score` is exhausted. The
+user's research agent checked 8 real sources (Enriquez et al. 2017, Price
+et al. 2020, Sheikh/Smith et al. 2021 BLC1, Jacobson-Bell et al. 2025/
+GLOBULAR arXiv:2411.16556, Lacki et al. 2021 Exotica Catalog, Ma et al.
+2023, Choza et al. 2024) against a strict acceptance rule (real
+downloadable table, one row per hit/candidate, independent human verdict
+column, mappable label categories) — none qualified. Full findings:
+`docs/seti_labeled_hit_data_research.md`; project-record summary:
+`docs/PRODUCTION_READINESS.md` Phase 1.
+
+**The 124-row HIP99427 citizen-science set (2 `follow_up` rows) remains the
+only real per-hit labeled ground truth this project has.** Do not re-run
+this literature search on the same question without a genuinely new lead
+(e.g. a newly published paper) — re-checking the same 8 already-rejected
+sources wastes the user's research-agent budget for no new information.
+
+**The only real path to closing the anomaly/OOD calibration blocker now is
+building a project-owned human review set**, per
+`docs/seti_labeled_hit_data_research.md`'s recommended schema
+(`hit_id`/`source_file`/`target`/`frequency_hz`/`drift_rate_hz_s`/`snr`/
+`score`/`review_label`/`reviewer_id`/`review_timestamp_utc`), targeting
+≥1,000 reviewed rows and ≥50 follow-up-like rows across multiple targets,
+bands, and score deciles — and using precision-at-k rather than a fixed
+global threshold if the positive class stays rare. This requires real
+human labeling effort; it is not an implementation task an agent can
+shortcut or fabricate.
 
 ---
 
