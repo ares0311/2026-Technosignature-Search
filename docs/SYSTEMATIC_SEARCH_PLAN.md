@@ -43,6 +43,23 @@ Phase 1) — more real hit-bearing targets are needed before novelty/coverage
 scoring in Step 3 has anything real to work with beyond the current 18-file
 local corpus.
 
+**This is explicitly a one-time corpus-widening bootstrap, not the ongoing
+acquisition model.** It's still driven by the stratified manifest — the
+same mechanism `AGENTS.md`'s TARGET SELECTION PHILOSOPHY says should not be
+the primary target-selection driver going forward. It's done once here
+because Step 1 and Step 3a need a large enough real corpus to work with at
+all (18 local files isn't enough to compute meaningful novelty scores or
+build a 1,000-row review set), not because bulk-downloading a static
+manifest is the intended long-term pattern.
+
+**Once Step 3 exists, the sequence flips**: the algorithm decides which
+specific targets to acquire next (driven by real novelty/follow-up
+scoring), and acquisition happens per-target, continuously — not
+"bulk-download broadly first, then apply an algorithm to whatever landed."
+Do not treat a future large stratified-manifest download as a template to
+repeat; Step 0 is a bootstrap exception, made once to unblock Steps 1 and
+3, not a recurring operating pattern.
+
 **Action:** resume
 `scripts/download_bl_extended_corpus.sh --manifest data/target_sample_manifest_expanded.json`
 per the command already given earlier in this session, then run turboSETI
@@ -135,23 +152,40 @@ coverage against):
 
 ### 3b. Follow-up-target selection ("candidates needing follow-on checks")
 
-Real, buildable now, independent of Step 1's calibration blocker:
+**Corrected 2026-07-05 — do not treat this as "buildable now" the way 3a
+is.** The original version of this section assumed a real backlog of
+partial candidates to drive follow-up scoring from. That assumption does
+not hold: the current real local corpus is 17 zero-hit non-detections and
+1 hit-bearing target (Voyager, a known human signal, not an unresolved
+candidate). **There is no real backlog of near-miss candidates today.**
+Building 3b's scoring logic now means building machinery with nothing real
+to exercise it — a genuine risk of it sitting untested and silently broken
+until the day a real candidate needs it.
 
-1. **Track B candidate-readiness gaps are already real, structured data.**
-   `track-b-candidate-readiness`'s `missing_track_b_candidate_features`
-   output (per `docs/PRODUCTION_READINESS.md` Phase 1) already tells you,
-   per real candidate, exactly which of the 9 conditions is unresolved and
-   why (e.g. insufficient cadence evidence, missing anomaly score).
-2. Compute a real `followup_value` input from this: a candidate one
-   real-evidence-gap away from full Track B resolution should rank higher
-   than one with many unresolved conditions or none at all (nothing to
-   follow up on).
-3. Map the specific missing condition to a concrete next-observation
-   ask (e.g. "needs 3 more ON/OFF cadence epochs," "needs a repeat
-   observation in a different band") rather than a bare priority number —
-   the output must be actionable, not just a ranked list.
-4. Wire the computed `followup_value` into `target_priority_score()`'s
-   existing weighting, same as 3a.
+**Correct sequencing: design now, implement/validate once a real
+qualifying candidate actually exists.** Concretely:
+
+1. **Design (do now):** `track-b-candidate-readiness`'s
+   `missing_track_b_candidate_features` output (per
+   `docs/PRODUCTION_READINESS.md` Phase 1) is the right real, structured
+   data source for this — per real candidate, it already reports exactly
+   which of the 9 conditions is unresolved and why. The intended
+   `followup_value` computation: a candidate one real-evidence-gap away
+   from full Track B resolution ranks higher than one with many unresolved
+   conditions or none at all. The output must map the specific missing
+   condition to a concrete next-observation ask (e.g. "needs 3 more ON/OFF
+   cadence epochs," "needs a repeat observation in a different band"), not
+   a bare priority number.
+2. **Implementation gate:** do not write and merge the scoring code for
+   this until a real candidate with a genuine partial-evidence gap exists
+   to test it against (not a synthetic/constructed fixture standing in for
+   "a candidate exists" — that would validate the code runs, not that the
+   scoring behavior is right, since there's no real case to check it
+   against). Prioritize **3a** as the actual near-term buildable work
+   instead; revisit 3b when Step 0/ongoing scanning produces a real
+   qualifying candidate.
+3. Wire the computed `followup_value` into `target_priority_score()`'s
+   existing weighting, same as 3a, once triggered by a real case.
 
 ### Acceptance criteria for Step 3
 
@@ -180,10 +214,16 @@ Step 1 (human-review calibration set)
   -> unblocks Track B unknown_candidate eligibility and Step 3b's real followup_value scoring
 Step 2 (UI hardening)
   -> precedes Step 3 per explicit user sequencing direction
-Step 3 (detection-optimized search algorithm: 3a novel-target, 3b follow-up-target)
-  -> the systematic search capability itself
+Step 3a (novel-target selection: real, buildable now once Step 0 lands)
+  -> prioritize this as the actual near-term Step 3 work
+Step 3b (follow-up-target selection)
+  -> design only; implementation waits on a real qualifying candidate existing —
+     do not build/merge scoring code against a backlog that doesn't exist yet
 ```
 
 Steps 0 and 1 can proceed in parallel with Step 2 (UI audit/hardening
 doesn't depend on either). Step 3 should not start until Step 2 is
-substantively underway, per the user's explicit sequencing direction.
+substantively underway, per the user's explicit sequencing direction. Within
+Step 3, 3a is the real near-term target; 3b stays design-only until a real
+candidate exists to validate it against — see the correction in 3b's
+section above (2026-07-05).
