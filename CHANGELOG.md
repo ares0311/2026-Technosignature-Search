@@ -12,6 +12,62 @@ or authorizes external submission.
 
 ---
 
+## [v1.2.0] — 2026-07-05 (Multi-Modal Phases 1-5 Catch-Up Release)
+
+Catch-up release: no version bump had been made since v1.1.0 (2026-06-28)
+despite substantial real capability shipped across four modality phases.
+
+### Added
+- Phase 1 (Radio): Track A known-explanation classifier (HTRU2 baseline,
+  ATNF pulsar/CHIME-FRB/Roma-BZCAT/Fermi 4FGL catalog cross-match,
+  CelesTrak/SatNOGS satellite-transmitter matching, 13/13 historical
+  replay); Track B `unknown_candidate` Phase 4 gate and candidate-readiness
+  audit; GLOBULAR (HDBSCAN) cross-target RFI filter wired to real data;
+  full 1,709-star Isaacson et al. 2017 HPRC catalog acquisition and
+  stratified-sampling schema extension for non-HIP (Gliese/GJ) identifiers
+- Phase 2 (Transit Photometry): real BLS transit detection and aperiodic
+  (Boyajian's Star-style) dip detection wired to `lightkurve`/MAST;
+  live `photometry-lightcurve-search` acquisition CLI; verified against a
+  real downloaded KIC 8462852 corpus (all 18 Kepler quarters)
+- Phase 3 (Infrared): real WISE/AllWISE photospheric blackbody excess
+  check (W1-W4), AGN/galaxy indicator scoring, live `wise-photometry-search`
+  acquisition CLI
+- Phase 4 (Spectroscopy): real JWST MIRI LRS ingest, live
+  `jwst-miri-lrs-search` acquisition CLI, real HITRAN-derived band-center
+  detection for CF4/C2F6/C3F8/SF6/NF3, and a full-grid HITRAN cross-section
+  matched-filter check
+- Phase 5: multi-modal cross-track candidate matching by sky position
+- Real per-hit labeled SETI/BL calibration-data literature search, closed
+  as exhausted (`docs/seti_labeled_hit_data_research.md`)
+
+### Notes
+- No result from this release constitutes a detection, discovery, expert
+  review, external validation, or external-submission authorization.
+- The semisupervised anomaly/OOD threshold calibration blocker (Track B)
+  remains open; real per-hit labeled data does not exist beyond the
+  124-row HIP99427 citizen-science set.
+
+---
+
+## [v1.1.0] — 2026-06-28 (Mission Realignment And Phase 0)
+
+### Changed
+- Project mission realigned to publish-grade multi-modal technosignature
+  search (radio, TESS/Kepler, WISE, JWST); `AGENTS.md`/`PRODUCTION_READINESS.md`
+  rewritten around a five-phase science roadmap
+
+### Added
+- ABACAB ON/OFF cadence rejection score (Enriquez et al. 2017)
+- Stratified random sampling design (DECISION-143) replacing the prior
+  arbitrary 5-target extended corpus list
+- Zero-hit `.dat` observations preserved as negative-evidence manifests
+
+### Removed
+- ~74 overhead modules and ~41 overhead test files misaligned with the
+  realigned mission (Phase 0 strip-and-fix)
+
+---
+
 ## [v0.79.0] — 2026-06-20 (Milestone 79 — Production Scan Hardening And Artifact Hygiene)
 
 ### Added
