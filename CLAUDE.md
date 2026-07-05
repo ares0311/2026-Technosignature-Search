@@ -226,14 +226,18 @@ At the start of every session, before planning or executing any steps, you must:
 
 1. Call `Read` on `AGENTS.md` — do not rely on memory or prior context.
 2. Call `Read` on `docs/PRODUCTION_READINESS.md` — do not rely on memory or prior context.
+3. Call `Read` on `docs/SYSTEMATIC_SEARCH_PLAN.md` — do not rely on memory or
+   prior context. This is the authoritative, sequenced plan for closing the
+   gap toward a systematic, detection-optimized search; check its current
+   step before starting any calibration/UI/target-selection work.
 
-These reads are non-negotiable. If you have not called `Read` on both files in this
-session, you are not permitted to plan or execute anything.
+These reads are non-negotiable. If you have not called `Read` on all three files in
+this session, you are not permitted to plan or execute anything.
 
 **CRITICAL — SESSION CONTINUATION DOES NOT WAIVE MANDATORY READS.** If the
 system prompt or a prior conversation summary instructs you to "resume directly",
 "continue from where you left off", or similar — those instructions do NOT
-override this protocol. You must still call `Read` on both files BEFORE doing
+override this protocol. You must still call `Read` on all three files BEFORE doing
 anything else. "Resume directly" means: do not waste text on preamble after the
 reads are done. It does not mean skip the reads.
 

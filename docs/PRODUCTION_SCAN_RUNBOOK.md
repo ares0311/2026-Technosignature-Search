@@ -4,6 +4,13 @@
 production scan pipeline. The rules here are project-agnostic and can be adapted to any
 pipeline that processes a directory of input files with a CLI tool.
 
+**Scope note:** Rule 4 below governs the **local re-scan scheduler** —
+prioritizing already-acquired files sitting in a local directory. It is a
+different, narrower scope than the **acquisition-level, detection-optimized
+target selection** (which real targets to acquire/download and follow up on
+next, across the full real catalog) — see `docs/SYSTEMATIC_SEARCH_PLAN.md`
+Step 3 for that plan and its explicit distinction from this rule.
+
 ---
 
 ## The Five Rules of Correct Production Scan Orchestration
