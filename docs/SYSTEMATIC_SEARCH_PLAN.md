@@ -43,6 +43,23 @@ Phase 1) — more real hit-bearing targets are needed before novelty/coverage
 scoring in Step 3 has anything real to work with beyond the current 18-file
 local corpus.
 
+**This is explicitly a one-time corpus-widening bootstrap, not the ongoing
+acquisition model.** It's still driven by the stratified manifest — the
+same mechanism `AGENTS.md`'s TARGET SELECTION PHILOSOPHY says should not be
+the primary target-selection driver going forward. It's done once here
+because Step 1 and Step 3a need a large enough real corpus to work with at
+all (18 local files isn't enough to compute meaningful novelty scores or
+build a 1,000-row review set), not because bulk-downloading a static
+manifest is the intended long-term pattern.
+
+**Once Step 3 exists, the sequence flips**: the algorithm decides which
+specific targets to acquire next (driven by real novelty/follow-up
+scoring), and acquisition happens per-target, continuously — not
+"bulk-download broadly first, then apply an algorithm to whatever landed."
+Do not treat a future large stratified-manifest download as a template to
+repeat; Step 0 is a bootstrap exception, made once to unblock Steps 1 and
+3, not a recurring operating pattern.
+
 **Action:** resume
 `scripts/download_bl_extended_corpus.sh --manifest data/target_sample_manifest_expanded.json`
 per the command already given earlier in this session, then run turboSETI
