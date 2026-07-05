@@ -17,6 +17,27 @@ that replaces that list.
 
 ---
 
+## Scope Correction — 2026-07-05
+
+**This design is a null-result-defensibility tool, not a detection-probability
+optimization strategy.** This project searches for a specific rare signal;
+it does not estimate a population parameter, so stratified random sampling
+is not the correct tool for maximizing the odds of finding a real
+technosignature. Its role here is narrower and still real: giving any
+future null-result report a documented, non-cherry-picked rationale,
+replacing the undocumented 5-target list described below.
+
+**Primary target selection for the search itself should be priority-ranked
+and algorithmic** (via `target_priority_score`/`target_selection_score` in
+`background_search.py`), optimized for detection probability — e.g.
+observational-coverage gaps and follow-up-evidence needs — not forced into
+stratification quota. See `AGENTS.md`'s "TARGET SELECTION PHILOSOPHY"
+section for the full directive. Do not read this document's stratified
+manifest as the project's primary or only target-selection mechanism going
+forward.
+
+---
+
 ## Sampling Frame
 
 **Source:** Breakthrough Listen High-Priority Candidate (HPRC) target list  

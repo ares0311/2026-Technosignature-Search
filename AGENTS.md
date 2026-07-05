@@ -270,6 +270,56 @@ milestone unless the user explicitly approves a later synthetic benchmark.
 
 ---
 
+## TARGET SELECTION PHILOSOPHY — NON-NEGOTIABLE
+
+**This project optimizes target selection for search/detection probability,
+not statistical representativeness.** We are looking for a specific rare
+signal, not estimating a population parameter — stratified random sampling
+(distance × spectral class × exoplanet-host status) is a population-inference
+tool, and importing it as the *primary* target-selection mechanism was a
+mismatch identified and corrected 2026-07-05.
+
+**Stratified sampling's real, narrower role**: defending a *null result*
+against the charge of cherry-picking (this is what DECISION-143 actually
+fixed — the prior 5-target list had no stated rationale at all). It is not,
+and must not be treated as, a detection-probability-maximizing strategy.
+Do not let stratification quota force inclusion of strata with no physical
+reason to expect a technosignature (e.g. distance/spectral-type cells
+"included for completeness") at the expense of targets a real
+detection-maximizing strategy would prioritize.
+
+**Primary target selection must be priority-ranked, algorithmic, and
+detection-probability-driven**, using the project's existing
+`target_priority_score`/`target_selection_score` mechanism
+(`background_search.py`) as the correct tool for this job, not the
+stratified-sampling manifest.
+
+### Roadmap after Track B calibration closes
+
+Once both the AI (semisupervised anomaly scorer) and non-AI (deterministic
+Track A/B rule-based gates) components are well-calibrated on real evidence:
+
+1. **Harden the UI** — the operator-facing surface for reviewing candidates
+   and non-detections must be solid before scaling the search algorithm
+   that feeds it.
+2. **Build the search-target algorithm**, with two distinct, algorithmically
+   chosen selection modes (not manual/hand-picked, not stratified-random):
+   - **Novel-target selection**: algorithmically identify and prioritize
+     targets with little or no prior observational coverage — i.e. places
+     nobody has looked yet — rather than re-covering already-well-observed
+     stars.
+   - **Follow-up target selection**: algorithmically identify and prioritize
+     the optimal next observation for existing candidates that need further
+     checks (e.g. more ON/OFF cadence epochs, a different band, a repeat
+     visit), distinct from novel-target selection above.
+
+Both selection modes must be evidence-driven (real prior-coverage data,
+real candidate evidence gaps) and must not fabricate or guess a priority
+score without a stated, citable basis — same standard as every other real
+data/methodology decision in this project.
+
+---
+
 ## ANTI-DOOM-LOOP DIRECTIVES — NON-NEGOTIABLE
 
 The project suffered 17 consecutive PRs (#103–#119) that only updated CLAUDE.md
