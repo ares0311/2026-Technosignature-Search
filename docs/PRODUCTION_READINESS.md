@@ -236,6 +236,33 @@ question.
 
 ---
 
+### Roadmap: Post-Calibration — UI Hardening, then Detection-Optimized Search Algorithm
+
+Recorded 2026-07-05, see `AGENTS.md`'s "TARGET SELECTION PHILOSOPHY" for the
+full directive. Sequence, once both the AI (semisupervised anomaly scorer)
+and non-AI (deterministic Track A/B rule-based gates) components are
+well-calibrated on real evidence (blocked on the open calibration-set item
+above):
+
+1. **Harden the UI** — the operator-facing candidate/non-detection review
+   surface must be solid before scaling the algorithm that feeds it.
+2. **Build the detection-optimized search-target algorithm**, replacing
+   stratified sampling as the *primary* target-selection mechanism (it
+   remains only as a null-result-defensibility framing device, per the
+   scope correction in `docs/SAMPLING_DESIGN.md`). Two required,
+   algorithmically-chosen selection modes:
+   - **Novel-target selection**: real observational-coverage-gap-driven
+     prioritization of targets with little or no prior search coverage.
+   - **Follow-up target selection**: real evidence-gap-driven
+     prioritization of the optimal next observation for existing
+     candidates needing further checks (e.g. more ON/OFF cadence epochs,
+     a different band).
+
+Not started. Both modes must be built on real coverage/evidence data, not
+guessed priority weights.
+
+---
+
 ## Current Production Capability (Honest Assessment)
 
 **Radio pipeline:** Functional for BL/GBT `.dat` files. Produces non-detection
