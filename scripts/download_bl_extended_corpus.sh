@@ -27,6 +27,11 @@
 #   These files are calibration and generalisation aids.  No downloaded file or
 #   derived hit table constitutes a technosignature detection or authorizes
 #   external submission.
+#
+# Data/storage policy guardrail:
+#   This script is a targeted batch-pull cache bootstrap, not a broad archive
+#   mirror. It keeps raw public HDF5 payloads as evictable cache unless a later
+#   candidate/eval/calibration policy explicitly pins them.
 
 set -euo pipefail
 
@@ -35,6 +40,10 @@ OUT_DIR="${TECHNO_EXTENDED_CORPUS_OUT_DIR:-${REPO_ROOT}/data/extended_corpus}"
 VENV_PYTHON="${TECHNO_EXTENDED_CORPUS_PYTHON:-${REPO_ROOT}/.venv/bin/python}"
 MANIFEST="${REPO_ROOT}/data/target_sample_manifest.json"
 MAX_TARGETS="${TECHNO_EXTENDED_CORPUS_MAX_TARGETS:-0}"
+FREE_SPACE_RESERVE_GB="${TECHNO_EXTENDED_CORPUS_FREE_SPACE_RESERVE_GB:-500}"
+ACQUISITION_ROLE="live_search_bootstrap_cache"
+ACQUISITION_MODE="targeted_batch_pull"
+RAW_RETENTION_POLICY="public_raw_archive_cache_not_pinned"
 DRY_RUN=0
 DISCOVER_ONLY=0
 AVAILABILITY_OUTPUT=""
@@ -71,6 +80,10 @@ Environment:
                                         available manifest targets.
   TECHNO_EXTENDED_CORPUS_OUT_DIR=PATH   Override output directory for tests or
                                         isolated local runs.
+  TECHNO_EXTENDED_CORPUS_FREE_SPACE_RESERVE_GB=N
+                                        Minimum free GB to preserve before each
+                                        new payload download. Default: 500.
+                                        Tests may set 0 for tiny temp dirs.
 
 Options:
   --manifest PATH  Stratified target manifest JSON. Default:
@@ -85,6 +98,11 @@ Options:
 Scientific guardrail:
   Outputs are local calibration/generalisation aids only. They do not
   constitute detections or authorize external submission.
+
+Data/storage guardrail:
+  Acquisition role: live_search_bootstrap_cache
+  Acquisition mode: targeted_batch_pull
+  Raw retention: public raw archive cache, not pinned evidence by default.
 EOF
       exit 0
       ;;
@@ -113,6 +131,53 @@ TARGETS=(
 # ---------------------------------------------------------------------------
 
 log() { echo "[$(date -u '+%Y-%m-%dT%H:%M:%SZ')] $*" >&2; }
+
+reserve_kb() {
+  "${VENV_PYTHON}" -c 'import sys; print(int(float(sys.argv[1]) * 1024 * 1024))' "${FREE_SPACE_RESERVE_GB}"
+}
+
+free_kb_for_out_dir() {
+  df -Pk "${OUT_DIR}" | awk 'NR == 2 {print $4}'
+}
+
+content_length_kb() {
+  local url="$1"
+  local headers
+  if ! headers="$(curl -fsSI --connect-timeout 15 --max-time 60 --retry 3 --retry-delay 5 --location "${url}" 2>/dev/null)"; then
+    printf '0\n'
+    return 0
+  fi
+  printf '%s\n' "${headers}" | awk 'BEGIN {IGNORECASE=1} /^content-length:/ {value=$2} END {gsub("\r", "", value); if (value == "") print 0; else print int((value + 1023) / 1024)}'
+}
+
+ensure_projected_free_space() {
+  local url="$1"
+  local reserve
+  local free_now
+  local projected_download
+  reserve="$(reserve_kb)"
+  if [[ "${reserve}" -le 0 ]]; then
+    return 0
+  fi
+  free_now="$(free_kb_for_out_dir)"
+  projected_download="$(content_length_kb "${url}")"
+  if [[ -z "${free_now}" || "${free_now}" -le 0 ]]; then
+    log "[ERROR] Could not determine free space for ${OUT_DIR}"
+    return 1
+  fi
+  if [[ "${projected_download}" -gt 0 ]]; then
+    if [[ "$((free_now - projected_download))" -lt "${reserve}" ]]; then
+      log "[ERROR] Free-space policy would be violated by this download."
+      log "[ERROR] Free now: $((free_now / 1024 / 1024))GB; projected payload: $((projected_download / 1024 / 1024))GB; reserve: ${FREE_SPACE_RESERVE_GB}GB"
+      return 1
+    fi
+  elif [[ "${free_now}" -lt "${reserve}" ]]; then
+    log "[ERROR] Free-space reserve is already below policy before download."
+    log "[ERROR] Free now: $((free_now / 1024 / 1024))GB; reserve: ${FREE_SPACE_RESERVE_GB}GB"
+    return 1
+  fi
+  return 0
+}
 
 record_available_url() {
   local name="$1"
@@ -254,6 +319,10 @@ log "[INFO]  Manifest: ${MANIFEST}"
 log "[INFO]  Target limit: ${MAX_TARGETS:-0} new URL-available download(s) (0 means all available targets)"
 log "[INFO]  Dry run: ${DRY_RUN}"
 log "[INFO]  Discover only: ${DISCOVER_ONLY}"
+log "[INFO]  Acquisition role: ${ACQUISITION_ROLE}"
+log "[INFO]  Acquisition mode: ${ACQUISITION_MODE}"
+log "[INFO]  Raw retention policy: ${RAW_RETENTION_POLICY}"
+log "[INFO]  Free-space reserve: ${FREE_SPACE_RESERVE_GB}GB"
 if [[ -n "${AVAILABILITY_OUTPUT}" ]]; then
   log "[INFO]  Availability output: ${AVAILABILITY_OUTPUT}"
   mkdir -p "$(dirname "${AVAILABILITY_OUTPUT}")"
@@ -277,6 +346,7 @@ downloaded=0
 reused=0
 skipped=0
 available=0
+policy_blocked=0
 DOWNLOADED_NAMES=()
 REUSED_NAMES=()
 SKIPPED_NAMES=()
@@ -313,6 +383,13 @@ for name in "${TARGETS[@]}"; do
   fi
   if [[ "${MAX_TARGETS}" != "0" && "${downloaded}" -ge "${MAX_TARGETS}" ]]; then
     log "[INFO]  New-download target limit reached (${MAX_TARGETS}); stopping early"
+    break
+  fi
+  if ! ensure_projected_free_space "${url}"; then
+    skipped=$((skipped + 1))
+    SKIPPED_NAMES+=("${name}")
+    SKIPPED_REASONS+=("free_space_reserve_not_met")
+    policy_blocked=1
     break
   fi
   if download_hdf5 "${name}" "${url}"; then
@@ -356,6 +433,10 @@ if [[ "$((downloaded + reused))" -eq 0 ]]; then
   log "[ERROR] No held-out evidence files were downloaded or reused."
   log "[ERROR] This command did not add usable extended-corpus evidence; empty directories are not evidence."
 fi
+if [[ "${policy_blocked}" -eq 1 ]]; then
+  RUN_OK=0
+  log "[ERROR] Data/storage policy blocked this run before completing all requested downloads."
+fi
 
 TECHNO_SEARCH_BIN="${REPO_ROOT}/.venv/bin/techno-search"
 if [[ ! -x "${TECHNO_SEARCH_BIN}" ]] && command -v techno-search >/dev/null 2>&1; then
@@ -383,6 +464,11 @@ if [[ -x "${TECHNO_SEARCH_BIN}" && -x "${STATUS_PYTHON}" ]]; then
     CHECKED_COUNT="${checked}" \
     TOTAL_COUNT="${total}" \
     RUN_OK="${RUN_OK}" \
+    ACQUISITION_ROLE="${ACQUISITION_ROLE}" \
+    ACQUISITION_MODE="${ACQUISITION_MODE}" \
+    RAW_RETENTION_POLICY="${RAW_RETENTION_POLICY}" \
+    FREE_SPACE_RESERVE_GB="${FREE_SPACE_RESERVE_GB}" \
+    POLICY_BLOCKED="${policy_blocked}" \
     "${STATUS_PYTHON}" -c '
 import json
 import os
@@ -403,6 +489,11 @@ summary = {
     "skipped": int(os.environ["SKIPPED_COUNT"]),
     "checked": int(os.environ["CHECKED_COUNT"]),
     "total": int(os.environ["TOTAL_COUNT"]),
+    "acquisition_role": os.environ["ACQUISITION_ROLE"],
+    "acquisition_mode": os.environ["ACQUISITION_MODE"],
+    "raw_retention_policy": os.environ["RAW_RETENTION_POLICY"],
+    "free_space_reserve_gb": float(os.environ["FREE_SPACE_RESERVE_GB"]),
+    "policy_blocked": os.environ["POLICY_BLOCKED"] == "1",
     "downloaded_targets": _lines("DOWNLOADED_NAMES"),
     "reused_targets": _lines("REUSED_NAMES"),
     "skipped_targets": [
