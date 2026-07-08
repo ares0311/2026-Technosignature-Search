@@ -62,9 +62,18 @@ repeat; Step 0 is a bootstrap exception, made once to unblock Steps 1 and
 
 **Action:** resume
 `scripts/download_bl_extended_corpus.sh --manifest data/target_sample_manifest_expanded.json`
-per the command already given earlier in this session, then run turboSETI
-and the pipeline over the results (`scripts/run_turboseti_on_extended_corpus.sh`,
-`scripts/run_pipeline_on_bl_data.sh`), then update
+per the command already given earlier in this session, but only after applying
+the Astrometrics data/storage policy now tracked in:
+
+- `docs/astrometrics_data_selection_policy.md`
+- `docs/astrometrics_external_and_cloud_storage_policy.md`
+
+That means: record the acquisition role and mode, confirm the batch remains
+within policy caps, confirm local free-space reserve, preserve metadata and
+status in `docs/data_collection_status.json`, and keep raw public archive files
+as cache unless a policy-backed pin rule promotes them. Then run turboSETI and
+the pipeline over the results (`scripts/run_turboseti_on_extended_corpus.sh`,
+`scripts/run_pipeline_on_bl_data.sh`), and update
 `docs/data_collection_status.json` per the standing reporting directive.
 
 ---
@@ -130,7 +139,9 @@ wiring real data into the inputs that formula already expects.**
 ### 3a. Novel-target selection ("places nobody has looked")
 
 Real, buildable now (after Step 0 gives a larger corpus to compute
-coverage against):
+coverage against), but it must follow
+`docs/astrometrics_data_selection_policy.md`'s metadata-first target-queue
+requirements:
 
 1. **Local-coverage gap (real, immediately computable):** cross-reference
    the full real HPRC catalog (`data/bl_hprc_full_seed_targets.csv`, 1,709
@@ -147,7 +158,10 @@ coverage against):
    burden (same "do not guess" standard as every other archive claim in
    this project) — treat as a stretch goal, not a blocker for shipping 3a's
    local-coverage version first.
-3. Wire the computed `novelty_score` into `target_priority_score()`'s
+3. Produce or update a target-priority queue with the required data-selection
+   fields before any new acquisition batch, rather than treating the model score
+   alone as a download reason.
+4. Wire the computed `novelty_score` into `target_priority_score()`'s
    existing weighting, don't reinvent the scoring formula.
 
 ### 3b. Follow-up-target selection ("candidates needing follow-on checks")

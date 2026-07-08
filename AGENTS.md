@@ -133,6 +133,39 @@ git conflict, confirming a destructive action). If the manifest shows a
 run failed, diagnose and propose a fix from the recorded error/reason
 fields before asking the user anything.
 
+### ASTROMETRICS CROSS-REPO POLICY DOCS — NON-NEGOTIABLE
+
+The following repo-local policy files are now active directives for work that
+touches models, datasets, scoring, evaluation, target selection, acquisition,
+storage, candidate ledgers, candidate reports, or detection-pipeline behavior:
+
+- `docs/astrometrics_coding_agents_master_guide.md`
+- `docs/astrometrics_data_selection_policy.md`
+- `docs/astrometrics_external_and_cloud_storage_policy.md`
+
+Before modifying those areas, read the relevant policy file(s) in this session
+and apply them. In particular:
+
+1. Do not promote a model without manifest provenance, grouped/leakage-safe
+   evaluation, calibration context, and injection-recovery evidence where the
+   policy requires it.
+2. Keep training, validation, calibration, frozen-eval, live-search, and
+   follow-up live-search data roles separate; never train on live-search data
+   and later claim a blind search on that same data.
+3. Use metadata-first target queues and batch manifests before raw downloads;
+   raw public archive files are cache unless promoted by policy.
+4. Treat the 4TB external SSD as the normal local workspace when mounted, but
+   keep the 500GB reserve and do not mirror broad public archives.
+5. Prefer archive URIs, product IDs, checksums, manifests, ledgers, derived
+   features, and candidate evidence packages over permanent raw-data hoarding.
+6. Do not use Dropbox-style sync as the authoritative scientific data layer for
+   raw archives, batch caches, model artifacts, or candidate evidence ledgers.
+
+If these cross-repo policies conflict with a more specific, current
+Technosignatures directive in this file or `docs/SYSTEMATIC_SEARCH_PLAN.md`,
+follow the more specific Technosignatures directive and document the reason in
+the PR.
+
 ### AGENT BRANCH SYNC — NON-NEGOTIABLE (prevents recurring merge conflicts)
 
 At the START of each session, before making any new commits, the agent must:

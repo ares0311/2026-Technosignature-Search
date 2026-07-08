@@ -7,7 +7,7 @@ implementations as of 2026-07-03 (Phase 4 opened this date). Remaining gaps
 per phase are either genuinely blocked on real data/network access the
 agent's sandbox cannot reach, or correctly deferred pending a surviving
 candidate (see the Phase 1-5 tables below for specifics).
-**Current app version:** 1.1.0
+**Current app version:** 1.2.0
 
 ---
 
@@ -57,6 +57,7 @@ These modules do real science or directly support it:
 | CI workflow | `.github/workflows/ci.yml` | ✅ Keep |
 | `validate-all` (simplified) | `cli.py` | ✅ Keep (needs cleanup) |
 | Production scan runbook | `docs/PRODUCTION_SCAN_RUNBOOK.md` | ✅ Keep |
+| Astrometrics cross-repo detection/data/storage policies | `docs/astrometrics_coding_agents_master_guide.md`, `docs/astrometrics_data_selection_policy.md`, `docs/astrometrics_external_and_cloud_storage_policy.md` | ✅ Keep — active policy inputs for manifests, data roles, acquisition modes, storage/cache rules, model promotion, and target queues |
 | 110 JSON schema artifacts | `schemas/` | ⚠️ ~100 are misaligned overhead; delete in Phase 0 |
 
 ---
