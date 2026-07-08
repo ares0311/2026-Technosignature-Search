@@ -102,6 +102,18 @@ def test_extended_corpus_downloader_preserves_scientific_guardrails() -> None:
     assert "authorizes external submission" in script
 
 
+def test_extended_corpus_downloader_enforces_data_storage_policy() -> None:
+    script = _script_text()
+
+    assert "ACQUISITION_ROLE=\"live_search_bootstrap_cache\"" in script
+    assert "ACQUISITION_MODE=\"targeted_batch_pull\"" in script
+    assert "RAW_RETENTION_POLICY=\"public_raw_archive_cache_not_pinned\"" in script
+    assert "TECHNO_EXTENDED_CORPUS_FREE_SPACE_RESERVE_GB" in script
+    assert "ensure_projected_free_space" in script
+    assert "free_space_reserve_not_met" in script
+    assert "\"policy_blocked\"" in script
+
+
 def test_extended_corpus_downloader_does_not_misstate_decision_134_status() -> None:
     script = _script_text()
 
@@ -288,6 +300,7 @@ printf 'downloaded %s\n' "${url}" > "${out_path}"
     env["TECHNO_EXTENDED_CORPUS_MAX_TARGETS"] = "1"
     env["TECHNO_EXTENDED_CORPUS_OUT_DIR"] = str(out_dir)
     env["TECHNO_EXTENDED_CORPUS_PYTHON"] = sys.executable
+    env["TECHNO_EXTENDED_CORPUS_FREE_SPACE_RESERVE_GB"] = "0"
     # Regression guard: this test runs the real script end-to-end (with a
     # faked curl), which reaches the real record-data-collection-status
     # call on success. Without redirecting the manifest path, this test
