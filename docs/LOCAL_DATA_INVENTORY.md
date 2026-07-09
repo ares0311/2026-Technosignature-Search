@@ -135,6 +135,11 @@ Measured result from pasted terminal output:
 - 17 URL-available HDF5 targets were processed.
 - 14 targets had no current HDF5 URL or were otherwise skipped.
 
+Future `--discover-only` metadata runs record their own tracked status under
+`download_bl_extended_corpus_discovery` in `docs/data_collection_status.json`,
+with per-target available URLs and skipped reasons. Use that committed manifest
+for review rather than relying on pasted console logs.
+
 New ignored local HDF5 payload targets included `HIP113421`, `HIP26779`,
 `HIP67275`, `HIP74981`, `HIP16852`, `HIP99427`, `HIP66704`, `HIP39826`,
 `HIP23311`, `HIP82860`, and `HIP17147`. These are local calibration and

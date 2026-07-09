@@ -351,6 +351,8 @@ DOWNLOADED_NAMES=()
 REUSED_NAMES=()
 SKIPPED_NAMES=()
 SKIPPED_REASONS=()
+AVAILABLE_NAMES=()
+AVAILABLE_URLS=()
 
 for name in "${TARGETS[@]}"; do
   if [[ "${DISCOVER_ONLY}" -eq 1 && "${MAX_TARGETS}" != "0" && "${available}" -ge "${MAX_TARGETS}" ]]; then
@@ -373,6 +375,8 @@ for name in "${TARGETS[@]}"; do
   available=$((available + 1))
   if [[ "${DISCOVER_ONLY}" -eq 1 ]]; then
     record_available_url "${name}" "${url}"
+    AVAILABLE_NAMES+=("${name}")
+    AVAILABLE_URLS+=("${url}")
     continue
   fi
   if target_hdf5_exists "${name}" "${url}"; then
@@ -412,8 +416,70 @@ if [[ "${DISCOVER_ONLY}" -eq 1 ]]; then
   log "[INFO]  Manifest targets checked: ${checked}/${total}"
   log "[INFO]  URL-available HDF5 targets: ${available}"
   log "[INFO]  Targets without a discovered HDF5 URL: ${skipped}"
+  DISCOVERY_RUN_OK=1
   if [[ "${available}" -eq 0 ]]; then
     log "[ERROR] No URL-available HDF5 targets were found."
+    DISCOVERY_RUN_OK=0
+  fi
+  TECHNO_SEARCH_BIN="${REPO_ROOT}/.venv/bin/techno-search"
+  if [[ ! -x "${TECHNO_SEARCH_BIN}" ]] && command -v techno-search >/dev/null 2>&1; then
+    TECHNO_SEARCH_BIN="$(command -v techno-search)"
+  fi
+  if [[ -x "${TECHNO_SEARCH_BIN}" && -x "${VENV_PYTHON}" ]]; then
+    SUMMARY_JSON="$(
+      AVAILABLE_NAMES="$(printf '%s\n' "${AVAILABLE_NAMES[@]:-}")" \
+      AVAILABLE_URLS="$(printf '%s\n' "${AVAILABLE_URLS[@]:-}")" \
+      SKIPPED_NAMES="$(printf '%s\n' "${SKIPPED_NAMES[@]:-}")" \
+      SKIPPED_REASONS="$(printf '%s\n' "${SKIPPED_REASONS[@]:-}")" \
+      AVAILABLE_COUNT="${available}" \
+      SKIPPED_COUNT="${skipped}" \
+      CHECKED_COUNT="${checked}" \
+      TOTAL_COUNT="${total}" \
+      RUN_OK="${DISCOVERY_RUN_OK}" \
+      ACQUISITION_ROLE="${ACQUISITION_ROLE}" \
+      RAW_RETENTION_POLICY="${RAW_RETENTION_POLICY}" \
+      "${VENV_PYTHON}" -c '
+import json
+import os
+
+
+def _lines(name):
+    text = os.environ.get(name, "")
+    return [line for line in text.split("\n") if line]
+
+
+available_names = _lines("AVAILABLE_NAMES")
+available_urls = _lines("AVAILABLE_URLS")
+skipped_names = _lines("SKIPPED_NAMES")
+skipped_reasons = _lines("SKIPPED_REASONS")
+summary = {
+    "ok": os.environ["RUN_OK"] == "1",
+    "mode": "discover_only",
+    "downloaded": 0,
+    "reused": 0,
+    "available": int(os.environ["AVAILABLE_COUNT"]),
+    "skipped": int(os.environ["SKIPPED_COUNT"]),
+    "checked": int(os.environ["CHECKED_COUNT"]),
+    "total": int(os.environ["TOTAL_COUNT"]),
+    "acquisition_role": os.environ["ACQUISITION_ROLE"],
+    "acquisition_mode": "metadata_only_discovery",
+    "raw_retention_policy": os.environ["RAW_RETENTION_POLICY"],
+    "available_targets": [
+        {"target": t, "url": u} for t, u in zip(available_names, available_urls)
+    ],
+    "skipped_targets": [
+        {"target": t, "reason": r} for t, r in zip(skipped_names, skipped_reasons)
+    ],
+}
+print(json.dumps(summary))
+'
+    )"
+    "${TECHNO_SEARCH_BIN}" record-data-collection-status \
+      --script download_bl_extended_corpus_discovery \
+      --summary-json "${SUMMARY_JSON}" \
+      >/dev/null 2>&1 || log "[INFO]  Discovery status manifest update/commit skipped (non-fatal)."
+  fi
+  if [[ "${DISCOVERY_RUN_OK}" -eq 0 ]]; then
     exit 1
   fi
   exit 0

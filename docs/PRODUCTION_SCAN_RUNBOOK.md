@@ -311,6 +311,12 @@ caffeinate -i bash scripts/download_bl_extended_corpus.sh \
   --availability-output /tmp/bl_hdf5_availability.tsv
 ```
 
+This metadata-discovery mode records a compact status entry under
+`download_bl_extended_corpus_discovery` in `docs/data_collection_status.json`,
+including `available_targets` with URLs and `skipped_targets` with reasons.
+Review that manifest after `git pull` instead of asking the operator to paste
+console output.
+
 For a bounded download, the target limit applies to new URL-available downloads,
 not raw manifest position and not already-downloaded HDF5 evidence. This
 prevents resumed runs from stopping on unavailable manifest entries or evidence
@@ -355,7 +361,9 @@ message -- a failed run with no manifest entry is invisible and looks
 identical to "never run"), with a JSON summary that names *which* items
 succeeded/failed and why (e.g. `download_bl_extended_corpus`'s
 `downloaded_targets`/`reused_targets`/`skipped_targets` with a `reason`
-per skip) -- not raw payload contents, and not just aggregate counts.
+per skip, and `download_bl_extended_corpus_discovery`'s
+`available_targets`/`skipped_targets`) -- not raw payload contents, and not
+just aggregate counts.
 This is what makes the committed manifest alone sufficient to diagnose a
 real problem without asking the operator to paste console output. Also
 consider the `CLAUDE.md` "DATA COLLECTION PARALLELIZATION DIRECTIVE" when
