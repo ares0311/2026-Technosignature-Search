@@ -117,6 +117,9 @@ class ProductionConsole:
         self.write(f"WARN {message}")
 
     def print_target_rows(self, entries: list[JsonObject]) -> None:
+        if not entries:
+            self.write("Completed target evaluations: none")
+            return
         if self._rich_console is not None and RichTable is not None:
             table = RichTable(title="Completed target evaluations")
             table.add_column("Index")

@@ -305,6 +305,39 @@ There are no confirmed positive technosignature labels. Do not use pretrained
 models, Kaggle SETI, Setigen, or any synthetic training set for the first Track A
 milestone unless the user explicitly approves a later synthetic benchmark.
 
+### CNN / Learned-Model Promotion Gate — NON-NEGOTIABLE
+
+`docs/astrometrics_coding_agents_master_guide.md` changes the formal roadmap
+for any CNN, waterfall morphology model, embedding model, or other learned
+model in this repo. Future agents must treat this as a production gate, not a
+nice-to-have benchmark note.
+
+Current local status: this repo has only CNN scaffold/stub records for radio
+waterfall morphology, with no trained promotable CNN weights. If a future agent
+finds or builds a CNN-like model, it must be frozen as `benchmark_cnn_v1` before
+any promotion discussion.
+
+Rules:
+
+1. Keep the CNN as a reproducible benchmark; do not make it the main scientific
+   thesis and do not let it make final detection decisions.
+2. Freeze architecture, preprocessing, random seeds, split definitions, metrics,
+   and model-card documentation before comparing future models against it.
+3. Do not casually tune a frozen CNN benchmark after results are recorded.
+4. Do not promote any learned model without dataset manifest IDs,
+   candidate-ledger provenance, grouped/leakage-safe evaluation, calibration
+   context, and injection-recovery evidence in real backgrounds.
+5. Required grouped holdouts for Technosignatures are by target, cadence,
+   frequency band, and telescope/session. Random-only splits are forbidden as
+   promotion evidence.
+6. Do not treat unlabeled data as negative data.
+7. Do not use accuracy as the primary metric for rare-event discovery. Report
+   top-k review yield, AUPRC, FDR, calibration, and injection-recovery context.
+8. Do not use synthetic-only performance as evidence of real-world performance.
+9. Model output is local triage evidence only; it is never a detection,
+   discovery, expert review, external validation, or external-submission
+   authorization.
+
 ---
 
 ## TARGET SELECTION PHILOSOPHY — NON-NEGOTIABLE
@@ -413,6 +446,9 @@ with operational status, with zero scientific progress. This must never recur.
 - Implement the Track A known-explanation classifier from
   `docs/technosignature_datasets_agent_brief.md` before any Track B
   `unknown_candidate` routing
+- Freeze any discovered or future CNN/waterfall model as `benchmark_cnn_v1`
+  before promotion discussion; promotion remains blocked until the CNN /
+  learned-model gate above is satisfied with real-background evidence
 - Build catalog cross-matches for pulsars, FRBs, blazars/AGN, gamma-ray sources,
   satellites/transmitters, terrestrial RFI, instrument artifacts, and noise
 - Implement proper ON/OFF cadence verification from raw `.fil`/`.h5` files
