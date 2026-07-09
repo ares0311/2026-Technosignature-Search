@@ -660,6 +660,35 @@ the current open item (real per-hit labeled BL/SETI calibration data).
 
 ---
 
+## MCP SERVER USAGE
+
+When these MCP servers are configured/available in the current session, prefer
+them over guessing, memory, or ad hoc shell calls:
+
+- **GitHub MCP** — issues, PRs, remote branches, repo metadata, PR review
+  notes, commit/PR review, and PR links. Prefer this over recalling PR state
+  from memory when reporting the PR LINK + CONTINUATION DIRECTIVE above.
+- **Context7 MCP** — current library/framework/SDK/API/CLI documentation.
+  Use even for well-known libraries; training data may be stale on recent
+  API/version changes.
+- **arXiv MCP** — preprint lookup, paper search, and research context for
+  citations used in `docs/*_research.md` / `docs/*_brief.md` files. Useful
+  precisely because the SANDBOX NETWORK RESTRICTION RULE above blocks direct
+  `arxiv.org`/`export.arxiv.org` access from this sandbox.
+- **NASA ADS MCP** — astronomy/astrophysics literature: bibcodes, citations,
+  references, author metrics, BibTeX export. Useful for the same reason —
+  direct `ui.adsabs.harvard.edu` access is blocked from this sandbox.
+
+Using these servers does not change any scientific rule in this file: fetched
+literature/documentation is research input only, still subject to the
+Non-Negotiable Scientific Rules (no discovery claims, provenance preserved,
+false positive remains the default hypothesis). See
+`docs/Technosignatures_MCP_BOOTSTRAP.md` for the original conservative MCP
+rollout policy (project-file/git-read/`techno_guard` scope) that these
+additional servers extend.
+
+---
+
 ## Local Performance Optimization
 
 Read `docs/LOCAL_SYSTEM_PROFILE.md` for local performance defaults and
