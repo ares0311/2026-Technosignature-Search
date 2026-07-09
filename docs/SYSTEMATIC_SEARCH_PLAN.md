@@ -27,7 +27,7 @@ step that's already blocked on an earlier one.
 | Track B 9-condition gate | ✅ Real, implemented, conservative-by-construction |
 | Semisupervised anomaly/OOD calibration | ❌ Blocked — see Step 1 |
 | Operator UI hardening | ⚠️ Partially underway — production scan terminal output and post-run review commands now have compact operator-facing summaries; see Step 2 |
-| Detection-optimized target selection algorithm | ❌ Not started — see Step 3 |
+| Detection-optimized target selection algorithm | ⚠️ Local-coverage target queue initialized — see Step 3a |
 | Extended-corpus download completion | ⚠️ Paused mid-run — see Step 0 |
 
 ---
@@ -150,8 +150,9 @@ wiring real data into the inputs that formula already expects.**
 
 ### 3a. Novel-target selection ("places nobody has looked")
 
-Real, buildable now (after Step 0 gives a larger corpus to compute
-coverage against), but it must follow
+Local-coverage target selection is now initialized. It still improves after
+Step 0 widens the local corpus, but the first metadata-first queue exists and
+is GitHub-visible. It follows
 `docs/astrometrics_data_selection_policy.md`'s metadata-first target-queue
 requirements:
 
@@ -161,7 +162,14 @@ requirements:
    and searched (`data/extended_corpus/`, `docs/data_collection_status.json`).
    Compute a real `novelty_score` input as "has this project ever searched
    this star" (binary or recency-weighted) — this requires no external
-   research, only real local provenance data already tracked.
+   research, only real local provenance data already tracked. **Initial
+   implementation:** `techno-search build-target-priority-queue` writes
+   `data_selection/target_priority_queue.csv` from the full HPRC seed CSV and
+   `docs/data_collection_status.json`. The first committed queue has 1,703
+   unique target IDs: 1,683 queued for metadata discovery, 4 requiring metadata
+   retry after prior `no_hdf5_url_discovered` results, and 16 already-acquired
+   local-cache controls. One status-manifest reused target (`HIP75676`) is not
+   present in the full HPRC seed CSV and is therefore not forced into the queue.
 2. **External-coverage gap (real, but needs research before building):**
    a stronger "nobody has looked here" claim would require cross-referencing
    against other surveys' published target lists (not just this project's
@@ -172,9 +180,14 @@ requirements:
    local-coverage version first.
 3. Produce or update a target-priority queue with the required data-selection
    fields before any new acquisition batch, rather than treating the model score
-   alone as a download reason.
+   alone as a download reason. **Initial implementation done:**
+   `data_selection/target_priority_queue.csv`.
 4. Wire the computed `novelty_score` into `target_priority_score()`'s
-   existing weighting, don't reinvent the scoring formula.
+   existing weighting, don't reinvent the scoring formula. **Initial
+   implementation done:** queue rows include a normalized
+   `background_target_priority_score` using the existing
+   `target_priority_score()` component shape; the data-selection
+   `total_priority` remains the policy-required 0-3 live-search sum.
 
 ### 3b. Follow-up-target selection ("candidates needing follow-on checks")
 

@@ -35,6 +35,28 @@ schemas, checksums, manifests, small fixtures, and tests.
 | `cache/` | Live-provider and catalog-cache helpers | Local provider metadata caches | Ignored payloads |
 | `artifacts/` | Local validation, export, and scratch workflows | Generated intermediate products | Ignored payloads |
 
+## Committed Metadata And Scheduling Artifacts
+
+These are intentionally small, GitHub-visible maps that keep future agents from
+depending on local-only state:
+
+| Path | Producer | Purpose | Git policy |
+|---|---|---|---|
+| `data/bl_hprc_seed_targets.csv` | Sampling design workflow | Small stratified/null-result target sample | Committed map |
+| `data/bl_hprc_full_targets_vizier.csv` | `scripts/acquire_bl_hprc_full_catalog.py` | Full HPRC catalog metadata export from the approved source workflow | Committed metadata map |
+| `data/bl_hprc_full_seed_targets.csv` | `scripts/build_bl_hprc_full_seed.py` | Full HPRC seed target metadata used for local-coverage target selection | Committed metadata map |
+| `data/target_sample_manifest.json` | Sampling design workflow | Stratified sample manifest retained for null-result defensibility | Committed manifest |
+| `docs/data_collection_status.json` | Data acquisition entrypoints | Compact tracked data-collection status and per-target outcomes | Committed status manifest |
+| `data_selection/target_priority_queue.csv` | `techno-search build-target-priority-queue` | Metadata-first live-search target queue for local-coverage novelty selection | Committed scheduling artifact |
+| `data_selection/data_role_registry.yaml` | Data-selection policy workflow | Role separation for live-search metadata and local-cache status | Committed policy artifact |
+
+The first target-priority queue contains 1,703 unique target IDs derived from
+the 1,709-row full HPRC metadata seed. It records 1,683 targets queued for
+product metadata discovery, 4 metadata-retry targets, and 16 already-acquired
+local-cache controls. `HIP75676` appears in the extended-corpus status manifest
+but not in the full HPRC seed CSV, so it is documented as a source-list
+limitation rather than forced into the queue.
+
 ## Broadly Ignored File Classes
 
 The repository ignores raw or generated science payloads wherever they appear:

@@ -109,11 +109,16 @@ Status: underway.
 Status: starts after P0/P3 supply enough evidence and operator UX stability.
 
 - Build local-coverage novelty scoring from the full real HPRC catalog and this
-  project's actual searched/acquired targets.
-- Produce a target-priority queue before future raw acquisitions.
+  project's actual searched/acquired targets. Initial local-coverage queue is
+  implemented by `techno-search build-target-priority-queue`.
+- Produce a target-priority queue before future raw acquisitions. Initial queue:
+  `data_selection/target_priority_queue.csv` with 1,703 unique target IDs
+  (1,683 metadata-discovery targets, 4 metadata-retry targets, 16 local-cache
+  controls).
 - Wire real novelty and follow-up-value inputs into the existing
   `target_priority_score` shape; do not let model score alone choose raw
-  downloads.
+  downloads. Initial queue includes `background_target_priority_score`; follow-up
+  leverage remains zero until a real unresolved candidate exists.
 - Defer follow-up-target scoring implementation until a real partial candidate
   exists to test it.
 
