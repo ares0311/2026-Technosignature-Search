@@ -48,25 +48,30 @@ depending on local-only state:
 | `data/target_sample_manifest.json` | Sampling design workflow | Stratified sample manifest retained for null-result defensibility | Committed manifest |
 | `docs/data_collection_status.json` | Data acquisition entrypoints | Compact tracked data-collection status and per-target outcomes | Committed status manifest |
 | `data_selection/target_priority_queue.csv` | `techno-search build-target-priority-queue` | Metadata-first live-search target queue for local-coverage novelty selection | Committed scheduling artifact |
-| `data_selection/batch_manifests/local_coverage_top25_manifest.json` | `techno-search build-target-priority-manifest` | Bounded top-25 manifest for BL product metadata discovery from the target-priority queue | Committed scheduling artifact |
-| `data_selection/batch_manifests/local_coverage_top25_size_preflight_manifest.json` | `techno-search build-target-priority-manifest --include-status size_preflight_required` | URL-discovered top-25 subset for size/checksum/storage preflight before any raw download | Committed scheduling artifact |
-| `data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json` | `techno-search target-priority-size-preflight` | HEAD-only content-length and header preflight for URL-discovered HDF5 files | Committed scheduling artifact |
-| `data_selection/batch_manifests/local_coverage_top25_raw_download_approval_manifest.json` | `techno-search build-target-priority-manifest --include-status raw_download_approval_required` | Human-review input for explicit approval of the 15 sized HDF5 rows | Committed scheduling artifact |
+| `data_selection/batch_manifests/local_coverage_top25_manifest.json` / `local_coverage_next25_manifest.json` | `techno-search build-target-priority-manifest` | Per-round bounded manifest for BL product metadata discovery from the target-priority queue | Committed scheduling artifact |
+| `data_selection/batch_manifests/local_coverage_top25_size_preflight_manifest.json` / `local_coverage_next25_size_preflight_manifest.json` | `techno-search build-target-priority-manifest --include-status size_preflight_required` | Per-round URL-discovered subset for size/checksum/storage preflight before any raw download | Committed scheduling artifact |
+| `data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json` / `local_coverage_next25_size_preflight_report.json` | `techno-search target-priority-size-preflight` | Per-round HEAD-only content-length and header preflight for URL-discovered HDF5 files | Committed scheduling artifact |
+| `data_selection/batch_manifests/local_coverage_raw_download_approval_manifest.json` | `techno-search build-target-priority-manifest --include-status raw_download_approval_required` | Consolidated human-review input for explicit approval of every sized HDF5 row promoted so far across all rounds (29 targets as of the `next25` round) | Committed scheduling artifact |
 | `data_selection/data_role_registry.yaml` | Data-selection policy workflow | Role separation for live-search metadata and local-cache status | Committed policy artifact |
 
 The current target-priority queue contains 1,703 unique target IDs derived from
-the 1,709-row full HPRC metadata seed. After the first top-25 metadata-only
-discovery and HEAD-only size preflight, it records 1,658 targets queued for
-product metadata discovery, 15 targets requiring explicit raw-download approval,
-14 metadata-retry targets, and 16 already-acquired local-cache controls.
-`HIP75676` appears in the extended-corpus status manifest but not in the full
-HPRC seed CSV, so it is documented as a source-list limitation rather than
-forced into the queue.
+the 1,709-row full HPRC metadata seed. After the top-25 and next-25
+metadata-only discovery rounds and their HEAD-only size preflights, it records
+1,643 targets queued for product metadata discovery, 29 targets requiring
+explicit raw-download approval, 15 metadata-retry targets, and 16
+already-acquired local-cache controls. `HIP75676` appears in the
+extended-corpus status manifest but not in the full HPRC seed CSV, so it is
+documented as a source-list limitation rather than forced into the queue.
 
-The regenerated queue moved the 15 URL-sized targets from
+The regenerated queue moved the 29 URL-sized targets from
 `size_preflight_required` to
 `raw_download_approval_required`. That state is planning evidence only; raw
-download still requires explicit operator approval and a storage-reserve check.
+download still requires explicit operator approval and a storage-reserve
+check. `techno-search build-target-priority-queue` merges every committed
+`*_size_preflight_report.json` under `data_selection/batch_manifests/` (see
+`--extra-size-preflight-report-path`, default: auto-glob) so a later round's
+report does not regress an earlier round's promotion — see the "next25"
+round entry below for the real regression this fixed.
 
 ## Broadly Ignored File Classes
 
@@ -160,6 +165,36 @@ New ignored local HDF5 payload targets included `HIP113421`, `HIP26779`,
 `HIP23311`, `HIP82860`, and `HIP17147`. These are local calibration and
 generalization aids only. They are ignored payloads under `data/extended_corpus/`
 and must not be committed by `git add .`.
+
+### 2026-07-09 Local-Coverage `next25` Discovery + Preflight Round
+
+The second local-coverage round processed the next 25 highest-priority
+`queued_metadata_discovery` rows (the top-25 rows had already left that
+status after the first round). `--discover-only` checked 25 targets, found
+14 current BL HDF5 URLs, found 11 targets without a current HDF5 URL, and
+downloaded zero raw payloads. The follow-on HEAD-only size preflight
+verified 14/14 URLs with content lengths, estimated 3.608361 GB total,
+found no checksum headers, and kept raw download authorization disabled.
+
+Running this second round surfaced a real bug in
+`build_target_priority_queue()`/`build-target-priority-queue`: the
+size-preflight report path was a single hard-coded default
+(`local_coverage_top25_size_preflight_report.json`), so rebuilding the
+queue after the `next25` preflight would have promoted the new 14 targets
+while silently regressing the original 15 `top25` targets back out of
+`raw_download_approval_required` (the `download_bl_extended_corpus_discovery`
+run entry in `docs/data_collection_status.json` is overwritten per run, so
+that fallback path could not recover the `top25` targets either). Fixed by
+merging **every** committed `*_size_preflight_report.json` under
+`data_selection/batch_manifests/` (new `--extra-size-preflight-report-path`
+CLI flag, default: auto-glob) instead of reading only one file. Regression
+test: `test_build_target_priority_queue_merges_multiple_size_preflight_reports`
+in `tests/test_target_priority_queue.py`. After the fix, the queue correctly
+reports 29 targets in `raw_download_approval_required` (15 + 14), and
+`data_selection/batch_manifests/local_coverage_raw_download_approval_manifest.json`
+is the current consolidated approval input covering all 29 (~7.41 GB
+combined). None of this authorizes a raw download; it remains metadata-only
+scheduling evidence pending explicit operator approval.
 
 ### 2026-07-02 Extended-Corpus turboSETI + Production Scan
 

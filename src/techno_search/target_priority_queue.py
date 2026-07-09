@@ -9,6 +9,7 @@ import ssl
 import urllib.error
 import urllib.request
 from collections import Counter
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -137,7 +138,7 @@ def _load_seed_targets(path: Path) -> list[dict[str, str]]:
 def _load_coverage_state(
     path: Path,
     *,
-    size_preflight_report_path: Path | None = None,
+    size_preflight_report_paths: Sequence[Path] = (),
 ) -> _CoverageState:
     with path.open(encoding="utf-8") as handle:
         payload = json.load(handle)
@@ -169,8 +170,10 @@ def _load_coverage_state(
         if target and target not in discovered_hdf5_urls:
             skipped[target] = reason
     size_preflight_targets: dict[str, dict[str, Any]] = {}
-    if size_preflight_report_path is not None and size_preflight_report_path.exists():
-        report = json.loads(size_preflight_report_path.read_text(encoding="utf-8"))
+    for report_path in dict.fromkeys(size_preflight_report_paths):
+        if report_path is None or not report_path.exists():
+            continue
+        report = json.loads(report_path.read_text(encoding="utf-8"))
         for item in report.get("targets", []):
             if not isinstance(item, dict):
                 continue
@@ -429,12 +432,24 @@ def build_target_priority_queue(
     size_preflight_report_path: Path = Path(
         "data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json"
     ),
+    extra_size_preflight_report_paths: Sequence[Path] = (),
 ) -> list[dict[str, str]]:
-    """Build sorted target-priority rows from committed metadata and status."""
+    """Build sorted target-priority rows from committed metadata and status.
+
+    Every committed size-preflight report is a separate acquisition batch
+    (e.g. ``local_coverage_top25_size_preflight_report.json``,
+    ``local_coverage_next25_size_preflight_report.json``). All of them must be
+    merged, not just the single default/legacy report, or promoting a later
+    batch to ``raw_download_approval_required`` would silently regress an
+    earlier batch's promotion back to an unresolved status.
+    """
 
     coverage = _load_coverage_state(
         data_status_path,
-        size_preflight_report_path=size_preflight_report_path,
+        size_preflight_report_paths=(
+            size_preflight_report_path,
+            *extra_size_preflight_report_paths,
+        ),
     )
     queue_rows = [
         _queue_row(row, coverage)
@@ -467,6 +482,7 @@ def write_target_priority_queue(
     size_preflight_report_path: Path = Path(
         "data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json"
     ),
+    extra_size_preflight_report_paths: Sequence[Path] = (),
 ) -> dict[str, Any]:
     """Write a target-priority queue CSV and return a compact summary."""
 
@@ -474,6 +490,7 @@ def write_target_priority_queue(
         seed_csv_path=seed_csv_path,
         data_status_path=data_status_path,
         size_preflight_report_path=size_preflight_report_path,
+        extra_size_preflight_report_paths=extra_size_preflight_report_paths,
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", newline="", encoding="utf-8") as handle:
