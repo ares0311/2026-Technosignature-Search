@@ -66,6 +66,7 @@ TARGET_PRIORITY_QUEUE_FIELDS = [
 class _CoverageState:
     reused_or_downloaded_targets: frozenset[str]
     discovered_hdf5_urls: dict[str, str]
+    size_preflight_targets: dict[str, dict[str, Any]]
     skipped_targets: dict[str, str]
 
 
@@ -133,7 +134,11 @@ def _load_seed_targets(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(handle))
 
 
-def _load_coverage_state(path: Path) -> _CoverageState:
+def _load_coverage_state(
+    path: Path,
+    *,
+    size_preflight_report_path: Path | None = None,
+) -> _CoverageState:
     with path.open(encoding="utf-8") as handle:
         payload = json.load(handle)
     run = payload.get("runs", {}).get("download_bl_extended_corpus", {})
@@ -163,9 +168,20 @@ def _load_coverage_state(path: Path) -> _CoverageState:
         reason = str(item.get("reason", "")).strip() or "skipped_without_reason"
         if target and target not in discovered_hdf5_urls:
             skipped[target] = reason
+    size_preflight_targets: dict[str, dict[str, Any]] = {}
+    if size_preflight_report_path is not None and size_preflight_report_path.exists():
+        report = json.loads(size_preflight_report_path.read_text(encoding="utf-8"))
+        for item in report.get("targets", []):
+            if not isinstance(item, dict):
+                continue
+            target = str(item.get("target_id", "")).strip()
+            url = str(item.get("url", "")).strip()
+            if target and url and item.get("ok") is True:
+                size_preflight_targets[target] = item
     return _CoverageState(
         reused_or_downloaded_targets=frozenset(reused | downloaded),
         discovered_hdf5_urls=discovered_hdf5_urls,
+        size_preflight_targets=size_preflight_targets,
         skipped_targets=skipped,
     )
 
@@ -211,7 +227,11 @@ def _data_quality(row: dict[str, str], data_products_available: str) -> float:
         score += 0.5
     if (row.get("spec_type") or row.get("SpType") or "").strip():
         score += 0.5
-    if data_products_available in {"local_cache_present", "hdf5_url_discovered"}:
+    if data_products_available in {
+        "local_cache_present",
+        "hdf5_url_discovered",
+        "hdf5_size_preflight_ok",
+    }:
         score += 0.5
     elif data_products_available == "requires_product_metadata_discovery":
         score += 0.25
@@ -231,6 +251,27 @@ def _classification_for_aliases(
             0.5,
             1.0,
             "",
+        )
+    size_preflight_aliases = sorted(
+        alias for alias in aliases if alias in coverage.size_preflight_targets
+    )
+    if size_preflight_aliases:
+        preflight = coverage.size_preflight_targets[size_preflight_aliases[0]]
+        size_gb = preflight.get("content_length_gb")
+        estimated_download_gb = (
+            f"{float(size_gb):.6f}".rstrip("0").rstrip(".")
+            if isinstance(size_gb, (int, float))
+            else ""
+        )
+        return (
+            "hdf5_size_preflight_ok",
+            estimated_download_gb,
+            "new_parameter_space",
+            "raw_download_approval_required",
+            "not_searched_size_preflight_ok",
+            2.75,
+            2.75,
+            str(preflight.get("url", "")).strip(),
         )
     discovered_aliases = sorted(
         alias for alias in aliases if alias in coverage.discovered_hdf5_urls
@@ -291,7 +332,12 @@ def _queue_row(row: dict[str, str], coverage: _CoverageState) -> dict[str, str]:
     data_quality = _data_quality(row, data_products_available)
     method_advantage = (
         2.5
-        if status in {"queued_metadata_discovery", "size_preflight_required"}
+        if status
+        in {
+            "queued_metadata_discovery",
+            "size_preflight_required",
+            "raw_download_approval_required",
+        }
         else 1.5
     )
     if status == "already_acquired_local_cache":
@@ -340,6 +386,11 @@ def _queue_row(row: dict[str, str], coverage: _CoverageState) -> dict[str, str]:
             "Current BL HDF5 URL discovered. Run size/checksum/storage preflight "
             "before any raw acquisition."
         )
+    elif status == "raw_download_approval_required":
+        notes = (
+            "Current BL HDF5 URL passed HEAD-only size preflight. Raw download "
+            "still requires explicit operator approval and storage-reserve check."
+        )
     return {
         "target_id": target_id,
         "project": DEFAULT_PROJECT,
@@ -375,10 +426,16 @@ def build_target_priority_queue(
     *,
     seed_csv_path: Path = Path("data/bl_hprc_full_seed_targets.csv"),
     data_status_path: Path = Path("docs/data_collection_status.json"),
+    size_preflight_report_path: Path = Path(
+        "data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json"
+    ),
 ) -> list[dict[str, str]]:
     """Build sorted target-priority rows from committed metadata and status."""
 
-    coverage = _load_coverage_state(data_status_path)
+    coverage = _load_coverage_state(
+        data_status_path,
+        size_preflight_report_path=size_preflight_report_path,
+    )
     queue_rows = [
         _queue_row(row, coverage)
         for row in _load_seed_targets(seed_csv_path)
@@ -407,12 +464,16 @@ def write_target_priority_queue(
     *,
     seed_csv_path: Path = Path("data/bl_hprc_full_seed_targets.csv"),
     data_status_path: Path = Path("docs/data_collection_status.json"),
+    size_preflight_report_path: Path = Path(
+        "data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json"
+    ),
 ) -> dict[str, Any]:
     """Write a target-priority queue CSV and return a compact summary."""
 
     rows = build_target_priority_queue(
         seed_csv_path=seed_csv_path,
         data_status_path=data_status_path,
+        size_preflight_report_path=size_preflight_report_path,
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", newline="", encoding="utf-8") as handle:
@@ -484,6 +545,9 @@ def build_target_priority_manifest(
                     row["background_target_priority_score"]
                 ),
                 "data_products_available": row["data_products_available"],
+                "estimated_download_gb": float(row["estimated_download_gb"])
+                if row.get("estimated_download_gb")
+                else None,
                 "source_hdf5_url": row.get("source_hdf5_url", ""),
                 "notes": row["notes"],
             }

@@ -333,12 +333,13 @@ lengths, estimated 3.803966 GB total, found no checksum headers, and wrote
 For a bounded download, the target limit applies to new URL-available downloads,
 not raw manifest position and not already-downloaded HDF5 evidence. This
 prevents resumed runs from stopping on unavailable manifest entries or evidence
-that is already present locally:
+that is already present locally. Only run this after explicit operator approval
+of the bounded raw acquisition:
 
 ```bash
 git pull origin main
 TECHNO_EXTENDED_CORPUS_MAX_TARGETS=5 caffeinate -i bash scripts/download_bl_extended_corpus.sh \
-  --manifest data/target_sample_manifest.json
+  --manifest data_selection/batch_manifests/local_coverage_top25_raw_download_approval_manifest.json
 ```
 
 ---

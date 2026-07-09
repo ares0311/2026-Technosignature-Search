@@ -194,7 +194,10 @@ requirements:
    `data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json`.
    The first HEAD-only run verified 15/15 URLs with content lengths, estimated
    3.803966 GB total, found no checksum headers, and left
-   `raw_download_authorized: false`.
+   `raw_download_authorized: false`. The regenerated queue now marks those 15
+   rows as `raw_download_approval_required` and writes
+   `data_selection/batch_manifests/local_coverage_top25_raw_download_approval_manifest.json`
+   as the review input for explicit bounded raw-download approval.
 4. Wire the computed `novelty_score` into `target_priority_score()`'s
    existing weighting, don't reinvent the scoring formula. **Initial
    implementation done:** queue rows include a normalized

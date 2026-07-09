@@ -51,16 +51,22 @@ depending on local-only state:
 | `data_selection/batch_manifests/local_coverage_top25_manifest.json` | `techno-search build-target-priority-manifest` | Bounded top-25 manifest for BL product metadata discovery from the target-priority queue | Committed scheduling artifact |
 | `data_selection/batch_manifests/local_coverage_top25_size_preflight_manifest.json` | `techno-search build-target-priority-manifest --include-status size_preflight_required` | URL-discovered top-25 subset for size/checksum/storage preflight before any raw download | Committed scheduling artifact |
 | `data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json` | `techno-search target-priority-size-preflight` | HEAD-only content-length and header preflight for URL-discovered HDF5 files | Committed scheduling artifact |
+| `data_selection/batch_manifests/local_coverage_top25_raw_download_approval_manifest.json` | `techno-search build-target-priority-manifest --include-status raw_download_approval_required` | Human-review input for explicit approval of the 15 sized HDF5 rows | Committed scheduling artifact |
 | `data_selection/data_role_registry.yaml` | Data-selection policy workflow | Role separation for live-search metadata and local-cache status | Committed policy artifact |
 
-The first target-priority queue contains 1,703 unique target IDs derived from
+The current target-priority queue contains 1,703 unique target IDs derived from
 the 1,709-row full HPRC metadata seed. After the first top-25 metadata-only
-discovery run, it records 1,658 targets queued for product metadata discovery,
-15 URL-discovered targets requiring size/checksum/storage preflight, 14
-metadata-retry targets, and 16 already-acquired local-cache controls. `HIP75676`
-appears in the extended-corpus status manifest but not in the full HPRC seed
-CSV, so it is documented as a source-list limitation rather than forced into the
-queue.
+discovery and HEAD-only size preflight, it records 1,658 targets queued for
+product metadata discovery, 15 targets requiring explicit raw-download approval,
+14 metadata-retry targets, and 16 already-acquired local-cache controls.
+`HIP75676` appears in the extended-corpus status manifest but not in the full
+HPRC seed CSV, so it is documented as a source-list limitation rather than
+forced into the queue.
+
+The regenerated queue moved the 15 URL-sized targets from
+`size_preflight_required` to
+`raw_download_approval_required`. That state is planning evidence only; raw
+download still requires explicit operator approval and a storage-reserve check.
 
 ## Broadly Ignored File Classes
 
