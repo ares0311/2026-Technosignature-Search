@@ -14,6 +14,109 @@ must classify or reject pulsars, FRBs, blazars/AGN, known gamma-ray sources,
 satellite/transmitter matches, terrestrial RFI, instrument artifacts, and noise
 before Track B can emit `unknown_candidate` triage labels.
 
+The current executable production roadmap is governed by:
+
+- `AGENTS.md`
+- `docs/SYSTEMATIC_SEARCH_PLAN.md`
+- `docs/PRODUCTION_READINESS.md`
+- `docs/astrometrics_coding_agents_master_guide.md`
+- `docs/astrometrics_data_selection_policy.md`
+- `docs/astrometrics_external_and_cloud_storage_policy.md`
+
+The historical milestones below remain useful implementation history, but they
+do not authorize synthetic-first model promotion or operational-overhead work
+that does not advance the search.
+
+---
+
+# Current Production Roadmap — 2026-07-08
+
+## P0 — Finish The Real Corpus Bootstrap
+
+Status: blocked on a long local data acquisition run.
+
+- Resume the expanded BL corpus bootstrap with
+  `scripts/download_bl_extended_corpus.sh --manifest data/target_sample_manifest_expanded.json`.
+- Preserve acquisition role/mode, free-space reserve status, per-target
+  downloaded/reused/skipped detail, and failure reasons in
+  `docs/data_collection_status.json`.
+- Keep raw public HDF5 payloads as cache unless a later candidate, frozen-eval,
+  or calibration policy explicitly pins them.
+- Then run turboSETI and the production pipeline over the expanded corpus.
+
+## P1 — Build The Real Review And Calibration Set
+
+Status: blocked until P0 provides a broader real corpus and the operator reviews
+labels.
+
+- Build a review-sampling tool that samples hits across score deciles, targets,
+  bands, and instruments from real evidence only.
+- Produce a review queue with `hit_id`, `source_file`, `target`,
+  `frequency_hz`, `drift_rate_hz_s`, `snr`, `score`, `review_label`,
+  `reviewer_id`, `review_timestamp_utc`, and `review_notes`.
+- Target at least 1,000 reviewed rows and at least 50 follow-up-like rows before
+  treating anomaly/OOD scores as calibrated.
+- Use precision-at-k, AUPRC, FDR, calibration curves, and top-k review yield;
+  do not use accuracy alone as the rare-event promotion metric.
+
+## P2 — CNN And Learned-Model Promotion Gate
+
+Status: policy gate added; current repo has only a CNN scaffold/stub, not a
+trained promotable CNN.
+
+The Astrometrics master guide changes the roadmap for CNN work:
+
+- Keep any CNN/waterfall model, but freeze it as `benchmark_cnn_v1`.
+- Do not make the CNN the main scientific thesis or the final detection
+  decision-maker.
+- Do not casually tune the benchmark after it is frozen; architecture,
+  preprocessing, random seeds, split definitions, and metrics must be locked.
+- Do not promote any learned model without dataset manifest provenance,
+  candidate-ledger provenance, grouped/leakage-safe holdouts, calibration
+  context, and injection-recovery results in real backgrounds.
+- Do not treat unlabeled rows as negative labels.
+- Do not treat synthetic-only performance as real-world evidence.
+- Required grouped holdouts for this repo: target, cadence, frequency band, and
+  telescope/session.
+
+Minimum promotion evidence for any future CNN or learned waterfall model:
+
+- `benchmark_cnn_v1` model card and locked config.
+- Dataset manifest IDs for training, validation, calibration, frozen-eval, and
+  live-search roles.
+- Leakage-check report showing no target/cadence/frequency/session bleed.
+- Injection-recovery curves for drifting narrowband signals in real
+  backgrounds.
+- Comparison against deterministic Track A/B gates and current
+  `semisupervised_anomaly_score` baselines using top-k yield, AUPRC, FDR, and
+  calibration, not just accuracy.
+- Explicit statement that model output is local triage evidence only and not a
+  detection, discovery, expert review, external validation, or external
+  submission authorization.
+
+## P3 — Operator UI Hardening
+
+Status: underway.
+
+- Keep production terminal output compact: spinner/progress while running and
+  one explicit completed-target summary per evaluated target.
+- Separate follow-up candidates from non-detections in durable ledgers.
+- Make zero-target and zero-hit outcomes explicit, not visually ambiguous.
+- Keep run IDs human-readable and searchable.
+
+## P4 — Detection-Optimized Target Selection
+
+Status: starts after P0/P3 supply enough evidence and operator UX stability.
+
+- Build local-coverage novelty scoring from the full real HPRC catalog and this
+  project's actual searched/acquired targets.
+- Produce a target-priority queue before future raw acquisitions.
+- Wire real novelty and follow-up-value inputs into the existing
+  `target_priority_score` shape; do not let model score alone choose raw
+  downloads.
+- Defer follow-up-target scoring implementation until a real partial candidate
+  exists to test it.
+
 ---
 
 # Milestone 1 — Multi-Modal Scoring Core

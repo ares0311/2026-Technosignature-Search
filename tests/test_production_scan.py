@@ -81,6 +81,15 @@ def test_plain_console_prints_compact_target_rows() -> None:
     assert "candidate_review_packet" in rendered
 
 
+def test_plain_console_prints_explicit_empty_target_rows() -> None:
+    stdout = StringIO()
+    console = ProductionConsole(stdout, use_rich=False)
+
+    console.print_target_rows([])
+
+    assert stdout.getvalue() == "Completed target evaluations: none\n"
+
+
 def test_run_production_scan_writes_artifacts_and_compact_output(tmp_path: Path) -> None:
     results_dir = tmp_path / "results"
     scans_dir = tmp_path / "scans"
@@ -248,6 +257,7 @@ def test_run_production_scan_allows_empty_only_when_explicit(tmp_path: Path) -> 
     )
 
     assert result.target_count == 0
+    assert "Completed target evaluations: none" in stdout.getvalue()
     assert (scans_dir / RUN_ID / f"{RUN_ID}_manifest.json").exists()
 
 
