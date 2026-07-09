@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+import techno_search.tui as tui_module
 from techno_search.tui import (
     TUI_DISCLAIMER,
     classify_stellar,
@@ -144,24 +145,43 @@ class TestExtractStellarFromCandidate:
 # ---------------------------------------------------------------------------
 
 class TestPrintResultLine:
-    def test_ok_no_escalation(self, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_ok_no_escalation(
+        self,
+        capsys: pytest.CaptureFixture[str],
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setattr(tui_module, "_RICH", False)
         print_result_line(
             index="20260618-120000-HIP99427",
             stellar="binary star",
             score=0.45,
             escalation=False,
             ok=True,
+            follow_up_required=False,
+            pathway="do_not_submit_false_positive",
         )
-        # With or without rich we just need no exception
+        rendered = capsys.readouterr().out
+        assert "follow-up=no" in rendered
+        assert "pathway=do_not_submit_false_positive" in rendered
 
-    def test_ok_with_escalation(self, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_ok_with_escalation(
+        self,
+        capsys: pytest.CaptureFixture[str],
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setattr(tui_module, "_RICH", False)
         print_result_line(
             index="20260618-120000-HIP99427",
             stellar="stellar",
             score=0.91,
             escalation=True,
             ok=True,
+            follow_up_required=True,
+            pathway="candidate_review_packet",
         )
+        rendered = capsys.readouterr().out
+        assert "follow-up=yes" in rendered
+        assert "pathway=candidate_review_packet" in rendered
 
     def test_error_line(self, capsys: pytest.CaptureFixture[str]) -> None:
         print_result_line(

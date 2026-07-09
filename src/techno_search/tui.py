@@ -186,8 +186,12 @@ def print_result_line(
     escalation: bool,
     ok: bool,
     error: str | None = None,
+    follow_up_required: bool = False,
+    pathway: str | None = None,
 ) -> None:
     """Print the single completed-target summary line."""
+    follow_up_text = "yes" if follow_up_required else "no"
+    pathway_text = pathway or "unknown"
     if _RICH:
         if ok:
             line = _Text.assemble(
@@ -195,6 +199,8 @@ def print_result_line(
                 _Text(f"{index:<{_INDEX_W}}", style="cyan"),
                 _Text(f"  {stellar:<{_STELLAR_W}}", style="white"),
                 _Text(f"  score={score:.2f}", style="yellow"),
+                _Text(f"  follow-up={follow_up_text}", style="magenta"),
+                _Text(f"  pathway={pathway_text}", style="white"),
                 _Text("  ⚡ ESCALATION", style="bold red")
                 if escalation
                 else _Text("  —", style="dim"),
@@ -209,7 +215,11 @@ def print_result_line(
     else:
         if ok:
             esc = "⚡ ESCALATION" if escalation else "—"
-            print(f"✓ {index:<{_INDEX_W}}  {stellar:<{_STELLAR_W}}  score={score:.2f}  {esc}")
+            print(
+                f"✓ {index:<{_INDEX_W}}  {stellar:<{_STELLAR_W}}  "
+                f"score={score:.2f}  follow-up={follow_up_text}  "
+                f"pathway={pathway_text}  {esc}"
+            )
         else:
             print(f"✗ {index:<{_INDEX_W}}  error: {error or 'pipeline failed'}")
 

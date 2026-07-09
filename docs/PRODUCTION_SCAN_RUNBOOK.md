@@ -121,6 +121,7 @@ These CLI commands implement the runbook rules:
 | `techno-search prod-record-scan --target-stem T --run-id R --score S --pathway P --dat-file F --history-file H [--parent-run-id ID]` | Append a completed scan record to the history NDJSON |
 | `techno-search scan-history-summary [--history-file H] [--dat-dir D]` | Show all prior scans; count pending targets |
 | `techno-search prod-scan INPUT_DIR OUTPUT_DIR [--track radio] [--force]` | Single-run batch scan with Rich spinner (does not use history) |
+| `techno-search prod-file-scan INPUT_DIR OUTPUT_DIR [--track TRACK]` | Per-file spinner scan; each completed line includes index, target kind, score, follow-up yes/no, and pathway |
 | `techno-search prod-target-status [RUN_DIR | --latest] [--json]` | Review compact per-target rows by default; use `--json` for the full target-status ledger |
 | `techno-search prod-follow-ups [RUN_DIR | --latest] [--json]` | Review compact follow-up rows by default; use `--json` for the full follow-up ledger |
 | `techno-search prod-non-detections [RUN_DIR | --latest] [--json]` | Review compact non-detection rows by default; use `--json` for the full non-detection ledger |

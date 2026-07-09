@@ -116,18 +116,18 @@ literature search again.
 The operator-facing candidate/non-detection review surface must be solid
 before scaling the algorithm that feeds it, per the user's explicit
 sequencing direction (2026-07-05). The first concrete hardening pass is now
-underway: `prod-scan` prints compact completed-target rows and the post-run
-review commands (`prod-target-status`, `prod-follow-ups`,
+underway: `prod-scan` prints compact completed-target rows; `prod-file-scan`
+completed-target lines include follow-up yes/no and pathway context; and the
+post-run review commands (`prod-target-status`, `prod-follow-ups`,
 `prod-non-detections`) default to compact terminal summaries, with `--json`
 preserved for machine-readable ledgers.
 
 Remaining Step 2 work must continue from a workflow audit of the other current
-UI surfaces (`tui.py`, `prod-file-scan` console output, `reporting.py`'s
-candidate packets/markdown reports) against real operator workflows: reviewing
-a candidate, reviewing a non-detection ledger, and approving/rejecting a
-follow-up. Do not guess that a UI is hardened because it has a command; verify
-the operator can answer the next review question without paging through raw
-machine output.
+UI surfaces (`reporting.py`'s candidate packets/markdown reports and any
+operator handoff views) against real operator workflows: reviewing a candidate,
+reviewing a non-detection ledger, and approving/rejecting a follow-up. Do not
+guess that a UI is hardened because it has a command; verify the operator can
+answer the next review question without paging through raw machine output.
 
 ---
 

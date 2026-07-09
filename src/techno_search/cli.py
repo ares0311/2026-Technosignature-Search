@@ -1126,6 +1126,7 @@ def _run_prod_file_scan(args: object) -> int:  # noqa: C901
 
     from techno_search.candidate_escalation import escalation_gate_check
     from techno_search.pipeline_runner import run_pipeline
+    from techno_search.production_run_outcomes import FOLLOW_UP_PATHWAYS
     from techno_search.tui import (
         TUI_DISCLAIMER,
         extract_composite_score,
@@ -1237,6 +1238,12 @@ def _run_prod_file_scan(args: object) -> int:  # noqa: C901
 
             score = extract_composite_score(candidate_dict)
             stellar = extract_stellar_from_candidate(candidate_dict)
+            pathway = str(
+                candidate_dict.get("recommended_pathway")
+                or candidate_dict.get("pathway")
+                or "unknown"
+            )
+            follow_up_required = pathway in FOLLOW_UP_PATHWAYS
             gate = escalation_gate_check(candidate_dict)
             is_escalation = bool(gate.get("passes", False))
 
@@ -1250,6 +1257,8 @@ def _run_prod_file_scan(args: object) -> int:  # noqa: C901
                 score=score,
                 escalation=is_escalation,
                 ok=True,
+                follow_up_required=follow_up_required,
+                pathway=pathway,
             )
 
     finally:
