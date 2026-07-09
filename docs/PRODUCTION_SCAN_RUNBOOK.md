@@ -125,6 +125,7 @@ These CLI commands implement the runbook rules:
 | `techno-search prod-target-status [RUN_DIR | --latest] [--json]` | Review compact per-target rows by default; use `--json` for the full target-status ledger |
 | `techno-search prod-follow-ups [RUN_DIR | --latest] [--json]` | Review compact follow-up rows by default; use `--json` for the full follow-up ledger |
 | `techno-search prod-non-detections [RUN_DIR | --latest] [--json]` | Review compact non-detection rows by default; use `--json` for the full non-detection ledger |
+| `techno-search review-dashboard [--run-dir RUN_DIR | --results-dir RESULTS_DIR]` | Review compact operator action counts from a run or active candidate manifests; exit 1 only when follow-up pathways need attention |
 | `techno-search run-pipeline FILE TRACK OUTPUT_DIR [--semisupervised-model PATH]` | Process one input file through the pipeline; radio packets use the default local fitted scorer model when present |
 | `techno-search radio-real-corpus-summary --dat-dir PATH [--dat-dir PATH2] [--hit-ndjson PATH] [--candidate-sample-limit N]` | Summarize local real `.dat` and normalized hit-NDJSON evidence for drift, cross-target RFI recurrence, fitted scorer integration, and bounded candidate-review survivors |
 | `techno-search track-b-candidate-readiness CANDIDATE_JSON [--crossmatch-json CROSSMATCH_JSON] [--satellite-json SATELLITE_JSON]` | Fail-closed audit of whether a real candidate packet has the packet metadata and explicit evidence needed for Track B gate review; it never guesses missing sky position, observation time, telescope location, or catalog classifications |
@@ -135,6 +136,10 @@ Candidate Markdown/JSON reports include an `operator_review` block that states
 the recommended pathway, whether local follow-up review is required, the
 operator action, and the guardrails (`detection_claimed: false`,
 `external_submission_allowed: false`).
+Production review dashboards now use `operator_review_dashboard_v1` and expose
+`follow_up_required_count`, pathway-specific counts, cross-target RFI flag
+counts, top follow-up targets, and operator action items without dumping raw
+machine JSON into the terminal.
 
 ---
 

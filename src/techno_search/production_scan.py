@@ -22,15 +22,105 @@ from techno_search.candidate_escalation import escalation_gate_check
 from techno_search.cross_target_rfi import cross_target_rfi_summary
 from techno_search.production_run_outcomes import (
     PRODUCTION_OUTCOME_DISCLAIMER,
+    build_target_status_summary,
+    latest_production_run_dir,
     make_production_run_id,
     production_run_file,
     write_production_outcomes,
 )
 from techno_search.scan_summary import load_candidates_from_batch_dir, scan_summary
 
+REVIEW_DASHBOARD_SCHEMA_VERSION = "operator_review_dashboard_v1"
 
-def review_dashboard_summary(**_kw: object) -> dict[str, object]:
-    return {"needs_attention": False, "schema_version": "review_dashboard_stub_v1"}
+
+def review_dashboard_summary(
+    *,
+    candidates: list[JsonObject] | None = None,
+    target_status: Mapping[str, Any] | None = None,
+    results_dir: Path | None = None,
+    scans_dir: Path | None = None,
+    run_dir: Path | None = None,
+) -> dict[str, object]:
+    """Return a compact operator dashboard from real run or candidate state."""
+    source = "no_review_source"
+    source_path = ""
+    loaded_status: Mapping[str, Any] | None = target_status
+    loaded_candidates = candidates
+    if loaded_status is None and run_dir is not None:
+        loaded_status = production_run_file(run_dir, "target_status")
+        source = "target_status"
+        source_path = str(run_dir)
+    if loaded_status is None and results_dir is not None:
+        loaded_candidates = load_candidates_from_batch_dir(results_dir)
+        source = "candidate_manifests"
+        source_path = str(results_dir)
+    if loaded_status is None and loaded_candidates is None and scans_dir is not None:
+        latest_run = latest_production_run_dir(scans_dir)
+        if latest_run is not None:
+            loaded_status = production_run_file(latest_run, "target_status")
+            source = "latest_target_status"
+            source_path = str(latest_run)
+        else:
+            source = "no_production_runs"
+            source_path = str(scans_dir)
+    if loaded_status is None and loaded_candidates is not None:
+        loaded_status = build_target_status_summary(
+            loaded_candidates,
+            run_id="RUN-review-dashboard",
+        )
+        source = "candidate_manifests" if source == "no_review_source" else source
+    if loaded_status is not None and source == "no_review_source":
+        source = "target_status"
+
+    entries = _dashboard_entries(loaded_status)
+    follow_up_entries = [entry for entry in entries if bool(entry.get("follow_up_required"))]
+    rfi_flagged_entries = [
+        entry for entry in entries if bool(entry.get("cross_target_rfi_flagged"))
+    ]
+    candidate_review_entries = [
+        entry
+        for entry in follow_up_entries
+        if entry.get("top_pathway") == "candidate_review_packet"
+    ]
+    human_review_entries = [
+        entry for entry in follow_up_entries if entry.get("top_pathway") == "human_review_queue"
+    ]
+    action_items = _dashboard_action_items(
+        follow_up_count=len(follow_up_entries),
+        candidate_review_count=len(candidate_review_entries),
+        human_review_count=len(human_review_entries),
+        rfi_flagged_count=len(rfi_flagged_entries),
+        target_count=len(entries),
+    )
+    return {
+        "schema_version": REVIEW_DASHBOARD_SCHEMA_VERSION,
+        "disclaimer": PRODUCTION_OUTCOME_DISCLAIMER,
+        "source": source,
+        "source_path": source_path,
+        "needs_attention": bool(follow_up_entries),
+        "target_count": len(entries),
+        "follow_up_required_count": len(follow_up_entries),
+        "candidate_review_packet_count": len(candidate_review_entries),
+        "human_review_queue_count": len(human_review_entries),
+        "cross_target_rfi_flagged_count": len(rfi_flagged_entries),
+        "top_follow_up_targets": [
+            {
+                "index_id": str(entry.get("index_id", "")),
+                "target_name": str(entry.get("target_name", "")),
+                "target_kind": str(entry.get("target_kind", "")),
+                "score": float(entry.get("composite_score", 0.0)),
+                "pathway": str(entry.get("top_pathway", "")),
+            }
+            for entry in sorted(
+                follow_up_entries,
+                key=lambda item: float(item.get("composite_score", 0.0)),
+                reverse=True,
+            )[:10]
+        ],
+        "action_items": action_items,
+        "detection_claimed": False,
+        "external_submission_allowed": False,
+    }
 
 try:  # pragma: no cover - exercised when rich is installed in the runtime env.
     RichConsole: Any | None = import_module("rich.console").Console
@@ -50,6 +140,80 @@ PRODUCTION_SCAN_DISCLAIMER = (
 JsonObject = dict[str, Any]
 ValidationFunc = Callable[[], JsonObject]
 DashboardFunc = Callable[[], JsonObject]
+
+
+def _dashboard_entries(target_status: Mapping[str, Any] | None) -> list[JsonObject]:
+    if not target_status or not bool(target_status.get("ok", True)):
+        return []
+    entries = target_status.get("entries", [])
+    return [dict(entry) for entry in entries if isinstance(entry, Mapping)]
+
+
+def _dashboard_action_items(
+    *,
+    follow_up_count: int,
+    candidate_review_count: int,
+    human_review_count: int,
+    rfi_flagged_count: int,
+    target_count: int,
+) -> list[JsonObject]:
+    actions: list[JsonObject] = []
+    if candidate_review_count:
+        actions.append(
+            {
+                "action": "review_candidate_packets",
+                "count": candidate_review_count,
+                "reason": "At least one target entered the candidate review packet pathway.",
+            }
+        )
+    if human_review_count:
+        actions.append(
+            {
+                "action": "review_human_queue",
+                "count": human_review_count,
+                "reason": "At least one target entered the local human review queue.",
+            }
+        )
+    other_follow_ups = follow_up_count - candidate_review_count - human_review_count
+    if other_follow_ups > 0:
+        actions.append(
+            {
+                "action": "review_follow_up_ledger",
+                "count": other_follow_ups,
+                "reason": "At least one target entered another follow-up pathway.",
+            }
+        )
+    if rfi_flagged_count:
+        actions.append(
+            {
+                "action": "inspect_cross_target_rfi_flags",
+                "count": rfi_flagged_count,
+                "reason": "Cross-target recurrence was recorded as false-positive evidence.",
+            }
+        )
+    if not actions and target_count:
+        actions.append(
+            {
+                "action": "review_non_detection_ledger",
+                "count": target_count,
+                "reason": (
+                    "No follow-up pathways were recorded; preserve the "
+                    "negative-evidence ledger."
+                ),
+            }
+        )
+    if not actions:
+        actions.append(
+            {
+                "action": "no_review_items_loaded",
+                "count": 0,
+                "reason": (
+                    "No production targets or candidate manifests were available "
+                    "to summarize."
+                ),
+            }
+        )
+    return actions
 
 
 class EmptyProductionScanError(RuntimeError):
@@ -219,7 +383,11 @@ def run_production_scan(
             console,
             label="review-dashboard",
             path=dashboard_path,
-            producer=dashboard_func or review_dashboard_summary,
+            producer=(
+                dashboard_func
+                if dashboard_func is not None
+                else lambda: review_dashboard_summary(candidates=candidates)
+            ),
             compatibility_path=resolved_run_dir / "review_dashboard.json",
         )
         target_status = _write_outcomes_and_target_status(
@@ -281,7 +449,11 @@ def production_diagnostics(
         validation = (validate_func or _default_validate_all)()
     diagnostics["validate_all_ok"] = bool(validation.get("ok", False))
     with console.step("review-dashboard"):
-        dashboard = (dashboard_func or review_dashboard_summary)()
+        dashboard = (
+            dashboard_func()
+            if dashboard_func is not None
+            else review_dashboard_summary(scans_dir=scans_dir)
+        )
     diagnostics["review_dashboard_needs_attention"] = bool(
         dashboard.get("needs_attention", False)
     )

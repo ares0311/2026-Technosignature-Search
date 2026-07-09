@@ -122,7 +122,11 @@ post-run review commands (`prod-target-status`, `prod-follow-ups`,
 `prod-non-detections`) default to compact terminal summaries, with `--json`
 preserved for machine-readable ledgers. Candidate Markdown/JSON reports now
 include an `operator_review` block with the pathway, follow-up-required flag,
-operator action, and no-claim guardrails.
+operator action, and no-claim guardrails. The `review-dashboard` CLI and
+per-run `*_review_dashboard.json` artifact now summarize real target-status or
+candidate-manifest state using `operator_review_dashboard_v1`, including
+follow-up-required counts, pathway-specific action items, cross-target RFI flag
+counts, and top follow-up targets.
 
 Remaining Step 2 work must continue from a workflow audit of the other current
 UI surfaces (especially any operator handoff views outside the candidate
