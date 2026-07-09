@@ -265,6 +265,9 @@ Initial local-coverage target selection is implemented:
 tracked acquisition status. The first queue contains 1,703 unique target IDs:
 1,683 queued for metadata discovery, 4 metadata-retry rows from prior
 `no_hdf5_url_discovered` outcomes, and 16 already-acquired local-cache controls.
+`techno-search build-target-priority-manifest` also writes the bounded
+`data_selection/batch_manifests/local_coverage_top25_manifest.json` manifest so
+the next acquisition step can run metadata discovery before any raw download.
 This is a metadata-first acquisition-planning artifact only; it does not
 authorize raw downloads, does not close the anomaly/OOD calibration blocker, and
 does not make any candidate or external-submission claim. Follow-up-target

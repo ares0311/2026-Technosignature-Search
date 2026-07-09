@@ -526,13 +526,15 @@ def test_catalog_cache_commit_path_validator_allows_small_fixture_paths(tmp_path
         [
             tmp_path / "tests/fixtures/live_metadata/gaia_cone_search.metadata.json",
             tmp_path / "docs/CATALOG_CACHE_POLICY.md",
+            tmp_path / "data/bl_hprc_full_seed_targets.csv",
+            tmp_path / "data/bl_hprc_full_targets_vizier.csv",
         ],
         project_root=tmp_path,
     )
 
     assert result["ok"] is True
     assert result["errors"] == []
-    assert result["checked_path_count"] == 2
+    assert result["checked_path_count"] == 4
 
 
 def test_live_provider_cache_writes_metadata_outside_committed_report_paths(tmp_path) -> None:

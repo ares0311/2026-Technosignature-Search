@@ -114,7 +114,9 @@ Status: starts after P0/P3 supply enough evidence and operator UX stability.
 - Produce a target-priority queue before future raw acquisitions. Initial queue:
   `data_selection/target_priority_queue.csv` with 1,703 unique target IDs
   (1,683 metadata-discovery targets, 4 metadata-retry targets, 16 local-cache
-  controls).
+  controls). Initial bounded manifest:
+  `data_selection/batch_manifests/local_coverage_top25_manifest.json` for
+  metadata discovery before raw download.
 - Wire real novelty and follow-up-value inputs into the existing
   `target_priority_score` shape; do not let model score alone choose raw
   downloads. Initial queue includes `background_target_priority_score`; follow-up
