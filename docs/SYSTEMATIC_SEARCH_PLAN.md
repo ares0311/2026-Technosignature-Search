@@ -183,9 +183,13 @@ requirements:
    alone as a download reason. **Initial implementation done:**
    `data_selection/target_priority_queue.csv`. A bounded downloader-compatible
    manifest for the top 25 local-coverage targets is also available at
-   `data_selection/batch_manifests/local_coverage_top25_manifest.json`; use it
-   first with `scripts/download_bl_extended_corpus.sh --discover-only` to verify
-   real BL product URLs before any raw download.
+   `data_selection/batch_manifests/local_coverage_top25_manifest.json`. The
+   first real metadata-only discovery run checked all 25 targets, found current
+   BL HDF5 URLs for 15 targets, found no current HDF5 URL for 10 targets, and
+   downloaded zero raw payloads. The regenerated queue now marks those 15 rows
+   as `size_preflight_required`; use
+   `data_selection/batch_manifests/local_coverage_top25_size_preflight_manifest.json`
+   for URL-size/checksum/storage preflight before any raw download.
 4. Wire the computed `novelty_score` into `target_priority_score()`'s
    existing weighting, don't reinvent the scoring formula. **Initial
    implementation done:** queue rows include a normalized

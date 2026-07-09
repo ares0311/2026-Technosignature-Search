@@ -35,3 +35,7 @@ Current metadata-only manifests:
   `data_selection/target_priority_queue.csv`. This is downloader-compatible for
   `scripts/download_bl_extended_corpus.sh --manifest ... --discover-only` and is
   intended for product metadata discovery before any raw download.
+- `local_coverage_top25_size_preflight_manifest.json` — the 15 rows from the
+  top-25 discovery run with current BL HDF5 URLs. Use this for URL header,
+  checksum, size, and local-storage preflight before any raw download; it is not
+  raw-download authorization.

@@ -49,14 +49,17 @@ depending on local-only state:
 | `docs/data_collection_status.json` | Data acquisition entrypoints | Compact tracked data-collection status and per-target outcomes | Committed status manifest |
 | `data_selection/target_priority_queue.csv` | `techno-search build-target-priority-queue` | Metadata-first live-search target queue for local-coverage novelty selection | Committed scheduling artifact |
 | `data_selection/batch_manifests/local_coverage_top25_manifest.json` | `techno-search build-target-priority-manifest` | Bounded top-25 manifest for BL product metadata discovery from the target-priority queue | Committed scheduling artifact |
+| `data_selection/batch_manifests/local_coverage_top25_size_preflight_manifest.json` | `techno-search build-target-priority-manifest --include-status size_preflight_required` | URL-discovered top-25 subset for size/checksum/storage preflight before any raw download | Committed scheduling artifact |
 | `data_selection/data_role_registry.yaml` | Data-selection policy workflow | Role separation for live-search metadata and local-cache status | Committed policy artifact |
 
 The first target-priority queue contains 1,703 unique target IDs derived from
-the 1,709-row full HPRC metadata seed. It records 1,683 targets queued for
-product metadata discovery, 4 metadata-retry targets, and 16 already-acquired
-local-cache controls. `HIP75676` appears in the extended-corpus status manifest
-but not in the full HPRC seed CSV, so it is documented as a source-list
-limitation rather than forced into the queue.
+the 1,709-row full HPRC metadata seed. After the first top-25 metadata-only
+discovery run, it records 1,658 targets queued for product metadata discovery,
+15 URL-discovered targets requiring size/checksum/storage preflight, 14
+metadata-retry targets, and 16 already-acquired local-cache controls. `HIP75676`
+appears in the extended-corpus status manifest but not in the full HPRC seed
+CSV, so it is documented as a source-list limitation rather than forced into the
+queue.
 
 ## Broadly Ignored File Classes
 
@@ -138,7 +141,10 @@ Measured result from pasted terminal output:
 Future `--discover-only` metadata runs record their own tracked status under
 `download_bl_extended_corpus_discovery` in `docs/data_collection_status.json`,
 with per-target available URLs and skipped reasons. Use that committed manifest
-for review rather than relying on pasted console logs.
+instead of pasted console output when deciding the next acquisition step. The
+2026-07-09 local-coverage top-25 discovery run checked 25 targets, found 15
+current BL HDF5 URLs, found 10 targets without a current HDF5 URL, and
+downloaded zero raw payloads.
 
 New ignored local HDF5 payload targets included `HIP113421`, `HIP26779`,
 `HIP67275`, `HIP74981`, `HIP16852`, `HIP99427`, `HIP66704`, `HIP39826`,
