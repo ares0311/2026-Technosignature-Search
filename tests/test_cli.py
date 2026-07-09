@@ -1964,10 +1964,22 @@ def test_cli_prod_write_and_show_outcomes(tmp_path) -> None:
     assert shown["external_submission_allowed"] is False
     stdout = StringIO()
     assert main(["prod-follow-ups", str(run_dir)], stdout=stdout) == 0
+    follow_up_rows = stdout.getvalue()
+    assert f"{run_id}: 1 follow-up candidate row(s)" in follow_up_rows
+    assert "FU-2026-06-18_201325Z-A7K4-001 | HIP99427 | radio | 0.900" in follow_up_rows
+    stdout = StringIO()
+    assert main(["prod-follow-ups", str(run_dir), "--json"], stdout=stdout) == 0
     follow_ups = json.loads(stdout.getvalue())
     assert follow_ups["entries"][0]["follow_up_id"] == (
         "FU-2026-06-18_201325Z-A7K4-001"
     )
+    stdout = StringIO()
+    assert main(["prod-non-detections", str(run_dir)], stdout=stdout) == 0
+    assert f"{run_id}: 0 non-detection/no-follow-up row(s)" in stdout.getvalue()
+    stdout = StringIO()
+    assert main(["prod-non-detections", str(run_dir), "--json"], stdout=stdout) == 0
+    non_detections = json.loads(stdout.getvalue())
+    assert non_detections["entry_count"] == 0
     stdout = StringIO()
     assert main(["prod-runs", "--scans-dir", str(results_dir / "scans")], stdout=stdout) == 0
     runs = json.loads(stdout.getvalue())
@@ -2122,6 +2134,16 @@ def test_cli_prod_target_status_shows_target_status(tmp_path) -> None:
     stdout = StringIO()
 
     assert main(["prod-target-status", str(run_dir)], stdout=stdout) == 0
+    compact_status = stdout.getvalue()
+    assert f"{run_id}: 1 target(s), 1 follow-up candidate target(s)" in compact_status
+    assert "Index | Target | Kind | Follow-up | Score | Pathway" in compact_status
+    assert (
+        "FU-2026-06-18_201325Z-A7K4-001 | HIP99427 | stellar target | yes | 0.900"
+        in compact_status
+    )
+
+    stdout = StringIO()
+    assert main(["prod-target-status", str(run_dir), "--json"], stdout=stdout) == 0
     target_status = json.loads(stdout.getvalue())
     assert target_status["target_count"] == 1
     assert target_status["entries"][0]["follow_up_required"] is True
@@ -2134,6 +2156,7 @@ def test_cli_prod_target_status_shows_target_status(tmp_path) -> None:
                 "--latest",
                 "--scans-dir",
                 str(results_dir / "scans"),
+                "--json",
             ],
             stdout=stdout,
         )
