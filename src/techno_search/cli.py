@@ -1315,6 +1315,103 @@ def _resolve_production_run_dir_arg(args: object, out: TextIO) -> Path | None:
     return latest
 
 
+def _print_production_target_status(data: dict[str, Any], out: TextIO) -> None:
+    """Print compact per-target production rows for overnight-run review."""
+    if not data.get("ok"):
+        print(json.dumps(data, indent=2, sort_keys=True), file=out)
+        return
+    run_id = str(data.get("run_id", "unknown-run"))
+    entries = list(data.get("entries", []))
+    follow_up_count = int(data.get("follow_up_required_count", 0) or 0)
+    print(
+        f"{run_id}: {len(entries)} target(s), {follow_up_count} follow-up candidate target(s)",
+        file=out,
+    )
+    if not entries:
+        print("Completed target evaluations: none", file=out)
+        return
+    print("Index | Target | Kind | Follow-up | Score | Pathway", file=out)
+    for entry in entries:
+        print(
+            " | ".join(
+                [
+                    str(entry.get("index_id", "")),
+                    str(entry.get("target_name", "")),
+                    str(entry.get("target_kind", "")),
+                    "yes" if entry.get("follow_up_required") else "no",
+                    _format_score(entry.get("composite_score")),
+                    str(entry.get("top_pathway", "")),
+                ]
+            ),
+            file=out,
+        )
+
+
+def _print_production_follow_ups(data: dict[str, Any], out: TextIO) -> None:
+    """Print compact follow-up ledger rows without hiding guardrails."""
+    if not data.get("ok"):
+        print(json.dumps(data, indent=2, sort_keys=True), file=out)
+        return
+    run_id = str(data.get("run_id", "unknown-run"))
+    entries = list(data.get("entries", []))
+    print(f"{run_id}: {len(entries)} follow-up candidate row(s)", file=out)
+    if not entries:
+        print("Follow-up candidates: none", file=out)
+        return
+    print("Follow-up | Target | Track | Score | SNR | Pathway", file=out)
+    for entry in entries:
+        print(
+            " | ".join(
+                [
+                    str(entry.get("follow_up_id", "")),
+                    str(entry.get("target_name", "")),
+                    str(entry.get("track", "")),
+                    _format_score(entry.get("score")),
+                    _format_score(entry.get("snr")),
+                    str(entry.get("pathway", "")),
+                ]
+            ),
+            file=out,
+        )
+
+
+def _print_production_non_detections(data: dict[str, Any], out: TextIO) -> None:
+    """Print compact non-detection ledger rows for review continuity."""
+    if not data.get("ok"):
+        print(json.dumps(data, indent=2, sort_keys=True), file=out)
+        return
+    run_id = str(data.get("run_id", "unknown-run"))
+    entries = list(data.get("entries", []))
+    print(f"{run_id}: {len(entries)} non-detection/no-follow-up row(s)", file=out)
+    if not entries:
+        reason = dict(data.get("scan_level_negative_result", {})).get("reason", "")
+        suffix = f" ({reason})" if reason else ""
+        print(f"Non-detections: none{suffix}", file=out)
+        return
+    print("Non-detection | Target | Track | Score | Status | Reason", file=out)
+    for entry in entries:
+        print(
+            " | ".join(
+                [
+                    str(entry.get("non_detection_id", "")),
+                    str(entry.get("target_name", "")),
+                    str(entry.get("track", "")),
+                    _format_score(entry.get("score")),
+                    str(entry.get("status", "")),
+                    str(entry.get("reason", "")),
+                ]
+            ),
+            file=out,
+        )
+
+
+def _format_score(value: Any) -> str:
+    try:
+        return f"{float(value):.3f}"
+    except (TypeError, ValueError):
+        return ""
+
+
 def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
     """Run the `techno-search` CLI."""
 
@@ -2615,7 +2712,10 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         if run_dir is None:
             return 1
         _follow_ups = production_run_file(run_dir, "follow_ups")
-        print(json.dumps(_follow_ups, indent=2, sort_keys=True), file=out)
+        if getattr(args, "json", False):
+            print(json.dumps(_follow_ups, indent=2, sort_keys=True), file=out)
+        else:
+            _print_production_follow_ups(_follow_ups, out)
         return 0 if _follow_ups.get("ok") else 1
 
     if args.command == "prod-non-detections":
@@ -2625,7 +2725,10 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         if run_dir is None:
             return 1
         _non_detections = production_run_file(run_dir, "non_detections")
-        print(json.dumps(_non_detections, indent=2, sort_keys=True), file=out)
+        if getattr(args, "json", False):
+            print(json.dumps(_non_detections, indent=2, sort_keys=True), file=out)
+        else:
+            _print_production_non_detections(_non_detections, out)
         return 0 if _non_detections.get("ok") else 1
 
     if args.command == "prod-target-status":
@@ -2635,7 +2738,10 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         if run_dir is None:
             return 1
         _target_status = production_run_file(run_dir, "target_status")
-        print(json.dumps(_target_status, indent=2, sort_keys=True), file=out)
+        if getattr(args, "json", False):
+            print(json.dumps(_target_status, indent=2, sort_keys=True), file=out)
+        else:
+            _print_production_target_status(_target_status, out)
         return 0 if _target_status.get("ok") else 1
 
     if args.command == "cross-target-rfi-summary":
@@ -7306,6 +7412,11 @@ def _build_parser() -> argparse.ArgumentParser:
         default="results/scans",
         help="Directory containing production run subdirectories when using --latest.",
     )
+    prod_follow_ups_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the full machine-readable follow-up ledger JSON.",
+    )
     prod_non_detections_parser = subparsers.add_parser(
         "prod-non-detections",
         help="Show non-detection ledger entries for one production run.",
@@ -7325,6 +7436,11 @@ def _build_parser() -> argparse.ArgumentParser:
         default="results/scans",
         help="Directory containing production run subdirectories when using --latest.",
     )
+    prod_non_detections_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the full machine-readable non-detection ledger JSON.",
+    )
     prod_target_status_parser = subparsers.add_parser(
         "prod-target-status",
         help="Show compact per-target status rows for one production run.",
@@ -7343,6 +7459,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "--scans-dir",
         default="results/scans",
         help="Directory containing production run subdirectories when using --latest.",
+    )
+    prod_target_status_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the full machine-readable target-status ledger JSON.",
     )
     _cross_rfi_parser = subparsers.add_parser(
         "cross-target-rfi-summary",

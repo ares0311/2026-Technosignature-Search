@@ -26,7 +26,7 @@ step that's already blocked on an earlier one.
 | Track A known-explanation classification | ✅ Real, implemented |
 | Track B 9-condition gate | ✅ Real, implemented, conservative-by-construction |
 | Semisupervised anomaly/OOD calibration | ❌ Blocked — see Step 1 |
-| Operator UI hardening | ❌ Not started — see Step 2 |
+| Operator UI hardening | ⚠️ Partially underway — production scan terminal output and post-run review commands now have compact operator-facing summaries; see Step 2 |
 | Detection-optimized target selection algorithm | ❌ Not started — see Step 3 |
 | Extended-corpus download completion | ⚠️ Paused mid-run — see Step 0 |
 
@@ -115,13 +115,19 @@ literature search again.
 
 The operator-facing candidate/non-detection review surface must be solid
 before scaling the algorithm that feeds it, per the user's explicit
-sequencing direction (2026-07-05). Scope not yet defined in detail —
-**the next agent picking this up must first audit the current UI
-surfaces** (`tui.py`, `prod-scan`/`prod-file-scan` console output,
-`reporting.py`'s candidate packets/markdown reports) against real operator
-workflows (reviewing a candidate, reviewing a non-detection ledger,
-approving/rejecting a follow-up) before proposing specific hardening work,
-rather than guessing what "hardened" means without that audit.
+sequencing direction (2026-07-05). The first concrete hardening pass is now
+underway: `prod-scan` prints compact completed-target rows and the post-run
+review commands (`prod-target-status`, `prod-follow-ups`,
+`prod-non-detections`) default to compact terminal summaries, with `--json`
+preserved for machine-readable ledgers.
+
+Remaining Step 2 work must continue from a workflow audit of the other current
+UI surfaces (`tui.py`, `prod-file-scan` console output, `reporting.py`'s
+candidate packets/markdown reports) against real operator workflows: reviewing
+a candidate, reviewing a non-detection ledger, and approving/rejecting a
+follow-up. Do not guess that a UI is hardened because it has a command; verify
+the operator can answer the next review question without paging through raw
+machine output.
 
 ---
 
