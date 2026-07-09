@@ -1923,6 +1923,7 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                     args.output_path,
                     seed_csv_path=args.seed_csv_path,
                     data_status_path=args.data_status_path,
+                    size_preflight_report_path=args.size_preflight_report_path,
                 ),
                 indent=2,
                 sort_keys=True,
@@ -6605,6 +6606,15 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("docs/data_collection_status.json"),
         help="Tracked data-collection status manifest path.",
+    )
+    build_target_queue_parser.add_argument(
+        "--size-preflight-report-path",
+        type=Path,
+        default=Path(
+            "data_selection/batch_manifests/"
+            "local_coverage_top25_size_preflight_report.json"
+        ),
+        help="Optional committed URL-size preflight report path.",
     )
     build_target_queue_parser.add_argument(
         "--output-path",

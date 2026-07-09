@@ -43,3 +43,7 @@ Current metadata-only manifests:
   the 15 URL-discovered HDF5 files. The first run verified 15/15 URLs with
   content lengths, estimated 3.803966 GB total, found no checksum headers, and
   leaves raw download authorization disabled.
+- `local_coverage_top25_raw_download_approval_manifest.json` — the same 15
+  sized HDF5 rows after queue promotion to `raw_download_approval_required`.
+  This is the human-review input for an explicitly approved bounded raw
+  download; it is not approval by itself.

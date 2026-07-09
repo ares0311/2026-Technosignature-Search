@@ -277,7 +277,10 @@ URL-discovered rows are captured in
 with content lengths in
 `data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json`,
 estimated 3.803966 GB total, found no checksum headers, and left raw download
-authorization disabled.
+authorization disabled. The regenerated queue now marks those 15 rows as
+`raw_download_approval_required`; the review input for a bounded raw-download
+approval decision is
+`data_selection/batch_manifests/local_coverage_top25_raw_download_approval_manifest.json`.
 These are metadata-first acquisition-planning artifacts only; they do not
 authorize raw downloads, do not close the anomaly/OOD calibration blocker, and
 do not make any candidate or external-submission claim. Follow-up-target scoring

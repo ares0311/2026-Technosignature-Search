@@ -417,3 +417,64 @@ def test_target_priority_size_preflight_records_header_metadata(tmp_path: Path) 
     assert result["ok"] is True
     assert result["raw_download_authorized"] is False
     assert written == preflight
+
+
+def test_build_target_priority_queue_promotes_sized_urls_to_download_approval(
+    tmp_path: Path,
+) -> None:
+    seed_path = tmp_path / "seed.csv"
+    status_path = tmp_path / "status.json"
+    preflight_path = tmp_path / "size_preflight_report.json"
+    _write_seed_csv(seed_path)
+    status_path.write_text(
+        json.dumps(
+            {
+                "runs": {
+                    "download_bl_extended_corpus": {
+                        "reused_targets": [],
+                        "downloaded_targets": [],
+                        "skipped_targets": [],
+                    },
+                    "download_bl_extended_corpus_discovery": {
+                        "available_targets": [
+                            {
+                                "target": "HIP2",
+                                "url": "https://bldata.berkeley.edu/example/HIP2.h5",
+                            }
+                        ],
+                    },
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    preflight_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "target_priority_size_preflight_v1",
+                "targets": [
+                    {
+                        "target_id": "HIP2",
+                        "url": "https://bldata.berkeley.edu/example/HIP2.h5",
+                        "ok": True,
+                        "content_length_gb": 0.242659,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    rows = build_target_priority_queue(
+        seed_csv_path=seed_path,
+        data_status_path=status_path,
+        size_preflight_report_path=preflight_path,
+    )
+    hip2 = {row["target_id"]: row for row in rows}["HIP2"]
+
+    assert hip2["status"] == "raw_download_approval_required"
+    assert hip2["data_products_available"] == "hdf5_size_preflight_ok"
+    assert hip2["estimated_download_gb"] == "0.242659"
+    assert hip2["local_coverage_status"] == "not_searched_size_preflight_ok"
+    assert hip2["source_hdf5_url"].endswith("HIP2.h5")
+    assert "explicit operator approval" in hip2["notes"]
