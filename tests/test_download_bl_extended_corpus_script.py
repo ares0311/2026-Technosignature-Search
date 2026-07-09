@@ -65,6 +65,8 @@ def test_extended_corpus_downloader_has_discovery_only_availability_mode() -> No
     assert "--availability-report" in script
     assert "Discovery complete; no HDF5 payloads downloaded" in script
     assert "URL-available HDF5 targets" in script
+    assert "download_bl_extended_corpus_discovery" in script
+    assert "metadata_only_discovery" in script
 
 
 def test_extended_corpus_downloader_limits_url_available_targets() -> None:
@@ -159,6 +161,7 @@ esac
     env["PATH"] = f"{fake_bin}{os.pathsep}{env['PATH']}"
     env["TECHNO_EXTENDED_CORPUS_MAX_TARGETS"] = "2"
     env["TECHNO_EXTENDED_CORPUS_PYTHON"] = sys.executable
+    env["TECHNO_DATA_COLLECTION_STATUS_PATH"] = str(tmp_path / "status.json")
     availability_output = tmp_path / "availability.tsv"
 
     result = subprocess.run(
@@ -185,6 +188,25 @@ esac
     assert availability_output.read_text(encoding="utf-8").splitlines() == [
         "HIP222\thttps://bldata.berkeley.edu/test/HIP222.gpuspec.0002.h5",
         "HIP333\thttps://bldata.berkeley.edu/test/HIP333.gpuspec.0002.h5",
+    ]
+    status = json.loads((tmp_path / "status.json").read_text(encoding="utf-8"))
+    run_status = status["runs"]["download_bl_extended_corpus_discovery"]
+    assert run_status["ok"] is True
+    assert run_status["mode"] == "discover_only"
+    assert run_status["available"] == 2
+    assert run_status["skipped"] == 1
+    assert run_status["available_targets"] == [
+        {
+            "target": "HIP222",
+            "url": "https://bldata.berkeley.edu/test/HIP222.gpuspec.0002.h5",
+        },
+        {
+            "target": "HIP333",
+            "url": "https://bldata.berkeley.edu/test/HIP333.gpuspec.0002.h5",
+        },
+    ]
+    assert run_status["skipped_targets"] == [
+        {"target": "HIP111", "reason": "no_hdf5_url_discovered"}
     ]
 
 
@@ -222,6 +244,7 @@ esac
     env = os.environ.copy()
     env["PATH"] = f"{fake_bin}{os.pathsep}{env['PATH']}"
     env["TECHNO_EXTENDED_CORPUS_PYTHON"] = sys.executable
+    env["TECHNO_DATA_COLLECTION_STATUS_PATH"] = str(tmp_path / "status.json")
 
     result = subprocess.run(
         ["bash", str(SCRIPT_PATH), "--manifest", str(manifest), "--discover-only"],
@@ -234,6 +257,12 @@ esac
     assert "HIP8102\thttps://bldata.berkeley.edu/test/HIP8102.gpuspec.0002.h5" in result.stdout
     assert "GJ1002\thttps://bldata.berkeley.edu/test/GJ1002.gpuspec.0002.h5" in result.stdout
     assert "HIPGJ1002" not in result.stdout
+    status = json.loads((tmp_path / "status.json").read_text(encoding="utf-8"))
+    run_status = status["runs"]["download_bl_extended_corpus_discovery"]
+    assert [item["target"] for item in run_status["available_targets"]] == [
+        "HIP8102",
+        "GJ1002",
+    ]
 
 
 def test_extended_corpus_download_limit_skips_existing_hdf5_targets(
