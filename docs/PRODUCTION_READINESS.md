@@ -259,8 +259,16 @@ above):
      candidates needing further checks (e.g. more ON/OFF cadence epochs,
      a different band).
 
-Not started. Both modes must be built on real coverage/evidence data, not
-guessed priority weights.
+Initial local-coverage target selection is implemented:
+`techno-search build-target-priority-queue` writes
+`data_selection/target_priority_queue.csv` from the full HPRC metadata seed and
+tracked acquisition status. The first queue contains 1,703 unique target IDs:
+1,683 queued for metadata discovery, 4 metadata-retry rows from prior
+`no_hdf5_url_discovered` outcomes, and 16 already-acquired local-cache controls.
+This is a metadata-first acquisition-planning artifact only; it does not
+authorize raw downloads, does not close the anomaly/OOD calibration blocker, and
+does not make any candidate or external-submission claim. Follow-up-target
+scoring remains design-only until a real unresolved candidate exists.
 
 ---
 

@@ -1,0 +1,37 @@
+datasets:
+  - dataset_id: bl_hprc_full_target_metadata_v1
+    role: live_search
+    project: 2026 Technosignature Search
+    source: Breakthrough Listen HPRC full target metadata
+    allowed_uses:
+      - target_queue_construction
+      - metadata_first_acquisition_planning
+      - local_coverage_novelty_scoring
+    forbidden_uses:
+      - model_training
+      - threshold_calibration
+      - detection_claims
+      - external_submission_claims
+    split_group_keys:
+      - target_id
+      - source_catalog
+    manifest_path: data_selection/target_priority_queue.csv
+    notes: Metadata-only live-search planning artifact; raw acquisition requires product metadata and batch manifest.
+  - dataset_id: bl_extended_corpus_local_cache_status_v1
+    role: live_search
+    project: 2026 Technosignature Search
+    source: docs/data_collection_status.json download_bl_extended_corpus summary
+    allowed_uses:
+      - local_coverage_status
+      - control_target_identification
+      - metadata_retry_identification
+    forbidden_uses:
+      - model_training
+      - threshold_calibration
+      - blind_search_claims_for_reused_targets
+      - detection_claims
+    split_group_keys:
+      - target_id
+    manifest_path: docs/data_collection_status.json
+    notes: Compact tracked status only; raw HDF5/DAT payloads remain ignored local cache.
+

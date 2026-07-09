@@ -97,6 +97,10 @@ from techno_search.signal_registry import (
     signal_registry_summary,
     signal_registry_track_summary,
 )
+from techno_search.target_priority_queue import (
+    target_priority_queue_summary,
+    write_target_priority_queue,
+)
 from techno_search.validation import (
     validate_candidate_file,
     validate_draft_report_directory,
@@ -1903,6 +1907,32 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                     args.config_path,
                     args.ledger_path,
                 ),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "build-target-priority-queue":
+        print(
+            json.dumps(
+                write_target_priority_queue(
+                    args.output_path,
+                    seed_csv_path=args.seed_csv_path,
+                    data_status_path=args.data_status_path,
+                ),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "target-priority-queue-summary":
+        print(
+            json.dumps(
+                target_priority_queue_summary(args.queue_path),
                 indent=2,
                 sort_keys=True,
             ),
@@ -6518,6 +6548,38 @@ def _build_parser() -> argparse.ArgumentParser:
         "--ledger-path",
         type=Path,
         help="Optional background search ledger path for review-history scoring.",
+    )
+    build_target_queue_parser = subparsers.add_parser(
+        "build-target-priority-queue",
+        help="Build the metadata-first live-search target-priority queue.",
+    )
+    build_target_queue_parser.add_argument(
+        "--seed-csv-path",
+        type=Path,
+        default=Path("data/bl_hprc_full_seed_targets.csv"),
+        help="Full HPRC seed target CSV path.",
+    )
+    build_target_queue_parser.add_argument(
+        "--data-status-path",
+        type=Path,
+        default=Path("docs/data_collection_status.json"),
+        help="Tracked data-collection status manifest path.",
+    )
+    build_target_queue_parser.add_argument(
+        "--output-path",
+        type=Path,
+        default=Path("data_selection/target_priority_queue.csv"),
+        help="Output target-priority queue CSV path.",
+    )
+    target_queue_summary_parser = subparsers.add_parser(
+        "target-priority-queue-summary",
+        help="Summarize the acquisition-level target-priority queue.",
+    )
+    target_queue_summary_parser.add_argument(
+        "--queue-path",
+        type=Path,
+        default=Path("data_selection/target_priority_queue.csv"),
+        help="Target-priority queue CSV path.",
     )
     background_ledger_parser = subparsers.add_parser(
         "background-ledger-summary",
