@@ -306,9 +306,9 @@ search pages, prints only target-to-HDF5 URL rows, and downloads no payloads:
 ```bash
 git pull origin main
 caffeinate -i bash scripts/download_bl_extended_corpus.sh \
-  --manifest data/target_sample_manifest.json \
+  --manifest data_selection/batch_manifests/local_coverage_top25_manifest.json \
   --discover-only \
-  --availability-output /tmp/bl_hdf5_availability.tsv
+  --availability-output /tmp/local_coverage_top25_availability.tsv
 ```
 
 This metadata-discovery mode records a compact status entry under
@@ -316,6 +316,19 @@ This metadata-discovery mode records a compact status entry under
 including `available_targets` with URLs and `skipped_targets` with reasons.
 Review that manifest after `git pull` instead of asking the operator to paste
 console output.
+
+After URL discovery, run a HEAD-only size/storage preflight before any raw
+download. This command downloads no payloads and keeps raw download
+authorization disabled:
+
+```bash
+git pull origin main
+.venv/bin/techno-search target-priority-size-preflight
+```
+
+The first local-coverage top-25 run verified 15/15 URL headers with content
+lengths, estimated 3.803966 GB total, found no checksum headers, and wrote
+`data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json`.
 
 For a bounded download, the target limit applies to new URL-available downloads,
 not raw manifest position and not already-downloaded HDF5 evidence. This

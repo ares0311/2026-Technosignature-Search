@@ -50,6 +50,7 @@ depending on local-only state:
 | `data_selection/target_priority_queue.csv` | `techno-search build-target-priority-queue` | Metadata-first live-search target queue for local-coverage novelty selection | Committed scheduling artifact |
 | `data_selection/batch_manifests/local_coverage_top25_manifest.json` | `techno-search build-target-priority-manifest` | Bounded top-25 manifest for BL product metadata discovery from the target-priority queue | Committed scheduling artifact |
 | `data_selection/batch_manifests/local_coverage_top25_size_preflight_manifest.json` | `techno-search build-target-priority-manifest --include-status size_preflight_required` | URL-discovered top-25 subset for size/checksum/storage preflight before any raw download | Committed scheduling artifact |
+| `data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json` | `techno-search target-priority-size-preflight` | HEAD-only content-length and header preflight for URL-discovered HDF5 files | Committed scheduling artifact |
 | `data_selection/data_role_registry.yaml` | Data-selection policy workflow | Role separation for live-search metadata and local-cache status | Committed policy artifact |
 
 The first target-priority queue contains 1,703 unique target IDs derived from
@@ -144,7 +145,9 @@ with per-target available URLs and skipped reasons. Use that committed manifest
 instead of pasted console output when deciding the next acquisition step. The
 2026-07-09 local-coverage top-25 discovery run checked 25 targets, found 15
 current BL HDF5 URLs, found 10 targets without a current HDF5 URL, and
-downloaded zero raw payloads.
+downloaded zero raw payloads. The follow-on HEAD-only size preflight verified
+15/15 URLs with content lengths, estimated 3.803966 GB total, found no checksum
+headers, and kept raw download authorization disabled.
 
 New ignored local HDF5 payload targets included `HIP113421`, `HIP26779`,
 `HIP67275`, `HIP74981`, `HIP16852`, `HIP99427`, `HIP66704`, `HIP39826`,

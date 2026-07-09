@@ -5,6 +5,9 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
+import ssl
+import urllib.error
+import urllib.request
 from collections import Counter
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -21,6 +24,7 @@ TARGET_PRIORITY_QUEUE_DISCLAIMER = (
     "validation, or authorization for external submission."
 )
 TARGET_PRIORITY_MANIFEST_SCHEMA_VERSION = "target_priority_manifest_v1"
+TARGET_PRIORITY_SIZE_PREFLIGHT_SCHEMA_VERSION = "target_priority_size_preflight_v1"
 DEFAULT_PROJECT = "2026 Technosignature Search"
 DEFAULT_SOURCE = "Breakthrough Listen HPRC full target catalog"
 DEFAULT_CITATIONS = (
@@ -525,6 +529,203 @@ def write_target_priority_manifest(
             }
             for index, target in enumerate(manifest["targets"][:10], start=1)
         ],
+    }
+
+
+def _default_head_metadata(url: str, timeout_seconds: float) -> dict[str, Any]:
+    request = urllib.request.Request(url, method="HEAD")
+    try:
+        with urllib.request.urlopen(
+            request,
+            context=_make_ssl_context(),
+            timeout=timeout_seconds,
+        ) as response:
+            return {
+                "ok": True,
+                "status_code": int(response.status),
+                "headers": {key.lower(): value for key, value in response.headers.items()},
+                "error": "",
+            }
+    except urllib.error.HTTPError as exc:
+        return {
+            "ok": False,
+            "status_code": int(exc.code),
+            "headers": {key.lower(): value for key, value in exc.headers.items()},
+            "error": str(exc),
+        }
+    except (OSError, urllib.error.URLError, TimeoutError) as exc:
+        return {"ok": False, "status_code": None, "headers": {}, "error": str(exc)}
+
+
+def _make_ssl_context() -> ssl.SSLContext:
+    try:
+        import certifi
+
+        return ssl.create_default_context(cafile=certifi.where())
+    except ImportError:
+        return ssl.create_default_context()
+
+
+def _int_header(headers: dict[str, str], key: str) -> int | None:
+    value = headers.get(key, "").strip()
+    if not value or not value.isdigit():
+        return None
+    return int(value)
+
+
+def _checksum_headers(headers: dict[str, str]) -> dict[str, str]:
+    checksum_keys = (
+        "content-md5",
+        "digest",
+        "x-amz-checksum-sha256",
+        "x-amz-checksum-sha1",
+        "x-amz-checksum-crc32",
+        "x-amz-meta-md5",
+    )
+    return {
+        key: headers[key]
+        for key in checksum_keys
+        if headers.get(key, "").strip()
+    }
+
+
+def build_target_priority_size_preflight(
+    manifest_path: Path = Path(
+        "data_selection/batch_manifests/local_coverage_top25_size_preflight_manifest.json"
+    ),
+    *,
+    timeout_seconds: float = 30.0,
+    head_fn: Any | None = None,
+    generated_at_utc: str | None = None,
+) -> dict[str, Any]:
+    """HEAD-probe URL-discovered target rows before raw acquisition."""
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    targets = manifest.get("targets", [])
+    fn = head_fn or _default_head_metadata
+    rows: list[dict[str, Any]] = []
+    total_bytes = 0
+    sized_count = 0
+    ok_count = 0
+    checksum_header_count = 0
+    for index, target in enumerate(targets, start=1):
+        url = str(target.get("source_hdf5_url", "")).strip()
+        target_id = str(target.get("hip", "")).strip()
+        if not url:
+            rows.append(
+                {
+                    "rank": index,
+                    "target_id": target_id,
+                    "url": url,
+                    "ok": False,
+                    "status_code": None,
+                    "content_length_bytes": None,
+                    "content_length_gb": None,
+                    "accept_ranges": "",
+                    "etag": "",
+                    "last_modified": "",
+                    "content_type": "",
+                    "checksum_headers": {},
+                    "error": "missing source_hdf5_url",
+                }
+            )
+            continue
+        result = fn(url, timeout_seconds)
+        headers = {
+            str(key).lower(): str(value)
+            for key, value in dict(result.get("headers", {})).items()
+        }
+        size_bytes = _int_header(headers, "content-length")
+        checksum_headers = _checksum_headers(headers)
+        if size_bytes is not None:
+            sized_count += 1
+            total_bytes += size_bytes
+        if bool(result.get("ok")):
+            ok_count += 1
+        if checksum_headers:
+            checksum_header_count += 1
+        rows.append(
+            {
+                "rank": index,
+                "target_id": target_id,
+                "url": url,
+                "ok": bool(result.get("ok")),
+                "status_code": result.get("status_code"),
+                "content_length_bytes": size_bytes,
+                "content_length_gb": round(size_bytes / 1_000_000_000, 6)
+                if size_bytes is not None
+                else None,
+                "accept_ranges": headers.get("accept-ranges", ""),
+                "etag": headers.get("etag", ""),
+                "last_modified": headers.get("last-modified", ""),
+                "content_type": headers.get("content-type", ""),
+                "checksum_headers": checksum_headers,
+                "error": str(result.get("error", "")),
+            }
+        )
+    return {
+        "schema_version": TARGET_PRIORITY_SIZE_PREFLIGHT_SCHEMA_VERSION,
+        "disclaimer": TARGET_PRIORITY_QUEUE_DISCLAIMER,
+        "generated_at_utc": generated_at_utc or datetime.now(UTC).isoformat(),
+        "source_manifest": {
+            "path": str(manifest_path),
+            "sha256": _file_sha256(manifest_path),
+            "schema_version": manifest.get("schema_version"),
+        },
+        "target_count": len(rows),
+        "ok_target_count": ok_count,
+        "sized_target_count": sized_count,
+        "checksum_header_count": checksum_header_count,
+        "all_targets_ok": ok_count == len(rows),
+        "all_targets_sized": sized_count == len(rows),
+        "total_content_length_bytes": total_bytes,
+        "total_content_length_gb": round(total_bytes / 1_000_000_000, 6),
+        "max_allowed_download_gb": 250.0,
+        "download_within_default_batch_limit": (total_bytes / 1_000_000_000) <= 250.0,
+        "raw_download_authorized": False,
+        "raw_download_authorization_note": (
+            "Header preflight is planning evidence only. Raw download still requires "
+            "operator approval, storage-reserve check, and policy-compliant role."
+        ),
+        "targets": rows,
+    }
+
+
+def write_target_priority_size_preflight(
+    output_path: Path,
+    *,
+    manifest_path: Path = Path(
+        "data_selection/batch_manifests/local_coverage_top25_size_preflight_manifest.json"
+    ),
+    timeout_seconds: float = 30.0,
+    head_fn: Any | None = None,
+    generated_at_utc: str | None = None,
+) -> dict[str, Any]:
+    """Write URL HEAD preflight output for a size-preflight target manifest."""
+
+    preflight = build_target_priority_size_preflight(
+        manifest_path,
+        timeout_seconds=timeout_seconds,
+        head_fn=head_fn,
+        generated_at_utc=generated_at_utc,
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
+        json.dumps(preflight, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return {
+        "schema_version": TARGET_PRIORITY_SIZE_PREFLIGHT_SCHEMA_VERSION,
+        "ok": bool(preflight["all_targets_ok"] and preflight["all_targets_sized"]),
+        "disclaimer": TARGET_PRIORITY_QUEUE_DISCLAIMER,
+        "output_path": str(output_path),
+        "source_manifest_path": str(manifest_path),
+        "target_count": preflight["target_count"],
+        "ok_target_count": preflight["ok_target_count"],
+        "sized_target_count": preflight["sized_target_count"],
+        "checksum_header_count": preflight["checksum_header_count"],
+        "total_content_length_gb": preflight["total_content_length_gb"],
+        "raw_download_authorized": False,
     }
 
 

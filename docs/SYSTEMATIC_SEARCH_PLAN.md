@@ -189,7 +189,12 @@ requirements:
    downloaded zero raw payloads. The regenerated queue now marks those 15 rows
    as `size_preflight_required`; use
    `data_selection/batch_manifests/local_coverage_top25_size_preflight_manifest.json`
-   for URL-size/checksum/storage preflight before any raw download.
+   for URL-size/checksum/storage preflight before any raw download. **Preflight
+   implementation done:** `techno-search target-priority-size-preflight` writes
+   `data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json`.
+   The first HEAD-only run verified 15/15 URLs with content lengths, estimated
+   3.803966 GB total, found no checksum headers, and left
+   `raw_download_authorized: false`.
 4. Wire the computed `novelty_score` into `target_priority_score()`'s
    existing weighting, don't reinvent the scoring formula. **Initial
    implementation done:** queue rows include a normalized
