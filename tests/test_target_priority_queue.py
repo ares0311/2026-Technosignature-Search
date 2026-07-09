@@ -79,6 +79,59 @@ def _write_status_json(path: Path) -> None:
     )
 
 
+def test_build_target_priority_queue_marks_discovered_urls_for_size_preflight(
+    tmp_path: Path,
+) -> None:
+    seed_path = tmp_path / "seed.csv"
+    status_path = tmp_path / "status.json"
+    _write_seed_csv(seed_path)
+    status_path.write_text(
+        json.dumps(
+            {
+                "runs": {
+                    "download_bl_extended_corpus": {
+                        "reused_targets": ["HIP99427"],
+                        "downloaded_targets": [],
+                        "skipped_targets": [],
+                    },
+                    "download_bl_extended_corpus_discovery": {
+                        "available_targets": [
+                            {
+                                "target": "HIP2",
+                                "url": "https://bldata.berkeley.edu/example/HIP2.h5",
+                            }
+                        ],
+                        "skipped_targets": [
+                            {
+                                "target": "HIP71681",
+                                "reason": "no_hdf5_url_discovered",
+                            }
+                        ],
+                    },
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    rows = build_target_priority_queue(
+        seed_csv_path=seed_path,
+        data_status_path=status_path,
+    )
+    rows_by_id = {row["target_id"]: row for row in rows}
+
+    assert rows_by_id["HIP2"]["status"] == "size_preflight_required"
+    assert rows_by_id["HIP2"]["data_products_available"] == "hdf5_url_discovered"
+    assert rows_by_id["HIP2"]["local_coverage_status"] == (
+        "not_searched_hdf5_url_discovered"
+    )
+    assert rows_by_id["HIP2"]["source_hdf5_url"] == (
+        "https://bldata.berkeley.edu/example/HIP2.h5"
+    )
+    assert "size/checksum/storage preflight" in rows_by_id["HIP2"]["notes"]
+    assert rows_by_id["HIP71681"]["status"] == "metadata_discovery_required"
+
+
 def test_build_target_priority_queue_prefers_unsearched_metadata_targets(
     tmp_path: Path,
 ) -> None:
@@ -233,3 +286,68 @@ def test_cli_build_target_priority_manifest(tmp_path: Path) -> None:
     assert result["output_path"] == str(manifest_path)
     assert manifest["targets"][0]["hip"] == "HIP2"
     assert manifest["selection"]["max_targets"] == 2
+
+
+def test_cli_build_target_priority_manifest_replaces_default_status_filter(
+    tmp_path: Path,
+) -> None:
+    queue_path = tmp_path / "target_priority_queue.csv"
+    manifest_path = tmp_path / "batch_manifest.json"
+    with queue_path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=TARGET_PRIORITY_QUEUE_FIELDS)
+        writer.writeheader()
+        base_row = {field: "" for field in TARGET_PRIORITY_QUEUE_FIELDS}
+        writer.writerow(
+            {
+                **base_row,
+                "target_id": "HIPQUEUED",
+                "ra_deg": "1.0",
+                "dec_deg": "2.0",
+                "search_category": "new_parameter_space",
+                "status": "queued_metadata_discovery",
+                "local_coverage_status": "not_searched_by_project",
+                "total_priority": "20",
+                "background_target_priority_score": "0.5",
+                "data_products_available": "requires_product_metadata_discovery",
+                "notes": "queued",
+            }
+        )
+        writer.writerow(
+            {
+                **base_row,
+                "target_id": "HIPREADY",
+                "ra_deg": "3.0",
+                "dec_deg": "4.0",
+                "search_category": "new_parameter_space",
+                "status": "size_preflight_required",
+                "local_coverage_status": "not_searched_hdf5_url_discovered",
+                "total_priority": "19.75",
+                "background_target_priority_score": "0.5",
+                "data_products_available": "hdf5_url_discovered",
+                "source_hdf5_url": "https://bldata.berkeley.edu/example/HIPREADY.h5",
+                "notes": "preflight",
+            }
+        )
+
+    stdout = StringIO()
+    exit_code = main(
+        [
+            "build-target-priority-manifest",
+            "--queue-path",
+            str(queue_path),
+            "--output-path",
+            str(manifest_path),
+            "--include-status",
+            "size_preflight_required",
+        ],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert result["include_statuses"] == ["size_preflight_required"]
+    assert result["selected_count"] == 1
+    assert manifest["selection"]["include_statuses"] == ["size_preflight_required"]
+    assert [target["hip"] for target in manifest["targets"]] == ["HIPREADY"]
+    assert manifest["targets"][0]["source_hdf5_url"].endswith("HIPREADY.h5")

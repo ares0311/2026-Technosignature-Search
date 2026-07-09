@@ -1948,7 +1948,9 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                     args.output_path,
                     queue_path=args.queue_path,
                     max_targets=args.max_targets,
-                    include_statuses=tuple(args.include_status),
+                    include_statuses=tuple(
+                        args.include_status or ["queued_metadata_discovery"]
+                    ),
                     generated_at_utc=args.generated_at_utc,
                 ),
                 indent=2,
@@ -6624,7 +6626,7 @@ def _build_parser() -> argparse.ArgumentParser:
     target_manifest_parser.add_argument(
         "--include-status",
         action="append",
-        default=["queued_metadata_discovery"],
+        default=None,
         help="Queue status to include; repeat for multiple statuses.",
     )
     target_manifest_parser.add_argument(

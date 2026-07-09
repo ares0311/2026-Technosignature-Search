@@ -54,12 +54,14 @@ TARGET_PRIORITY_QUEUE_FIELDS = [
     "citations",
     "local_coverage_status",
     "background_target_priority_score",
+    "source_hdf5_url",
 ]
 
 
 @dataclass(frozen=True)
 class _CoverageState:
     reused_or_downloaded_targets: frozenset[str]
+    discovered_hdf5_urls: dict[str, str]
     skipped_targets: dict[str, str]
 
 
@@ -141,8 +143,25 @@ def _load_coverage_state(path: Path) -> _CoverageState:
         reason = str(item.get("reason", "")).strip() or "skipped_without_reason"
         if target:
             skipped[target] = reason
+    discovery_run = payload.get("runs", {}).get("download_bl_extended_corpus_discovery", {})
+    discovered_hdf5_urls: dict[str, str] = {}
+    for item in discovery_run.get("available_targets", []):
+        if not isinstance(item, dict):
+            continue
+        target = str(item.get("target", "")).strip()
+        url = str(item.get("url", "")).strip()
+        if target and url:
+            discovered_hdf5_urls[target] = url
+    for item in discovery_run.get("skipped_targets", []):
+        if not isinstance(item, dict):
+            continue
+        target = str(item.get("target", "")).strip()
+        reason = str(item.get("reason", "")).strip() or "skipped_without_reason"
+        if target and target not in discovered_hdf5_urls:
+            skipped[target] = reason
     return _CoverageState(
         reused_or_downloaded_targets=frozenset(reused | downloaded),
+        discovered_hdf5_urls=discovered_hdf5_urls,
         skipped_targets=skipped,
     )
 
@@ -188,7 +207,7 @@ def _data_quality(row: dict[str, str], data_products_available: str) -> float:
         score += 0.5
     if (row.get("spec_type") or row.get("SpType") or "").strip():
         score += 0.5
-    if data_products_available == "local_cache_present":
+    if data_products_available in {"local_cache_present", "hdf5_url_discovered"}:
         score += 0.5
     elif data_products_available == "requires_product_metadata_discovery":
         score += 0.25
@@ -197,7 +216,7 @@ def _data_quality(row: dict[str, str], data_products_available: str) -> float:
 
 def _classification_for_aliases(
     aliases: frozenset[str], coverage: _CoverageState
-) -> tuple[str, str, str, str, str, float, float]:
+) -> tuple[str, str, str, str, str, float, float, str]:
     if aliases & coverage.reused_or_downloaded_targets:
         return (
             "local_cache_present",
@@ -207,6 +226,21 @@ def _classification_for_aliases(
             "searched_by_project",
             0.5,
             1.0,
+            "",
+        )
+    discovered_aliases = sorted(
+        alias for alias in aliases if alias in coverage.discovered_hdf5_urls
+    )
+    if discovered_aliases:
+        return (
+            "hdf5_url_discovered",
+            "",
+            "new_parameter_space",
+            "size_preflight_required",
+            "not_searched_hdf5_url_discovered",
+            2.75,
+            2.75,
+            coverage.discovered_hdf5_urls[discovered_aliases[0]],
         )
     skipped_aliases = sorted(
         alias for alias in aliases if alias in coverage.skipped_targets
@@ -221,6 +255,7 @@ def _classification_for_aliases(
             "not_searched_product_discovery_failed",
             2.5,
             2.0,
+            "",
         )
     return (
         "requires_product_metadata_discovery",
@@ -230,6 +265,7 @@ def _classification_for_aliases(
         "not_searched_by_project",
         3.0,
         3.0,
+        "",
     )
 
 
@@ -244,11 +280,16 @@ def _queue_row(row: dict[str, str], coverage: _CoverageState) -> dict[str, str]:
         local_coverage_status,
         scientific_novelty,
         new_followup_balance,
+        source_hdf5_url,
     ) = _classification_for_aliases(aliases, coverage)
     prior_significance = _prior_significance(row)
     followup_leverage = 0.0
     data_quality = _data_quality(row, data_products_available)
-    method_advantage = 2.5 if status == "queued_metadata_discovery" else 1.5
+    method_advantage = (
+        2.5
+        if status in {"queued_metadata_discovery", "size_preflight_required"}
+        else 1.5
+    )
     if status == "already_acquired_local_cache":
         method_advantage = 1.0
     publication_value = _publication_value(row)
@@ -290,6 +331,11 @@ def _queue_row(row: dict[str, str], coverage: _CoverageState) -> dict[str, str]:
             "Previous BL extended-corpus discovery did not find an HDF5 URL; retry "
             "metadata discovery before any raw acquisition."
         )
+    elif status == "size_preflight_required":
+        notes = (
+            "Current BL HDF5 URL discovered. Run size/checksum/storage preflight "
+            "before any raw acquisition."
+        )
     return {
         "target_id": target_id,
         "project": DEFAULT_PROJECT,
@@ -317,6 +363,7 @@ def _queue_row(row: dict[str, str], coverage: _CoverageState) -> dict[str, str]:
         "background_target_priority_score": _format_score(
             target_priority_score(background_target)
         ),
+        "source_hdf5_url": source_hdf5_url,
     }
 
 
@@ -433,6 +480,7 @@ def build_target_priority_manifest(
                     row["background_target_priority_score"]
                 ),
                 "data_products_available": row["data_products_available"],
+                "source_hdf5_url": row.get("source_hdf5_url", ""),
                 "notes": row["notes"],
             }
             for row in selected

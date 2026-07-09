@@ -262,16 +262,21 @@ above):
 Initial local-coverage target selection is implemented:
 `techno-search build-target-priority-queue` writes
 `data_selection/target_priority_queue.csv` from the full HPRC metadata seed and
-tracked acquisition status. The first queue contains 1,703 unique target IDs:
-1,683 queued for metadata discovery, 4 metadata-retry rows from prior
+tracked acquisition status. The current queue contains 1,703 unique target IDs:
+1,658 queued for metadata discovery, 15 URL-discovered rows requiring
+size/checksum/storage preflight, 14 metadata-retry rows from
 `no_hdf5_url_discovered` outcomes, and 16 already-acquired local-cache controls.
 `techno-search build-target-priority-manifest` also writes the bounded
 `data_selection/batch_manifests/local_coverage_top25_manifest.json` manifest so
 the next acquisition step can run metadata discovery before any raw download.
-This is a metadata-first acquisition-planning artifact only; it does not
-authorize raw downloads, does not close the anomaly/OOD calibration blocker, and
-does not make any candidate or external-submission claim. Follow-up-target
-scoring remains design-only until a real unresolved candidate exists.
+The first top-25 discovery checked 25 targets, found 15 current BL HDF5 URLs,
+found 10 targets without a current HDF5 URL, and downloaded zero payloads; the
+URL-discovered rows are captured in
+`data_selection/batch_manifests/local_coverage_top25_size_preflight_manifest.json`.
+These are metadata-first acquisition-planning artifacts only; they do not
+authorize raw downloads, do not close the anomaly/OOD calibration blocker, and
+do not make any candidate or external-submission claim. Follow-up-target scoring
+remains design-only until a real unresolved candidate exists.
 
 ---
 
