@@ -273,6 +273,11 @@ The first top-25 discovery checked 25 targets, found 15 current BL HDF5 URLs,
 found 10 targets without a current HDF5 URL, and downloaded zero payloads; the
 URL-discovered rows are captured in
 `data_selection/batch_manifests/local_coverage_top25_size_preflight_manifest.json`.
+`techno-search target-priority-size-preflight` then verified 15/15 URL headers
+with content lengths in
+`data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json`,
+estimated 3.803966 GB total, found no checksum headers, and left raw download
+authorization disabled.
 These are metadata-first acquisition-planning artifacts only; they do not
 authorize raw downloads, do not close the anomaly/OOD calibration blocker, and
 do not make any candidate or external-submission claim. Follow-up-target scoring

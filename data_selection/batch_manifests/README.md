@@ -39,3 +39,7 @@ Current metadata-only manifests:
   top-25 discovery run with current BL HDF5 URLs. Use this for URL header,
   checksum, size, and local-storage preflight before any raw download; it is not
   raw-download authorization.
+- `local_coverage_top25_size_preflight_report.json` — HEAD-only preflight for
+  the 15 URL-discovered HDF5 files. The first run verified 15/15 URLs with
+  content lengths, estimated 3.803966 GB total, found no checksum headers, and
+  leaves raw download authorization disabled.

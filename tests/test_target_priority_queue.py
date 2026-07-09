@@ -10,8 +10,10 @@ from techno_search.target_priority_queue import (
     TARGET_PRIORITY_QUEUE_FIELDS,
     build_target_priority_manifest,
     build_target_priority_queue,
+    build_target_priority_size_preflight,
     target_priority_queue_summary,
     write_target_priority_queue,
+    write_target_priority_size_preflight,
 )
 
 
@@ -351,3 +353,67 @@ def test_cli_build_target_priority_manifest_replaces_default_status_filter(
     assert manifest["selection"]["include_statuses"] == ["size_preflight_required"]
     assert [target["hip"] for target in manifest["targets"]] == ["HIPREADY"]
     assert manifest["targets"][0]["source_hdf5_url"].endswith("HIPREADY.h5")
+
+
+def test_target_priority_size_preflight_records_header_metadata(tmp_path: Path) -> None:
+    manifest_path = tmp_path / "size_preflight_manifest.json"
+    output_path = tmp_path / "size_preflight_report.json"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "target_priority_manifest_v1",
+                "targets": [
+                    {
+                        "hip": "HIPREADY",
+                        "source_hdf5_url": "https://bldata.berkeley.edu/example/HIPREADY.h5",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    def head_fn(url: str, timeout_seconds: float) -> dict[str, object]:
+        assert url == "https://bldata.berkeley.edu/example/HIPREADY.h5"
+        assert timeout_seconds == 12.0
+        return {
+            "ok": True,
+            "status_code": 200,
+            "headers": {
+                "content-length": "123456789",
+                "accept-ranges": "bytes",
+                "etag": '"opaque-etag"',
+                "last-modified": "Thu, 09 Jul 2026 17:45:00 GMT",
+                "content-type": "application/x-hdf5",
+                "content-md5": "abc123",
+            },
+            "error": "",
+        }
+
+    preflight = build_target_priority_size_preflight(
+        manifest_path,
+        timeout_seconds=12.0,
+        head_fn=head_fn,
+        generated_at_utc="2026-07-09T18:00:00+00:00",
+    )
+    result = write_target_priority_size_preflight(
+        output_path,
+        manifest_path=manifest_path,
+        timeout_seconds=12.0,
+        head_fn=head_fn,
+        generated_at_utc="2026-07-09T18:00:00+00:00",
+    )
+    written = json.loads(output_path.read_text(encoding="utf-8"))
+
+    assert preflight["schema_version"] == "target_priority_size_preflight_v1"
+    assert preflight["target_count"] == 1
+    assert preflight["ok_target_count"] == 1
+    assert preflight["sized_target_count"] == 1
+    assert preflight["checksum_header_count"] == 1
+    assert preflight["total_content_length_bytes"] == 123456789
+    assert preflight["raw_download_authorized"] is False
+    assert preflight["targets"][0]["accept_ranges"] == "bytes"
+    assert preflight["targets"][0]["checksum_headers"] == {"content-md5": "abc123"}
+    assert result["ok"] is True
+    assert result["raw_download_authorized"] is False
+    assert written == preflight

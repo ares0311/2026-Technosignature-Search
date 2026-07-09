@@ -101,6 +101,7 @@ from techno_search.target_priority_queue import (
     target_priority_queue_summary,
     write_target_priority_manifest,
     write_target_priority_queue,
+    write_target_priority_size_preflight,
 )
 from techno_search.validation import (
     validate_candidate_file,
@@ -1959,6 +1960,26 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             file=out,
         )
         return 0
+
+    if args.command == "target-priority-size-preflight":
+        result = write_target_priority_size_preflight(
+            args.output_path,
+            manifest_path=args.manifest_path,
+            timeout_seconds=args.timeout_seconds,
+            generated_at_utc=args.generated_at_utc,
+        )
+        from techno_search.data_collection_status import (
+            record_and_publish_data_collection_status,
+        )
+
+        record_and_publish_data_collection_status(
+            default_project_root(),
+            "target_priority_size_preflight",
+            result,
+            status_path=args.data_status_path,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        return 0 if result["ok"] else 1
 
     if args.command == "background-ledger-summary":
         print(
@@ -6632,6 +6653,44 @@ def _build_parser() -> argparse.ArgumentParser:
     target_manifest_parser.add_argument(
         "--generated-at-utc",
         help="Optional fixed generated_at_utc timestamp for reproducible manifests.",
+    )
+    target_size_preflight_parser = subparsers.add_parser(
+        "target-priority-size-preflight",
+        help="HEAD-probe URL-discovered target-priority rows before raw download.",
+    )
+    target_size_preflight_parser.add_argument(
+        "--manifest-path",
+        type=Path,
+        default=Path(
+            "data_selection/batch_manifests/"
+            "local_coverage_top25_size_preflight_manifest.json"
+        ),
+        help="Input size-preflight target manifest path.",
+    )
+    target_size_preflight_parser.add_argument(
+        "--output-path",
+        type=Path,
+        default=Path(
+            "data_selection/batch_manifests/"
+            "local_coverage_top25_size_preflight_report.json"
+        ),
+        help="Output URL header preflight report path.",
+    )
+    target_size_preflight_parser.add_argument(
+        "--data-status-path",
+        type=Path,
+        default=Path("docs/data_collection_status.json"),
+        help="Tracked data-collection status manifest path.",
+    )
+    target_size_preflight_parser.add_argument(
+        "--timeout-seconds",
+        type=float,
+        default=30.0,
+        help="Per-URL HEAD request timeout in seconds.",
+    )
+    target_size_preflight_parser.add_argument(
+        "--generated-at-utc",
+        help="Optional fixed generated_at_utc timestamp for reproducible reports.",
     )
     background_ledger_parser = subparsers.add_parser(
         "background-ledger-summary",
