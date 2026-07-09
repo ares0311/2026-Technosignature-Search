@@ -120,14 +120,16 @@ underway: `prod-scan` prints compact completed-target rows; `prod-file-scan`
 completed-target lines include follow-up yes/no and pathway context; and the
 post-run review commands (`prod-target-status`, `prod-follow-ups`,
 `prod-non-detections`) default to compact terminal summaries, with `--json`
-preserved for machine-readable ledgers.
+preserved for machine-readable ledgers. Candidate Markdown/JSON reports now
+include an `operator_review` block with the pathway, follow-up-required flag,
+operator action, and no-claim guardrails.
 
 Remaining Step 2 work must continue from a workflow audit of the other current
-UI surfaces (`reporting.py`'s candidate packets/markdown reports and any
-operator handoff views) against real operator workflows: reviewing a candidate,
-reviewing a non-detection ledger, and approving/rejecting a follow-up. Do not
-guess that a UI is hardened because it has a command; verify the operator can
-answer the next review question without paging through raw machine output.
+UI surfaces (especially any operator handoff views outside the candidate
+packet path) against real operator workflows: reviewing a candidate, reviewing
+a non-detection ledger, and approving/rejecting a follow-up. Do not guess that
+a UI is hardened because it has a command; verify the operator can answer the
+next review question without paging through raw machine output.
 
 ---
 

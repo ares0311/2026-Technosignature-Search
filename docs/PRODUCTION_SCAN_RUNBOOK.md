@@ -131,6 +131,11 @@ These CLI commands implement the runbook rules:
 | `techno-search track-b-unknown-candidate-gate CANDIDATE_JSON --crossmatch-json CROSSMATCH_JSON [--satellite-json SATELLITE_JSON]` | Combine explicit Track A crossmatch, optional satellite-match, RFI/artifact/cadence/anomaly/provenance evidence into the Phase 4 `unknown_candidate` gate without network lookups |
 | `techno-search validate-all` | Must pass before any scan proceeds |
 
+Candidate Markdown/JSON reports include an `operator_review` block that states
+the recommended pathway, whether local follow-up review is required, the
+operator action, and the guardrails (`detection_claimed: false`,
+`external_submission_allowed: false`).
+
 ---
 
 ## Track A Known-Explanation Gate
