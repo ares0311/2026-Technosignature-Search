@@ -181,7 +181,11 @@ requirements:
 3. Produce or update a target-priority queue with the required data-selection
    fields before any new acquisition batch, rather than treating the model score
    alone as a download reason. **Initial implementation done:**
-   `data_selection/target_priority_queue.csv`.
+   `data_selection/target_priority_queue.csv`. A bounded downloader-compatible
+   manifest for the top 25 local-coverage targets is also available at
+   `data_selection/batch_manifests/local_coverage_top25_manifest.json`; use it
+   first with `scripts/download_bl_extended_corpus.sh --discover-only` to verify
+   real BL product URLs before any raw download.
 4. Wire the computed `novelty_score` into `target_priority_score()`'s
    existing weighting, don't reinvent the scoring formula. **Initial
    implementation done:** queue rows include a normalized

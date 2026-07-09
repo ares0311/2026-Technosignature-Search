@@ -28,3 +28,10 @@ Do not use a batch manifest as approval to download raw files until archive
 product metadata, size estimates, and local free-space constraints have been
 verified.
 
+Current metadata-only manifests:
+
+- `local_coverage_top25_manifest.json` — top 25
+  `queued_metadata_discovery` rows from
+  `data_selection/target_priority_queue.csv`. This is downloader-compatible for
+  `scripts/download_bl_extended_corpus.sh --manifest ... --discover-only` and is
+  intended for product metadata discovery before any raw download.

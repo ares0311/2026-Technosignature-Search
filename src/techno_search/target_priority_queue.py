@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 from collections import Counter
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +20,7 @@ TARGET_PRIORITY_QUEUE_DISCLAIMER = (
     "planning. They are not detections, discovery claims, expert review, external "
     "validation, or authorization for external submission."
 )
+TARGET_PRIORITY_MANIFEST_SCHEMA_VERSION = "target_priority_manifest_v1"
 DEFAULT_PROJECT = "2026 Technosignature Search"
 DEFAULT_SOURCE = "Breakthrough Listen HPRC full target catalog"
 DEFAULT_CITATIONS = (
@@ -371,6 +374,110 @@ def write_target_priority_queue(
 def read_target_priority_queue(path: Path) -> list[dict[str, str]]:
     with path.open(newline="", encoding="utf-8") as handle:
         return list(csv.DictReader(handle))
+
+
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def build_target_priority_manifest(
+    *,
+    queue_path: Path = Path("data_selection/target_priority_queue.csv"),
+    max_targets: int = 25,
+    include_statuses: tuple[str, ...] = ("queued_metadata_discovery",),
+    generated_at_utc: str | None = None,
+) -> dict[str, Any]:
+    """Build a downloader-compatible manifest from top priority queue rows."""
+
+    if max_targets <= 0:
+        raise ValueError("max_targets must be positive")
+    rows = [
+        row
+        for row in read_target_priority_queue(queue_path)
+        if row.get("status") in include_statuses
+    ]
+    selected = rows[:max_targets]
+    generated_at = generated_at_utc or datetime.now(UTC).isoformat()
+    priorities = [float(row["total_priority"]) for row in selected]
+    return {
+        "schema_version": TARGET_PRIORITY_MANIFEST_SCHEMA_VERSION,
+        "disclaimer": TARGET_PRIORITY_QUEUE_DISCLAIMER,
+        "generated_at_utc": generated_at,
+        "source_queue": {
+            "path": str(queue_path),
+            "sha256": _file_sha256(queue_path),
+            "schema_version": TARGET_PRIORITY_QUEUE_SCHEMA_VERSION,
+        },
+        "selection": {
+            "max_targets": max_targets,
+            "include_statuses": list(include_statuses),
+            "selected_count": len(selected),
+            "min_total_priority": min(priorities) if priorities else None,
+            "max_total_priority": max(priorities) if priorities else None,
+        },
+        "targets": [
+            {
+                "hip": row["target_id"],
+                "name": row["target_id"],
+                "ra_deg": float(row["ra_deg"]) if row["ra_deg"] else None,
+                "dec_deg": float(row["dec_deg"]) if row["dec_deg"] else None,
+                "search_category": row["search_category"],
+                "queue_status": row["status"],
+                "local_coverage_status": row["local_coverage_status"],
+                "total_priority": float(row["total_priority"]),
+                "background_target_priority_score": float(
+                    row["background_target_priority_score"]
+                ),
+                "data_products_available": row["data_products_available"],
+                "notes": row["notes"],
+            }
+            for row in selected
+        ],
+    }
+
+
+def write_target_priority_manifest(
+    output_path: Path,
+    *,
+    queue_path: Path = Path("data_selection/target_priority_queue.csv"),
+    max_targets: int = 25,
+    include_statuses: tuple[str, ...] = ("queued_metadata_discovery",),
+    generated_at_utc: str | None = None,
+) -> dict[str, Any]:
+    """Write a downloader-compatible manifest from top priority queue rows."""
+
+    manifest = build_target_priority_manifest(
+        queue_path=queue_path,
+        max_targets=max_targets,
+        include_statuses=include_statuses,
+        generated_at_utc=generated_at_utc,
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return {
+        "schema_version": TARGET_PRIORITY_MANIFEST_SCHEMA_VERSION,
+        "ok": True,
+        "disclaimer": TARGET_PRIORITY_QUEUE_DISCLAIMER,
+        "output_path": str(output_path),
+        "source_queue_path": str(queue_path),
+        "selected_count": manifest["selection"]["selected_count"],
+        "include_statuses": list(include_statuses),
+        "top_targets": [
+            {
+                "rank": index,
+                "target_id": target["hip"],
+                "total_priority": target["total_priority"],
+            }
+            for index, target in enumerate(manifest["targets"][:10], start=1)
+        ],
+    }
 
 
 def target_priority_queue_summary(

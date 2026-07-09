@@ -48,6 +48,7 @@ depending on local-only state:
 | `data/target_sample_manifest.json` | Sampling design workflow | Stratified sample manifest retained for null-result defensibility | Committed manifest |
 | `docs/data_collection_status.json` | Data acquisition entrypoints | Compact tracked data-collection status and per-target outcomes | Committed status manifest |
 | `data_selection/target_priority_queue.csv` | `techno-search build-target-priority-queue` | Metadata-first live-search target queue for local-coverage novelty selection | Committed scheduling artifact |
+| `data_selection/batch_manifests/local_coverage_top25_manifest.json` | `techno-search build-target-priority-manifest` | Bounded top-25 manifest for BL product metadata discovery from the target-priority queue | Committed scheduling artifact |
 | `data_selection/data_role_registry.yaml` | Data-selection policy workflow | Role separation for live-search metadata and local-cache status | Committed policy artifact |
 
 The first target-priority queue contains 1,703 unique target IDs derived from

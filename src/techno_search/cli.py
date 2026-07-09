@@ -99,6 +99,7 @@ from techno_search.signal_registry import (
 )
 from techno_search.target_priority_queue import (
     target_priority_queue_summary,
+    write_target_priority_manifest,
     write_target_priority_queue,
 )
 from techno_search.validation import (
@@ -1933,6 +1934,23 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(
             json.dumps(
                 target_priority_queue_summary(args.queue_path),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=out,
+        )
+        return 0
+
+    if args.command == "build-target-priority-manifest":
+        print(
+            json.dumps(
+                write_target_priority_manifest(
+                    args.output_path,
+                    queue_path=args.queue_path,
+                    max_targets=args.max_targets,
+                    include_statuses=tuple(args.include_status),
+                    generated_at_utc=args.generated_at_utc,
+                ),
                 indent=2,
                 sort_keys=True,
             ),
@@ -6580,6 +6598,38 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("data_selection/target_priority_queue.csv"),
         help="Target-priority queue CSV path.",
+    )
+    target_manifest_parser = subparsers.add_parser(
+        "build-target-priority-manifest",
+        help="Build a bounded downloader manifest from the target-priority queue.",
+    )
+    target_manifest_parser.add_argument(
+        "--queue-path",
+        type=Path,
+        default=Path("data_selection/target_priority_queue.csv"),
+        help="Target-priority queue CSV path.",
+    )
+    target_manifest_parser.add_argument(
+        "--output-path",
+        type=Path,
+        default=Path("data_selection/batch_manifests/local_coverage_top25_manifest.json"),
+        help="Output downloader-compatible target manifest path.",
+    )
+    target_manifest_parser.add_argument(
+        "--max-targets",
+        type=int,
+        default=25,
+        help="Maximum number of target rows to include.",
+    )
+    target_manifest_parser.add_argument(
+        "--include-status",
+        action="append",
+        default=["queued_metadata_discovery"],
+        help="Queue status to include; repeat for multiple statuses.",
+    )
+    target_manifest_parser.add_argument(
+        "--generated-at-utc",
+        help="Optional fixed generated_at_utc timestamp for reproducible manifests.",
     )
     background_ledger_parser = subparsers.add_parser(
         "background-ledger-summary",

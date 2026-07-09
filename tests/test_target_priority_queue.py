@@ -8,6 +8,7 @@ from pathlib import Path
 from techno_search.cli import main
 from techno_search.target_priority_queue import (
     TARGET_PRIORITY_QUEUE_FIELDS,
+    build_target_priority_manifest,
     build_target_priority_queue,
     target_priority_queue_summary,
     write_target_priority_queue,
@@ -163,3 +164,72 @@ def test_cli_build_and_summarize_target_priority_queue(tmp_path: Path) -> None:
 
     assert exit_code == 0
     assert summary == target_priority_queue_summary(output_path)
+
+
+def test_build_target_priority_manifest_selects_top_unsearched_targets(
+    tmp_path: Path,
+) -> None:
+    seed_path = tmp_path / "seed.csv"
+    status_path = tmp_path / "status.json"
+    queue_path = tmp_path / "target_priority_queue.csv"
+    _write_seed_csv(seed_path)
+    _write_status_json(status_path)
+    write_target_priority_queue(
+        queue_path,
+        seed_csv_path=seed_path,
+        data_status_path=status_path,
+    )
+
+    manifest = build_target_priority_manifest(
+        queue_path=queue_path,
+        max_targets=1,
+        generated_at_utc="2026-07-09T12:00:00+00:00",
+    )
+
+    assert manifest["schema_version"] == "target_priority_manifest_v1"
+    assert manifest["generated_at_utc"] == "2026-07-09T12:00:00+00:00"
+    assert manifest["selection"]["selected_count"] == 1
+    assert manifest["selection"]["include_statuses"] == ["queued_metadata_discovery"]
+    assert manifest["targets"][0]["hip"] == "HIP2"
+    assert manifest["targets"][0]["queue_status"] == "queued_metadata_discovery"
+    assert manifest["targets"][0]["ra_deg"] == 0.004167
+    assert "sha256" in manifest["source_queue"]
+
+
+def test_cli_build_target_priority_manifest(tmp_path: Path) -> None:
+    seed_path = tmp_path / "seed.csv"
+    status_path = tmp_path / "status.json"
+    queue_path = tmp_path / "target_priority_queue.csv"
+    manifest_path = tmp_path / "batch_manifest.json"
+    _write_seed_csv(seed_path)
+    _write_status_json(status_path)
+    write_target_priority_queue(
+        queue_path,
+        seed_csv_path=seed_path,
+        data_status_path=status_path,
+    )
+
+    stdout = StringIO()
+    exit_code = main(
+        [
+            "build-target-priority-manifest",
+            "--queue-path",
+            str(queue_path),
+            "--output-path",
+            str(manifest_path),
+            "--max-targets",
+            "2",
+            "--generated-at-utc",
+            "2026-07-09T12:00:00+00:00",
+        ],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert result["ok"] is True
+    assert result["selected_count"] == 1
+    assert result["output_path"] == str(manifest_path)
+    assert manifest["targets"][0]["hip"] == "HIP2"
+    assert manifest["selection"]["max_targets"] == 2
