@@ -209,11 +209,22 @@ git pull origin main
 .venv/bin/techno-search review-dashboard
 ```
 
-Exit code 1 means `needs_attention: true`. Review the dashboard output for:
+Exit code 1 means `needs_attention: true` because at least one target entered a
+follow-up pathway. The dashboard reads the latest production run by default; use
+`--run-dir results/scans/RUN-...` for a specific run, or `--results-dir results`
+while a shell scan is still building outcome ledgers.
 
-- Open flags requiring resolution
-- Overdue review deadlines
-- Real-label accuracy gate status
+Review the dashboard output for:
+
+- `follow_up_required_count`
+- `candidate_review_packet_count`
+- `human_review_queue_count`
+- `cross_target_rfi_flagged_count`
+- `top_follow_up_targets`
+- `action_items`
+
+The dashboard is a local operator review aid only. Its `detection_claimed` and
+`external_submission_allowed` fields must remain `false`.
 
 ---
 

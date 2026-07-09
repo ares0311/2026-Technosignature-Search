@@ -2534,12 +2534,15 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         return 0 if _health["all_gates_pass"] else 1
 
     if args.command == "review-dashboard":
-        _dash: dict[str, Any] = {
-            "needs_attention": False,
-            "schema_version": "review_dashboard_stub_v1",
-        }
+        from techno_search.production_scan import review_dashboard_summary
+
+        _dash = review_dashboard_summary(
+            results_dir=Path(args.results_dir) if getattr(args, "results_dir", None) else None,
+            run_dir=Path(args.run_dir) if getattr(args, "run_dir", None) else None,
+            scans_dir=Path(args.scans_dir),
+        )
         print(json.dumps(_dash, indent=2, sort_keys=True), file=out)
-        return 0
+        return 1 if _dash["needs_attention"] else 0
 
     if args.command == "scan-summary":
         from techno_search.scan_summary import scan_summary_from_batch_dir
@@ -7217,13 +7220,28 @@ def _build_parser() -> argparse.ArgumentParser:
             "Returns exit 1 if any gate fails."
         ),
     )
-    subparsers.add_parser(
+    review_dashboard_parser = subparsers.add_parser(
         "review-dashboard",
         help=(
-            "Operator review dashboard: open flags, overdue deadlines, "
-            "review queue depth, pipeline blockers, and real-label accuracy. "
-            "Returns exit 1 when any action items are pending."
+            "Operator review dashboard for production target status, follow-up "
+            "counts, RFI flags, and next local review actions. Returns exit 1 "
+            "when follow-up pathways need attention."
         ),
+    )
+    review_dashboard_parser.add_argument(
+        "--scans-dir",
+        default="results/scans",
+        help="Directory containing production run subdirectories.",
+    )
+    review_dashboard_parser.add_argument(
+        "--run-dir",
+        default=None,
+        help="Summarize one production run directory instead of the latest run.",
+    )
+    review_dashboard_parser.add_argument(
+        "--results-dir",
+        default=None,
+        help="Summarize candidate manifests directly before outcome files exist.",
     )
     scan_summary_parser = subparsers.add_parser(
         "scan-summary",

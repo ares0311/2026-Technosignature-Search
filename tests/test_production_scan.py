@@ -8,6 +8,7 @@ from techno_search.production_scan import (
     EmptyProductionScanError,
     ProductionConsole,
     production_diagnostics,
+    review_dashboard_summary,
     run_production_scan,
 )
 
@@ -109,7 +110,6 @@ def test_run_production_scan_writes_artifacts_and_compact_output(tmp_path: Path)
         run_id=RUN_ID,
         use_rich=False,
         validate_func=lambda: {"ok": True},
-        dashboard_func=lambda: {"needs_attention": False},
     )
 
     run_dir = scans_dir / RUN_ID
@@ -129,9 +129,16 @@ def test_run_production_scan_writes_artifacts_and_compact_output(tmp_path: Path)
     target_status = json.loads(
         (run_dir / f"{RUN_ID}_target_status.json").read_text(encoding="utf-8")
     )
+    dashboard = json.loads(
+        (run_dir / f"{RUN_ID}_review_dashboard.json").read_text(encoding="utf-8")
+    )
     assert target_status["entries"][0]["index_id"] == "FU-2026-06-18_201325Z-A7K4-001"
     assert target_status["entries"][0]["score_basis"] == "pipeline_score"
     assert target_status["entries"][0]["detection_claimed"] is False
+    assert dashboard["schema_version"] == "operator_review_dashboard_v1"
+    assert dashboard["needs_attention"] is True
+    assert dashboard["follow_up_required_count"] == 1
+    assert dashboard["top_follow_up_targets"][0]["target_name"] == "HIP99427"
 
 
 def test_run_production_scan_sanitizes_project_paths_in_artifacts(tmp_path: Path) -> None:
@@ -259,6 +266,30 @@ def test_run_production_scan_allows_empty_only_when_explicit(tmp_path: Path) -> 
     assert result.target_count == 0
     assert "Completed target evaluations: none" in stdout.getvalue()
     assert (scans_dir / RUN_ID / f"{RUN_ID}_manifest.json").exists()
+
+
+def test_review_dashboard_summary_from_candidates_reports_operator_actions(
+    tmp_path: Path,
+) -> None:
+    results_dir = tmp_path / "results"
+    _write_result_pair(
+        results_dir,
+        "HIP99427",
+        "candidate",
+        "candidate_review_packet",
+        0.9,
+    )
+
+    dashboard = review_dashboard_summary(results_dir=results_dir)
+
+    assert dashboard["schema_version"] == "operator_review_dashboard_v1"
+    assert dashboard["source"] == "candidate_manifests"
+    assert dashboard["needs_attention"] is True
+    assert dashboard["follow_up_required_count"] == 1
+    assert dashboard["candidate_review_packet_count"] == 1
+    assert dashboard["detection_claimed"] is False
+    assert dashboard["external_submission_allowed"] is False
+    assert dashboard["action_items"][0]["action"] == "review_candidate_packets"
 
 
 def test_run_production_scan_resume_skips_existing_artifacts(tmp_path: Path) -> None:
