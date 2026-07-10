@@ -1,11 +1,39 @@
 {
+  "enabledMcpjsonServers": [
+    "technosignatures_project_files",
+    "technosignatures_git_read",
+    "techno_guard"
+  ],
   "permissions": {
     "allow": [
-      "mcp__20036162-3856-4dca-b004-29ec34ab00db__search_files",
-      "mcp__20036162-3856-4dca-b004-29ec34ab00db__get_file_metadata",
-      "Bash(mkdir -p /home/user/2026-Technosignature-Search/.claude/hooks)",
-      "Bash(cat)",
-      "Bash(chmod +x /home/user/2026-Technosignature-Search/.claude/hooks/session-start.sh)"
+      "Bash(pwd)",
+      "Bash(git rev-parse *)",
+      "Bash(git branch --show-current)",
+      "Bash(git status)",
+      "Bash(git status --short)",
+      "Bash(basename *)",
+      "Bash(cat .agent-project-id)"
+    ],
+    "ask": [],
+    "deny": [
+      "Read(//Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Near Earth Objects/**)",
+      "Edit(//Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Near Earth Objects/**)",
+      "Bash(*/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Near Earth Objects*)",
+      "Read(//Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Exoplanet Research/**)",
+      "Edit(//Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Exoplanet Research/**)",
+      "Bash(*/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Exoplanet Research*)"
     ]
+  },
+  "sandbox": {
+    "filesystem": {
+      "denyRead": [
+        "/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Near Earth Objects",
+        "/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Exoplanet Research"
+      ],
+      "denyWrite": [
+        "/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Near Earth Objects",
+        "/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Exoplanet Research"
+      ]
+    }
   }
 }
