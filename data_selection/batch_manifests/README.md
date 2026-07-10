@@ -124,3 +124,7 @@ Current metadata-only manifests:
   ~10.89 GB combined as of the `batch3` round). This is the human-review
   input for an explicitly approved bounded raw download; it is not approval
   by itself.
+- `local_coverage_batch4_manifest.json` — the fourth round's 25 targets,
+  built after `batch3` completed (zero overlap with `top25`/`next25`/
+  `batch3`, confirmed). Discovery not yet run — needs live network access
+  from the user's machine, same as every prior round's discovery step.
