@@ -30,14 +30,16 @@ verified.
 
 ## Batch naming convention
 
-Each acquisition round (`top25`, `next25`, ...) gets its own discovery
-manifest, size-preflight manifest, and size-preflight report — this
-preserves that round's real discovered URLs and measured sizes as a
-distinct, reviewable artifact. `techno-search build-target-priority-queue`
-merges **every** `*_size_preflight_report.json` file committed under this
-directory (see `--extra-size-preflight-report-path`, default: auto-glob),
-so a later round's report does not regress an earlier round's
-`raw_download_approval_required` promotion.
+Each acquisition round (`top25`, `next25`, `batch3`, ...) gets its own
+discovery manifest, discovery-result file, size-preflight manifest, and
+size-preflight report — this preserves that round's real discovered URLs,
+skipped targets, and measured sizes as a distinct, reviewable artifact.
+`techno-search build-target-priority-queue` merges **every**
+`*_size_preflight_report.json` and every `*_discovery_result.json` file
+committed under this directory (see `--extra-size-preflight-report-path` /
+`--extra-discovery-result-path`, both default: auto-glob), so a later
+round's report/result does not regress an earlier round's promotion or
+"no HDF5 URL found" outcome.
 
 Because of that merge, the raw-download **approval manifest** is not
 per-round — it is regenerated as one consolidated, always-current file
@@ -46,16 +48,50 @@ covering every target currently promoted to
 `local_coverage_raw_download_approval_manifest.json`. Regenerate it after
 each new round's size preflight completes and the queue is rebuilt.
 
+**Real bug found and fixed, 2026-07-10:** `docs/data_collection_status.json`
+keeps only the single most recent `download_bl_extended_corpus_discovery`
+run, so once `next25`'s discovery ran, `top25`'s 10 "no HDF5 URL found"
+targets were no longer visible to `build-target-priority-queue` and
+silently fell back to `queued_metadata_discovery` — they resurfaced as
+10 of the 25 targets in a first `batch3` manifest attempt, which would have
+wasted a repeat live-network check on targets already known to have no
+current URL. This is the same class of bug already fixed for size-preflight
+reports (`--extra-size-preflight-report-path`, see the `next25` entry in
+`docs/LOCAL_DATA_INVENTORY.md`) — just not yet applied to discovery
+results. Fixed with the analogous mechanism
+(`--extra-discovery-result-path` / `*_discovery_result.json`, see
+`scripts/download_bl_extended_corpus.sh --discovery-result-output` for how
+future rounds should persist their own result durably). `top25`'s and
+`next25`'s original discovery outcomes were reconstructed from
+already-committed evidence (each round's discovery manifest minus that
+round's size-preflight manifest is exactly the checked-but-no-URL set) —
+not guessed — and committed as
+`local_coverage_top25_discovery_result.json` /
+`local_coverage_next25_discovery_result.json`. `batch3` was then
+regenerated cleanly with zero overlap against `top25`/`next25`.
+
 Current metadata-only manifests:
 
 - `local_coverage_top25_manifest.json` / `local_coverage_next25_manifest.json`
-  — the top 25 `queued_metadata_discovery` rows from
+  / `local_coverage_batch3_manifest.json` — the top 25
+  `queued_metadata_discovery` rows from
   `data_selection/target_priority_queue.csv` at the time each round ran
-  (`next25` naturally picks up the next-highest-priority rows once the prior
-  round's rows have left `queued_metadata_discovery` status). Each is
+  (each round naturally picks up the next-highest-priority rows once the
+  prior rounds' rows have left `queued_metadata_discovery` status). Each is
   downloader-compatible for
   `scripts/download_bl_extended_corpus.sh --manifest ... --discover-only` and
   is intended for product metadata discovery before any raw download.
+  `batch3` has not yet had its discovery round run (blocked on live network
+  access this agent's sandbox does not have — run from a machine with real
+  network access, then commit
+  `local_coverage_batch3_discovery_result.json` via
+  `--discovery-result-output` before rebuilding the queue).
+- `local_coverage_top25_discovery_result.json` /
+  `local_coverage_next25_discovery_result.json` — the full per-round
+  discovery outcome (available + skipped targets with reasons), durably
+  committed so a later round's discovery cannot lose an earlier round's
+  result. `top25`: 15 available, 10 skipped (reconstructed, see above).
+  `next25`: 14 available, 11 skipped (reconstructed, see above).
 - `local_coverage_top25_size_preflight_manifest.json` /
   `local_coverage_next25_size_preflight_manifest.json` — the URL-discovered
   rows from each round (15 and 14 respectively). Use these for URL header,

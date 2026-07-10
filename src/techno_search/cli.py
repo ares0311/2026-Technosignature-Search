@@ -1988,6 +1988,12 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                 for path in batch_manifest_dir.glob("*_size_preflight_report.json")
                 if path != args.size_preflight_report_path
             )
+        extra_discovery_result_paths = args.extra_discovery_result_path
+        if extra_discovery_result_paths is None:
+            batch_manifest_dir = Path("data_selection/batch_manifests")
+            extra_discovery_result_paths = sorted(
+                batch_manifest_dir.glob("*_discovery_result.json")
+            )
         print(
             json.dumps(
                 write_target_priority_queue(
@@ -1996,6 +2002,7 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                     data_status_path=args.data_status_path,
                     size_preflight_report_path=args.size_preflight_report_path,
                     extra_size_preflight_report_paths=extra_size_preflight_report_paths,
+                    extra_discovery_result_paths=extra_discovery_result_paths,
                 ),
                 indent=2,
                 sort_keys=True,
@@ -6703,6 +6710,22 @@ def _build_parser() -> argparse.ArgumentParser:
             "regresses. When omitted, defaults to every "
             "*_size_preflight_report.json file already committed under "
             "data_selection/batch_manifests/."
+        ),
+    )
+    build_target_queue_parser.add_argument(
+        "--extra-discovery-result-path",
+        type=Path,
+        action="append",
+        default=None,
+        help=(
+            "Additional committed discovery-result path (see "
+            "--discovery-result-output in "
+            "scripts/download_bl_extended_corpus.sh); repeat for multiple "
+            "later discovery rounds. Every round's result must be supplied "
+            "or its no-HDF5-url-found targets silently fall back to "
+            "queued_metadata_discovery and get re-selected into a later "
+            "batch. When omitted, defaults to every *_discovery_result.json "
+            "file already committed under data_selection/batch_manifests/."
         ),
     )
     build_target_queue_parser.add_argument(

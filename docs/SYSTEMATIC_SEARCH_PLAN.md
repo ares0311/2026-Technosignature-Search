@@ -228,6 +228,35 @@ requirements:
    approval. This same discover → preflight → promote pattern is the
    repeatable, safe (metadata-only) way to keep advancing 3a through further
    rounds without needing raw-download approval at each step.
+
+   **Third round (`batch3`), 2026-07-10:** building the next 25-target
+   manifest the same way surfaced a second real merge bug, one step earlier
+   in the pipeline than the `next25` size-preflight bug:
+   `docs/data_collection_status.json` keeps only the single most recent
+   `download_bl_extended_corpus_discovery` run, so `top25`'s 10 "no HDF5 URL
+   found" targets were lost once `next25`'s discovery ran, and resurfaced as
+   10 of the 25 rows in a first `batch3` manifest attempt — which would have
+   wasted a live-network re-check on targets already known to have no
+   current URL. Fixed with the analogous mechanism already proven for
+   size-preflight reports: `build_target_priority_queue`/
+   `build-target-priority-queue` now also merges every committed
+   `*_discovery_result.json` file (`--extra-discovery-result-path`, default:
+   auto-glob), and `scripts/download_bl_extended_corpus.sh` gained
+   `--discovery-result-output PATH` so future discovery rounds persist their
+   full outcome durably instead of only writing into the single-slot status
+   file. `top25`'s and `next25`'s lost discovery outcomes were reconstructed
+   from already-committed evidence (each round's discovery manifest minus
+   that round's size-preflight manifest is exactly its checked-but-no-URL
+   set — not guessed) and committed as
+   `local_coverage_top25_discovery_result.json` /
+   `local_coverage_next25_discovery_result.json`; see
+   `data_selection/batch_manifests/README.md` for full detail and
+   regression test
+   `test_build_target_priority_queue_merges_multiple_discovery_results`.
+   `batch3`'s own discovery round is not yet run (needs live network access
+   from the user's machine — `breakthroughinitiatives.org`/
+   `bldata.berkeley.edu` are unreachable from this agent's sandbox, same
+   restriction already documented for MAST/IRSA/arXiv hosts).
 4. Wire the computed `novelty_score` into `target_priority_score()`'s
    existing weighting, don't reinvent the scoring formula. **Initial
    implementation done:** queue rows include a normalized

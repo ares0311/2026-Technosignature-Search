@@ -20,6 +20,10 @@
 #       --manifest data/target_sample_manifest.json
 #   bash scripts/download_bl_extended_corpus.sh --discover-only \
 #       --availability-output /tmp/bl_hdf5_availability.tsv
+#   bash scripts/download_bl_extended_corpus.sh --discover-only \
+#       --manifest data_selection/batch_manifests/local_coverage_batch3_manifest.json \
+#       --discovery-result-output \
+#       data_selection/batch_manifests/local_coverage_batch3_discovery_result.json
 #
 # Output: data/extended_corpus/<target_name>/<filename>.h5
 #
@@ -47,6 +51,7 @@ RAW_RETENTION_POLICY="public_raw_archive_cache_not_pinned"
 DRY_RUN=0
 DISCOVER_ONLY=0
 AVAILABILITY_OUTPUT=""
+DISCOVERY_RESULT_OUTPUT=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -66,9 +71,13 @@ while [[ $# -gt 0 ]]; do
       AVAILABILITY_OUTPUT="$2"
       shift 2
       ;;
+    --discovery-result-output)
+      DISCOVERY_RESULT_OUTPUT="$2"
+      shift 2
+      ;;
     -h|--help)
       cat <<'EOF'
-Usage: bash scripts/download_bl_extended_corpus.sh [--manifest PATH] [--dry-run] [--discover-only] [--availability-output PATH]
+Usage: bash scripts/download_bl_extended_corpus.sh [--manifest PATH] [--dry-run] [--discover-only] [--availability-output PATH] [--discovery-result-output PATH]
 
 Downloads current Breakthrough Open Data HDF5 evidence inputs into:
   data/extended_corpus/<target>/
@@ -94,6 +103,18 @@ Options:
   --availability-output PATH
                    Write URL-available target<TAB>URL rows to PATH. Use with
                    --discover-only for a durable, verified availability map.
+  --discovery-result-output PATH
+                   Write the full discovery-round summary JSON (available and
+                   skipped targets, with skip reasons) to PATH. Use with
+                   --discover-only for a durable, per-round committed record —
+                   docs/data_collection_status.json only keeps the single
+                   most recent discovery run, so without this, a later
+                   round's discovery silently loses an earlier round's
+                   "no HDF5 URL found" results. Pass the written file to
+                   `techno-search build-target-priority-queue
+                   --extra-discovery-result-path PATH` (or commit it under
+                   data_selection/batch_manifests/*_discovery_result.json,
+                   which is auto-globbed by default).
 
 Scientific guardrail:
   Outputs are local calibration/generalisation aids only. They do not
@@ -478,6 +499,12 @@ print(json.dumps(summary))
       --script download_bl_extended_corpus_discovery \
       --summary-json "${SUMMARY_JSON}" \
       >/dev/null 2>&1 || log "[INFO]  Discovery status manifest update/commit skipped (non-fatal)."
+    if [[ -n "${DISCOVERY_RESULT_OUTPUT}" ]]; then
+      mkdir -p "$(dirname "${DISCOVERY_RESULT_OUTPUT}")"
+      printf '%s\n' "${SUMMARY_JSON}" >"${DISCOVERY_RESULT_OUTPUT}"
+      log "[INFO]  Discovery result written: ${DISCOVERY_RESULT_OUTPUT}"
+      log "[INFO]  Commit this file and re-run 'techno-search build-target-priority-queue' so this round's no-URL-found targets are not lost when a later discovery round overwrites docs/data_collection_status.json."
+    fi
   fi
   if [[ "${DISCOVERY_RUN_OK}" -eq 0 ]]; then
     exit 1

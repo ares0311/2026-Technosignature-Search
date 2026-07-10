@@ -1,0 +1,120 @@
+{
+  "acquisition_mode": "metadata_only_discovery",
+  "acquisition_role": "live_search_bootstrap_cache",
+  "available": 15,
+  "available_targets": [
+    {
+      "target": "GJ1002",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT16A_999_219/holding/spliced_blc0001020304050607_guppi_57550_40640_GJ1002_0003.gpuspec.0002.h5"
+    },
+    {
+      "target": "GJ15A",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_28/holding/spliced_blc0001020304050607_guppi_57831_65138_GJ15A_0005.gpuspec.0002.h5"
+    },
+    {
+      "target": "GJ273",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_20/holding/spliced_blc0001020304050607_guppi_57635_49752_Gj273_0045.gpuspec.0002.h5"
+    },
+    {
+      "target": "GJ411",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_32/holding/spliced_blc0001020304050607_guppi_57660_50750_GJ411_0003.gpuspec.0002.h5"
+    },
+    {
+      "target": "GJ687",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT16A_999_242/holding/spliced_blc0001020304050607_guppi_57591_12936_Gj687_0016.gpuspec.0002.h5"
+    },
+    {
+      "target": "GJ876",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_18/holding/spliced_blc0001020304050607_guppi_57628_25874_Gj876_0009.gpuspec.0002.h5"
+    },
+    {
+      "target": "HIP109388",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT16A_999_233/holding/spliced_blc0001020304050607_guppi_57574_37371_HIP109388_0045.gpuspec.0002.h5"
+    },
+    {
+      "target": "HIP114622",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_13/holding/spliced_blc0001020304050607_guppi_57622_28853_Hip114622_0027.gpuspec.0002.h5"
+    },
+    {
+      "target": "HIP120005",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT16A_999_251/holding/spliced_blc0001020304050607_guppi_57636_70056_HIP120005_0034.gpuspec.0002.h5"
+    },
+    {
+      "target": "HIP21932",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_08/holding/spliced_blc0001020304050607_guppi_57803_85861_HIP21932_0045.gpuspec.0002.h5"
+    },
+    {
+      "target": "HIP31635",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_24/holding/spliced_blc0001020304050607_guppi_57645_55495_Hip31635_0033.gpuspec.0002.h5"
+    },
+    {
+      "target": "HIP33226",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_110/holding/spliced_blc0001020304050607_guppi_57756_19045_HIP33226_0008.gpuspec.0002.h5"
+    },
+    {
+      "target": "HIP4872",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_41/holding/spliced_blc0001020304050607_guppi_57850_66437_HIP4872_0020.gpuspec.0002.h5"
+    },
+    {
+      "target": "HIP51317",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_89/holding/spliced_blc0001020304050607_guppi_57734_41531_HIP51317_0027.gpuspec.0002.h5"
+    },
+    {
+      "target": "HIP64924",
+      "url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_07/holding/spliced_blc0001020304050607_guppi_57802_33220_HIP64924_0015.gpuspec.0002.h5"
+    }
+  ],
+  "checked": 25,
+  "downloaded": 0,
+  "mode": "discover_only",
+  "ok": true,
+  "raw_retention_policy": "public_raw_archive_cache_not_pinned",
+  "reconstructed_from": {
+    "note": "This round's live discovery record was overwritten in docs/data_collection_status.json by a later round before being merged into the target-priority queue (docs/data_collection_status.json stores only the single latest download_bl_extended_corpus_discovery run). Reconstructed from already-committed evidence: available_targets/URLs come directly from the committed size-preflight manifest (local_coverage_top25_size_preflight_manifest.json); skipped_targets is the set difference between the round's full checked manifest and that preflight manifest, which is exactly the set of targets this round checked but found no current HDF5 URL for."
+  },
+  "reused": 0,
+  "skipped": 10,
+  "skipped_targets": [
+    {
+      "reason": "no_hdf5_url_discovered",
+      "target": "GJ1061"
+    },
+    {
+      "reason": "no_hdf5_url_discovered",
+      "target": "GJ674"
+    },
+    {
+      "reason": "no_hdf5_url_discovered",
+      "target": "GJ682"
+    },
+    {
+      "reason": "no_hdf5_url_discovered",
+      "target": "GJ832"
+    },
+    {
+      "reason": "no_hdf5_url_discovered",
+      "target": "GJ887"
+    },
+    {
+      "reason": "no_hdf5_url_discovered",
+      "target": "HIP102409"
+    },
+    {
+      "reason": "no_hdf5_url_discovered",
+      "target": "HIP29295"
+    },
+    {
+      "reason": "no_hdf5_url_discovered",
+      "target": "HIP47103"
+    },
+    {
+      "reason": "no_hdf5_url_discovered",
+      "target": "HIP47780"
+    },
+    {
+      "reason": "no_hdf5_url_discovered",
+      "target": "HIP56528"
+    }
+  ],
+  "total": 25
+}

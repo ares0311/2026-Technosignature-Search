@@ -1,12 +1,12 @@
 {
   "disclaimer": "Target priority queues are metadata-first scheduling aids for local search planning. They are not detections, discovery claims, expert review, external validation, or authorization for external submission.",
-  "generated_at_utc": "2026-07-09T23:53:01.664063+00:00",
+  "generated_at_utc": "2026-07-10T23:02:52.409410+00:00",
   "schema_version": "target_priority_manifest_v1",
   "selection": {
     "include_statuses": [
       "raw_download_approval_required"
     ],
-    "max_targets": 30,
+    "max_targets": 100,
     "max_total_priority": 19.75,
     "min_total_priority": 19.0,
     "selected_count": 29
@@ -14,7 +14,7 @@
   "source_queue": {
     "path": "data_selection/target_priority_queue.csv",
     "schema_version": "target_priority_queue_v1",
-    "sha256": "38e83250c580a7b919c4f864917cd9f80d233dd8904b7f9d8766837f8b8b3d28"
+    "sha256": "567dced06d7bc58f48043b0be11e1b23719135be167b55ade1e84568a52a1703"
   },
   "targets": [
     {

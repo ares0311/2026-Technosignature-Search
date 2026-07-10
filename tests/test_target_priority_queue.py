@@ -540,3 +540,69 @@ def test_build_target_priority_queue_merges_multiple_size_preflight_reports(
 
     assert rows_by_target["HIP2"]["status"] == "raw_download_approval_required"
     assert rows_by_target["GJ99427"]["status"] == "raw_download_approval_required"
+
+
+def test_build_target_priority_queue_merges_multiple_discovery_results(
+    tmp_path: Path,
+) -> None:
+    """A later discovery round must not lose an earlier round's results.
+
+    docs/data_collection_status.json keeps only the single most recent
+    ``download_bl_extended_corpus_discovery`` run. Once a second discovery
+    round (e.g. next25) has run, the first round's (top25) "no HDF5 URL
+    found" targets are no longer visible there. Committed
+    ``*_discovery_result.json`` files preserve each round's real outcome, and
+    build_target_priority_queue must merge all of them, or the first round's
+    already-checked, still-unavailable targets silently fall back to
+    queued_metadata_discovery and get re-selected into a later acquisition
+    batch, wasting a repeat discovery check on a target already known to
+    have no URL.
+    """
+
+    seed_path = tmp_path / "seed.csv"
+    status_path = tmp_path / "status.json"
+    first_round_result_path = tmp_path / "round1_discovery_result.json"
+    _write_seed_csv(seed_path)
+    # Simulates the real overwrite bug: the tracked status file only still
+    # holds the *second* round's discovery outcome (HIP71681 checked, no
+    # URL); the first round's outcome (HIP2 checked, no URL) has already
+    # been overwritten there and only survives in the committed result file.
+    status_path.write_text(
+        json.dumps(
+            {
+                "runs": {
+                    "download_bl_extended_corpus_discovery": {
+                        "available_targets": [],
+                        "skipped_targets": [
+                            {
+                                "target": "HIP71681",
+                                "reason": "no_hdf5_url_discovered",
+                            }
+                        ],
+                    },
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    first_round_result_path.write_text(
+        json.dumps(
+            {
+                "available_targets": [],
+                "skipped_targets": [
+                    {"target": "HIP2", "reason": "no_hdf5_url_discovered"}
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    rows = build_target_priority_queue(
+        seed_csv_path=seed_path,
+        data_status_path=status_path,
+        extra_discovery_result_paths=[first_round_result_path],
+    )
+    rows_by_target = {row["target_id"]: row for row in rows}
+
+    assert rows_by_target["HIP2"]["status"] == "metadata_discovery_required"
+    assert rows_by_target["HIP71681"]["status"] == "metadata_discovery_required"

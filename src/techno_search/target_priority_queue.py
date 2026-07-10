@@ -139,6 +139,7 @@ def _load_coverage_state(
     path: Path,
     *,
     size_preflight_report_paths: Sequence[Path] = (),
+    discovery_result_paths: Sequence[Path] = (),
 ) -> _CoverageState:
     with path.open(encoding="utf-8") as handle:
         payload = json.load(handle)
@@ -153,22 +154,35 @@ def _load_coverage_state(
         reason = str(item.get("reason", "")).strip() or "skipped_without_reason"
         if target:
             skipped[target] = reason
-    discovery_run = payload.get("runs", {}).get("download_bl_extended_corpus_discovery", {})
+    # Each committed discovery-result file is a separate acquisition round
+    # (e.g. top25, next25). docs/data_collection_status.json only keeps the
+    # single most recent "download_bl_extended_corpus_discovery" run, so a
+    # later round's discovery silently loses an earlier round's "no HDF5 URL
+    # found" results unless every round's result file is merged here too.
+    discovery_sources: list[dict[str, Any]] = [
+        payload.get("runs", {}).get("download_bl_extended_corpus_discovery", {})
+    ]
+    for result_path in dict.fromkeys(discovery_result_paths):
+        if result_path is None or not result_path.exists():
+            continue
+        discovery_sources.append(json.loads(result_path.read_text(encoding="utf-8")))
     discovered_hdf5_urls: dict[str, str] = {}
-    for item in discovery_run.get("available_targets", []):
-        if not isinstance(item, dict):
-            continue
-        target = str(item.get("target", "")).strip()
-        url = str(item.get("url", "")).strip()
-        if target and url:
-            discovered_hdf5_urls[target] = url
-    for item in discovery_run.get("skipped_targets", []):
-        if not isinstance(item, dict):
-            continue
-        target = str(item.get("target", "")).strip()
-        reason = str(item.get("reason", "")).strip() or "skipped_without_reason"
-        if target and target not in discovered_hdf5_urls:
-            skipped[target] = reason
+    for source in discovery_sources:
+        for item in source.get("available_targets", []):
+            if not isinstance(item, dict):
+                continue
+            target = str(item.get("target", "")).strip()
+            url = str(item.get("url", "")).strip()
+            if target and url:
+                discovered_hdf5_urls[target] = url
+    for source in discovery_sources:
+        for item in source.get("skipped_targets", []):
+            if not isinstance(item, dict):
+                continue
+            target = str(item.get("target", "")).strip()
+            reason = str(item.get("reason", "")).strip() or "skipped_without_reason"
+            if target and target not in discovered_hdf5_urls:
+                skipped[target] = reason
     size_preflight_targets: dict[str, dict[str, Any]] = {}
     for report_path in dict.fromkeys(size_preflight_report_paths):
         if report_path is None or not report_path.exists():
@@ -433,6 +447,7 @@ def build_target_priority_queue(
         "data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json"
     ),
     extra_size_preflight_report_paths: Sequence[Path] = (),
+    extra_discovery_result_paths: Sequence[Path] = (),
 ) -> list[dict[str, str]]:
     """Build sorted target-priority rows from committed metadata and status.
 
@@ -442,6 +457,13 @@ def build_target_priority_queue(
     merged, not just the single default/legacy report, or promoting a later
     batch to ``raw_download_approval_required`` would silently regress an
     earlier batch's promotion back to an unresolved status.
+
+    Likewise, every committed ``*_discovery_result.json`` file is a separate
+    discovery round. They must be merged too, or a later round's discovery
+    would silently lose an earlier round's "no HDF5 URL found" targets (which
+    only ever lived in the single-slot ``download_bl_extended_corpus_discovery``
+    entry of ``data_status_path``), causing them to fall back to
+    ``queued_metadata_discovery`` and get re-selected into a future batch.
     """
 
     coverage = _load_coverage_state(
@@ -450,6 +472,7 @@ def build_target_priority_queue(
             size_preflight_report_path,
             *extra_size_preflight_report_paths,
         ),
+        discovery_result_paths=extra_discovery_result_paths,
     )
     queue_rows = [
         _queue_row(row, coverage)
@@ -483,6 +506,7 @@ def write_target_priority_queue(
         "data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json"
     ),
     extra_size_preflight_report_paths: Sequence[Path] = (),
+    extra_discovery_result_paths: Sequence[Path] = (),
 ) -> dict[str, Any]:
     """Write a target-priority queue CSV and return a compact summary."""
 
@@ -491,6 +515,7 @@ def write_target_priority_queue(
         data_status_path=data_status_path,
         size_preflight_report_path=size_preflight_report_path,
         extra_size_preflight_report_paths=extra_size_preflight_report_paths,
+        extra_discovery_result_paths=extra_discovery_result_paths,
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", newline="", encoding="utf-8") as handle:
