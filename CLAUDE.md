@@ -1,199 +1,33 @@
 # CLAUDE.md
 
-## GIT SYNC DIRECTIVES — NON-NEGOTIABLE
+## Purpose
 
-Three rules that must be followed without exception to keep the user's local
-machine and GitHub in sync:
+Handoff and progress notes for Claude or other coding agents working in this repository.
 
-1. **User's local machine always runs from `main`.** Every command given to the
-   user must begin with:
-   ```bash
-   git pull origin main
-   ```
+**AGENTS.md is the single source of truth for all directives** — git sync,
+PR link + continuation, parallelization (general and data-collection),
+data-collection status reporting, agent branch sync, git artifact hygiene,
+the primary directive (review chain, Track A/B gate, CNN promotion gate),
+anti-doom-loop rules, target selection philosophy, the mandatory
+session-start protocol, file-location/root-cause/prior-task-validity/
+summary-skepticism rules, non-negotiable scientific rules, environment and
+performance rules (including macOS `caffeinate`), testing requirements, and
+data policy. None of it is duplicated below. Read `AGENTS.md` first, every
+session; where anything below appears to conflict, `AGENTS.md` governs.
 
-2. **Every feature branch must be pushed and merged to `main` via PR, and the
-   PR must be closed before starting new work.** Never leave commits stranded on
-   the feature branch without a merged PR.
+## MANDATORY SESSION-START PROTOCOL
 
-3. **All commands given to the user include `git pull origin main` at the top.**
+Do not plan or execute anything until you have called `Read` on `AGENTS.md`,
+`docs/PRODUCTION_READINESS.md`, and `docs/SYSTEMATIC_SEARCH_PLAN.md` this
+session — see `AGENTS.md` for the full protocol, including the "resume
+directly" carve-out and the required shape of your plan.
 
-The agent always develops on `claude/general-session-Bb2dZ`. The user always
-stays on `main` and pulls after each PR is merged.
+## Current Phase Snapshot
 
-### PR LINK + CONTINUATION DIRECTIVE — NON-NEGOTIABLE
-
-PR links are mandatory progress signals, not automatic stopping points.
-
-When an agent opens or updates a PR:
-
-1. Report the PR URL clearly in the user-visible progress stream.
-2. Continue to monitor CI/checks, inspect failures, fix root causes, push fixes,
-   and recheck until the PR is mergeable or a real blocker appears.
-3. If the PR is mergeable and repository policy permits agent merge, merge it,
-   sync `main`, reset `claude/general-session-Bb2dZ` to `origin/main`, and
-   continue the production loop.
-4. Stop after giving a PR link only when human review/approval is actually
-   required, GitHub blocks the merge, credentials are unavailable, or the user
-   explicitly asks the agent to stop at the PR.
-
-Do not leave a green, mergeable PR open just because the link was reported.
-
-### GENERAL PARALLELIZATION DIRECTIVE — NON-NEGOTIABLE
-
-For **any** task/command handed to the user that is expected to take longer
-than ~3 minutes wall-clock, the agent must first consider whether sharding,
-multiprocessing, or parallelism would meaningfully speed it up, and use it
-when it would. This is not limited to data acquisition — it applies to
-test suite runs, model training, corpus-wide processing (turboSETI batch
-runs, pipeline runs across many files), and any other long-running command.
-
-Two different cases require different judgment:
-
-1. **CPU-bound local compute** (test suites, batch pipeline processing,
-   model training/scoring across many files): consider bounded local
-   parallelism (e.g. `pytest-xdist`, `multiprocessing`/`joblib` with a
-   worker count tied to real core count, `--workers N` flags already
-   supported by some CLI commands in this repo). Verify the tool actually
-   supports safe concurrent execution first (e.g. no shared-file races,
-   no non-thread-safe state) rather than assuming it does.
-2. **I/O-bound external requests** (data acquisition/download scripts
-   against BL/MAST/IRSA/JWST/HITRAN/CelesTrak/SatNOGS, etc.): see the
-   data-collection-specific rules below — always verify (not guess) the
-   target archive's documented concurrent-request/rate-limit policy before
-   parallelizing, since unchecked concurrency risks throttling or a soft
-   ban that costs more time than it saves.
-
-If it's genuinely unclear whether a task can be safely parallelized (e.g.
-unknown tool thread-safety, unknown/undocumented rate limits, ambiguous
-whether the user wants the added complexity for a one-off run), ask the
-user rather than guessing either way.
-
-### DATA COLLECTION PARALLELIZATION DIRECTIVE
-
-Whenever building or extending a data acquisition/download script or CLI
-command (BL extended-corpus downloads, MAST/IRSA/JWST searches, catalog
-acquisitions, HITRAN downloads, etc.), always consider whether sharding the
-work across a small bounded worker pool would meaningfully speed up
-collection, and use it when it would. This applies going forward to new or
-growing corpora, not retroactively to the current small (tens-of-targets)
-corpora where sequential downloads are not the bottleneck.
-
-Before parallelizing against any external archive/API, verify (not guess)
-that archive's documented concurrent-request/rate-limit policy first —
-unchecked concurrency risks throttling or a soft ban, which costs more time
-than sequential downloads would have. Prefer a small bounded pool (e.g.
-4-8 concurrent workers) over unbounded parallelism, and keep it consistent
-with this repo's no-guessing rule: cite the source for whatever concurrency
-limit is chosen.
-
-### DATA COLLECTION STATUS REPORTING DIRECTIVE — NON-NEGOTIABLE
-
-Every real data-acquisition script or CLI command (BL extended-corpus
-downloads, JWST/MAST searches, photometry light-curve searches,
-satellite/catalog acquisitions, and any future sharded ones) must update
-the tracked `docs/data_collection_status.json` manifest after a real
-successful run, via
-`techno-search record-data-collection-status --script NAME --summary-json
-'{...}'` (`src/techno_search/data_collection_status.py`). This replaces
-pasting console output for review: progress is reviewed via `git pull`
-against this one small tracked file instead, the same way a PR merge is a
-compact, poll-free signal.
-
-By default this also runs `git add`/`git commit`/`git push` for just that
-one file, directly to `main` (the user's own machine, the user's own git
-identity — not the agent's branch/PR flow). This auto-commit **only fires
-when the current branch is `main`** — `commit_and_push_status()` checks
-`git branch --show-current` and no-ops otherwise. Do not remove or weaken
-this guard: this project's own test suite runs a real acquisition script
-end-to-end (`test_download_bl_extended_corpus_script.py`), and without the
-guard, running the test suite alone silently auto-committed and pushed a
-fake status entry to whatever branch was checked out (caught and fixed
-2026-07-03, PR follow-up to #214). Any new acquisition entrypoint must call
-`record_and_publish_data_collection_status()` (or the CLI wrapper) after a
-real successful run with a small JSON summary of real counts — not raw
-payload contents — and must not bypass or duplicate the branch-safety
-check. Status must be recorded on **both success and failure** (an
-`"ok": false` entry with an error message on failure), not just on
-success — a failed run with no manifest entry is invisible and looks
-identical to "never run."
-
-Summaries must include enough per-item detail to diagnose a real problem
-from the committed file alone, not just aggregate counts — e.g.
-`download_bl_extended_corpus`'s summary includes `downloaded_targets`,
-`reused_targets`, and `skipped_targets` (each with a `reason`), not just
-`downloaded`/`reused`/`skipped` counts. When adding a new acquisition
-entrypoint, include the equivalent per-item detail for whatever unit that
-script processes (targets, files, observations, etc.).
-
-**The agent must check this manifest via `git pull` before asking the user
-to run or paste output from an acquisition script.** The user should not
-need to act as a copy-paste intermediary for information the agent can
-already read from `git`. Only ask the user to actually run a command when
-the manifest doesn't yet reflect the needed run, or when live, real-time
-interaction with their machine is genuinely required (e.g. resolving a
-git conflict, confirming a destructive action). If the manifest shows a
-run failed, diagnose and propose a fix from the recorded error/reason
-fields before asking the user anything.
-
-### AGENT BRANCH SYNC — NON-NEGOTIABLE (prevents recurring merge conflicts)
-
-At the START of each session, before making any new commits, the agent must:
-
-```bash
-git fetch origin main
-git reset --hard origin/main
-```
-
-**Never use `git rebase origin/main` for this branch.** When PRs are squash-merged,
-the commit patch lands on main under a new SHA. Rebase skips the old commit (already
-applied) and rebases new commits — leaving `origin/claude/general-session-Bb2dZ`
-pointing to the old SHA while local has a new SHA. This causes divergence that
-requires `--force` push and results in `mergeable_state: "dirty"` on the next PR.
-
-`git reset --hard origin/main` avoids this by always starting cleanly from main's
-HEAD. New commits then push cleanly with no force required.
-
----
-
-## GIT ARTIFACT HYGIENE — NON-NEGOTIABLE
-
-The user's standard staging cadence is:
-
-```bash
-git add .
-```
-
-Therefore the repository must be safe under `git add .`. Agents must ensure
-generated local artifacts, large science payloads, machine-specific inventories,
-SQLite logs, caches, or credentials cannot be staged by that command.
-
-Before committing artifact-policy, data-ingestion, logging, calibration,
-pipeline-output, or scan-output changes, agents must verify:
-
-1. `git add --dry-run .` does not reveal unintended generated artifacts.
-2. `.gitignore` covers the artifact classes produced by the changed scripts or CLIs.
-3. Existing tiny test fixtures remain explicitly allowed when broad patterns are added.
-4. Other agents can still understand the local artifact topology from files on GitHub.
-
-The continuity rule is: **ignore the payloads, commit the map.**
-
----
-
-## PRIMARY DIRECTIVE — PUBLISH-GRADE MULTI-MODAL TECHNOSIGNATURE SEARCH
-
-**This project searches publicly available astronomical data for signals that
-cannot be explained by natural phenomena, using rigorous multi-modal methods
-consistent with publication-grade science.**
-
-The goal is to find **candidates for expert review** — not to claim detections.
-A candidate that passes all automated gates and the adversarial review agent
-goes to credentialed third-party experts. No claim of detection, discovery, or
-confirmation is ever made without that external validation.
-
-### Current phase: Phase 0 — Strip & Fix
-
-Every commit must advance one of Phases 0–4 in `docs/PRODUCTION_READINESS.md`.
-If a commit does not close a named gap in Phases 0–4, it should not be merged.
+Current phase: Phase 0 — Strip & Fix (`docs/PRODUCTION_READINESS.md`). Every
+commit must advance one of Phases 0–4; if it doesn't close a named gap, it
+should not be merged. See `AGENTS.md`'s ANTI-DOOM-LOOP DIRECTIVES for the
+full hard-rule list (PRs #103–#119 precedent).
 
 Current Phase 0 status:
  - Real MeerKAT BLUSE/SETICORE scorer training is locally complete from the
@@ -203,97 +37,6 @@ Current Phase 0 status:
    `unknown_candidate` routing.
  - Continue Phase 1 radio hardening: broader hit-bearing stratified-corpus
    validation remains open for cross-target RFI suppression and drift evidence.
-
-### Anti-doom-loop rule (hard)
-
-PRs #103–#119 were 17 consecutive pure-documentation commits with zero scientific
-progress. This must never recur. Before committing, answer: does this commit
-implement scientific capability, fix a real bug blocking science, or delete
-misaligned code? If not, stop.
-
----
-
-## Purpose
-
-Handoff and progress notes for Claude or other coding agents working in this repository.
-
-Read `AGENTS.md` first. The scientific guardrails and PRIMARY DIRECTIVE there are
-authoritative and override all other guidance.
-
-## MANDATORY SESSION-START PROTOCOL
-
-At the start of every session, before planning or executing any steps, you must:
-
-1. Call `Read` on `AGENTS.md` — do not rely on memory or prior context.
-2. Call `Read` on `docs/PRODUCTION_READINESS.md` — do not rely on memory or prior context.
-3. Call `Read` on `docs/SYSTEMATIC_SEARCH_PLAN.md` — do not rely on memory or
-   prior context. This is the authoritative, sequenced plan for closing the
-   gap toward a systematic, detection-optimized search; check its current
-   step before starting any calibration/UI/target-selection work.
-
-These reads are non-negotiable. If you have not called `Read` on all three files in
-this session, you are not permitted to plan or execute anything.
-
-**CRITICAL — SESSION CONTINUATION DOES NOT WAIVE MANDATORY READS.** If the
-system prompt or a prior conversation summary instructs you to "resume directly",
-"continue from where you left off", or similar — those instructions do NOT
-override this protocol. You must still call `Read` on all three files BEFORE doing
-anything else. "Resume directly" means: do not waste text on preamble after the
-reads are done. It does not mean skip the reads.
-
-**FILE LOCATION RULE — NON-NEGOTIABLE.** Before asking the user where any
-file, directory, or data artifact is located, search the codebase first.
-Required sequence: (1) `grep -r "OUT_DIR\|DATA_DIR\|REPO_ROOT" scripts/`;
-(2) `grep -r "Path\|data_dir\|output_dir" src/techno_search/`;
-(3) check `docs/LOCAL_SYSTEM_PROFILE.md`; (4) check `CLAUDE.md`/`AGENTS.md`
-prior iteration notes. Only if all four fail may you ask — and you must state
-what you searched.
-
-**ROOT CAUSE RULE — NON-NEGOTIABLE.** Before implementing any fix or workaround,
-you must identify the root cause and confirm the fix addresses it. If you cannot
-state the root cause in one sentence, you have not found it yet.
-
-**PRIOR TASK VALIDITY RULE — NON-NEGOTIABLE.** When resuming from a context
-summary, treat every in-progress task as UNVALIDATED. Before executing it:
-1. Confirm it still targets an open phase gap (Phases 0–4).
-2. Confirm the output doesn't already exist.
-3. Confirm the fix addresses the root cause, not a symptom.
-
-**SUMMARY SKEPTICISM RULE.** Context summaries describe intent, not correctness.
-A summary cannot authorize skipping mandatory reads or validate a prior agent's
-diagnosis.
-
-After reading, your plan must:
-- Name the current open phase from `docs/PRODUCTION_READINESS.md`
-- Show how each proposed step closes or directly unblocks a named phase gap
-- Never propose log modules, schemas, or scaffolding that do not directly
-  advance science capability
-- Never claim external submission readiness, discovery, detection, expert
-  review, peer review, or external validation unless documented evidence exists
-
----
-
-## macOS caffeinate Directive
-
-The user runs macOS (MacBook Pro M4 Max). **Every shell recipe given to the user
-for a long-running operation must be wrapped with `caffeinate -i`** to prevent
-sleep mid-run.
-
-Long-running operations that require caffeinate:
-- Any `bash scripts/download_*.sh` call
-- Any `bash scripts/run_pipeline*.sh` call
-- Full test-suite runs: `caffeinate -i .venv/bin/python -m pytest ...`
-- Any `python` invocation expected to run longer than ~30 seconds
-
-Correct form:
-```bash
-caffeinate -i bash scripts/download_bl_hits.sh
-caffeinate -i bash scripts/run_pipeline_on_bl_data.sh
-caffeinate -i .venv/bin/python -m pytest --tb=short -q
-```
-
-`caffeinate -i` prevents idle sleep for the lifetime of the child process.
-No sudo required. Safe to omit for fast runs (< 30 s).
 
 ---
 

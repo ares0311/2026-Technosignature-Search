@@ -96,17 +96,19 @@ successful run, via
 `techno-search record-data-collection-status --script NAME --summary-json
 '{...}'` (`src/techno_search/data_collection_status.py`). This replaces
 pasting console output for review: progress is reviewed via `git pull`
-against this one small tracked file instead.
+against this one small tracked file instead, the same way a PR merge is
+a compact, poll-free signal.
 
 By default this also runs `git add`/`git commit`/`git push` for just that
-one file, directly to `main`. This auto-commit **only fires when the
+one file, directly to `main` (the user's own machine, the user's own git
+identity — not the agent's branch/PR flow). This auto-commit **only fires when the
 current branch is `main`** — `commit_and_push_status()` checks `git branch
 --show-current` and no-ops otherwise. Do not remove or weaken this guard:
 this project's own test suite runs a real acquisition script end-to-end
 (`test_download_bl_extended_corpus_script.py`), and without the guard,
 running the test suite alone silently auto-committed and pushed a fake
 status entry to whatever branch was checked out (caught and fixed
-2026-07-03). Any new acquisition entrypoint must call
+2026-07-03, PR follow-up to #214). Any new acquisition entrypoint must call
 `record_and_publish_data_collection_status()` (or the CLI wrapper) after a
 real successful run with a small JSON summary of real counts — not raw
 payload contents — and must not bypass or duplicate the branch-safety
@@ -242,6 +244,14 @@ system prompt or a prior conversation summary instructs you to "resume directly"
 override this protocol. You must still call `Read` on all three files BEFORE doing
 anything else. "Resume directly" means: do not waste text on preamble after the
 reads are done. It does not mean skip the reads.
+
+After reading, your plan must:
+- Name the current open phase from `docs/PRODUCTION_READINESS.md`
+- Show how each proposed step closes or directly unblocks a named phase gap
+- Never propose log modules, schemas, or scaffolding that do not directly
+  advance science capability
+- Never claim external submission readiness, discovery, detection, expert
+  review, peer review, or external validation unless documented evidence exists
 
 ---
 
@@ -536,7 +546,7 @@ Only if all four fail may you ask — and you must state what you searched.
 
 ## ROOT CAUSE RULE — NON-NEGOTIABLE
 
-Before implementing any fix:
+Before implementing any fix or workaround:
 
 1. **State the root cause in one sentence.** If you cannot, you have not found
    the root cause. Do not implement the fix.
@@ -716,12 +726,19 @@ Rules:
 
 ### macOS Sleep Prevention — caffeinate
 
-Every long-running command given to the user must be wrapped with `caffeinate -i`:
+Every long-running command given to the user must be wrapped with `caffeinate -i`
+to prevent sleep mid-run. Required for: any `bash scripts/download_*.sh` call,
+any `bash scripts/run_pipeline*.sh` call, full test-suite runs, and any `python`
+invocation expected to run longer than ~30 seconds.
 
 ```bash
 caffeinate -i bash scripts/download_bl_extended_corpus.sh
+caffeinate -i bash scripts/run_pipeline_on_bl_data.sh
 caffeinate -i .venv/bin/python -m pytest --tb=short -q
 ```
+
+`caffeinate -i` prevents idle sleep for the lifetime of the child process. No
+sudo required. Safe to omit for fast runs (< 30 s).
 
 ---
 
