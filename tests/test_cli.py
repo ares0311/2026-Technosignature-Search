@@ -1986,6 +1986,12 @@ def test_cli_prod_write_and_show_outcomes(tmp_path) -> None:
     assert runs["run_count"] == 1
     stdout = StringIO()
     assert main(["review-dashboard", "--run-dir", str(run_dir)], stdout=stdout) == 1
+    dashboard_text = stdout.getvalue()
+    assert "1 follow-up candidate target(s)" in dashboard_text
+    assert "needs_attention=yes" in dashboard_text
+    assert "review_candidate_packets" in dashboard_text
+    stdout = StringIO()
+    assert main(["review-dashboard", "--run-dir", str(run_dir), "--json"], stdout=stdout) == 1
     dashboard = json.loads(stdout.getvalue())
     assert dashboard["schema_version"] == "operator_review_dashboard_v1"
     assert dashboard["needs_attention"] is True

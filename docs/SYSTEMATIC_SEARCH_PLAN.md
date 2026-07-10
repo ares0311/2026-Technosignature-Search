@@ -128,6 +128,19 @@ candidate-manifest state using `operator_review_dashboard_v1`, including
 follow-up-required counts, pathway-specific action items, cross-target RFI flag
 counts, and top follow-up targets.
 
+**Real gap found and fixed, 2026-07-09:** a workflow audit against a real
+local production run (`RUN-2026-07-02_130330Z-3ZNT-prod-scan`) found that
+`review-dashboard` — despite being documented above as a hardened operator
+surface — printed raw indented JSON by default with no compact-table option,
+unlike its three sibling commands (`prod-target-status`/`prod-follow-ups`/
+`prod-non-detections`), which all default to a header-line-plus-table
+summary and only print JSON behind an explicit `--json` flag. This is exactly
+the "guessed hardened because it has a command" failure mode this section
+warns against. Fixed: `review-dashboard` now defaults to the same compact
+style (source/target/follow-up counts, an action-item table, a top-follow-up-
+target table) and gained `--json` for the machine-readable form, matching its
+siblings. Regression test updated in `tests/test_cli.py`.
+
 Remaining Step 2 work must continue from a workflow audit of the other current
 UI surfaces (especially any operator handoff views outside the candidate
 packet path) against real operator workflows: reviewing a candidate, reviewing

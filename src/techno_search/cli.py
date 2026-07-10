@@ -1330,6 +1330,69 @@ def _resolve_production_run_dir_arg(args: object, out: TextIO) -> Path | None:
     return latest
 
 
+def _print_review_dashboard(data: dict[str, Any], out: TextIO) -> None:
+    """Print a compact operator review dashboard summary.
+
+    Mirrors the header-line-plus-table style of _print_production_* below so
+    the newest operator surface does not force paging raw JSON while its
+    siblings (prod-follow-ups/prod-non-detections/prod-target-status) do not.
+    """
+    source = str(data.get("source", "unknown"))
+    source_path = str(data.get("source_path", ""))
+    target_count = int(data.get("target_count", 0) or 0)
+    follow_up_count = int(data.get("follow_up_required_count", 0) or 0)
+    print(
+        f"{source} ({source_path}): {target_count} target(s), "
+        f"{follow_up_count} follow-up candidate target(s)",
+        file=out,
+    )
+    print(
+        " | ".join(
+            [
+                f"candidate_review_packet={data.get('candidate_review_packet_count', 0)}",
+                f"human_review_queue={data.get('human_review_queue_count', 0)}",
+                f"cross_target_rfi_flagged={data.get('cross_target_rfi_flagged_count', 0)}",
+                f"needs_attention={'yes' if data.get('needs_attention') else 'no'}",
+            ]
+        ),
+        file=out,
+    )
+    action_items = list(data.get("action_items", []))
+    if not action_items:
+        print("Action items: none", file=out)
+    else:
+        print("Action | Count | Reason", file=out)
+        for item in action_items:
+            print(
+                " | ".join(
+                    [
+                        str(item.get("action", "")),
+                        str(item.get("count", "")),
+                        str(item.get("reason", "")),
+                    ]
+                ),
+                file=out,
+            )
+    top_targets = list(data.get("top_follow_up_targets", []))
+    if not top_targets:
+        print("Top follow-up targets: none", file=out)
+    else:
+        print("Index | Target | Kind | Score | Pathway", file=out)
+        for entry in top_targets:
+            print(
+                " | ".join(
+                    [
+                        str(entry.get("index_id", "")),
+                        str(entry.get("target_name", "")),
+                        str(entry.get("target_kind", "")),
+                        _format_score(entry.get("score")),
+                        str(entry.get("pathway", "")),
+                    ]
+                ),
+                file=out,
+            )
+
+
 def _print_production_target_status(data: dict[str, Any], out: TextIO) -> None:
     """Print compact per-target production rows for overnight-run review."""
     if not data.get("ok"):
@@ -2622,7 +2685,10 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             run_dir=Path(args.run_dir) if getattr(args, "run_dir", None) else None,
             scans_dir=Path(args.scans_dir),
         )
-        print(json.dumps(_dash, indent=2, sort_keys=True), file=out)
+        if getattr(args, "json", False):
+            print(json.dumps(_dash, indent=2, sort_keys=True), file=out)
+        else:
+            _print_review_dashboard(_dash, out)
         return 1 if _dash["needs_attention"] else 0
 
     if args.command == "scan-summary":
@@ -7448,6 +7514,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "--results-dir",
         default=None,
         help="Summarize candidate manifests directly before outcome files exist.",
+    )
+    review_dashboard_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the full machine-readable review dashboard JSON.",
     )
     scan_summary_parser = subparsers.add_parser(
         "scan-summary",
