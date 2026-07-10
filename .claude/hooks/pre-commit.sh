@@ -90,5 +90,20 @@ for pattern in "${ALLOWED_PATTERNS[@]}"; do
   fi
 done
 
-echo '{"decision": "block", "reason": "PRIMARY DIRECTIVE VIOLATION: Commit does not advance multi-modal technosignature search (Phases 0-5). See AGENTS.md PRIMARY DIRECTIVE and FIVE-PHASE SCIENCE ROADMAP. Every commit must implement scientific capability, fix a real bug blocking science, or delete misaligned code."}'
+python3 - <<'PYJSON'
+import json
+
+print(json.dumps({
+    "hookSpecificOutput": {
+        "hookEventName": "PreToolUse",
+        "permissionDecision": "deny",
+        "permissionDecisionReason": (
+            "PRIMARY DIRECTIVE VIOLATION: Commit does not advance multi-modal "
+            "technosignature search (Phases 0-5). See AGENTS.md PRIMARY DIRECTIVE "
+            "and FIVE-PHASE SCIENCE ROADMAP. Every commit must implement scientific "
+            "capability, fix a real bug blocking science, or delete misaligned code."
+        )
+    }
+}))
+PYJSON
 exit 0
