@@ -85,46 +85,27 @@ preflight then verified 14/14 URLs, 3.481361 GB total, no checksum headers.
 Queue rebuild promoted all 14 to `raw_download_approval_required` (29→43
 total across all three rounds).
 
-Current metadata-only manifests:
+Every round follows the same four files:
+`local_coverage_<round>_manifest.json` (the round's 25
+`queued_metadata_discovery` targets, downloader-compatible for
+`scripts/download_bl_extended_corpus.sh --manifest ... --discover-only`),
+`local_coverage_<round>_discovery_result.json` (durable available+skipped
+outcome), `local_coverage_<round>_size_preflight_manifest.json` (the
+URL-discovered subset), and `local_coverage_<round>_size_preflight_report.json`
+(HEAD-only size/checksum results). None of these authorize a raw download by
+themselves.
 
-- `local_coverage_top25_manifest.json` / `local_coverage_next25_manifest.json`
-  / `local_coverage_batch3_manifest.json` — the top 25
-  `queued_metadata_discovery` rows from
-  `data_selection/target_priority_queue.csv` at the time each round ran
-  (each round naturally picks up the next-highest-priority rows once the
-  prior rounds' rows have left `queued_metadata_discovery` status). Each is
-  downloader-compatible for
-  `scripts/download_bl_extended_corpus.sh --manifest ... --discover-only` and
-  is intended for product metadata discovery before any raw download.
-- `local_coverage_top25_discovery_result.json` /
-  `local_coverage_next25_discovery_result.json` /
-  `local_coverage_batch3_discovery_result.json` — the full per-round
-  discovery outcome (available + skipped targets with reasons), durably
-  committed so a later round's discovery cannot lose an earlier round's
-  result. `top25`: 15 available, 10 skipped (reconstructed from committed
-  evidence, see above). `next25`: 14 available, 11 skipped (reconstructed).
-  `batch3`: 14 available, 11 skipped (captured live via
-  `--discovery-result-output`).
-- `local_coverage_top25_size_preflight_manifest.json` /
-  `local_coverage_next25_size_preflight_manifest.json` /
-  `local_coverage_batch3_size_preflight_manifest.json` — the URL-discovered
-  rows from each round (15, 14, and 14 respectively). Use these for URL
-  header, checksum, size, and local-storage preflight before any raw
-  download; they are not raw-download authorization.
-- `local_coverage_top25_size_preflight_report.json` /
-  `local_coverage_next25_size_preflight_report.json` /
-  `local_coverage_batch3_size_preflight_report.json` — HEAD-only preflight
-  results for each round. `top25`: 15/15 URLs verified, 3.803966 GB total.
-  `next25`: 14/14 URLs verified, 3.608361 GB total. `batch3`: 14/14 URLs
-  verified, 3.481361 GB total. None found checksum headers, and all leave
-  raw download authorization disabled.
-- `local_coverage_raw_download_approval_manifest.json` — the consolidated,
-  current set of sized HDF5 rows promoted to
-  `raw_download_approval_required` across all rounds so far (43 targets,
-  ~10.89 GB combined as of the `batch3` round). This is the human-review
-  input for an explicitly approved bounded raw download; it is not approval
-  by itself.
-- `local_coverage_batch4_manifest.json` — the fourth round's 25 targets,
-  built after `batch3` completed (zero overlap with `top25`/`next25`/
-  `batch3`, confirmed). Discovery not yet run — needs live network access
-  from the user's machine, same as every prior round's discovery step.
+| Round | Checked | Available (URL found) | Skipped (no URL) | Preflight verified | Size (GB) | Notes |
+|---|---|---|---|---|---|---|
+| `top25` | 25 | 15 | 10 | 15/15 | 3.803966 | discovery result reconstructed from committed evidence, 2026-07-10 (see below) |
+| `next25` | 25 | 14 | 11 | 14/14 | 3.608361 | discovery result reconstructed from committed evidence, 2026-07-10 (see below) |
+| `batch3` | 25 | 14 | 11 | 14/14 | 3.481361 | first round captured live via `--discovery-result-output` |
+| `batch4` | 25 | 19 | 6 | 19/19 | 4.79346 | captured live |
+
+`local_coverage_raw_download_approval_manifest.json` — the consolidated,
+always-current set of sized HDF5 rows promoted to
+`raw_download_approval_required` across all rounds so far: **62 targets,
+~15.69 GB combined** (as of the `batch4` round). This is the human-review
+input for an explicitly approved bounded raw download; it is not approval
+by itself. Regenerate it after each new round's size preflight completes and
+the queue is rebuilt.
