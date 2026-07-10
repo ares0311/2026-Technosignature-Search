@@ -1917,6 +1917,14 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         return 0
 
     if args.command == "build-target-priority-queue":
+        extra_size_preflight_report_paths = args.extra_size_preflight_report_path
+        if extra_size_preflight_report_paths is None:
+            batch_manifest_dir = Path("data_selection/batch_manifests")
+            extra_size_preflight_report_paths = sorted(
+                path
+                for path in batch_manifest_dir.glob("*_size_preflight_report.json")
+                if path != args.size_preflight_report_path
+            )
         print(
             json.dumps(
                 write_target_priority_queue(
@@ -1924,6 +1932,7 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                     seed_csv_path=args.seed_csv_path,
                     data_status_path=args.data_status_path,
                     size_preflight_report_path=args.size_preflight_report_path,
+                    extra_size_preflight_report_paths=extra_size_preflight_report_paths,
                 ),
                 indent=2,
                 sort_keys=True,
@@ -6615,6 +6624,20 @@ def _build_parser() -> argparse.ArgumentParser:
             "local_coverage_top25_size_preflight_report.json"
         ),
         help="Optional committed URL-size preflight report path.",
+    )
+    build_target_queue_parser.add_argument(
+        "--extra-size-preflight-report-path",
+        type=Path,
+        action="append",
+        default=None,
+        help=(
+            "Additional committed URL-size preflight report path; repeat for "
+            "multiple later acquisition batches. Every batch's report must be "
+            "supplied or its raw_download_approval_required promotion "
+            "regresses. When omitted, defaults to every "
+            "*_size_preflight_report.json file already committed under "
+            "data_selection/batch_manifests/."
+        ),
     )
     build_target_queue_parser.add_argument(
         "--output-path",

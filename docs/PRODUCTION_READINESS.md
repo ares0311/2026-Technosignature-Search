@@ -263,24 +263,34 @@ Initial local-coverage target selection is implemented:
 `techno-search build-target-priority-queue` writes
 `data_selection/target_priority_queue.csv` from the full HPRC metadata seed and
 tracked acquisition status. The current queue contains 1,703 unique target IDs:
-1,658 queued for metadata discovery, 15 URL-discovered rows requiring
-size/checksum/storage preflight, 14 metadata-retry rows from
-`no_hdf5_url_discovered` outcomes, and 16 already-acquired local-cache controls.
-`techno-search build-target-priority-manifest` also writes the bounded
-`data_selection/batch_manifests/local_coverage_top25_manifest.json` manifest so
-the next acquisition step can run metadata discovery before any raw download.
-The first top-25 discovery checked 25 targets, found 15 current BL HDF5 URLs,
-found 10 targets without a current HDF5 URL, and downloaded zero payloads; the
-URL-discovered rows are captured in
-`data_selection/batch_manifests/local_coverage_top25_size_preflight_manifest.json`.
+1,643 queued for metadata discovery, 29 URL-discovered rows promoted to
+`raw_download_approval_required` (across two discovery+preflight rounds, see
+below), 15 metadata-retry rows from `no_hdf5_url_discovered` outcomes, and 16
+already-acquired local-cache controls.
+`techno-search build-target-priority-manifest` also writes a bounded manifest
+per discovery round (e.g.
+`data_selection/batch_manifests/local_coverage_top25_manifest.json`,
+`local_coverage_next25_manifest.json`) so each acquisition step can run
+metadata discovery before any raw download. The first (`top25`) round checked
+25 targets, found 15 current BL HDF5 URLs, found 10 targets without a current
+HDF5 URL, and downloaded zero payloads;
 `techno-search target-priority-size-preflight` then verified 15/15 URL headers
-with content lengths in
-`data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json`,
-estimated 3.803966 GB total, found no checksum headers, and left raw download
-authorization disabled. The regenerated queue now marks those 15 rows as
-`raw_download_approval_required`; the review input for a bounded raw-download
-approval decision is
-`data_selection/batch_manifests/local_coverage_top25_raw_download_approval_manifest.json`.
+with content lengths (3.803966 GB total, no checksum headers, raw download
+left disabled). The second (`next25`) round, 2026-07-09, repeated the same
+pattern on the next 25 highest-priority queued rows: 14 current HDF5 URLs
+found (11 without), 14/14 preflighted (3.608361 GB total). Running the second
+round surfaced and fixed a real bug — `build-target-priority-queue` read only
+one hard-coded size-preflight report, so promoting `next25` would have
+silently regressed `top25`'s promotion — fixed by merging every committed
+`*_size_preflight_report.json` under `data_selection/batch_manifests/` (new
+`--extra-size-preflight-report-path`, default: auto-glob; regression test
+`test_build_target_priority_queue_merges_multiple_size_preflight_reports`).
+The review input for a bounded raw-download approval decision is now the
+consolidated
+`data_selection/batch_manifests/local_coverage_raw_download_approval_manifest.json`
+covering all 29 promoted targets (~7.41 GB combined) across both rounds. Full
+detail: `docs/LOCAL_DATA_INVENTORY.md`'s "2026-07-09 Local-Coverage `next25`"
+entry and `docs/SYSTEMATIC_SEARCH_PLAN.md` Step 3a.
 These are metadata-first acquisition-planning artifacts only; they do not
 authorize raw downloads, do not close the anomaly/OOD calibration blocker, and
 do not make any candidate or external-submission claim. Follow-up-target scoring

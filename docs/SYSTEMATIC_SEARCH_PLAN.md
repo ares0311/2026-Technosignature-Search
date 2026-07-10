@@ -194,10 +194,27 @@ requirements:
    `data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json`.
    The first HEAD-only run verified 15/15 URLs with content lengths, estimated
    3.803966 GB total, found no checksum headers, and left
-   `raw_download_authorized: false`. The regenerated queue now marks those 15
-   rows as `raw_download_approval_required` and writes
-   `data_selection/batch_manifests/local_coverage_top25_raw_download_approval_manifest.json`
-   as the review input for explicit bounded raw-download approval.
+   `raw_download_authorized: false`. The regenerated queue marked those 15
+   rows as `raw_download_approval_required`.
+
+   **Second round (`next25`), 2026-07-09:** the same discover → size-preflight
+   → promote sequence ran against the next 25 highest-priority
+   `queued_metadata_discovery` rows, finding 14 current HDF5 URLs (11 without)
+   and verifying 14/14 with a 3.608361 GB total. This surfaced and fixed a
+   real bug: `build-target-priority-queue` only read one hard-coded
+   size-preflight report, so promoting `next25`'s 14 targets would have
+   silently regressed `top25`'s 15 back out of
+   `raw_download_approval_required`. Fixed by merging every committed
+   `*_size_preflight_report.json` under `data_selection/batch_manifests/`
+   (new `--extra-size-preflight-report-path`, default: auto-glob) — see
+   `docs/LOCAL_DATA_INVENTORY.md`'s "2026-07-09 Local-Coverage `next25`"
+   entry for the full root cause and regression test. The queue now reports
+   29 targets in `raw_download_approval_required`, consolidated in
+   `data_selection/batch_manifests/local_coverage_raw_download_approval_manifest.json`
+   (~7.41 GB combined) as the review input for explicit bounded raw-download
+   approval. This same discover → preflight → promote pattern is the
+   repeatable, safe (metadata-only) way to keep advancing 3a through further
+   rounds without needing raw-download approval at each step.
 4. Wire the computed `novelty_score` into `target_priority_score()`'s
    existing weighting, don't reinvent the scoring formula. **Initial
    implementation done:** queue rows include a normalized
