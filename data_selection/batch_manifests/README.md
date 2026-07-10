@@ -70,6 +70,21 @@ not guessed — and committed as
 `local_coverage_next25_discovery_result.json`. `batch3` was then
 regenerated cleanly with zero overlap against `top25`/`next25`.
 
+**Third round (`batch3`) completed, 2026-07-10:** the user ran discovery
+from their own machine (real network access; `breakthroughinitiatives.org`/
+`bldata.berkeley.edu` are not reachable from this agent's sandbox proxy for
+the search-page discovery step, though the direct `bldata.berkeley.edu`
+HEAD-only size-preflight requests were reachable). Discovery checked 25/25
+targets: 14 available, 11 skipped, written durably via
+`--discovery-result-output` to `local_coverage_batch3_discovery_result.json`
+(no reconstruction needed for this round — it was captured live). Queue
+rebuild correctly grew `metadata_discovery_required` by exactly 11 (25→36)
+and moved all 25 `batch3` rows out of `queued_metadata_discovery`,
+confirming the merge fix above works end-to-end on a real round. Size
+preflight then verified 14/14 URLs, 3.481361 GB total, no checksum headers.
+Queue rebuild promoted all 14 to `raw_download_approval_required` (29→43
+total across all three rounds).
+
 Current metadata-only manifests:
 
 - `local_coverage_top25_manifest.json` / `local_coverage_next25_manifest.json`
@@ -81,30 +96,31 @@ Current metadata-only manifests:
   downloader-compatible for
   `scripts/download_bl_extended_corpus.sh --manifest ... --discover-only` and
   is intended for product metadata discovery before any raw download.
-  `batch3` has not yet had its discovery round run (blocked on live network
-  access this agent's sandbox does not have — run from a machine with real
-  network access, then commit
-  `local_coverage_batch3_discovery_result.json` via
-  `--discovery-result-output` before rebuilding the queue).
 - `local_coverage_top25_discovery_result.json` /
-  `local_coverage_next25_discovery_result.json` — the full per-round
+  `local_coverage_next25_discovery_result.json` /
+  `local_coverage_batch3_discovery_result.json` — the full per-round
   discovery outcome (available + skipped targets with reasons), durably
   committed so a later round's discovery cannot lose an earlier round's
-  result. `top25`: 15 available, 10 skipped (reconstructed, see above).
-  `next25`: 14 available, 11 skipped (reconstructed, see above).
+  result. `top25`: 15 available, 10 skipped (reconstructed from committed
+  evidence, see above). `next25`: 14 available, 11 skipped (reconstructed).
+  `batch3`: 14 available, 11 skipped (captured live via
+  `--discovery-result-output`).
 - `local_coverage_top25_size_preflight_manifest.json` /
-  `local_coverage_next25_size_preflight_manifest.json` — the URL-discovered
-  rows from each round (15 and 14 respectively). Use these for URL header,
-  checksum, size, and local-storage preflight before any raw download; they
-  are not raw-download authorization.
+  `local_coverage_next25_size_preflight_manifest.json` /
+  `local_coverage_batch3_size_preflight_manifest.json` — the URL-discovered
+  rows from each round (15, 14, and 14 respectively). Use these for URL
+  header, checksum, size, and local-storage preflight before any raw
+  download; they are not raw-download authorization.
 - `local_coverage_top25_size_preflight_report.json` /
-  `local_coverage_next25_size_preflight_report.json` — HEAD-only preflight
+  `local_coverage_next25_size_preflight_report.json` /
+  `local_coverage_batch3_size_preflight_report.json` — HEAD-only preflight
   results for each round. `top25`: 15/15 URLs verified, 3.803966 GB total.
-  `next25`: 14/14 URLs verified, 3.608361 GB total. Neither found checksum
-  headers, and both leave raw download authorization disabled.
+  `next25`: 14/14 URLs verified, 3.608361 GB total. `batch3`: 14/14 URLs
+  verified, 3.481361 GB total. None found checksum headers, and all leave
+  raw download authorization disabled.
 - `local_coverage_raw_download_approval_manifest.json` — the consolidated,
   current set of sized HDF5 rows promoted to
-  `raw_download_approval_required` across all rounds so far (29 targets,
-  ~7.41 GB combined as of the `next25` round). This is the human-review
+  `raw_download_approval_required` across all rounds so far (43 targets,
+  ~10.89 GB combined as of the `batch3` round). This is the human-review
   input for an explicitly approved bounded raw download; it is not approval
   by itself.
