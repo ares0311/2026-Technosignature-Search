@@ -1,0 +1,4 @@
+PROJECT_ID=2026 Technosignatures
+EXPECTED_REPO_BASENAME=2026 Technosignatures
+AGENT_ROLE=Technosignatures agent
+DO_NOT_OPERATE_IF_REPO_DIFFERS=true
