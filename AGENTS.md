@@ -639,6 +639,55 @@ shortcut or fabricate.
 - Always assume a local `.venv` environment — **Python 3.14.3**
 - **NEVER invoke bare `python3` or `python`. Always use `.venv/bin/python` or
   `.venv/bin/techno-search` explicitly.**
+- **A bare `pip install -e .` only installs `techno_search`'s core
+  `install_requires`** (numpy/pandas/astropy/scipy/rich/pyyaml/etc.) — not
+  even `pytest`/`ruff`/`mypy`, let alone `turbo_seti`/`blimpy`/`h5py`/
+  `lightkurve`/`scikit-learn`/`astroquery`. Found 2026-07-11 when a fresh
+  sandboxed session's `.venv` (site-packages modified 2026-07-10, ~36
+  packages total) turned out to be missing the entire science stack every
+  prior session's real work in this file depended on. **The venv this
+  project actually needs is every extras group in `pyproject.toml`:**
+  ```bash
+  .venv/bin/python -m pip install -e ".[dev,radio,science,ml,track_a,photometry]"
+  ```
+  After installing the `radio` extra, also run
+  `bash scripts/patch_turbo_seti_numpy2_compat.sh` (see below) — required
+  every time `radio` is (re)installed, since the fix lives in site-packages
+  and does not survive a reinstall.
+- **`turbo_seti==2.3.2`** (the exact pin in the `radio` extra, and the
+  newest release on PyPI as of 2026-07-11 — there is no newer upstream
+  version to bump to) **has a real off-by-one bug that crashes every run**
+  under numpy>=2.0 (which pip resolves to by default, since turbo_seti
+  declares no numpy upper bound, and pinning `numpy<2` project-wide risks
+  real resolver conflicts with `astropy==8.0.1`/`pandas==3.0.3`, both very
+  recent releases likely requiring numpy 2.x). Root cause:
+  `find_doppler.py`'s final per-coarse-channel debug-log line formats
+  `max_val.total_n_hits` (a length-1 numpy array by design — three other
+  call sites in the same file correctly index it as `total_n_hits[0]`)
+  directly with `%i`, omitting the `[0]` index used everywhere else in the
+  file. Older numpy silently coerced the length-1 array for `%` string
+  formatting; numpy 2.x no longer does, so an otherwise-successful run
+  (hits already found and written to the `.dat` file) crashes on this
+  trailing log statement. Fix: `scripts/patch_turbo_seti_numpy2_compat.sh`
+  applies the same one-line `[0]` index turbo_seti's own authors used
+  elsewhere in the file, directly to the installed site-packages copy
+  (idempotent, safe to re-run; never touches this repo's own tracked
+  code). Run it once after any `radio`-extra install, before running
+  turboSETI.
+- **This sandbox's PyPI installs require `--trusted-host pypi.org
+  --trusted-host files.pythonhosted.org`** (confirmed with the user
+  2026-07-11): the sandbox routes all outbound HTTPS through a local
+  proxy that TLS-terminates with its own certificate. `curl` trusts it
+  via the system CA bundle at `/etc/ssl/cert.pem`, but this session's
+  sandbox denies any command that references an absolute path outside the
+  repo root — including reading `/etc/ssl/cert.pem` itself, via any tool
+  (Bash or Read) — so Python/pip can never be pointed at that already-
+  trusted system bundle from inside this sandbox. `--trusted-host` for
+  just these two already network-allow-listed hosts is the only working
+  mechanism found; the user confirmed this is acceptable (it does not
+  expose new attack surface beyond what the network allowlist already
+  permits). This is not a credential to store anywhere — it is a per-pip-
+  invocation flag.
 - **Install packages with `.venv/bin/python -m pip install ...`, never
   `.venv/bin/pip install ...`.** If the venv's Python was ever upgraded in
   place, the `.venv/bin/pip` script can keep pointing at the old
@@ -702,6 +751,19 @@ false positive remains the default hypothesis). See
 `docs/Technosignatures_MCP_BOOTSTRAP.md` for the original conservative MCP
 rollout policy (project-file/git-read/`techno_guard` scope) that these
 additional servers extend.
+
+**Do not offload routine command execution to the user.** If the agent has a
+working tool for a task (GitHub MCP, `gh`/`curl` via Bash, WebFetch, etc.),
+use it directly instead of asking the user to run a command and paste back
+the result — this generalizes the DATA COLLECTION STATUS REPORTING
+DIRECTIVE's "the user should not need to act as a copy-paste intermediary"
+rule beyond acquisition scripts to GitHub API lookups, diagnostic
+`curl`/`jq` checks, and other routine reads. Only ask the user to run
+something themselves when there is a genuine, confirmed tool/sandbox
+blocker (e.g. this session's sandbox hard-denies file access outside the
+repository's git root, so files like `~/.claude.json` truly require the
+user's own shell) — and say so explicitly rather than defaulting to it out
+of convenience. (User correction, 2026-07-11.)
 
 ---
 
