@@ -37,18 +37,26 @@ file_mtime_epoch() {
   stat -f %m "$f" 2>/dev/null || stat -c %Y "$f" 2>/dev/null
 }
 
-# ANSI color codes. Claude Code's status line renderer interprets these
-# directly (per the docs cited above) — this isn't a raw terminal, so no
-# NO_COLOR / isatty gating is needed.
+# 24-bit truecolor ANSI codes using seaborn's "pastel" categorical palette
+# (seaborn.color_palette("pastel"), the hardcoded hex list in
+# seaborn/palettes.py — not the low-intensity 8-color `\033[2m`/`\033[9Xm`
+# codes previously used here, which read as low-contrast grey-on-black).
+# Claude Code's status line renderer interprets ANSI directly (per the docs
+# cited above) — this isn't a raw terminal, so no NO_COLOR/isatty gating is
+# needed, and everything below is bold for maximum pop against a black
+# background.
+rgb() { printf '\033[1;38;2;%d;%d;%dm' "$1" "$2" "$3"; }
+
 RESET='\033[0m'
-DIM='\033[2m'
-BOLD='\033[1m'
-CYAN='\033[1;36m'
-MAGENTA='\033[35m'
-GREEN='\033[32m'
-YELLOW='\033[33m'
-RED='\033[31m'
-GREY='\033[90m'
+BLUE=$(rgb 161 201 244)     # #A1C9F4 — model
+ORANGE=$(rgb 255 180 130)   # #FFB482 — version
+GREEN=$(rgb 141 229 161)    # #8DE5A1 — clean/low/working
+RED=$(rgb 255 159 155)      # #FF9F9B — dirty/high
+PURPLE=$(rgb 208 187 255)   # #D0BBFF — style/vim mode
+PINK=$(rgb 250 176 228)     # #FAB0E4 — project name
+SILVER=$(rgb 207 207 207)   # #CFCFCF — idle, separators
+YELLOW=$(rgb 255 254 163)   # #FFFEA3 — mid-range %
+TEAL=$(rgb 185 242 240)     # #B9F2F0 — reset-time annotations
 
 # Green under 70%, yellow 70-89%, red 90%+ — same thresholds the official
 # multi-line context-bar example uses.
@@ -84,7 +92,7 @@ if git -C "${cwd:-$project_dir}" --no-optional-locks rev-parse --is-inside-work-
   [ -z "$branch" ] && branch="detached"
   if ! git -C "${cwd:-$project_dir}" --no-optional-locks diff --quiet 2>/dev/null || \
      ! git -C "${cwd:-$project_dir}" --no-optional-locks diff --cached --quiet 2>/dev/null; then
-    branch_color="$YELLOW"
+    branch_color="$RED"
   fi
 fi
 
@@ -111,20 +119,22 @@ if [ -n "$transcript_path" ] && [ -f "$transcript_path" ]; then
   now_epoch=$(date +%s)
   mtime_epoch=$(file_mtime_epoch "$transcript_path")
   if [ -n "$mtime_epoch" ] && [ $((now_epoch - mtime_epoch)) -le 10 ]; then
-    work_indicator="${GREEN}${BOLD}● working${RESET}"
+    work_indicator="${GREEN}● working${RESET}"
   else
-    work_indicator="${GREY}○ idle${RESET}"
+    work_indicator="${SILVER}○ idle${RESET}"
   fi
 fi
 
+# Left-to-right order: working/idle, model, version, project, branch,
+# context, 5h group, weekly group.
 parts=()
 [ -n "$work_indicator" ] && parts+=("$work_indicator")
-[ -n "$version" ] && parts+=("${DIM}v${version}${RESET}")
-[ -n "$model" ] && parts+=("${CYAN}${model}${RESET}")
-[ -n "$project_name" ] && parts+=("${BOLD}${project_name}${RESET}")
+[ -n "$model" ] && parts+=("${BLUE}${model}${RESET}")
+[ -n "$version" ] && parts+=("${ORANGE}v${version}${RESET}")
+[ -n "$project_name" ] && parts+=("${PINK}${project_name}${RESET}")
 [ -n "$branch" ] && parts+=("${branch_color}git:${branch}${RESET}")
-[ -n "$output_style" ] && [ "$output_style" != "default" ] && parts+=("${MAGENTA}style:${output_style}${RESET}")
-[ -n "$vim_mode" ] && parts+=("${MAGENTA}${vim_mode}${RESET}")
+[ -n "$output_style" ] && [ "$output_style" != "default" ] && parts+=("${PURPLE}style:${output_style}${RESET}")
+[ -n "$vim_mode" ] && parts+=("${PURPLE}${vim_mode}${RESET}")
 if [ -n "$ctx_used" ]; then
   ctx_color=$(color_for_pct "$ctx_used")
   parts+=("${ctx_color}$(printf 'ctx:%.0f%%' "$ctx_used")${RESET}")
@@ -132,13 +142,13 @@ fi
 if [ -n "$five_hour" ]; then
   five_hour_color=$(color_for_pct "$five_hour")
   five_hour_part="${five_hour_color}$(printf '5h:%.0f%%' "$five_hour")${RESET}"
-  [ -n "$five_hour_resets" ] && five_hour_part="${five_hour_part}${DIM} (↻${five_hour_resets})${RESET}"
+  [ -n "$five_hour_resets" ] && five_hour_part="${five_hour_part} ${TEAL}(↻${five_hour_resets})${RESET}"
   parts+=("$five_hour_part")
 fi
 if [ -n "$seven_day" ]; then
   seven_day_color=$(color_for_pct "$seven_day")
   seven_day_part="${seven_day_color}$(printf '7d:%.0f%%' "$seven_day")${RESET}"
-  [ -n "$seven_day_resets" ] && seven_day_part="${seven_day_part}${DIM} (↻${seven_day_resets})${RESET}"
+  [ -n "$seven_day_resets" ] && seven_day_part="${seven_day_part} ${TEAL}(↻${seven_day_resets})${RESET}"
   parts+=("$seven_day_part")
 fi
 
@@ -146,7 +156,7 @@ out=""
 sep=""
 for p in "${parts[@]}"; do
   out="${out}${sep}${p}"
-  sep="${DIM} | ${RESET}"
+  sep="${SILVER} | ${RESET}"
 done
 
 echo -e "$out"
