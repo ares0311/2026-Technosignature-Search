@@ -5548,22 +5548,6 @@
       ],
       "total": 1358
     },
-    "stream_process_evict_batch": {
-      "acquisition_mode": "stream_process_evict",
-      "candidate_report_manifests_total": 39,
-      "dat_files_total": 17,
-      "downloaded_count": 2,
-      "downloaded_gb": 0.485395,
-      "evicted_count": 0,
-      "failed_count": 0,
-      "failed_targets": [],
-      "last_run_utc": "2026-07-11T18:27:58.702675+00:00",
-      "manifest": "data_selection/batch_manifests/local_coverage_first_bounded_batch_manifest.json",
-      "ok": true,
-      "raw_retention_policy": "evicted_after_candidate_report_generation",
-      "targets_attempted": 2,
-      "total_targets_in_manifest": 2
-    },
     "target_priority_size_preflight": {
       "checksum_header_count": 0,
       "disclaimer": "Target priority queues are metadata-first scheduling aids for local search planning. They are not detections, discovery claims, expert review, external validation, or authorization for external submission.",
