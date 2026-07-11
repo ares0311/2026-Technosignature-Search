@@ -92,12 +92,12 @@ themselves.
 | `next25` | 25 | 14 | 11 | 14/14 | 3.608361 | discovery result reconstructed from committed evidence, 2026-07-10 (see below) |
 | `batch3` | 25 | 14 | 11 | 14/14 | 3.481361 | first round captured live via `--discovery-result-output` |
 | `batch4` | 25 | 19 | 6 | 19/19 | 4.79346 | captured live |
-| `batch5` | - | - | - | - | - | manifest built, zero overlap confirmed against prior rounds; discovery not yet run |
+| `batch5` | 25 | 18 | 7 | 18/18 | 4.4936 | captured live |
 
 `local_coverage_raw_download_approval_manifest.json` — the consolidated,
 always-current set of sized HDF5 rows promoted to
-`raw_download_approval_required` across all rounds so far: **62 targets,
-~15.69 GB combined** (as of the `batch4` round). This is the human-review
+`raw_download_approval_required` across all rounds so far: **80 targets,
+~20.18 GB combined** (as of the `batch5` round). This is the human-review
 input for an explicitly approved bounded raw download; it is not approval
 by itself. Regenerate it after each new round's size preflight completes and
 the queue is rebuilt.
