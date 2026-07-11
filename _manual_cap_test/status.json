@@ -4,12 +4,12 @@
     "download_bl_extended_corpus": {
       "acquisition_mode": "targeted_batch_pull",
       "acquisition_role": "live_search_bootstrap_cache",
-      "available": 0,
+      "available": 1,
       "checked": 1,
       "downloaded": 0,
       "downloaded_targets": [],
       "free_space_reserve_gb": 0.0,
-      "last_run_utc": "2026-07-11T13:38:10.208506+00:00",
+      "last_run_utc": "2026-07-11T13:38:52.744221+00:00",
       "local_storage_cap_gb": 1.0,
       "ok": false,
       "policy_blocked": false,
@@ -19,7 +19,7 @@
       "skipped": 1,
       "skipped_targets": [
         {
-          "reason": "discovery_request_failed",
+          "reason": "download_failed",
           "target": "BIG"
         }
       ],
