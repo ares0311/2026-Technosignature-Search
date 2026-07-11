@@ -102,6 +102,20 @@ themselves.
 | `batch12` | 25 | 16 | 9 | 16/16 | 4.086154 | captured live |
 | `batch13` | 25 | 16 | 9 | 16/16 | 3.983772 | captured live |
 
+**Switched to one bulk round after `batch13`, 2026-07-11:** at 25
+targets/round, the remaining queue (1,358 targets after `batch13`) would
+have needed ~55 more manual discovery rounds, each requiring the user to
+copy-paste a command — the user flagged this as unsustainable
+("How many times are we doing to do this?"). `local_coverage_batch14_bulk_manifest.json`
+covers all 1,358 remaining `queued_metadata_discovery` targets in one
+manifest (zero overlap with `top25`/`next25`/`batch3`-`batch13`, confirmed).
+This does not change the discovery script's request pattern — it is still
+one sequential HEAD/GET request per target, same as every prior round, just
+run to completion in a single invocation instead of 55 separate ones. Not a
+change to acquisition role/mode/rate; still `--discover-only`, no payloads.
+
+| `batch14_bulk` | - | - | - | - | - | manifest built (1,358 targets), zero overlap confirmed; discovery not yet run (expected runtime: ~50-60 min at the observed ~2.3s/target rate) |
+
 `local_coverage_raw_download_approval_manifest.json` — the consolidated,
 always-current set of sized HDF5 rows promoted to
 `raw_download_approval_required` across all rounds so far: **211 targets,
