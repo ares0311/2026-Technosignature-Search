@@ -67,6 +67,43 @@ Mandatory requirements:
 
 ## Current Live Handoff — 2026-06-27
 
+### Step 3a Bulk Discovery Round (`batch14_bulk`) Complete — 2026-07-11
+
+After 13 sequential 25-target rounds (`top25` through `batch13`, 211 targets
+promoted, ~53.15 GB), the user flagged the per-round pace as unsustainable
+for the remaining 1,358 queued targets. Consolidated all of them into one
+manifest, `local_coverage_batch14_bulk_manifest.json` (zero overlap with
+prior rounds, confirmed), and hardened
+`scripts/download_bl_extended_corpus.sh` first: added bounded-parallel
+discovery workers (`TECHNO_EXTENDED_CORPUS_DISCOVERY_WORKERS`, default 4)
+and compact `[PROGRESS] X/Y checked (elapsed Xm, ETA ~Ym remaining)` output,
+per the VISIBLE PROGRESS DIRECTIVE (the sequential-only version had neither).
+
+**Real live run result:** 1,358/1,358 targets checked in 13m53s wall-clock
+(vs. the ~50-60 min sequential estimate) — 936 URL-available, 422 skipped
+(no HDF5 URL). All 936 then passed HEAD-only size preflight cleanly
+(`all_targets_ok: true`, `all_targets_sized: true`), totaling 235.825276 GB.
+Target-priority queue rebuilt (auto-glob merge of every
+`*_discovery_result.json`/`*_size_preflight_report.json`, per the
+already-fixed merge mechanism) and the consolidated approval manifest
+regenerated: **`local_coverage_raw_download_approval_manifest.json` now
+covers 1,147 targets, ~288.97 GB combined**, across all rounds so far.
+Committed as `00a8c3a` and pushed to `origin/main`.
+
+None of this authorizes a raw download — `raw_download_authorized: false`
+in every preflight report, same as every prior round. The 1,147-target,
+~289 GB queue is still awaiting the user's own bounded-download approval
+decision, not yet requested this round.
+
+**Git-LFS push note:** `git push` still prints a spurious
+`fatal: failed to store: 100001` line (the sandbox-proxy TLS issue on
+git-lfs's unused locking-API sub-call, `lfs.locksverify` global fix already
+applied) but the push itself succeeds — verified via
+`git rev-parse origin/main HEAD` matching after every push this round. Don't
+treat that error text alone as a failed push; always verify with
+`git log origin/main..HEAD` or `git rev-parse origin/main HEAD` before
+retrying or asking the user to intervene.
+
 ### Calibration-Data Literature Search Closed — 2026-07-05
 
 PRs #226-#227 merged. The open question "does any published BL/SETI paper
