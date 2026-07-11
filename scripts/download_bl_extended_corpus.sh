@@ -44,7 +44,15 @@ OUT_DIR="${TECHNO_EXTENDED_CORPUS_OUT_DIR:-${REPO_ROOT}/data/extended_corpus}"
 VENV_PYTHON="${TECHNO_EXTENDED_CORPUS_PYTHON:-${REPO_ROOT}/.venv/bin/python}"
 MANIFEST="${REPO_ROOT}/data/target_sample_manifest.json"
 MAX_TARGETS="${TECHNO_EXTENDED_CORPUS_MAX_TARGETS:-0}"
-FREE_SPACE_RESERVE_GB="${TECHNO_EXTENDED_CORPUS_FREE_SPACE_RESERVE_GB:-500}"
+# Real hard constraint, not a 4TB-external-SSD-era fallback: this project has
+# no external SSD and no cloud storage available for testing, so the entire
+# local data footprint (data/ + models/ + artifacts/) must never exceed this
+# cap. See docs/astrometrics_data_selection_policy.md and
+# docs/astrometrics_external_and_cloud_storage_policy.md, both corrected
+# 2026-07-11.
+LOCAL_STORAGE_CAP_GB="${TECHNO_LOCAL_STORAGE_CAP_GB:-100}"
+LOCAL_STORAGE_USAGE_DIRS="${TECHNO_LOCAL_STORAGE_USAGE_DIRS:-${REPO_ROOT}/data ${REPO_ROOT}/models ${REPO_ROOT}/artifacts}"
+FREE_SPACE_RESERVE_GB="${TECHNO_EXTENDED_CORPUS_FREE_SPACE_RESERVE_GB:-10}"
 # No published BL Open Data Archive rate limit exists for this discovery
 # endpoint (verified 2026-07-04, see docs/bl_hprc_target_list_research.md) --
 # this default is a conservative, configurable choice per AGENTS.md's data
@@ -95,9 +103,23 @@ Environment:
                                         available manifest targets.
   TECHNO_EXTENDED_CORPUS_OUT_DIR=PATH   Override output directory for tests or
                                         isolated local runs.
+  TECHNO_LOCAL_STORAGE_CAP_GB=N         Hard cap on this project's total local
+                                        data footprint (data/ + models/ +
+                                        artifacts/), never exceeded. Default:
+                                        100. No external SSD or cloud storage
+                                        is available for this project -- this
+                                        is a real ceiling, not a conservative
+                                        fallback. A download that would push
+                                        total usage over the cap is skipped
+                                        with reason local_storage_cap_exceeded.
+  TECHNO_LOCAL_STORAGE_USAGE_DIRS="A B" Space-separated directories summed
+                                        against the cap. Default: this
+                                        project's data/, models/, artifacts/
+                                        directories under the repo root.
   TECHNO_EXTENDED_CORPUS_FREE_SPACE_RESERVE_GB=N
-                                        Minimum free GB to preserve before each
-                                        new payload download. Default: 500.
+                                        Minimum free GB to preserve on the
+                                        underlying disk before each new
+                                        payload download. Default: 10.
                                         Tests may set 0 for tiny temp dirs.
   TECHNO_EXTENDED_CORPUS_DISCOVERY_WORKERS=N
                                         Bounded concurrent discovery workers
@@ -202,7 +224,12 @@ content_length_kb() {
     printf '0\n'
     return 0
   fi
-  printf '%s\n' "${headers}" | awk 'BEGIN {IGNORECASE=1} /^content-length:/ {value=$2} END {gsub("\r", "", value); if (value == "") print 0; else print int((value + 1023) / 1024)}'
+  # Real bug found and fixed 2026-07-11: macOS's /usr/bin/awk (the BWK "one
+  # true awk", not gawk) does not support IGNORECASE -- the original pattern
+  # never matched a real server's "Content-Length:" header, so this always
+  # returned 0 and silently disabled both this and the local-storage-cap
+  # check on macOS. tolower($1) is portable POSIX awk.
+  printf '%s\n' "${headers}" | awk '{ if (tolower($1) == "content-length:") value = $2 } END { gsub("\r", "", value); if (value == "") print 0; else print int((value + 1023) / 1024) }'
 }
 
 ensure_projected_free_space() {
@@ -229,6 +256,41 @@ ensure_projected_free_space() {
   elif [[ "${free_now}" -lt "${reserve}" ]]; then
     log "[ERROR] Free-space reserve is already below policy before download."
     log "[ERROR] Free now: $((free_now / 1024 / 1024))GB; reserve: ${FREE_SPACE_RESERVE_GB}GB"
+    return 1
+  fi
+  return 0
+}
+
+storage_cap_kb() {
+  "${VENV_PYTHON}" -c 'import sys; print(int(float(sys.argv[1]) * 1024 * 1024))' "${LOCAL_STORAGE_CAP_GB}"
+}
+
+project_storage_usage_kb() {
+  local total=0
+  local dir
+  for dir in ${LOCAL_STORAGE_USAGE_DIRS}; do
+    if [[ -d "${dir}" ]]; then
+      total=$((total + $(du -sk "${dir}" 2>/dev/null | awk '{print $1}')))
+    fi
+  done
+  printf '%s\n' "${total}"
+}
+
+ensure_within_local_storage_cap() {
+  local url="$1"
+  local cap
+  local used_now
+  local projected_download
+  cap="$(storage_cap_kb)"
+  if [[ "${cap}" -le 0 ]]; then
+    return 0
+  fi
+  used_now="$(project_storage_usage_kb)"
+  projected_download="$(content_length_kb "${url}")"
+  if [[ "$((used_now + projected_download))" -gt "${cap}" ]]; then
+    log "[ERROR] Local storage cap would be exceeded by this download."
+    log "[ERROR] Used now: $((used_now / 1024 / 1024))GB; projected payload: $((projected_download / 1024 / 1024))GB; cap: ${LOCAL_STORAGE_CAP_GB}GB"
+    log "[ERROR] No external SSD or cloud storage is available for this project -- evict already-processed raw payloads before continuing."
     return 1
   fi
   return 0
@@ -393,6 +455,7 @@ log "[INFO]  Discover only: ${DISCOVER_ONLY}"
 log "[INFO]  Acquisition role: ${ACQUISITION_ROLE}"
 log "[INFO]  Acquisition mode: ${ACQUISITION_MODE}"
 log "[INFO]  Raw retention policy: ${RAW_RETENTION_POLICY}"
+log "[INFO]  Local storage cap: ${LOCAL_STORAGE_CAP_GB}GB (no external SSD or cloud storage available)"
 log "[INFO]  Free-space reserve: ${FREE_SPACE_RESERVE_GB}GB"
 if [[ -n "${AVAILABILITY_OUTPUT}" ]]; then
   log "[INFO]  Availability output: ${AVAILABILITY_OUTPUT}"
@@ -537,6 +600,13 @@ else
     fi
     if [[ "${MAX_TARGETS}" != "0" && "${downloaded}" -ge "${MAX_TARGETS}" ]]; then
       log "[INFO]  New-download target limit reached (${MAX_TARGETS}); stopping early"
+      break
+    fi
+    if ! ensure_within_local_storage_cap "${url}"; then
+      skipped=$((skipped + 1))
+      SKIPPED_NAMES+=("${name}")
+      SKIPPED_REASONS+=("local_storage_cap_exceeded")
+      policy_blocked=1
       break
     fi
     if ! ensure_projected_free_space "${url}"; then
@@ -691,6 +761,7 @@ if [[ -x "${TECHNO_SEARCH_BIN}" && -x "${STATUS_PYTHON}" ]]; then
     ACQUISITION_MODE="${ACQUISITION_MODE}" \
     RAW_RETENTION_POLICY="${RAW_RETENTION_POLICY}" \
     FREE_SPACE_RESERVE_GB="${FREE_SPACE_RESERVE_GB}" \
+    LOCAL_STORAGE_CAP_GB="${LOCAL_STORAGE_CAP_GB}" \
     POLICY_BLOCKED="${policy_blocked}" \
     "${STATUS_PYTHON}" -c '
 import json
@@ -716,6 +787,7 @@ summary = {
     "acquisition_mode": os.environ["ACQUISITION_MODE"],
     "raw_retention_policy": os.environ["RAW_RETENTION_POLICY"],
     "free_space_reserve_gb": float(os.environ["FREE_SPACE_RESERVE_GB"]),
+    "local_storage_cap_gb": float(os.environ["LOCAL_STORAGE_CAP_GB"]),
     "policy_blocked": os.environ["POLICY_BLOCKED"] == "1",
     "downloaded_targets": _lines("DOWNLOADED_NAMES"),
     "reused_targets": _lines("REUSED_NAMES"),

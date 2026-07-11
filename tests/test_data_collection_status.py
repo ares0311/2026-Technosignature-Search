@@ -107,6 +107,36 @@ def test_commit_and_push_skips_auto_commit_when_not_on_main(
     assert calls == [["git", "branch", "--show-current"]]
 
 
+def test_commit_and_push_skips_auto_commit_for_redirected_status_path(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """Regression test: this happened for real twice -- pointing
+    TECHNO_DATA_COLLECTION_STATUS_PATH at a path inside the repo for local/
+    manual testing (e.g. a scratch directory, not docs/data_collection_status.json)
+    caused this function to git-add/commit/push that scratch file directly to
+    main, three times in a row in one incident. This must only ever fire for
+    the canonical status_path under project_root."""
+
+    status_path = tmp_path / "_manual_test" / "status.json"
+    status_path.parent.mkdir(parents=True)
+    status_path.write_text("{}")
+
+    calls: list[list[str]] = []
+
+    def _fake_run(args: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        calls.append(args)
+        raise AssertionError(f"git add/commit/push must not run for a redirected path: {args}")
+
+    monkeypatch.setattr(subprocess, "run", _fake_run)
+
+    result = commit_and_push_status(tmp_path, status_path=status_path, message="test")
+
+    assert result["committed"] is False
+    assert result["pushed"] is False
+    assert "not the canonical" in result["error"]
+    assert calls == []
+
+
 def test_record_and_publish_without_auto_commit_skips_git(tmp_path: Path) -> None:
     status_path = tmp_path / "docs" / "data_collection_status.json"
 

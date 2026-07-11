@@ -114,6 +114,10 @@ def test_extended_corpus_downloader_enforces_data_storage_policy() -> None:
     assert "ensure_projected_free_space" in script
     assert "free_space_reserve_not_met" in script
     assert "\"policy_blocked\"" in script
+    assert "TECHNO_LOCAL_STORAGE_CAP_GB" in script
+    assert "ensure_within_local_storage_cap" in script
+    assert "local_storage_cap_exceeded" in script
+    assert "\"local_storage_cap_gb\"" in script
 
 
 def test_extended_corpus_downloader_does_not_misstate_decision_134_status() -> None:
@@ -487,3 +491,94 @@ printf 'downloaded %s\n' "${url}" > "${out_path}"
     assert real_status_path.read_text(encoding="utf-8") == real_status_before, (
         "this test must never write to the real tracked status manifest"
     )
+
+
+def test_extended_corpus_downloader_enforces_local_storage_cap(tmp_path: Path) -> None:
+    """Regression test: this project has no external SSD or cloud storage, so
+    the total local data footprint must never exceed TECHNO_LOCAL_STORAGE_CAP_GB,
+    independent of the underlying disk's free space (which the pre-existing
+    free-space-reserve check measures instead)."""
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps({"targets": [{"hip": "BIG"}]}),
+        encoding="utf-8",
+    )
+    out_dir = tmp_path / "extended_corpus"
+    usage_dir = tmp_path / "usage"
+    usage_dir.mkdir()
+
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    fake_curl = fake_bin / "curl"
+    fake_curl.write_text(
+        """#!/usr/bin/env bash
+set -euo pipefail
+url="${@: -1}"
+if [[ "${url}" == *breakthroughinitiatives.org* ]]; then
+  args="$*"
+  case "${args}" in
+    *target=BIG*) printf 'https://bldata.berkeley.edu/test/HIPBIG.gpuspec.0002.h5' ;;
+    *) printf 'unexpected-discovery-args=%s' "${args}" >&2; exit 22 ;;
+  esac
+  exit 0
+fi
+out_path=""
+head_only=0
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --output) out_path="$2"; shift 2 ;;
+    -fsSI) head_only=1; shift ;;
+    *) shift ;;
+  esac
+done
+if [[ "${head_only}" -eq 1 ]]; then
+  printf 'HTTP/1.1 200 OK\\r\\nContent-Length: 5368709120\\r\\n\\r\\n'
+  exit 0
+fi
+if [[ -z "${out_path}" ]]; then
+  printf 'missing --output for %s' "${url}" >&2
+  exit 45
+fi
+printf 'unexpected download past the storage cap check' >&2
+exit 46
+""",
+        encoding="utf-8",
+    )
+    fake_curl.chmod(fake_curl.stat().st_mode | stat.S_IXUSR)
+
+    env = os.environ.copy()
+    env["PATH"] = f"{fake_bin}{os.pathsep}{env['PATH']}"
+    env["TECHNO_EXTENDED_CORPUS_OUT_DIR"] = str(out_dir)
+    env["TECHNO_EXTENDED_CORPUS_PYTHON"] = sys.executable
+    env["TECHNO_EXTENDED_CORPUS_FREE_SPACE_RESERVE_GB"] = "0"
+    env["TECHNO_LOCAL_STORAGE_CAP_GB"] = "1"
+    env["TECHNO_LOCAL_STORAGE_USAGE_DIRS"] = str(usage_dir)
+    env["TECHNO_DATA_COLLECTION_STATUS_PATH"] = str(tmp_path / "data_collection_status.json")
+
+    result = subprocess.run(
+        [
+            "bash",
+            str(SCRIPT_PATH),
+            "--manifest",
+            str(manifest),
+        ],
+        check=False,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    assert not (out_dir / "HIPBIG" / "HIPBIG.gpuspec.0002.h5").exists()
+    assert "Local storage cap would be exceeded" in result.stderr
+    assert "No external SSD or cloud storage is available" in result.stderr
+    assert "Data/storage policy blocked this run" in result.stderr
+
+    status = json.loads((tmp_path / "data_collection_status.json").read_text(encoding="utf-8"))
+    run_status = status["runs"]["download_bl_extended_corpus"]
+    assert run_status["ok"] is False
+    assert run_status["policy_blocked"] is True
+    assert run_status["local_storage_cap_gb"] == 1.0
+    assert run_status["skipped_targets"] == [
+        {"target": "HIPBIG", "reason": "local_storage_cap_exceeded"}
+    ]

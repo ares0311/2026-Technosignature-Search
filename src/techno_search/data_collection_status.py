@@ -94,6 +94,22 @@ def commit_and_push_status(
     path = status_path or (project_root / DATA_COLLECTION_STATUS_RELATIVE_PATH)
     result: dict[str, Any] = {"committed": False, "pushed": False, "error": None}
 
+    canonical_path = project_root / DATA_COLLECTION_STATUS_RELATIVE_PATH
+    try:
+        is_canonical_path = path.resolve() == canonical_path.resolve()
+    except OSError:
+        is_canonical_path = False
+    if not is_canonical_path:
+        result["error"] = (
+            "auto-commit skipped: status_path "
+            f"{path!s} is not the canonical {canonical_path!s} (this guards "
+            "against a redirected/manual/test status path -- e.g. "
+            "TECHNO_DATA_COLLECTION_STATUS_PATH pointed inside the repo for "
+            "local testing -- getting auto-committed and pushed to main; "
+            "this happened for real twice before this guard existed)"
+        )
+        return result
+
     def _run(args: list[str]) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             args,
