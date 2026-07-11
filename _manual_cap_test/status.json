@@ -9,17 +9,17 @@
       "downloaded": 0,
       "downloaded_targets": [],
       "free_space_reserve_gb": 0.0,
-      "last_run_utc": "2026-07-11T13:38:52.744221+00:00",
+      "last_run_utc": "2026-07-11T13:41:57.472457+00:00",
       "local_storage_cap_gb": 1.0,
       "ok": false,
-      "policy_blocked": false,
+      "policy_blocked": true,
       "raw_retention_policy": "public_raw_archive_cache_not_pinned",
       "reused": 0,
       "reused_targets": [],
       "skipped": 1,
       "skipped_targets": [
         {
-          "reason": "download_failed",
+          "reason": "local_storage_cap_exceeded",
           "target": "BIG"
         }
       ],
