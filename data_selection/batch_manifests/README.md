@@ -93,6 +93,7 @@ themselves.
 | `batch3` | 25 | 14 | 11 | 14/14 | 3.481361 | first round captured live via `--discovery-result-output` |
 | `batch4` | 25 | 19 | 6 | 19/19 | 4.79346 | captured live |
 | `batch5` | 25 | 18 | 7 | 18/18 | 4.4936 | captured live |
+| `batch6` | - | - | - | - | - | manifest built, zero overlap confirmed against prior rounds; discovery not yet run |
 
 `local_coverage_raw_download_approval_manifest.json` — the consolidated,
 always-current set of sized HDF5 rows promoted to
