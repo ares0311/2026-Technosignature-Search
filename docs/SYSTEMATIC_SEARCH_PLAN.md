@@ -148,6 +148,41 @@ a non-detection ledger, and approving/rejecting a follow-up. Do not guess that
 a UI is hardened because it has a command; verify the operator can answer the
 next review question without paging through raw machine output.
 
+**Second workflow audit, 2026-07-10:** surveyed every real (non-deleted-stub)
+operator-facing summary command for the same defect. Ten candidates were
+raw-JSON-only with no `--json` flag at all: `escalation-gate-check`,
+`cross-target-rfi-summary`, `track-b-unknown-candidate-gate`,
+`track-b-candidate-readiness`, `gbt-cadence-abacab-review`,
+`gbt-cadence-raw-status`, `scan-summary`, `health`, `prod-runs`, `prod-show`.
+Applying the same judgment this section calls for (verify the operator can
+answer the review question, don't mechanically "fix" every command with a
+JSON flag): `escalation-gate-check`, `cross-target-rfi-summary`, and `health`
+each return a small flat dict (5-9 keys, no per-item arrays) that is already
+scannable as printed JSON — adding `--json` there would be bureaucratic
+parity, not a real UX fix, so they were left alone. `prod-show` is similarly
+a small flat single-run dict, left alone. The remaining seven genuinely
+return large nested/multi-row structures an operator would have to page
+through, and each is directly part of the real review chain (Track B
+`unknown_candidate` eligibility -- the core "approve/reject" decision;
+ABACAB cadence review; the Step 2 adversarial-review dossier; multi-modal
+cross-match groups; ranked scan-summary candidates; the run picker):
+`track-b-unknown-candidate-gate`, `track-b-candidate-readiness`,
+`gbt-cadence-abacab-review`, `gbt-cadence-raw-status`,
+`adversarial-review-dossier` (already lacked `--json` entirely, not caught
+by the raw-JSON survey above since it was not on the original ten-item
+list), `multi-modal-crossmatch-summary` (same), and `prod-runs`. All seven
+now default to a compact table matching the established
+`_print_review_dashboard`/`_print_production_target_status` style, with
+`--json` for the machine-readable form. Six existing `tests/test_cli.py`
+tests that called these commands without `--json` and parsed the stdout as
+JSON were fixed to pass `--json` explicitly; new compact-mode assertions
+were added to every fixed/new test so the new default path is actually
+exercised, not just left unbroken. Three new CLI-level tests were added for
+`scan-summary`, `multi-modal-crossmatch-summary`, and
+`adversarial-review-dossier`, which previously had no CLI-dispatch test
+coverage at all. 1580 tests pass (up from 1577), ruff/mypy clean,
+`validate-all` ok.
+
 ---
 
 ## Step 3: build the detection-optimized search algorithm

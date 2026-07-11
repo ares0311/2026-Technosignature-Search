@@ -1393,6 +1393,306 @@ def _print_review_dashboard(data: dict[str, Any], out: TextIO) -> None:
             )
 
 
+def _print_gate_conditions(conditions: list[dict[str, Any]], out: TextIO) -> None:
+    """Print the shared Track B 9-condition gate table (tri-state satisfied)."""
+    if not conditions:
+        print("Conditions: none", file=out)
+        return
+    print("Condition | Satisfied | Description", file=out)
+    for condition in conditions:
+        satisfied = condition.get("satisfied")
+        satisfied_label = "unresolved" if satisfied is None else ("yes" if satisfied else "no")
+        print(
+            " | ".join(
+                [
+                    str(condition.get("condition_id", "")),
+                    satisfied_label,
+                    str(condition.get("description", "")),
+                ]
+            ),
+            file=out,
+        )
+
+
+def _print_track_b_unknown_candidate_gate(data: dict[str, Any], out: TextIO) -> None:
+    """Print a compact Track B 9-condition gate result for operator review."""
+    print(
+        f"Candidate: {data.get('candidate_id', 'unknown')} | "
+        f"eligible_for_unknown_candidate={data.get('eligible_for_unknown_candidate')}",
+        file=out,
+    )
+    print(
+        " | ".join(
+            [
+                f"satisfied={data.get('satisfied_count', 0)}",
+                f"failed={data.get('failed_count', 0)}",
+                f"unresolved={data.get('unresolved_count', 0)}",
+                f"total={data.get('condition_count', 0)}",
+            ]
+        ),
+        file=out,
+    )
+    _print_gate_conditions(list(data.get("conditions", [])), out)
+
+
+def _print_track_b_candidate_readiness(data: dict[str, Any], out: TextIO) -> None:
+    """Print a compact Track B candidate-packet readiness summary."""
+    print(
+        f"Candidate: {data.get('candidate_id', 'unknown')} "
+        f"(track={data.get('candidate_track', 'unknown')})",
+        file=out,
+    )
+    missing_features = list(data.get("missing_candidate_feature_ids", []))
+    print(
+        " | ".join(
+            [
+                f"zero_hit_non_detection={data.get('zero_hit_non_detection')}",
+                f"provenance_ready={data.get('provenance_ready')}",
+                f"missing_features={len(missing_features)}",
+            ]
+        ),
+        file=out,
+    )
+    if missing_features:
+        print(f"Missing features: {', '.join(missing_features)}", file=out)
+    for evidence_key in ("track_a_crossmatch", "satellite_match"):
+        evidence = data.get(evidence_key)
+        if isinstance(evidence, dict):
+            print(
+                f"{evidence_key}: status={evidence.get('status')} "
+                f"provided={evidence.get('provided')}",
+                file=out,
+            )
+    gate_result = data.get("gate_result")
+    if isinstance(gate_result, dict):
+        print(
+            f"Track B gate: eligible_for_unknown_candidate="
+            f"{gate_result.get('eligible_for_unknown_candidate')} "
+            f"({gate_result.get('satisfied_count', 0)}/"
+            f"{gate_result.get('condition_count', 0)} satisfied)",
+            file=out,
+        )
+        _print_gate_conditions(list(gate_result.get("conditions", [])), out)
+    else:
+        print("Track B gate: not computed (crossmatch evidence not supplied)", file=out)
+
+
+def _print_gbt_cadence_raw_status(data: dict[str, Any], out: TextIO) -> None:
+    """Print a compact per-scan raw-HDF5 status table."""
+    print(
+        f"Cadence: {data.get('cadence_id', 'unknown')} "
+        f"({data.get('target_name', 'unknown')}) | ok={data.get('ok')}",
+        file=out,
+    )
+    print(
+        " | ".join(
+            [
+                f"verified={data.get('verified_count', 0)}",
+                f"missing={data.get('missing_count', 0)}",
+                f"mismatch={data.get('mismatch_count', 0)}",
+                f"of {data.get('expected_scan_count', 0)} expected",
+            ]
+        ),
+        file=out,
+    )
+    scans = list(data.get("scans", []))
+    if not scans:
+        print("Scans: none", file=out)
+        return
+    print("Seq | Role | Source | Exists | Verified | Issue", file=out)
+    for scan in scans:
+        print(
+            " | ".join(
+                [
+                    str(scan.get("sequence_index", "")),
+                    str(scan.get("scan_role", "")),
+                    str(scan.get("source_name", "")),
+                    "yes" if scan.get("exists") else "no",
+                    "yes" if scan.get("verified") else "no",
+                    str(scan.get("issue", "")),
+                ]
+            ),
+            file=out,
+        )
+
+
+def _print_gbt_cadence_abacab_review(data: dict[str, Any], out: TextIO) -> None:
+    """Print a compact ABACAB cadence review summary for operator triage."""
+    print(
+        f"Cadence: {data.get('cadence_id', 'unknown')} | "
+        f"{data.get('evidence_group_count', 0)} evidence group(s), "
+        f"{data.get('row_count', 0)} row(s)",
+        file=out,
+    )
+    print(
+        " | ".join(
+            [
+                f"follow_up={data.get('follow_up_candidate_count', 0)}",
+                f"false_positive={data.get('false_positive_count', 0)}",
+                f"insufficient_evidence={data.get('insufficient_evidence_count', 0)}",
+            ]
+        ),
+        file=out,
+    )
+    review = data.get("review_summary", {})
+    if isinstance(review, dict):
+        print(
+            f"Primary/audit agreement: {review.get('agreement_count', 0)} agree, "
+            f"{review.get('disagreement_count', 0)} disagree",
+            file=out,
+        )
+    top_follow_ups = list(data.get("top_follow_up_candidates", []))
+    if not top_follow_ups:
+        print("Top follow-up candidates: none", file=out)
+        return
+    print("Candidate | Score | Frequency (Hz) | On | Off | Targets", file=out)
+    for candidate in top_follow_ups:
+        print(
+            " | ".join(
+                [
+                    str(candidate.get("candidate_id", "")),
+                    _format_score(candidate.get("follow_up_candidate_score")),
+                    str(candidate.get("frequency_hz", "")),
+                    str(candidate.get("on_scan_count", "")),
+                    str(candidate.get("off_scan_count", "")),
+                    ", ".join(candidate.get("targets", [])),
+                ]
+            ),
+            file=out,
+        )
+
+
+def _print_adversarial_review_dossier(data: dict[str, Any], out: TextIO) -> None:
+    """Print a compact adversarial-review dossier for operator triage."""
+    print(
+        f"Candidate: {data.get('candidate_id', 'unknown')} "
+        f"(track={data.get('track', 'unknown')}, pathway={data.get('recommended_pathway', '')})",
+        file=out,
+    )
+    print(
+        " | ".join(
+            [
+                f"false_positive_probability={_format_score(data.get('false_positive_probability'))}",
+                f"refutation_count={data.get('refutation_count', 0)}",
+                f"requires_human_expert_review={data.get('requires_human_expert_review')}",
+            ]
+        ),
+        file=out,
+    )
+    blocking_issues = list(data.get("blocking_issues", []))
+    if blocking_issues:
+        print(f"Blocking issues: {'; '.join(blocking_issues)}", file=out)
+    refutations = list(data.get("refutations", []))
+    if not refutations:
+        print("Refutations: none", file=out)
+    else:
+        print("Source | Refuted | Detail", file=out)
+        for refutation in refutations:
+            print(
+                " | ".join(
+                    [
+                        str(refutation.get("source", "")),
+                        "yes" if refutation.get("refuted") else "no",
+                        str(refutation.get("detail", "")),
+                    ]
+                ),
+                file=out,
+            )
+    unrefuted = list(data.get("unrefuted_signals", []))
+    if unrefuted:
+        print(f"Unrefuted signals ({len(unrefuted)}): {'; '.join(unrefuted)}", file=out)
+
+
+def _print_multi_modal_crossmatch_summary(data: dict[str, Any], out: TextIO) -> None:
+    """Print a compact multi-modal cross-match summary for operator triage."""
+    print(
+        " | ".join(
+            [
+                f"candidates_with_position={data.get('candidate_count_with_position', 0)}",
+                f"groups={data.get('group_count', 0)}",
+                f"multi_modal_groups={data.get('multi_modal_group_count', 0)}",
+            ]
+        ),
+        file=out,
+    )
+    groups = list(data.get("multi_modal_groups", []))
+    if not groups:
+        print("Multi-modal groups: none", file=out)
+        return
+    print("Tracks | Distinct tracks | Max separation (arcsec) | Candidate IDs", file=out)
+    for group in groups:
+        print(
+            " | ".join(
+                [
+                    ", ".join(group.get("tracks", [])),
+                    str(group.get("distinct_track_count", "")),
+                    f"{float(group.get('max_separation_arcsec', 0.0)):.2f}",
+                    ", ".join(group.get("candidate_ids", [])),
+                ]
+            ),
+            file=out,
+        )
+
+
+def _print_production_run_list(data: dict[str, Any], out: TextIO) -> None:
+    """Print a compact table of production runs for the operator to pick from."""
+    runs = list(data.get("runs", []))
+    print(
+        f"{data.get('scans_dir', 'unknown')}: {data.get('run_count', len(runs))} run(s)",
+        file=out,
+    )
+    if not runs:
+        print("Runs: none", file=out)
+        return
+    print("Run ID | OK | Candidates | Follow-ups | Non-detections", file=out)
+    for run in runs:
+        print(
+            " | ".join(
+                [
+                    str(run.get("run_id", "")),
+                    "yes" if run.get("ok") else "no",
+                    str(run.get("candidate_count", "")),
+                    str(run.get("follow_up_count", "")),
+                    str(run.get("non_detection_count", "")),
+                ]
+            ),
+            file=out,
+        )
+
+
+def _print_scan_summary(data: dict[str, Any], out: TextIO) -> None:
+    """Print a compact ranked candidate summary for operator triage."""
+    print(
+        " | ".join(
+            [
+                f"candidates={data.get('total_candidates', 0)}",
+                f"follow_up={data.get('follow_up_count', 0)}",
+                f"candidate_review={data.get('candidate_review_count', 0)}",
+                f"targets_scanned={data.get('targets_scanned', 0)}",
+            ]
+        ),
+        file=out,
+    )
+    top_candidates = list(data.get("top_candidates", []))
+    if not top_candidates:
+        print("Top candidates: none", file=out)
+        return
+    print("Rank | Candidate | Target | Score | Pathway", file=out)
+    for candidate in top_candidates:
+        print(
+            " | ".join(
+                [
+                    str(candidate.get("rank", "")),
+                    str(candidate.get("candidate_id", "")),
+                    str(candidate.get("target_name", "")),
+                    _format_score(candidate.get("score")),
+                    str(candidate.get("pathway", "")),
+                ]
+            ),
+            file=out,
+        )
+
+
 def _print_production_target_status(data: dict[str, Any], out: TextIO) -> None:
     """Print compact per-target production rows for overnight-run review."""
     if not data.get("ok"):
@@ -1631,7 +1931,10 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             else Path(args.data_root) / "bl_observations" / str(manifest["cadence_id"])
         )
         result = raw_cadence_status(manifest, raw_dir)
-        print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        if getattr(args, "json", False):
+            print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        else:
+            _print_gbt_cadence_raw_status(result, out)
         return 0 if result["ok"] else 1
 
     if args.command == "gbt-cadence-abacab-review":
@@ -1642,7 +1945,10 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             limit=int(args.limit),
             cadence_id=args.cadence_id,
         )
-        print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        if getattr(args, "json", False):
+            print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        else:
+            _print_gbt_cadence_abacab_review(result, out)
         return 0 if result["ok"] else 1
 
     if args.command == "globular-filter-summary":
@@ -1801,7 +2107,10 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         result["report_dir"] = str(report_dir)
         result["report_file_count"] = len(report_paths)
-        print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        if getattr(args, "json", False):
+            print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        else:
+            _print_multi_modal_crossmatch_summary(result, out)
         return 0
 
     if args.command == "calibration-summary":
@@ -2701,7 +3010,10 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
     if args.command == "scan-summary":
         from techno_search.scan_summary import scan_summary_from_batch_dir
         _scan = scan_summary_from_batch_dir(Path(args.batch_dir))
-        print(json.dumps(_scan, indent=2, sort_keys=True), file=out)
+        if getattr(args, "json", False):
+            print(json.dumps(_scan, indent=2, sort_keys=True), file=out)
+        else:
+            _print_scan_summary(_scan, out)
         return 0
 
     if args.command == "prod-target-queue":
@@ -2858,7 +3170,10 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         from techno_search.production_run_outcomes import production_run_list
 
         _runs = production_run_list(Path(args.scans_dir))
-        print(json.dumps(_runs, indent=2, sort_keys=True), file=out)
+        if getattr(args, "json", False):
+            print(json.dumps(_runs, indent=2, sort_keys=True), file=out)
+        else:
+            _print_production_run_list(_runs, out)
         return 0 if _runs.get("ok") else 1
 
     if args.command == "prod-show":
@@ -5785,7 +6100,11 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             crossmatch_result=crossmatch_result,
             satellite_result=satellite_result,
         )
-        print(json.dumps({"ok": True, **gate_result}, indent=2, sort_keys=True), file=out)
+        _gate_out = {"ok": True, **gate_result}
+        if getattr(args, "json", False):
+            print(json.dumps(_gate_out, indent=2, sort_keys=True), file=out)
+        else:
+            _print_track_b_unknown_candidate_gate(_gate_out, out)
         return 0
 
     if args.command == "track-b-candidate-readiness":
@@ -5811,7 +6130,11 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             crossmatch_result=readiness_crossmatch_result,
             satellite_result=readiness_satellite_result,
         )
-        print(json.dumps({"ok": True, **readiness}, indent=2, sort_keys=True), file=out)
+        _readiness_out = {"ok": True, **readiness}
+        if getattr(args, "json", False):
+            print(json.dumps(_readiness_out, indent=2, sort_keys=True), file=out)
+        else:
+            _print_track_b_candidate_readiness(_readiness_out, out)
         return 0
 
     if args.command == "adversarial-review-dossier":
@@ -5831,7 +6154,11 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             scored_report,
             track_b_gate_result=track_b_gate_result,
         )
-        print(json.dumps({"ok": True, **dossier.as_dict()}, indent=2, sort_keys=True), file=out)
+        _dossier_out = {"ok": True, **dossier.as_dict()}
+        if getattr(args, "json", False):
+            print(json.dumps(_dossier_out, indent=2, sort_keys=True), file=out)
+        else:
+            _print_adversarial_review_dossier(_dossier_out, out)
         return 0
 
     parser.error(f"Unknown command: {args.command}")
@@ -7555,6 +7882,11 @@ def _build_parser() -> argparse.ArgumentParser:
         type=str,
         help="Directory containing *manifest.json files from a batch scan.",
     )
+    scan_summary_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the full machine-readable scan summary JSON.",
+    )
     gbt_cadence_raw_parser = subparsers.add_parser(
         "gbt-cadence-raw-status",
         help=(
@@ -7579,6 +7911,11 @@ def _build_parser() -> argparse.ArgumentParser:
         type=str,
         default=None,
         help="Explicit raw HDF5 directory; overrides --data-root.",
+    )
+    gbt_cadence_raw_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the full machine-readable raw cadence status JSON.",
     )
     gbt_cadence_review_parser = subparsers.add_parser(
         "gbt-cadence-abacab-review",
@@ -7609,6 +7946,11 @@ def _build_parser() -> argparse.ArgumentParser:
         type=int,
         default=10,
         help="Maximum follow-up candidate rows to include (default: 10).",
+    )
+    gbt_cadence_review_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the full machine-readable ABACAB review JSON.",
     )
     prod_run_id_parser = subparsers.add_parser(
         "prod-run-id",
@@ -7700,6 +8042,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "--scans-dir",
         default="results/scans",
         help="Directory containing production run subdirectories.",
+    )
+    prod_runs_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the full machine-readable production run list JSON.",
     )
     prod_show_parser = subparsers.add_parser(
         "prod-show",
@@ -10432,6 +10779,11 @@ def _build_parser() -> argparse.ArgumentParser:
             "beam/PSF-informed radius when known."
         ),
     )
+    multi_modal_crossmatch_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the full machine-readable multi-modal crossmatch JSON.",
+    )
 
     prod_target_queue_parser = subparsers.add_parser(
         "prod-target-queue",
@@ -10787,6 +11139,11 @@ def _build_parser() -> argparse.ArgumentParser:
             "Omitting it leaves the satellite condition unresolved and blocks eligibility."
         ),
     )
+    track_b_gate_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the full machine-readable Track B gate JSON.",
+    )
     track_b_readiness_parser = subparsers.add_parser(
         "track-b-candidate-readiness",
         help=(
@@ -10813,6 +11170,11 @@ def _build_parser() -> argparse.ArgumentParser:
             "Optional JSON output from track-a-satellite-match. Missing satellite "
             "evidence remains an explicit unresolved blocker."
         ),
+    )
+    track_b_readiness_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the full machine-readable Track B readiness JSON.",
     )
 
     data_collection_status_parser = subparsers.add_parser(
@@ -10876,6 +11238,11 @@ def _build_parser() -> argparse.ArgumentParser:
             "same candidate; any unsatisfied condition is folded in as an "
             "additional real refutation."
         ),
+    )
+    adversarial_review_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the full machine-readable adversarial review dossier JSON.",
     )
 
     return parser

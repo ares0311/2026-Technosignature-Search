@@ -148,6 +148,7 @@ def test_cli_gbt_cadence_raw_status_reports_missing_files(tmp_path) -> None:
             str(manifest_path),
             "--raw-dir",
             str(tmp_path / "missing"),
+            "--json",
         ],
         stdout=stdout,
     )
@@ -156,6 +157,20 @@ def test_cli_gbt_cadence_raw_status_reports_missing_files(tmp_path) -> None:
     assert exit_code == 1
     assert result["ok"] is False
     assert result["missing_count"] == 6
+
+    compact_stdout = StringIO()
+    main(
+        [
+            "gbt-cadence-raw-status",
+            "--manifest",
+            str(manifest_path),
+            "--raw-dir",
+            str(tmp_path / "missing"),
+        ],
+        stdout=compact_stdout,
+    )
+    assert "missing=6" in compact_stdout.getvalue()
+    assert "missing_raw_file" in compact_stdout.getvalue()
 
 
 def test_cli_gbt_cadence_raw_status_verifies_files(tmp_path) -> None:
@@ -169,6 +184,7 @@ def test_cli_gbt_cadence_raw_status_verifies_files(tmp_path) -> None:
             str(manifest_path),
             "--raw-dir",
             str(raw_dir),
+            "--json",
         ],
         stdout=stdout,
     )
@@ -177,6 +193,20 @@ def test_cli_gbt_cadence_raw_status_verifies_files(tmp_path) -> None:
     assert exit_code == 0
     assert result["ok"] is True
     assert result["verified_count"] == 6
+
+    compact_stdout = StringIO()
+    main(
+        [
+            "gbt-cadence-raw-status",
+            "--manifest",
+            str(manifest_path),
+            "--raw-dir",
+            str(raw_dir),
+        ],
+        stdout=compact_stdout,
+    )
+    assert "verified=6" in compact_stdout.getvalue()
+    assert "ok=True" in compact_stdout.getvalue()
 
 
 def test_cli_gbt_cadence_abacab_review_summarizes_candidate_outcomes(tmp_path) -> None:
@@ -193,6 +223,7 @@ def test_cli_gbt_cadence_abacab_review_summarizes_candidate_outcomes(tmp_path) -
             "test-cadence",
             "--limit",
             "1",
+            "--json",
         ],
         stdout=stdout,
     )
@@ -204,6 +235,22 @@ def test_cli_gbt_cadence_abacab_review_summarizes_candidate_outcomes(tmp_path) -
     assert result["top_follow_up_candidates"][0]["on_scan_count"] == 3
     assert result["top_follow_up_candidates"][0]["off_scan_count"] == 0
     assert result["detection_claimed"] is False
+
+    compact_stdout = StringIO()
+    main(
+        [
+            "gbt-cadence-abacab-review",
+            "--cadence-csv",
+            str(cadence_csv),
+            "--cadence-id",
+            "test-cadence",
+            "--limit",
+            "1",
+        ],
+        stdout=compact_stdout,
+    )
+    assert "follow_up=1" in compact_stdout.getvalue()
+    assert "false_positive=1" in compact_stdout.getvalue()
 
 
 def test_cli_track_b_unknown_candidate_gate_combines_explicit_evidence(tmp_path) -> None:
@@ -233,6 +280,7 @@ def test_cli_track_b_unknown_candidate_gate_combines_explicit_evidence(tmp_path)
             str(crossmatch_path),
             "--satellite-json",
             str(satellite_path),
+            "--json",
         ],
         stdout=stdout,
     )
@@ -248,6 +296,21 @@ def test_cli_track_b_unknown_candidate_gate_combines_explicit_evidence(tmp_path)
     )
     assert anomaly_condition["satisfied"] is None
     assert "local triage queue state only" in result["disclaimer"]
+
+    compact_stdout = StringIO()
+    main(
+        [
+            "track-b-unknown-candidate-gate",
+            str(candidate_path),
+            "--crossmatch-json",
+            str(crossmatch_path),
+            "--satellite-json",
+            str(satellite_path),
+        ],
+        stdout=compact_stdout,
+    )
+    assert "eligible_for_unknown_candidate=False" in compact_stdout.getvalue()
+    assert "has_high_anomaly_score | unresolved" in compact_stdout.getvalue()
 
 
 def test_cli_track_b_candidate_readiness_reports_missing_inputs(tmp_path) -> None:
@@ -267,6 +330,7 @@ def test_cli_track_b_candidate_readiness_reports_missing_inputs(tmp_path) -> Non
         [
             "track-b-candidate-readiness",
             str(candidate_path),
+            "--json",
         ],
         stdout=stdout,
     )
@@ -279,6 +343,128 @@ def test_cli_track_b_candidate_readiness_reports_missing_inputs(tmp_path) -> Non
     assert result["track_a_crossmatch"]["missing_candidate_fields"] == ["ra_deg", "dec_deg"]
     assert "missing_source_ids_or_provenance" in result["blocking_reason_ids"]
     assert result["eligible_for_unknown_candidate"] is False
+
+    compact_stdout = StringIO()
+    main(
+        ["track-b-candidate-readiness", str(candidate_path)],
+        stdout=compact_stdout,
+    )
+    assert "provenance_ready=False" in compact_stdout.getvalue()
+    assert "Track B gate: not computed" in compact_stdout.getvalue()
+
+
+def test_cli_scan_summary_ranks_candidates(tmp_path: Path) -> None:
+    batch_dir = tmp_path / "batch"
+    batch_dir.mkdir()
+    (batch_dir / "c1_manifest.json").write_text(
+        json.dumps(
+            {
+                "candidate_id": "c1",
+                "score": 0.3,
+                "recommended_pathway": "human_review_queue",
+                "target_name": "HIP1",
+            }
+        ),
+        encoding="utf-8",
+    )
+    (batch_dir / "c2_manifest.json").write_text(
+        json.dumps(
+            {
+                "candidate_id": "c2",
+                "score": 0.9,
+                "recommended_pathway": "candidate_review_packet",
+                "target_name": "HIP2",
+            }
+        ),
+        encoding="utf-8",
+    )
+    stdout = StringIO()
+    exit_code = main(["scan-summary", str(batch_dir), "--json"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["total_candidates"] == 2
+    assert result["top_candidates"][0]["candidate_id"] == "c2"
+
+    compact_stdout = StringIO()
+    main(["scan-summary", str(batch_dir)], stdout=compact_stdout)
+    assert "candidates=2" in compact_stdout.getvalue()
+    assert "c2" in compact_stdout.getvalue()
+
+
+def test_cli_multi_modal_crossmatch_summary_groups_by_position(tmp_path: Path) -> None:
+    report_dir = tmp_path / "reports"
+    report_dir.mkdir()
+    (report_dir / "radio.json").write_text(
+        json.dumps(
+            {
+                "candidate_id": "radio-1",
+                "track": "radio",
+                "features": {"ra_deg": 10.0, "dec_deg": 20.0},
+            }
+        ),
+        encoding="utf-8",
+    )
+    (report_dir / "photometry.json").write_text(
+        json.dumps(
+            {
+                "candidate_id": "photometry-1",
+                "track": "transit_photometry",
+                "features": {"ra_deg": 10.001, "dec_deg": 20.001},
+            }
+        ),
+        encoding="utf-8",
+    )
+    stdout = StringIO()
+    exit_code = main(
+        ["multi-modal-crossmatch-summary", "--report-dir", str(report_dir), "--json"],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["multi_modal_group_count"] == 1
+
+    compact_stdout = StringIO()
+    main(
+        ["multi-modal-crossmatch-summary", "--report-dir", str(report_dir)],
+        stdout=compact_stdout,
+    )
+    assert "multi_modal_groups=1" in compact_stdout.getvalue()
+    assert "radio-1" in compact_stdout.getvalue()
+
+
+def test_cli_adversarial_review_dossier_reports_refutations(tmp_path: Path) -> None:
+    report_path = tmp_path / "report.json"
+    report_path.write_text(
+        json.dumps(
+            {
+                "candidate_id": "adv-1",
+                "track": "radio",
+                "recommended_pathway": "do_not_submit_false_positive",
+                "scores": {"false_positive_probability": 0.9},
+                "positive_evidence": [],
+                "negative_evidence": ["Frequency overlaps known or suspected RFI."],
+                "blocking_issues": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    stdout = StringIO()
+    exit_code = main(
+        ["adversarial-review-dossier", str(report_path), "--json"],
+        stdout=stdout,
+    )
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["refutation_count"] == 1
+    assert result["requires_human_expert_review"] is False
+
+    compact_stdout = StringIO()
+    main(["adversarial-review-dossier", str(report_path)], stdout=compact_stdout)
+    assert "refutation_count=1" in compact_stdout.getvalue()
+    assert "requires_human_expert_review=False" in compact_stdout.getvalue()
 
 
 def test_cli_writes_reports(tmp_path) -> None:
@@ -1981,9 +2167,18 @@ def test_cli_prod_write_and_show_outcomes(tmp_path) -> None:
     non_detections = json.loads(stdout.getvalue())
     assert non_detections["entry_count"] == 0
     stdout = StringIO()
-    assert main(["prod-runs", "--scans-dir", str(results_dir / "scans")], stdout=stdout) == 0
+    assert (
+        main(
+            ["prod-runs", "--scans-dir", str(results_dir / "scans"), "--json"],
+            stdout=stdout,
+        )
+        == 0
+    )
     runs = json.loads(stdout.getvalue())
     assert runs["run_count"] == 1
+    stdout = StringIO()
+    assert main(["prod-runs", "--scans-dir", str(results_dir / "scans")], stdout=stdout) == 0
+    assert "1 run(s)" in stdout.getvalue()
     stdout = StringIO()
     assert main(["review-dashboard", "--run-dir", str(run_dir)], stdout=stdout) == 1
     dashboard_text = stdout.getvalue()
