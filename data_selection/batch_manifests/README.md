@@ -114,15 +114,26 @@ one sequential HEAD/GET request per target, same as every prior round, just
 run to completion in a single invocation instead of 55 separate ones. Not a
 change to acquisition role/mode/rate; still `--discover-only`, no payloads.
 
-| `batch14_bulk` | - | - | - | - | - | manifest built (1,358 targets), zero overlap confirmed; discovery not yet run (expected runtime: ~50-60 min at the observed ~2.3s/target rate) |
+**Discovery script hardened before this round ran, 2026-07-11:** the
+sequential-only script had no progress/ETA output and no concurrency, which
+the user flagged as non-compliant with the project's visible-progress
+directive for a ~50-60 minute unattended run. Added bounded-parallel workers
+(`TECHNO_EXTENDED_CORPUS_DISCOVERY_WORKERS`, default 4) and a
+`[PROGRESS] X/Y checked (elapsed Xm, ETA ~Ym remaining)` line every 10th
+completion. Real observed runtime for the full 1,358-target run: **13m53s**
+wall-clock (vs. the ~50-60 min sequential estimate) — ETA tracked actual
+completion closely throughout (e.g. predicted ~12m remaining at 10% done,
+finished within the predicted window).
+
+| `batch14_bulk` | 1358 | 936 | 422 | 936/936 | 235.825276 | discovery + size-preflight both captured live with the new bounded-parallel/ETA discovery script; `all_targets_ok: true` |
 
 `local_coverage_raw_download_approval_manifest.json` — the consolidated,
 always-current set of sized HDF5 rows promoted to
-`raw_download_approval_required` across all rounds so far: **211 targets,
-~53.15 GB combined** (as of the `batch13` round). This is the human-review
-input for an explicitly approved bounded raw download; it is not approval
-by itself. Regenerate it after each new round's size preflight completes and
-the queue is rebuilt.
+`raw_download_approval_required` across all rounds so far: **1,147 targets,
+~288.97 GB combined** (as of the `batch14_bulk` round). This is the
+human-review input for an explicitly approved bounded raw download; it is
+not approval by itself. Regenerate it after each new round's size preflight
+completes and the queue is rebuilt.
 
 **Real bug found and fixed during `batch6`, 2026-07-11:** target
 `DENIS-P J1048.0-3956` broke the discovery curl call with `curl: (3) URL
