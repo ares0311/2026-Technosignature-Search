@@ -1,4 +1,9 @@
 {
+  "statusLine": {
+    "type": "command",
+    "command": "bash -lc 'exec \"$CLAUDE_PROJECT_DIR/.claude/statusline.sh\"'",
+    "refreshInterval": 1000
+  },
   "hooks": {
     "SessionStart": [
       {
