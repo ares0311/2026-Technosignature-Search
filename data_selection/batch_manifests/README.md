@@ -100,6 +100,7 @@ themselves.
 | `batch10` | 25 | 15 | 10 | 15/15 | 3.726074 | captured live |
 | `batch11` | 25 | 14 | 11 | 14/14 | 3.496068 | captured live; included a second real space-containing target name (`NAME SO J025300.5+165258`), ran clean -- confirms the URL-encoding fix generalizes |
 | `batch12` | 25 | 16 | 9 | 16/16 | 4.086154 | captured live |
+| `batch13` | - | - | - | - | - | manifest built, zero overlap confirmed against prior rounds; discovery not yet run |
 
 `local_coverage_raw_download_approval_manifest.json` — the consolidated,
 always-current set of sized HDF5 rows promoted to
