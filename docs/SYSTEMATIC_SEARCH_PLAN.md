@@ -18,7 +18,7 @@ step that's already blocked on an earlier one.
 
 ---
 
-## Current honest state (2026-07-05)
+## Current honest state (updated 2026-07-11; originally recorded 2026-07-05)
 
 | Capability | Status |
 |---|---|
@@ -26,9 +26,9 @@ step that's already blocked on an earlier one.
 | Track A known-explanation classification | ✅ Real, implemented |
 | Track B 9-condition gate | ✅ Real, implemented, conservative-by-construction |
 | Semisupervised anomaly/OOD calibration | ❌ Blocked — see Step 1 |
-| Operator UI hardening | ⚠️ Partially underway — production scan terminal output and post-run review commands now have compact operator-facing summaries; see Step 2 |
-| Detection-optimized target selection algorithm | ⚠️ Local-coverage target queue initialized — see Step 3a |
-| Extended-corpus download completion | ⚠️ Paused mid-run — see Step 0 |
+| Operator UI hardening | ⚠️ Substantially underway — 12 operator-facing commands now default to compact summaries with `--json` opt-in, across three rounds of hardening: `prod-target-status`/`prod-follow-ups`/`prod-non-detections` (before 2026-07-09), `review-dashboard` (2026-07-09), and `track-b-unknown-candidate-gate`/`track-b-candidate-readiness`/`gbt-cadence-abacab-review`/`gbt-cadence-raw-status`/`adversarial-review-dossier`/`multi-modal-crossmatch-summary`/`prod-runs`/`scan-summary` (2026-07-10/11, 8 commands — the commit message for this round undercounted it as "7 more", missing `scan-summary`; verified by counting `_print_*` functions directly, not trusting the commit message). `escalation-gate-check`/`cross-target-rfi-summary`/`health`/`prod-show` deliberately left alone — small flat dicts, already scannable. See Step 2 for what a future audit should still check. |
+| Detection-optimized target selection algorithm | ⚠️ 3a (novel-target selection) real and running: 13 discover→preflight→promote rounds completed (`top25`/`next25`/`batch3`-`batch13`) as of 2026-07-11, 195 targets / ~49 GB promoted to `raw_download_approval_required` (as of `batch12`; `batch13` built, discovery pending), all pending explicit raw-download approval — no payloads downloaded. 3b (follow-up-target selection) remains design-only per its documented gate (no real qualifying candidate exists yet to validate it against). See Step 3a. |
+| Extended-corpus download completion | ⚠️ Paused mid-run — see Step 0. Untouched this session; distinct from the batch-round work above (Step 0 is the original stratified-manifest bulk download, not the target-priority-queue rounds). |
 
 ---
 
@@ -160,17 +160,23 @@ JSON flag): `escalation-gate-check`, `cross-target-rfi-summary`, and `health`
 each return a small flat dict (5-9 keys, no per-item arrays) that is already
 scannable as printed JSON — adding `--json` there would be bureaucratic
 parity, not a real UX fix, so they were left alone. `prod-show` is similarly
-a small flat single-run dict, left alone. The remaining seven genuinely
+a small flat single-run dict, left alone. The remaining eight genuinely
 return large nested/multi-row structures an operator would have to page
 through, and each is directly part of the real review chain (Track B
 `unknown_candidate` eligibility -- the core "approve/reject" decision;
 ABACAB cadence review; the Step 2 adversarial-review dossier; multi-modal
 cross-match groups; ranked scan-summary candidates; the run picker):
 `track-b-unknown-candidate-gate`, `track-b-candidate-readiness`,
-`gbt-cadence-abacab-review`, `gbt-cadence-raw-status`,
+`gbt-cadence-abacab-review`, `gbt-cadence-raw-status`, `scan-summary`,
 `adversarial-review-dossier` (already lacked `--json` entirely, not caught
 by the raw-JSON survey above since it was not on the original ten-item
-list), `multi-modal-crossmatch-summary` (same), and `prod-runs`. All seven
+list), `multi-modal-crossmatch-summary` (same), and `prod-runs`.
+(This paragraph originally said "seven" and omitted `scan-summary` from
+this list -- a real arithmetic error caught and fixed 2026-07-11 during a
+milestone audit; the ten-item survey, the four left-alone, and the "three
+new CLI-level tests... for scan-summary, multi-modal-crossmatch-summary,
+and adversarial-review-dossier" sentence below were all already correct,
+only this one list and count were wrong.) All eight
 now default to a compact table matching the established
 `_print_review_dashboard`/`_print_production_target_status` style, with
 `--json` for the machine-readable form. Six existing `tests/test_cli.py`

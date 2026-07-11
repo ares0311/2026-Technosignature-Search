@@ -441,14 +441,21 @@ with operational status, with zero scientific progress. This must never recur.
 
 ## FIVE-PHASE SCIENCE ROADMAP
 
-### Phase 0 — Strip & Fix (current)
-- Delete ~141 misaligned overhead modules (log schemas, operational adapters,
+This section describes each phase's scope and methodology — it is not a
+status tracker and must not be read as one. **For current phase status, read
+`docs/PRODUCTION_READINESS.md`.** This section was written at the 2026-06-26
+mission redirect and does not get updated as phase work completes; treat any
+status-sounding language below ("currently X", "already present") as
+unreliable and verify against `PRODUCTION_READINESS.md` or the real repo
+state instead.
+
+### Phase 0 — Strip & Fix
+- Delete misaligned overhead modules (log schemas, operational adapters,
   MCP configs, synthetic calibration fixtures, etc.)
 - Delete synthetic training data files to free storage space
 - Fix ON/OFF cadence RFI rejection to match Enriquez et al. 2017 / Price et al.
   2020 methodology (ABACAB pattern; signal must appear ON but not OFF)
-- Train `semisupervised_scorer` on real MeerKAT BLUSE corpus (Sheikh et al. 2025)
-  — currently `train_hit_count: 0, is_fitted: false`
+- Train `semisupervised_scorer` on a real MeerKAT BLUSE corpus (Sheikh et al. 2025)
 - Add "delete synthetic training data" step to the production scan runbook
 - Update `validate-all` to reflect the correct scientific gates only
 
@@ -465,9 +472,8 @@ with operational status, with zero scientific progress. This must never recur.
 - Cross-target RFI suppression (signal in ≥2 independent pointings = RFI)
 - Drift rate analysis: Earth-rotation consistent drift is a candidate signal
   (0.44 Hz/s/GHz); clearly inconsistent drift is RFI
-- Globular filter (HDBSCAN, Jacobson-Bell et al. 2024) — already present, verify
-  it is wired to real data
-- Multi-epoch persistence scoring — already present, verify against real data
+- Globular filter (HDBSCAN, Jacobson-Bell et al. 2024)
+- Multi-epoch persistence scoring
 - Output: ranked candidate list with provenance, ready for Phase 5 cross-modal
 
 ### Phase 2 — Transit Photometry: Kepler/TESS

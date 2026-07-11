@@ -1,13 +1,19 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-07-03
-**Current milestone:** 79 (Production Scan Hardening And Artifact Hygiene)
+**Last updated:** 2026-07-11
 **Current phase:** Phase 0 complete; Phases 1-5 all have real, tested baseline
-implementations as of 2026-07-03 (Phase 4 opened this date). Remaining gaps
-per phase are either genuinely blocked on real data/network access the
-agent's sandbox cannot reach, or correctly deferred pending a surviving
-candidate (see the Phase 1-5 tables below for specifics).
+implementations. Remaining gaps per phase are either genuinely blocked on
+real data/network access the agent's sandbox cannot reach, or correctly
+deferred pending a surviving candidate (see the Phase 1-5 tables below for
+specifics).
 **Current app version:** 1.2.0
+
+(A "Current milestone: 79" numbered-milestone field was removed here on
+2026-07-11: an audit found it referenced nowhere else in the project, never
+incremented across 80+ commits since it was set, and superseded in practice
+by the Phase 0-5 / Step 0-3b tracking this document and
+`docs/SYSTEMATIC_SEARCH_PLAN.md` already use. Numbered milestones are not a
+tracking convention this project maintains going forward.)
 
 ---
 
@@ -154,6 +160,7 @@ commands instead of placeholder `rm` recipes.
 | Cross-target RFI suppression on full stratified corpus | ⚠️ Partial — production ledgers now carry per-candidate cross-target RFI flags from independent target recurrence; current local GBT `.dat` evidence has 18 files, 17 zero-hit observations, and only 1 hit-bearing target (Voyager control), so `.dat`-only recurrence validation remains limited; `radio-real-corpus-summary --hit-ndjson data/meerkat_hits/meerkat_normalised_200000.ndjson` admits the verified real MeerKAT BLUSE hit corpus as hit-bearing Phase 1 validation evidence without committing payloads and reported `cross_target_rfi_validation_ready: true` on a bounded 5,000-row review. `scripts/download_bl_extended_corpus.sh --manifest data/target_sample_manifest.json` follows the 31-target stratified manifest, supports `--discover-only` live availability preflight, can write a target-to-HDF5 URL availability TSV, and applies `TECHNO_EXTENDED_CORPUS_MAX_TARGETS` to new URL-available HDF5 downloads rather than raw manifest position or already-downloaded evidence. |
 | Ranked candidate/non-detection output ready for Phase 5 | ⚠️ Partial — zero-hit observations are preserved as negative evidence ledgers. Production scan `RUN-2026-07-02_130330Z-3ZNT-prod-scan` scanned 11 pending extended-corpus targets, failed 0, flagged 0 escalations, produced 0 follow-up entries, produced 39 non-detection/no-follow-up ledger entries across the current local result set, and left 0 pending targets. This is negative evidence only, not a detection, discovery, expert review, external validation, or external-submission authorization. |
 | GLOBULAR filter (HDBSCAN, Jacobson-Bell et al. 2024) wired to real data | ✅ Done, 2026-07-02 — `globular_filter.py` existed but was never actually applied to a real hit table (only a `globular-filter-summary` metadata CLI command existed). Wired into `radio_real_corpus_summary()`'s corpus-wide `hit_rows_for_scorer` population (already accumulated across every `.dat`/hit-NDJSON file in a summary run), which is the correct granularity for this filter. **Root-caused and reverted one wrong placement first**: an initial attempt wired GLOBULAR into `build_radio_candidate()` itself (per-candidate, i.e. within one target's own small ON/OFF cadence hit list); this caused the real-label accuracy gate to drop from 77.42% to 65.32% and broke golden-example reproducibility, because a real signal's own naturally-similar repeated hits were mistaken for a dense RFI cluster — the opposite of the intended cross-target RFI signature Jacobson-Bell et al. 2024 actually targets. Reverted before committing; re-implemented at the correct (multi-target corpus) granularity, verified via `.venv/bin/python -m pytest -q` (1478 passed, 0 regressions) and a real 30-dense-hit-plus-1-outlier test confirming the outlier survives as noise while the dense recurring signal is flagged. |
+| CNN / learned-model promotion gate (AGENTS.md "CNN / Learned-Model Promotion Gate", added #235) | ❌ Not triggered — this repo has only CNN scaffold/stub records for radio waterfall morphology; no trained promotable CNN or other learned-model weights exist. The gate itself (freeze as `benchmark_cnn_v1` before any promotion discussion, CNN never makes final detection decisions) is a standing rule for if/when a future agent finds or builds one — added here 2026-07-11 to close a gap where this NON-NEGOTIABLE AGENTS.md rule had no corresponding tracker entry, per AGENTS.md's own Definition of Done. |
 
 ### Sandbox network restrictions — archives that require the user's research agent
 
