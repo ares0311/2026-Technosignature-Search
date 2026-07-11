@@ -93,12 +93,35 @@ themselves.
 | `batch3` | 25 | 14 | 11 | 14/14 | 3.481361 | first round captured live via `--discovery-result-output` |
 | `batch4` | 25 | 19 | 6 | 19/19 | 4.79346 | captured live |
 | `batch5` | 25 | 18 | 7 | 18/18 | 4.4936 | captured live |
-| `batch6` | - | - | - | - | - | manifest built, zero overlap confirmed against prior rounds; discovery not yet run |
+| `batch6` | 25 | 18 | 7 | 18/18 | 4.616439 | captured live; surfaced and fixed a real bug (see below) |
 
 `local_coverage_raw_download_approval_manifest.json` — the consolidated,
 always-current set of sized HDF5 rows promoted to
-`raw_download_approval_required` across all rounds so far: **80 targets,
-~20.18 GB combined** (as of the `batch5` round). This is the human-review
+`raw_download_approval_required` across all rounds so far: **98 targets,
+~24.80 GB combined** (as of the `batch6` round). This is the human-review
 input for an explicitly approved bounded raw download; it is not approval
 by itself. Regenerate it after each new round's size preflight completes and
 the queue is rebuilt.
+
+**Real bug found and fixed during `batch6`, 2026-07-11:** target
+`DENIS-P J1048.0-3956` broke the discovery curl call with `curl: (3) URL
+rejected: Malformed input to a URL function`, because
+`discover_hdf5_url()` interpolated the raw target name directly into the
+query string instead of percent-encoding it -- any target name containing
+a space or other URL-reserved character corrupted the request. Fixed by
+switching to `curl -G --data-urlencode`, which encodes each query
+parameter correctly. This also surfaced a second, related correctness gap:
+a curl transport/request failure and a genuine "no HDF5 file for this
+target" response were both recorded under the identical
+`no_hdf5_url_discovered` reason, silently conflating a technical failure
+with confirmed negative evidence. `discover_hdf5_url()` now returns a
+distinct exit code for each case, and the caller records
+`discovery_request_failed` for the former. Two regression tests added
+(`test_extended_corpus_downloader_url_encodes_target_names_with_spaces`,
+`test_extended_corpus_downloader_distinguishes_request_failure_from_no_match`).
+`DENIS-P J1048.0-3956` itself was checked with the *pre-fix* script during
+this round and is recorded as `no_hdf5_url_discovered` in
+`local_coverage_batch6_discovery_result.json` -- an honest record of what
+that run actually returned, but the fix means it was never really queried
+successfully. Re-running discovery for just this one target with the fixed
+script would give a real answer; not yet done.

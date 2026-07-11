@@ -35,8 +35,8 @@ def test_extended_corpus_downloader_bounds_curl_connection_time() -> None:
     script = _script_text()
 
     assert (
-        "curl -fsSL --connect-timeout 15 --max-time 60 --retry 3 --retry-delay 5 "
-        '--location "${search_url}"'
+        "curl -fsSL --connect-timeout 15 --max-time 60 --retry 3 --retry-delay 5 \\\n"
+        "      --location -G \\\n"
     ) in script
     assert "--continue-at - \\\n       --connect-timeout 15 \\\n       --retry 3" in script
 
@@ -74,7 +74,7 @@ def test_extended_corpus_downloader_limits_url_available_targets() -> None:
 
     assert "URL-available target limit reached" in script
     assert "New-download target limit reached" in script
-    assert 'if ! url="$(discover_hdf5_url "${name}")"; then' in script
+    assert 'if url="$(discover_hdf5_url "${name}")"; then' in script
     assert 'available=$((available + 1))' in script
     assert '"${downloaded}" -ge "${MAX_TARGETS}"' in script
 
@@ -145,12 +145,12 @@ def test_extended_corpus_available_target_limit_skips_unavailable_manifest_rows(
     fake_curl.write_text(
         """#!/usr/bin/env bash
 set -euo pipefail
-url="${@: -1}"
-case "${url}" in
+args="$*"
+case "${args}" in
   *target=HIP111*) printf '<html>No HDF5 here</html>' ;;
   *target=HIP222*) printf 'https://bldata.berkeley.edu/test/HIP222.gpuspec.0002.h5' ;;
   *target=HIP333*) printf 'https://bldata.berkeley.edu/test/HIP333.gpuspec.0002.h5' ;;
-  *) printf 'unexpected-url=%s' "${url}" >&2; exit 22 ;;
+  *) printf 'unexpected-args=%s' "${args}" >&2; exit 22 ;;
 esac
 """,
         encoding="utf-8",
@@ -210,6 +210,116 @@ esac
     ]
 
 
+def test_extended_corpus_downloader_url_encodes_target_names_with_spaces(
+    tmp_path: Path,
+) -> None:
+    """Regression test, 2026-07-11: a real target-priority queue row named
+    'DENIS-P J1048.0-3956' broke the discovery curl call with 'curl: (3)
+    URL rejected: Malformed input to a URL function', because the target
+    name was interpolated raw into the query string instead of being
+    percent-encoded. Real curl encodes '-G --data-urlencode' arguments
+    itself, so this fake curl only has to prove the raw (unencoded) target
+    name reaches it as its own argument rather than corrupting the URL."""
+
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps({"targets": [{"hip": "DENIS-P J1048.0-3956"}]}),
+        encoding="utf-8",
+    )
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    fake_curl = fake_bin / "curl"
+    fake_curl.write_text(
+        """#!/usr/bin/env bash
+set -euo pipefail
+args="$*"
+case "${args}" in
+  *"target=DENIS-P J1048.0-3956"*)
+    printf 'https://bldata.berkeley.edu/test/DENIS.gpuspec.0002.h5' ;;
+  *) printf 'unexpected-args=%s' "${args}" >&2; exit 22 ;;
+esac
+""",
+        encoding="utf-8",
+    )
+    fake_curl.chmod(fake_curl.stat().st_mode | stat.S_IXUSR)
+
+    env = os.environ.copy()
+    env["PATH"] = f"{fake_bin}{os.pathsep}{env['PATH']}"
+    env["TECHNO_EXTENDED_CORPUS_PYTHON"] = sys.executable
+    env["TECHNO_DATA_COLLECTION_STATUS_PATH"] = str(tmp_path / "status.json")
+
+    result = subprocess.run(
+        ["bash", str(SCRIPT_PATH), "--manifest", str(manifest), "--discover-only"],
+        check=True,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert (
+        "DENIS-P J1048.0-3956\thttps://bldata.berkeley.edu/test/DENIS.gpuspec.0002.h5"
+        in result.stdout
+    )
+    status = json.loads((tmp_path / "status.json").read_text(encoding="utf-8"))
+    run_status = status["runs"]["download_bl_extended_corpus_discovery"]
+    assert run_status["skipped"] == 0
+
+
+def test_extended_corpus_downloader_distinguishes_request_failure_from_no_match(
+    tmp_path: Path,
+) -> None:
+    """Regression test, 2026-07-11: before this fix, both a curl transport
+    failure and a genuine 'no HDF5 file for this target' response were
+    recorded under the identical 'no_hdf5_url_discovered' reason, silently
+    conflating a technical failure with confirmed negative evidence."""
+
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps({"targets": [{"hip": "111"}, {"hip": "222"}]}),
+        encoding="utf-8",
+    )
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    fake_curl = fake_bin / "curl"
+    fake_curl.write_text(
+        """#!/usr/bin/env bash
+set -euo pipefail
+args="$*"
+case "${args}" in
+  *target=HIP111*) printf 'connection reset' >&2; exit 7 ;;
+  *target=HIP222*) printf '<html>No HDF5 here</html>' ;;
+  *) printf 'unexpected-args=%s' "${args}" >&2; exit 22 ;;
+esac
+""",
+        encoding="utf-8",
+    )
+    fake_curl.chmod(fake_curl.stat().st_mode | stat.S_IXUSR)
+
+    env = os.environ.copy()
+    env["PATH"] = f"{fake_bin}{os.pathsep}{env['PATH']}"
+    env["TECHNO_EXTENDED_CORPUS_PYTHON"] = sys.executable
+    env["TECHNO_DATA_COLLECTION_STATUS_PATH"] = str(tmp_path / "status.json")
+
+    # Not check=True: both targets are intentionally unavailable here (that's
+    # the point of this test), and a zero-available discovery run correctly
+    # exits 1 -- the status manifest is still written before that exit, which
+    # is what this test verifies.
+    subprocess.run(
+        ["bash", str(SCRIPT_PATH), "--manifest", str(manifest), "--discover-only"],
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    status = json.loads((tmp_path / "status.json").read_text(encoding="utf-8"))
+    run_status = status["runs"]["download_bl_extended_corpus_discovery"]
+    skipped_by_target = {
+        item["target"]: item["reason"] for item in run_status["skipped_targets"]
+    }
+    assert skipped_by_target["HIP111"] == "discovery_request_failed"
+    assert skipped_by_target["HIP222"] == "no_hdf5_url_discovered"
+
+
 def test_extended_corpus_downloader_passes_through_non_numeric_identifiers(
     tmp_path: Path,
 ) -> None:
@@ -230,11 +340,11 @@ def test_extended_corpus_downloader_passes_through_non_numeric_identifiers(
     fake_curl.write_text(
         """#!/usr/bin/env bash
 set -euo pipefail
-url="${@: -1}"
-case "${url}" in
+args="$*"
+case "${args}" in
   *target=HIP8102*) printf 'https://bldata.berkeley.edu/test/HIP8102.gpuspec.0002.h5' ;;
   *target=GJ1002*) printf 'https://bldata.berkeley.edu/test/GJ1002.gpuspec.0002.h5' ;;
-  *) printf 'unexpected-url=%s' "${url}" >&2; exit 22 ;;
+  *) printf 'unexpected-args=%s' "${args}" >&2; exit 22 ;;
 esac
 """,
         encoding="utf-8",
@@ -295,11 +405,12 @@ def test_extended_corpus_download_limit_skips_existing_hdf5_targets(
 set -euo pipefail
 url="${@: -1}"
 if [[ "${url}" == *breakthroughinitiatives.org* ]]; then
-  case "${url}" in
+  args="$*"
+  case "${args}" in
     *target=HIP111*) printf 'https://bldata.berkeley.edu/test/HIP111.gpuspec.0002.h5' ;;
     *target=HIP222*) printf 'https://bldata.berkeley.edu/test/HIP222.gpuspec.0002.h5' ;;
     *target=HIP333*) printf 'https://bldata.berkeley.edu/test/HIP333.gpuspec.0002.h5' ;;
-    *) printf 'unexpected-discovery-url=%s' "${url}" >&2; exit 22 ;;
+    *) printf 'unexpected-discovery-args=%s' "${args}" >&2; exit 22 ;;
   esac
   exit 0
 fi

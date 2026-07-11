@@ -248,16 +248,32 @@ for row in targets:
 }
 
 discover_hdf5_url() {
+  # Exit codes distinguish a confirmed no-match (1: the archive was queried
+  # successfully and has no HDF5 file for this target) from a request
+  # failure (2: curl/network/HTTP error, not evidence about the target) --
+  # the caller must not record both under the same "no data" reason.
   local name="$1"
-  local search_url="https://breakthroughinitiatives.org/opendatasearch?project=GBT&file_type=HDF5&target=${name}&search=Search&perPage=100"
+  local search_base_url="https://breakthroughinitiatives.org/opendatasearch"
 
   log "[INFO]  Discovering current BL archive URL for ${name}"
-  log "[URL]   ${search_url}"
+  log "[URL]   ${search_base_url}?project=GBT&file_type=HDF5&target=<url-encoded>&search=Search&perPage=100"
 
   local page
-  if ! page="$(curl -fsSL --connect-timeout 15 --max-time 60 --retry 3 --retry-delay 5 --location "${search_url}")"; then
-    log "[WARN]  Discovery failed for ${name}"
-    return 1
+  # -G --data-urlencode percent-encodes the target name (e.g. spaces in
+  # "DENIS-P J1048.0-3956") instead of interpolating it raw into the query
+  # string, which curl otherwise rejects as a malformed URL.
+  if ! page="$(
+    curl -fsSL --connect-timeout 15 --max-time 60 --retry 3 --retry-delay 5 \
+      --location -G \
+      --data-urlencode "project=GBT" \
+      --data-urlencode "file_type=HDF5" \
+      --data-urlencode "target=${name}" \
+      --data-urlencode "search=Search" \
+      --data-urlencode "perPage=100" \
+      "${search_base_url}"
+  )"; then
+    log "[WARN]  Discovery request failed for ${name} (network/HTTP error, not a confirmed no-match)"
+    return 2
   fi
 
   local url
@@ -387,10 +403,22 @@ for name in "${TARGETS[@]}"; do
     available=$((available + 1))
     continue
   fi
-  if ! url="$(discover_hdf5_url "${name}")"; then
+  # Not `if ! url=...; then` -- `!` negates the exit status itself, so `$?`
+  # inside the then-branch would no longer distinguish exit code 1 from 2.
+  # A bare `url=$(...)` outside a conditional would also trip `set -e` on
+  # the first failure, aborting the whole script instead of skipping one
+  # target -- so the assignment must stay the condition of this `if`.
+  if url="$(discover_hdf5_url "${name}")"; then
+    :
+  else
+    discover_status=$?
     skipped=$((skipped + 1))
     SKIPPED_NAMES+=("${name}")
-    SKIPPED_REASONS+=("no_hdf5_url_discovered")
+    if [[ "${discover_status}" -eq 2 ]]; then
+      SKIPPED_REASONS+=("discovery_request_failed")
+    else
+      SKIPPED_REASONS+=("no_hdf5_url_discovered")
+    fi
     continue
   fi
   available=$((available + 1))
