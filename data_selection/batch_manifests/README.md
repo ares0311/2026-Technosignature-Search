@@ -96,12 +96,12 @@ themselves.
 | `batch6` | 25 | 18 | 7 | 18/18 | 4.616439 | captured live; surfaced and fixed a real bug (see below) |
 | `batch7` | 25 | 15 | 10 | 15/15 | 3.679746 | captured live with the URL-encoding fix; ran clean, no curl errors |
 | `batch8` | 25 | 18 | 7 | 18/18 | 4.491797 | captured live |
-| `batch9` | - | - | - | - | - | manifest built, zero overlap confirmed against prior rounds; discovery not yet run |
+| `batch9` | 25 | 19 | 6 | 19/19 | 4.887394 | captured live |
 
 `local_coverage_raw_download_approval_manifest.json` — the consolidated,
 always-current set of sized HDF5 rows promoted to
-`raw_download_approval_required` across all rounds so far: **131 targets,
-~32.97 GB combined** (as of the `batch8` round). This is the human-review
+`raw_download_approval_required` across all rounds so far: **150 targets,
+~37.86 GB combined** (as of the `batch9` round). This is the human-review
 input for an explicitly approved bounded raw download; it is not approval
 by itself. Regenerate it after each new round's size preflight completes and
 the queue is rebuilt.
