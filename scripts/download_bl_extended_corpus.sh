@@ -45,6 +45,12 @@ VENV_PYTHON="${TECHNO_EXTENDED_CORPUS_PYTHON:-${REPO_ROOT}/.venv/bin/python}"
 MANIFEST="${REPO_ROOT}/data/target_sample_manifest.json"
 MAX_TARGETS="${TECHNO_EXTENDED_CORPUS_MAX_TARGETS:-0}"
 FREE_SPACE_RESERVE_GB="${TECHNO_EXTENDED_CORPUS_FREE_SPACE_RESERVE_GB:-500}"
+# No published BL Open Data Archive rate limit exists for this discovery
+# endpoint (verified 2026-07-04, see docs/bl_hprc_target_list_research.md) --
+# this default is a conservative, configurable choice per AGENTS.md's data
+# collection parallelization directive (4-8 bounded workers when no
+# documented limit exists), not a claimed archive-published limit.
+DISCOVERY_WORKERS="${TECHNO_EXTENDED_CORPUS_DISCOVERY_WORKERS:-4}"
 ACQUISITION_ROLE="live_search_bootstrap_cache"
 ACQUISITION_MODE="targeted_batch_pull"
 RAW_RETENTION_POLICY="public_raw_archive_cache_not_pinned"
@@ -93,6 +99,15 @@ Environment:
                                         Minimum free GB to preserve before each
                                         new payload download. Default: 500.
                                         Tests may set 0 for tiny temp dirs.
+  TECHNO_EXTENDED_CORPUS_DISCOVERY_WORKERS=N
+                                        Bounded concurrent discovery workers
+                                        for --discover-only runs with no
+                                        TECHNO_EXTENDED_CORPUS_MAX_TARGETS
+                                        limit set. Default: 4. No published BL
+                                        rate limit exists (verified 2026-07-04,
+                                        docs/bl_hprc_target_list_research.md);
+                                        this is a conservative default, not a
+                                        claimed archive limit.
 
 Options:
   --manifest PATH  Stratified target manifest JSON. Default:
@@ -152,6 +167,25 @@ TARGETS=(
 # ---------------------------------------------------------------------------
 
 log() { echo "[$(date -u '+%Y-%m-%dT%H:%M:%SZ')] $*" >&2; }
+
+# Compact progress with a computed ETA -- printed every 10th completion (plus
+# the final one), not per-target, so a large bulk discovery run proves it is
+# alive without flooding the terminal with thousands of lines.
+_log_discovery_progress() {
+  local checked="$1" total="$2" start_epoch="$3"
+  if [[ "${checked}" -lt "${total}" && $((checked % 10)) -ne 0 ]]; then
+    return 0
+  fi
+  local now elapsed remaining_targets eta_seconds eta_min elapsed_min
+  now="$(date +%s)"
+  elapsed=$((now - start_epoch))
+  [[ "${elapsed}" -lt 1 ]] && elapsed=1
+  remaining_targets=$((total - checked))
+  eta_seconds=$((remaining_targets * elapsed / checked))
+  eta_min=$((eta_seconds / 60))
+  elapsed_min=$((elapsed / 60))
+  log "[PROGRESS] ${checked}/${total} checked (elapsed ${elapsed_min}m, ETA ~${eta_min}m remaining)"
+}
 
 reserve_kb() {
   "${VENV_PYTHON}" -c 'import sys; print(int(float(sys.argv[1]) * 1024 * 1024))' "${FREE_SPACE_RESERVE_GB}"
@@ -391,69 +425,137 @@ SKIPPED_REASONS=()
 AVAILABLE_NAMES=()
 AVAILABLE_URLS=()
 
-for name in "${TARGETS[@]}"; do
-  if [[ "${DISCOVER_ONLY}" -eq 1 && "${MAX_TARGETS}" != "0" && "${available}" -ge "${MAX_TARGETS}" ]]; then
-    log "[INFO]  URL-available target limit reached (${MAX_TARGETS}); stopping early"
-    break
-  fi
-  checked=$((checked + 1))
-  log "[${checked}/${total}] Target: ${name}"
-  if [[ "${DRY_RUN}" -eq 1 ]]; then
-    log "[DRY-RUN] Would discover and download current HDF5 evidence for ${name}"
-    available=$((available + 1))
-    continue
-  fi
-  # Not `if ! url=...; then` -- `!` negates the exit status itself, so `$?`
-  # inside the then-branch would no longer distinguish exit code 1 from 2.
-  # A bare `url=$(...)` outside a conditional would also trip `set -e` on
-  # the first failure, aborting the whole script instead of skipping one
-  # target -- so the assignment must stay the condition of this `if`.
-  if url="$(discover_hdf5_url "${name}")"; then
-    :
-  else
-    discover_status=$?
-    skipped=$((skipped + 1))
-    SKIPPED_NAMES+=("${name}")
-    if [[ "${discover_status}" -eq 2 ]]; then
-      SKIPPED_REASONS+=("discovery_request_failed")
-    else
-      SKIPPED_REASONS+=("no_hdf5_url_discovered")
+if [[ "${DISCOVER_ONLY}" -eq 1 && "${DRY_RUN}" -eq 0 && "${MAX_TARGETS}" == "0" ]]; then
+  # Bounded-parallel discovery: only used for unlimited discover-only runs.
+  # Download mode, dry-run, and MAX_TARGETS-limited discover-only runs keep
+  # the sequential loop below unchanged -- MAX_TARGETS early-stop semantics
+  # (stop once N available targets are found) depend on strict sequential
+  # order and are not reproduced under concurrent dispatch.
+  log "[INFO]  Discovery workers: ${DISCOVERY_WORKERS} (bounded; no published BL rate limit exists -- see docs/bl_hprc_target_list_research.md -- conservative default, not a verified archive-published limit)"
+  discovery_work_dir="$(mktemp -d "${TMPDIR:-/tmp}/bl_discovery.XXXXXX")"
+  trap 'rm -rf "${discovery_work_dir}"' EXIT
+  discovery_start_epoch="$(date +%s)"
+  discovery_running=0
+  discovery_index=0
+  for name in "${TARGETS[@]}"; do
+    discovery_index=$((discovery_index + 1))
+    result_file="${discovery_work_dir}/$(printf '%06d' "${discovery_index}").tsv"
+    (
+      # Discovery's own per-target [INFO]/[URL]/[WARN] log lines are
+      # redirected to /dev/null here (not removed from discover_hdf5_url
+      # itself, which sequential download mode still uses for per-target
+      # visibility) -- they would otherwise interleave illegibly across
+      # concurrent workers and defeat the point of compact progress.
+      if job_url="$(discover_hdf5_url "${name}" 2>/dev/null)"; then
+        printf 'found\t%s\t%s\n' "${name}" "${job_url}" >"${result_file}"
+      else
+        job_status=$?
+        if [[ "${job_status}" -eq 2 ]]; then
+          printf 'failed\t%s\tdiscovery_request_failed\n' "${name}" >"${result_file}"
+        else
+          printf 'no_url\t%s\tno_hdf5_url_discovered\n' "${name}" >"${result_file}"
+        fi
+      fi
+    ) &
+    discovery_running=$((discovery_running + 1))
+    if [[ "${discovery_running}" -ge "${DISCOVERY_WORKERS}" ]]; then
+      wait -n
+      discovery_running=$((discovery_running - 1))
+      checked=$((checked + 1))
+      _log_discovery_progress "${checked}" "${total}" "${discovery_start_epoch}"
     fi
-    continue
-  fi
-  available=$((available + 1))
-  if [[ "${DISCOVER_ONLY}" -eq 1 ]]; then
-    record_available_url "${name}" "${url}"
-    AVAILABLE_NAMES+=("${name}")
-    AVAILABLE_URLS+=("${url}")
-    continue
-  fi
-  if target_hdf5_exists "${name}" "${url}"; then
-    log "[SKIP] Reusing existing HDF5 evidence for ${name}; does not consume new-download limit"
-    reused=$((reused + 1))
-    REUSED_NAMES+=("${name}")
-    continue
-  fi
-  if [[ "${MAX_TARGETS}" != "0" && "${downloaded}" -ge "${MAX_TARGETS}" ]]; then
-    log "[INFO]  New-download target limit reached (${MAX_TARGETS}); stopping early"
-    break
-  fi
-  if ! ensure_projected_free_space "${url}"; then
-    skipped=$((skipped + 1))
-    SKIPPED_NAMES+=("${name}")
-    SKIPPED_REASONS+=("free_space_reserve_not_met")
-    policy_blocked=1
-    break
-  fi
-  if download_hdf5 "${name}" "${url}"; then
-    downloaded=$((downloaded + 1))
-    DOWNLOADED_NAMES+=("${name}")
-  else
-    skipped=$((skipped + 1))
-    SKIPPED_NAMES+=("${name}")
-    SKIPPED_REASONS+=("download_failed")
-  fi
-done
+  done
+  while [[ "${discovery_running}" -gt 0 ]]; do
+    wait -n
+    discovery_running=$((discovery_running - 1))
+    checked=$((checked + 1))
+    _log_discovery_progress "${checked}" "${total}" "${discovery_start_epoch}"
+  done
+
+  # Aggregate in manifest order (zero-padded filenames sort correctly),
+  # not completion order, so output/status ordering matches the sequential
+  # path exactly regardless of which worker finished first.
+  for result_file in "${discovery_work_dir}"/*.tsv; do
+    [[ -f "${result_file}" ]] || continue
+    IFS=$'\t' read -r result_kind result_name result_detail <"${result_file}"
+    if [[ "${result_kind}" == "found" ]]; then
+      available=$((available + 1))
+      record_available_url "${result_name}" "${result_detail}"
+      AVAILABLE_NAMES+=("${result_name}")
+      AVAILABLE_URLS+=("${result_detail}")
+    else
+      skipped=$((skipped + 1))
+      SKIPPED_NAMES+=("${result_name}")
+      SKIPPED_REASONS+=("${result_detail}")
+    fi
+  done
+  rm -rf "${discovery_work_dir}"
+  trap - EXIT
+else
+  for name in "${TARGETS[@]}"; do
+    if [[ "${DISCOVER_ONLY}" -eq 1 && "${MAX_TARGETS}" != "0" && "${available}" -ge "${MAX_TARGETS}" ]]; then
+      log "[INFO]  URL-available target limit reached (${MAX_TARGETS}); stopping early"
+      break
+    fi
+    checked=$((checked + 1))
+    log "[${checked}/${total}] Target: ${name}"
+    if [[ "${DRY_RUN}" -eq 1 ]]; then
+      log "[DRY-RUN] Would discover and download current HDF5 evidence for ${name}"
+      available=$((available + 1))
+      continue
+    fi
+    # Not `if ! url=...; then` -- `!` negates the exit status itself, so `$?`
+    # inside the then-branch would no longer distinguish exit code 1 from 2.
+    # A bare `url=$(...)` outside a conditional would also trip `set -e` on
+    # the first failure, aborting the whole script instead of skipping one
+    # target -- so the assignment must stay the condition of this `if`.
+    if url="$(discover_hdf5_url "${name}")"; then
+      :
+    else
+      discover_status=$?
+      skipped=$((skipped + 1))
+      SKIPPED_NAMES+=("${name}")
+      if [[ "${discover_status}" -eq 2 ]]; then
+        SKIPPED_REASONS+=("discovery_request_failed")
+      else
+        SKIPPED_REASONS+=("no_hdf5_url_discovered")
+      fi
+      continue
+    fi
+    available=$((available + 1))
+    if [[ "${DISCOVER_ONLY}" -eq 1 ]]; then
+      record_available_url "${name}" "${url}"
+      AVAILABLE_NAMES+=("${name}")
+      AVAILABLE_URLS+=("${url}")
+      continue
+    fi
+    if target_hdf5_exists "${name}" "${url}"; then
+      log "[SKIP] Reusing existing HDF5 evidence for ${name}; does not consume new-download limit"
+      reused=$((reused + 1))
+      REUSED_NAMES+=("${name}")
+      continue
+    fi
+    if [[ "${MAX_TARGETS}" != "0" && "${downloaded}" -ge "${MAX_TARGETS}" ]]; then
+      log "[INFO]  New-download target limit reached (${MAX_TARGETS}); stopping early"
+      break
+    fi
+    if ! ensure_projected_free_space "${url}"; then
+      skipped=$((skipped + 1))
+      SKIPPED_NAMES+=("${name}")
+      SKIPPED_REASONS+=("free_space_reserve_not_met")
+      policy_blocked=1
+      break
+    fi
+    if download_hdf5 "${name}" "${url}"; then
+      downloaded=$((downloaded + 1))
+      DOWNLOADED_NAMES+=("${name}")
+    else
+      skipped=$((skipped + 1))
+      SKIPPED_NAMES+=("${name}")
+      SKIPPED_REASONS+=("download_failed")
+    fi
+  done
+fi
 
 if [[ "${DRY_RUN}" -eq 1 ]]; then
   log "[DONE]  Dry run complete; no network download attempted."
