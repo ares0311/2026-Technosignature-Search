@@ -70,20 +70,11 @@ not guessed — and committed as
 `local_coverage_next25_discovery_result.json`. `batch3` was then
 regenerated cleanly with zero overlap against `top25`/`next25`.
 
-**Third round (`batch3`) completed, 2026-07-10:** the user ran discovery
-from their own machine (real network access; `breakthroughinitiatives.org`/
-`bldata.berkeley.edu` are not reachable from this agent's sandbox proxy for
-the search-page discovery step, though the direct `bldata.berkeley.edu`
-HEAD-only size-preflight requests were reachable). Discovery checked 25/25
-targets: 14 available, 11 skipped, written durably via
-`--discovery-result-output` to `local_coverage_batch3_discovery_result.json`
-(no reconstruction needed for this round — it was captured live). Queue
-rebuild correctly grew `metadata_discovery_required` by exactly 11 (25→36)
-and moved all 25 `batch3` rows out of `queued_metadata_discovery`,
-confirming the merge fix above works end-to-end on a real round. Size
-preflight then verified 14/14 URLs, 3.481361 GB total, no checksum headers.
-Queue rebuild promoted all 14 to `raw_download_approval_required` (29→43
-total across all three rounds).
+Starting with `batch3`, `breakthroughinitiatives.org` discovery still needs
+the user's own machine (not reachable from this agent's sandbox proxy), but
+`bldata.berkeley.edu` HEAD-only size-preflight requests are reachable from
+here, so this agent runs preflight/queue-rebuild/manifest-regen itself once
+the user pastes back a discovery-result file.
 
 Every round follows the same four files:
 `local_coverage_<round>_manifest.json` (the round's 25
@@ -101,6 +92,7 @@ themselves.
 | `next25` | 25 | 14 | 11 | 14/14 | 3.608361 | discovery result reconstructed from committed evidence, 2026-07-10 (see below) |
 | `batch3` | 25 | 14 | 11 | 14/14 | 3.481361 | first round captured live via `--discovery-result-output` |
 | `batch4` | 25 | 19 | 6 | 19/19 | 4.79346 | captured live |
+| `batch5` | - | - | - | - | - | manifest built, zero overlap confirmed against prior rounds; discovery not yet run |
 
 `local_coverage_raw_download_approval_manifest.json` — the consolidated,
 always-current set of sized HDF5 rows promoted to
