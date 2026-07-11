@@ -94,6 +94,7 @@ themselves.
 | `batch4` | 25 | 19 | 6 | 19/19 | 4.79346 | captured live |
 | `batch5` | 25 | 18 | 7 | 18/18 | 4.4936 | captured live |
 | `batch6` | 25 | 18 | 7 | 18/18 | 4.616439 | captured live; surfaced and fixed a real bug (see below) |
+| `batch7` | - | - | - | - | - | manifest built, zero overlap confirmed against prior rounds; discovery not yet run |
 
 `local_coverage_raw_download_approval_manifest.json` — the consolidated,
 always-current set of sized HDF5 rows promoted to
