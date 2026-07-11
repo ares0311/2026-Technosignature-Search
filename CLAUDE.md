@@ -67,6 +67,47 @@ Mandatory requirements:
 
 ## Current Live Handoff — 2026-06-27
 
+### HARD LOCAL STORAGE CONSTRAINT — NON-NEGOTIABLE — 2026-07-11
+
+**This project has no external SSD and no cloud storage available for
+testing.** The user, verbatim: "we can't use more that 100G of local store
+ever. We can't use external storage to test. Work within these
+constraints." This overrides the 4TB-external-SSD assumption baked into
+`docs/astrometrics_data_selection_policy.md` and
+`docs/astrometrics_external_and_cloud_storage_policy.md` (both now carry a
+"Current Reality Override" section at the top — read those, not the 4TB
+tables below them, for this project). Enforced in code:
+`TECHNO_LOCAL_STORAGE_CAP_GB` in `scripts/download_bl_extended_corpus.sh`
+(default 100GB), checked against the sum of `data/` + `models/` +
+`artifacts/` before every payload download. Real usage as of 2026-07-11:
+~9GB, leaving ~91GB of headroom.
+
+Practical consequence: the `raw_download_approval_required` queue
+(1,147 targets, ~289GB as of `batch14_bulk`) can never be bulk-downloaded —
+it's ~3x the cap. Discovery/size-preflight (free, metadata-only) can keep
+running against the full queue, but any actual raw download must be a
+small `stream_process_evict` batch (download → turboSETI/pipeline →
+evict raw payload → repeat), sized to fit real remaining headroom, not the
+old 250GB-per-batch defaults in the data-selection policy doc.
+
+**Root cause found and fixed while implementing this:** the download
+script's existing `content_length_kb()` used gawk's `IGNORECASE`, which
+macOS's real `/usr/bin/awk` (BWK awk) doesn't support — it silently never
+matched a real `Content-Length:` header and always returned 0, making the
+pre-existing free-space-reserve check (and the new cap check) a no-op on
+macOS. Fixed with a portable `tolower()` comparison, PR includes a
+regression test that caught it via a real fake-curl HEAD response.
+
+**Also found and fixed, same session:** manually testing this by pointing
+`TECHNO_DATA_COLLECTION_STATUS_PATH` at a repo-local scratch path
+auto-committed and pushed that scratch file to `main` three times for
+real — `commit_and_push_status()` only guarded against running off the
+`main` branch, not against `status_path` being redirected away from the
+canonical `docs/data_collection_status.json`. This is the second time this
+exact class of incident happened (see `docs/PRODUCTION_SCAN_RUNBOOK.md`'s
+earlier note on the same function). Added a canonical-path guard plus a
+regression test so it can't recur a third time.
+
 ### Step 3a Bulk Discovery Round (`batch14_bulk`) Complete — 2026-07-11
 
 After 13 sequential 25-target rounds (`top25` through `batch13`, 211 targets

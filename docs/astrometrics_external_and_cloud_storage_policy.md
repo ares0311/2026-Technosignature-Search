@@ -23,7 +23,11 @@ This file complements:
 6. Prefer manifest-driven copy/upload/download over automatic broad sync.
 7. Preserve citations inline and in the bibliography. Do not move citations to a separate file.
 
-## Core Decision
+## Current Reality Override — 2026-07-11 — Read This First
+
+**There is no 4TB external SSD and no cloud storage available for testing on `2026 Technosignatures`.** The user stated this explicitly: "we can't use more that 100G of local store ever. We can't use external storage to test. Work within these constraints." Every section below assumes a 4TB external SSD workspace and an optional cloud tier — neither exists here. This project's entire local data footprint (`data/` + `models/` + `artifacts/`) is capped at a hard, permanent **100GB**, enforced by `TECHNO_LOCAL_STORAGE_CAP_GB` in `scripts/download_bl_extended_corpus.sh` (default 100). Do not plan cloud lifecycle policies, bucket layouts, or SSD mount paths for this project until the user says otherwise. If storage runs tight, the answer is `stream_process_evict` (small batch → process → delete raw payload → next batch), not cloud overflow.
+
+## Core Decision (not applicable right now — see override above)
 
 Use the **4TB external SSD** as the primary local workspace. Use cloud object storage only when it provides a clear benefit: overflow, off-laptop durability, collaboration, or running compute near cloud-hosted public archives.
 

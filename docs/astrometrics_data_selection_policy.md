@@ -32,7 +32,18 @@ Do not mix these criteria.
 | Training data | Make models robust, calibrated, and honest about uncertainty | Diversity, labels, failure modes, distribution coverage, hard negatives | Better grouped holdout, calibration, injection recovery, artifact rejection |
 | Live search data | Find candidates worth publishing, following up, or contributing to catalogs | Scientific value, novelty, observability, target priority, follow-up leverage | New candidates, validated null results, recoveries, follow-up-ready reports |
 
-## 4TB External SSD Local Workspace
+## Current Reality Override — 2026-07-11 — Read This First
+
+**There is no 4TB external SSD for this project, and no cloud storage available for testing.** The user stated this explicitly: "we can't use more that 100G of local store ever. We can't use external storage to test. Work within these constraints." Every section below that assumes a 4TB workspace, a 500GB reserve, or an optional cloud tier does not apply to `2026 Technosignatures` right now. Treat every number in this file as **downscaled to a single, permanent, hard 100GB local cap** for this project's entire data footprint (`data/` + `models/` + `artifacts/`), enforced in `scripts/download_bl_extended_corpus.sh` via `TECHNO_LOCAL_STORAGE_CAP_GB` (default 100). As of 2026-07-11 the real footprint is ~9GB, leaving ~91GB of real headroom.
+
+Concretely, under this override:
+- The "conservative 100GB active-cache" fallback described throughout this file is not a fallback — it is the only mode.
+- Batch caps below (250GB/200GB/100GB/50GB/25GB) are **not usable at their stated size**; any real batch must fit inside remaining headroom under the 100GB total, not under the 4TB/500GB-reserve numbers.
+- The `raw_download_approval_required` queue can and will grow far past 100GB in size-preflight terms (it is a priority-ranked wishlist, not a download plan) — that is fine. What must never happen is actually holding more than 100GB of raw/derived data locally at once.
+- The only way to search a queue larger than the cap allows is `stream_process_evict`: pull a small bounded batch, run turboSETI/pipeline immediately, save the compact derived candidate reports/features (small), then delete the raw HDF5 payloads before pulling the next batch. This is not a nice-to-have here — it is mandatory.
+- If a future session has real access to an external SSD or approved cloud storage, that changes this override; until then, do not plan around the 4TB numbers below.
+
+## 4TB External SSD Local Workspace (not applicable right now — see override above)
 
 The expected local setup is a **4TB external SSD** used as the primary Astrometrics workspace for all three projects. The old 100GB number is no longer a hard per-project limit. It remains a conservative default **active raw batch/cache guardrail** for agents that do not know the current drive budget.
 

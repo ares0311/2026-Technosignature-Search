@@ -135,6 +135,22 @@ human-review input for an explicitly approved bounded raw download; it is
 not approval by itself. Regenerate it after each new round's size preflight
 completes and the queue is rebuilt.
 
+**Hard local storage constraint set, 2026-07-11:** the user confirmed there
+is no external SSD and no cloud storage available for this project — the
+local data footprint is capped at 100GB, permanently (see the "Current
+Reality Override" sections added to `docs/astrometrics_data_selection_policy.md`
+and `docs/astrometrics_external_and_cloud_storage_policy.md`, and
+`TECHNO_LOCAL_STORAGE_CAP_GB` in `scripts/download_bl_extended_corpus.sh`).
+This means the 1,147-target/~289GB approval manifest above is a
+**priority-ranked wishlist, not a download plan** — it is roughly 3x the
+entire cap and could never be downloaded in bulk. Continuing to discover
+and size-preflight the full BL archive against this queue is still useful
+(it's free, no payloads), but any actual raw download must be a small,
+bounded `stream_process_evict` batch sized to fit the real remaining
+headroom (~91GB as of this round: 100GB cap − ~9GB current usage), run
+through turboSETI/pipeline immediately, then evicted before pulling the
+next batch. Not yet requested by the user; this is scope-setting only.
+
 **Real bug found and fixed during `batch6`, 2026-07-11:** target
 `DENIS-P J1048.0-3956` broke the discovery curl call with `curl: (3) URL
 rejected: Malformed input to a URL function`, because
