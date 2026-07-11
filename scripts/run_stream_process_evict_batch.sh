@@ -38,11 +38,25 @@ CHUNK_SIZE=25
 LIMIT=0
 DRY_RUN=0
 PIPELINE_WORKERS=12
+LOG_FILE=""
 LOCAL_STORAGE_CAP_GB="${TECHNO_LOCAL_STORAGE_CAP_GB:-100}"
 LOCAL_STORAGE_USAGE_DIRS="${TECHNO_LOCAL_STORAGE_USAGE_DIRS:-${REPO_ROOT}/data ${REPO_ROOT}/models ${REPO_ROOT}/artifacts}"
 FREE_SPACE_RESERVE_GB="${TECHNO_EXTENDED_CORPUS_FREE_SPACE_RESERVE_GB:-10}"
 
-log() { echo "[$(date -u '+%Y-%m-%dT%H:%M:%SZ')] $*"; }
+# Always prints to the console AND (once LOG_FILE is set, right after
+# manifest validation below) appends to a log file -- the caller must not
+# have to remember to add `tee`/redirection themselves to get either one.
+# A prior version of this script relied entirely on the caller's shell
+# redirection, so a plain `> file 2>&1` invocation (as opposed to `| tee
+# file`) silently produced zero terminal output for the many-minutes-long
+# gaps between progress lines, looking hung. Fixed 2026-07-11.
+log() {
+  local line="[$(date -u '+%Y-%m-%dT%H:%M:%SZ')] $*"
+  echo "${line}"
+  if [[ -n "${LOG_FILE}" ]]; then
+    echo "${line}" >> "${LOG_FILE}"
+  fi
+}
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -50,6 +64,7 @@ while [[ $# -gt 0 ]]; do
     --chunk-size) CHUNK_SIZE="$2"; shift 2 ;;
     --limit) LIMIT="$2"; shift 2 ;;
     --pipeline-workers) PIPELINE_WORKERS="$2"; shift 2 ;;
+    --log-file) LOG_FILE="$2"; shift 2 ;;
     --dry-run) DRY_RUN=1; shift ;;
     -h|--help)
       sed -n '2,26p' "$0" | grep '^#' | sed 's/^# \?//'
@@ -67,6 +82,12 @@ if [[ ! -f "${MANIFEST}" ]]; then
   log "[ERROR] Manifest not found: ${MANIFEST}"
   exit 2
 fi
+
+if [[ -z "${LOG_FILE}" ]]; then
+  LOG_FILE="${REPO_ROOT}/data_cache/logs/$(basename "${MANIFEST}" .json)_run.log"
+fi
+mkdir -p "$(dirname "${LOG_FILE}")"
+log "[INFO]  Logging to console and ${LOG_FILE}"
 
 project_storage_usage_kb() {
   local total=0
@@ -215,7 +236,7 @@ download_target() {
         eta_min=$(( eta_seconds / 60 ))
       fi
     fi
-    log "[PROGRESS] ${hip}: $((cur_bytes / 1024 / 1024))MB/$((dl_expected_bytes / 1024 / 1024))MB (${pct}%%), elapsed $((elapsed / 60))m, ETA ~${eta_min}m"
+    log "[PROGRESS] ${hip}: $((cur_bytes / 1024 / 1024))MB/$((dl_expected_bytes / 1024 / 1024))MB (${pct}%), elapsed $((elapsed / 60))m, ETA ~${eta_min}m"
   done
   if ! wait "${curl_pid}"; then
     log "[WARN] ${hip}: download failed"
@@ -327,7 +348,7 @@ elapsed = ${batch_elapsed}
 pct = (downloaded_gb / total_gb * 100) if total_gb > 0 else 0
 rate = downloaded_gb / elapsed if elapsed > 0 else 0
 eta_min = int((total_gb - downloaded_gb) / rate / 60) if rate > 0 else 0
-print(f'[BATCH] {downloaded_gb:.2f}GB/{total_gb:.2f}GB downloaded ({pct:.1f}%%), '
+print(f'[BATCH] {downloaded_gb:.2f}GB/{total_gb:.2f}GB downloaded ({pct:.1f}%), '
       f'elapsed {elapsed // 60}m, ETA ~{eta_min}m remaining')
 " | while IFS= read -r batch_line; do log "${batch_line}"; done
 
