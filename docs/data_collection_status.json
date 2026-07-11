@@ -219,16 +219,16 @@
     "target_priority_size_preflight": {
       "checksum_header_count": 0,
       "disclaimer": "Target priority queues are metadata-first scheduling aids for local search planning. They are not detections, discovery claims, expert review, external validation, or authorization for external submission.",
-      "last_run_utc": "2026-07-11T01:05:59.760094+00:00",
+      "last_run_utc": "2026-07-11T01:14:27.489728+00:00",
       "ok": true,
-      "ok_target_count": 15,
-      "output_path": "data_selection/batch_manifests/local_coverage_batch7_size_preflight_report.json",
+      "ok_target_count": 18,
+      "output_path": "data_selection/batch_manifests/local_coverage_batch8_size_preflight_report.json",
       "raw_download_authorized": false,
       "schema_version": "target_priority_size_preflight_v1",
-      "sized_target_count": 15,
-      "source_manifest_path": "data_selection/batch_manifests/local_coverage_batch7_size_preflight_manifest.json",
-      "target_count": 15,
-      "total_content_length_gb": 3.679746
+      "sized_target_count": 18,
+      "source_manifest_path": "data_selection/batch_manifests/local_coverage_batch8_size_preflight_manifest.json",
+      "target_count": 18,
+      "total_content_length_gb": 4.491797
     }
   },
   "schema_version": "data_collection_status_v1"
