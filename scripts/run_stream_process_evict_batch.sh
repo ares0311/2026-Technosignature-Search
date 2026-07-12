@@ -158,7 +158,9 @@ fi
 
 DOWNLOADED_COUNT=0
 DOWNLOADED_GB="0"
+DOWNLOADED_NAMES=()
 EVICTED_COUNT=0
+EVICTED_NAMES=()
 FAILED_COUNT=0
 FAILED_NAMES=()
 FAILED_REASONS=()
@@ -278,18 +280,28 @@ process_chunk() {
   if [[ "${#names_ref[@]}" -eq 0 ]]; then
     return 0
   fi
-  log "[CHUNK] Running turboSETI over corpus (idempotent; only new files processed)"
-  if ! bash "${REPO_ROOT}/scripts/run_turboseti_on_extended_corpus.sh" --corpus-dir "${OUT_DIR}"; then
-    log "[WARN] turboSETI batch step reported a failure; continuing to pipeline/eviction for whatever succeeded"
-  fi
-  log "[CHUNK] Running pipeline over corpus (idempotent; only new .dat files processed; ${PIPELINE_WORKERS} workers)"
-  if ! bash "${REPO_ROOT}/scripts/run_pipeline_on_bl_data.sh" --dat-dir "${OUT_DIR}" --workers "${PIPELINE_WORKERS}"; then
-    log "[WARN] pipeline batch step reported a failure; continuing to eviction for whatever succeeded"
-  fi
   local hip
+  # Process only this shard's current chunk. The previous implementation
+  # passed OUT_DIR to every concurrent shard, so all shards recursively
+  # scanned the same global corpus and raced while writing identical .dat
+  # outputs. Target directories are disjoint across the prepared manifests,
+  # making these per-target calls safe for bounded shard parallelism.
+  for hip in "${names_ref[@]}"; do
+    log "[CHUNK] ${hip}: running isolated turboSETI"
+    if ! bash "${REPO_ROOT}/scripts/run_turboseti_on_extended_corpus.sh" \
+      --corpus-dir "${OUT_DIR}/${hip}"; then
+      log "[WARN] ${hip}: turboSETI reported a failure; continuing to pipeline/eviction for whatever succeeded"
+    fi
+    log "[CHUNK] ${hip}: running isolated pipeline (${PIPELINE_WORKERS} workers)"
+    if ! bash "${REPO_ROOT}/scripts/run_pipeline_on_bl_data.sh" \
+      --dat-dir "${OUT_DIR}/${hip}" --workers "${PIPELINE_WORKERS}"; then
+      log "[WARN] ${hip}: pipeline reported a failure; continuing to eviction check"
+    fi
+  done
   for hip in "${names_ref[@]}"; do
     if evict_target_if_processed "${hip}"; then
       EVICTED_COUNT=$((EVICTED_COUNT + 1))
+      EVICTED_NAMES+=("${hip}")
     fi
   done
 }
@@ -322,6 +334,7 @@ while IFS=$'\t' read -r hip url gb; do
   if download_target "${hip}" "${url}" "${gb}"; then
     DOWNLOADED_COUNT=$((DOWNLOADED_COUNT + 1))
     DOWNLOADED_GB="$("${VENV_PYTHON}" -c "print(${DOWNLOADED_GB} + ${gb})")"
+    DOWNLOADED_NAMES+=("${hip}")
     CHUNK_NAMES+=("${hip}")
   else
     status=$?
@@ -399,6 +412,8 @@ if [[ "${RECORD_STATUS}" -eq 0 ]]; then
   log "[INFO]  Manifest is not under data_selection/batch_manifests/ -- skipping status-manifest record (scratch/test run)."
 elif [[ -x "${TECHNO_SEARCH_BIN}" ]]; then
   SUMMARY_JSON="$(
+    DOWNLOADED_NAMES="$(printf '%s\n' "${DOWNLOADED_NAMES[@]:-}")" \
+    EVICTED_NAMES="$(printf '%s\n' "${EVICTED_NAMES[@]:-}")" \
     FAILED_NAMES="$(printf '%s\n' "${FAILED_NAMES[@]:-}")" \
     FAILED_REASONS="$(printf '%s\n' "${FAILED_REASONS[@]:-}")" \
     MANIFEST="${MANIFEST}" \
@@ -415,6 +430,8 @@ elif [[ -x "${TECHNO_SEARCH_BIN}" ]]; then
 import json
 import os
 
+from techno_search import __version__
+
 
 def _lines(name):
     text = os.environ.get(name, "")
@@ -423,8 +440,11 @@ def _lines(name):
 
 failed_names = _lines("FAILED_NAMES")
 failed_reasons = _lines("FAILED_REASONS")
+downloaded_names = _lines("DOWNLOADED_NAMES")
+evicted_names = _lines("EVICTED_NAMES")
 summary = {
     "ok": os.environ["RUN_OK"] == "1",
+    "app_version": __version__,
     "manifest": os.environ["MANIFEST"],
     "acquisition_mode": "stream_process_evict",
     "raw_retention_policy": "evicted_after_candidate_report_generation",
@@ -432,7 +452,9 @@ summary = {
     "targets_attempted": int(os.environ["ATTEMPTED"]),
     "downloaded_count": int(os.environ["DOWNLOADED_COUNT"]),
     "downloaded_gb": float(os.environ["DOWNLOADED_GB"]),
+    "downloaded_targets": downloaded_names,
     "evicted_count": int(os.environ["EVICTED_COUNT"]),
+    "evicted_targets": evicted_names,
     "failed_count": int(os.environ["FAILED_COUNT"]),
     "dat_files_total": int(os.environ["DAT_PRODUCED_COUNT"]),
     "candidate_report_manifests_total": int(os.environ["REPORT_COUNT"]),
@@ -443,8 +465,9 @@ summary = {
 print(json.dumps(summary))
 '
   )"
+  STATUS_KEY="stream_process_evict_batch__$(basename "${MANIFEST}" .json)"
   "${TECHNO_SEARCH_BIN}" record-data-collection-status \
-    --script stream_process_evict_batch \
+    --script "${STATUS_KEY}" \
     --summary-json "${SUMMARY_JSON}" \
     >/dev/null 2>&1 || log "[INFO]  Status manifest update/commit skipped (non-fatal)."
 fi

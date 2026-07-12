@@ -6,7 +6,7 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.0
+**Current app version:** 1.2.1
 
 (A "Current milestone: 79" numbered-milestone field was removed here on
 2026-07-11: an audit found it referenced nowhere else in the project, never
@@ -179,6 +179,20 @@ reprocesses a present `.dat` when its recorded ceiling is lower. The 198
 evicted products still require an explicitly approved redownload/reprocess
 batch before Step 1 review sampling can use them. Until then, do not count the
 old 198 zero-hit reports as negative evidence or as calibration rows.
+
+**Corrected-batch concurrency incident, 2026-07-12:** the authorized six-shard
+rerun downloaded 120 unique targets and evicted the first 60 after report
+generation before live monitoring exposed a second root cause: every shard's
+`process_chunk()` recursively invoked turboSETI and the candidate pipeline on
+the shared global corpus directory. Multiple workers were directly observed
+processing the same HIP4845 HDF5 file and writing the same `.dat` output.
+All remaining shard process groups were terminated, 77 complete HDF5 files and
+one resumable partial were preserved, and none of the raced outputs count as
+validated science evidence. App version 1.2.1 scopes both post-processors to
+each chunk target, records status under distinct per-shard keys with per-target
+download/eviction detail, and serializes concurrent status-manifest updates.
+The six shards must be restarted after 1.2.1 is merged; existing complete and
+partial files are reused/resumed.
 
 ### Sandbox network restrictions — archives that require the user's research agent
 
