@@ -225,6 +225,27 @@ These `.dat`, `.log`, production-run, and report artifacts remain ignored local
 payloads. GitHub-visible continuity is this measured map plus the committed
 scripts and tests, not the payloads.
 
+### 2026-07-12 Extended-Corpus Drift-Resolution Audit
+
+The first bounded `stream_process_evict` expansion left 215 extended-corpus
+`.dat` files locally, all zero-hit. A direct audit found these are not valid
+negative-evidence tables: the `.0002.h5` logs report approximately 9.8 Hz/s
+drift-bin resolution, but `scripts/bl_fetch.py` had been hard-coded to a
+4 Hz/s maximum. With stationary/DC bins blanked, no eligible nonzero bin was
+searched. This is the same resolution mismatch already documented for the
+approved HIP99427 cadence.
+
+A retained real HIP17147 HDF5 product was rerun without modifying corpus
+artifacts, writing to `/tmp/techno-drift-validation` at ±10 Hz/s and SNR 10.
+The corrected run produced 13 turboSETI rows where the ±4 Hz/s run produced
+zero. These rows are unreviewed triage inputs, overwhelmingly likely RFI, and
+are not candidate or detection claims. The code now rejects unresolvable drift
+ceilings and the extended-corpus runner explicitly uses 10 Hz/s. Existing
+lower-ceiling `.dat` tables are reprocessed when their HDF5 source is present.
+The 198 already-evicted products require a separately authorized
+redownload/reprocess batch; their old zero-hit reports must not be used as null
+results or calibration data.
+
 ## Local Inventory Snapshot
 
 To inspect the current workstation without committing local paths:

@@ -1,6 +1,6 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-07-11
+**Last updated:** 2026-07-12
 **Current phase:** Phase 0 complete; Phases 1-5 all have real, tested baseline
 implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
@@ -161,6 +161,24 @@ commands instead of placeholder `rm` recipes.
 | Ranked candidate/non-detection output ready for Phase 5 | ⚠️ Partial — zero-hit observations are preserved as negative evidence ledgers. Production scan `RUN-2026-07-02_130330Z-3ZNT-prod-scan` scanned 11 pending extended-corpus targets, failed 0, flagged 0 escalations, produced 0 follow-up entries, produced 39 non-detection/no-follow-up ledger entries across the current local result set, and left 0 pending targets. This is negative evidence only, not a detection, discovery, expert review, external validation, or external-submission authorization. |
 | GLOBULAR filter (HDBSCAN, Jacobson-Bell et al. 2024) wired to real data | ✅ Done, 2026-07-02 — `globular_filter.py` existed but was never actually applied to a real hit table (only a `globular-filter-summary` metadata CLI command existed). Wired into `radio_real_corpus_summary()`'s corpus-wide `hit_rows_for_scorer` population (already accumulated across every `.dat`/hit-NDJSON file in a summary run), which is the correct granularity for this filter. **Root-caused and reverted one wrong placement first**: an initial attempt wired GLOBULAR into `build_radio_candidate()` itself (per-candidate, i.e. within one target's own small ON/OFF cadence hit list); this caused the real-label accuracy gate to drop from 77.42% to 65.32% and broke golden-example reproducibility, because a real signal's own naturally-similar repeated hits were mistaken for a dense RFI cluster — the opposite of the intended cross-target RFI signature Jacobson-Bell et al. 2024 actually targets. Reverted before committing; re-implemented at the correct (multi-target corpus) granularity, verified via `.venv/bin/python -m pytest -q` (1478 passed, 0 regressions) and a real 30-dense-hit-plus-1-outlier test confirming the outlier survives as noise while the dense recurring signal is flagged. |
 | CNN / learned-model promotion gate (AGENTS.md "CNN / Learned-Model Promotion Gate", added #235) | ❌ Not triggered — this repo has only CNN scaffold/stub records for radio waterfall morphology; no trained promotable CNN or other learned-model weights exist. The gate itself (freeze as `benchmark_cnn_v1` before any promotion discussion, CNN never makes final detection decisions) is a standing rule for if/when a future agent finds or builds one — added here 2026-07-11 to close a gap where this NON-NEGOTIABLE AGENTS.md rule had no corresponding tracker entry, per AGENTS.md's own Definition of Done. |
+
+**Extended-corpus drift-resolution correction, 2026-07-12:** the completed
+198-target `stream_process_evict` batch produced 198 zero-hit `.dat` tables,
+but those tables are not valid null-search evidence. Every preserved real
+`.0002.h5` log reports approximately 2,861 Hz channels and a turboSETI drift
+resolution of approximately 9.8 Hz/s, while the extended-corpus runner was
+hard-coded to a ±4 Hz/s ceiling and blanked stationary/DC bins. This reproduced
+the exact failure already documented for the approved HIP99427 cadence: no
+eligible nonzero drift bin existed inside the requested range. A read-only
+real-data validation reran retained HIP17147 evidence into `/tmp` at the
+previously reviewed ±10 Hz/s ingestion ceiling and recovered 13 turboSETI rows
+(triage inputs, overwhelmingly likely RFI; not candidate or detection claims).
+`bl_fetch.py` now refuses unresolvable drift ceilings, exposes the search
+parameters, and the extended-corpus runner explicitly requests 10 Hz/s and
+reprocesses a present `.dat` when its recorded ceiling is lower. The 198
+evicted products still require an explicitly approved redownload/reprocess
+batch before Step 1 review sampling can use them. Until then, do not count the
+old 198 zero-hit reports as negative evidence or as calibration rows.
 
 ### Sandbox network restrictions — archives that require the user's research agent
 

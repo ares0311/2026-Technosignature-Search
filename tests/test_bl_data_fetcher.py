@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import subprocess
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -20,6 +21,7 @@ import pytest
 
 # Ensure scripts/ is importable
 SCRIPTS_DIR = Path(__file__).parent.parent / "scripts"
+EXTENDED_CORPUS_RUNNER = SCRIPTS_DIR / "run_turboseti_on_extended_corpus.sh"
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
@@ -417,6 +419,108 @@ def test_build_synthetic_h5_deterministic(tmp_path: Path) -> None:
         np.testing.assert_array_equal(fa["data"][:], fb["data"][:])
 
 
+def _write_coarse_resolution_h5(path: Path) -> None:
+    h5py = pytest.importorskip("h5py")
+    import numpy as np
+
+    with h5py.File(path, "w") as handle:
+        dataset = handle.create_dataset(
+            "data",
+            data=np.zeros((293, 1, 4), dtype=np.float32),
+        )
+        dataset.attrs["foff"] = -0.00286102294921875
+        dataset.attrs["tsamp"] = 1.0
+
+
+def test_drift_rate_resolution_matches_bl_0002_scale(tmp_path: Path) -> None:
+    path = tmp_path / "coarse.gpuspec.0002.h5"
+    _write_coarse_resolution_h5(path)
+
+    assert bl_fetch.drift_rate_resolution_hz_s(path) == pytest.approx(9.76458)
+
+
+def test_run_turboseti_rejects_unresolvable_drift_ceiling(tmp_path: Path) -> None:
+    path = tmp_path / "coarse.gpuspec.0002.h5"
+    _write_coarse_resolution_h5(path)
+
+    with pytest.raises(ValueError, match="below the first resolvable drift bin"):
+        bl_fetch.run_turboseti(path, tmp_path / "out", max_drift_hz_s=4.0)
+
+
+def test_run_turboseti_cli_preserves_fine_resolution_default() -> None:
+    args = bl_fetch._parse_args(["run-turboseti", "input.h5", "out"])
+
+    assert args.max_drift == 4.0
+    assert args.min_drift == 1e-4
+    assert args.snr == 10.0
+
+
+def test_extended_corpus_runner_passes_reviewed_0002_drift_ceiling() -> None:
+    script = EXTENDED_CORPUS_RUNNER.read_text(encoding="utf-8")
+
+    assert 'MAX_DRIFT="10"' in script
+    assert '--max-drift "${MAX_DRIFT}"' in script
+    assert "first nonzero bin for approved BL .0002 products" in script
+
+
+def test_extended_corpus_runner_reprocesses_lower_drift_table(tmp_path: Path) -> None:
+    target_dir = tmp_path / "HIP123"
+    target_dir.mkdir()
+    (target_dir / "observation.gpuspec.0002.h5").write_bytes(b"placeholder")
+    (target_dir / "observation.gpuspec.0002.dat").write_text(
+        "# DELTAT: 1.0\tmax_drift_rate: 4.000000\tobs_length: 293\n",
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            "bash",
+            str(EXTENDED_CORPUS_RUNNER),
+            "--corpus-dir",
+            str(tmp_path),
+            "--max-drift",
+            "10",
+            "--dry-run",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0
+    assert "[REPROCESS] HIP123" in result.stderr
+    assert "Would run:" in result.stdout
+
+
+def test_extended_corpus_runner_skips_adequate_drift_table(tmp_path: Path) -> None:
+    target_dir = tmp_path / "HIP123"
+    target_dir.mkdir()
+    (target_dir / "observation.gpuspec.0002.h5").write_bytes(b"placeholder")
+    (target_dir / "observation.gpuspec.0002.dat").write_text(
+        "# DELTAT: 1.0\tmax_drift_rate: 10.000000\tobs_length: 293\n",
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            "bash",
+            str(EXTENDED_CORPUS_RUNNER),
+            "--corpus-dir",
+            str(tmp_path),
+            "--max-drift",
+            "10",
+            "--dry-run",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0
+    assert "[SKIP] HIP123" in result.stdout
+    assert "Would run:" not in result.stdout
+
+
 # ---------------------------------------------------------------------------
 # run_pipeline_parallel (mocked techno-search)
 # ---------------------------------------------------------------------------
@@ -709,6 +813,7 @@ def test_bl_fetch_module_has_required_functions() -> None:
         "download_first_valid",
         "apply_pkg_resources_shim",
         "build_synthetic_h5",
+        "drift_rate_resolution_hz_s",
         "run_turboseti",
         "run_pipeline_parallel",
         "collect_dat_files",
