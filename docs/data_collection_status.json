@@ -5550,15 +5550,20 @@
     },
     "stream_process_evict_batch": {
       "acquisition_mode": "stream_process_evict",
-      "candidate_report_manifests_total": 233,
-      "dat_files_total": 211,
-      "downloaded_count": 33,
-      "downloaded_gb": 8.349794000000001,
-      "evicted_count": 33,
-      "failed_count": 0,
-      "failed_targets": [],
-      "last_run_utc": "2026-07-12T01:35:16.225781+00:00",
-      "manifest": "data_selection/batch_manifests/local_coverage_first_bounded_batch_shard5_manifest.json",
+      "candidate_report_manifests_total": 237,
+      "dat_files_total": 215,
+      "downloaded_count": 32,
+      "downloaded_gb": 8.067515000000002,
+      "evicted_count": 32,
+      "failed_count": 1,
+      "failed_targets": [
+        {
+          "reason": "download_failed",
+          "target": "HIP103039"
+        }
+      ],
+      "last_run_utc": "2026-07-12T01:35:42.561372+00:00",
+      "manifest": "data_selection/batch_manifests/local_coverage_first_bounded_batch_shard6_manifest.json",
       "ok": true,
       "raw_retention_policy": "evicted_after_candidate_report_generation",
       "targets_attempted": 33,
