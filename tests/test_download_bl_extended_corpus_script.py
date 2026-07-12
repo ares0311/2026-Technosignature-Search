@@ -500,7 +500,7 @@ def test_extended_corpus_downloader_enforces_local_storage_cap(tmp_path: Path) -
     free-space-reserve check measures instead)."""
     manifest = tmp_path / "manifest.json"
     manifest.write_text(
-        json.dumps({"targets": [{"hip": "BIG"}]}),
+        json.dumps({"targets": [{"hip": "999999"}]}),
         encoding="utf-8",
     )
     out_dir = tmp_path / "extended_corpus"
@@ -517,7 +517,7 @@ url="${@: -1}"
 if [[ "${url}" == *breakthroughinitiatives.org* ]]; then
   args="$*"
   case "${args}" in
-    *target=BIG*) printf 'https://bldata.berkeley.edu/test/HIPBIG.gpuspec.0002.h5' ;;
+    *target=HIP999999*) printf 'https://bldata.berkeley.edu/test/HIP999999.gpuspec.0002.h5' ;;
     *) printf 'unexpected-discovery-args=%s' "${args}" >&2; exit 22 ;;
   esac
   exit 0
@@ -569,7 +569,7 @@ exit 46
     )
 
     assert result.returncode != 0
-    assert not (out_dir / "HIPBIG" / "HIPBIG.gpuspec.0002.h5").exists()
+    assert not (out_dir / "HIP999999" / "HIP999999.gpuspec.0002.h5").exists()
     assert "Local storage cap would be exceeded" in result.stderr
     assert "No external SSD or cloud storage is available" in result.stderr
     assert "Data/storage policy blocked this run" in result.stderr
@@ -580,5 +580,5 @@ exit 46
     assert run_status["policy_blocked"] is True
     assert run_status["local_storage_cap_gb"] == 1.0
     assert run_status["skipped_targets"] == [
-        {"target": "HIPBIG", "reason": "local_storage_cap_exceeded"}
+        {"target": "HIP999999", "reason": "local_storage_cap_exceeded"}
     ]
