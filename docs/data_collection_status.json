@@ -5552,18 +5552,13 @@
       "acquisition_mode": "stream_process_evict",
       "candidate_report_manifests_total": 237,
       "dat_files_total": 215,
-      "downloaded_count": 32,
-      "downloaded_gb": 8.121110999999997,
-      "evicted_count": 32,
-      "failed_count": 1,
-      "failed_targets": [
-        {
-          "reason": "download_failed",
-          "target": "HIP83043"
-        }
-      ],
-      "last_run_utc": "2026-07-12T01:35:51.319999+00:00",
-      "manifest": "data_selection/batch_manifests/local_coverage_first_bounded_batch_shard3_manifest.json",
+      "downloaded_count": 33,
+      "downloaded_gb": 8.171782,
+      "evicted_count": 33,
+      "failed_count": 0,
+      "failed_targets": [],
+      "last_run_utc": "2026-07-12T08:56:11.385669+00:00",
+      "manifest": "data_selection/batch_manifests/local_coverage_first_bounded_batch_shard4_manifest.json",
       "ok": true,
       "raw_retention_policy": "evicted_after_candidate_report_generation",
       "targets_attempted": 33,
