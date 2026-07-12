@@ -52,6 +52,17 @@ evicted files. Do not use the old zero-hit tables as null-search or calibration
 evidence. The historical text below remains for context about why corpus
 widening was required, but its download status is superseded by this correction.
 
+The first authorized corrected rerun was stopped after 120 unique downloads
+and 60 evictions because concurrent shards were discovered recursively
+post-processing the same global corpus and racing on identical `.dat` outputs.
+Those raced outputs are not validation evidence. Version 1.2.1 isolates
+turboSETI and pipeline work to each shard's current target, preserves distinct
+per-shard status entries, and locks concurrent status-manifest publication.
+Seventy-seven complete raw HDF5 files plus one resumable partial remain local;
+the safe next action is to restart all six manifests after the 1.2.1 merge.
+The restart reuses complete files and resumes the partial rather than beginning
+the 198-target transfer from zero.
+
 The 554-target manifest discovery is complete (399/554 targets have a real
 BL archive URL). The actual download (capped at
 `TECHNO_EXTENDED_CORPUS_MAX_TARGETS=390`, ~90GB) was never restarted after

@@ -25,14 +25,20 @@ run's exit status is never blocked by a status-reporting side effect.
 
 from __future__ import annotations
 
+import fcntl
 import json
 import subprocess
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 DATA_COLLECTION_STATUS_SCHEMA_VERSION = "data_collection_status_v1"
 DATA_COLLECTION_STATUS_RELATIVE_PATH = Path("docs/data_collection_status.json")
+DATA_COLLECTION_STATUS_LOCK_RELATIVE_PATH = Path(
+    "data_cache/locks/data_collection_status.lock"
+)
 DATA_COLLECTION_STATUS_DISCLAIMER = (
     "This manifest records real local data-collection run outcomes "
     "(counts of items found/downloaded/skipped/failed) for compact "
@@ -41,18 +47,33 @@ DATA_COLLECTION_STATUS_DISCLAIMER = (
 )
 
 
-def update_data_collection_status(
+@contextmanager
+def _exclusive_status_lock(project_root: Path) -> Iterator[None]:
+    """Serialize manifest read-modify-write and optional git publication.
+
+    Parallel acquisition shards finish independently. Without a process lock,
+    two completions can both read the same manifest and the last writer drops
+    the other shard's entry. The lock lives under ignored ``data_cache`` so it
+    can never become a tracked artifact.
+    """
+
+    lock_path = project_root / DATA_COLLECTION_STATUS_LOCK_RELATIVE_PATH
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open("a+", encoding="utf-8") as lock_file:
+        fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+
+
+def _update_data_collection_status_unlocked(
     project_root: Path,
     script: str,
     summary: dict[str, Any],
     *,
     status_path: Path | None = None,
 ) -> dict[str, Any]:
-    """Update one script's entry in the tracked status manifest and write it back.
-
-    Pure file I/O, no git side effects -- safe to call from tests. Returns
-    the full manifest dict after the update.
-    """
 
     path = status_path or (project_root / DATA_COLLECTION_STATUS_RELATIVE_PATH)
     manifest: dict[str, Any]
@@ -76,6 +97,21 @@ def update_data_collection_status(
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
     return manifest
+
+
+def update_data_collection_status(
+    project_root: Path,
+    script: str,
+    summary: dict[str, Any],
+    *,
+    status_path: Path | None = None,
+) -> dict[str, Any]:
+    """Update one script entry atomically with respect to parallel writers."""
+
+    with _exclusive_status_lock(project_root):
+        return _update_data_collection_status_unlocked(
+            project_root, script, summary, status_path=status_path
+        )
 
 
 def commit_and_push_status(
@@ -167,14 +203,19 @@ def record_and_publish_data_collection_status(
 ) -> dict[str, Any]:
     """Update the manifest and (by default) commit + push it. Main entrypoint."""
 
-    manifest = update_data_collection_status(
-        project_root, script, summary, status_path=status_path
-    )
-    git_result: dict[str, Any] | None = None
-    if auto_commit:
-        git_result = commit_and_push_status(
-            project_root,
-            status_path=status_path,
-            message=f"Update data collection status: {script}",
+    # Keep the lock through git publication too. Distinct shard keys prevent
+    # semantic overwrites; this lock additionally prevents concurrent writers
+    # from racing on the manifest or Git index when several shards finish near
+    # the same time.
+    with _exclusive_status_lock(project_root):
+        manifest = _update_data_collection_status_unlocked(
+            project_root, script, summary, status_path=status_path
         )
+        git_result: dict[str, Any] | None = None
+        if auto_commit:
+            git_result = commit_and_push_status(
+                project_root,
+                status_path=status_path,
+                message=f"Update data collection status: {script}",
+            )
     return {"manifest": manifest, "git": git_result}

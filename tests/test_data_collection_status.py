@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import multiprocessing
 import subprocess
 from pathlib import Path
 
@@ -12,6 +13,16 @@ from techno_search.data_collection_status import (
     record_and_publish_data_collection_status,
     update_data_collection_status,
 )
+
+
+def _parallel_status_writer(project_root: str, script: str) -> None:
+    root = Path(project_root)
+    update_data_collection_status(
+        root,
+        script,
+        {"downloaded": 1},
+        status_path=root / "docs" / "data_collection_status.json",
+    )
 
 
 def test_update_creates_manifest_with_disclaimer(tmp_path: Path) -> None:
@@ -49,6 +60,27 @@ def test_update_overwrites_same_script_entry(tmp_path: Path) -> None:
     )
 
     assert manifest["runs"]["script_a"]["downloaded"] == 5
+
+
+def test_parallel_updates_preserve_each_shard_entry(tmp_path: Path) -> None:
+    processes = [
+        multiprocessing.Process(
+            target=_parallel_status_writer,
+            args=(str(tmp_path), f"shard_{index}"),
+        )
+        for index in range(6)
+    ]
+
+    for process in processes:
+        process.start()
+    for process in processes:
+        process.join(timeout=10)
+        assert process.exitcode == 0
+
+    manifest = json.loads(
+        (tmp_path / "docs" / "data_collection_status.json").read_text()
+    )
+    assert set(manifest["runs"]) == {f"shard_{index}" for index in range(6)}
 
 
 def test_commit_and_push_reports_error_without_raising_when_git_unavailable(

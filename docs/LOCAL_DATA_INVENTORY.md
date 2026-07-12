@@ -246,6 +246,15 @@ The 198 already-evicted products require a separately authorized
 redownload/reprocess batch; their old zero-hit reports must not be used as null
 results or calibration data.
 
+The authorized six-shard corrected rerun was stopped on 2026-07-12 when live
+process inspection found several shards simultaneously processing HIP4845:
+each shard had incorrectly scanned the shared corpus during post-processing.
+The interrupted run logged 120 unique downloaded targets and 60 evictions.
+After termination, the preserved raw cache contained 78 HDF5 paths totaling
+19,396,108,770 bytes: 77 fully readable files and one resumable truncated
+HIP23512 file. Outputs created during the cross-shard race are unvalidated and
+must be regenerated with the target-isolated version 1.2.1 runner.
+
 ## Local Inventory Snapshot
 
 To inspect the current workstation without committing local paths:
