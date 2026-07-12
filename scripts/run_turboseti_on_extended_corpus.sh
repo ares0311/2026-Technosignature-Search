@@ -4,14 +4,16 @@
 # Run turboSETI FindDoppler on every HDF5 file in data/extended_corpus/
 # that does not yet have a corresponding .dat hit table.  Idempotent.
 #
-# Parameters match bl_fetch.py run_turboseti():
-#   max_drift = 4 Hz/s   (standard GBT L-band)
+# Parameters are explicit for the approved coarse-resolution `.0002.h5` corpus;
+# the generic bl_fetch.py helper retains its fine-resolution default.
+#   max_drift = 10 Hz/s  (first nonzero bin for approved BL .0002 products)
 #   min_drift = 1e-4 Hz/s
 #   snr       = 10        (lower threshold for sensitivity)
 #
 # Usage:
 #   caffeinate -i bash scripts/run_turboseti_on_extended_corpus.sh \
-#       [--corpus-dir PATH] [--dry-run]
+#       [--corpus-dir PATH] [--max-drift HZ_S] [--min-drift HZ_S] \
+#       [--snr N] [--dry-run]
 #
 # Outputs:
 #   .dat files are written alongside each H5 file in their target directory.
@@ -32,6 +34,9 @@ VENV="${REPO_ROOT}/.venv/bin/python"
 BL_FETCH="${SCRIPT_DIR}/bl_fetch.py"
 
 CORPUS_DIR="${REPO_ROOT}/data/extended_corpus"
+MAX_DRIFT="10"
+MIN_DRIFT="0.0001"
+SNR_THRESHOLD="10"
 DRY_RUN=false
 
 info()  { echo "[$(date '+%H:%M:%S')] [INFO]  $*"; }
@@ -43,6 +48,9 @@ step()  { echo ""; echo "[$(date '+%H:%M:%S')] === $* ==="; }
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --corpus-dir)  CORPUS_DIR="$2"; shift 2 ;;
+        --max-drift)   MAX_DRIFT="$2"; shift 2 ;;
+        --min-drift)   MIN_DRIFT="$2"; shift 2 ;;
+        --snr)         SNR_THRESHOLD="$2"; shift 2 ;;
         --dry-run)     DRY_RUN=true;   shift   ;;
         -h|--help)
             sed -n '2,30p' "$0" | grep '^#' | sed 's/^# \?//'
@@ -60,12 +68,38 @@ fi
 
 step "turboSETI extended corpus processing"
 info "Corpus dir: ${CORPUS_DIR}"
+info "Max drift: ${MAX_DRIFT} Hz/s"
+info "Min drift: ${MIN_DRIFT} Hz/s"
+info "SNR:       ${SNR_THRESHOLD}"
 info "Dry run:    ${DRY_RUN}"
 echo ""
 
 processed=0
 skipped=0
 failed=0
+
+dat_max_drift_rate() {
+    local dat_file="$1"
+    awk -F '\t' '
+        /^#/ {
+            for (i = 1; i <= NF; i++) {
+                if ($i ~ /max_drift_rate:/) {
+                    split($i, parts, ":")
+                    gsub(/^[[:space:]]+|[[:space:]]+$/, "", parts[2])
+                    print parts[2]
+                    exit
+                }
+            }
+        }
+    ' "${dat_file}"
+}
+
+drift_ceiling_is_adequate() {
+    local existing="$1"
+    local required="$2"
+    awk -v existing="${existing}" -v required="${required}" \
+        'BEGIN { exit !((existing + 0) >= (required + 0)) }'
+}
 
 while IFS= read -r -d '' h5_file; do
     target_dir="$(dirname "${h5_file}")"
@@ -74,20 +108,27 @@ while IFS= read -r -d '' h5_file; do
     # Check if a .dat file already exists in this target directory
     existing_dat="$(find "${target_dir}" -maxdepth 1 -name "*.dat" | head -1)"
     if [[ -n "${existing_dat}" ]]; then
-        info "[SKIP] ${target_name}: .dat already exists ($(basename "${existing_dat}"))"
-        skipped=$((skipped + 1))
-        continue
+        existing_max_drift="$(dat_max_drift_rate "${existing_dat}")"
+        if [[ -z "${existing_max_drift}" ]] || drift_ceiling_is_adequate "${existing_max_drift}" "${MAX_DRIFT}"; then
+            info "[SKIP] ${target_name}: .dat already exists ($(basename "${existing_dat}"))"
+            skipped=$((skipped + 1))
+            continue
+        fi
+        warn "[REPROCESS] ${target_name}: existing .dat max drift ${existing_max_drift} Hz/s is below requested ${MAX_DRIFT} Hz/s"
     fi
 
     info "[RUN]  ${target_name}: $(basename "${h5_file}")"
 
     if [[ "${DRY_RUN}" == "true" ]]; then
-        info "[DRY]  Would run: ${VENV} ${BL_FETCH} run-turboseti ${h5_file} ${target_dir}"
+        info "[DRY]  Would run: ${VENV} ${BL_FETCH} run-turboseti ${h5_file} ${target_dir} --max-drift ${MAX_DRIFT} --min-drift ${MIN_DRIFT} --snr ${SNR_THRESHOLD}"
         processed=$((processed + 1))
         continue
     fi
 
-    if "${VENV}" "${BL_FETCH}" run-turboseti "${h5_file}" "${target_dir}"; then
+    if "${VENV}" "${BL_FETCH}" run-turboseti "${h5_file}" "${target_dir}" \
+        --max-drift "${MAX_DRIFT}" \
+        --min-drift "${MIN_DRIFT}" \
+        --snr "${SNR_THRESHOLD}"; then
         new_dat="$(find "${target_dir}" -maxdepth 1 -name "*.dat" | head -1)"
         if [[ -n "${new_dat}" ]]; then
             ok "${target_name}: produced $(basename "${new_dat}")"

@@ -77,6 +77,9 @@ VOYAGER_URLS = [
 ]
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_MPLCONFIGDIR = REPO_ROOT / "cache" / "matplotlib"
+DEFAULT_MAX_DRIFT_HZ_S = 4.0
+DEFAULT_MIN_DRIFT_HZ_S = 1e-4
+DEFAULT_SNR_THRESHOLD = 10.0
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -638,11 +641,60 @@ def ensure_drift_indexes() -> None:
 # ---------------------------------------------------------------------------
 
 
-def run_turboseti(h5_path: str | Path, out_dir: str | Path) -> None:
+def drift_rate_resolution_hz_s(h5_path: str | Path) -> float:
+    """Estimate the first resolvable turboSETI drift bin for an HDF5 product."""
+    import h5py  # type: ignore[import]
+
+    with h5py.File(h5_path, "r") as handle:
+        if "data" not in handle:
+            raise ValueError(f"HDF5 file has no data dataset: {h5_path}")
+        dataset = handle["data"]
+        if not dataset.shape or int(dataset.shape[0]) < 1:
+            raise ValueError(f"HDF5 data dataset has no time samples: {h5_path}")
+        time_sample_count = int(dataset.shape[0])
+        try:
+            channel_width_hz = abs(float(dataset.attrs["foff"])) * 1e6
+            sample_time_s = float(dataset.attrs["tsamp"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError(
+                f"HDF5 data dataset lacks numeric foff/tsamp metadata: {h5_path}"
+            ) from exc
+
+    observation_duration_s = time_sample_count * sample_time_s
+    if channel_width_hz <= 0.0 or observation_duration_s <= 0.0:
+        raise ValueError(f"HDF5 foff/tsamp metadata must be non-zero: {h5_path}")
+    return channel_width_hz / observation_duration_s
+
+
+def run_turboseti(
+    h5_path: str | Path,
+    out_dir: str | Path,
+    *,
+    max_drift_hz_s: float = DEFAULT_MAX_DRIFT_HZ_S,
+    min_drift_hz_s: float = DEFAULT_MIN_DRIFT_HZ_S,
+    snr_threshold: float = DEFAULT_SNR_THRESHOLD,
+) -> None:
     """
     Run turboSETI FindDoppler on h5_path, writing .dat hit table to out_dir.
     Applies all 6 Python 3.13+ fixes before importing turboSETI.
     """
+    if max_drift_hz_s <= 0.0:
+        raise ValueError("max_drift_hz_s must be positive")
+    if min_drift_hz_s < 0.0 or min_drift_hz_s > max_drift_hz_s:
+        raise ValueError("min_drift_hz_s must be non-negative and <= max_drift_hz_s")
+    if snr_threshold <= 0.0:
+        raise ValueError("snr_threshold must be positive")
+
+    resolution = drift_rate_resolution_hz_s(h5_path)
+    if max_drift_hz_s < resolution:
+        raise ValueError(
+            "max_drift_hz_s is below the first resolvable drift bin for this "
+            f"HDF5 product: requested={max_drift_hz_s:.6g}, "
+            f"estimated_resolution={resolution:.6g}, file={h5_path}. "
+            "Use a scientifically reviewed larger drift ceiling or a finer "
+            "spectral-resolution product."
+        )
+
     configure_matplotlib_cache()
     apply_pkg_resources_shim()
     ensure_drift_indexes()
@@ -651,9 +703,9 @@ def run_turboseti(h5_path: str | Path, out_dir: str | Path) -> None:
 
     fd = FindDoppler(
         str(h5_path),
-        max_drift=4,
-        min_drift=1e-4,
-        snr=10,
+        max_drift=max_drift_hz_s,
+        min_drift=min_drift_hz_s,
+        snr=snr_threshold,
         out_dir=str(out_dir),
         log_level_int=30,
     )
@@ -916,6 +968,28 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p_ts = sub.add_parser("run-turboseti", help="Run turboSETI FindDoppler on an H5.")
     p_ts.add_argument("h5", type=Path, help="Input HDF5 file.")
     p_ts.add_argument("out_dir", type=Path, help="Directory to write .dat hit table.")
+    p_ts.add_argument(
+        "--max-drift",
+        type=float,
+        default=DEFAULT_MAX_DRIFT_HZ_S,
+        help=(
+            "Maximum absolute drift rate in Hz/s. The default 4 is suitable for "
+            "the fine-resolution Voyager control; approved BL .0002 products "
+            "require an explicit 10 Hz/s ceiling."
+        ),
+    )
+    p_ts.add_argument(
+        "--min-drift",
+        type=float,
+        default=DEFAULT_MIN_DRIFT_HZ_S,
+        help="Minimum absolute drift rate in Hz/s.",
+    )
+    p_ts.add_argument(
+        "--snr",
+        type=float,
+        default=DEFAULT_SNR_THRESHOLD,
+        help="turboSETI signal-to-noise threshold.",
+    )
 
     # run-pipeline
     p_rp = sub.add_parser(
@@ -963,7 +1037,13 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.cmd == "run-turboseti":
         args.out_dir.mkdir(parents=True, exist_ok=True)
-        run_turboseti(args.h5, args.out_dir)
+        run_turboseti(
+            args.h5,
+            args.out_dir,
+            max_drift_hz_s=args.max_drift,
+            min_drift_hz_s=args.min_drift,
+            snr_threshold=args.snr,
+        )
         return 0
 
     if args.cmd == "run-pipeline":

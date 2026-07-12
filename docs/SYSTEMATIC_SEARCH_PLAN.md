@@ -18,7 +18,7 @@ step that's already blocked on an earlier one.
 
 ---
 
-## Current honest state (updated 2026-07-11; originally recorded 2026-07-05)
+## Current honest state (updated 2026-07-12; originally recorded 2026-07-05)
 
 | Capability | Status |
 |---|---|
@@ -28,11 +28,29 @@ step that's already blocked on an earlier one.
 | Semisupervised anomaly/OOD calibration | ❌ Blocked — see Step 1 |
 | Operator UI hardening | ⚠️ Substantially underway — 12 operator-facing commands now default to compact summaries with `--json` opt-in, across three rounds of hardening: `prod-target-status`/`prod-follow-ups`/`prod-non-detections` (before 2026-07-09), `review-dashboard` (2026-07-09), and `track-b-unknown-candidate-gate`/`track-b-candidate-readiness`/`gbt-cadence-abacab-review`/`gbt-cadence-raw-status`/`adversarial-review-dossier`/`multi-modal-crossmatch-summary`/`prod-runs`/`scan-summary` (2026-07-10/11, 8 commands — the commit message for this round undercounted it as "7 more", missing `scan-summary`; verified by counting `_print_*` functions directly, not trusting the commit message). `escalation-gate-check`/`cross-target-rfi-summary`/`health`/`prod-show` deliberately left alone — small flat dicts, already scannable. See Step 2 for what a future audit should still check. |
 | Detection-optimized target selection algorithm | ⚠️ 3a (novel-target selection) real and running: 13 discover→preflight→promote rounds completed (`top25`/`next25`/`batch3`-`batch13`) as of 2026-07-11, 195 targets / ~49 GB promoted to `raw_download_approval_required` (as of `batch12`; `batch13` built, discovery pending), all pending explicit raw-download approval — no payloads downloaded. 3b (follow-up-target selection) remains design-only per its documented gate (no real qualifying candidate exists yet to validate it against). See Step 3a. |
-| Extended-corpus download completion | ⚠️ Paused mid-run — see Step 0. Untouched this session; distinct from the batch-round work above (Step 0 is the original stratified-manifest bulk download, not the target-priority-queue rounds). |
+| Extended-corpus completion | ❌ Reprocessing required — 198 targets were downloaded/processed/evicted, but a ±4 Hz/s ceiling was below the `.0002.h5` products' ≈9.8 Hz/s drift resolution, so all zero-hit outputs are invalid as null-search evidence. See Step 0 correction below. |
 
 ---
 
 ## Step 0 (unblocks everything below): finish the extended-corpus download
+
+**Correction, 2026-07-12 — this supersedes the stale “paused” status below.**
+The first bounded 198-target, approximately 49.9 GB `stream_process_evict`
+batch completed with zero transport/process failures, but its scientific
+outputs need reprocessing. The extended-corpus runner used `max_drift=4` on
+`.0002.h5` products whose preserved logs report an approximately 9.8 Hz/s
+first drift bin; with DC blanking enabled, the run could not search a nonzero
+drift bin. A retained real HIP17147 product produced 13 rows when rerun at the
+already-reviewed 10 Hz/s ingestion ceiling, confirming the root cause.
+
+The code now refuses a drift ceiling below the input product's resolvable bin,
+passes 10 Hz/s explicitly for the `.0002` corpus, and recognizes lower-ceiling
+`.dat` files as stale when their HDF5 source is present. The immediate action is
+not to build the Step 1 sampler yet: first reprocess the 17 retained HDF5 files,
+then obtain explicit authorization before redownloading/reprocessing the 198
+evicted files. Do not use the old zero-hit tables as null-search or calibration
+evidence. The historical text below remains for context about why corpus
+widening was required, but its download status is superseded by this correction.
 
 The 554-target manifest discovery is complete (399/554 targets have a real
 BL archive URL). The actual download (capped at
