@@ -5553,17 +5553,17 @@
       "candidate_report_manifests_total": 230,
       "dat_files_total": 208,
       "downloaded_count": 32,
-      "downloaded_gb": 7.9302719999999995,
+      "downloaded_gb": 8.031256,
       "evicted_count": 32,
       "failed_count": 1,
       "failed_targets": [
         {
           "reason": "download_failed",
-          "target": "GJ702B"
+          "target": "HIP3206"
         }
       ],
-      "last_run_utc": "2026-07-12T01:34:30.718935+00:00",
-      "manifest": "data_selection/batch_manifests/local_coverage_first_bounded_batch_shard4_manifest.json",
+      "last_run_utc": "2026-07-12T01:34:35.738221+00:00",
+      "manifest": "data_selection/batch_manifests/local_coverage_first_bounded_batch_shard2_manifest.json",
       "ok": true,
       "raw_retention_policy": "evicted_after_candidate_report_generation",
       "targets_attempted": 33,
