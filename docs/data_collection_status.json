@@ -5550,28 +5550,20 @@
     },
     "stream_process_evict_batch": {
       "acquisition_mode": "stream_process_evict",
-      "candidate_report_manifests_total": 218,
-      "dat_files_total": 196,
-      "downloaded_count": 30,
-      "downloaded_gb": 7.582222000000002,
-      "evicted_count": 30,
-      "failed_count": 3,
+      "candidate_report_manifests_total": 230,
+      "dat_files_total": 208,
+      "downloaded_count": 32,
+      "downloaded_gb": 7.9302719999999995,
+      "evicted_count": 32,
+      "failed_count": 1,
       "failed_targets": [
         {
           "reason": "download_failed",
-          "target": "HIP102422"
-        },
-        {
-          "reason": "download_failed",
-          "target": "HIP102488"
-        },
-        {
-          "reason": "download_failed",
-          "target": "HIP102766"
+          "target": "GJ702B"
         }
       ],
-      "last_run_utc": "2026-07-12T00:53:41.728978+00:00",
-      "manifest": "data_selection/batch_manifests/local_coverage_first_bounded_batch_shard6_manifest.json",
+      "last_run_utc": "2026-07-12T01:34:30.718935+00:00",
+      "manifest": "data_selection/batch_manifests/local_coverage_first_bounded_batch_shard4_manifest.json",
       "ok": true,
       "raw_retention_policy": "evicted_after_candidate_report_generation",
       "targets_attempted": 33,
