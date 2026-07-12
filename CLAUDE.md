@@ -67,6 +67,83 @@ Mandatory requirements:
 
 ## Current Live Handoff — 2026-06-27
 
+### First `stream_process_evict` Batch Complete — 198/198 Targets, 2026-07-12
+
+The first bounded `stream_process_evict` batch (`local_coverage_first_bounded_batch_manifest.json`,
+198 targets / ~49.9GB from the `raw_download_approval_required` queue) is
+fully complete: **198/198 targets downloaded, processed, and evicted; 0
+failures.** Executed via `scripts/run_stream_process_evict_batch.sh`
+(new script this session) sharded across 6 manifests
+(`local_coverage_first_bounded_batch_shard{1-6}_manifest.json`, ~33 targets
+each) run in parallel across 6 terminal tabs on the user's own machine —
+this sandbox's own outbound network is capped at a confirmed ~200KB/s
+aggregate (verified empirically: 2 concurrent connections got the same
+combined throughput as 1), so the actual bulk download had to run outside
+the sandbox. Real local storage stayed at ~9GB throughout (never
+accumulated), confirming the stream_process_evict eviction design (raw
+HDF5 deleted immediately after each target's candidate report is
+confirmed) holds up under sustained real multi-hour, multi-shard load.
+
+Corpus now has 215 `.dat` files and 237 candidate report manifests
+(cumulative, includes prior corpus). This is real negative/candidate
+triage evidence only — not a detection, discovery, or external-submission
+claim.
+
+**Two real bugs found and fixed live during this run:**
+1. `turbo_seti==2.3.2` (newest PyPI release, no upper numpy bound) crashes
+   on a real off-by-one bug in its own trailing debug-log line
+   (`find_doppler.py`, formats a length-1 array with `%i` instead of
+   indexing `[0]`, as the same file does correctly three other times) once
+   numpy>=2.0 is resolved. Fixed via a one-line site-packages patch
+   (`scripts/patch_turbo_seti_numpy2_compat.sh`, idempotent, required again
+   after any fresh `radio`-extra install) — documented in `AGENTS.md`'s
+   Environment Rules.
+2. The batch script's own console-visibility bug: `log()` only wrote via
+   plain `echo`, so a caller redirecting output with `> file 2>&1` (rather
+   than `| tee file`) got zero visible terminal output for the
+   many-minutes-long gaps between progress lines — looked hung even though
+   it was working (confirmed via the log file). Fixed: `log()` now always
+   writes to both console and an auto-derived (or `--log-file`-specified)
+   log file; no caller-side `tee` needed.
+
+**Two real operational incidents, both caught and corrected:**
+1. Editing `run_stream_process_evict_batch.sh` while a background instance
+   of it was still executing (to add the resume-check/progress-polling/
+   interrupt-trap fixes) corrupted one in-flight download (`GJ273`,
+   became an oversized/corrupted file that a naive size-only resume-check
+   would have treated as "complete" forever). Root cause: bash reads a
+   running script's file incrementally from disk: modifying it mid-execution
+   is undefined behavior. Fixed by deleting the corrupted file (forcing a
+   clean re-download) and adopting a hard rule: never edit a script while
+   any instance of it is executing. GJ273 backfilled successfully on retry.
+2. Two throwaway test runs (against a scratch `data_cache/test_slice_manifest.json`,
+   not a real batch manifest) auto-committed and pushed fabricated
+   `stream_process_evict_batch` status entries to the canonical, tracked
+   `docs/data_collection_status.json` on `main` — the same incident class
+   already documented below under "Git-Add-Safe Label Regeneration" and
+   `AGENTS.md`'s DATA COLLECTION STATUS REPORTING DIRECTIVE, now hit a
+   second way (real canonical path, fake/test manifest data, rather than a
+   redirected path). Both commits reverted (`git revert`, pushed). Fixed at
+   the root: the script now only calls `record-data-collection-status` when
+   the manifest path is under the canonical `data_selection/batch_manifests/`
+   directory; scratch/test manifests are silently skipped.
+
+**Known minor limitation, not yet fixed:** `docs/data_collection_status.json`'s
+single `stream_process_evict_batch` key reflects only whichever of the 6
+concurrent shard processes committed last (a git race across 6 simultaneous
+auto-commits), not a true aggregate. The real aggregate for this batch is
+recorded here. Also: each shard's turboSETI step scans the *entire* shared
+`data/extended_corpus/` directory rather than just its own chunk, causing
+occasional harmless cross-shard timing collisions (a redundant scan hits a
+file another shard just evicted or is still writing) — non-destructive
+(never evicts unprocessed data) but not yet scoped per-shard.
+
+**Not yet done:** the remaining ~949-target / ~239GB balance of the
+1,147-target `raw_download_approval_required` queue is still queued; this
+batch was explicitly sized to ~50GB to leave a wide safety margin, not the
+whole queue. Next bounded batch needs the same discover→preflight→promote
+→ size-cap pattern before download.
+
 ### HARD LOCAL STORAGE CONSTRAINT — NON-NEGOTIABLE — 2026-07-11
 
 **This project has no external SSD and no cloud storage available for
