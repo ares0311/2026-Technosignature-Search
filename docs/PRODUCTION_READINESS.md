@@ -8,6 +8,24 @@ deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
 **Current app version:** 1.2.1
 
+**Step 0 corrected-corpus completion — 2026-07-12 23:58 UTC:** version 1.2.1
+was merged in PR #251 at commit `5507030`, then all six target-isolated
+`stream_process_evict` shards completed 33/33 targets. The combined measured
+outcome was 198 downloads, 198 post-report raw evictions, zero failures, and
+zero warnings/errors. Read-only monitoring observed no duplicate active target
+at any point. All six distinct v1.2.1 status entries and their 33 downloaded +
+33 evicted target lists are tracked in `docs/data_collection_status.json`.
+The final extended corpus has 215/215 `.dat` files at the corrected 10 Hz/s
+ceiling and zero at the invalid 4 Hz/s ceiling. `radio-real-corpus-summary`
+reports 8,988 hit rows across 215 hit-bearing targets: all 8,988 are
+Earth-drift-inconsistent under the current check, 7,571 carry cross-target RFI
+flags, and zero are follow-up or escalation-ready candidates. The raw cache
+returned to the 17 retained HDF5 files and total project data usage to 9.0 GB.
+These are automated triage/negative-filtering results, not candidate,
+detection, discovery, expert-review, or external-validation claims. Step 0 is
+complete; the next honest Phase 1 action is the project-owned human review set
+already specified below, not further bulk acquisition or threshold guessing.
+
 (A "Current milestone: 79" numbered-milestone field was removed here on
 2026-07-11: an audit found it referenced nowhere else in the project, never
 incremented across 80+ commits since it was set, and superseded in practice
@@ -191,8 +209,8 @@ one resumable partial were preserved, and none of the raced outputs count as
 validated science evidence. App version 1.2.1 scopes both post-processors to
 each chunk target, records status under distinct per-shard keys with per-target
 download/eviction detail, and serializes concurrent status-manifest updates.
-The six shards must be restarted after 1.2.1 is merged; existing complete and
-partial files are reused/resumed.
+The shards were restarted after the merge, reused/resumed the preserved files,
+and completed successfully as recorded in the Step 0 completion handoff above.
 
 ### Sandbox network restrictions — archives that require the user's research agent
 

@@ -255,6 +255,14 @@ After termination, the preserved raw cache contained 78 HDF5 paths totaling
 HIP23512 file. Outputs created during the cross-shard race are unvalidated and
 must be regenerated with the target-isolated version 1.2.1 runner.
 
+The v1.2.1 restart then completed all six 33-target shards: 198 downloads,
+198 post-report evictions, zero failures, and zero warnings/errors. The final
+corpus contains 215 `.dat` files, all at 10 Hz/s and all hit-bearing, with
+8,988 automated triage rows. The raw cache returned to 17 retained HDF5 files;
+`data/` returned to approximately 9.0 GB. Six per-shard status entries with
+complete downloaded/evicted target lists are tracked in
+`docs/data_collection_status.json`. No row is a candidate or detection claim.
+
 ## Local Inventory Snapshot
 
 To inspect the current workstation without committing local paths:
