@@ -20,6 +20,18 @@ step that's already blocked on an earlier one.
 
 ## Current honest state (updated 2026-07-12; originally recorded 2026-07-05)
 
+**Step 0 completion handoff — 2026-07-12 23:58 UTC:** PR #251/version 1.2.1
+is merged (`5507030`) and all six isolated shards completed 33/33 targets with
+198 combined downloads, 198 evictions, zero failures, zero warnings/errors,
+and no duplicate target observed by the one-minute process monitor. Six
+distinct per-shard v1.2.1 entries with complete target detail are tracked in
+`docs/data_collection_status.json`. The corrected corpus contains 215/215
+10-Hz/s `.dat` files, zero 4-Hz/s files, 8,988 hit rows across 215 targets,
+7,571 cross-target RFI flags, and zero follow-up or escalation-ready
+candidates. Raw retention returned to 17 HDF5 files and data usage to 9.0 GB.
+Step 0 is complete. Proceed to the Step 1 project-owned human review set; do
+not repeat bulk acquisition or infer labels from these automated filters.
+
 | Capability | Status |
 |---|---|
 | Pipeline processes real data end-to-end per file/target | ✅ Real, repeatedly demonstrated (Voyager, HIP99427, all 18 KIC 8462852 quarters) |
@@ -28,11 +40,11 @@ step that's already blocked on an earlier one.
 | Semisupervised anomaly/OOD calibration | ❌ Blocked — see Step 1 |
 | Operator UI hardening | ⚠️ Substantially underway — 12 operator-facing commands now default to compact summaries with `--json` opt-in, across three rounds of hardening: `prod-target-status`/`prod-follow-ups`/`prod-non-detections` (before 2026-07-09), `review-dashboard` (2026-07-09), and `track-b-unknown-candidate-gate`/`track-b-candidate-readiness`/`gbt-cadence-abacab-review`/`gbt-cadence-raw-status`/`adversarial-review-dossier`/`multi-modal-crossmatch-summary`/`prod-runs`/`scan-summary` (2026-07-10/11, 8 commands — the commit message for this round undercounted it as "7 more", missing `scan-summary`; verified by counting `_print_*` functions directly, not trusting the commit message). `escalation-gate-check`/`cross-target-rfi-summary`/`health`/`prod-show` deliberately left alone — small flat dicts, already scannable. See Step 2 for what a future audit should still check. |
 | Detection-optimized target selection algorithm | ⚠️ 3a (novel-target selection) real and running: 13 discover→preflight→promote rounds completed (`top25`/`next25`/`batch3`-`batch13`) as of 2026-07-11, 195 targets / ~49 GB promoted to `raw_download_approval_required` (as of `batch12`; `batch13` built, discovery pending), all pending explicit raw-download approval — no payloads downloaded. 3b (follow-up-target selection) remains design-only per its documented gate (no real qualifying candidate exists yet to validate it against). See Step 3a. |
-| Extended-corpus completion | ❌ Reprocessing required — 198 targets were downloaded/processed/evicted, but a ±4 Hz/s ceiling was below the `.0002.h5` products' ≈9.8 Hz/s drift resolution, so all zero-hit outputs are invalid as null-search evidence. See Step 0 correction below. |
+| Extended-corpus completion | ✅ Complete — corrected v1.2.1 six-shard rerun finished 198/198 targets with zero failures or duplicate processing; the full 215-target local corpus is now at 10 Hz/s and contains 8,988 triage rows, with zero follow-up/escalation-ready candidates. See Step 0 completion below. |
 
 ---
 
-## Step 0 (unblocks everything below): finish the extended-corpus download
+## Step 0 (complete): corrected extended-corpus bootstrap
 
 **Correction, 2026-07-12 — this supersedes the stale “paused” status below.**
 The first bounded 198-target, approximately 49.9 GB `stream_process_evict`
@@ -45,12 +57,11 @@ already-reviewed 10 Hz/s ingestion ceiling, confirming the root cause.
 
 The code now refuses a drift ceiling below the input product's resolvable bin,
 passes 10 Hz/s explicitly for the `.0002` corpus, and recognizes lower-ceiling
-`.dat` files as stale when their HDF5 source is present. The immediate action is
-not to build the Step 1 sampler yet: first reprocess the 17 retained HDF5 files,
-then obtain explicit authorization before redownloading/reprocessing the 198
-evicted files. Do not use the old zero-hit tables as null-search or calibration
-evidence. The historical text below remains for context about why corpus
-widening was required, but its download status is superseded by this correction.
+`.dat` files as stale when their HDF5 source is present. The 17 retained files
+were reprocessed first; the authorized v1.2.1 six-shard rerun then completed all
+198 evicted targets. Do not use the superseded 4-Hz/s zero-hit results as null
+evidence or calibration rows. The historical text below remains only as
+context for why this one-time corpus widening was required.
 
 The first authorized corrected rerun was stopped after 120 unique downloads
 and 60 evictions because concurrent shards were discovered recursively
@@ -58,10 +69,9 @@ post-processing the same global corpus and racing on identical `.dat` outputs.
 Those raced outputs are not validation evidence. Version 1.2.1 isolates
 turboSETI and pipeline work to each shard's current target, preserves distinct
 per-shard status entries, and locks concurrent status-manifest publication.
-Seventy-seven complete raw HDF5 files plus one resumable partial remain local;
-the safe next action is to restart all six manifests after the 1.2.1 merge.
-The restart reuses complete files and resumes the partial rather than beginning
-the 198-target transfer from zero.
+Seventy-seven complete raw HDF5 files plus one resumable partial remained at
+termination. The subsequent v1.2.1 restart reused/resumed them and completed
+all manifests. Final measured results are in the Step 0 completion handoff.
 
 The 554-target manifest discovery is complete (399/554 targets have a real
 BL archive URL). The actual download (capped at
