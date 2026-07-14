@@ -109,14 +109,35 @@ def _git(repo_root: Path, *args: str) -> str:
     return result.stdout
 
 
+def _resolve_base_ref(repo_root: Path, base_ref: str) -> str:
+    """Resolve the base locally, fetching only its tip in shallow GitHub CI."""
+    verify = subprocess.run(
+        ["git", "rev-parse", "--verify", "--quiet", f"{base_ref}^{{commit}}"],
+        cwd=repo_root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if verify.returncode == 0:
+        return base_ref
+    github_base = os.environ.get("GITHUB_BASE_REF")
+    if os.environ.get("GITHUB_ACTIONS") == "true" and github_base:
+        _git(repo_root, "fetch", "--no-tags", "--depth=1", "origin", github_base)
+        return "FETCH_HEAD"
+    raise RuntimeError(f"base ref {base_ref!r} is unavailable")
+
+
 def base_increment_errors(repo_root: Path, base_ref: str) -> list[str]:
     """Require a strict version increase when app/directive surfaces changed."""
-    changed_paths = _git(repo_root, "diff", "--name-only", f"{base_ref}...HEAD").splitlines()
+    resolved_base = _resolve_base_ref(repo_root, base_ref)
+    changed_paths = _git(
+        repo_root, "diff", "--name-only", resolved_base, "HEAD"
+    ).splitlines()
     relevant = release_relevant_paths(changed_paths)
     if not relevant:
         return []
     current = project_version((repo_root / "pyproject.toml").read_text(encoding="utf-8"))
-    base = project_version(_git(repo_root, "show", f"{base_ref}:pyproject.toml"))
+    base = project_version(_git(repo_root, "show", f"{resolved_base}:pyproject.toml"))
     if version_tuple(current) > version_tuple(base):
         return []
     sample = ", ".join(relevant[:8])

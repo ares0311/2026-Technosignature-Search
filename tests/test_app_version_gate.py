@@ -59,6 +59,9 @@ def test_base_gate_rejects_relevant_change_without_increment(
         raise AssertionError(args)
 
     monkeypatch.setattr(check_app_version, "_git", fake_git)
+    monkeypatch.setattr(
+        check_app_version, "_resolve_base_ref", lambda _root, ref: ref
+    )
 
     errors = check_app_version.base_increment_errors(tmp_path, "origin/main")
 
@@ -82,5 +85,8 @@ def test_base_gate_accepts_strict_increment(
         raise AssertionError(args)
 
     monkeypatch.setattr(check_app_version, "_git", fake_git)
+    monkeypatch.setattr(
+        check_app_version, "_resolve_base_ref", lambda _root, ref: ref
+    )
 
     assert check_app_version.base_increment_errors(tmp_path, "origin/main") == []
