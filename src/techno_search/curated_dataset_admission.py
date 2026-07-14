@@ -147,13 +147,15 @@ def validate_curated_dataset_admission_records(
         authority_review_complete = (
             record.external_review_required and record.external_review_completed
         )
-        citizen_science_review_complete = (
-            record.review_policy == "citizen_science_reproducibility"
+        preexisting_label_provenance_complete = (
+            record.review_policy == "preexisting_label_provenance"
             and record.independent_method_review_completed
             and bool(record.public_reproducibility_artifact.strip())
             and not record.external_review_required
         )
-        review_complete = authority_review_complete or citizen_science_review_complete
+        review_complete = (
+            authority_review_complete or preexisting_label_provenance_complete
+        )
         all_reviews_complete = (
             record.provenance_reviewed
             and record.license_reviewed
@@ -170,18 +172,20 @@ def validate_curated_dataset_admission_records(
         if (
             not record.synthetic_fixture_only
             and not record.external_review_required
-            and record.review_policy != "citizen_science_reproducibility"
+            and record.review_policy != "preexisting_label_provenance"
         ):
             issues.append(
                 prefix
-                + "non-synthetic admission requires external or citizen-science review"
+                + "non-synthetic admission requires external review or documented "
+                "pre-existing label provenance"
             )
         if (
-            record.review_policy == "citizen_science_reproducibility"
+            record.review_policy == "preexisting_label_provenance"
             and record.external_review_completed
         ):
             issues.append(
-                prefix + "citizen-science review cannot claim external review completion"
+                prefix
+                + "pre-existing label provenance cannot claim external review completion"
             )
         if record.real_data_authorized and record.synthetic_fixture_only:
             issues.append(prefix + "real data cannot be authorized for synthetic-only records")
@@ -210,7 +214,7 @@ def curated_dataset_admission_summary(path: Path | None = None) -> dict[str, Any
     real_data_authorized_count = 0
     external_review_required_count = 0
     external_review_completed_count = 0
-    citizen_science_review_completed_count = 0
+    preexisting_label_provenance_completed_count = 0
     total_blocker_count = 0
 
     for record in records:
@@ -233,11 +237,11 @@ def curated_dataset_admission_summary(path: Path | None = None) -> dict[str, Any
         if record.external_review_completed:
             external_review_completed_count += 1
         if (
-            record.review_policy == "citizen_science_reproducibility"
+            record.review_policy == "preexisting_label_provenance"
             and record.independent_method_review_completed
             and record.public_reproducibility_artifact
         ):
-            citizen_science_review_completed_count += 1
+            preexisting_label_provenance_completed_count += 1
 
     return {
         "schema_version": CURATED_DATASET_ADMISSION_SCHEMA_VERSION,
@@ -249,8 +253,8 @@ def curated_dataset_admission_summary(path: Path | None = None) -> dict[str, Any
         "real_data_authorized_count": real_data_authorized_count,
         "external_review_required_count": external_review_required_count,
         "external_review_completed_count": external_review_completed_count,
-        "citizen_science_review_completed_count": (
-            citizen_science_review_completed_count
+        "preexisting_label_provenance_completed_count": (
+            preexisting_label_provenance_completed_count
         ),
         "total_blocker_count": total_blocker_count,
         "validation_ok": bool(validation["ok"]),

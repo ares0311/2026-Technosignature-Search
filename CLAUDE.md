@@ -83,6 +83,15 @@ Current execution status:
    threshold. `ai-hardening-gate-summary` must report `status: open`,
    `production_promotion_allowed: false`, and scope `blocked` until adequate
    pre-existing labeled evidence exists. Never create or solicit those labels.
+ - Version 1.2.11 retires the remaining executable project-owned label creation
+   paths: `scripts/build_citizen_science_labels.py`,
+   `scripts/combine_citizen_science_labels.py`, their dataset writer APIs, and
+   the label-trained binary/pathway model module and CLI commands.
+   The frozen 124-row HIP99427 artifact remains available only as the accepted
+   legacy diagnostic input; it is not authorized labeled data and cannot satisfy
+   an accuracy or promotion gate. Deterministic ABACAB analysis reports triage
+   outcomes from `cadence_triage.py` and may not write training/evaluation ground
+   truth.
  - Training, calibration, threshold selection, and scientific evaluation use
    pre-existing independently labeled row-level data only. Never ask the user
    or anyone else to label data, and never build a label-acquisition queue.
@@ -460,14 +469,18 @@ cause any wrong claim, just an unresolved condition.
 2. Get real ABACAB 6-scan cadence evidence (this Voyager file is a single
    observation, not a full ON/OFF cadence).
 
-### Second Track B Blocker Closed — Real Cadence Bug, 2026-07-02
+### Historical Track B Cadence Work — 2026-07-02 (superseded 2026-07-14)
+
+The text below records a historical implementation path. DECISIONS 144-145
+supersede its label, training, calibration, and gate-closure claims; the
+project-generated HIP99427 artifact is legacy diagnostic evidence only.
 
 Blocker 2 above turned out to already have real evidence sitting unused: the
 committed `examples/real_labeled/hip99427_citizen_science_labels_v1.json`
 (124 real HIP99427 evidence groups, 2 labeled `follow_up`) was generated
 before PR #125 added `abacab_cadence_score`, so it predated the feature
-entirely. Re-running the existing `scripts/build_citizen_science_labels.py`
-against the real local cadence CSV surfaced a real bug (PR #186, not a data
+entirely. A historical run of the now-retired label-generation script against
+the real local cadence CSV surfaced a real bug (PR #186, not a data
 gap): `_candidate_mapping()` in `citizen_science_labels.py` built row dicts
 for `build_radio_candidate()` without a `source_artifact` key, so
 `_abacab_cadence_score()` saw every hit's source collapse to `""` (falsy)
@@ -534,7 +547,7 @@ implementation gap.
 
 ### Real Anomaly-Score Distribution — Calibration Attempt, 2026-07-02
 
-Wired `semisupervised_anomaly_score` into `citizen_science_labels.py`'s
+Historically wired `semisupervised_anomaly_score` into the retired label path's
 candidate path (PR #189, reusing `pipeline_runner.py`'s existing injection
 pattern) and ran the user's real fitted MeerKAT-trained scorer against all
 124 real HIP99427 evidence groups. Real distribution by label:
@@ -596,18 +609,18 @@ you MUST record the key results in this handoff section before responding.
 Do NOT ask the user to run a command again if they have already run it and
 pasted the results — even across sessions. This file is the memory between sessions.**
 
-### Git-Add-Safe Label Regeneration — 2026-07-02
+### Historical Label Regeneration — 2026-07-02 (retired 2026-07-14)
 
 The user reminded agents that their standard cadence is `git add .`; scripts
-must work around that design feature. Root cause found: the normal
-`scripts/build_citizen_science_labels.py` default overwrote the tracked
+must work around that design feature. Before the label-generation path was
+retired, its default overwrote the tracked
 `examples/real_labeled/hip99427_citizen_science_labels_v1.json` fixture, so
 routine local diagnostic regeneration made `git add .` stage a generated diff.
 Fix: normal runs now default to ignored
 `tmp_training/real_labeled/hip99427_citizen_science_labels_v1.local.json`.
 Refreshing the committed fixture requires explicit `--update-committed-fixture`
-or an explicit `--output` path. Keep this pattern for any future scripts that
-produce both local diagnostics and committed reference fixtures.
+or an explicit `--output` path. Version 1.2.11 removes the script entirely;
+future agents must not recreate any project-owned label writer.
 
 ### Extended-Corpus Download Result — 2026-07-02
 

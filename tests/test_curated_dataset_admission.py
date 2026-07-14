@@ -27,13 +27,13 @@ def test_curated_dataset_admission_summary_counts_gate_states() -> None:
 
     assert summary["schema_version"] == "curated_dataset_admission_v1"
     assert summary["record_count"] == 5
-    assert summary["blocked_count"] == 3
-    assert summary["ready_for_local_fixture_count"] == 1
+    assert summary["blocked_count"] == 4
+    assert summary["ready_for_local_fixture_count"] == 0
     assert summary["synthetic_only_count"] == 1
-    assert summary["real_data_authorized_count"] == 1
+    assert summary["real_data_authorized_count"] == 0
     assert summary["external_review_required_count"] == 3
-    assert summary["citizen_science_review_completed_count"] == 1
-    assert summary["total_blocker_count"] == 9
+    assert summary["preexisting_label_provenance_completed_count"] == 0
+    assert summary["total_blocker_count"] == 10
     assert summary["validation_ok"] is True
     assert summary["by_track"] == {
         "anomaly": 1,
@@ -74,7 +74,7 @@ def test_curated_dataset_admission_rejects_real_authorization_without_reviews(
     summary = curated_dataset_admission_summary(path)
 
     assert summary["validation_ok"] is False
-    assert summary["real_data_authorized_count"] == 2
+    assert summary["real_data_authorized_count"] == 1
     assert any(
         "requires ready_for_local_fixture" in issue
         for issue in summary["validation_issues"]

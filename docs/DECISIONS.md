@@ -3898,3 +3898,47 @@ review, infer, or synthesize those missing labels. Unlabeled observations and
 synthetic injections are not substitutes. Deterministic false-positive
 rejection and other roadmap work continue while the learned gate remains
 honestly blocked.
+
+
+# DECISION-145: Retire Project-Owned Label Creation Paths
+
+**Date:** 2026-07-14
+**Status:** Accepted
+**Implements:** AGENTS.md pre-existing-label-only prime directive
+
+## Context
+
+After DECISION-144 reopened learned/AI promotion, a code audit found that the
+repository still exposed executable pre-prime-directive machinery for creating
+and operationalizing new labels: `scripts/build_citizen_science_labels.py`
+inferred labels from deterministic ABACAB cadence behavior, its public helper
+APIs wrote label datasets, `scripts/combine_citizen_science_labels.py` enabled
+expansion into new combined training sets, and `learned_scoring_model.py`
+trained binary/pathway models from those artifacts. `validate-all` then treated
+their accuracy and trained state as passing gates, while admission fixtures
+authorized the artifact as real labeled data. Those are project-created
+annotations, not pre-existing, independently supplied row-level ground truth.
+
+## Decision
+
+Delete both label-creation scripts, their dataset build/write APIs, and the
+label-trained binary/pathway model module and CLI commands. Remove their
+accuracy/trained-state gates from `validate-all` and fail-close the curated
+dataset and calibration admission records. Preserve read-only deterministic
+ABACAB cadence analysis as unlabeled triage outcomes in `cadence_triage.py`.
+Preserve the frozen 124-row HIP99427 artifact only as legacy diagnostic input;
+do not regenerate, expand, train, calibrate, evaluate, or promote from it. Add
+regression tests that require the executable creation and training paths to
+remain absent.
+
+## Consequences
+
+No repo-supported command can create or combine new project-owned labels or
+train a model from the retired artifacts. The validation dashboard no longer
+advertises their accuracy or trained state as a passing scientific gate.
+Future training, calibration, threshold selection, or scientific evaluation
+may use labels only when they already exist independently with documented
+row-level provenance. If adequate labels remain unavailable, learned gates stay
+fail-closed. The permitted next work is deterministic false-positive rejection,
+unlabeled ranking/triage, or another named roadmap gap—not reconstructing a
+labeling workflow under a different name.
