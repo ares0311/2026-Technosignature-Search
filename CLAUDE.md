@@ -66,6 +66,12 @@ Current execution status:
    context and the remaining 3 share a source artifact, so 0 are independently
    escalation-ready. These are follow-up triage items, not positive labels or
    detection claims.
+ - Version 1.2.8 streams the complete local 2,028,537-row MeerKAT JSON source
+   for explicit candidate-frequency neighbors without creating another corpus.
+   At ±500 Hz, each of the three source-context survivors occurs exactly once.
+   Their two complete observation artifacts contain harmonic-family RFI, but
+   none of the three rows belongs to those families. They remain unresolved,
+   unlabeled triage items; no deterministic rejection or escalation is claimed.
  - Training, calibration, threshold selection, and scientific evaluation use
    pre-existing independently labeled row-level data only. Never ask the user
    or anyone else to label data, and never build a label-acquisition queue.

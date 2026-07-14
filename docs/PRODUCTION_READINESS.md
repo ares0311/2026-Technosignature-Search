@@ -6,7 +6,25 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.7
+**Current app version:** 1.2.8
+
+**Phase 1 full-source recurrence check — 2026-07-14:** version 1.2.8 adds
+`meerkat-frequency-neighbor-summary`, a read-only streaming check for explicit
+candidate frequencies in the full local MeerKAT top-level-array JSON/JSON.gz
+source. The root cause was that the normal review artifact contains only the
+first 200,000 normalized rows, so recurrence outside that subset could not be
+tested without materializing another large corpus. The new command keeps memory
+and output bounded, distinguishes raw and duplicate matches, and reports unique
+targets, source artifacts, beams, and backend hosts without assigning labels.
+A measured scan of all 2,028,537 local raw rows at the existing ±500 Hz
+cross-target tolerance found exactly one match—the original row—for each of the
+three source-context survivors at 916.766154826, 921.606530279, and
+999.989178866 MHz. Full-band checks of their two observation artifacts found 2
+harmonic families/137 flagged rows and 16 families/1,463 flagged rows,
+respectively, but none of the three survivor rows belonged to those families.
+They therefore remain unresolved, unlabeled follow-up triage items: no new
+deterministic rejection was justified, and no independent observation exists
+to permit escalation.
 
 **Phase 1 corpus-provenance correction — 2026-07-14:** version 1.2.7
 removes corpus-level `public_null_search_context` from the per-row automated

@@ -4,10 +4,10 @@
 Technosignature Search
 
 ## Status
-Multi-modal publication-grade technosignature search — Phase 0 (Strip & Fix)
+Multi-modal publication-grade technosignature search — Phase 1 radio hardening
 
 ## Current Phase
-Phase 0 — Delete misaligned overhead, harden radio pipeline, prepare for multi-modal expansion
+Phase 0 complete; Phase 1 deterministic radio hardening is active
 
 ## Package Name
 `techno_search`
@@ -25,11 +25,13 @@ normalized into ignored local storage, and the local semi-supervised scorer is
 trained on 200,000 real rows. The payload and fitted model remain ignored local
 artifacts and must not be redistributed without explicit license terms.
 
-**Current milestone:** Milestone 79 (Production Scan Hardening And Artifact Hygiene)
-
 **Current phase work:** Phase 1 radio hardening. The current local real-corpus
-review treats the verified MeerKAT BLUSE/SETICORE ATLAS rows as public
-null-search context and reports zero follow-up candidates.
+review retains public null-search information as corpus metadata, never a row
+label or rejection condition. It reports 1,072 unlabeled automated triage
+survivors and 0 independently escalation-ready rows. A full-source stream over
+all 2,028,537 raw MeerKAT rows found no additional ±500 Hz neighbor for the
+three rows that clear target-concentration checks; full-band family analysis of
+their observation artifacts also did not flag those three rows.
 `docs/technosignature_datasets_agent_brief.md` is now the formal Track A dataset
 handoff for known-explanation classification before any Track B
 `unknown_candidate` routing. Track A baseline training, known-source catalog
@@ -53,14 +55,15 @@ feature added in Phase 0; raw-file ABACAB verification remains Phase 1 hardening
 Semi-supervised scorer integration is locally fitted on the verified real
 MeerKAT BLUSE/SETICORE corpus. The current local summary reports
 `public_null_search_context_candidate_count: 200000`,
-`follow_up_candidate_count: 0`, and
+`follow_up_candidate_count: 1072`, and
 `independent_escalation_ready_candidate_count: 0`; no candidate is ready for
 external escalation. Track B `unknown_candidate` eligibility remains blocked by
 the intentionally unresolved anomaly/OOD threshold unless and until a real
 calibration study sets one.
 
-**Photometry, IR, spectroscopy:** Not implemented. No `lightkurve`, no WISE SED
-fitting, no JWST spectral ingest.
+**Photometry, IR, spectroscopy:** Real, tested baseline implementations exist;
+their current evidence and remaining Phase 2-4 gaps are tracked in
+`docs/PRODUCTION_READINESS.md`.
 
 **Candidate output:** Radio pipeline produces candidate manifests from real GBT data
 (stratified sample of 31 targets, 18 strata). No multi-modal candidates yet.
@@ -117,8 +120,8 @@ Step 3 blocked pending surviving candidates.
 | Proper ON/OFF cadence verification (ABACAB from raw files) | ⚠️ Partial — HIP99427 raw HDF5 status and derived cadence review are wired locally |
 | MeerKAT BLUSE real training corpus loaded into semisupervised_scorer | ✅ Done locally — 200,000 verified real rows train the ignored local scorer |
 | Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial — real-corpus summary exposes stationary, Earth-consistent, and inconsistent rows |
-| Cross-target RFI suppression on full stratified corpus | ⚠️ Partial — verified real corpus exercises recurrence and public-null context; broader independent hit-bearing GBT validation remains open |
-| Ranked candidate list output ready for Phase 5 | ⚠️ Partial — public-null context, controls, and RFI rows are separated; independent-ready count is currently 0 |
+| Cross-target RFI suppression on full stratified corpus | ⚠️ Partial — the combined review exercises recurrence, and explicit survivor frequencies can now be checked against all 2,028,537 local raw MeerKAT rows without another materialized corpus |
+| Ranked candidate list output ready for Phase 5 | ⚠️ Partial — 1,072 unlabeled rows survive current deterministic filters, but source-context and artifact-independence gates leave 0 independently escalation-ready |
 
 ---
 
