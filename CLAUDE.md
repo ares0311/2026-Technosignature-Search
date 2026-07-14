@@ -56,7 +56,9 @@ Current execution status:
    100-MHz harmonic-family match (13th/17th harmonics, 191-Hz residual), which
    is deterministic RFI-forensics evidence, not a label. Version 1.2.5 wires
    those family flags into triage; the union of cross-target and family checks
-   rejects 4,896 unique rows while leaving zero survivors.
+   rejects 4,896 unique rows while leaving zero survivors. Version 1.2.6 also
+   runs this diagnostic on normalized hit-NDJSON rows grouped strictly by their
+   supplied `source_artifact`, never by an inferred observation identity.
  - Training, calibration, threshold selection, and scientific evaluation use
    pre-existing independently labeled row-level data only. Never ask the user
    or anyone else to label data, and never build a label-acquisition queue.
