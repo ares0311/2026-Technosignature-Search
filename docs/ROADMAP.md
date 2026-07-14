@@ -1740,12 +1740,20 @@ Total schemas: 188.
 
 # Milestone 74 — Operator Review Dashboard And Learned Scoring Model v1
 
+**Retired 2026-07-14 (DECISION-145):** the model and gate below used
+project-generated HIP99427 cadence outcomes rather than pre-existing,
+independently supplied row-level ground truth. Version 1.2.11 deletes the
+trainers and removes the accuracy/promotion gate. This historical milestone is
+not current readiness evidence.
+
 - Operator review dashboard (`review_dashboard_summary`) aggregates open flags, overdue deadlines, review queue depth, pipeline blockers, watchlist elevated targets, and real-label accuracy gate into a single operator scheduling aid
 - `techno-search review-dashboard` CLI with exit code 1 on needs_attention
-- Learned scoring model v1: logistic regression trained on 124 real GBT/HIP99427 citizen-science labels; 3-class pathway classifier (false_positive / insufficient_evidence / follow_up); 3-fold stratified CV accuracy 99.19% (rule-based baseline: 77.42%); closes final Tier 2 gap
-- `techno-search real-labels-model-summary` CLI reports CV accuracy and model metadata
-- `validate-all` gate: `learned_scoring_model_v1_trained=True`
-- All Tier 2 gaps closed as of 2026-06-12; production readiness ~80%
+- Historical learned scoring model v1: logistic regression trained on 124
+  project-generated GBT/HIP99427 cadence outcomes; its reported CV accuracy is
+  not scientific evaluation evidence.
+- The former `real-labels-model-summary` command and
+  `learned_scoring_model_v1_trained` validation gate are removed.
+- The former Tier 2 closure is superseded by DECISIONS 144-145.
 - Scores and dashboard entries are local scheduling aids only; no detection claim; no external submission authorization
 
 # Milestone 76 — Multi-Target Scan Orchestration — Tier 3 Production Hardening

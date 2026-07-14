@@ -61,7 +61,7 @@
             "enum": [
               "synthetic_ground_truth",
               "external_expert_review",
-              "citizen_science_reproducibility"
+              "preexisting_label_provenance"
             ]
           },
           "independent_method_review_completed": {"type": "boolean"},

@@ -22,16 +22,16 @@
       "label": "Real labeled dataset",
       "required_evidence": [
         "curated dataset admission record with zero blockers",
-        "deterministic labeling methodology review",
-        "independent-method audit artifact"
+        "pre-existing row-level ground-truth provenance",
+        "independent source documentation"
       ],
-      "current_evidence_count": 3,
-      "blocker_count": 0,
-      "review_status": "ready_for_local_review",
-      "real_data_authorized": true,
+      "current_evidence_count": 0,
+      "blocker_count": 1,
+      "review_status": "blocked_pending_labeled_dataset",
+      "real_data_authorized": false,
       "live_data_authorized": false,
       "external_submission_authorized": false,
-      "notes": "The 124-group HIP99427 citizen-science label set is admitted for local evaluation; expert review and external validation are not claimed."
+      "notes": "Blocked: the frozen HIP99427 artifact contains project-generated cadence outcomes, not pre-existing independently supplied row-level ground truth. It is legacy diagnostic evidence only."
     },
     {
       "category_id": "scoring_calibration",
@@ -41,13 +41,13 @@
         "site-specific false-positive baseline",
         "threshold review record"
       ],
-      "current_evidence_count": 3,
-      "blocker_count": 0,
-      "review_status": "ready_for_local_review",
-      "real_data_authorized": true,
+      "current_evidence_count": 2,
+      "blocker_count": 1,
+      "review_status": "blocked_pending_calibration",
+      "real_data_authorized": false,
       "live_data_authorized": false,
       "external_submission_authorized": false,
-      "notes": "Calibrated GBT noise thresholds are admitted for local scoring configuration review; independent citizen-science review is required before production scoring claims."
+      "notes": "Blocked from learned calibration and production scoring claims until adequate pre-existing row-level labels with documented provenance exist. Deterministic noise summaries remain local diagnostics."
     },
     {
       "category_id": "site_specific_rfi_database",
@@ -69,29 +69,29 @@
       "category_id": "public_reproducibility_review",
       "label": "Public reproducibility review",
       "required_evidence": [
-        "published citizen-science review protocol",
-        "committed independently audited label artifact",
-        "public repository reproducibility package"
+        "pre-existing-label-only policy",
+        "label-creation regression guard",
+        "fail-closed learned-model gate"
       ],
       "current_evidence_count": 3,
       "blocker_count": 0,
       "review_status": "ready_for_local_review",
-      "real_data_authorized": true,
+      "real_data_authorized": false,
       "live_data_authorized": false,
       "external_submission_authorized": false,
-      "notes": "Citizen-science production review is complete and reproducible in the public repository. No expert review or external validation is claimed."
+      "notes": "Repository policy and tests reproducibly prohibit project-owned label creation and keep learned promotion fail-closed. This category does not authorize any labeled dataset."
     }
   ],
   "expected_preflight": {
     "category_count": 5,
-    "min_blocker_total": 0,
-    "expected_real_data_authorization_total": 4,
+    "min_blocker_total": 2,
+    "expected_real_data_authorization_total": 1,
     "expected_rfi_database_authorization_total": 0,
-    "expected_curated_dataset_authorization_total": 1,
+    "expected_curated_dataset_authorization_total": 0,
     "require_zero_live_data_authorization": true,
     "require_zero_external_submission_authorization": true,
     "require_rfi_admission_blockers_visible": false,
-    "require_curated_dataset_admission_blockers_visible": false,
+    "require_curated_dataset_admission_blockers_visible": true,
     "require_production_blocker_consistency_ok": true
   }
 }

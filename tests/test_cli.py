@@ -231,7 +231,10 @@ def test_cli_gbt_cadence_abacab_review_summarizes_candidate_outcomes(tmp_path) -
 
     assert exit_code == 0
     assert result["ok"] is True
-    assert result["label_counts"] == {"false_positive": 1, "follow_up": 1}
+    assert result["triage_outcome_counts"] == {
+        "false_positive": 1,
+        "follow_up": 1,
+    }
     assert result["top_follow_up_candidates"][0]["on_scan_count"] == 3
     assert result["top_follow_up_candidates"][0]["off_scan_count"] == 0
     assert result["detection_claimed"] is False
@@ -624,8 +627,8 @@ def test_cli_curated_dataset_admission_summary_outputs_gate_counts() -> None:
     assert exit_code == 0
     assert result["schema_version"] == "curated_dataset_admission_v1"
     assert result["record_count"] == 5
-    assert result["blocked_count"] == 3
-    assert result["real_data_authorized_count"] == 1
+    assert result["blocked_count"] == 4
+    assert result["real_data_authorized_count"] == 0
     assert result["validation_ok"] is True
     assert "does not authorize unreviewed real observation data" in result["disclaimer"]
 
@@ -1675,12 +1678,9 @@ def test_cli_validate_all_outputs_local_summary() -> None:
     assert result["radio_science_summary"]["cross_band_feature_count"] >= 4
     assert result["radio_science_summary"]["globular_feature_count"] >= 13
     assert result["radio_science_summary"]["semisupervised_feature_count"] >= 12
-    assert result["real_label_accuracy_gate_ok"] is True
-    assert result["real_label_entry_count"] == 124
-    assert result["eval_against_labels_summary"]["dataset_classification"] != "synthetic"
-    assert "results" not in result["eval_against_labels_summary"]
-    assert result["learned_scoring_model_v1_ok"] is True
-    assert result["learned_scoring_model_v1_trained"] is True
+    assert "real_label_accuracy_gate_ok" not in result
+    assert "eval_against_labels_summary" not in result
+    assert "learned_scoring_model_v1_summary" not in result
     assert result["provenance_chain_validation"]["ok"] is True
     assert result["project_status_consistency_summary"]["ok"] is True
     assert result["ai_hardening_gate_summary"]["ok"] is True

@@ -6,7 +6,18 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.10
+**Current app version:** 1.2.11
+
+**Project-owned label generation retired — 2026-07-14:** version 1.2.11
+deletes the remaining executable cadence-label builder and multi-file label
+combiner, removes their public dataset writer APIs, and adds a regression test
+that prevents those paths from returning. The root cause was pre-prime-
+directive citizen-science machinery still being able to infer and write new
+training/evaluation labels from deterministic cadence behavior. Deterministic
+ABACAB review remains available as unlabeled triage. The frozen 124-row
+HIP99427 artifact remains only as the accepted legacy diagnostic input; it may
+not be regenerated, expanded, or used to claim global calibration. No person
+or automated rule may be asked to create replacement labels.
 
 **AI hardening production blocker correction — 2026-07-14:** version 1.2.10
 reopens DECISION-134 and supersedes the stale DECISION-139 local-promotion
@@ -93,13 +104,15 @@ the two checks, and zero follow-up or escalation-ready survivors.
 This project never asks the user or anyone else to create labels. Training,
 calibration, threshold selection, and scientific evaluation use only
 pre-existing, independently supplied row-level labels with provenance. The
-124-row HIP99427 set remains the only accepted real per-hit label source and is
-insufficient for a global anomaly/OOD threshold. The semi-supervised score is
-therefore an uncalibrated ranking diagnostic, and dependent promotion gates stay
-fail-closed. Unlabeled observations remain usable for search, distributional
-analysis, and deterministic false-positive investigation, never as ground
-truth. `docs/False_Positive_Technosignature_Case_Studies.md` and its bibliography
-are the best current internal false-positive synthesis.
+frozen 124-row HIP99427 artifact is project-generated legacy diagnostic
+evidence, not an accepted label source. Version 1.2.11 removes its label
+writers, binary/pathway model trainers, accuracy gate, and real-data
+authorization. The semi-supervised score is therefore an uncalibrated ranking
+diagnostic, and dependent promotion gates stay fail-closed. Unlabeled
+observations remain usable for search, distributional analysis, and
+deterministic false-positive investigation, never as ground truth.
+`docs/False_Positive_Technosignature_Case_Studies.md` and its bibliography are
+the best current internal false-positive synthesis.
 
 **Single-terminal sharding and parallel validation — 2026-07-13:** version
 1.2.2 adds `scripts/run_six_shard_downloads.py`, which validates and launches
@@ -700,6 +713,7 @@ Key scientific decisions:
   semi-supervised scorer — all need real training data)
 - DECISION-139: historical injection-recovery closure (superseded by DECISION-144)
 - DECISION-144: learned/AI promotion gate reopened fail-closed; adequate pre-existing row-level labels remain unavailable
+- DECISION-145: project-owned label generation and combination paths retired
 - DECISION-141: Production scan history and history-aware queue
 - DECISION-143: Stratified random sampling of BL HPRC target list (31 targets,
   18 strata, Isaacson et al. 2017)

@@ -1938,7 +1938,7 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         return 0 if result["ok"] else 1
 
     if args.command == "gbt-cadence-abacab-review":
-        from techno_search.citizen_science_labels import cadence_abacab_review_summary
+        from techno_search.cadence_triage import cadence_abacab_review_summary
 
         result = cadence_abacab_review_summary(
             Path(args.cadence_csv),
@@ -5771,46 +5771,6 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(pr_result, indent=2, sort_keys=True), file=out)
         return 1
 
-    if args.command == "learned-model-summary":
-        from techno_search.learned_scoring_model import learned_model_summary
-
-        lm_path = getattr(args, "labeled_dataset_path", None)
-        lm_result: dict[str, Any] = learned_model_summary(lm_path)
-        print(json.dumps(lm_result, indent=2, sort_keys=True), file=out)
-        return 0 if lm_result.get("ok") else 1
-
-    if args.command == "synthetic-training-summary":
-        from techno_search.learned_scoring_model import (  # noqa: PLC0415
-            SYNTHETIC_DATASET_V1_PATH,
-            synthetic_v1_training_summary,
-        )
-
-        dataset_path_arg = getattr(args, "dataset_path", None)
-        ds_path = Path(dataset_path_arg) if dataset_path_arg else SYNTHETIC_DATASET_V1_PATH
-        synth_result: dict[str, Any] = synthetic_v1_training_summary(ds_path)
-        print(json.dumps(synth_result, indent=2, sort_keys=True), file=out)
-        return 0 if synth_result.get("ok") else 1
-
-    if args.command == "real-labels-model-summary":
-        from techno_search.learned_scoring_model import (  # noqa: PLC0415
-            real_labels_model_summary as _rlms2,
-        )
-
-        rl_path_arg = getattr(args, "dataset_path", None)
-        rl_result: dict[str, Any] = _rlms2(Path(rl_path_arg) if rl_path_arg else None)
-        print(json.dumps(rl_result, indent=2, sort_keys=True), file=out)
-        return 0 if rl_result.get("ok") else 1
-
-    if args.command == "combined-model-summary":
-        from techno_search.learned_scoring_model import (  # noqa: PLC0415
-            combined_model_summary as _cms,
-        )
-
-        cm_path_arg = getattr(args, "dataset_path", None)
-        cm_result: dict[str, Any] = _cms(Path(cm_path_arg) if cm_path_arg else None)
-        print(json.dumps(cm_result, indent=2, sort_keys=True), file=out)
-        return 0 if cm_result.get("ok") else 1
-
     if args.command == "noise-threshold-calibration":
         noise_cal_result: dict[str, Any] = {
             "ok": True,
@@ -6412,48 +6372,14 @@ def validate_all() -> dict[str, object]:
         project_root=root,
     )
 
-    from techno_search.baseline_eval import eval_against_labels as _eval_labels
     from techno_search.globular_filter import (  # noqa: PLC0415
         GLOBULAR_FEATURE_NAMES as _GLOBULAR_FEATURE_NAMES,
-    )
-    from techno_search.learned_scoring_model import (  # noqa: PLC0415
-        real_labels_model_summary as _real_labels_model_summary,
     )
     from techno_search.radio.cross_band_features import (  # noqa: PLC0415
         cross_band_features_summary as _cross_band_features_summary,
     )
     from techno_search.semisupervised_scorer import (  # noqa: PLC0415
         semisupervised_scorer_summary as _semisupervised_scorer_summary,
-    )
-
-    real_label_path = root / "examples" / "real_labeled" / (
-        "hip99427_citizen_science_labels_v1.json"
-    )
-    label_eval_data = _eval_labels(real_label_path)
-    label_eval_public = {
-        key: value
-        for key, value in label_eval_data.items()
-        if key != "results"
-    }
-    real_label_accuracy_raw = label_eval_data.get("accuracy")
-    real_label_accuracy = (
-        float(real_label_accuracy_raw)
-        if isinstance(real_label_accuracy_raw, (int, float))
-        else None
-    )
-    real_label_entry_count = int(label_eval_data.get("entry_count", 0))
-    real_label_accuracy_gate_ok = (
-        real_label_accuracy is None or real_label_accuracy >= 0.70
-    )
-
-    real_labels_model = _real_labels_model_summary()
-    learned_model_ok = bool(real_labels_model.get("ok", False))
-    learned_model_trained = bool(real_labels_model.get("trained", False))
-    learned_model_cv_accuracy_raw = real_labels_model.get("cv_accuracy")
-    learned_model_cv_accuracy = (
-        float(learned_model_cv_accuracy_raw)
-        if isinstance(learned_model_cv_accuracy_raw, (int, float))
-        else None
     )
 
     cross_band_features = _cross_band_features_summary()
@@ -6505,9 +6431,6 @@ def validate_all() -> dict[str, object]:
         and cross_band_feature_count >= 4
         and globular_feature_count >= 13
         and semisupervised_feature_count >= 12
-        and real_label_accuracy_gate_ok
-        and learned_model_ok
-        and learned_model_trained
         and bool(provenance_chain.get("ok", False))
         and bool(project_status.get("ok", False))
         and bool(ai_hardening_gate.get("ok", False))
@@ -6550,14 +6473,6 @@ def validate_all() -> dict[str, object]:
         "cross_band_features_summary": cross_band_features,
         "globular_filter_summary": globular_filter,
         "semisupervised_scorer_summary": semisupervised_scorer,
-        "eval_against_labels_summary": label_eval_public,
-        "real_label_accuracy": real_label_accuracy,
-        "real_label_accuracy_gate_ok": real_label_accuracy_gate_ok,
-        "real_label_entry_count": real_label_entry_count,
-        "learned_scoring_model_v1_summary": real_labels_model,
-        "learned_scoring_model_v1_ok": learned_model_ok,
-        "learned_scoring_model_v1_trained": learned_model_trained,
-        "learned_scoring_model_v1_cv_accuracy": learned_model_cv_accuracy,
         "provenance_chain_validation": provenance_chain,
         "project_status_consistency_summary": project_status,
         "ai_hardening_gate_summary": ai_hardening_gate,
@@ -10408,66 +10323,6 @@ def _build_parser() -> argparse.ArgumentParser:
             "CF4_298.1K-760.0Torr_....xsc. When provided, runs the "
             "additional full-grid matched-filter check for whichever of "
             "the 5 known gases have a matching file present."
-        ),
-    )
-
-    learned_model_parser = subparsers.add_parser(
-        "learned-model-summary",
-        help=(
-            "Train a logistic regression on the labeled candidate dataset and "
-            "report training summary. Development scaffold only — requires "
-            "real labeled data for production use."
-        ),
-    )
-    learned_model_parser.add_argument(
-        "--labeled-dataset-path",
-        type=Path,
-        help="Path to labeled_candidates.json fixture (defaults to built-in fixture).",
-    )
-
-    synthetic_training_parser = subparsers.add_parser(
-        "synthetic-training-summary",
-        help=(
-            "Report that synthetic training was removed in Phase 0. "
-            "Production scoring must use real labeled corpora."
-        ),
-    )
-    synthetic_training_parser.add_argument(
-        "--dataset-path",
-        type=Path,
-        help=(
-            "Legacy synthetic dataset path; retained only for compatibility."
-        ),
-    )
-
-    real_labels_model_parser = subparsers.add_parser(
-        "real-labels-model-summary",
-        help=(
-            "Train logistic regression on 124 real HIP99427 citizen-science labels "
-            "(closes Tier 2: Learned scoring model). Reports 3-fold CV accuracy. "
-            "Local scheduling aid only — not a validated production model."
-        ),
-    )
-    real_labels_model_parser.add_argument(
-        "--dataset-path",
-        type=Path,
-        help="Path to real labels JSON (defaults to examples/real_labeled/hip99427_...).",
-    )
-
-    combined_model_parser = subparsers.add_parser(
-        "combined-model-summary",
-        help=(
-            "Train logistic regression on a combined multi-target citizen-science label "
-            "dataset (closes KNOWN_LIMITATIONS #1: Single-target generalization gap). "
-            "Local scheduling aid only — not a validated production model."
-        ),
-    )
-    combined_model_parser.add_argument(
-        "--dataset-path",
-        type=Path,
-        help=(
-            "Path to combined label JSON "
-            "(defaults to examples/real_labeled/combined_citizen_science_labels_v1.json)."
         ),
     )
 

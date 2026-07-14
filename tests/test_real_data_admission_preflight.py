@@ -112,12 +112,12 @@ def test_load_real_data_admission_preflight_fixture() -> None:
     assert categories[0].real_data_authorized is True
     assert categories[0].blocker_count == 0
     assert categories[2].category_id == "scoring_calibration"
-    assert categories[2].review_status == "ready_for_local_review"
+    assert categories[2].review_status == "blocked_pending_calibration"
     assert categories[3].category_id == "site_specific_rfi_database"
     assert categories[3].review_status == "ready_for_local_review"
     assert expected["category_count"] == 5
-    assert expected["expected_real_data_authorization_total"] == 4
-    assert expected["min_blocker_total"] == 0
+    assert expected["expected_real_data_authorization_total"] == 1
+    assert expected["min_blocker_total"] == 2
 
 
 def test_real_data_admission_preflight_custom_fixture_passes(tmp_path: Path) -> None:
@@ -247,26 +247,27 @@ def test_real_data_admission_preflight_default_project_passes() -> None:
     assert summary["schema_version"] == "real_data_admission_preflight_v1"
     assert summary["ok"] is True
     assert summary["category_count"] == 5
-    assert summary["blocked_category_count"] == 0
-    assert summary["blocker_total"] == 0
-    assert summary["real_data_authorized_total"] == 4
-    assert summary["expected_real_data_authorized_total"] == 4
+    assert summary["blocked_category_count"] == 2
+    assert summary["blocker_total"] == 2
+    assert summary["real_data_authorized_total"] == 1
+    assert summary["expected_real_data_authorized_total"] == 1
     assert summary["live_data_authorized_total"] == 0
     assert summary["external_submission_authorized_total"] == 0
 
 
-def test_closed_tier1_readiness_has_no_preflight_blockers() -> None:
+def test_learned_label_and_calibration_gates_remain_fail_closed() -> None:
     readiness_text = (
         Path(__file__).resolve().parents[1] / "docs" / "PRODUCTION_READINESS.md"
     ).read_text(encoding="utf-8")
 
     summary = real_data_admission_preflight_summary()
 
-    assert "All Tier 1 gaps are closed" in readiness_text
-    assert summary["blocked_category_count"] == 0
-    assert summary["blocker_total"] == 0
-    assert not [
-        record
+    assert "adequate pre-existing row-level labels" in readiness_text
+    assert summary["blocked_category_count"] == 2
+    assert summary["blocker_total"] == 2
+    blocked_ids = {
+        str(record["category_id"])
         for record in summary["records"]
         if str(record["review_status"]).startswith("blocked_")
-    ]
+    }
+    assert blocked_ids == {"real_labeled_dataset", "scoring_calibration"}

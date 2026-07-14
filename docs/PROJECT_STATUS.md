@@ -14,8 +14,8 @@ Phase 0 complete; Phase 1 deterministic radio hardening is active
 
 ## Current Production Gate
 
-Tier 1 and Tier 2 engineering blockers are closed for local radio pipeline
-operations.
+Local deterministic radio pipeline operations are functional. Learned-model
+calibration and promotion remain explicitly open and fail-closed.
 
 **AI hardening production blocker:** DECISION-134 is open and fail-closed under
 DECISION-144. DECISION-139's
@@ -28,6 +28,13 @@ Berkeley SETI / Breakthrough Listen MeerKAT BLUSE/SETICORE JSON source has been
 normalized into ignored local storage, and the local semi-supervised scorer is
 trained on 200,000 real rows. The payload and fitted model remain ignored local
 artifacts and must not be redistributed without explicit license terms.
+
+**Label-creation boundary:** Project-owned label generation is retired under
+DECISION-145. Deterministic cadence review may rank or reject observations for
+triage, but it cannot write training, calibration, threshold-selection, or
+evaluation labels. The frozen HIP99427 artifact is legacy diagnostic evidence
+only and cannot be regenerated, expanded, used to train a model, satisfy an
+accuracy gate, or receive real-labeled-data authorization.
 
 **Current phase work:** Phase 1 radio hardening. The current local real-corpus
 review retains public null-search information as corpus metadata, never a row

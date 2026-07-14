@@ -81,23 +81,23 @@
       "public_reproducibility_artifact": ""
     },
     {
-      "dataset_id": "curated-admit-hip99427-citizen-science-v1",
-      "dataset_label": "HIP99427 GBT Cadence Citizen-Science Labels v1",
+      "dataset_id": "curated-admit-hip99427-legacy-v1",
+      "dataset_label": "HIP99427 GBT Cadence Legacy Triage Artifact v1",
       "track": "radio",
       "dataset_kind": "curated_non_synthetic_false_positive_suite",
-      "admission_status": "ready_for_local_fixture",
+      "admission_status": "blocked_pending_labeling",
       "provenance_reviewed": true,
       "license_reviewed": true,
-      "labeling_method_reviewed": true,
+      "labeling_method_reviewed": false,
       "false_positive_baseline_reviewed": true,
       "external_review_required": false,
       "external_review_completed": false,
-      "real_data_authorized": true,
+      "real_data_authorized": false,
       "synthetic_fixture_only": false,
-      "blocker_count": 0,
-      "notes": "Approved for local evaluation under the citizen-science reproducibility protocol. This is not expert or external validation.",
-      "review_policy": "citizen_science_reproducibility",
-      "independent_method_review_completed": true,
+      "blocker_count": 1,
+      "notes": "Frozen legacy diagnostic artifact only. Project-generated cadence outcomes are not pre-existing row-level ground truth and are blocked from training, calibration, threshold selection, and scientific evaluation.",
+      "review_policy": "preexisting_label_provenance",
+      "independent_method_review_completed": false,
       "public_reproducibility_artifact": "examples/real_labeled/hip99427_citizen_science_labels_v1.json"
     }
   ]
