@@ -24,3 +24,20 @@ def test_label_trained_model_commands_are_absent() -> None:
         "combined-model-summary",
     )
     assert all(command not in cli_source for command in forbidden_commands)
+
+
+def test_authoritative_directives_reject_legacy_artifact_as_labels() -> None:
+    directive_paths = (
+        Path("CLAUDE.md"),
+        Path("docs/PRODUCTION_READINESS.md"),
+        Path("docs/PROJECT_STATUS.md"),
+        Path("docs/SYSTEMATIC_SEARCH_PLAN.md"),
+    )
+    forbidden_claims = (
+        "only accepted real per-hit labels",
+        "only verified pre-existing per-hit labels",
+        "only real labeled data in hand",
+    )
+    combined = "\n".join(path.read_text(encoding="utf-8") for path in directive_paths)
+    assert all(claim not in combined for claim in forbidden_claims)
+    assert "project-generated legacy diagnostic evidence" in combined

@@ -107,12 +107,15 @@ metadata-first, detection-priority work and remains separately approval-gated.
 
 ## Step 1 (permanently fail-closed): document the unavailable calibration evidence
 
-The search for additional real per-hit labeled SETI/BL data is exhausted
-(`docs/seti_labeled_hit_data_research.md`). HIP99427's 124 rows remain the only
-verified pre-existing per-hit labels and are insufficient for a global
-anomaly/OOD threshold. The previously proposed project-owned human review set
-and `radio-review-sample` workflow were invalid because this project does not
-ask anyone to create labels; they are retired.
+The search for real per-hit labeled SETI/BL data is exhausted
+(`docs/seti_labeled_hit_data_research.md`), and no qualifying pre-existing
+row-level label source was found. HIP99427's frozen 124-row artifact contains
+project-generated cadence outcomes; it is legacy diagnostic evidence, not
+ground truth, and is unauthorized for training, calibration, threshold
+selection, or scientific evaluation. The previously proposed project-owned
+human review set, `radio-review-sample` workflow, label writers, and
+label-trained model commands were invalid because this project does not ask
+anyone to create labels; they are retired.
 
 **Required behavior:**
 

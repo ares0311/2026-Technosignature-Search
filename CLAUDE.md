@@ -83,6 +83,9 @@ Current execution status:
    threshold. `ai-hardening-gate-summary` must report `status: open`,
    `production_promotion_allowed: false`, and scope `blocked` until adequate
    pre-existing labeled evidence exists. Never create or solicit those labels.
+ - Version 1.2.12 corrects all active plan/handoff claims that the HIP99427
+   artifact was pre-existing labeled data or a future calibration input. Active
+   next actions are deterministic no-label science and operator workflow work.
  - Version 1.2.11 retires the remaining executable project-owned label creation
    paths: `scripts/build_citizen_science_labels.py`,
    `scripts/combine_citizen_science_labels.py`, their dataset writer APIs, and
@@ -323,11 +326,12 @@ acceptance rule and none qualified — full findings in
 `docs/seti_labeled_hit_data_research.md`, project record in
 `docs/PRODUCTION_READINESS.md` Phase 1 and `AGENTS.md`'s "CALIBRATION DATA
 STATUS" section. **Do not re-run this search on the same question.** The
-124-row HIP99427 set (2 `follow_up` rows) remains the only real labeled
-data in hand and is insufficient for a global threshold. The project uses
-pre-existing independently labeled data only: do not ask anyone to create
-labels, build a label-acquisition queue, infer labels, or re-run the exhausted
-search without a genuinely new already-labeled source.
+frozen 124-row HIP99427 artifact (including 2 `follow_up` outcomes) is
+project-generated legacy diagnostic evidence, not real labeled data, and is
+unauthorized for training, calibration, threshold selection, or scientific
+evaluation. The project uses pre-existing independently labeled data only: do
+not ask anyone to create labels, build a label-acquisition queue, infer labels,
+or re-run the exhausted search without a genuinely new already-labeled source.
 
 ### Track A Real Baseline Results — 2026-07-02
 

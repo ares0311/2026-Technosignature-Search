@@ -188,15 +188,13 @@ Step 3 blocked pending surviving candidates.
 
 ## Next 3 Actions
 
-1. Resolve the remaining Track B blocker by replacing the naive high-anomaly
-   threshold with a same-instrument GBT-native calibration plan, or document why
-   the current real evidence still cannot support a threshold.
-2. Broaden raw-file ABACAB cadence verification beyond HIP99427 where approved
-   public raw files are locally available.
-3. Use the fully converted 17-file extended corpus as negative evidence for
-   regression checks while prioritizing acquisition of real hit-bearing GBT
-   examples; the 2026-07-02 extended-corpus production scan produced 0
-   follow-ups and left 0 pending targets.
+1. Continue the Step 2 operator-workflow audit for candidate, non-detection,
+   and follow-up handoffs; do not create a review-label workflow.
+2. Broaden raw-file ABACAB cadence verification beyond HIP99427 only where
+   approved public raw files are locally available.
+3. Continue deterministic false-positive investigation of unresolved real-corpus
+   triage survivors using the case-study synthesis and existing local evidence;
+   without independent evidence, leave them unresolved and unlabeled.
 
 ---
 
