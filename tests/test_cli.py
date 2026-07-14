@@ -629,7 +629,7 @@ def test_cli_curated_dataset_admission_summary_outputs_gate_counts() -> None:
     assert result["validation_ok"] is True
     assert "does not authorize unreviewed real observation data" in result["disclaimer"]
 
-def test_cli_ai_hardening_gate_summary_outputs_closed_local_only_gate() -> None:
+def test_cli_ai_hardening_gate_summary_outputs_open_fail_closed_gate() -> None:
     stdout = StringIO()
 
     exit_code = main(["ai-hardening-gate-summary"], stdout=stdout)
@@ -638,11 +638,14 @@ def test_cli_ai_hardening_gate_summary_outputs_closed_local_only_gate() -> None:
     assert exit_code == 0
     assert result["schema_version"] == "ai_hardening_gate_v1"
     assert result["ok"] is True
-    assert result["status"] == "closed"
-    assert result["production_promotion_allowed"] is True
-    assert result["production_promotion_scope"] == "local_citizen_science_operations_only"
+    assert result["status"] == "open"
+    assert result["production_promotion_allowed"] is False
+    assert result["production_promotion_scope"] == "blocked"
     assert result["external_submission_allowed"] is False
-    assert result["open_blocking_requirement_count"] == 0
+    assert result["open_blocking_requirement_count"] == 1
+    assert result["open_blocking_requirement_ids"] == [
+        "adequate_preexisting_row_level_labels"
+    ]
     assert result["closure_evidence_bundle_exists"] is True
     assert result["populated_evidence_path_count"] <= result[
         "existing_evidence_path_count"

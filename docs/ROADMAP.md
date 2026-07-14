@@ -1794,10 +1794,14 @@ Total schemas: 188.
   explicitly closed.
 - No result constitutes a detection claim; no expert review, peer review,
   external validation, or external submission is claimed.
-- DECISION-139 closes DECISION-134 for local citizen-science production
-  promotion after the setigen injection-recovery grid produced 75/75 recovered
-  injections in real Voyager 1 GBT noise, 256 valid turboSETI hit rows, a
-  committed review-safe closure bundle, and preserved method abstentions.
+- DECISION-139 historically closed DECISION-134 after the setigen
+  injection-recovery grid produced 75/75 recovered injections in real Voyager
+  1 GBT noise, 256 valid turboSETI hit rows, a committed review-safe bundle,
+  and preserved method abstentions. DECISION-144 supersedes that promotion
+  interpretation: synthetic recovery evidence cannot provide the independent
+  row-level labels needed to calibrate a global anomaly/OOD threshold. The
+  learned/AI promotion gate is open and fail-closed; scores remain ranking-only
+  and the project must never solicit or create labels.
 
 # Milestone 79 — Production Scan Hardening And Artifact Hygiene
 

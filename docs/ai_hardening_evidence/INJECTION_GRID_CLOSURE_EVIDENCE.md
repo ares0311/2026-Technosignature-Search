@@ -1,4 +1,8 @@
-# DECISION-134 Injection-Grid Closure Evidence
+# DECISION-134 Historical Injection-Grid Evidence
+
+**Current interpretation:** DECISION-144 supersedes DECISION-139's promotion
+closure. The measured recovery evidence below remains valid, but it does not
+authorize learned/AI production promotion.
 
 This note records the review-safe closure evidence for DECISION-134. Raw HDF5,
 DAT, LOG, cache, SQLite, and generated science payloads remain ignored local
@@ -52,14 +56,16 @@ as useful zero-hit negative evidence. They did not close DECISION-134 by
 themselves because they produced no valid candidate rows for independent
 candidate-level method comparison.
 
-The injection grid closes the local production-promotion gate because it
-provides a populated DECISION-133 evidence stream with valid recovered rows and
-preserved method comparisons. It does not replace independent external
-validation.
+The injection grid provides a populated DECISION-133 recovery evidence stream
+with valid recovered rows and preserved method comparisons. It does not supply
+independent row-level labels, calibrate a global real-background anomaly/OOD
+threshold, or replace independent external validation. It therefore does not
+close the current production-promotion gate.
 
 ## Guardrails
 
-This closure authorizes only local citizen-science production promotion of
-learned or AI-assisted pathway routing. It does not claim a detection, expert
-review, peer review, external validation, or external-submission authorization.
-DECISION-132 remains controlling for any external submission path.
+This evidence authorizes no learned or AI-assisted production promotion.
+Scores remain uncalibrated ranking diagnostics. It does not claim a detection,
+expert review, peer review, external validation, or external-submission
+authorization. DECISION-132 remains controlling for any external submission
+path.

@@ -6,7 +6,21 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.9
+**Current app version:** 1.2.10
+
+**AI hardening production blocker correction — 2026-07-14:** version 1.2.10
+reopens DECISION-134 and supersedes the stale DECISION-139 local-promotion
+interpretation. The root cause was the
+machine-readable `ai_hardening_gate.json` still treating a synthetic
+injection-recovery exercise as sufficient to close learned-model production
+promotion, contradicting this document's current fail-closed anomaly/OOD
+calibration status and the pre-existing-label-only prime directive. Injection
+recovery remains valid recovery and false-negative stress evidence, but it
+cannot supply independent row-level labels or calibrate a real-background
+global anomaly/OOD threshold. The gate now reports `status: open`,
+`production_promotion_allowed: false`, scope `blocked`, and the explicit
+blocking requirement `adequate_preexisting_row_level_labels`. No new labeling
+may be requested or performed; the scorer remains ranking-only.
 
 **Step 3a zero-result discovery provenance — 2026-07-14:** version 1.2.9
 fixes a run-level status bug in `download_bl_extended_corpus.sh`. The root
@@ -684,7 +698,8 @@ Key scientific decisions:
 - DECISION-128: Scoring model v1 (77.42% diagnostic agreement on real labels)
 - DECISION-133: Model generalizability suite (cross-band features, GLOBULAR,
   semi-supervised scorer — all need real training data)
-- DECISION-139: AI hardening production blocker closed for local operations (closes DECISION-134)
+- DECISION-139: historical injection-recovery closure (superseded by DECISION-144)
+- DECISION-144: learned/AI promotion gate reopened fail-closed; adequate pre-existing row-level labels remain unavailable
 - DECISION-141: Production scan history and history-aware queue
 - DECISION-143: Stratified random sampling of BL HPRC target list (31 targets,
   18 strata, Isaacson et al. 2017)

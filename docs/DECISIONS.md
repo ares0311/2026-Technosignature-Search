@@ -3318,7 +3318,7 @@ review before use in production pathway routing.
 # DECISION-134: AI Hardening Production Evidence Gate
 
 **Date:** 2026-06-17
-**Status:** Closed by DECISION-139
+**Status:** Reopened fail-closed by DECISION-144; DECISION-139 evidence retained
 **Opens:** Tier 3 gap — AI hardening production blocker
 
 The Tier 1 and Tier 2 engineering gates are closed, and DECISION-133 adds the
@@ -3536,7 +3536,7 @@ expert review, external validation, or external-submission authorization.
 # DECISION-139: DECISION-134 Closed For Local Citizen-Science Production Promotion
 
 **Date:** 2026-06-18
-**Status:** Accepted
+**Status:** Historical promotion interpretation superseded by DECISION-144
 **Closes:** DECISION-134 — AI hardening production blocker
 
 ## Context
@@ -3847,3 +3847,54 @@ by the stratified sampler — their prior inclusion is now coincidental overlap,
 post-hoc justification.
 
 No entry in any manifest constitutes a detection claim or authorizes external submission.
+
+
+# DECISION-144: Reopen Learned/AI Promotion Gate Under Pre-Existing-Label Rule
+
+**Date:** 2026-07-14
+**Status:** Accepted
+**Supersedes:** DECISION-139 production-promotion interpretation; preserves its measured injection-recovery evidence
+
+## Context
+
+The current production-readiness assessment correctly states that the
+semi-supervised anomaly/OOD score is uncalibrated and ranking-only because the
+only accepted pre-existing per-hit label source has 124 rows from one cadence
+and is inadequate for a global threshold. However, the machine-readable
+DECISION-134 gate still reported `status: closed` and
+`production_promotion_allowed: true` based on DECISION-139's setigen
+injection-recovery bundle. `validate-all` therefore advertised learned/AI
+promotion even though the authoritative labeled-data boundary kept it
+fail-closed.
+
+The root cause was treating synthetic recovery evidence as calibration and
+label evidence. Injection recovery can measure whether known injected signals
+survive a pipeline in real noise. It cannot supply independent row-level class
+labels, establish real-background false-discovery behavior, or calibrate a
+global anomaly/OOD threshold.
+
+## Decision
+
+Reopen the learned/AI promotion gate. The machine-readable gate must report:
+
+- `status: "open"`;
+- `production_promotion_allowed: false`;
+- `production_promotion_scope: "blocked"`;
+- an open `adequate_preexisting_row_level_labels` requirement;
+- no detection, expert-review, external-validation, or external-submission
+  claim.
+
+DECISION-139's 75/75 injection recovery, 256 turboSETI rows, provenance, method
+comparisons, and abstentions remain valid historical recovery evidence. They no
+longer authorize learned/AI production promotion. Learned and semi-supervised
+outputs remain uncalibrated local ranking diagnostics.
+
+## Consequences
+
+The gate may close only if adequate pre-existing, independently supplied,
+row-level labels with documented provenance become available for the claimed
+calibration scope. The project must never ask the user or anyone else to create,
+review, infer, or synthesize those missing labels. Unlabeled observations and
+synthetic injections are not substitutes. Deterministic false-positive
+rejection and other roadmap work continue while the learned gate remains
+honestly blocked.

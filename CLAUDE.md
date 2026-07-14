@@ -77,6 +77,12 @@ Current execution status:
    while any transport/HTTP failure still makes the run fail closed. A live
    URL-encoded retry for `DENIS-P J1048.0-3956` completed successfully and
    found no current GBT HDF5 product; no raw payload was downloaded.
+ - Version 1.2.10 reopens the stale DECISION-139 learned/AI promotion gate.
+   Synthetic injection recovery remains valid recovery evidence, but it cannot
+   supply independent row-level labels or calibrate a global anomaly/OOD
+   threshold. `ai-hardening-gate-summary` must report `status: open`,
+   `production_promotion_allowed: false`, and scope `blocked` until adequate
+   pre-existing labeled evidence exists. Never create or solicit those labels.
  - Training, calibration, threshold selection, and scientific evaluation use
    pre-existing independently labeled row-level data only. Never ask the user
    or anyone else to label data, and never build a label-acquisition queue.

@@ -1,9 +1,9 @@
 {
   "schema_version": "ai_hardening_gate_v1",
   "gate_id": "decision-134-ai-hardening-production-evidence",
-  "status": "closed",
-  "production_promotion_allowed": true,
-  "production_promotion_scope": "local_citizen_science_operations_only",
+  "status": "open",
+  "production_promotion_allowed": false,
+  "production_promotion_scope": "blocked",
   "external_submission_allowed": false,
   "detection_claimed": false,
   "expert_review_claimed": false,
@@ -61,6 +61,12 @@
       "satisfied": true,
       "blocking": false,
       "description": "A committed review-safe closure bundle records validation commands, artifact checksums, file counts, method summaries, and non-claim guardrails."
+    },
+    {
+      "requirement_id": "adequate_preexisting_row_level_labels",
+      "satisfied": false,
+      "blocking": true,
+      "description": "No adequate independent row-level labeled dataset exists for global anomaly/OOD calibration; synthetic injections and unlabeled observations cannot close this requirement."
     }
   ],
   "required_document_phrases": [
