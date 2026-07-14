@@ -136,6 +136,7 @@ These CLI commands implement the runbook rules:
 | `techno-search review-dashboard [--run-dir RUN_DIR | --results-dir RESULTS_DIR]` | Review compact operator action counts from a run or active candidate manifests; exit 1 only when follow-up pathways need attention |
 | `techno-search run-pipeline FILE TRACK OUTPUT_DIR [--semisupervised-model PATH]` | Process one input file through the pipeline; radio packets use the default local fitted scorer model when present |
 | `techno-search radio-real-corpus-summary --dat-dir PATH [--dat-dir PATH2] [--hit-ndjson PATH] [--candidate-sample-limit N]` | Summarize local real `.dat` and normalized hit-NDJSON evidence for drift, cross-target RFI recurrence, fitted scorer integration, and bounded candidate-review survivors |
+| `techno-search meerkat-frequency-neighbor-summary --raw-json PATH --frequency-hz HZ [--frequency-hz HZ2]` | Stream the complete local MeerKAT JSON/JSON.gz source for explicit ±500 Hz candidate-frequency neighbors without materializing another normalized corpus |
 | `techno-search track-b-candidate-readiness CANDIDATE_JSON [--crossmatch-json CROSSMATCH_JSON] [--satellite-json SATELLITE_JSON]` | Fail-closed audit of whether a real candidate packet has the packet metadata and explicit evidence needed for Track B gate review; it never guesses missing sky position, observation time, telescope location, or catalog classifications |
 | `techno-search track-b-unknown-candidate-gate CANDIDATE_JSON --crossmatch-json CROSSMATCH_JSON [--satellite-json SATELLITE_JSON]` | Combine explicit Track A crossmatch, optional satellite-match, RFI/artifact/cadence/anomaly/provenance evidence into the Phase 4 `unknown_candidate` gate without network lookups |
 | `techno-search validate-all` | Must pass before any scan proceeds |
@@ -306,6 +307,25 @@ Voyager and stationary-frequency rows are counted separately and are not
 promoted as follow-up candidates. Inspect `candidate_review.top_review_targets`
 before individual rows; a survivor set concentrated on one target is a
 source-context and instrumental-vetting task, not a discovery claim.
+
+When a survivor frequency comes from the bounded normalized MeerKAT subset,
+check the complete already-local raw source before concluding that cross-target
+recurrence is absent:
+
+```bash
+git pull origin main
+caffeinate -i .venv/bin/techno-search meerkat-frequency-neighbor-summary \
+  --raw-json data/meerkat_hits/meerkat_bluse_hits.json \
+  --frequency-hz CANDIDATE_FREQUENCY_HZ \
+  --tolerance-hz 500 \
+  --sample-limit 10
+```
+
+Repeat `--frequency-hz` for multiple explicit survivor frequencies. The command
+streams the top-level JSON array and writes no corpus or report file. Its unique
+target/artifact/beam counts are deterministic triage context only: absence of a
+neighbor does not confirm a signal, and presence of a neighbor is RFI evidence,
+not an independently supplied row label.
 
 The retired `radio-review-sample` command and its unlabeled queue are not a
 calibration path and must not be recreated. The available pre-existing labels

@@ -2092,6 +2092,20 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(result, indent=2, sort_keys=True), file=out)
         return 0
 
+    if args.command == "meerkat-frequency-neighbor-summary":
+        from techno_search.meerkat_frequency_neighbors import (
+            meerkat_frequency_neighbor_summary,
+        )
+
+        result = meerkat_frequency_neighbor_summary(
+            Path(args.raw_json),
+            args.frequency_hz,
+            tolerance_hz=args.tolerance_hz,
+            sample_limit=args.sample_limit,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        return 0
+
     if args.command == "multi-modal-crossmatch-summary":
         from techno_search.multi_modal_crossmatch import multi_modal_crossmatch_summary
 
@@ -10759,6 +10773,38 @@ def _build_parser() -> argparse.ArgumentParser:
             "Optional documented clock-oscillator frequency for integer-spacing "
             "RFI-family checks; may be repeated. No clock values are guessed."
         ),
+    )
+
+    meerkat_frequency_neighbor_parser = subparsers.add_parser(
+        "meerkat-frequency-neighbor-summary",
+        help=(
+            "Stream a full local MeerKAT JSON hit table for neighbors of explicit "
+            "candidate frequencies without materializing another corpus."
+        ),
+    )
+    meerkat_frequency_neighbor_parser.add_argument(
+        "--raw-json",
+        required=True,
+        help="Local top-level-array JSON or JSON.gz MeerKAT hit table.",
+    )
+    meerkat_frequency_neighbor_parser.add_argument(
+        "--frequency-hz",
+        action="append",
+        type=float,
+        required=True,
+        help="Candidate frequency in Hz; may be repeated.",
+    )
+    meerkat_frequency_neighbor_parser.add_argument(
+        "--tolerance-hz",
+        type=float,
+        default=500.0,
+        help="Symmetric frequency-neighbor tolerance in Hz.",
+    )
+    meerkat_frequency_neighbor_parser.add_argument(
+        "--sample-limit",
+        type=int,
+        default=20,
+        help="Maximum matching raw rows returned per query frequency.",
     )
 
     multi_modal_crossmatch_parser = subparsers.add_parser(
