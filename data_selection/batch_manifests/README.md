@@ -28,6 +28,27 @@ Do not use a batch manifest as approval to download raw files until archive
 product metadata, size estimates, and local free-space constraints have been
 verified.
 
+## Six-shard single-terminal launcher
+
+Once an explicitly approved batch has six committed, disjoint manifests named
+`<PREFIX>_shard1_manifest.json` through `<PREFIX>_shard6_manifest.json`, run the
+repo-native launcher instead of opening six terminal tabs. Always dry-run the
+same prefix first:
+
+```bash
+git pull origin main
+caffeinate -i .venv/bin/python scripts/run_six_shard_downloads.py \
+  data_selection/batch_manifests/<PREFIX> --dry-run
+```
+
+Remove `--dry-run` only after the printed target count, 100GB storage preflight,
+six manifest paths, and approval state are correct. The launcher defaults to six
+pipeline workers per shard, but permits only two shards to post-process at once
+(12 aggregate workers); all six download shards remain independently logged.
+It refuses a completed manifest unless `--rerun-completed` is deliberately
+supplied. That override is not routine resume behavior: the underlying runner
+already skips targets with existing `.dat` plus candidate-report evidence.
+
 ## Batch naming convention
 
 Each acquisition round (`top25`, `next25`, `batch3`, ...) gets its own

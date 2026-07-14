@@ -19,6 +19,11 @@ def test_agents_requires_local_gpu_and_parallel_optimization() -> None:
     assert "4 to 6 workers" in agents
     assert "Avoid oversubscription" in agents
     assert "Do not hard-code this workstation into" in agents
+    assert "REPO-NATIVE SHARD LAUNCHERS" in agents
+    assert "scripts/run_six_shard_downloads.py" in agents
+    assert "scripts/run_parallel_validation.py" in agents
+    assert "six pytest-xdist workers" in agents
+    assert "six non-overlapping `loadfile` test" in agents
 
 
 def test_committed_system_profile_records_gpu_first_ai_guidance() -> None:
@@ -43,3 +48,16 @@ def test_decision_137_records_local_optimization_policy() -> None:
     assert "up to 12 workers" in decisions
     assert "4 to 6 workers" in decisions
     assert "fallback paths when GPU support is unavailable" in decisions
+
+
+def test_all_current_agent_validation_surfaces_use_repo_native_launchers() -> None:
+    claude = _read("CLAUDE.md")
+    validation = _read("docs/VALIDATION.md")
+    readme = _read("README.md")
+    ci = _read(".github/workflows/ci.yml")
+    ci_template = _read("docs/templates/ci.yml")
+
+    for text in (claude, validation, readme, ci, ci_template):
+        assert "scripts/run_parallel_validation.py" in text
+    assert "scripts/run_six_shard_downloads.py" in claude
+    assert "SHARDED EXECUTION DIRECTIVE" in claude

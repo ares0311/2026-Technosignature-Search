@@ -150,8 +150,8 @@ Only after `admission_status: "ready_for_local_fixture"` and `blocker_count: 0`:
 - Re-run the full test suite:
 
 ```bash
-caffeinate -i .venv/bin/python -m pytest --tb=short -q
-.venv/bin/techno-search validate-all
+git pull origin main
+caffeinate -i .venv/bin/python scripts/run_parallel_validation.py
 ```
 
 ---

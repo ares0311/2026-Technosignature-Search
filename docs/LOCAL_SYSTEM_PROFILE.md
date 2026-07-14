@@ -66,7 +66,8 @@ Unique local identifiers such as serial number, hardware UUID, and provisioning 
 
 **Correct:**
 ```bash
-.venv/bin/python -m pytest
+caffeinate -i .venv/bin/python scripts/run_parallel_validation.py
+.venv/bin/python -m pytest tests/test_version.py
 .venv/bin/techno-search validate-all
 VENV="$REPO_ROOT/.venv/bin/python"; "$VENV" -m pip install ...
 ```

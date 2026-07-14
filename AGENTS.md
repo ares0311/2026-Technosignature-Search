@@ -86,6 +86,36 @@ than sequential downloads would have. Prefer a small bounded pool (e.g.
 with this repo's no-guessing rule: cite the source for whatever concurrency
 limit is chosen.
 
+### REPO-NATIVE SHARD LAUNCHERS — NON-NEGOTIABLE
+
+When parallel execution would materially shorten a safe task, use the checked-in
+repo-native launcher instead of asking the operator to open multiple terminals
+or composing ad hoc background commands. This is the standing default for all
+future downloads, tests, and other bounded batch workloads where scopes can be
+made non-overlapping and concurrency is verified safe:
+
+- Approved six-manifest `stream_process_evict` acquisition uses
+  `scripts/run_six_shard_downloads.py`. It launches exactly six disjoint shard
+  manifests from one terminal, defaults to six pipeline workers per shard,
+  bounds simultaneous post-processing to at most 12 aggregate pipeline workers,
+  preflights the worst-case concurrent raw chunks against the hard 100GB cap,
+  refuses completed shard manifests unless repetition is explicit, and preserves
+  per-shard logs/status entries. Large raw downloads still require the existing
+  metadata, size-preflight, manifest, and explicit-approval gates.
+- Full local validation uses `scripts/run_parallel_validation.py`. Its default
+  is six pytest-xdist workers operating as six non-overlapping `loadfile` test
+  shards with aggregated package coverage; after pytest passes, Ruff, mypy, and
+  `validate-all` run concurrently.
+  Use this launcher whenever the full suite or a large test selection would
+  benefit. Small focused tests may still run directly when launcher startup
+  would cost more than it saves.
+
+Do not interpret "six workers and six shards" as 36 simultaneous test workers.
+For tests, each xdist worker is one active non-overlapping shard. For downloads,
+the launcher may keep six network shards active while its processing-slot gate
+prevents CPU oversubscription. Verify manifest/test scopes are non-overlapping
+and estimate aggregate storage before starting either launcher.
+
 ### DATA COLLECTION STATUS REPORTING DIRECTIVE — NON-NEGOTIABLE
 
 Every real data-acquisition script or CLI command (BL extended-corpus
@@ -802,7 +832,7 @@ invocation expected to run longer than ~30 seconds.
 ```bash
 caffeinate -i bash scripts/download_bl_extended_corpus.sh
 caffeinate -i bash scripts/run_pipeline_on_bl_data.sh
-caffeinate -i .venv/bin/python -m pytest --tb=short -q
+caffeinate -i .venv/bin/python scripts/run_parallel_validation.py
 ```
 
 `caffeinate -i` prevents idle sleep for the lifetime of the child process. No
@@ -818,11 +848,13 @@ realistic data, not purely synthetic fixtures.
 Minimum validation before any PR:
 
 ```bash
-.venv/bin/python -m pytest --tb=short -q
-.venv/bin/ruff check .
-.venv/bin/mypy src --no-error-summary
-.venv/bin/techno-search validate-all
+caffeinate -i .venv/bin/python scripts/run_parallel_validation.py
 ```
+
+The launcher is the canonical full-validation command: six xdist workers are
+six active `loadfile` shards, and the three independent post-pytest checks run
+concurrently. If diagnosing a failure, rerun the smallest failing test/check
+directly inside `.venv`; do not parallelize a tiny reproduction unnecessarily.
 
 ---
 

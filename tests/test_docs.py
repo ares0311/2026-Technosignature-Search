@@ -187,7 +187,7 @@ def test_readme_keeps_public_entrypoint_structure() -> None:
     assert "Candidate-extraction handoff records are the next local contract" in readme
     assert "### Quality-Control Matrix" in readme
     assert ".venv/bin/techno-search score examples/candidates/radio_clean_candidate.json" in readme
-    assert ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing" in readme
+    assert "caffeinate -i .venv/bin/python scripts/run_parallel_validation.py" in readme
     assert "Works Cited" in readme
     assert "Gaia Data Release 3" in readme
     assert "No claims of confirmed technosignatures" in readme
@@ -198,9 +198,7 @@ def test_publishing_docs_reference_current_validation_commands() -> None:
     doc = Path("docs/PUBLISHING.md").read_text(encoding="utf-8")
 
     assert "git push origin main" in doc
-    assert ".venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing" in doc
-    assert ".venv/bin/python -m ruff check ." in doc
-    assert ".venv/bin/python -m mypy src" in doc
+    assert "caffeinate -i .venv/bin/python scripts/run_parallel_validation.py" in doc
     assert "git diff --check" in doc
 
 
@@ -261,6 +259,7 @@ def test_background_scheduler_templates_use_ignored_artifact_paths() -> None:
 def test_ci_template_stays_non_networked_and_outside_workflows() -> None:
     ci_doc = Path("docs/CI.md").read_text(encoding="utf-8")
     template = Path("docs/templates/ci.yml").read_text(encoding="utf-8")
+    launcher = Path("scripts/run_parallel_validation.py").read_text(encoding="utf-8")
 
     assert Path("docs/templates/ci.yml").exists()
     # CI workflow may exist once workflow scope token is available
@@ -268,11 +267,9 @@ def test_ci_template_stays_non_networked_and_outside_workflows() -> None:
     assert "workflow` scope" in ci_doc
     assert "TECHNO_SEARCH_ENABLE_LIVE_DATA=0" in ci_doc
     assert 'TECHNO_SEARCH_ENABLE_LIVE_DATA: "0"' in template
-    assert 'python -m pytest -m "not integration_live"' in template
-    assert "python -m ruff check ." in template
-    assert "python -m mypy src" in template
+    assert 'python scripts/run_parallel_validation.py -- -m "not integration_live"' in template
     assert "git diff --check" in template
-    assert "techno-search validate-all" in template
+    assert '"validate-all"' in launcher
     assert "techno-search health" in template
     assert "techno-search operations-readiness-summary" in template
     assert "techno-search operations-action-plan-summary" in template
