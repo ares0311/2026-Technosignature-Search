@@ -34,7 +34,8 @@ techno-search operations-blocker-progress-execution-followup-summary
 ```
 
 The launcher distributes pytest files across six xdist workers, aggregates
-package coverage, and, after the tests pass, runs Ruff, mypy, and `validate-all`
+package coverage, and, after the tests pass, runs the base-aware app-version
+gate, Ruff, mypy, and `validate-all`
 concurrently. It is the default for future full-suite CI work; direct serial
 pytest remains appropriate only for small focused reproductions or a verified
 shared-state incompatibility.

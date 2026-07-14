@@ -64,8 +64,11 @@ Current execution status:
  - Future approved six-manifest data batches use
    `scripts/run_six_shard_downloads.py`, not six manual terminal tabs.
  - Full validation uses `scripts/run_parallel_validation.py` (six xdist
-   workers/six non-overlapping test shards, then concurrent static/science
-   checks). `AGENTS.md` remains the directive source of truth.
+   workers/six non-overlapping test shards, then concurrent app-version,
+   static, and science checks). `scripts/check_app_version.py` requires every
+   release-relevant branch change to advance the version beyond `origin/main`
+   and requires package/readiness version surfaces to agree. `AGENTS.md`
+   remains the directive source of truth.
 
 ---
 

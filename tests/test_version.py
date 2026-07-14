@@ -3,6 +3,8 @@ from __future__ import annotations
 import tomllib
 from pathlib import Path
 
+from scripts.check_app_version import current_surface_errors
+
 import techno_search
 
 
@@ -20,3 +22,7 @@ def test_package_version_matches_project_metadata() -> None:
 
 def test_package_version_is_monotonic_after_pilot_release() -> None:
     assert _version_tuple(techno_search.__version__) >= (1, 1, 0)
+
+
+def test_all_operator_visible_version_surfaces_agree() -> None:
+    assert current_surface_errors() == []

@@ -3,8 +3,8 @@
 
 pytest-xdist owns the test scheduling: six workers are six active shards, and
 ``--dist=loadfile`` keeps every test file on one worker while executing each
-collected test exactly once. After pytest succeeds, the independent Ruff,
-mypy, and scientific ``validate-all`` checks run concurrently.
+collected test exactly once. After pytest succeeds, the independent app-version,
+Ruff, mypy, and scientific ``validate-all`` checks run concurrently.
 """
 
 from __future__ import annotations
@@ -54,6 +54,7 @@ def pytest_command(workers: int, shards: int, pytest_args: Sequence[str]) -> lis
 
 def _run_parallel_checks(env: dict[str, str]) -> dict[str, int]:
     commands = {
+        "app-version": [sys.executable, "scripts/check_app_version.py"],
         "ruff": [sys.executable, "-m", "ruff", "check", "."],
         "mypy": [sys.executable, "-m", "mypy", "src", "--no-error-summary"],
         "validate-all": [sys.executable, "-m", "techno_search.cli", "validate-all"],
@@ -139,7 +140,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if pytest_result.returncode != 0 or args.pytest_only:
         return pytest_result.returncode
 
-    print("pytest passed; running Ruff, mypy, and validate-all concurrently.")
+    print("pytest passed; running app-version, Ruff, mypy, and validate-all concurrently.")
     results = _run_parallel_checks(env)
     failures = {name: code for name, code in results.items() if code != 0}
     if failures:

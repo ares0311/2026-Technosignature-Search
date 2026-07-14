@@ -53,6 +53,17 @@ machine and GitHub in sync:
 The agent always develops on `claude/general-session-Bb2dZ`. The user always
 stays on `main` and pulls after each PR is merged.
 
+### APP VERSION TRACKING — NON-NEGOTIABLE
+
+Every release-relevant change must advance the semantic app version relative to
+`origin/main`. This includes application/science code, scripts, configs,
+schemas, and authoritative agent/production directives. Keep `pyproject.toml`,
+`src/techno_search/__init__.py`, and `docs/PRODUCTION_READINESS.md` on the same
+version. `scripts/check_app_version.py` is the enforced source/base comparison;
+it runs inside `scripts/run_parallel_validation.py`. Do not replace it with a
+fixed minimum-version assertion—the old test only checked `>= 1.1.0` and could
+not detect skipped bumps.
+
 ### PR LINK + CONTINUATION DIRECTIVE — NON-NEGOTIABLE
 
 PR links are mandatory progress signals, not automatic stopping points.
