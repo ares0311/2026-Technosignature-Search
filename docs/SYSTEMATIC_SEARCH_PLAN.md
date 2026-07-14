@@ -97,47 +97,11 @@ Seventy-seven complete raw HDF5 files plus one resumable partial remained at
 termination. The subsequent v1.2.1 restart reused/resumed them and completed
 all manifests. Final measured results are in the Step 0 completion handoff.
 
-The 554-target manifest discovery is complete (399/554 targets have a real
-BL archive URL). The actual download (capped at
-`TECHNO_EXTENDED_CORPUS_MAX_TARGETS=390`, ~90GB) was never restarted after
-being paused. This is a prerequisite for Step 1's follow-up-value inputs
-and for broader cross-target RFI validation (`docs/PRODUCTION_READINESS.md`
-Phase 1) — more real hit-bearing targets are needed before novelty/coverage
-scoring in Step 3 has anything real to work with beyond the current 18-file
-local corpus.
-
-**This is explicitly a one-time corpus-widening bootstrap, not the ongoing
-acquisition model.** It's still driven by the stratified manifest — the
-same mechanism `AGENTS.md`'s TARGET SELECTION PHILOSOPHY says should not be
-the primary target-selection driver going forward. It's done once here
-because Step 1 and Step 3a need a large enough real corpus to work with at
-all (18 local files isn't enough to compute meaningful novelty scores or
-build a 1,000-row review set), not because bulk-downloading a static
-manifest is the intended long-term pattern.
-
-**Once Step 3 exists, the sequence flips**: the algorithm decides which
-specific targets to acquire next (driven by real novelty/follow-up
-scoring), and acquisition happens per-target, continuously — not
-"bulk-download broadly first, then apply an algorithm to whatever landed."
-Do not treat a future large stratified-manifest download as a template to
-repeat; Step 0 is a bootstrap exception, made once to unblock Steps 1 and
-3, not a recurring operating pattern.
-
-**Action:** resume
-`scripts/download_bl_extended_corpus.sh --manifest data/target_sample_manifest_expanded.json`
-per the command already given earlier in this session, but only after applying
-the Astrometrics data/storage policy now tracked in:
-
-- `docs/astrometrics_data_selection_policy.md`
-- `docs/astrometrics_external_and_cloud_storage_policy.md`
-
-That means: record the acquisition role and mode, confirm the batch remains
-within policy caps, confirm local free-space reserve, preserve metadata and
-status in `docs/data_collection_status.json`, and keep raw public archive files
-as cache unless a policy-backed pin rule promotes them. Then run turboSETI and
-the pipeline over the results (`scripts/run_turboseti_on_extended_corpus.sh`,
-`scripts/run_pipeline_on_bl_data.sh`), and update
-`docs/data_collection_status.json` per the standing reporting directive.
+The paragraphs formerly here instructed agents to resume a 554-target bootstrap
+and build a 1,000-row human-review set. Both instructions are superseded and
+must not be executed: the corrected 215-target corpus is complete, and creating
+new labels is outside project scope. Future acquisition is Step 3a
+metadata-first, detection-priority work and remains separately approval-gated.
 
 ---
 
@@ -419,22 +383,20 @@ qualifying candidate actually exists.** Concretely:
 ## Sequencing summary
 
 ```
-Step 0 (resume extended-corpus download)
-  -> unblocks broader real corpus for Step 1 review sampling and Step 3a coverage data
-Step 1 (human-review calibration set)
-  -> unblocks Track B unknown_candidate eligibility and Step 3b's real followup_value scoring
+Step 0 (complete corrected extended corpus)
+  -> do not repeat the bootstrap; use its real outputs for deterministic validation
+Step 1 (permanently fail-closed learned calibration)
+  -> never acquire labels; keep the anomaly score ranking-only and dependent gates closed
 Step 2 (UI hardening)
   -> precedes Step 3 per explicit user sequencing direction
-Step 3a (novel-target selection: real, buildable now once Step 0 lands)
-  -> prioritize this as the actual near-term Step 3 work
+Step 3a (novel-target selection: real metadata-first queue exists)
+  -> future raw acquisition remains explicit-approval and storage-policy gated
 Step 3b (follow-up-target selection)
   -> design only; implementation waits on a real qualifying candidate existing —
      do not build/merge scoring code against a backlog that doesn't exist yet
 ```
 
-Steps 0 and 1 can proceed in parallel with Step 2 (UI audit/hardening
-doesn't depend on either). Step 3 should not start until Step 2 is
-substantively underway, per the user's explicit sequencing direction. Within
-Step 3, 3a is the real near-term target; 3b stays design-only until a real
-candidate exists to validate it against — see the correction in 3b's
-section above (2026-07-05).
+Steps 0 and 1 are terminal states, not active work. Step 2 is substantively
+underway and Step 3a has a real metadata-first queue; neither status authorizes
+raw downloads. Step 3b stays design-only until a real candidate exists to
+validate it against.

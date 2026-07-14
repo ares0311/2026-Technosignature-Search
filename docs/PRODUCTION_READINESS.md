@@ -6,7 +6,17 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.4
+**Current app version:** 1.2.5
+
+**Phase 1 frequency-family rejection — 2026-07-14:** version 1.2.5 wires
+the existing BLC1-inspired harmonic/clock-family evidence into deterministic
+candidate triage. Hits flagged by the full-band, per-observation diagnostic no
+longer survive the current automated filters and are reported as
+`likely_frequency_family_rfi`. This is conservative RFI-forensics evidence,
+not a ground-truth label or physical-origin claim. A read-only rerun over the
+215-file corrected corpus verified 2 frequency-family members, 4,895
+cross-target recurrence flags, 4,896 unique deterministic-RFI rejections across
+the two checks, and zero follow-up or escalation-ready survivors.
 
 **Phase 1 labeled-data boundary — 2026-07-14:** version 1.2.4 retires
 `techno-search radio-review-sample` and the proposed project-owned review set.
