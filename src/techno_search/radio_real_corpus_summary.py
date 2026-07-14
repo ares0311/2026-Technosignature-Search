@@ -556,13 +556,14 @@ def _candidate_review_summary(
             public_null_search_context_count += 1
         if stationary_drift:
             stationary_drift_candidate_count += 1
+        # A publication's corpus-level null result is provenance metadata, not
+        # an independently supplied row verdict or a deterministic row filter.
         survives_current_filters = (
             rfi_flag is None
             and not frequency_family_flagged
             and drift_consistent
             and not stationary_drift
             and not known_control
-            and not public_null_search_context
         )
         if survives_current_filters:
             follow_up_candidate_count += 1
@@ -600,19 +601,15 @@ def _candidate_review_summary(
                         "known_spacecraft_or_calibration_control"
                         if known_control
                         else (
-                            "public_null_search_context"
-                            if public_null_search_context
+                            "stationary_frequency_review"
+                            if stationary_drift
                             else (
-                                "stationary_frequency_review"
-                                if stationary_drift
+                                "likely_cross_target_rfi"
+                                if rfi_flag is not None
                                 else (
-                                    "likely_cross_target_rfi"
-                                    if rfi_flag is not None
-                                    else (
-                                        "likely_frequency_family_rfi"
-                                        if frequency_family_flagged
-                                        else "drift_inconsistent_review"
-                                    )
+                                    "likely_frequency_family_rfi"
+                                    if frequency_family_flagged
+                                    else "drift_inconsistent_review"
                                 )
                             )
                         )
@@ -684,6 +681,10 @@ def _candidate_review_summary(
         "stationary_drift_candidate_count": stationary_drift_candidate_count,
         "known_control_candidate_count": known_control_candidate_count,
         "public_null_search_context_candidate_count": public_null_search_context_count,
+        "public_null_search_context_role": (
+            "Corpus-level publication metadata only; it is not a row-level label "
+            "or automated rejection condition."
+        ),
         "sample_limit": limited_sample,
         "top_review_candidates": ranked_survivors[:limited_sample],
         "top_review_targets": review_targets[:limited_sample],
@@ -695,7 +696,8 @@ def _candidate_review_summary(
         "claim_guardrail": (
             "Rows labeled needs_follow_up_review are automated triage survivors "
             "only, not detections, discoveries, expert review, external validation, "
-            "or external-submission approval."
+            "or external-submission approval. Corpus-level public-null context is "
+            "metadata only and never a row-level verdict."
         ),
     }
 

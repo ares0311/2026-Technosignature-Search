@@ -59,6 +59,13 @@ Current execution status:
    rejects 4,896 unique rows while leaving zero survivors. Version 1.2.6 also
    runs this diagnostic on normalized hit-NDJSON rows grouped strictly by their
    supplied `source_artifact`, never by an inferred observation identity.
+ - Version 1.2.7 corrects a provenance bug in combined-corpus review:
+   paper-level public-null context is retained as metadata but no longer acts as
+   a per-row rejection or label. The full read-only 205,857-row review leaves
+   1,072 unlabeled automated triage survivors; 1,069 are blocked by target/source
+   context and the remaining 3 share a source artifact, so 0 are independently
+   escalation-ready. These are follow-up triage items, not positive labels or
+   detection claims.
  - Training, calibration, threshold selection, and scientific evaluation use
    pre-existing independently labeled row-level data only. Never ask the user
    or anyone else to label data, and never build a label-acquisition queue.
