@@ -254,6 +254,9 @@ def test_cli_gbt_cadence_abacab_review_summarizes_candidate_outcomes(tmp_path) -
     )
     assert "follow_up=1" in compact_stdout.getvalue()
     assert "false_positive=1" in compact_stdout.getvalue()
+    assert "Independent-rule agreement: 2 agree, 0 disagree" in (
+        compact_stdout.getvalue()
+    )
 
 
 def test_cli_track_b_unknown_candidate_gate_combines_explicit_evidence(tmp_path) -> None:

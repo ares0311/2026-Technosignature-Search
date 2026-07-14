@@ -164,6 +164,14 @@ style (source/target/follow-up counts, an action-item table, a top-follow-up-
 target table) and gained `--json` for the machine-readable form, matching its
 siblings. Regression test updated in `tests/test_cli.py`.
 
+**Cadence-triage handoff regression fixed, 2026-07-14:** the version 1.2.11
+rename from project-label review fields to unlabeled triage fields left the
+compact `gbt-cadence-abacab-review` formatter reading the retired
+`review_summary` key. JSON contained the two-rule agreement evidence, but the
+default operator surface silently omitted it. Version 1.2.13 reads
+`triage_summary`, prints independent-rule agreement/disagreement, and has a
+compact-output regression assertion.
+
 Remaining Step 2 work must continue from a workflow audit of the other current
 UI surfaces (especially any operator handoff views outside the candidate
 packet path) against real operator workflows: reviewing a candidate, reviewing

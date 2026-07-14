@@ -6,7 +6,14 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.12
+**Current app version:** 1.2.13
+
+**Step 2 cadence-triage UI repair — 2026-07-14:** version 1.2.13 fixes the
+compact `gbt-cadence-abacab-review` surface after the version 1.2.11 unlabeled
+triage rename. The engine emits `triage_summary`, but the formatter still read
+the retired `review_summary` key and silently omitted agreement evidence. The
+compact output now reports independent-rule agreement/disagreement and the CLI
+help calls the machine-readable payload triage JSON, not review JSON.
 
 **Directive-state correction — 2026-07-14:** version 1.2.12 removes stale
 claims in the active systematic plan, Phase 1 table, and agent handoff that the

@@ -83,6 +83,9 @@ Current execution status:
    threshold. `ai-hardening-gate-summary` must report `status: open`,
    `production_promotion_allowed: false`, and scope `blocked` until adequate
    pre-existing labeled evidence exists. Never create or solicit those labels.
+ - Version 1.2.13 fixes the compact ABACAB triage formatter to read
+   `triage_summary`; it again shows independent-rule agreement evidence and no
+   longer calls the machine-readable output review JSON.
  - Version 1.2.12 corrects all active plan/handoff claims that the HIP99427
    artifact was pre-existing labeled data or a future calibration input. Active
    next actions are deterministic no-label science and operator workflow work.
