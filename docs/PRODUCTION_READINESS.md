@@ -6,7 +6,14 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.11
+**Current app version:** 1.2.12
+
+**Directive-state correction — 2026-07-14:** version 1.2.12 removes stale
+claims in the active systematic plan, Phase 1 table, and agent handoff that the
+HIP99427 artifact was pre-existing labeled data or could support a future
+calibration action. A regression guard now requires those authoritative files
+to identify it as project-generated legacy diagnostic evidence and keeps the
+next-action list on deterministic no-label work.
 
 **Project-owned label generation retired — 2026-07-14:** version 1.2.11
 deletes the remaining executable cadence-label builder and multi-file label
@@ -15,9 +22,10 @@ that prevents those paths from returning. The root cause was pre-prime-
 directive citizen-science machinery still being able to infer and write new
 training/evaluation labels from deterministic cadence behavior. Deterministic
 ABACAB review remains available as unlabeled triage. The frozen 124-row
-HIP99427 artifact remains only as the accepted legacy diagnostic input; it may
-not be regenerated, expanded, or used to claim global calibration. No person
-or automated rule may be asked to create replacement labels.
+HIP99427 artifact remains only as legacy diagnostic input; it is not authorized
+labeled data and may not be regenerated, expanded, or used to claim global
+calibration. No person or automated rule may be asked to create replacement
+labels.
 
 **AI hardening production blocker correction — 2026-07-14:** version 1.2.10
 reopens DECISION-134 and supersedes the stale DECISION-139 local-promotion
@@ -297,7 +305,7 @@ commands instead of placeholder `rm` recipes.
 
 | Task | Status |
 |---|---|
-| Track A known-explanation classifier before Track B `unknown_candidate` routing | ⚠️ Partial — Track A's HTRU2 baseline, four known-source catalogs, satellite-transmitter matching, and 13/13 historical replay use real pre-existing evidence. A valid future CNN/classifier may learn only pre-existing labels for known objects, phenomena, RFI, and artifacts, and must abstain with `low_confidence` when no known class is reliable. An unresolved item is follow-up triage, not a positive technosignature label, and Track B's independent gates still apply. Track B is exposed as `techno-search track-b-unknown-candidate-gate`/`track-b-candidate-readiness`; real Voyager and HIP99427 checks remain conservatively ineligible. HIP99427's 124 rows are the only accepted real per-hit labels; the two `follow_up` rows score below the false-positive mean under the current cross-instrument scorer, so a high-score threshold would reject the very rows it should retain. Eight published-source checks found no larger qualifying row-level labeled dataset. New labeling and review queues are prohibited; the anomaly score remains an uncalibrated ranking diagnostic and the dependent gate stays fail-closed. |
+| Track A known-explanation classifier before Track B `unknown_candidate` routing | ⚠️ Partial — Track A's HTRU2 baseline, four known-source catalogs, satellite-transmitter matching, and 13/13 historical replay use real pre-existing evidence. A valid future CNN/classifier may learn only pre-existing labels for known objects, phenomena, RFI, and artifacts, and must abstain with `low_confidence` when no known class is reliable. An unresolved item is follow-up triage, not a positive technosignature label, and Track B's independent gates still apply. Track B is exposed as `techno-search track-b-unknown-candidate-gate`/`track-b-candidate-readiness`; real Voyager and HIP99427 checks remain conservatively ineligible. Eight published-source checks found no qualifying pre-existing row-level labeled dataset. HIP99427's frozen 124-row project-generated artifact is legacy diagnostic evidence only and is unauthorized for learned training, calibration, threshold selection, or evaluation. New labeling and review queues are prohibited; the anomaly score remains an uncalibrated ranking diagnostic and the dependent gate stays fail-closed. |
 | Proper ON/OFF cadence verification (ABACAB from raw files) | ⚠️ Partial — `gbt-cadence-raw-status` verifies approved raw HDF5 presence, size, MD5, and HDF5 signature before cadence processing; local HIP99427 raw files are present under `~/technosignature-data`, the official ingest reproduces the 213-row cadence CSV, and `gbt-cadence-abacab-review` summarizes candidate-level ON/OFF outcomes |
 | Real training corpus loaded into semisupervised_scorer | ✅ Done locally — local GBT/turboSETI `.dat` corpus can fit the scorer and production radio packets can carry fitted-model anomaly scores; verified MeerKAT BLUSE/SETICORE JSON source is documented, `scripts/ingest_meerkat_hits.py` supports its schema, and `data/meerkat_hits/semisupervised_scorer_metadata.json` records `train_hit_count: 200000`; payload/model artifacts remain ignored and non-redistributed |
 | Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial — radio candidate packets, ranked summaries, and production ledgers carry normalized drift and Earth-drift consistency features. The 2026-07-14 full combined-corpus review examined 205,857 rows and found 148,215 stationary rows and 10,741 Earth-drift-inconsistent rows. After all current row-level deterministic filters, 1,072 unlabeled rows remain follow-up triage items and 0 are independently escalation-ready. Broader candidate-level scientific investigation remains open. |
