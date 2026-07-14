@@ -46,7 +46,7 @@ Status: blocked on a long local data acquisition run.
 
 ## P1 — Build The Real Review And Calibration Set
 
-Status: blocked until P0 provides a broader real corpus and the operator reviews
+Status: sampler complete on the broader real corpus; blocked on operator review
 labels.
 
 - Build a review-sampling tool that samples hits across score deciles, targets,
@@ -58,6 +58,9 @@ labels.
   treating anomaly/OOD scores as calibrated.
 - Use precision-at-k, AUPRC, FDR, calibration curves, and top-k review yield;
   do not use accuracy alone as the rare-event promotion metric.
+- Current real queue: 1,000 unlabeled rows, 100 per score decile, 208 targets,
+  two measured GHz bins. It is ignored local calibration data and is protected
+  from accidental overwrite; no automated label is accepted as human review.
 
 ## P2 — CNN And Learned-Model Promotion Gate
 

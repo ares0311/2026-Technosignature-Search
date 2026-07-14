@@ -128,6 +128,7 @@ These CLI commands implement the runbook rules:
 | `techno-search review-dashboard [--run-dir RUN_DIR | --results-dir RESULTS_DIR]` | Review compact operator action counts from a run or active candidate manifests; exit 1 only when follow-up pathways need attention |
 | `techno-search run-pipeline FILE TRACK OUTPUT_DIR [--semisupervised-model PATH]` | Process one input file through the pipeline; radio packets use the default local fitted scorer model when present |
 | `techno-search radio-real-corpus-summary --dat-dir PATH [--dat-dir PATH2] [--hit-ndjson PATH] [--candidate-sample-limit N]` | Summarize local real `.dat` and normalized hit-NDJSON evidence for drift, cross-target RFI recurrence, fitted scorer integration, and bounded candidate-review survivors |
+| `techno-search radio-review-sample --dat-dir PATH --output CSV [--sample-size N]` | Build an unlabeled Phase 1 calibration-review queue balanced across score deciles and target/frequency-bin groups; refuses to overwrite human work by default |
 | `techno-search track-b-candidate-readiness CANDIDATE_JSON [--crossmatch-json CROSSMATCH_JSON] [--satellite-json SATELLITE_JSON]` | Fail-closed audit of whether a real candidate packet has the packet metadata and explicit evidence needed for Track B gate review; it never guesses missing sky position, observation time, telescope location, or catalog classifications |
 | `techno-search track-b-unknown-candidate-gate CANDIDATE_JSON --crossmatch-json CROSSMATCH_JSON [--satellite-json SATELLITE_JSON]` | Combine explicit Track A crossmatch, optional satellite-match, RFI/artifact/cadence/anomaly/provenance evidence into the Phase 4 `unknown_candidate` gate without network lookups |
 | `techno-search validate-all` | Must pass before any scan proceeds |
@@ -298,6 +299,23 @@ Voyager and stationary-frequency rows are counted separately and are not
 promoted as follow-up candidates. Inspect `candidate_review.top_review_targets`
 before individual rows; a survivor set concentrated on one target is a
 source-context and instrumental-vetting task, not a discovery claim.
+
+Build the Phase 1 human-review queue only from completed real observations:
+
+```bash
+git pull origin main
+caffeinate -i .venv/bin/techno-search radio-review-sample \
+  --dat-dir data/extended_corpus \
+  --output data/review/phase1_radio_review_queue_v1.csv \
+  --sample-size 1000
+```
+
+The CSV is ignored local calibration data. It contains real measured hit
+features and anomaly-score sampling strata, but its human-review fields are
+blank. Do not infer labels from automated RFI/drift filters, and do not use
+`--overwrite` once human review begins. Because these completed search rows are
+being promoted into calibration review, they cannot later be represented as a
+blind search set.
 
 Before expanding `data/extended_corpus/`, verify current BL Open Data
 availability from the committed manifest. This command queries the official

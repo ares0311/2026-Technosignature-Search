@@ -159,6 +159,17 @@ for more real per-hit labeled data is exhausted
 attempt to shortcut it with rule-derived proxy labels or by re-running the
 literature search again.
 
+**Implementation update — 2026-07-13:** the sampling/tooling portion is now
+complete in version 1.2.3. `techno-search radio-review-sample` built the first
+ignored local queue from the corrected 215-target corpus: 1,000 of 8,988 real
+hits, exactly 100 per score decile, spanning 208 targets and two measured GHz
+frequency bins. All `review_label`/`reviewer_id`/`review_timestamp_utc`/
+`review_notes` values are blank, and reruns refuse to overwrite an existing
+queue by default. The queue is calibration-only and prohibited from later
+blind-search reuse. Step 1 remains open on the irreducible human-labeling work
+and the empirical ≥50 follow-up-like-row goal; agents must not fill that gap
+with automated filter outputs or paper-level conclusions.
+
 ---
 
 ## Step 2 (blocks nothing downstream directly, but must precede Step 3 per user direction): harden the UI

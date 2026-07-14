@@ -6,7 +6,22 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.2
+**Current app version:** 1.2.3
+
+**Phase 1 human-review sampler — 2026-07-13:** version 1.2.3 adds
+`techno-search radio-review-sample`, the missing implementation step for the
+project-owned calibration set. It reads the completed real GBT `.dat` corpus,
+uses the existing fitted semi-supervised scorer, assigns stable rank-based score
+deciles, and round-robins target/frequency-bin groups within each decile. The
+first real local run sampled 1,000 of 8,988 hits: exactly 100 per decile, across
+208 targets and two measured GHz bins, with no human label/reviewer/timestamp
+field prepopulated. The ignored queue is
+`data/review/phase1_radio_review_queue_v1.csv`; existing queues are protected
+from overwrite by default. These completed-search rows are explicitly promoted
+to calibration-only use and may not later be represented as blind-search
+evidence. The remaining blocker is genuine human review: the tool does not
+create labels, and the ≥50 follow-up-like target remains an empirical goal, not
+an assumed class balance.
 
 **Single-terminal sharding and parallel validation — 2026-07-13:** version
 1.2.2 adds `scripts/run_six_shard_downloads.py`, which validates and launches
