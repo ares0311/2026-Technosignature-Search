@@ -34,6 +34,10 @@ Current execution status:
  - The corrected 215-target radio corpus is complete at the valid 10 Hz/s drift
    ceiling; no follow-up or escalation-ready candidates survived automated
    triage.
+ - Phase 1's real review sampler is implemented as `radio-review-sample`. The
+   first local calibration queue contains 1,000 unlabeled rows balanced 100 per
+   score decile across 208 targets and two measured GHz bins. Human labeling is
+   now the blocker; agents must not populate or infer those verdicts.
  - Future approved six-manifest data batches use
    `scripts/run_six_shard_downloads.py`, not six manual terminal tabs.
  - Full validation uses `scripts/run_parallel_validation.py` (six xdist
