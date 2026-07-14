@@ -63,7 +63,7 @@ acquisition is permanently outside project scope.
 | Track B 9-condition gate | ✅ Real, implemented, conservative-by-construction |
 | Semisupervised anomaly/OOD calibration | ❌ Blocked — see Step 1 |
 | Operator UI hardening | ⚠️ Substantially underway — 12 operator-facing commands now default to compact summaries with `--json` opt-in, across three rounds of hardening: `prod-target-status`/`prod-follow-ups`/`prod-non-detections` (before 2026-07-09), `review-dashboard` (2026-07-09), and `track-b-unknown-candidate-gate`/`track-b-candidate-readiness`/`gbt-cadence-abacab-review`/`gbt-cadence-raw-status`/`adversarial-review-dossier`/`multi-modal-crossmatch-summary`/`prod-runs`/`scan-summary` (2026-07-10/11, 8 commands — the commit message for this round undercounted it as "7 more", missing `scan-summary`; verified by counting `_print_*` functions directly, not trusting the commit message). `escalation-gate-check`/`cross-target-rfi-summary`/`health`/`prod-show` deliberately left alone — small flat dicts, already scannable. See Step 2 for what a future audit should still check. |
-| Detection-optimized target selection algorithm | ⚠️ 3a (novel-target selection) real and running: 13 discover→preflight→promote rounds completed (`top25`/`next25`/`batch3`-`batch13`) as of 2026-07-11, 195 targets / ~49 GB promoted to `raw_download_approval_required` (as of `batch12`; `batch13` built, discovery pending), all pending explicit raw-download approval — no payloads downloaded. 3b (follow-up-target selection) remains design-only per its documented gate (no real qualifying candidate exists yet to validate it against). See Step 3a. |
+| Detection-optimized target selection algorithm | ⚠️ 3a (novel-target selection) metadata discovery and size preflight are complete for the full current HPRC queue: `top25`/`next25`/`batch3`-`batch13` plus the 1,358-target `batch14_bulk` round. The queue has 1,147 sized URL-available targets (~288.97 GB), 540 completed no-product results, and 16 already-acquired controls. This is an inventory, not raw-download approval, and cannot fit the permanent 100 GB cap as a bulk pull. 3b remains design-only per its documented gate (no real qualifying candidate exists yet). See Step 3a. |
 | Extended-corpus completion | ✅ Complete — corrected v1.2.1 six-shard rerun finished 198/198 targets with zero download-task duplication. The full 215-target local corpus is at 10 Hz/s; ingestion removes 3,134 exact duplicate hit rows from 8,988 raw rows, leaving 5,854 unique triage rows and zero follow-up/escalation-ready candidates. See Step 0 completion below. |
 
 ---
@@ -282,11 +282,13 @@ requirements:
    `*_size_preflight_report.json` under `data_selection/batch_manifests/`
    (new `--extra-size-preflight-report-path`, default: auto-glob) — see
    `docs/LOCAL_DATA_INVENTORY.md`'s "2026-07-09 Local-Coverage `next25`"
-   entry for the full root cause and regression test. The queue now reports
-   29 targets in `raw_download_approval_required`, consolidated in
+   entry for the full root cause and regression test. At that two-round
+   checkpoint, the queue reported 29 targets in
+   `raw_download_approval_required`, consolidated in
    `data_selection/batch_manifests/local_coverage_raw_download_approval_manifest.json`
    (~7.41 GB combined) as the review input for explicit bounded raw-download
-   approval. This same discover → preflight → promote pattern is the
+   approval. Later rounds supersede those counts. This same discover →
+   preflight → promote pattern is the
    repeatable, safe (metadata-only) way to keep advancing 3a through further
    rounds without needing raw-download approval at each step.
 
@@ -314,10 +316,12 @@ requirements:
    `data_selection/batch_manifests/README.md` for full detail and
    regression test
    `test_build_target_priority_queue_merges_multiple_discovery_results`.
-   `batch3`'s own discovery round is not yet run (needs live network access
-   from the user's machine — `breakthroughinitiatives.org`/
-   `bldata.berkeley.edu` are unreachable from this agent's sandbox, same
-   restriction already documented for MAST/IRSA/arXiv hosts).
+   **Superseded execution status, 2026-07-14:** `batch3` through `batch13` and
+   the 1,358-target `batch14_bulk` discovery/size-preflight round are complete;
+   see `data_selection/batch_manifests/README.md` for measured per-round counts.
+   A live URL-encoded retry also closed the ambiguous pre-fix
+   `DENIS-P J1048.0-3956` result: the request succeeded and found no current
+   GBT HDF5 product. No raw payload was downloaded.
 4. Wire the computed `novelty_score` into `target_priority_score()`'s
    existing weighting, don't reinvent the scoring formula. **Initial
    implementation done:** queue rows include a normalized

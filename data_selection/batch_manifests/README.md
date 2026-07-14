@@ -189,8 +189,11 @@ distinct exit code for each case, and the caller records
 (`test_extended_corpus_downloader_url_encodes_target_names_with_spaces`,
 `test_extended_corpus_downloader_distinguishes_request_failure_from_no_match`).
 `DENIS-P J1048.0-3956` itself was checked with the *pre-fix* script during
-this round and is recorded as `no_hdf5_url_discovered` in
-`local_coverage_batch6_discovery_result.json` -- an honest record of what
-that run actually returned, but the fix means it was never really queried
-successfully. Re-running discovery for just this one target with the fixed
-script would give a real answer; not yet done.
+this round and was recorded as `no_hdf5_url_discovered` in
+`local_coverage_batch6_discovery_result.json`, although that request had not
+actually succeeded. The fixed URL-encoded one-target retry completed on
+2026-07-14 and found no current GBT HDF5 product; the durable result is
+`local_coverage_batch6_retry_discovery_result.json`. The same run exposed and
+fixed a second status-semantics bug: a successfully completed zero-product
+query is now `ok: true`, while any `discovery_request_failed` outcome still
+fails closed. No raw payload was downloaded.

@@ -638,9 +638,21 @@ if [[ "${DISCOVER_ONLY}" -eq 1 ]]; then
   log "[INFO]  URL-available HDF5 targets: ${available}"
   log "[INFO]  Targets without a discovered HDF5 URL: ${skipped}"
   DISCOVERY_RUN_OK=1
-  if [[ "${available}" -eq 0 ]]; then
-    log "[ERROR] No URL-available HDF5 targets were found."
-    DISCOVERY_RUN_OK=0
+  for reason in "${SKIPPED_REASONS[@]:-}"; do
+    if [[ "${reason}" == "discovery_request_failed" ]]; then
+      DISCOVERY_RUN_OK=0
+      break
+    fi
+  done
+  if [[ "${DISCOVERY_RUN_OK}" -eq 0 ]]; then
+    log "[ERROR] One or more archive discovery requests failed; no-data conclusions are incomplete."
+  elif [[ "${available}" -eq 0 ]]; then
+    # A successful archive query that returns no products is valid metadata
+    # evidence, not an operational failure. Keep the per-target
+    # no_hdf5_url_discovered reasons and publish an ok=true run summary so
+    # downstream queue builders do not confuse a confirmed empty result with
+    # an unexecuted or transport-failed query.
+    log "[INFO]  Discovery completed successfully; no current HDF5 products matched this manifest."
   fi
   TECHNO_SEARCH_BIN="${REPO_ROOT}/.venv/bin/techno-search"
   if [[ ! -x "${TECHNO_SEARCH_BIN}" ]] && command -v techno-search >/dev/null 2>&1; then

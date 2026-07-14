@@ -72,6 +72,11 @@ Current execution status:
    Their two complete observation artifacts contain harmonic-family RFI, but
    none of the three rows belongs to those families. They remain unresolved,
    unlabeled triage items; no deterministic rejection or escalation is claimed.
+ - Version 1.2.9 fixes metadata-discovery run semantics: a completed archive
+   query with zero matching products is successful negative metadata evidence,
+   while any transport/HTTP failure still makes the run fail closed. A live
+   URL-encoded retry for `DENIS-P J1048.0-3956` completed successfully and
+   found no current GBT HDF5 product; no raw payload was downloaded.
  - Training, calibration, threshold selection, and scientific evaluation use
    pre-existing independently labeled row-level data only. Never ask the user
    or anyone else to label data, and never build a label-acquisition queue.

@@ -304,24 +304,70 @@ esac
     env["TECHNO_EXTENDED_CORPUS_PYTHON"] = sys.executable
     env["TECHNO_DATA_COLLECTION_STATUS_PATH"] = str(tmp_path / "status.json")
 
-    # Not check=True: both targets are intentionally unavailable here (that's
-    # the point of this test), and a zero-available discovery run correctly
-    # exits 1 -- the status manifest is still written before that exit, which
-    # is what this test verifies.
-    subprocess.run(
+    result = subprocess.run(
         ["bash", str(SCRIPT_PATH), "--manifest", str(manifest), "--discover-only"],
         env=env,
         capture_output=True,
         text=True,
     )
 
+    assert result.returncode == 1
     status = json.loads((tmp_path / "status.json").read_text(encoding="utf-8"))
     run_status = status["runs"]["download_bl_extended_corpus_discovery"]
+    assert run_status["ok"] is False
     skipped_by_target = {
         item["target"]: item["reason"] for item in run_status["skipped_targets"]
     }
     assert skipped_by_target["HIP111"] == "discovery_request_failed"
     assert skipped_by_target["HIP222"] == "no_hdf5_url_discovered"
+
+
+def test_extended_corpus_zero_match_discovery_is_successful_metadata_evidence(
+    tmp_path: Path,
+) -> None:
+    """A completed zero-match query is not the same as a request failure."""
+
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps({"targets": [{"hip": "DENIS-P J1048.0-3956"}]}),
+        encoding="utf-8",
+    )
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    fake_curl = fake_bin / "curl"
+    fake_curl.write_text(
+        """#!/usr/bin/env bash
+set -euo pipefail
+printf '<html>No HDF5 here</html>'
+""",
+        encoding="utf-8",
+    )
+    fake_curl.chmod(fake_curl.stat().st_mode | stat.S_IXUSR)
+
+    env = os.environ.copy()
+    env["PATH"] = f"{fake_bin}{os.pathsep}{env['PATH']}"
+    env["TECHNO_EXTENDED_CORPUS_PYTHON"] = sys.executable
+    env["TECHNO_DATA_COLLECTION_STATUS_PATH"] = str(tmp_path / "status.json")
+
+    result = subprocess.run(
+        ["bash", str(SCRIPT_PATH), "--manifest", str(manifest), "--discover-only"],
+        check=True,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "no current HDF5 products matched this manifest" in result.stderr
+    status = json.loads((tmp_path / "status.json").read_text(encoding="utf-8"))
+    run_status = status["runs"]["download_bl_extended_corpus_discovery"]
+    assert run_status["ok"] is True
+    assert run_status["available"] == 0
+    assert run_status["skipped_targets"] == [
+        {
+            "target": "DENIS-P J1048.0-3956",
+            "reason": "no_hdf5_url_discovered",
+        }
+    ]
 
 
 def test_extended_corpus_downloader_passes_through_non_numeric_identifiers(

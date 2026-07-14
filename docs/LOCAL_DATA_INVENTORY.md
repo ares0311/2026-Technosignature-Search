@@ -51,19 +51,19 @@ depending on local-only state:
 | `data_selection/batch_manifests/local_coverage_top25_manifest.json` / `local_coverage_next25_manifest.json` | `techno-search build-target-priority-manifest` | Per-round bounded manifest for BL product metadata discovery from the target-priority queue | Committed scheduling artifact |
 | `data_selection/batch_manifests/local_coverage_top25_size_preflight_manifest.json` / `local_coverage_next25_size_preflight_manifest.json` | `techno-search build-target-priority-manifest --include-status size_preflight_required` | Per-round URL-discovered subset for size/checksum/storage preflight before any raw download | Committed scheduling artifact |
 | `data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json` / `local_coverage_next25_size_preflight_report.json` | `techno-search target-priority-size-preflight` | Per-round HEAD-only content-length and header preflight for URL-discovered HDF5 files | Committed scheduling artifact |
-| `data_selection/batch_manifests/local_coverage_raw_download_approval_manifest.json` | `techno-search build-target-priority-manifest --include-status raw_download_approval_required` | Consolidated human-review input for explicit approval of every sized HDF5 row promoted so far across all rounds (29 targets as of the `next25` round) | Committed scheduling artifact |
+| `data_selection/batch_manifests/local_coverage_raw_download_approval_manifest.json` | `techno-search build-target-priority-manifest --include-status raw_download_approval_required` | Consolidated human-review input for the 1,147 sized HDF5 rows (~288.97 GB) promoted across all completed rounds; inventory only, not raw-download approval | Committed scheduling artifact |
 | `data_selection/data_role_registry.yaml` | Data-selection policy workflow | Role separation for live-search metadata and local-cache status | Committed policy artifact |
 
 The current target-priority queue contains 1,703 unique target IDs derived from
-the 1,709-row full HPRC metadata seed. After the top-25 and next-25
-metadata-only discovery rounds and their HEAD-only size preflights, it records
-1,643 targets queued for product metadata discovery, 29 targets requiring
-explicit raw-download approval, 15 metadata-retry targets, and 16
-already-acquired local-cache controls. `HIP75676` appears in the
+the 1,709-row full HPRC metadata seed. After all metadata-only discovery and
+HEAD-only size-preflight rounds (`top25`, `next25`, `batch3`-`batch13`, and
+`batch14_bulk`), it records 1,147 targets requiring explicit raw-download
+approval, 540 completed no-product results retained for future metadata retry,
+and 16 already-acquired local-cache controls. `HIP75676` appears in the
 extended-corpus status manifest but not in the full HPRC seed CSV, so it is
 documented as a source-list limitation rather than forced into the queue.
 
-The regenerated queue moved the 29 URL-sized targets from
+The regenerated queue moved the 1,147 URL-sized targets from
 `size_preflight_required` to
 `raw_download_approval_required`. That state is planning evidence only; raw
 download still requires explicit operator approval and a storage-reserve
@@ -189,11 +189,13 @@ merging **every** committed `*_size_preflight_report.json` under
 `data_selection/batch_manifests/` (new `--extra-size-preflight-report-path`
 CLI flag, default: auto-glob) instead of reading only one file. Regression
 test: `test_build_target_priority_queue_merges_multiple_size_preflight_reports`
-in `tests/test_target_priority_queue.py`. After the fix, the queue correctly
-reports 29 targets in `raw_download_approval_required` (15 + 14), and
+in `tests/test_target_priority_queue.py`. At that two-round checkpoint, the
+queue correctly reported 29 targets in `raw_download_approval_required`
+(15 + 14), and
 `data_selection/batch_manifests/local_coverage_raw_download_approval_manifest.json`
-is the current consolidated approval input covering all 29 (~7.41 GB
-combined). None of this authorizes a raw download; it remains metadata-only
+covered all 29 (~7.41 GB combined). Later rounds supersede those counts; the
+current totals are in the inventory summary above and the batch-manifest
+README. None of this authorizes a raw download; it remains metadata-only
 scheduling evidence pending explicit operator approval.
 
 ### 2026-07-02 Extended-Corpus turboSETI + Production Scan
