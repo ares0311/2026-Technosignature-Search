@@ -85,7 +85,9 @@ def radio_real_corpus_summary(
     earth_consistent_rows = 0
     max_abs_normalized_drift = 0.0
     unique_targets: set[str] = set()
-    frequency_family_file_summaries: list[dict[str, Any]] = []
+    frequency_family_observation_summaries: list[dict[str, Any]] = []
+    hit_ndjson_frequency_family_groups: dict[str, list[dict[str, Any]]] = {}
+    hit_ndjson_rows_without_observation_artifact = 0
     dat_raw_hit_row_count = 0
     dat_duplicate_hit_row_count = 0
     dat_files_with_duplicate_hits: list[str] = []
@@ -132,9 +134,10 @@ def radio_real_corpus_summary(
             review_candidates.append(enriched)
             hit_rows_for_scorer.append(_scorer_features(row, rows))
         candidate_lists.append(per_file_candidates)
-        frequency_family_file_summaries.append(
+        frequency_family_observation_summaries.append(
             {
-                "dat_file": str(dat_file),
+                "observation_artifact": str(dat_file),
+                "source_type": "dat_file",
                 "summary": frequency_family_summary(
                     per_file_candidates,
                     clock_frequencies_hz=clock_frequencies_hz,
@@ -191,15 +194,36 @@ def radio_real_corpus_summary(
             per_file_candidates.append(enriched)
             review_candidates.append(enriched)
             hit_rows_for_scorer.append(_scorer_features_from_normalized_hit(row))
+            source_artifact = str(enriched.get("source_artifact") or "")
+            if source_artifact:
+                hit_ndjson_frequency_family_groups.setdefault(
+                    source_artifact, []
+                ).append(enriched)
+            else:
+                hit_ndjson_rows_without_observation_artifact += 1
         candidate_lists.append(per_file_candidates)
         hit_ndjson_row_count += len(rows)
         if max_hit_rows is not None and hit_ndjson_row_count >= max_hit_rows:
             break
 
+    for source_artifact, observation_rows in sorted(
+        hit_ndjson_frequency_family_groups.items()
+    ):
+        frequency_family_observation_summaries.append(
+            {
+                "observation_artifact": source_artifact,
+                "source_type": "hit_ndjson_artifact",
+                "summary": frequency_family_summary(
+                    observation_rows,
+                    clock_frequencies_hz=clock_frequencies_hz,
+                ),
+            }
+        )
+
     cross_target_flags = flag_cross_target_rfi(candidate_lists, freq_tolerance_hz)
     frequency_family_flagged_ids = {
         str(candidate_id)
-        for item in frequency_family_file_summaries
+        for item in frequency_family_observation_summaries
         for candidate_id in item["summary"]["flagged_candidate_ids"]
     }
     scorer_summary, anomaly_scores = _score_with_local_model(
@@ -256,7 +280,10 @@ def radio_real_corpus_summary(
         "semisupervised_scorer": scorer_summary,
         "globular_filter": globular_summary,
         "frequency_family_rfi": _frequency_family_corpus_summary(
-            frequency_family_file_summaries
+            frequency_family_observation_summaries,
+            hit_ndjson_rows_without_observation_artifact=(
+                hit_ndjson_rows_without_observation_artifact
+            ),
         ),
         "candidate_review": _candidate_review_summary(
             review_candidates,
@@ -273,51 +300,75 @@ def radio_real_corpus_summary(
 
 
 def _frequency_family_corpus_summary(
-    file_summaries: list[dict[str, Any]],
+    observation_summaries: list[dict[str, Any]],
+    *,
+    hit_ndjson_rows_without_observation_artifact: int,
 ) -> dict[str, Any]:
     """Aggregate per-observation full-band family evidence without mixing epochs."""
-    evidence_files = [
+    evidence_observations = [
         item
-        for item in file_summaries
+        for item in observation_summaries
         if bool(item["summary"]["frequency_family_evidence_present"])
     ]
     flagged_ids = sorted(
         {
             str(candidate_id)
-            for item in file_summaries
+            for item in observation_summaries
             for candidate_id in item["summary"]["flagged_candidate_ids"]
         }
     )
     method = (
-        file_summaries[0]["summary"]["method"]
-        if file_summaries
+        observation_summaries[0]["summary"]["method"]
+        if observation_summaries
         else frequency_family_summary([])["method"]
     )
     disclaimer = (
-        file_summaries[0]["summary"]["disclaimer"]
-        if file_summaries
+        observation_summaries[0]["summary"]["disclaimer"]
+        if observation_summaries
         else frequency_family_summary([])["disclaimer"]
     )
+    dat_summaries = [
+        item for item in observation_summaries if item["source_type"] == "dat_file"
+    ]
+    hit_ndjson_summaries = [
+        item
+        for item in observation_summaries
+        if item["source_type"] == "hit_ndjson_artifact"
+    ]
     return {
-        "schema_version": "radio_frequency_family_corpus_summary_v1",
+        "schema_version": "radio_frequency_family_corpus_summary_v2",
         "disclaimer": disclaimer,
         "method": method,
-        "dat_file_count_analyzed": len(file_summaries),
-        "dat_file_count_with_evidence": len(evidence_files),
+        "observation_group_count_analyzed": len(observation_summaries),
+        "observation_group_count_with_evidence": len(evidence_observations),
+        "dat_file_count_analyzed": len(dat_summaries),
+        "dat_file_count_with_evidence": sum(
+            bool(item["summary"]["frequency_family_evidence_present"])
+            for item in dat_summaries
+        ),
+        "hit_ndjson_artifact_count_analyzed": len(hit_ndjson_summaries),
+        "hit_ndjson_artifact_count_with_evidence": sum(
+            bool(item["summary"]["frequency_family_evidence_present"])
+            for item in hit_ndjson_summaries
+        ),
+        "hit_ndjson_rows_without_observation_artifact": (
+            hit_ndjson_rows_without_observation_artifact
+        ),
         "harmonic_family_count": sum(
             int(item["summary"]["harmonic_family_count"])
-            for item in file_summaries
+            for item in observation_summaries
         ),
         "clock_spacing_family_count": sum(
             int(item["summary"]["clock_spacing_family_count"])
-            for item in file_summaries
+            for item in observation_summaries
         ),
         "flagged_hit_count": len(flagged_ids),
         "flagged_candidate_ids": flagged_ids[:20],
         "flagged_candidate_id_count_returned": min(20, len(flagged_ids)),
-        "sample_files_with_evidence": [
+        "sample_observations_with_evidence": [
             {
-                "dat_file": str(item["dat_file"]),
+                "observation_artifact": str(item["observation_artifact"]),
+                "source_type": str(item["source_type"]),
                 "harmonic_family_count": int(
                     item["summary"]["harmonic_family_count"]
                 ),
@@ -329,7 +380,7 @@ def _frequency_family_corpus_summary(
                     "clock_spacing_families"
                 ][:3],
             }
-            for item in evidence_files[:10]
+            for item in evidence_observations[:10]
         ],
     }
 

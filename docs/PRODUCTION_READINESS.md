@@ -6,7 +6,16 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.5
+**Current app version:** 1.2.6
+
+**Phase 1 normalized-corpus frequency forensics — 2026-07-14:** version
+1.2.6 extends the BLC1-inspired frequency-family diagnostic from turboSETI
+`.dat` observations to normalized hit-NDJSON rows that carry a real
+`source_artifact`. Rows are grouped only by that supplied observation artifact;
+missing artifacts are counted and skipped rather than guessed, preventing
+cross-epoch family construction. A bounded read-only check of the first 5,000
+real normalized MeerKAT rows found one supplied observation artifact, zero
+unscoped rows, and no harmonic/clock-family evidence in that observation.
 
 **Phase 1 frequency-family rejection — 2026-07-14:** version 1.2.5 wires
 the existing BLC1-inspired harmonic/clock-family evidence into deterministic

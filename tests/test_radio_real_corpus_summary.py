@@ -411,6 +411,57 @@ def test_radio_real_corpus_summary_rejects_frequency_family_members(
     }
 
 
+def test_radio_real_corpus_summary_groups_ndjson_families_by_source_artifact(
+    tmp_path: Path,
+) -> None:
+    dat_dir = tmp_path / "dat"
+    dat_dir.mkdir()
+    _write_zero_hit_dat(dat_dir / "zero_hit.dat", source="ZERO_HIT_TARGET")
+    hit_ndjson = tmp_path / "normalised_hits.ndjson"
+    _write_hit_ndjson(
+        hit_ndjson,
+        [
+            _normalized_hit(
+                target_id="FAMILY_TARGET",
+                frequency_hz=200_000_400.0,
+                drift=0.05,
+                source_artifact="observation_a.hits",
+            ),
+            _normalized_hit(
+                target_id="FAMILY_TARGET",
+                frequency_hz=299_999_300.0,
+                drift=0.05,
+                source_artifact="observation_a.hits",
+            ),
+            _normalized_hit(
+                target_id="SEPARATE_TARGET",
+                frequency_hz=400_000_000.0,
+                drift=0.05,
+                source_artifact="observation_b.hits",
+            ),
+        ],
+    )
+
+    result = radio_real_corpus_summary(
+        [dat_dir],
+        hit_ndjson_paths=[hit_ndjson],
+        semisupervised_model_path=tmp_path / "missing_model.joblib",
+    )
+
+    family = result["frequency_family_rfi"]
+    assert family["schema_version"] == "radio_frequency_family_corpus_summary_v2"
+    assert family["dat_file_count_analyzed"] == 0
+    assert family["hit_ndjson_artifact_count_analyzed"] == 2
+    assert family["hit_ndjson_rows_without_observation_artifact"] == 0
+    assert family["flagged_hit_count"] == 2
+    assert family["sample_observations_with_evidence"][0]["source_type"] == (
+        "hit_ndjson_artifact"
+    )
+    review = result["candidate_review"]
+    assert review["frequency_family_rfi_candidate_count"] == 2
+    assert review["follow_up_candidate_count"] == 1
+
+
 def test_radio_real_corpus_summary_flags_target_concentration(tmp_path: Path) -> None:
     dat_dir = tmp_path / "dat"
     dat_dir.mkdir()
