@@ -32,3 +32,22 @@ def test_status_entries_are_per_shard_and_include_success_details() -> None:
     assert '"evicted_targets": evicted_names' in script
     assert '"app_version": __version__' in script
     assert '--script "${STATUS_KEY}"' in script
+
+
+def test_launcher_can_bound_concurrent_post_processing_slots() -> None:
+    script = _script_text()
+
+    assert "TECHNO_STREAM_PROCESS_SLOT_DIR" in script
+    assert "TECHNO_STREAM_PROCESS_SLOT_COUNT" in script
+    assert "acquire_processing_slot" in script
+    assert "release_processing_slot" in script
+    assert "acquire_processing_slot\n  local hip" in script
+
+
+def test_completed_targets_are_not_downloaded_again_on_resume() -> None:
+    script = _script_text()
+
+    assert "target_has_completed_evidence" in script
+    assert "existing .dat and candidate report; no re-download needed" in script
+    assert '"already_processed_targets": already_processed_names' in script
+    assert '"completed_count": int(os.environ["COMPLETED_COUNT"])' in script

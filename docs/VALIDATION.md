@@ -13,11 +13,16 @@ Validation is a scientific guardrail. It helps keep outputs reproducible, conser
 Run:
 
 ```bash
-.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
-.venv/bin/python -m ruff check .
-.venv/bin/python -m mypy src
+git pull origin main
+caffeinate -i .venv/bin/python scripts/run_parallel_validation.py
 git diff --check
 ```
+
+The launcher runs six pytest-xdist workers as six non-overlapping `loadfile`
+shards and aggregates `techno_search` coverage. After pytest succeeds, it runs
+Ruff, mypy, and `validate-all` concurrently. Use direct
+`.venv/bin/python -m pytest ...` only for a small, focused reproduction where
+startup/distribution overhead would not save time.
 
 The non-networked CI template in `docs/templates/ci.yml` mirrors these checks
 and also runs:

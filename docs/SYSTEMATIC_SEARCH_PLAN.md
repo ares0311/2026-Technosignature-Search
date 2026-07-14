@@ -18,7 +18,18 @@ step that's already blocked on an earlier one.
 
 ---
 
-## Current honest state (updated 2026-07-12; originally recorded 2026-07-05)
+## Current honest state (updated 2026-07-13; originally recorded 2026-07-05)
+
+**Execution-tooling handoff — 2026-07-13:** future explicitly approved
+six-manifest Step 3a batches no longer require six terminal tabs.
+`scripts/run_six_shard_downloads.py` launches the six disjoint
+`stream_process_evict` shards from one terminal, applies the 100GB worst-case
+chunk preflight, gates six-worker-per-shard post-processing to 12 aggregate CPU
+workers, and refuses completed manifests by default. This is orchestration for
+already-approved, metadata-first manifests only; it does not reopen completed
+Step 0 or authorize another bulk download. Repository validation likewise uses
+`scripts/run_parallel_validation.py` with six xdist workers/six non-overlapping
+test shards.
 
 **Step 0 completion handoff — 2026-07-12 23:58 UTC:** PR #251/version 1.2.1
 is merged (`5507030`) and all six isolated shards completed 33/33 targets with

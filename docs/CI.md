@@ -12,14 +12,12 @@ prevents push failures while still preserving the intended CI contract.
 
 ## Default Checks
 
-The template runs:
+The template uses the canonical six-worker/six-shard validation launcher, then
+runs the remaining operator summaries:
 
 ```bash
-python -m pytest -m "not integration_live" --cov=techno_search --cov-report=term-missing
-python -m ruff check .
-python -m mypy src
+python scripts/run_parallel_validation.py -- -m "not integration_live"
 git diff --check
-techno-search validate-all
 techno-search health
 techno-search operations-readiness-summary
 techno-search operations-action-plan-summary
@@ -34,6 +32,12 @@ techno-search operations-blocker-progress-execution-summary
 techno-search operations-blocker-progress-execution-review-summary
 techno-search operations-blocker-progress-execution-followup-summary
 ```
+
+The launcher distributes pytest files across six xdist workers, aggregates
+package coverage, and, after the tests pass, runs Ruff, mypy, and `validate-all`
+concurrently. It is the default for future full-suite CI work; direct serial
+pytest remains appropriate only for small focused reproductions or a verified
+shared-state incompatibility.
 
 The workflow sets `TECHNO_SEARCH_ENABLE_LIVE_DATA=0`. CI must remain
 non-networked by default and must not contact live providers, ingest real

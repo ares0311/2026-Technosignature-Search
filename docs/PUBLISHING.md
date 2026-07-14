@@ -73,9 +73,8 @@ The project owner can choose one of these paths:
 Before publishing, run:
 
 ```bash
-.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
-.venv/bin/python -m ruff check .
-.venv/bin/python -m mypy src
+git pull origin main
+caffeinate -i .venv/bin/python scripts/run_parallel_validation.py
 .venv/bin/techno-search operations-readiness-summary
 .venv/bin/techno-search operations-action-plan-summary
 .venv/bin/techno-search operations-action-resolution-summary

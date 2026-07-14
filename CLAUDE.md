@@ -24,19 +24,21 @@ directly" carve-out and the required shape of your plan.
 
 ## Current Phase Snapshot
 
-Current phase: Phase 0 — Strip & Fix (`docs/PRODUCTION_READINESS.md`). Every
-commit must advance one of Phases 0–4; if it doesn't close a named gap, it
-should not be merged. See `AGENTS.md`'s ANTI-DOOM-LOOP DIRECTIVES for the
-full hard-rule list (PRs #103–#119 precedent).
+Current phase: Phase 0 is complete. Phase 1's open scientific blocker is the
+project-owned human review/calibration set (`docs/PRODUCTION_READINESS.md`).
+Every commit must advance a named science phase or directly unblock its safe
+execution; see `AGENTS.md`'s ANTI-DOOM-LOOP DIRECTIVES for the full hard-rule
+list (PRs #103–#119 precedent).
 
-Current Phase 0 status:
- - Real MeerKAT BLUSE/SETICORE scorer training is locally complete from the
-   verified Berkeley source documented in `docs/meerkat_bluse_hit_table_research.md`.
- - `docs/technosignature_datasets_agent_brief.md` is now the formal Track A
-   dataset handoff: build known-explanation rejection before Track B
-   `unknown_candidate` routing.
- - Continue Phase 1 radio hardening: broader hit-bearing stratified-corpus
-   validation remains open for cross-target RFI suppression and drift evidence.
+Current execution status:
+ - The corrected 215-target radio corpus is complete at the valid 10 Hz/s drift
+   ceiling; no follow-up or escalation-ready candidates survived automated
+   triage.
+ - Future approved six-manifest data batches use
+   `scripts/run_six_shard_downloads.py`, not six manual terminal tabs.
+ - Full validation uses `scripts/run_parallel_validation.py` (six xdist
+   workers/six non-overlapping test shards, then concurrent static/science
+   checks). `AGENTS.md` remains the directive source of truth.
 
 ---
 
@@ -62,6 +64,30 @@ Mandatory requirements:
    must wrap the child process with `caffeinate -i`.
 5. `prod-file-scan` and `tui.py` are lower-level file-oriented diagnostics.
    Do not present them as the main overnight production-ledger workflow.
+
+---
+
+## SHARDED EXECUTION DIRECTIVE — NON-NEGOTIABLE
+
+`AGENTS.md` is authoritative. From this point forward, all agents must default
+to the repo-native optimized sharded/multiprocess path whenever bounded
+parallelism materially reduces wall time and scopes/concurrency are verified
+safe:
+
+- `scripts/run_six_shard_downloads.py` replaces six manual download terminals
+  for explicitly approved, committed six-manifest `stream_process_evict`
+  batches. It validates non-overlap, the 100GB peak-chunk budget, completion
+  state, per-shard logs, and aggregate CPU slots before launching anything.
+- `scripts/run_parallel_validation.py` is the canonical full validation entry
+  point: six pytest-xdist workers are six non-overlapping `loadfile` shards
+  with aggregated package coverage; Ruff, mypy, and `validate-all` then run
+  concurrently.
+
+Do not reconstruct either workflow with ad hoc background shell commands. Do
+not ask the operator to open extra tabs when the repo-native launcher applies.
+Small focused test reproductions may run directly when sharding would not save
+time. Download approval, metadata-first selection, and the 100GB cap remain
+unchanged.
 
 ---
 
@@ -128,15 +154,12 @@ claim.
    the manifest path is under the canonical `data_selection/batch_manifests/`
    directory; scratch/test manifests are silently skipped.
 
-**Known minor limitation, not yet fixed:** `docs/data_collection_status.json`'s
-single `stream_process_evict_batch` key reflects only whichever of the 6
-concurrent shard processes committed last (a git race across 6 simultaneous
-auto-commits), not a true aggregate. The real aggregate for this batch is
-recorded here. Also: each shard's turboSETI step scans the *entire* shared
-`data/extended_corpus/` directory rather than just its own chunk, causing
-occasional harmless cross-shard timing collisions (a redundant scan hits a
-file another shard just evicted or is still writing) — non-destructive
-(never evicts unprocessed data) but not yet scoped per-shard.
+**Resolved in v1.2.2:** parallel status updates are serialized by the existing
+ignored-path process lock in `data_collection_status.py`, and the stream runner
+now invokes turboSETI and the pipeline only on each shard's current target
+directory. The one-terminal launcher additionally validates cross-shard target
+non-overlap and gates simultaneous post-processing, so future six-shard runs do
+not recreate the earlier shared-corpus scan or status-publication races.
 
 **Not yet done:** the remaining ~949-target / ~239GB balance of the
 1,147-target `raw_download_approval_required` queue is still queued; this

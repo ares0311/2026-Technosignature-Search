@@ -1,12 +1,28 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-07-12
+**Last updated:** 2026-07-13
 **Current phase:** Phase 0 complete; Phases 1-5 all have real, tested baseline
 implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.1
+**Current app version:** 1.2.2
+
+**Single-terminal sharding and parallel validation — 2026-07-13:** version
+1.2.2 adds `scripts/run_six_shard_downloads.py`, which validates and launches
+six disjoint `stream_process_evict` manifests from one terminal. It defaults to
+the requested six pipeline workers per shard while limiting simultaneous
+post-processing to two shards (12 aggregate pipeline workers), checks the
+worst-case six-chunk footprint against the permanent 100GB cap, refuses to
+silently repeat completed manifests, and preserves six separate log/status
+streams. The underlying shard runner now recognizes an existing `.dat` plus
+candidate report as completed evidence, so a resume does not re-download a raw
+HDF5 file that was already processed and evicted. Full repository validation is
+now orchestrated by `scripts/run_parallel_validation.py`: six pytest-xdist
+workers are six non-overlapping `loadfile` shards, followed by concurrent Ruff,
+mypy, and `validate-all` checks. These launchers improve bounded execution of
+future approved Step 3a/Phase 1 work; they do not authorize a new raw-data batch,
+change scientific thresholds, create labels, or make a candidate claim.
 
 **Step 0 corrected-corpus completion — 2026-07-12 23:58 UTC:** version 1.2.1
 was merged in PR #251 at commit `5507030`, then all six target-isolated

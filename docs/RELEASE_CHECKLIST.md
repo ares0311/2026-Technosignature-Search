@@ -13,9 +13,8 @@ This project is scientific software. A release or publication step must preserve
 Run from the project virtual environment:
 
 ```bash
-.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
-.venv/bin/python -m ruff check .
-.venv/bin/python -m mypy src
+git pull origin main
+caffeinate -i .venv/bin/python scripts/run_parallel_validation.py
 git diff --check
 ```
 

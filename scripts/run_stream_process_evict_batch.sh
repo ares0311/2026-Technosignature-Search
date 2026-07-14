@@ -42,6 +42,9 @@ LOG_FILE=""
 LOCAL_STORAGE_CAP_GB="${TECHNO_LOCAL_STORAGE_CAP_GB:-100}"
 LOCAL_STORAGE_USAGE_DIRS="${TECHNO_LOCAL_STORAGE_USAGE_DIRS:-${REPO_ROOT}/data ${REPO_ROOT}/models ${REPO_ROOT}/artifacts}"
 FREE_SPACE_RESERVE_GB="${TECHNO_EXTENDED_CORPUS_FREE_SPACE_RESERVE_GB:-10}"
+PROCESSING_SLOT_DIR="${TECHNO_STREAM_PROCESS_SLOT_DIR:-}"
+PROCESSING_SLOT_COUNT="${TECHNO_STREAM_PROCESS_SLOT_COUNT:-0}"
+ACTIVE_PROCESSING_SLOT=""
 
 # Always prints to the console AND (once LOG_FILE is set, right after
 # manifest validation below) appends to a log file -- the caller must not
@@ -108,6 +111,37 @@ mkdir -p "${SCRATCH_DIR}"
 TARGET_ROWS_FILE="${SCRATCH_DIR}/stream_evict_targets.$$.tsv"
 CURRENT_CURL_PID=""
 
+release_processing_slot() {
+  if [[ -n "${ACTIVE_PROCESSING_SLOT}" ]]; then
+    rmdir "${ACTIVE_PROCESSING_SLOT}" 2>/dev/null || true
+    log "[SLOT] Released bounded post-processing slot"
+    ACTIVE_PROCESSING_SLOT=""
+  fi
+}
+
+acquire_processing_slot() {
+  if [[ -z "${PROCESSING_SLOT_DIR}" || "${PROCESSING_SLOT_COUNT}" -le 0 ]]; then
+    return 0
+  fi
+  mkdir -p "${PROCESSING_SLOT_DIR}"
+  local waited=0 slot candidate
+  while true; do
+    for ((slot=1; slot<=PROCESSING_SLOT_COUNT; slot++)); do
+      candidate="${PROCESSING_SLOT_DIR}/slot${slot}"
+      if mkdir "${candidate}" 2>/dev/null; then
+        ACTIVE_PROCESSING_SLOT="${candidate}"
+        log "[SLOT] Acquired post-processing slot ${slot}/${PROCESSING_SLOT_COUNT}"
+        return 0
+      fi
+    done
+    sleep 2
+    waited=$((waited + 2))
+    if (( waited % 20 == 0 )); then
+      log "[WAIT] Waiting for a bounded post-processing slot (${waited}s elapsed)"
+    fi
+  done
+}
+
 # Clean Ctrl+C handling, matching this project's VISIBLE PROGRESS DIRECTIVE:
 # kill any in-flight background curl (left running would otherwise become an
 # orphaned process writing to a file nothing is tracking), then exit. Safe to
@@ -122,11 +156,12 @@ _on_interrupt() {
   if [[ -n "${CURRENT_CURL_PID}" ]] && kill -0 "${CURRENT_CURL_PID}" 2>/dev/null; then
     kill "${CURRENT_CURL_PID}" 2>/dev/null || true
   fi
+  release_processing_slot
   rm -f "${TARGET_ROWS_FILE}"
   exit 130
 }
 trap _on_interrupt INT TERM
-trap 'rm -f "${TARGET_ROWS_FILE}"' EXIT
+trap 'release_processing_slot; rm -f "${TARGET_ROWS_FILE}"' EXIT
 "${VENV_PYTHON}" -c '
 import json
 import sys
@@ -161,11 +196,26 @@ DOWNLOADED_GB="0"
 DOWNLOADED_NAMES=()
 EVICTED_COUNT=0
 EVICTED_NAMES=()
+ALREADY_PROCESSED_COUNT=0
+ALREADY_PROCESSED_NAMES=()
 FAILED_COUNT=0
 FAILED_NAMES=()
 FAILED_REASONS=()
 DAT_PRODUCED_COUNT=0
 REPORT_COUNT=0
+
+target_has_completed_evidence() {
+  local hip="$1"
+  local target_dir="${OUT_DIR}/${hip}"
+  local dat_file dat_stem report_hit
+  dat_file="$(find "${target_dir}" -maxdepth 1 -name '*.dat' 2>/dev/null | head -1)"
+  if [[ -z "${dat_file}" ]]; then
+    return 1
+  fi
+  dat_stem="$(basename "${dat_file}" .dat)"
+  report_hit="$(find "${RESULTS_DIR}" -name '*.manifest.json' -path "*${dat_stem}*" 2>/dev/null | head -1)"
+  [[ -n "${report_hit}" ]]
+}
 
 download_target() {
   local hip="$1" url="$2" gb="$3"
@@ -280,6 +330,7 @@ process_chunk() {
   if [[ "${#names_ref[@]}" -eq 0 ]]; then
     return 0
   fi
+  acquire_processing_slot
   local hip
   # Process only this shard's current chunk. The previous implementation
   # passed OUT_DIR to every concurrent shard, so all shards recursively
@@ -304,6 +355,7 @@ process_chunk() {
       EVICTED_NAMES+=("${hip}")
     fi
   done
+  release_processing_slot
 }
 
 if [[ "${DRY_RUN}" -eq 1 ]]; then
@@ -331,6 +383,13 @@ while IFS=$'\t' read -r hip url gb; do
   fi
   processed_in_run=$((processed_in_run + 1))
   log "[${processed_in_run}/${TOTAL}] ${hip}"
+  if target_has_completed_evidence "${hip}"; then
+    evict_target_if_processed "${hip}" || true
+    ALREADY_PROCESSED_COUNT=$((ALREADY_PROCESSED_COUNT + 1))
+    ALREADY_PROCESSED_NAMES+=("${hip}")
+    log "[DONE] ${hip}: existing .dat and candidate report; no re-download needed"
+    continue
+  fi
   if download_target "${hip}" "${url}" "${gb}"; then
     DOWNLOADED_COUNT=$((DOWNLOADED_COUNT + 1))
     DOWNLOADED_GB="$("${VENV_PYTHON}" -c "print(${DOWNLOADED_GB} + ${gb})")"
@@ -383,12 +442,14 @@ log "[DONE]  stream_process_evict batch complete"
 log "[INFO]  Targets attempted: ${processed_in_run}/${TOTAL}"
 log "[INFO]  Downloaded: ${DOWNLOADED_COUNT} (~${DOWNLOADED_GB}GB)"
 log "[INFO]  Evicted (raw payload deleted after processing): ${EVICTED_COUNT}"
+log "[INFO]  Already processed (download skipped): ${ALREADY_PROCESSED_COUNT}"
 log "[INFO]  Failed: ${FAILED_COUNT}"
 log "[INFO]  Total .dat files now in ${OUT_DIR}: ${DAT_PRODUCED_COUNT}"
 log "[INFO]  Total candidate report manifests in ${RESULTS_DIR}: ${REPORT_COUNT}"
 
 RUN_OK=1
-if [[ "${DOWNLOADED_COUNT}" -eq 0 ]]; then
+COMPLETED_COUNT=$((EVICTED_COUNT + ALREADY_PROCESSED_COUNT))
+if [[ "${COMPLETED_COUNT}" -ne "${TOTAL}" || "${FAILED_COUNT}" -gt 0 ]]; then
   RUN_OK=0
 fi
 
@@ -414,6 +475,7 @@ elif [[ -x "${TECHNO_SEARCH_BIN}" ]]; then
   SUMMARY_JSON="$(
     DOWNLOADED_NAMES="$(printf '%s\n' "${DOWNLOADED_NAMES[@]:-}")" \
     EVICTED_NAMES="$(printf '%s\n' "${EVICTED_NAMES[@]:-}")" \
+    ALREADY_PROCESSED_NAMES="$(printf '%s\n' "${ALREADY_PROCESSED_NAMES[@]:-}")" \
     FAILED_NAMES="$(printf '%s\n' "${FAILED_NAMES[@]:-}")" \
     FAILED_REASONS="$(printf '%s\n' "${FAILED_REASONS[@]:-}")" \
     MANIFEST="${MANIFEST}" \
@@ -422,6 +484,8 @@ elif [[ -x "${TECHNO_SEARCH_BIN}" ]]; then
     DOWNLOADED_COUNT="${DOWNLOADED_COUNT}" \
     DOWNLOADED_GB="${DOWNLOADED_GB}" \
     EVICTED_COUNT="${EVICTED_COUNT}" \
+    ALREADY_PROCESSED_COUNT="${ALREADY_PROCESSED_COUNT}" \
+    COMPLETED_COUNT="${COMPLETED_COUNT}" \
     FAILED_COUNT="${FAILED_COUNT}" \
     DAT_PRODUCED_COUNT="${DAT_PRODUCED_COUNT}" \
     REPORT_COUNT="${REPORT_COUNT}" \
@@ -442,6 +506,7 @@ failed_names = _lines("FAILED_NAMES")
 failed_reasons = _lines("FAILED_REASONS")
 downloaded_names = _lines("DOWNLOADED_NAMES")
 evicted_names = _lines("EVICTED_NAMES")
+already_processed_names = _lines("ALREADY_PROCESSED_NAMES")
 summary = {
     "ok": os.environ["RUN_OK"] == "1",
     "app_version": __version__,
@@ -455,6 +520,9 @@ summary = {
     "downloaded_targets": downloaded_names,
     "evicted_count": int(os.environ["EVICTED_COUNT"]),
     "evicted_targets": evicted_names,
+    "already_processed_count": int(os.environ["ALREADY_PROCESSED_COUNT"]),
+    "already_processed_targets": already_processed_names,
+    "completed_count": int(os.environ["COMPLETED_COUNT"]),
     "failed_count": int(os.environ["FAILED_COUNT"]),
     "dat_files_total": int(os.environ["DAT_PRODUCED_COUNT"]),
     "candidate_report_manifests_total": int(os.environ["REPORT_COUNT"]),

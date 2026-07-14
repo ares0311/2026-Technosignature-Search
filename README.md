@@ -960,17 +960,21 @@ Before any future passive runner is treated as operational, it must:
 Minimum validation:
 
 ```bash
-.venv/bin/python -m pytest
+git pull origin main
+caffeinate -i .venv/bin/python scripts/run_parallel_validation.py
 ```
 
 Release-grade local validation:
 
 ```bash
-.venv/bin/python -m pytest --cov=techno_search --cov-report=term-missing
-.venv/bin/ruff check .
-.venv/bin/python -m mypy src
+git pull origin main
+caffeinate -i .venv/bin/python scripts/run_parallel_validation.py
 git diff --check
 ```
+
+The launcher uses six pytest-xdist workers as six non-overlapping `loadfile`
+test shards, then runs Ruff, mypy, and `validate-all` concurrently. Small
+focused reproductions may still call pytest directly inside `.venv`.
 
 The GitHub Actions template lives at `docs/templates/ci.yml` until the
 publishing token has GitHub `workflow` scope. It mirrors the local validation

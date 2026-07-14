@@ -33,14 +33,5 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -e ".[dev,science]"
 
-      - name: Run tests
-        run: python -m pytest --tb=short -q
-
-      - name: Lint
-        run: python -m ruff check .
-
-      - name: Type check
-        run: python -m mypy src --no-error-summary
-
-      - name: Validate pipeline
-        run: techno-search validate-all
+      - name: Run six-shard tests and validation
+        run: python scripts/run_parallel_validation.py
