@@ -631,7 +631,7 @@ def test_radio_real_corpus_summary_keeps_voyager_as_control(tmp_path: Path) -> N
     assert candidate["review_label"] == "known_spacecraft_or_calibration_control"
 
 
-def test_radio_real_corpus_summary_rejects_public_null_search_context(
+def test_radio_real_corpus_summary_keeps_public_null_search_context_as_metadata(
     tmp_path: Path,
 ) -> None:
     dat_dir = tmp_path / "dat"
@@ -658,12 +658,50 @@ def test_radio_real_corpus_summary_rejects_public_null_search_context(
 
     review = result["candidate_review"]
     assert review["public_null_search_context_candidate_count"] == 1
+    assert review["public_null_search_context_role"].startswith(
+        "Corpus-level publication metadata only"
+    )
+    assert review["follow_up_candidate_count"] == 1
+    assert review["escalation_ready_candidate_count"] == 1
+    candidate = review["top_review_candidates"][0]
+    assert candidate["public_null_search_context"] is True
+    assert candidate["survives_current_automated_filters"] is True
+    assert candidate["review_label"] == "needs_follow_up_review"
+
+
+def test_radio_real_corpus_summary_uses_row_evidence_with_public_null_context(
+    tmp_path: Path,
+) -> None:
+    dat_dir = tmp_path / "dat"
+    dat_dir.mkdir()
+    _write_zero_hit_dat(dat_dir / "zero_hit.dat", source="ZERO_HIT_TARGET")
+    hit_ndjson = tmp_path / "atlas_stationary_sample.ndjson"
+    _write_hit_ndjson(
+        hit_ndjson,
+        [
+            _normalized_hit(
+                target_id="ATLAS_STATIONARY",
+                frequency_hz=1_420_000_000.0,
+                drift=0.0,
+                corpus_source="meerkat_bluse_seticore_atlas_2025_11",
+            ),
+        ],
+    )
+
+    result = radio_real_corpus_summary(
+        [dat_dir],
+        hit_ndjson_paths=[hit_ndjson],
+        semisupervised_model_path=tmp_path / "missing_model.joblib",
+    )
+
+    review = result["candidate_review"]
+    assert review["public_null_search_context_candidate_count"] == 1
+    assert review["stationary_drift_candidate_count"] == 1
     assert review["follow_up_candidate_count"] == 0
-    assert review["escalation_ready_candidate_count"] == 0
     candidate = review["top_rejected_or_control_candidates"][0]
     assert candidate["public_null_search_context"] is True
-    assert candidate["survives_current_automated_filters"] is False
-    assert candidate["review_label"] == "public_null_search_context"
+    assert candidate["stationary_drift"] is True
+    assert candidate["review_label"] == "stationary_frequency_review"
 
 
 def test_radio_real_corpus_summary_separates_stationary_drift(tmp_path: Path) -> None:

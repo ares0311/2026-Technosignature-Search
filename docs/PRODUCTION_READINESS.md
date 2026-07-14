@@ -6,7 +6,23 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.6
+**Current app version:** 1.2.7
+
+**Phase 1 corpus-provenance correction — 2026-07-14:** version 1.2.7
+removes corpus-level `public_null_search_context` from the per-row automated
+rejection predicate and review-label vocabulary. The root cause was a
+paper-level null-search conclusion being applied to every unlabeled MeerKAT row
+as though it were an independent row verdict. Publication context remains
+visible as metadata, but only row-level deterministic evidence can reject a
+row. A full read-only rerun over the current local combined corpus reviewed
+205,857 rows: 200,000 carry public-null corpus context, 200,364 carry
+cross-target recurrence flags, 148,215 are stationary, 10,741 are
+Earth-drift-inconsistent, 26 belong to frequency families, and 3 are known
+Voyager controls. These overlapping deterministic checks leave 1,072 automated
+triage survivors. Target/source-context checks block 1,069 from escalation; the
+remaining 3 share a source artifact, leaving 0 independently escalation-ready
+rows. The 1,072 survivors are unlabeled `needs_follow_up_review` triage items,
+not positive labels, detections, discoveries, or external-review candidates.
 
 **Phase 1 normalized-corpus frequency forensics — 2026-07-14:** version
 1.2.6 extends the BLC1-inspired frequency-family diagnostic from turboSETI
@@ -226,9 +242,9 @@ commands instead of placeholder `rm` recipes.
 | Track A known-explanation classifier before Track B `unknown_candidate` routing | ⚠️ Partial — Track A's HTRU2 baseline, four known-source catalogs, satellite-transmitter matching, and 13/13 historical replay use real pre-existing evidence. A valid future CNN/classifier may learn only pre-existing labels for known objects, phenomena, RFI, and artifacts, and must abstain with `low_confidence` when no known class is reliable. An unresolved item is follow-up triage, not a positive technosignature label, and Track B's independent gates still apply. Track B is exposed as `techno-search track-b-unknown-candidate-gate`/`track-b-candidate-readiness`; real Voyager and HIP99427 checks remain conservatively ineligible. HIP99427's 124 rows are the only accepted real per-hit labels; the two `follow_up` rows score below the false-positive mean under the current cross-instrument scorer, so a high-score threshold would reject the very rows it should retain. Eight published-source checks found no larger qualifying row-level labeled dataset. New labeling and review queues are prohibited; the anomaly score remains an uncalibrated ranking diagnostic and the dependent gate stays fail-closed. |
 | Proper ON/OFF cadence verification (ABACAB from raw files) | ⚠️ Partial — `gbt-cadence-raw-status` verifies approved raw HDF5 presence, size, MD5, and HDF5 signature before cadence processing; local HIP99427 raw files are present under `~/technosignature-data`, the official ingest reproduces the 213-row cadence CSV, and `gbt-cadence-abacab-review` summarizes candidate-level ON/OFF outcomes |
 | Real training corpus loaded into semisupervised_scorer | ✅ Done locally — local GBT/turboSETI `.dat` corpus can fit the scorer and production radio packets can carry fitted-model anomaly scores; verified MeerKAT BLUSE/SETICORE JSON source is documented, `scripts/ingest_meerkat_hits.py` supports its schema, and `data/meerkat_hits/semisupervised_scorer_metadata.json` records `train_hit_count: 200000`; payload/model artifacts remain ignored and non-redistributed |
-| Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial — radio candidate packets, ranked summaries, and production ledgers now carry normalized drift and Earth-drift consistency features; `radio-real-corpus-summary` validates drift rows from local `.dat` files and can include real normalized hit-NDJSON evidence from the verified MeerKAT BLUSE corpus. On 2026-07-02, the bounded local review counted 5,003 hit rows (5,000 MeerKAT rows plus Voyager control rows), all Earth-consistent under the current drift check; no escalation-ready candidates survived automated filters. Broader candidate-level stratified-corpus review remains open. |
-| Cross-target RFI suppression on full stratified corpus | ⚠️ Partial — production ledgers now carry per-candidate cross-target RFI flags from independent target recurrence; current local GBT `.dat` evidence has 18 files, 17 zero-hit observations, and only 1 hit-bearing target (Voyager control), so `.dat`-only recurrence validation remains limited; `radio-real-corpus-summary --hit-ndjson data/meerkat_hits/meerkat_normalised_200000.ndjson` admits the verified real MeerKAT BLUSE hit corpus as hit-bearing Phase 1 validation evidence without committing payloads and reported `cross_target_rfi_validation_ready: true` on a bounded 5,000-row review. `scripts/download_bl_extended_corpus.sh --manifest data/target_sample_manifest.json` follows the 31-target stratified manifest, supports `--discover-only` live availability preflight, can write a target-to-HDF5 URL availability TSV, and applies `TECHNO_EXTENDED_CORPUS_MAX_TARGETS` to new URL-available HDF5 downloads rather than raw manifest position or already-downloaded evidence. |
-| Ranked candidate/non-detection output ready for Phase 5 | ⚠️ Partial — zero-hit observations are preserved as negative evidence ledgers. Production scan `RUN-2026-07-02_130330Z-3ZNT-prod-scan` scanned 11 pending extended-corpus targets, failed 0, flagged 0 escalations, produced 0 follow-up entries, produced 39 non-detection/no-follow-up ledger entries across the current local result set, and left 0 pending targets. This is negative evidence only, not a detection, discovery, expert review, external validation, or external-submission authorization. |
+| Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial — radio candidate packets, ranked summaries, and production ledgers carry normalized drift and Earth-drift consistency features. The 2026-07-14 full combined-corpus review examined 205,857 rows and found 148,215 stationary rows and 10,741 Earth-drift-inconsistent rows. After all current row-level deterministic filters, 1,072 unlabeled rows remain follow-up triage items and 0 are independently escalation-ready. Broader candidate-level scientific investigation remains open. |
+| Cross-target RFI suppression on full stratified corpus | ⚠️ Partial — production ledgers carry per-candidate cross-target RFI flags from independent target recurrence. The corrected local `.dat` corpus now has 215 hit-bearing target files and 5,854 unique rows after exact-duplicate removal; the full combined `.dat` plus normalized MeerKAT review reports `cross_target_rfi_validation_ready: true` and 200,364 recurrence-flagged rows. This is deterministic triage evidence, not a row label or physical-origin proof. |
+| Ranked candidate/non-detection output ready for Phase 5 | ⚠️ Partial — zero-hit observations remain negative-evidence ledgers, while the current combined real-corpus review reports 1,072 `needs_follow_up_review` automated survivors. Source-context checks block 1,069 from escalation and the other 3 share a source artifact, so 0 rows are independently escalation-ready. The survivors remain unlabeled triage items, not detections, discoveries, expert review, external validation, or external-submission authorization. |
 | GLOBULAR filter (HDBSCAN, Jacobson-Bell et al. 2024) wired to real data | ✅ Done, 2026-07-02 — `globular_filter.py` existed but was never actually applied to a real hit table (only a `globular-filter-summary` metadata CLI command existed). Wired into `radio_real_corpus_summary()`'s corpus-wide `hit_rows_for_scorer` population (already accumulated across every `.dat`/hit-NDJSON file in a summary run), which is the correct granularity for this filter. **Root-caused and reverted one wrong placement first**: an initial attempt wired GLOBULAR into `build_radio_candidate()` itself (per-candidate, i.e. within one target's own small ON/OFF cadence hit list); this caused the real-label accuracy gate to drop from 77.42% to 65.32% and broke golden-example reproducibility, because a real signal's own naturally-similar repeated hits were mistaken for a dense RFI cluster — the opposite of the intended cross-target RFI signature Jacobson-Bell et al. 2024 actually targets. Reverted before committing; re-implemented at the correct (multi-target corpus) granularity, verified via `.venv/bin/python -m pytest -q` (1478 passed, 0 regressions) and a real 30-dense-hit-plus-1-outlier test confirming the outlier survives as noise while the dense recurring signal is flagged. |
 | CNN / learned-model promotion gate (AGENTS.md "CNN / Learned-Model Promotion Gate", added #235) | ❌ Not triggered — this repo has only CNN scaffold/stub records for radio waterfall morphology; no trained promotable CNN or other learned-model weights exist. The gate itself (freeze as `benchmark_cnn_v1` before any promotion discussion, CNN never makes final detection decisions) is a standing rule for if/when a future agent finds or builds one — added here 2026-07-11 to close a gap where this NON-NEGOTIABLE AGENTS.md rule had no corresponding tracker entry, per AGENTS.md's own Definition of Done. |
 
@@ -245,10 +261,11 @@ previously reviewed ±10 Hz/s ingestion ceiling and recovered 13 turboSETI rows
 (triage inputs, overwhelmingly likely RFI; not candidate or detection claims).
 `bl_fetch.py` now refuses unresolvable drift ceilings, exposes the search
 parameters, and the extended-corpus runner explicitly requests 10 Hz/s and
-reprocesses a present `.dat` when its recorded ceiling is lower. The 198
-evicted products still require an explicitly approved redownload/reprocess
-batch before Step 1 review sampling can use them. Until then, do not count the
-old 198 zero-hit reports as negative evidence or as calibration rows.
+reprocesses a present `.dat` when its recorded ceiling is lower. The later
+approved six-shard rerun completed all 198 redownload/reprocess targets and is
+summarized in the Step 0 completion handoff above. The superseded 4 Hz/s
+zero-hit reports remain invalid evidence and must not be used as calibration
+rows.
 
 **Corrected-batch concurrency incident, 2026-07-12:** the authorized six-shard
 rerun downloaded 120 unique targets and evicted the first 60 after report
@@ -457,33 +474,31 @@ real-corpus metadata and fitted joblib model are both present; on the current
 local system it reports `train_hit_count: 200000`.
 `techno-search radio-real-corpus-summary --dat-dir data/extended_corpus --dat-dir data/bl_hits`
 summarizes local real `.dat` evidence without writing payloads. On the current
-local GBT `.dat` corpus it scanned 10 `.dat` files, found 9 zero-hit observations
-and 1 hit-bearing Voyager calibration file, preserved 3 drift rows, reported 3
-Earth-consistent drift rows, found 0 cross-target RFI recurrence flags, and
-confirmed the MeerKAT-trained scorer scored 3 hits. The `.dat`-only summary
-marks `phase1_radio_validation_ready: false` because only 1 independent
-hit-bearing target is available; cross-target RFI suppression needs at least 2
-independent hit-bearing targets before a zero-recurrence result can be treated as
-validation evidence. `radio-real-corpus-summary` now also accepts
+corrected corpus it reports 8,988 raw rows across 215 hit-bearing target files;
+exact-deduplication removes 3,134 repeated normalized rows and leaves 5,854
+unique rows. All 5,854 are Earth-drift-inconsistent under the current check,
+4,895 carry cross-target recurrence flags, and two share a frequency-family
+relationship; no `.dat`-only row survives for follow-up. The summary also accepts
 `--hit-ndjson data/meerkat_hits/meerkat_normalised_200000.ndjson` and
 `--max-hit-rows` so the verified real MeerKAT BLUSE hit corpus can exercise
 cross-target RFI recurrence, drift-evidence, fitted-scorer integration, and
 bounded candidate-review samples without redistributing or committing the
 payload. `SemisupervisedScorer.score_hits` now scores batches with one vectorized
 sklearn `decision_function` call, so the full 200,000-row local MeerKAT review is
-practical. A full local review with `--candidate-sample-limit 0` reviewed
-200,003 candidate rows, reported 799 hit-bearing targets, 195,469 cross-target
-RFI recurrence flags, 3 known Voyager control rows, 148,215 stationary-drift
-rows, 4,887 drift-inconsistent rows, and `phase1_radio_validation_ready: true`.
-The verified MeerKAT BLUSE/SETICORE ATLAS corpus is now treated as public
-null-search context because the public Breakthrough Listen 3I/ATLAS summary
-reports no technosignatures detected and ATel #17499 reports the detected
-MeerKAT signals were spatially inconsistent with 3I/ATLAS and likely RFI. The
-current local summary therefore reports
-`public_null_search_context_candidate_count: 200000`,
-`follow_up_candidate_count: 0`, `escalation_ready_candidate_count: 0`, and
-`independent_escalation_ready_candidate_count: 0`. Known control targets are
-preserved as positive controls, and stationary-frequency rows are separated from
+practical. A full local review with `--candidate-sample-limit 0` now reviews
+205,857 candidate rows across the corrected `.dat` corpus and normalized
+MeerKAT corpus, reports 1,014 hit-bearing targets, 200,364 cross-target
+recurrence flags, 3 known Voyager control rows, 148,215 stationary-drift rows,
+10,741 drift-inconsistent rows, and `phase1_radio_validation_ready: true`. The
+verified MeerKAT BLUSE/SETICORE ATLAS corpus retains public null-search
+publication context as corpus metadata because the public Breakthrough Listen
+3I/ATLAS summary reports no technosignatures detected and ATel #17499 reports
+the detected MeerKAT signals were spatially inconsistent with 3I/ATLAS and
+likely RFI. That paper-level context is not a row-level label or rejection
+condition. Row-level deterministic checks leave 1,072 automated follow-up
+triage survivors, of which 0 are independently escalation-ready after
+target/source-artifact context checks. Known control targets are preserved as
+positive controls, and stationary-frequency rows are separated from
 nonstationary rows rather than promoted as follow-up candidates.
 These summaries are local validation evidence only; they are not detections,
 discoveries, expert review, external validation, or external-submission
