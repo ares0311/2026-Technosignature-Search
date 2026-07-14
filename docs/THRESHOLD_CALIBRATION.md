@@ -1,5 +1,16 @@
 # Scoring Threshold Calibration Guide
 
+## STOP — THIS GUIDE DOES NOT AUTHORIZE NEW LABELING
+
+Only pre-existing independent row-level labels with provenance may support
+threshold calibration. Never ask the user or anyone else to review, annotate,
+or label rows; never construct a review queue; never infer labels from filters,
+paper conclusions, anomalies, or follow-up states. No positive technosignature
+labels exist. The available labels do not support a global anomaly/OOD
+threshold, so that gate remains fail-closed. Historical reviewer fields and
+review steps below describe provenance/audit mechanics only and do not authorize
+new human labeling; where they imply otherwise, this section overrides them.
+
 This document explains how to derive and commit calibrated scoring thresholds
 from real Breakthrough Listen hit table data (Tier 1 gap: Calibrated scoring
 thresholds).
@@ -8,9 +19,9 @@ thresholds).
 
 ## Status
 
-Current scoring config: `configs/scoring_v0.json` — synthetic defaults.  
-v1 template: `configs/scoring_v1_template.json` — **requires multiple real
-cadences plus citizen-science reproducibility review**.
+Current scoring config: `configs/scoring_v0.json` — unpromoted defaults.
+The v1 template must not be promoted without adequate pre-existing independent
+labels; current evidence is insufficient.
 
 The production command is provenance-aware and fail-closed. It accepts only
 checksum-matching real observation artifacts with approved data-use,

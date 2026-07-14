@@ -2068,28 +2068,6 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(result, indent=2, sort_keys=True), file=out)
         return 0
 
-    if args.command == "radio-review-sample":
-        from techno_search.radio_review_sampling import build_radio_review_sample
-
-        try:
-            result = build_radio_review_sample(
-                [Path(path) for path in args.dat_dir],
-                output_csv=Path(args.output),
-                semisupervised_model_path=Path(args.semisupervised_model),
-                sample_size=args.sample_size,
-                sampling_seed=args.sampling_seed,
-                dataset_source=args.dataset_source,
-                overwrite=args.overwrite,
-            )
-        except (FileNotFoundError, OSError, ValueError) as exc:
-            print(
-                json.dumps({"ok": False, "error": str(exc)}, indent=2, sort_keys=True),
-                file=out,
-            )
-            return 1
-        print(json.dumps(result, indent=2, sort_keys=True), file=out)
-        return 0
-
     if args.command == "radio-real-corpus-summary":
         from techno_search.radio_real_corpus_summary import radio_real_corpus_summary
 
@@ -2109,6 +2087,7 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             max_hit_rows=args.max_hit_rows,
             candidate_sample_limit=args.candidate_sample_limit,
             freq_tolerance_hz=args.freq_tolerance_hz,
+            clock_frequencies_hz=tuple(args.clock_frequency_hz),
         )
         print(json.dumps(result, indent=2, sort_keys=True), file=out)
         return 0
@@ -10771,51 +10750,14 @@ def _build_parser() -> argparse.ArgumentParser:
             "data/meerkat_hits/semisupervised_scorer.joblib when present."
         ),
     )
-
-    radio_review_sample_parser = subparsers.add_parser(
-        "radio-review-sample",
-        help=(
-            "Phase 1: build an unlabeled human-review queue from real radio "
-            "hits, balanced across anomaly-score deciles and target/frequency bins."
-        ),
-    )
-    radio_review_sample_parser.add_argument(
-        "--dat-dir",
+    radio_real_corpus_parser.add_argument(
+        "--clock-frequency-hz",
         action="append",
-        required=True,
-        help="Directory or .dat file to include; may be repeated.",
-    )
-    radio_review_sample_parser.add_argument(
-        "--output",
-        required=True,
-        help="CSV output path for the unlabeled human-review queue.",
-    )
-    radio_review_sample_parser.add_argument(
-        "--sample-size",
-        type=int,
-        default=1000,
-        help="Number of real hit rows to sample; default: 1000.",
-    )
-    radio_review_sample_parser.add_argument(
-        "--sampling-seed",
-        default="phase1-radio-review-v1",
-        help="Stable text seed used only for deterministic diversity ordering.",
-    )
-    radio_review_sample_parser.add_argument(
-        "--dataset-source",
-        default="local_completed_gbt_extended_corpus",
-        help="Provenance label written to paper_or_dataset_source.",
-    )
-    radio_review_sample_parser.add_argument(
-        "--semisupervised-model",
-        default="data/meerkat_hits/semisupervised_scorer.joblib",
-        help="Fitted SemisupervisedScorer joblib model used for score deciles.",
-    )
-    radio_review_sample_parser.add_argument(
-        "--overwrite",
-        action="store_true",
+        type=float,
+        default=[],
         help=(
-            "Replace an existing queue. Omit by default to protect human review fields."
+            "Optional documented clock-oscillator frequency for integer-spacing "
+            "RFI-family checks; may be repeated. No clock values are guessed."
         ),
     )
 

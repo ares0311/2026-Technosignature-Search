@@ -34,6 +34,16 @@ Do not mix these criteria.
 
 ## Current Reality Override — 2026-07-11 — Read This First
 
+### Technosignatures labeled-data override
+
+For `2026 Technosignatures`, labeled datasets are admissible only when their
+row-level labels already exist, were independently supplied, and have documented
+provenance. Never ask the user or anyone else to create labels, never construct
+an annotation/review set, and never infer ground truth from unlabeled live or
+archival observations. There are no positive technosignature labels. Missing
+label evidence leaves the affected calibration or promotion gate fail-closed.
+This override controls any generic training/calibration language below.
+
 **There is no 4TB external SSD for this project, and no cloud storage available for testing.** The user stated this explicitly: "we can't use more that 100G of local store ever. We can't use external storage to test. Work within these constraints." Every section below that assumes a 4TB workspace, a 500GB reserve, or an optional cloud tier does not apply to `2026 Technosignatures` right now. Treat every number in this file as **downscaled to a single, permanent, hard 100GB local cap** for this project's entire data footprint (`data/` + `models/` + `artifacts/`), enforced in `scripts/download_bl_extended_corpus.sh` via `TECHNO_LOCAL_STORAGE_CAP_GB` (default 100). As of 2026-07-11 the real footprint is ~9GB, leaving ~91GB of real headroom.
 
 Concretely, under this override:

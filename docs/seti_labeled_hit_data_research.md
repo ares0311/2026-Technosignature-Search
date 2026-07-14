@@ -553,40 +553,20 @@ A coding agent must not create labels by inference from paper-level conclusions:
 
 ## Recommended Calibration Path
 
-Given the current evidence, threshold calibration should be staged:
+Given the current evidence, threshold calibration must remain fail-closed:
 
 1. Keep the HIP99427 human-review dataset as the only verified per-hit label set currently available.
 2. Use it only for sanity checks and qualitative ordering, not global threshold selection.
 3. Use unlabeled BL event tables and hit tables for distributional checks, not supervised calibration.
-4. Build a larger internal review set by sampling high-, medium-, and low-score hits across multiple targets and asking humans to label them with the same schema.
-5. Version the review table with immutable columns:
-
-```text
-hit_id
-source_file
-target
-frequency_hz
-drift_rate_hz_s
-snr
-score
-review_label
-reviewer_id
-review_timestamp_utc
-review_notes
-paper_or_dataset_source
-```
-
-Minimum useful calibration target:
-
-```text
->= 1,000 reviewed rows total
->= 50 follow_up or candidate-like rows, if naturally present
-multiple targets
-multiple observing bands
-multiple score deciles
-```
-
-If the positive class remains rare, use precision-at-k and review-budget calibration instead of a fixed binary threshold.
+4. Never ask the user or anyone else to label data, and never create an internal
+   annotation/review set. This is a permanent project constraint, not a pending
+   staffing task.
+5. Do not substitute automated rules, paper conclusions, anomaly rankings,
+   follow-up states, known human transmitters, or synthetic injections for
+   independent ground truth.
+6. Keep the semisupervised anomaly score as an uncalibrated ranking diagnostic
+   unless a genuinely new, independently labeled, row-level public dataset is
+   published and passes this document's acceptance audit.
 
 ## Accepted-dataset Schema If a Future Label Table Is Found
 
@@ -942,4 +922,8 @@ The coding agent must fail the audit if:
 
 For SETI/BL calibration, do not proceed as if a broad public ground-truth label set exists. The checked BL/SETI literature provides event summaries, top-candidate examples, target catalogs, and unsupervised methods, but not a larger real human-labeled per-hit table suitable for calibrating a high-score threshold.
 
-The next defensible step is to create a project-owned human review set from real hits, while continuing to log future literature/data searches using the rejection protocol above.
+No project-owned labeling effort is permitted. The defensible disposition is to
+record the calibration limitation, keep the learned gate fail-closed, use
+unlabeled data only for ranking/distributional analysis, and continue
+deterministic false-positive investigation. Reopen the dataset search only for
+a genuinely new published lead, using the rejection protocol above.
