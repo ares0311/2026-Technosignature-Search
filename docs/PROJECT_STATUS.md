@@ -17,9 +17,13 @@ Phase 0 complete; Phase 1 deterministic radio hardening is active
 Tier 1 and Tier 2 engineering blockers are closed for local radio pipeline
 operations.
 
-**AI hardening gate:** The AI hardening production blocker (DECISION-134) is
-closed for local operations via the injection-recovery closure evidence bundle
-(DECISION-139). Radio pipeline functional for BL/GBT `.dat` files. The verified
+**AI hardening production blocker:** DECISION-134 is open and fail-closed under
+DECISION-144. DECISION-139's
+synthetic injection-recovery bundle remains valid recovery evidence, but it
+cannot supply independent row-level labels or calibrate a global
+real-background anomaly/OOD threshold. Learned/AI production promotion is
+therefore blocked; the semi-supervised score is ranking-only. New labeling is
+prohibited. Radio pipeline functional for BL/GBT `.dat` files. The verified
 Berkeley SETI / Breakthrough Listen MeerKAT BLUSE/SETICORE JSON source has been
 normalized into ignored local storage, and the local semi-supervised scorer is
 trained on 200,000 real rows. The payload and fitted model remain ignored local

@@ -219,9 +219,12 @@ Measured result:
   targets, failed 0, flagged 0 escalations, and left 0 pending targets.
 - The run produced 0 follow-up entries and 39 non-detection/no-follow-up ledger
   entries across the current local result set.
-- `ai-hardening-gate-summary` remained closed with `production_promotion_allowed:
-  true` for local operations only; no detection, discovery, expert-review,
-  external-validation, or external-submission claim was made.
+- At that historical checkpoint, `ai-hardening-gate-summary` was closed with
+  `production_promotion_allowed: true` for local operations only. DECISION-144
+  supersedes that promotion interpretation: the current gate is open,
+  promotion is blocked, and the injection grid remains recovery evidence only.
+  No detection, discovery, expert-review, external-validation, or
+  external-submission claim was made.
 
 These `.dat`, `.log`, production-run, and report artifacts remain ignored local
 payloads. GitHub-visible continuity is this measured map plus the committed

@@ -81,17 +81,16 @@ def test_zero_hit_evidence_does_not_close_decision_134() -> None:
         assert "does not close DECISION-134" in conclusion
 
 
-def test_injection_grid_closure_bundle_is_review_safe() -> None:
+def test_injection_grid_bundle_is_review_safe_but_not_promotion_evidence() -> None:
     bundle = json.loads(CLOSURE_PATH.read_text(encoding="utf-8"))
 
     assert bundle["schema_version"] == "ai_hardening_evidence_bundle_v1"
     assert bundle["decision"] == "DECISION-134"
     assert bundle["raw_payload_committed"] is False
-    assert bundle["production_promotion_allowed"] is True
-    assert (
-        bundle["production_promotion_scope"]
-        == "local_citizen_science_operations_only"
-    )
+    assert bundle["status"] == "historical_injection_recovery_evidence_only"
+    assert bundle["superseded_by"] == "DECISION-144"
+    assert bundle["production_promotion_allowed"] is False
+    assert bundle["production_promotion_scope"] == "blocked"
     assert bundle["detection_claimed"] is False
     assert bundle["expert_review_claimed"] is False
     assert bundle["external_validation_claimed"] is False

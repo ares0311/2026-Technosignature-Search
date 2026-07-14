@@ -1,9 +1,9 @@
 # AI Hardening Review Protocol
 
-**Status:** DECISION-134 closed for local citizen-science production promotion;
-required for reruns, audits, and future production-promotion evidence updates.
-**Scope:** Citizen-science production evidence for learned and AI-assisted
-pathway routing.
+**Status:** Open and fail-closed under DECISION-144. DECISION-139's historical
+injection-recovery closure remains recovery evidence but no longer authorizes
+learned/AI production promotion.
+**Scope:** Evidence requirements for learned and AI-assisted pathway routing.
 
 ---
 
@@ -11,7 +11,7 @@ pathway routing.
 
 This protocol defines the minimum reproducible evidence needed to close the
 Tier 3 **AI hardening production blocker** recorded in DECISION-134. It is a
-local citizen-science review protocol, not expert review, peer review, external
+local scientific evidence protocol, not expert review, peer review, external
 validation, or external submission approval.
 
 The goal is to test whether learned or AI-assisted pathway routing behaves
@@ -19,6 +19,11 @@ conservatively on held-out evidence outside the HIP99427 training cadence. The
 default interpretation of unusual signals remains false positive or
 insufficient evidence unless multiple independent checks preserve stronger
 evidence for follow-up.
+
+Synthetic injection recovery can measure recovery and false-negative behavior,
+but it cannot provide independent row-level labels or calibrate a global
+real-background anomaly/OOD threshold. Unlabeled observations remain unlabeled.
+The project must never ask anyone to create the missing labels.
 
 ---
 
@@ -63,15 +68,24 @@ Before closure, the AI hardening gate must report:
 If any of those safety fields differ, stop and fix the gate before running
 evidence generation.
 
-After closure, the AI hardening gate must report:
+The current gate must report:
 
-- `status: "closed"`
-- `production_promotion_allowed: true`
-- `production_promotion_scope: "local_citizen_science_operations_only"`
+- `status: "open"`
+- `production_promotion_allowed: false`
+- `production_promotion_scope: "blocked"`
 - `external_submission_allowed: false`
 - `detection_claimed: false`
 - `expert_review_claimed: false`
 - `closure_evidence_bundle_exists: true`
+- `open_blocking_requirement_ids` containing
+  `adequate_preexisting_row_level_labels`
+
+DECISION-139's closure bundle remains reproducible historical evidence. It does
+not satisfy the current label/calibration requirement and must not be used to
+flip the promotion fields above. The gate may close only if adequate
+pre-existing, independently supplied row-level labels with provenance become
+available; project-created, requested, inferred, or synthetic labels are
+forbidden substitutes.
 
 Path existence is not evidence. Failed acquisition attempts may create
 `data/extended_corpus/` or `data/meerkat_hits/` directories without usable
@@ -191,8 +205,9 @@ DECISION-134 can be proposed for closure only when all are true:
 4. The review-safe evidence bundle exists and is reproducible from current
    `main`.
 5. `validate-all` passes.
-6. The gate remains clear that production promotion is local citizen-science
-   operations only, with no detection or external-validation claim.
+6. Adequate pre-existing, independently supplied row-level labels exist for the
+   claimed calibration scope; synthetic injections and unlabeled observations
+   are not substitutes.
 
 Closing this gate does not authorize external submission. DECISION-132 remains
 the controlling protocol for any external submission path.
@@ -202,9 +217,10 @@ the controlling protocol for any external submission path.
 ## Permanent Guardrails
 
 - No result from this protocol constitutes a confirmed technosignature.
-- Learned, semi-supervised, and AI-assisted scores are local scheduling aids.
+- Learned, semi-supervised, and AI-assisted scores are uncalibrated local
+  ranking diagnostics until the open label/calibration blocker is satisfied.
 - False positives remain the default hypothesis.
-- Citizen-science review is not expert review or peer review.
+- Project-local review is not expert review or peer review.
 - External validation is unclaimed unless it actually occurs.
 - External submission remains blocked unless DECISION-132 is separately
   satisfied and explicitly cleared by the operator.

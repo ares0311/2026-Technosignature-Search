@@ -45,13 +45,24 @@ def _open_gate_data() -> dict[str, object]:
     return data
 
 
+def _closed_gate_data() -> dict[str, object]:
+    data = load_ai_hardening_gate(FIXTURE_PATH)
+    data["status"] = "closed"
+    data["production_promotion_allowed"] = True
+    data["production_promotion_scope"] = "local_citizen_science_operations_only"
+    for requirement in cast(list[dict[str, Any]], data["requirements"]):
+        requirement["satisfied"] = True
+        requirement["blocking"] = False
+    return data
+
+
 def _write_gate(
     root: Path,
     *,
     open_gate: bool = False,
     **overrides: object,
 ) -> Path:
-    data = _open_gate_data() if open_gate else load_ai_hardening_gate(FIXTURE_PATH)
+    data = _open_gate_data() if open_gate else _closed_gate_data()
     data.update(overrides)
     path = root / "gate.json"
     path.write_text(json.dumps(data), encoding="utf-8")
@@ -62,23 +73,26 @@ def test_load_ai_hardening_gate_fixture() -> None:
     gate = load_ai_hardening_gate(FIXTURE_PATH)
 
     assert gate["schema_version"] == "ai_hardening_gate_v1"
-    assert gate["status"] == "closed"
-    assert gate["production_promotion_allowed"] is True
-    assert gate["production_promotion_scope"] == "local_citizen_science_operations_only"
+    assert gate["status"] == "open"
+    assert gate["production_promotion_allowed"] is False
+    assert gate["production_promotion_scope"] == "blocked"
     assert gate["external_submission_allowed"] is False
 
 
-def test_ai_hardening_gate_default_project_is_closed_and_local_only() -> None:
+def test_ai_hardening_gate_default_project_is_open_and_fail_closed() -> None:
     summary = ai_hardening_gate_summary()
 
     assert summary["ok"] is True
-    assert summary["status"] == "closed"
-    assert summary["production_promotion_allowed"] is True
-    assert summary["production_promotion_scope"] == "local_citizen_science_operations_only"
+    assert summary["status"] == "open"
+    assert summary["production_promotion_allowed"] is False
+    assert summary["production_promotion_scope"] == "blocked"
     assert summary["external_submission_allowed"] is False
     assert summary["detection_claimed"] is False
     assert summary["expert_review_claimed"] is False
-    assert summary["open_blocking_requirement_count"] == 0
+    assert summary["open_blocking_requirement_count"] == 1
+    assert summary["open_blocking_requirement_ids"] == [
+        "adequate_preexisting_row_level_labels"
+    ]
     assert summary["satisfied_requirement_count"] == 4
     assert summary["independent_methods_required"] == 2
     assert summary["independent_methods_recorded_count"] >= 2
@@ -149,7 +163,7 @@ def test_ai_hardening_gate_detects_premature_closure(tmp_path: Path) -> None:
 
     assert summary["ok"] is False
     assert summary["status"] == "closed"
-    assert summary["open_blocking_requirement_count"] == 4
+    assert summary["open_blocking_requirement_count"] == 5
     assert any("closed with blocking" in issue for issue in summary["issues"])
 
 

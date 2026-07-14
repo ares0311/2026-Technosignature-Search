@@ -10,9 +10,10 @@ AI_HARDENING_GATE_SCHEMA_VERSION = "ai_hardening_gate_v1"
 
 AI_HARDENING_GATE_DISCLAIMER = (
     "AI hardening gate records are production-readiness controls for learned "
-    "and AI-assisted pathway routing. They are local citizen-science evidence "
-    "gates only. They do not constitute detections, discoveries, expert review, "
-    "external validation, or authorization for external submission."
+    "and AI-assisted pathway routing. Learned promotion remains blocked unless "
+    "every current evidence requirement is satisfied with independently "
+    "provenanced data. These records do not constitute detections, discoveries, "
+    "expert review, external validation, or authorization for external submission."
 )
 
 

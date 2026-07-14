@@ -2,14 +2,16 @@
   "schema_version": "ai_hardening_evidence_bundle_v1",
   "evidence_id": "decision-134-injection-grid-closure-2026-06-18",
   "decision": "DECISION-134",
-  "status": "closes_decision_134_for_local_citizen_science_operations",
+  "status": "historical_injection_recovery_evidence_only",
+  "historical_decision": "DECISION-139",
+  "superseded_by": "DECISION-144",
   "raw_payload_committed": false,
   "detection_claimed": false,
   "expert_review_claimed": false,
   "external_validation_claimed": false,
   "external_submission_allowed": false,
-  "production_promotion_allowed": true,
-  "production_promotion_scope": "local_citizen_science_operations_only",
+  "production_promotion_allowed": false,
+  "production_promotion_scope": "blocked",
   "source_real_noise": {
     "telescope": "GBT",
     "target": "Voyager1",
@@ -95,12 +97,12 @@
     "At least two structurally independent method families are recorded on the same evidence stream.",
     "Disagreements, abstentions, and negative evidence are preserved.",
     "Raw HDF5, DAT, LOG, cache, SQLite, and generated science payloads remain uncommitted.",
-    "Production promotion is local citizen-science operations only."
+    "Synthetic injection recovery does not calibrate a real-background anomaly/OOD threshold or authorize learned-model promotion."
   ],
   "validation_commands": [
     ".venv/bin/techno-search ai-hardening-gate-summary",
     ".venv/bin/techno-search validate-all",
     ".venv/bin/python -m pytest tests/test_ai_hardening_gate.py tests/test_ai_hardening_evidence_bundle.py tests/test_json_schemas.py tests/test_project_status_consistency.py tests/test_cli.py -q"
   ],
-  "conclusion": "DECISION-134 is closed for local citizen-science production promotion because the review-safe evidence bundle records a populated injection-recovery stream in real GBT noise, at least two independent method-family reviews, preserved abstentions and negative evidence, and explicit non-claim guardrails. This does not claim a detection, expert review, peer review, external validation, or external-submission authorization."
+  "conclusion": "The review-safe bundle preserves valid injection-recovery evidence in real GBT noise, independent method-family reviews, abstentions, and non-claim guardrails. Under DECISION-144 it does not close the learned-model promotion gate because synthetic injections cannot supply the missing independent row-level labels or calibrate a global anomaly/OOD threshold."
 }
