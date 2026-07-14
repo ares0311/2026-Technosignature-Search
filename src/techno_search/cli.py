@@ -1534,11 +1534,12 @@ def _print_gbt_cadence_abacab_review(data: dict[str, Any], out: TextIO) -> None:
         ),
         file=out,
     )
-    review = data.get("review_summary", {})
-    if isinstance(review, dict):
+    triage = data.get("triage_summary", {})
+    if isinstance(triage, dict):
         print(
-            f"Primary/audit agreement: {review.get('agreement_count', 0)} agree, "
-            f"{review.get('disagreement_count', 0)} disagree",
+            "Independent-rule agreement: "
+            f"{triage.get('agreement_count', 0)} agree, "
+            f"{triage.get('disagreement_count', 0)} disagree",
             file=out,
         )
     top_follow_ups = list(data.get("top_follow_up_candidates", []))
@@ -7880,7 +7881,7 @@ def _build_parser() -> argparse.ArgumentParser:
     gbt_cadence_review_parser.add_argument(
         "--json",
         action="store_true",
-        help="Print the full machine-readable ABACAB review JSON.",
+        help="Print the full machine-readable ABACAB triage JSON.",
     )
     prod_run_id_parser = subparsers.add_parser(
         "prod-run-id",
