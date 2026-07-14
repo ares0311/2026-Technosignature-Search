@@ -197,6 +197,11 @@ def radio_real_corpus_summary(
             break
 
     cross_target_flags = flag_cross_target_rfi(candidate_lists, freq_tolerance_hz)
+    frequency_family_flagged_ids = {
+        str(candidate_id)
+        for item in frequency_family_file_summaries
+        for candidate_id in item["summary"]["flagged_candidate_ids"]
+    }
     scorer_summary, anomaly_scores = _score_with_local_model(
         hit_rows_for_scorer,
         semisupervised_model_path=semisupervised_model_path,
@@ -256,6 +261,7 @@ def radio_real_corpus_summary(
         "candidate_review": _candidate_review_summary(
             review_candidates,
             cross_target_flags=cross_target_flags,
+            frequency_family_flagged_ids=frequency_family_flagged_ids,
             anomaly_scores=anomaly_scores,
             sample_limit=candidate_sample_limit,
         ),
@@ -468,6 +474,7 @@ def _candidate_review_summary(
     candidates: list[dict[str, Any]],
     *,
     cross_target_flags: dict[str, dict[str, Any]],
+    frequency_family_flagged_ids: set[str],
     anomaly_scores: list[float | None],
     sample_limit: int,
 ) -> dict[str, Any]:
@@ -484,6 +491,7 @@ def _candidate_review_summary(
     for candidate, anomaly_score in zip(candidates, score_values, strict=False):
         candidate_id = str(candidate.get("candidate_id", ""))
         rfi_flag = cross_target_flags.get(candidate_id)
+        frequency_family_flagged = candidate_id in frequency_family_flagged_ids
         known_control = _is_known_control_candidate(candidate)
         public_null_search_context = _has_public_null_search_context(candidate)
         normalized_drift = _float(candidate, "normalized_drift_hz_s_per_ghz")
@@ -499,6 +507,7 @@ def _candidate_review_summary(
             stationary_drift_candidate_count += 1
         survives_current_filters = (
             rfi_flag is None
+            and not frequency_family_flagged
             and drift_consistent
             and not stationary_drift
             and not known_control
@@ -530,6 +539,7 @@ def _candidate_review_summary(
                 "cross_target_match_count": int(rfi_flag.get("match_count", 0))
                 if rfi_flag is not None
                 else 0,
+                "frequency_family_rfi_flagged": frequency_family_flagged,
                 "semisupervised_anomaly_score": anomaly_score,
                 "survives_current_automated_filters": survives_current_filters,
                 "review_label": (
@@ -547,7 +557,11 @@ def _candidate_review_summary(
                                 else (
                                     "likely_cross_target_rfi"
                                     if rfi_flag is not None
-                                    else "drift_inconsistent_review"
+                                    else (
+                                        "likely_frequency_family_rfi"
+                                        if frequency_family_flagged
+                                        else "drift_inconsistent_review"
+                                    )
                                 )
                             )
                         )
@@ -610,7 +624,11 @@ def _candidate_review_summary(
             "independence_blocked_candidate_count"
         ],
         "follow_up_target_count": len(review_targets),
-        "rfi_rejected_candidate_count": len(cross_target_flags),
+        "rfi_rejected_candidate_count": len(
+            set(cross_target_flags) | frequency_family_flagged_ids
+        ),
+        "cross_target_rfi_rejected_candidate_count": len(cross_target_flags),
+        "frequency_family_rfi_candidate_count": len(frequency_family_flagged_ids),
         "drift_inconsistent_candidate_count": drift_inconsistent_count,
         "stationary_drift_candidate_count": stationary_drift_candidate_count,
         "known_control_candidate_count": known_control_candidate_count,

@@ -54,7 +54,9 @@ Current execution status:
    cross-target RFI flags and no follow-up or escalation-ready candidates
    survived automated triage. One GJ412A observation contains a two-member
    100-MHz harmonic-family match (13th/17th harmonics, 191-Hz residual), which
-   is deterministic RFI-forensics evidence, not a label.
+   is deterministic RFI-forensics evidence, not a label. Version 1.2.5 wires
+   those family flags into triage; the union of cross-target and family checks
+   rejects 4,896 unique rows while leaving zero survivors.
  - Training, calibration, threshold selection, and scientific evaluation use
    pre-existing independently labeled row-level data only. Never ask the user
    or anyone else to label data, and never build a label-acquisition queue.
@@ -922,7 +924,12 @@ The project was redirected in session on 2026-06-26. Key changes:
 - **PRODUCTION_SCAN_RUNBOOK.md** updated with storage cleanup section.
 - **CLAUDE.md and PROJECT_STATUS.md** updated to reflect multi-modal mission.
 
-### Authoritative current state:
+### Historical snapshot (2026-06-26 through 2026-06-29; do not execute)
+
+The status and next-step language below is retained only as project history.
+It is not authoritative and must not be used to resume downloads, calibration,
+label creation, or Phase 0 work. Use the Current Phase Snapshot above,
+`docs/PRODUCTION_READINESS.md`, and `docs/SYSTEMATIC_SEARCH_PLAN.md` instead.
 
 - User stays on `main`; agents develop on `claude/general-session-Bb2dZ`.
 - **PR #121 merged to `main`** (2026-06-26): DOOM LOOP BROKEN. Fixed

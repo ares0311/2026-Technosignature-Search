@@ -36,6 +36,34 @@ def _write_dat(path: Path, *, source: str, frequency_mhz: float, drift: float) -
     )
 
 
+def _write_dat_rows(
+    path: Path,
+    *,
+    source: str,
+    rows: list[tuple[float, float]],
+) -> None:
+    header = [
+        "# -------------------------- o --------------------------",
+        f"# Source:{source}",
+        "# MJD: 57650.782094907408\tRA: 17h10m03.984s\tDEC: 12d10m58.8s",
+        "# DELTAT:  18.253611\tDELTAF(Hz):  -2.793968",
+        "# --------------------------",
+        (
+            "# Top_Hit_# \tDrift_Rate \tSNR \tUncorrected_Frequency "
+            "\tCorrected_Frequency \tIndex \tfreq_start \tfreq_end "
+            "\tSEFD \tSEFD_freq \tCoarse_Channel_Number \tFull_number_of_hits"
+        ),
+    ]
+    hit_lines = [
+        (
+            f"{index:06d}\t {drift}\t 30.0\t {frequency_mhz}\t {frequency_mhz}"
+            f"\t{739932 + index}\t 0.0\t 0.0\t0.0\t0.0\t0\t{len(rows)}"
+        )
+        for index, (frequency_mhz, drift) in enumerate(rows, start=1)
+    ]
+    path.write_text("\n".join([*header, *hit_lines, ""]), encoding="utf-8")
+
+
 def _write_zero_hit_dat(path: Path, *, source: str) -> None:
     path.write_text(
         "\n".join(
@@ -351,6 +379,36 @@ def test_radio_real_corpus_summary_reports_review_survivor(tmp_path: Path) -> No
     assert concentration["candidate_escalation_blocked"] is False
     assert concentration["blocking_review_flags"] == []
     assert "not detections" in result["candidate_review"]["claim_guardrail"]
+
+
+def test_radio_real_corpus_summary_rejects_frequency_family_members(
+    tmp_path: Path,
+) -> None:
+    dat_dir = tmp_path / "dat"
+    dat_dir.mkdir()
+    _write_dat_rows(
+        dat_dir / "harmonic_family.dat",
+        source="FAMILY_TARGET",
+        rows=[(200.0004, 0.05), (299.9993, 0.05)],
+    )
+
+    result = radio_real_corpus_summary(
+        [dat_dir],
+        semisupervised_model_path=tmp_path / "missing_model.joblib",
+    )
+
+    assert result["frequency_family_rfi"]["flagged_hit_count"] == 2
+    review = result["candidate_review"]
+    assert review["frequency_family_rfi_candidate_count"] == 2
+    assert review["cross_target_rfi_rejected_candidate_count"] == 0
+    assert review["rfi_rejected_candidate_count"] == 2
+    assert review["follow_up_candidate_count"] == 0
+    rejected = review["top_rejected_or_control_candidates"]
+    assert len(rejected) == 2
+    assert all(row["frequency_family_rfi_flagged"] for row in rejected)
+    assert {row["review_label"] for row in rejected} == {
+        "likely_frequency_family_rfi"
+    }
 
 
 def test_radio_real_corpus_summary_flags_target_concentration(tmp_path: Path) -> None:
