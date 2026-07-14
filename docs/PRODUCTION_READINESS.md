@@ -6,7 +6,20 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.8
+**Current app version:** 1.2.9
+
+**Step 3a zero-result discovery provenance — 2026-07-14:** version 1.2.9
+fixes a run-level status bug in `download_bl_extended_corpus.sh`. The root
+cause was that every zero-product discovery round was marked `ok: false` and
+exited nonzero even when all archive requests completed successfully, thereby
+conflating valid negative metadata evidence with transport failure. A run is
+now successful when every request completes; any
+`discovery_request_failed` outcome still fails the run closed. The previously
+ambiguous pre-fix `DENIS-P J1048.0-3956` query was retried live with the
+URL-encoding fix: the request succeeded and found no current GBT HDF5 product.
+The durable retry result is
+`data_selection/batch_manifests/local_coverage_batch6_retry_discovery_result.json`.
+No raw payload was downloaded.
 
 **Phase 1 full-source recurrence check — 2026-07-14:** version 1.2.8 adds
 `meerkat-frequency-neighbor-summary`, a read-only streaming check for explicit
@@ -407,10 +420,14 @@ Initial local-coverage target selection is implemented:
 `techno-search build-target-priority-queue` writes
 `data_selection/target_priority_queue.csv` from the full HPRC metadata seed and
 tracked acquisition status. The current queue contains 1,703 unique target IDs:
-1,643 queued for metadata discovery, 29 URL-discovered rows promoted to
-`raw_download_approval_required` (across two discovery+preflight rounds, see
-below), 15 metadata-retry rows from `no_hdf5_url_discovered` outcomes, and 16
-already-acquired local-cache controls.
+1,147 URL-discovered rows promoted to `raw_download_approval_required`, 540
+rows with completed no-product metadata results retained for future retry, and
+16 already-acquired local-cache controls. Discovery and HEAD-only size
+preflight are complete for `top25`, `next25`, `batch3`-`batch13`, and the
+1,358-target `batch14_bulk` round. The consolidated approval manifest is
+approximately 288.97 GB, so it is a priority-ranked inventory, not a download
+plan; any raw acquisition remains explicitly approved, bounded,
+`stream_process_evict`, and subject to the permanent 100 GB cap.
 `techno-search build-target-priority-manifest` also writes a bounded manifest
 per discovery round (e.g.
 `data_selection/batch_manifests/local_coverage_top25_manifest.json`,
@@ -429,12 +446,11 @@ silently regressed `top25`'s promotion — fixed by merging every committed
 `*_size_preflight_report.json` under `data_selection/batch_manifests/` (new
 `--extra-size-preflight-report-path`, default: auto-glob; regression test
 `test_build_target_priority_queue_merges_multiple_size_preflight_reports`).
-The review input for a bounded raw-download approval decision is now the
-consolidated
+The review input for any future bounded raw-download decision is the consolidated
 `data_selection/batch_manifests/local_coverage_raw_download_approval_manifest.json`
-covering all 29 promoted targets (~7.41 GB combined) across both rounds. Full
-detail: `docs/LOCAL_DATA_INVENTORY.md`'s "2026-07-09 Local-Coverage `next25`"
-entry and `docs/SYSTEMATIC_SEARCH_PLAN.md` Step 3a.
+covering all 1,147 promoted targets (~288.97 GB combined). Full round-by-round
+detail is in `data_selection/batch_manifests/README.md` and
+`docs/SYSTEMATIC_SEARCH_PLAN.md` Step 3a.
 These are metadata-first acquisition-planning artifacts only; they do not
 authorize raw downloads, do not close the anomaly/OOD calibration blocker, and
 do not make any candidate or external-submission claim. Follow-up-target scoring
