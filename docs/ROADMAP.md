@@ -1,5 +1,13 @@
 # ROADMAP
 
+## PRIME CONSTRAINT — NO NEW LABELING
+
+Training, calibration, threshold selection, and scientific evaluation may use
+only pre-existing independent row-level labels with provenance. Never ask the
+user or anyone else to label data, and never build an annotation/review queue.
+No positive technosignature labels exist. Missing label evidence leaves the
+affected learned gate fail-closed; it is not a work request for a human.
+
 ## Project
 Technosignature Search
 
@@ -44,23 +52,20 @@ Status: blocked on a long local data acquisition run.
   or calibration policy explicitly pins them.
 - Then run turboSETI and the production pipeline over the expanded corpus.
 
-## P1 — Build The Real Review And Calibration Set
+## P1 — Preserve The Fail-Closed Calibration Boundary
 
-Status: sampler complete on the broader real corpus; blocked on operator review
-labels.
+Status: closed as unavailable with current pre-existing labeled evidence.
 
-- Build a review-sampling tool that samples hits across score deciles, targets,
-  bands, and instruments from real evidence only.
-- Produce a review queue with `hit_id`, `source_file`, `target`,
-  `frequency_hz`, `drift_rate_hz_s`, `snr`, `score`, `review_label`,
-  `reviewer_id`, `review_timestamp_utc`, and `review_notes`.
-- Target at least 1,000 reviewed rows and at least 50 follow-up-like rows before
-  treating anomaly/OOD scores as calibrated.
-- Use precision-at-k, AUPRC, FDR, calibration curves, and top-k review yield;
-  do not use accuracy alone as the rare-event promotion metric.
-- Current real queue: 1,000 unlabeled rows, 100 per score decile, 208 targets,
-  two measured GHz bins. It is ignored local calibration data and is protected
-  from accidental overwrite; no automated label is accepted as human review.
+- HIP99427's 124-row dataset is the only accepted pre-existing per-hit label
+  set and is insufficient for global anomaly/OOD threshold selection.
+- The retired review sampler and unlabeled queue are not calibration or
+  evaluation evidence and must not be recreated.
+- Keep anomaly/OOD output as a ranking diagnostic only; do not promote it to a
+  classifier or force a threshold.
+- Never ask for new labels, infer labels, or substitute automated gates,
+  synthetic injections, anomalies, or follow-up states for ground truth.
+- Continue deterministic false-positive analysis and scientific roadmap work
+  that does not depend on unavailable labels.
 
 ## P2 — CNN And Learned-Model Promotion Gate
 
@@ -450,7 +455,10 @@ Evaluate modern AI methods only after interpretable baselines, provenance, false
 ## Guardrails
 
 - Learned models must not replace provenance, negative evidence, blocking issues, or pathway logic.
-- Black-box scores must be calibrated against synthetic injections, known contaminants, known artifacts, and human-reviewed labels.
+- Black-box scores may be promoted only with adequate pre-existing independent
+  labels and the other evidence required by `AGENTS.md`; synthetic injections,
+  contaminants, artifacts, and project-requested reviews cannot substitute for
+  missing ground truth.
 - AI outputs should be treated as decision-support signals, not discovery claims.
 - Model versions, training data, features, prompts where applicable, and evaluation metrics must be recorded.
 

@@ -7,7 +7,8 @@ from pathlib import Path
 from typing import Any
 
 from techno_search.cross_target_rfi import flag_cross_target_rfi
-from techno_search.radio.hit_table_reader import hit_table_to_radio_hit_dicts
+from techno_search.radio.hit_table_reader import hit_table_to_radio_hit_dicts_with_stats
+from techno_search.radio_frequency_families import frequency_family_summary
 
 RADIO_REAL_CORPUS_SCHEMA_VERSION = "radio_real_corpus_summary_v1"
 RADIO_REAL_CORPUS_DISCLAIMER = (
@@ -65,6 +66,7 @@ def radio_real_corpus_summary(
     max_hit_rows: int | None = None,
     candidate_sample_limit: int = 20,
     freq_tolerance_hz: float = DEFAULT_RFI_TOLERANCE_HZ,
+    clock_frequencies_hz: tuple[float, ...] = (),
 ) -> dict[str, Any]:
     """Summarize local real radio hit evidence without writing payloads."""
     dat_files = discover_dat_files(dat_paths)
@@ -83,13 +85,22 @@ def radio_real_corpus_summary(
     earth_consistent_rows = 0
     max_abs_normalized_drift = 0.0
     unique_targets: set[str] = set()
+    frequency_family_file_summaries: list[dict[str, Any]] = []
+    dat_raw_hit_row_count = 0
+    dat_duplicate_hit_row_count = 0
+    dat_files_with_duplicate_hits: list[str] = []
 
     for dat_file in dat_files:
         try:
-            rows = hit_table_to_radio_hit_dicts(dat_file)
+            rows, read_stats = hit_table_to_radio_hit_dicts_with_stats(dat_file)
         except Exception as exc:  # pragma: no cover - defensive local payload report
             unreadable_files.append(f"{dat_file}: {exc}")
             continue
+
+        dat_raw_hit_row_count += read_stats["raw_row_count"]
+        dat_duplicate_hit_row_count += read_stats["duplicate_row_count"]
+        if read_stats["duplicate_row_count"]:
+            dat_files_with_duplicate_hits.append(str(dat_file))
 
         if not rows:
             zero_hit_files.append(str(dat_file))
@@ -121,6 +132,15 @@ def radio_real_corpus_summary(
             review_candidates.append(enriched)
             hit_rows_for_scorer.append(_scorer_features(row, rows))
         candidate_lists.append(per_file_candidates)
+        frequency_family_file_summaries.append(
+            {
+                "dat_file": str(dat_file),
+                "summary": frequency_family_summary(
+                    per_file_candidates,
+                    clock_frequencies_hz=clock_frequencies_hz,
+                ),
+            }
+        )
 
     hit_ndjson_row_count = 0
     for hit_ndjson_file in hit_ndjson_files:
@@ -197,6 +217,11 @@ def radio_real_corpus_summary(
         "hit_ndjson_file_count": len(hit_ndjson_files),
         "hit_ndjson_row_count": hit_ndjson_row_count,
         "hit_ndjson_row_limit": max_hit_rows,
+        "dat_raw_hit_row_count": dat_raw_hit_row_count,
+        "dat_unique_hit_row_count": dat_raw_hit_row_count - dat_duplicate_hit_row_count,
+        "dat_duplicate_hit_row_count": dat_duplicate_hit_row_count,
+        "dat_files_with_duplicate_hits_count": len(dat_files_with_duplicate_hits),
+        "sample_dat_files_with_duplicate_hits": dat_files_with_duplicate_hits[:10],
         "hit_bearing_dat_file_count": len(hit_bearing_files),
         "zero_hit_dat_file_count": len(zero_hit_files),
         "unreadable_dat_file_count": len(unreadable_files),
@@ -225,6 +250,9 @@ def radio_real_corpus_summary(
         },
         "semisupervised_scorer": scorer_summary,
         "globular_filter": globular_summary,
+        "frequency_family_rfi": _frequency_family_corpus_summary(
+            frequency_family_file_summaries
+        ),
         "candidate_review": _candidate_review_summary(
             review_candidates,
             cross_target_flags=cross_target_flags,
@@ -235,6 +263,68 @@ def radio_real_corpus_summary(
         "sample_hit_ndjson_files": [str(path) for path in hit_ndjson_files[:10]],
         "sample_hit_bearing_dat_files": hit_bearing_files[:10],
         "sample_zero_hit_dat_files": zero_hit_files[:10],
+    }
+
+
+def _frequency_family_corpus_summary(
+    file_summaries: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Aggregate per-observation full-band family evidence without mixing epochs."""
+    evidence_files = [
+        item
+        for item in file_summaries
+        if bool(item["summary"]["frequency_family_evidence_present"])
+    ]
+    flagged_ids = sorted(
+        {
+            str(candidate_id)
+            for item in file_summaries
+            for candidate_id in item["summary"]["flagged_candidate_ids"]
+        }
+    )
+    method = (
+        file_summaries[0]["summary"]["method"]
+        if file_summaries
+        else frequency_family_summary([])["method"]
+    )
+    disclaimer = (
+        file_summaries[0]["summary"]["disclaimer"]
+        if file_summaries
+        else frequency_family_summary([])["disclaimer"]
+    )
+    return {
+        "schema_version": "radio_frequency_family_corpus_summary_v1",
+        "disclaimer": disclaimer,
+        "method": method,
+        "dat_file_count_analyzed": len(file_summaries),
+        "dat_file_count_with_evidence": len(evidence_files),
+        "harmonic_family_count": sum(
+            int(item["summary"]["harmonic_family_count"])
+            for item in file_summaries
+        ),
+        "clock_spacing_family_count": sum(
+            int(item["summary"]["clock_spacing_family_count"])
+            for item in file_summaries
+        ),
+        "flagged_hit_count": len(flagged_ids),
+        "flagged_candidate_ids": flagged_ids[:20],
+        "flagged_candidate_id_count_returned": min(20, len(flagged_ids)),
+        "sample_files_with_evidence": [
+            {
+                "dat_file": str(item["dat_file"]),
+                "harmonic_family_count": int(
+                    item["summary"]["harmonic_family_count"]
+                ),
+                "clock_spacing_family_count": int(
+                    item["summary"]["clock_spacing_family_count"]
+                ),
+                "harmonic_families": item["summary"]["harmonic_families"][:3],
+                "clock_spacing_families": item["summary"][
+                    "clock_spacing_families"
+                ][:3],
+            }
+            for item in evidence_files[:10]
+        ],
     }
 
 

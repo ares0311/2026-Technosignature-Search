@@ -1,5 +1,13 @@
 # Production Scan Runbook
 
+## STOP — DO NOT CREATE LABELS
+
+This runbook does not authorize any labeling or annotation work. Use only
+pre-existing independent row-level labels with provenance for training,
+calibration, threshold selection, or evaluation. Never ask the user or anyone
+else to label data, and never construct a review queue. Unlabeled scan output
+may be ranked and investigated but must remain unlabeled.
+
 **Purpose:** Durable UX rules for operating a continuous, prioritized, history-aware
 production scan pipeline. The rules here are project-agnostic and can be adapted to any
 pipeline that processes a directory of input files with a CLI tool.
@@ -128,7 +136,6 @@ These CLI commands implement the runbook rules:
 | `techno-search review-dashboard [--run-dir RUN_DIR | --results-dir RESULTS_DIR]` | Review compact operator action counts from a run or active candidate manifests; exit 1 only when follow-up pathways need attention |
 | `techno-search run-pipeline FILE TRACK OUTPUT_DIR [--semisupervised-model PATH]` | Process one input file through the pipeline; radio packets use the default local fitted scorer model when present |
 | `techno-search radio-real-corpus-summary --dat-dir PATH [--dat-dir PATH2] [--hit-ndjson PATH] [--candidate-sample-limit N]` | Summarize local real `.dat` and normalized hit-NDJSON evidence for drift, cross-target RFI recurrence, fitted scorer integration, and bounded candidate-review survivors |
-| `techno-search radio-review-sample --dat-dir PATH --output CSV [--sample-size N]` | Build an unlabeled Phase 1 calibration-review queue balanced across score deciles and target/frequency-bin groups; refuses to overwrite human work by default |
 | `techno-search track-b-candidate-readiness CANDIDATE_JSON [--crossmatch-json CROSSMATCH_JSON] [--satellite-json SATELLITE_JSON]` | Fail-closed audit of whether a real candidate packet has the packet metadata and explicit evidence needed for Track B gate review; it never guesses missing sky position, observation time, telescope location, or catalog classifications |
 | `techno-search track-b-unknown-candidate-gate CANDIDATE_JSON --crossmatch-json CROSSMATCH_JSON [--satellite-json SATELLITE_JSON]` | Combine explicit Track A crossmatch, optional satellite-match, RFI/artifact/cadence/anomaly/provenance evidence into the Phase 4 `unknown_candidate` gate without network lookups |
 | `techno-search validate-all` | Must pass before any scan proceeds |
@@ -300,22 +307,11 @@ promoted as follow-up candidates. Inspect `candidate_review.top_review_targets`
 before individual rows; a survivor set concentrated on one target is a
 source-context and instrumental-vetting task, not a discovery claim.
 
-Build the Phase 1 human-review queue only from completed real observations:
-
-```bash
-git pull origin main
-caffeinate -i .venv/bin/techno-search radio-review-sample \
-  --dat-dir data/extended_corpus \
-  --output data/review/phase1_radio_review_queue_v1.csv \
-  --sample-size 1000
-```
-
-The CSV is ignored local calibration data. It contains real measured hit
-features and anomaly-score sampling strata, but its human-review fields are
-blank. Do not infer labels from automated RFI/drift filters, and do not use
-`--overwrite` once human review begins. Because these completed search rows are
-being promoted into calibration review, they cannot later be represented as a
-blind search set.
+The retired `radio-review-sample` command and its unlabeled queue are not a
+calibration path and must not be recreated. The available pre-existing labels
+are insufficient for a global anomaly/OOD threshold, so that learned gate
+remains fail-closed. Continue deterministic false-positive analysis without
+converting completed search rows into ground truth.
 
 Before expanding `data/extended_corpus/`, verify current BL Open Data
 availability from the committed manifest. This command queries the official

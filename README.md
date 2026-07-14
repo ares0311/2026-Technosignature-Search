@@ -973,7 +973,8 @@ git diff --check
 ```
 
 The launcher uses six pytest-xdist workers as six non-overlapping `loadfile`
-test shards, then runs Ruff, mypy, and `validate-all` concurrently. Small
+test shards, then runs the base-aware app-version gate, Ruff, mypy, and
+`validate-all` concurrently. Small
 focused reproductions may still call pytest directly inside `.venv`.
 
 The GitHub Actions template lives at `docs/templates/ci.yml` until the

@@ -22,6 +22,17 @@ The coding agent should read this file before modifying any model, dataset, scor
 
 ## Non-Negotiable Decisions
 
+### Technosignatures repo override — pre-existing labels only
+
+For `2026 Technosignatures`, never ask the user or any other person to label,
+annotate, classify, or review data to create training, calibration,
+threshold-selection, or evaluation labels. Never build a labeling queue or
+retraining queue. Only pre-existing, independently supplied row-level labels
+with provenance are admissible. No positive technosignature labels exist. If
+adequate labels are unavailable, the learned gate remains fail-closed. Any
+generic human-review-feedback architecture or task elsewhere in this shared
+guide is inapplicable to this repo where it would require new labels.
+
 These decisions are already made for coding agents:
 
 1. Keep the CNN, but freeze it as `benchmark_cnn_v1`.

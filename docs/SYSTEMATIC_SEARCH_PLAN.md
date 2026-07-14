@@ -1,5 +1,15 @@
 # Systematic Search Plan
 
+## STOP — LABEL ACQUISITION IS NOT A PROJECT STEP
+
+Only pre-existing, independently supplied, row-level labels with provenance may
+be used for training, calibration, threshold selection, or evaluation. Never
+ask the user or anyone else to create labels; never build a review/annotation
+queue; never infer labels from automated filters, papers, anomalies, or
+follow-up states. No positive technosignature labels exist. If the available
+labels are insufficient, the relevant learned-model gate stays fail-closed.
+This rule supersedes every older human-review-set proposal in project history.
+
 **Status:** Active plan, recorded 2026-07-05. Read this before starting any
 work that touches target selection, calibration, or the production UI.
 
@@ -37,11 +47,14 @@ is merged (`5507030`) and all six isolated shards completed 33/33 targets with
 and no duplicate target observed by the one-minute process monitor. Six
 distinct per-shard v1.2.1 entries with complete target detail are tracked in
 `docs/data_collection_status.json`. The corrected corpus contains 215/215
-10-Hz/s `.dat` files, zero 4-Hz/s files, 8,988 hit rows across 215 targets,
-7,571 cross-target RFI flags, and zero follow-up or escalation-ready
-candidates. Raw retention returned to 17 HDF5 files and data usage to 9.0 GB.
-Step 0 is complete. Proceed to the Step 1 project-owned human review set; do
-not repeat bulk acquisition or infer labels from these automated filters.
+10-Hz/s `.dat` files and zero 4-Hz/s files. Corrected ingestion reports 8,988
+raw rows, 3,134 exact normalized duplicates across 39 files, and 5,854 unique
+rows across 215 targets; 4,895 unique rows carry cross-target RFI flags and zero
+are follow-up or escalation-ready candidates. Raw retention returned to 17 HDF5
+files and data usage to 9.0 GB.
+Step 0 is complete. Do not repeat bulk acquisition or infer labels from these
+automated filters. Step 1 is now a documented fail-closed limitation; label
+acquisition is permanently outside project scope.
 
 | Capability | Status |
 |---|---|
@@ -51,7 +64,7 @@ not repeat bulk acquisition or infer labels from these automated filters.
 | Semisupervised anomaly/OOD calibration | ❌ Blocked — see Step 1 |
 | Operator UI hardening | ⚠️ Substantially underway — 12 operator-facing commands now default to compact summaries with `--json` opt-in, across three rounds of hardening: `prod-target-status`/`prod-follow-ups`/`prod-non-detections` (before 2026-07-09), `review-dashboard` (2026-07-09), and `track-b-unknown-candidate-gate`/`track-b-candidate-readiness`/`gbt-cadence-abacab-review`/`gbt-cadence-raw-status`/`adversarial-review-dossier`/`multi-modal-crossmatch-summary`/`prod-runs`/`scan-summary` (2026-07-10/11, 8 commands — the commit message for this round undercounted it as "7 more", missing `scan-summary`; verified by counting `_print_*` functions directly, not trusting the commit message). `escalation-gate-check`/`cross-target-rfi-summary`/`health`/`prod-show` deliberately left alone — small flat dicts, already scannable. See Step 2 for what a future audit should still check. |
 | Detection-optimized target selection algorithm | ⚠️ 3a (novel-target selection) real and running: 13 discover→preflight→promote rounds completed (`top25`/`next25`/`batch3`-`batch13`) as of 2026-07-11, 195 targets / ~49 GB promoted to `raw_download_approval_required` (as of `batch12`; `batch13` built, discovery pending), all pending explicit raw-download approval — no payloads downloaded. 3b (follow-up-target selection) remains design-only per its documented gate (no real qualifying candidate exists yet to validate it against). See Step 3a. |
-| Extended-corpus completion | ✅ Complete — corrected v1.2.1 six-shard rerun finished 198/198 targets with zero failures or duplicate processing; the full 215-target local corpus is now at 10 Hz/s and contains 8,988 triage rows, with zero follow-up/escalation-ready candidates. See Step 0 completion below. |
+| Extended-corpus completion | ✅ Complete — corrected v1.2.1 six-shard rerun finished 198/198 targets with zero download-task duplication. The full 215-target local corpus is at 10 Hz/s; ingestion removes 3,134 exact duplicate hit rows from 8,988 raw rows, leaving 5,854 unique triage rows and zero follow-up/escalation-ready candidates. See Step 0 completion below. |
 
 ---
 
@@ -128,47 +141,29 @@ the pipeline over the results (`scripts/run_turboseti_on_extended_corpus.sh`,
 
 ---
 
-## Step 1 (blocks Track B `unknown_candidate` and blocks Step 3's follow-up scoring): close the calibration gap
+## Step 1 (permanently fail-closed): document the unavailable calibration evidence
 
-Per `AGENTS.md`'s "CALIBRATION DATA STATUS" section: the literature search
-for more real per-hit labeled data is exhausted
-(`docs/seti_labeled_hit_data_research.md`). The only real path left is a
-**project-owned human review set**.
+The search for additional real per-hit labeled SETI/BL data is exhausted
+(`docs/seti_labeled_hit_data_research.md`). HIP99427's 124 rows remain the only
+verified pre-existing per-hit labels and are insufficient for a global
+anomaly/OOD threshold. The previously proposed project-owned human review set
+and `radio-review-sample` workflow were invalid because this project does not
+ask anyone to create labels; they are retired.
 
-**Action, per the research note's recommended schema:**
-1. Build a review-sampling tool that pulls hits across score deciles from
-   the (post-Step-0) expanded real corpus — not just HIP99427 — so the
-   review set spans multiple targets and bands, not one target repeated.
-2. Produce a review queue with columns: `hit_id`, `source_file`, `target`,
-   `frequency_hz`, `drift_rate_hz_s`, `snr`, `score`, `review_label`,
-   `reviewer_id`, `review_timestamp_utc`, `review_notes`.
-3. Target: ≥1,000 reviewed rows, ≥50 follow-up-like rows, across multiple
-   targets/bands/score-deciles (the research note's minimum useful
-   calibration target). This requires real human review time from the
-   user — an agent cannot generate or fabricate these labels.
-4. If the positive class remains rare even at that scale, calibrate via
-   precision-at-k rather than forcing a fixed global threshold (per the
-   research note's guidance) — do not invent a cutoff to force a binary
-   decision.
-5. Once calibrated, re-run `track-b-candidate-readiness` on real
-   candidates and confirm `eligible_for_unknown_candidate` can now
-   genuinely resolve `true` for a qualifying real candidate, not just
-   `false` by default.
+**Required behavior:**
 
-**This step is genuine unstarted scientific/human-labor work.** Do not
-attempt to shortcut it with rule-derived proxy labels or by re-running the
-literature search again.
-
-**Implementation update — 2026-07-13:** the sampling/tooling portion is now
-complete in version 1.2.3. `techno-search radio-review-sample` built the first
-ignored local queue from the corrected 215-target corpus: 1,000 of 8,988 real
-hits, exactly 100 per score decile, spanning 208 targets and two measured GHz
-frequency bins. All `review_label`/`reviewer_id`/`review_timestamp_utc`/
-`review_notes` values are blank, and reruns refuse to overwrite an existing
-queue by default. The queue is calibration-only and prohibited from later
-blind-search reuse. Step 1 remains open on the irreducible human-labeling work
-and the empirical ≥50 follow-up-like-row goal; agents must not fill that gap
-with automated filter outputs or paper-level conclusions.
+1. Keep the semisupervised anomaly score as an uncalibrated ranking diagnostic,
+   not a classification or promotion gate.
+2. Keep Track B fail-closed wherever adequate independent labels are required.
+3. Use unlabeled real observations only for search, ranking, distributional
+   analysis, and deterministic false-positive investigation. Do not turn them
+   into ground truth.
+4. Do not repeat the closed literature search without a genuinely new published
+   dataset lead, and do not replace missing evidence with synthetic, inferred,
+   automated, expert-requested, or user-created labels.
+5. Continue with deterministic false-positive rejection and other named roadmap
+   gaps that do not depend on unavailable labels. The current internal synthesis
+   is `docs/False_Positive_Technosignature_Case_Studies.md` and its bibliography.
 
 ---
 

@@ -1,27 +1,25 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-07-13
+**Last updated:** 2026-07-14
 **Current phase:** Phase 0 complete; Phases 1-5 all have real, tested baseline
 implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.3
+**Current app version:** 1.2.4
 
-**Phase 1 human-review sampler — 2026-07-13:** version 1.2.3 adds
-`techno-search radio-review-sample`, the missing implementation step for the
-project-owned calibration set. It reads the completed real GBT `.dat` corpus,
-uses the existing fitted semi-supervised scorer, assigns stable rank-based score
-deciles, and round-robins target/frequency-bin groups within each decile. The
-first real local run sampled 1,000 of 8,988 hits: exactly 100 per decile, across
-208 targets and two measured GHz bins, with no human label/reviewer/timestamp
-field prepopulated. The ignored queue is
-`data/review/phase1_radio_review_queue_v1.csv`; existing queues are protected
-from overwrite by default. These completed-search rows are explicitly promoted
-to calibration-only use and may not later be represented as blind-search
-evidence. The remaining blocker is genuine human review: the tool does not
-create labels, and the ≥50 follow-up-like target remains an empirical goal, not
-an assumed class balance.
+**Phase 1 labeled-data boundary — 2026-07-14:** version 1.2.4 retires
+`techno-search radio-review-sample` and the proposed project-owned review set.
+This project never asks the user or anyone else to create labels. Training,
+calibration, threshold selection, and scientific evaluation use only
+pre-existing, independently supplied row-level labels with provenance. The
+124-row HIP99427 set remains the only accepted real per-hit label source and is
+insufficient for a global anomaly/OOD threshold. The semi-supervised score is
+therefore an uncalibrated ranking diagnostic, and dependent promotion gates stay
+fail-closed. Unlabeled observations remain usable for search, distributional
+analysis, and deterministic false-positive investigation, never as ground
+truth. `docs/False_Positive_Technosignature_Case_Studies.md` and its bibliography
+are the best current internal false-positive synthesis.
 
 **Single-terminal sharding and parallel validation — 2026-07-13:** version
 1.2.2 adds `scripts/run_six_shard_downloads.py`, which validates and launches
@@ -36,7 +34,7 @@ HDF5 file that was already processed and evicted. Full repository validation is
 now orchestrated by `scripts/run_parallel_validation.py`: six pytest-xdist
 workers are six non-overlapping `loadfile` shards, followed by concurrent Ruff,
 mypy, and `validate-all` checks. These launchers improve bounded execution of
-future approved Step 3a/Phase 1 work; they do not authorize a new raw-data batch,
+future approved Step 3a and other applicable work; they do not authorize a new raw-data batch,
 change scientific thresholds, create labels, or make a candidate claim.
 
 **Step 0 corrected-corpus completion — 2026-07-12 23:58 UTC:** version 1.2.1
@@ -48,14 +46,18 @@ at any point. All six distinct v1.2.1 status entries and their 33 downloaded +
 33 evicted target lists are tracked in `docs/data_collection_status.json`.
 The final extended corpus has 215/215 `.dat` files at the corrected 10 Hz/s
 ceiling and zero at the invalid 4 Hz/s ceiling. `radio-real-corpus-summary`
-reports 8,988 hit rows across 215 hit-bearing targets: all 8,988 are
-Earth-drift-inconsistent under the current check, 7,571 carry cross-target RFI
-flags, and zero are follow-up or escalation-ready candidates. The raw cache
+reports 8,988 raw rows across 215 hit-bearing targets. Ingestion now removes
+3,134 exact normalized duplicates from 39 files, leaving 5,854 independent
+rows; all 5,854 are Earth-drift-inconsistent under the current check, 4,895
+carry cross-target RFI flags, and zero are follow-up or escalation-ready
+candidates. One observation contains a two-member harmonic-family match at the
+13th and 17th harmonics of 100 MHz (191 Hz residual), recorded as deterministic
+RFI-forensics evidence rather than a label. The raw cache
 returned to the 17 retained HDF5 files and total project data usage to 9.0 GB.
 These are automated triage/negative-filtering results, not candidate,
 detection, discovery, expert-review, or external-validation claims. Step 0 is
-complete; the next honest Phase 1 action is the project-owned human review set
-already specified below, not further bulk acquisition or threshold guessing.
+complete. Phase 1's learned calibration limitation remains fail-closed; neither
+new labeling, further bulk acquisition, nor threshold guessing is authorized.
 
 (A "Current milestone: 79" numbered-milestone field was removed here on
 2026-07-11: an audit found it referenced nowhere else in the project, never
@@ -202,7 +204,7 @@ commands instead of placeholder `rm` recipes.
 
 | Task | Status |
 |---|---|
-| Track A known-explanation classifier before Track B `unknown_candidate` routing | ⚠️ Partial — Track A HTRU2 baseline, four known-source catalogs, satellite-transmitter matching, and 13/13 historical replay are implemented from real sources. Track B Phase 4 gate is implemented in `track_b_gate.py` and exposed as `techno-search track-b-unknown-candidate-gate`/`track-b-candidate-readiness`. **First real end-to-end Track B run completed 2026-07-02** on `data/bl_hits/voyager1_hits.dat` (real Voyager 1 X-band downlink hit, 8.419 GHz) using NRAO's own published GBT reference-point coordinates (38.4331211, -79.8398350, 807.43m — verified via GBT Proposer's Guide + National Radio Quiet Zone page, not guessed): **7 of 9 conditions satisfied**, 2 correctly unresolved (single-file cadence evidence; uncalibrated anomaly threshold), `eligible_for_unknown_candidate: false` — no false claim either direction. Surfaced a real, non-urgent scope gap: none of the 9 conditions covers "known human deep-space spacecraft" (SatNOGS/CelesTrak only cover Earth-orbiting objects), so Voyager-class signals fall through to unresolved rather than being confidently attributed — conservative-by-construction design means this causes no wrong claim. **Blocker 2 (real 6-scan ABACAB cadence evidence) closed 2026-07-02**: the real evidence already existed in the committed HIP99427 dataset (124 evidence groups, 2 real `follow_up` candidates), but predated the `abacab_cadence_score` feature and hit a real bug (PR #186 — `_candidate_mapping()` omitted `source_artifact`, so genuine 3-distinct-ON/0-OFF cadences scored the neutral 0.5 instead of 1.0). Fixed; user re-ran `scripts/build_citizen_science_labels.py` and confirmed both real follow-up candidates now report `abacab_cadence_score: 1.0`. **Real 8/9 result 2026-07-02**: HIP99427's real RA/Dec (302.7191, 77.2411125) and observation time were extracted directly from the raw `.dat` header (not guessed or externally looked up), converted with this project's own tested functions, and run through the real crossmatch (`no_known_match`) and real satellite match (`no_known_match`, verified GBT coordinates). `track-b-candidate-readiness` reports **8 of 9 conditions satisfied** on this real candidate — every implemented known-source, RFI, artifact, cadence, and satellite check found no explanation. `eligible_for_unknown_candidate: false`, correctly, since condition 8 remains unresolved. This is not evidence of anomaly; it reflects that the deterministic checks implemented so far have nothing further to say, and false positive remains the default hypothesis per AGENTS.md. **Blocker 1 (calibrated anomaly/OOD threshold) is the only remaining Track B blocker, and a real calibration attempt 2026-07-02 found it can't be resolved with available data.** Ran the real fitted MeerKAT-trained semisupervised scorer against all 124 real HIP99427 evidence groups: `false_positive` (n=81) mean 0.0755, `follow_up` (n=2) mean 0.0456, `insufficient_evidence` (n=41) mean 0.0907 — the two real follow_up candidates score *lower* than confirmed false positives, the opposite of what a "high score = interesting" threshold assumes. A naive percentile-of-false_positive threshold would filter out the exact candidates it should flag. Two real reasons, not implementation gaps: (1) `follow_up` n=2 is too small for any percentile estimate, (2) the scorer is trained on real MeerKAT data, this corpus is real GBT L-band data — cross-instrument feature transfer likely doesn't hold. Real calibration needs either a same-instrument (GBT-native) scorer or a substantially larger real positive sample; neither exists yet. **Literature search for more real per-hit labeled data closed, 2026-07-05** (`docs/seti_labeled_hit_data_research.md`, the user's research agent, run from a machine with real network access): checked 8 real BL/SETI sources (Enriquez 2017, Price 2020, Sheikh/Smith 2021 BLC1, Jacobson-Bell 2025/GLOBULAR arXiv:2411.16556, Lacki 2021 Exotica Catalog, Ma 2023, Choza 2024) against a strict acceptance rule (real downloadable table, one row per hit/candidate, independent human verdict column, mappable label categories) — none qualified. Price et al. 2020's Berkeley SETI event CSVs are the closest real machine-readable artifact found, but their documented columns (`Source`/`DriftRateMax`/`Nevent`/`FreqMid`/`DriftBW`/`DriftRates`/`Freqs`/`FileID`/`SNR`) are event-summary quantities, not verdict labels — explicitly do **not** infer `false_positive` for every row from the paper's "zero surviving candidates" conclusion, since that would fabricate row-level labels never actually published. **Confirmed real conclusion: the 124-row HIP99427 citizen-science set remains the only real per-hit labeled ground truth this project has**, and the recommended real next step is a project-owned human review set (target ≥1,000 reviewed rows, ≥50 follow-up-like, spanning multiple targets/bands/score-deciles — see the research note's `hit_id`/`review_label`/`reviewer_id` schema), using precision-at-k rather than a fixed global threshold if the positive class stays rare. This is genuine unstarted work requiring human review effort, not a data-acquisition or implementation gap. |
+| Track A known-explanation classifier before Track B `unknown_candidate` routing | ⚠️ Partial — Track A's HTRU2 baseline, four known-source catalogs, satellite-transmitter matching, and 13/13 historical replay use real pre-existing evidence. A valid future CNN/classifier may learn only pre-existing labels for known objects, phenomena, RFI, and artifacts, and must abstain with `low_confidence` when no known class is reliable. An unresolved item is follow-up triage, not a positive technosignature label, and Track B's independent gates still apply. Track B is exposed as `techno-search track-b-unknown-candidate-gate`/`track-b-candidate-readiness`; real Voyager and HIP99427 checks remain conservatively ineligible. HIP99427's 124 rows are the only accepted real per-hit labels; the two `follow_up` rows score below the false-positive mean under the current cross-instrument scorer, so a high-score threshold would reject the very rows it should retain. Eight published-source checks found no larger qualifying row-level labeled dataset. New labeling and review queues are prohibited; the anomaly score remains an uncalibrated ranking diagnostic and the dependent gate stays fail-closed. |
 | Proper ON/OFF cadence verification (ABACAB from raw files) | ⚠️ Partial — `gbt-cadence-raw-status` verifies approved raw HDF5 presence, size, MD5, and HDF5 signature before cadence processing; local HIP99427 raw files are present under `~/technosignature-data`, the official ingest reproduces the 213-row cadence CSV, and `gbt-cadence-abacab-review` summarizes candidate-level ON/OFF outcomes |
 | Real training corpus loaded into semisupervised_scorer | ✅ Done locally — local GBT/turboSETI `.dat` corpus can fit the scorer and production radio packets can carry fitted-model anomaly scores; verified MeerKAT BLUSE/SETICORE JSON source is documented, `scripts/ingest_meerkat_hits.py` supports its schema, and `data/meerkat_hits/semisupervised_scorer_metadata.json` records `train_hit_count: 200000`; payload/model artifacts remain ignored and non-redistributed |
 | Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial — radio candidate packets, ranked summaries, and production ledgers now carry normalized drift and Earth-drift consistency features; `radio-real-corpus-summary` validates drift rows from local `.dat` files and can include real normalized hit-NDJSON evidence from the verified MeerKAT BLUSE corpus. On 2026-07-02, the bounded local review counted 5,003 hit rows (5,000 MeerKAT rows plus Voyager control rows), all Earth-consistent under the current drift check; no escalation-ready candidates survived automated filters. Broader candidate-level stratified-corpus review remains open. |
@@ -271,9 +273,9 @@ scorer's threshold. The user's research agent ran this from a machine with
 real network access and answered it — see `docs/seti_labeled_hit_data_research.md`
 and the Phase 1 row above for the full result: no qualifying source was
 found across 8 checked real BL/SETI papers/repos/catalogs. This specific
-literature-search lead is exhausted; the real next step is building a
-project-owned human review set, not further literature search on this
-question.
+literature-search lead is exhausted. No project-owned labeling effort is
+permitted; retain the fail-closed limitation and continue with deterministic
+false-positive analysis or another named science gap.
 
 ### Phase 2 — Transit Photometry: Kepler/TESS
 

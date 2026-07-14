@@ -15,6 +15,7 @@ Run from the project virtual environment:
 ```bash
 git pull origin main
 caffeinate -i .venv/bin/python scripts/run_parallel_validation.py
+.venv/bin/python scripts/check_app_version.py --base-ref origin/main
 git diff --check
 ```
 
@@ -24,8 +25,10 @@ git diff --check
 
 Before release, verify:
 
-- `pyproject.toml`, `techno_search.__version__`, and `techno-search version`
-  agree, and the app version is monotonic relative to the latest release tag
+- `pyproject.toml`, `techno_search.__version__`,
+  `docs/PRODUCTION_READINESS.md`, and `techno-search version` agree; the enforced
+  base-aware gate requires a strict increment over `origin/main` whenever
+  release-relevant code, scripts, configs, schemas, or directives change
 - candidate packet schemas parse
 - report manifest schemas parse
 - batch manifest schemas parse

@@ -151,7 +151,30 @@ def test_radio_real_corpus_summary_counts_drift_rfi_and_scorer(tmp_path: Path) -
     assert result["cross_target_rfi"]["validation_ready"] is True
     assert result["semisupervised_scorer"]["model_used"] is True
     assert result["semisupervised_scorer"]["scored_hit_count"] == 2
+    assert result["frequency_family_rfi"]["dat_file_count_analyzed"] == 2
+    assert result["frequency_family_rfi"]["method"]["arxiv_id"] == "2111.06350"
     assert "detections" in result["disclaimer"]
+
+
+def test_radio_real_corpus_summary_reports_and_excludes_exact_dat_duplicates(
+    tmp_path: Path,
+) -> None:
+    dat_dir = tmp_path / "dat"
+    dat_dir.mkdir()
+    path = dat_dir / "duplicate.dat"
+    _write_dat(path, source="TARGET_A", frequency_mhz=1420.0, drift=0.1)
+    lines = path.read_text(encoding="utf-8").splitlines()
+    path.write_text("\n".join([*lines, lines[-1], ""]), encoding="utf-8")
+
+    result = radio_real_corpus_summary([dat_dir])
+
+    assert result["dat_raw_hit_row_count"] == 2
+    assert result["dat_unique_hit_row_count"] == 1
+    assert result["dat_duplicate_hit_row_count"] == 1
+    assert result["dat_files_with_duplicate_hits_count"] == 1
+    assert result["sample_dat_files_with_duplicate_hits"] == [str(path)]
+    assert result["hit_count"] == 1
+    assert result["drift_evidence"]["drift_row_count"] == 1
 
 
 def test_radio_real_corpus_summary_applies_globular_filter_across_corpus(

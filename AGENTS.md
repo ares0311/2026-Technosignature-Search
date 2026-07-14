@@ -1,5 +1,38 @@
 # AGENTS.md
 
+## STOP — PRE-EXISTING LABELED DATA ONLY — PRIME DIRECTIVE
+
+**Never ask the user—or any other person, expert, collaborator, contractor,
+crowd, or research agent—to label, annotate, classify, or review data for the
+purpose of creating training, calibration, threshold-selection, or scientific
+evaluation labels. Never propose, build, or operate a labeling queue or review
+campaign. This project uses labeled data only when the labels already exist as
+independent, row-level ground truth with documented provenance.**
+
+There are no confirmed positive technosignature labels. Do not search for,
+invent, infer, synthesize, or substitute a positive technosignature class.
+`follow_up`, `unknown_candidate`, anomaly, unexplained, synthetic injection,
+Voyager, and human-made transmitters are not positive technosignature labels.
+Unlabeled observations may be searched, ranked, and analyzed, but must remain
+unlabeled and must never be converted into ground truth.
+
+If adequate pre-existing labels do not exist, the affected learned calibration
+or promotion gate remains honestly blocked and fail-closed. The correct next
+step is deterministic scientific analysis, false-positive rejection, or another
+named roadmap gap—not asking anyone to create labels. This prohibition applies
+even if another document contains an older suggestion to assemble a human
+review set; this section overrides that suggestion. The best current internal
+false-positive synthesis is
+`docs/False_Positive_Technosignature_Case_Studies.md` and its bibliography.
+
+A valid learned-model path is a Track A classifier—including a CNN if it passes
+the CNN promotion gate—trained only on pre-existing labels for known objects,
+known phenomena, RFI, and artifacts. It must be allowed to abstain or emit
+`low_confidence` when no known class is reliable. Such an unresolved output may
+enter deterministic follow-up triage, but it is not a positive label,
+`unknown_candidate`, detection, or discovery. Track B's independent evidence
+gates still apply.
+
 ## GIT SYNC DIRECTIVES — NON-NEGOTIABLE
 
 Three rules that must be followed without exception to keep the user's local
@@ -19,6 +52,17 @@ machine and GitHub in sync:
 
 The agent always develops on `claude/general-session-Bb2dZ`. The user always
 stays on `main` and pulls after each PR is merged.
+
+### APP VERSION TRACKING — NON-NEGOTIABLE
+
+Every release-relevant change must advance the semantic app version relative to
+`origin/main`. This includes application/science code, scripts, configs,
+schemas, and authoritative agent/production directives. Keep `pyproject.toml`,
+`src/techno_search/__init__.py`, and `docs/PRODUCTION_READINESS.md` on the same
+version. `scripts/check_app_version.py` is the enforced source/base comparison;
+it runs inside `scripts/run_parallel_validation.py`. Do not replace it with a
+fixed minimum-version assertion—the old test only checked `>= 1.1.0` and could
+not detect skipped bumps.
 
 ### PR LINK + CONTINUATION DIRECTIVE — NON-NEGOTIABLE
 
@@ -651,16 +695,32 @@ this literature search on the same question without a genuinely new lead
 (e.g. a newly published paper) — re-checking the same 8 already-rejected
 sources wastes the user's research-agent budget for no new information.
 
-**The only real path to closing the anomaly/OOD calibration blocker now is
-building a project-owned human review set**, per
-`docs/seti_labeled_hit_data_research.md`'s recommended schema
-(`hit_id`/`source_file`/`target`/`frequency_hz`/`drift_rate_hz_s`/`snr`/
-`score`/`review_label`/`reviewer_id`/`review_timestamp_utc`), targeting
-≥1,000 reviewed rows and ≥50 follow-up-like rows across multiple targets,
-bands, and score deciles — and using precision-at-k rather than a fixed
-global threshold if the positive class stays rare. This requires real
-human labeling effort; it is not an implementation task an agent can
-shortcut or fabricate.
+### LABELED-DATA-ONLY RULE — PRIME DIRECTIVE
+
+Training, calibration, threshold selection, and scientific performance
+evaluation may use only **pre-existing, independently supplied, row-level
+labeled data with documented provenance**.
+
+- Never ask the user, an external expert, a collaborator, a contractor, a
+  citizen-science participant, or any other person or institution to label
+  data for this project.
+- Never build or operate a queue whose purpose is to obtain new labels.
+- Never infer labels from automated filters, anomaly scores, clusters,
+  paper-level conclusions, target categories, or unlabeled observations.
+- Unlabeled observations may be searched, ranked, or used for distributional
+  diagnostics, but they may not serve as training targets, calibration truth,
+  threshold truth, negatives, positives, or scientific evaluation truth.
+- A newly published dataset may be admitted only if it already contains an
+  explicit independent row-level label column and passes the provenance and
+  acceptance rules in `docs/seti_labeled_hit_data_research.md`.
+
+The 124-row HIP99427 set (2 `follow_up` rows) remains the only verified real
+per-hit labeled ground truth available for this radio anomaly calibration
+question. It is suitable only for bounded sanity checks, not a global anomaly
+threshold. Therefore `semisupervised_anomaly_score` remains an uncalibrated
+ranking diagnostic and Track B must fail closed wherever calibrated anomaly
+evidence is required. Do not create a workaround, solicit labels, or reopen the
+exhausted literature search without a genuinely new already-labeled source.
 
 ---
 

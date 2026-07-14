@@ -20,7 +20,7 @@ git diff --check
 
 The launcher runs six pytest-xdist workers as six non-overlapping `loadfile`
 shards and aggregates `techno_search` coverage. After pytest succeeds, it runs
-Ruff, mypy, and `validate-all` concurrently. Use direct
+the base-aware app-version gate, Ruff, mypy, and `validate-all` concurrently. Use direct
 `.venv/bin/python -m pytest ...` only for a small, focused reproduction where
 startup/distribution overhead would not save time.
 

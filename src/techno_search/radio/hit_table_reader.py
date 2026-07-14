@@ -92,6 +92,14 @@ def read_hit_table_csv(path: Path) -> list[dict[str, Any]]:
       frequency_hz, snr, drift_rate_hz_per_sec, source_name, mjd, ra_deg, dec_deg
     Frequencies are converted from MHz to Hz.
     """
+    rows, _ = read_hit_table_csv_with_stats(path)
+    return rows
+
+
+def read_hit_table_csv_with_stats(
+    path: Path,
+) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    """Read and stably deduplicate normalized rows, reporting exact duplicates."""
     raw_text = Path(path).read_text(encoding="utf-8", errors="replace")
     all_lines = raw_text.splitlines(keepends=True)
 
@@ -131,7 +139,20 @@ def read_hit_table_csv(path: Path) -> list[dict[str, Any]]:
             if row is not None:
                 rows.append(row)
 
-    return rows
+    unique_rows: list[dict[str, Any]] = []
+    seen: set[tuple[tuple[str, Any], ...]] = set()
+    for row in rows:
+        fingerprint = tuple(sorted(row.items()))
+        if fingerprint in seen:
+            continue
+        seen.add(fingerprint)
+        unique_rows.append(row)
+
+    return unique_rows, {
+        "raw_row_count": len(rows),
+        "unique_row_count": len(unique_rows),
+        "duplicate_row_count": len(rows) - len(unique_rows),
+    }
 
 
 def _normalize_row(
@@ -222,7 +243,15 @@ def hit_table_to_radio_hit_dicts(path: Path) -> list[dict[str, Any]]:
 
     Maps real column names to the RadioHit field names used by the prototype.
     """
-    raw_rows = read_hit_table_csv(path)
+    rows, _ = hit_table_to_radio_hit_dicts_with_stats(path)
+    return rows
+
+
+def hit_table_to_radio_hit_dicts_with_stats(
+    path: Path,
+) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    """Return normalized radio-hit dicts plus source-row deduplication counts."""
+    raw_rows, stats = read_hit_table_csv_with_stats(path)
     artifact_context = _artifact_context(path)
     out = []
     for r in raw_rows:
@@ -240,7 +269,7 @@ def hit_table_to_radio_hit_dicts(path: Path) -> list[dict[str, Any]]:
             ),
             "source_artifact": r.get("source_artifact") or str(path.name),
         })
-    return out
+    return out, stats
 
 
 def _artifact_context(path: Path) -> dict[str, str]:

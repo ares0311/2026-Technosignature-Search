@@ -1,5 +1,21 @@
 # CLAUDE.md
 
+## STOP — NEVER ASK ANYONE TO LABEL DATA
+
+This project uses only **pre-existing, independently supplied, row-level
+labeled data with provenance** for training, calibration, threshold selection,
+or scientific evaluation. Never ask the user or anyone else to label, annotate,
+classify, or review data to create labels. Never propose or build a labeling
+queue, paid annotation effort, expert-labeling request, citizen-science task,
+or project-owned review set. No positive technosignature labels exist; anomaly,
+`follow_up`, `unknown_candidate`, synthetic injections, Voyager, and known
+human transmitters are not substitutes. When sufficient labels do not exist,
+keep the relevant gate fail-closed and work on a different named science gap.
+The prime directive in `AGENTS.md` overrides any stale contrary wording.
+A Track A CNN/classifier may learn pre-existing labels for known explanations
+and abstain with `low_confidence`; an unclassified item is a follow-up triage
+input, not a positive technosignature label, and must still pass Track B.
+
 ## Purpose
 
 Handoff and progress notes for Claude or other coding agents working in this repository.
@@ -24,25 +40,35 @@ directly" carve-out and the required shape of your plan.
 
 ## Current Phase Snapshot
 
-Current phase: Phase 0 is complete. Phase 1's open scientific blocker is the
-project-owned human review/calibration set (`docs/PRODUCTION_READINESS.md`).
+Current phase: Phase 0 is complete. Phase 1's anomaly/OOD calibration is a
+documented fail-closed limitation because no adequate pre-existing labeled
+dataset exists (`docs/PRODUCTION_READINESS.md`). New labeling is prohibited.
 Every commit must advance a named science phase or directly unblock its safe
 execution; see `AGENTS.md`'s ANTI-DOOM-LOOP DIRECTIVES for the full hard-rule
 list (PRs #103–#119 precedent).
 
 Current execution status:
  - The corrected 215-target radio corpus is complete at the valid 10 Hz/s drift
-   ceiling; no follow-up or escalation-ready candidates survived automated
-   triage.
- - Phase 1's real review sampler is implemented as `radio-review-sample`. The
-   first local calibration queue contains 1,000 unlabeled rows balanced 100 per
-   score decile across 208 targets and two measured GHz bins. Human labeling is
-   now the blocker; agents must not populate or infer those verdicts.
+   ceiling. Corrected ingestion removes 3,134 exact normalized duplicates from
+   8,988 raw rows across 39 files, leaving 5,854 unique rows; 4,895 carry
+   cross-target RFI flags and no follow-up or escalation-ready candidates
+   survived automated triage. One GJ412A observation contains a two-member
+   100-MHz harmonic-family match (13th/17th harmonics, 191-Hz residual), which
+   is deterministic RFI-forensics evidence, not a label.
+ - Training, calibration, threshold selection, and scientific evaluation use
+   pre-existing independently labeled row-level data only. Never ask the user
+   or anyone else to label data, and never build a label-acquisition queue.
+ - The retired 1,000-row unlabeled radio sample is not calibration or evaluation
+   evidence. The anomaly scorer remains ranking-only and Track B fails closed
+   wherever calibrated anomaly evidence is required.
  - Future approved six-manifest data batches use
    `scripts/run_six_shard_downloads.py`, not six manual terminal tabs.
  - Full validation uses `scripts/run_parallel_validation.py` (six xdist
-   workers/six non-overlapping test shards, then concurrent static/science
-   checks). `AGENTS.md` remains the directive source of truth.
+   workers/six non-overlapping test shards, then concurrent app-version,
+   static, and science checks). `scripts/check_app_version.py` requires every
+   release-relevant branch change to advance the version beyond `origin/main`
+   and requires package/readiness version surfaces to agree. `AGENTS.md`
+   remains the directive source of truth.
 
 ---
 
@@ -261,8 +287,10 @@ acceptance rule and none qualified — full findings in
 `docs/PRODUCTION_READINESS.md` Phase 1 and `AGENTS.md`'s "CALIBRATION DATA
 STATUS" section. **Do not re-run this search on the same question.** The
 124-row HIP99427 set (2 `follow_up` rows) remains the only real labeled
-data in hand; the real next step is a project-owned human review set
-(≥1,000 rows, ≥50 follow-up-like), not further literature search.
+data in hand and is insufficient for a global threshold. The project uses
+pre-existing independently labeled data only: do not ask anyone to create
+labels, build a label-acquisition queue, infer labels, or re-run the exhausted
+search without a genuinely new already-labeled source.
 
 ### Track A Real Baseline Results — 2026-07-02
 

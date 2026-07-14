@@ -9,6 +9,7 @@ import pytest
 from techno_search.radio.hit_table_reader import (
     hit_table_to_radio_hit_dicts,
     read_hit_table_csv,
+    read_hit_table_csv_with_stats,
 )
 from techno_search.radio.prototype import parse_hit_table
 
@@ -172,6 +173,21 @@ def test_dat_feeds_parse_hit_table() -> None:
     hits = parse_hit_table(dicts)
     assert len(hits) == 5
     assert all(h.frequency_hz > 0 for h in hits)
+
+
+def test_dat_exact_normalized_rows_are_deduplicated(tmp_path: Path) -> None:
+    path = tmp_path / "duplicate_hits.dat"
+    header, row = FIXTURE_DAT.read_text(encoding="utf-8").rsplit("\n", 2)[:2]
+    path.write_text(f"{header}\n{row}\n{row}\n", encoding="utf-8")
+
+    rows, stats = read_hit_table_csv_with_stats(path)
+
+    assert len(rows) == 5
+    assert stats == {
+        "raw_row_count": 6,
+        "unique_row_count": 5,
+        "duplicate_row_count": 1,
+    }
 
 
 def test_csv_preserves_explicit_scan_role_and_target(tmp_path: Path) -> None:
