@@ -513,6 +513,48 @@ with operational status, with zero scientific progress. This must never recur.
 
 ---
 
+## LLM MAINTENANCE DIRECTIVES — NON-NEGOTIABLE (added 2026-07-16)
+
+Standing rules for any agent touching this codebase, prompted by a real
+2026-07-16 finding: the `operations-blocker-*` CLI family was silently
+stubbed (`_StubDict` returning fabricated zero-value keys) while dispatch
+code built on top of those stubs still assumed the old real return shape,
+causing 7 of 16 commands to crash outright with zero test coverage catching
+it — and the crashing commands were listed as literal steps in the canonical
+`docs/templates/ci.yml` CI template.
+
+1. **Fail loudly, never silently.** A stub, fallback, or default must never
+   return a value that lets calling code proceed as if real data were
+   present. If a dependency is missing, unimplemented, or deleted, raise or
+   return an explicit "not implemented"/"not available" error — do not
+   return a placeholder zero/empty value that downstream code can silently
+   consume as if it were real.
+2. **No stubbing that hides absence.** Do not create a stand-in function
+   that mimics a deleted or unimplemented module's return shape with fake
+   data. If a module is deleted, delete its CLI surface (dispatch, parser,
+   docs, schemas, fixtures) too — do not leave a command registered that
+   returns fabricated content or, worse, crashes.
+3. **Fidelity tests are required, not optional.** Every CLI command must
+   have at least one test that actually invokes it through the real
+   dispatch path (`main([...])` or equivalent), not just a unit test of its
+   underlying function. A function-level or fixture-level test can pass
+   while the actual command crashes — this happened here, and it must not
+   happen again silently.
+4. **Spec/provenance conformance.** When an agent or prior session claims a
+   capability exists or a command works, that claim must be verifiable by
+   actually running the command, not inferred from adjacent test coverage,
+   documentation, or a prior agent's summary. Do not treat "described as
+   working" as equivalent to "verified working."
+5. **Lint/fail on divergence.** Prefer an automated check (test, lint rule,
+   or CI step) that fails when implementation diverges from documented
+   behavior over relying on manual review to catch it later.
+6. **Keep this document itself scannable.** Favor structure that lets an
+   agent re-read and re-derive the current rule set accurately in one pass
+   (clear section boundaries, no information duplicated across
+   contradicting places) over prose density.
+
+---
+
 ## FIVE-PHASE SCIENCE ROADMAP
 
 This section describes each phase's scope and methodology — it is not a

@@ -75,9 +75,6 @@ Before publishing, run:
 ```bash
 git pull origin main
 caffeinate -i .venv/bin/python scripts/run_parallel_validation.py
-.venv/bin/techno-search operations-readiness-summary
-.venv/bin/techno-search operations-action-plan-summary
-.venv/bin/techno-search operations-action-resolution-summary
 git diff --check
 git status --short --branch
 ```

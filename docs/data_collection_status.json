@@ -1097,6 +1097,11 @@
       "source_manifest_path": "data_selection/batch_manifests/local_coverage_batch14_bulk_size_preflight_manifest.json",
       "target_count": 936,
       "total_content_length_gb": 235.825276
+    },
+    "wise-photometry-search": {
+      "error": "Could not resolve 'KIC 8462852' to a sky position: All Sesame queries failed. Unable to retrieve coordinates. See errors per URL below: \n https://cds.unistra.fr/cgi-bin/nph-sesame/SNV?KIC%208462852: [Errno 8] nodename nor servname provided, or not known. requested URL: https://cds.unistra.fr/cgi-bin/nph-sesame/SNV?KIC%208462852\nhttp://vizier.cfa.harvard.edu/viz-bin/nph-sesame/SNV?KIC%208462852: [Errno 8] nodename nor servname provided, or not known. requested URL: http://vizier.cfa.harvard.edu/viz-bin/nph-sesame/SNV?KIC%208462852",
+      "last_run_utc": "2026-07-16T11:30:22.635153+00:00",
+      "ok": false
     }
   },
   "schema_version": "data_collection_status_v1"

@@ -167,7 +167,6 @@ Allowed `techno_guard` commands:
 .venv/bin/techno-search --help
 .venv/bin/techno-search validate-all
 .venv/bin/techno-search validation-summary
-.venv/bin/techno-search operations-readiness-summary
 .venv/bin/techno-search score examples/candidates/radio_clean_candidate.json
 .venv/bin/techno-search score-batch examples/candidates artifacts/mcp_bootstrap_batch_reports
 ```
@@ -343,7 +342,6 @@ git status --short --branch
 .venv/bin/mypy src
 .venv/bin/techno-search validate-all
 .venv/bin/techno-search validation-summary
-.venv/bin/techno-search operations-readiness-summary
 ```
 
 Do not run live-provider tests during bootstrap.
