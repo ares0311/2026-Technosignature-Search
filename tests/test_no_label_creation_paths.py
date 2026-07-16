@@ -30,6 +30,8 @@ def test_label_trained_model_commands_are_absent() -> None:
         "consensus-summary",
         "consensus-export-summary",
         "triage-label-completeness",
+        "generate-peer-review-package",
+        "noise-threshold-calibration",
     )
     assert all(command not in cli_source for command in forbidden_commands)
 

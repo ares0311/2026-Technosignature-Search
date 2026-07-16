@@ -6,7 +6,17 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.19
+**Current app version:** 1.2.20
+
+**Deleted-implementation CLI stubs retired — 2026-07-16:** version 1.2.20
+removes the still-callable `generate-peer-review-package` and
+`noise-threshold-calibration` parser/dispatch paths. The root cause was Phase 0
+deleting their implementations but retaining CLI stubs; the noise-calibration
+stub returned unconditional `ok: true`, so legacy automation could report a
+passing calibration gate when no calibration implementation ran. Both commands
+are now covered by the forbidden-command regression guard and fail closed as
+unknown commands. Active scoring thresholds, calibration status, candidate
+evidence, and external-submission authorization are unchanged.
 
 **Premature public-deposit path retired — 2026-07-16:** version 1.2.19
 deletes the stale Zenodo manifest generator and upload guide. The root cause
