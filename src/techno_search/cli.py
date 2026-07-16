@@ -2505,7 +2505,6 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         return 0
 
     if args.command == "user-decision-record":
-        external_approved = bool(args.confirm_external_submission_approval)
         record = BackgroundUserDecisionRecord(
             decision_id=args.decision_id,
             readiness_id=args.readiness_id,
@@ -2517,10 +2516,10 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             or datetime.now(UTC).isoformat(),
             rationale=args.rationale,
             required_next_actions=tuple(args.required_next_action or ()),
-            external_submission_approved=external_approved,
+            external_submission_approved=False,
             request_more_tests=args.decision == "request_more_tests",
             close_as_reviewed=args.decision == "close_as_reviewed",
-            submission_destination=args.submission_destination,
+            submission_destination=None,
             blocking_issues=tuple(args.blocking_issue or ()),
             network_access_allowed=False,
         )
@@ -7076,7 +7075,7 @@ def _build_parser() -> argparse.ArgumentParser:
     user_decision_record_parser.add_argument(
         "--decision",
         required=True,
-        choices=["approve_submission", "request_more_tests", "close_as_reviewed"],
+        choices=["request_more_tests", "close_as_reviewed"],
     )
     user_decision_record_parser.add_argument("--rationale", required=True)
     user_decision_record_parser.add_argument("--decided-at-utc")
@@ -7089,15 +7088,6 @@ def _build_parser() -> argparse.ArgumentParser:
         "--blocking-issue",
         action="append",
         default=[],
-    )
-    user_decision_record_parser.add_argument("--submission-destination")
-    user_decision_record_parser.add_argument(
-        "--confirm-external-submission-approval",
-        action="store_true",
-        help=(
-            "Explicitly approve external submission. Required with "
-            "approve_submission and never inferred for other decisions."
-        ),
     )
     submission_recommendation_parser = subparsers.add_parser(
         "submission-recommendation-summary",

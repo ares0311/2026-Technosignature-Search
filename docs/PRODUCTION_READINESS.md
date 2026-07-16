@@ -6,7 +6,18 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.24
+**Current app version:** 1.2.25
+
+**Executable external-approval writer retired — 2026-07-16:** version 1.2.25
+removes `approve_submission`, `--confirm-external-submission-approval`, and the
+submission-destination option from `user-decision-record`. The root cause was a
+legacy background-report writer remaining able to persist external approval
+after DECISION-149 made external scientific action a hard stop outside local
+routing. New records may only request more tests or close an item as reviewed;
+their compatibility approval field is schema-constant `false` and destination
+is `null`. Existing summaries and SQLite integrity checks retain the field so
+any nonzero legacy state remains visible. No external action or record was
+created.
 
 **External-action and limitations docs fail-closed — 2026-07-16:** version
 1.2.24 replaces the pre-mission submission procedure, stale known-limitations

@@ -33,3 +33,13 @@ def test_local_pathways_do_not_create_labels_or_external_action() -> None:
     assert "external action\n  -> blocked" in pathways
     assert "ask reviewers to classify" not in pathways
     assert "citizen-science review" not in pathways
+
+
+def test_background_user_decisions_cannot_authorize_submission() -> None:
+    cli_source = _read("src/techno_search/cli.py")
+    schema = _read("schemas/background_user_decisions.schema.json")
+
+    assert "--confirm-external-submission-approval" not in cli_source
+    assert 'choices=["request_more_tests", "close_as_reviewed"]' in cli_source
+    assert '"external_submission_approved": {\n            "const": false' in schema
+    assert '"submission_destination": {\n            "const": null' in schema

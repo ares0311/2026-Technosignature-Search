@@ -4088,3 +4088,34 @@ authorize candidate disclosure, external contact, telescope requests, journal
 or preprint submission, or authority-facing communication. Current work remains
 deterministic analysis, false-positive rejection, local evidence preservation,
 and honest negative-result reporting. No external action was taken.
+
+
+# DECISION-150: Retire Executable External-Approval Writer
+
+**Date:** 2026-07-16
+**Status:** Accepted
+**Implements:** DECISION-149
+
+## Context
+
+After external scientific action became a fail-closed boundary, the local
+`user-decision-record` command still accepted `approve_submission`, a
+confirmation flag, and a destination, then persisted
+`external_submission_approved: true`. That created a repo-supported bypass
+around the automated, adversarial, credentialed-expert, and explicit user
+authorization boundary.
+
+## Decision
+
+Remove the approval decision and both approval-related CLI options. Permit only
+`request_more_tests` and `close_as_reviewed`. Keep the persisted approval and
+destination fields for compatibility, but constrain new schema-valid records
+to `false` and `null`, and make the append API reject any other values.
+
+## Consequences
+
+Local background-report records cannot authorize or target an external action.
+Summaries and SQLite checks continue to expose any nonzero legacy approval
+count as an integrity failure. A future external action, if ever justified,
+must occur through a separate, explicitly approved workflow after the full
+review chain; no such action is implemented here.
