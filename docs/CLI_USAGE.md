@@ -605,7 +605,10 @@ Print explicit user decision records for background report handling:
 .venv/bin/techno-search user-decision-summary
 ```
 
-The summary reports decisions to request more tests or close as reviewed, required next actions, blocking issues, and whether external submission has been explicitly approved. The committed fixture keeps `external_submission_approved` false for every record.
+The summary reports decisions to request more tests or close as reviewed,
+required next actions, blocking issues, and the persisted external-submission
+approval count. That count must remain zero; the field is retained only for
+backward-compatible integrity checks.
 
 Use `--user-decision-path` to inspect a different user decision JSON file.
 
@@ -625,7 +628,10 @@ Append one explicit local user decision record:
   --blocking-issue "external submission has not been approved"
 ```
 
-`request_more_tests` and `close_as_reviewed` never imply external submission approval. `approve_submission` requires the explicit `--confirm-external-submission-approval` flag, a destination, and a rationale; it should be used only when the project owner has explicitly approved external action.
+`request_more_tests` and `close_as_reviewed` are the only writable decisions.
+The command cannot set an external-submission approval or destination. Any
+future external action is outside this local record writer and remains governed
+by `docs/EXTERNAL_SUBMISSION_PROTOCOL.md`.
 
 ## Summarize Background Reviewed Workflow
 

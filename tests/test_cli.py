@@ -1217,11 +1217,11 @@ def test_cli_user_decision_record_appends_request_more_tests(tmp_path) -> None:
     assert decisions_path.exists()
 
 
-def test_cli_user_decision_record_blocks_unconfirmed_submission(tmp_path) -> None:
+def test_cli_user_decision_record_has_no_submission_approval_choice(tmp_path) -> None:
     decisions_path = tmp_path / "background_user_decisions.json"
     stdout = StringIO()
 
-    with pytest.raises(ValueError, match="explicit external submission approval"):
+    with pytest.raises(SystemExit):
         main(
             [
                 "user-decision-record",
@@ -1241,8 +1241,6 @@ def test_cli_user_decision_record_blocks_unconfirmed_submission(tmp_path) -> Non
                 "approve_submission",
                 "--rationale",
                 "User is testing the approval gate.",
-                "--submission-destination",
-                "Internal test destination",
             ],
             stdout=stdout,
         )

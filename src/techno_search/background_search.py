@@ -1304,21 +1304,14 @@ def append_background_user_decision_record(
 ) -> dict[str, object]:
     """Append one explicit user decision record, creating the file if needed."""
 
-    if record.decision == "approve_submission":
-        if not record.external_submission_approved:
-            msg = "approve_submission requires explicit external submission approval."
-            raise ValueError(msg)
-        if not record.submission_destination:
-            msg = "approve_submission requires a submission destination."
-            raise ValueError(msg)
-        if not record.rationale:
-            msg = "approve_submission requires a rationale."
-            raise ValueError(msg)
-    elif record.external_submission_approved:
-        msg = (
-            "Only approve_submission decisions may set external submission "
-            "approval."
-        )
+    if record.decision not in {"request_more_tests", "close_as_reviewed"}:
+        msg = "Background user decisions do not support external submission approval."
+        raise ValueError(msg)
+    if record.external_submission_approved:
+        msg = "Background user decisions must keep external submission approval false."
+        raise ValueError(msg)
+    if record.submission_destination is not None:
+        msg = "Background user decisions must not set an external submission destination."
         raise ValueError(msg)
 
     decision_path = Path(path)

@@ -65,7 +65,6 @@
           },
           "decision": {
             "enum": [
-              "approve_submission",
               "request_more_tests",
               "close_as_reviewed"
             ]
@@ -83,7 +82,7 @@
             }
           },
           "external_submission_approved": {
-            "type": "boolean"
+            "const": false
           },
           "request_more_tests": {
             "type": "boolean"
@@ -92,10 +91,7 @@
             "type": "boolean"
           },
           "submission_destination": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "const": null
           },
           "blocking_issues": {
             "type": "array",

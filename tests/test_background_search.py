@@ -454,7 +454,7 @@ def test_append_user_decision_records_request_more_tests_without_submission(
     assert result["summary"]["external_submission_approved_count"] == 0
 
 
-def test_append_user_decision_requires_explicit_approval_for_submission(
+def test_append_user_decision_rejects_external_submission_approval(
     tmp_path: Path,
 ) -> None:
     decisions_path = tmp_path / "background_user_decisions.json"
@@ -466,17 +466,17 @@ def test_append_user_decision_requires_explicit_approval_for_submission(
         track=Track.RADIO,
         decision="approve_submission",
         decided_at_utc="2026-05-09T16:00:00+00:00",
-        rationale="",
+        rationale="External action must remain blocked.",
         required_next_actions=(),
-        external_submission_approved=False,
+        external_submission_approved=True,
         request_more_tests=False,
         close_as_reviewed=False,
-        submission_destination=None,
+        submission_destination="external-destination",
         blocking_issues=(),
         network_access_allowed=False,
     )
 
-    with pytest.raises(ValueError, match="explicit external submission approval"):
+    with pytest.raises(ValueError, match="do not support external submission approval"):
         append_background_user_decision_record(decisions_path, record)
 
 

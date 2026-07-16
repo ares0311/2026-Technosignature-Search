@@ -243,5 +243,5 @@ def test_cli_docs_include_draft_report_and_decision_workflows() -> None:
     assert "techno-search operations-blocker-progress-execution-followup-summary" in doc
     assert "techno-search operations-readiness-digest" in doc
     assert "--sqlite-log-path" in doc
-    assert "--confirm-external-submission-approval" in doc
-    assert "request_more_tests` and `close_as_reviewed` never imply" in doc
+    assert "--confirm-external-submission-approval" not in doc
+    assert "request_more_tests` and `close_as_reviewed` are the only" in doc

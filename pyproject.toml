@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "techno-search"
-version = "1.2.24"
+version = "1.2.25"
 description = "Conservative, reproducible technosignature-interest candidate search tooling."
 readme = "README.md"
 requires-python = ">=3.11"
