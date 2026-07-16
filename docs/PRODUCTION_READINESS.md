@@ -6,7 +6,19 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.23
+**Current app version:** 1.2.24
+
+**External-action and limitations docs fail-closed — 2026-07-16:** version
+1.2.24 replaces the pre-mission submission procedure, stale known-limitations
+claims, and label-seeking pathway guide. The root cause was public operator
+documentation still presenting the retired 42.4 GBT SNR value as calibrated,
+asking citizen reviewers to create classifications, permitting candidate
+posting before credentialed expert review, and describing external submission
+as an operator-clearable production capability. The current documents define
+local routing only, preserve `human_review_queue` as a no-label compatibility
+value, and require the automated, adversarial, and credentialed-expert review
+chain plus explicit user approval before any particular external action. No
+candidate, evidence ledger, external contact, or submission changed.
 
 **Unsafe scheduled scan retired — 2026-07-16:** version 1.2.23 deletes the
 Sunday `weekly_scan.yml` job and its duplicate production-scan guide/schedule.

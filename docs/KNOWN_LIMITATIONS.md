@@ -1,143 +1,88 @@
 # Known Limitations
 
-**Last updated:** 2026-06-13
+**Last updated:** 2026-07-16
 
-This document records known limitations of the 2026 Technosignature Search
-citizen-science pipeline. It is part of the project's public provenance record.
-No result produced by this pipeline constitutes a detection claim or authorizes
-external submission.
+This project has real, tested baseline implementations across radio,
+photometry, infrared, and spectroscopy, but those baselines do not establish a
+technosignature detection capability with calibrated scientific performance.
+No result authorizes external submission or public disclosure of a candidate.
 
----
+## 1. No Confirmed Positive Labels
 
-## 1. Training Data — Single Target, 124 Labels
+There are no confirmed positive technosignature labels. The frozen HIP99427
+artifact contains project-generated cadence outcomes and is legacy diagnostic
+evidence only. It cannot support training, calibration, threshold selection, or
+scientific evaluation.
 
-The learned scoring model v1 is trained on **124 labeled examples from a single
-stellar target (HIP99427)** observed with the Green Bank Telescope (GBT) L-band
-receiver. This is a small dataset from a single telescope/receiver combination.
+The available pre-existing row-level labels are not adequate for a global
+anomaly/OOD calibration. Learned and semi-supervised outputs therefore remain
+fail-closed ranking diagnostics. The project must not ask anyone to create the
+missing labels.
 
-**Implications:**
-- The model's generalization to other targets, telescopes, receivers, or
-  frequency bands is unknown and should not be assumed.
-- Feature importance and decision boundaries are specific to GBT L-band RFI
-  environment.
-- 3-fold CV accuracy (99.19%) reflects performance on held-out HIP99427 data
-  only — not on independent targets.
+## 2. No Calibrated Scoring Or Escalation Threshold
 
-**Mitigation path:** Ingest cadence data from additional BL targets
-(HIP100670, HIP99560, HIP99759 and others) to expand the training set and
-validate cross-target generalization.
+`configs/scoring_v0.json` contains conservative heuristic routing values, not
+calibrated probabilities or survey sensitivity. The legacy GBT SNR values were
+retired because they were tuned against inadmissible project-generated outcomes
+and their claimed corpus coverage conflicted with the current preflight record.
+The standalone escalation gate reports no calibrated SNR gate and fails closed.
 
----
+## 3. Track A Coverage Is Incomplete
 
-## 2. Single Telescope and Receiver
+The HTRU2 pulsar baseline is a valid known-explanation component with
+pre-existing labels, not a comprehensive Track A classifier. Catalog and
+deterministic checks cover additional known sources, RFI, cadence behavior,
+drift, satellites/transmitters, and artifacts, but their combined coverage does
+not prove that every mundane explanation has been modeled.
 
-All real observation data in this pipeline comes from the **Green Bank Telescope
-(GBT), L-band receiver (~1.1–1.9 GHz)**. The pipeline has not been tested on:
+`low_confidence` and abstention remain required when no known class is reliable.
 
-- Other GBT receivers (S-band, C-band, X-band)
-- Other telescopes (Parkes, MeerKAT, FAST)
-- Interferometric data
-- Non-Breakthrough Listen datasets
+## 4. Radio Evidence Is Instrument And Coverage Limited
 
-Calibrated SNR thresholds (noise_floor_snr=42.4, follow_up_snr=54.8,
-high_interest_snr=118.3) are derived from GBT L-band noise distributions and
-**must be recalibrated for any other telescope or receiver** before use.
-See `docs/CALIBRATION_TRANSFER_PROTOCOL.md`.
+The strongest real-observation evidence is concentrated in Breakthrough Listen
+GBT products plus a local MeerKAT BLUSE false-positive corpus used for
+semisupervised ranking. Results do not automatically transfer across telescope,
+receiver, frequency band, backend, cadence, or integration time. Random-only
+splits and synthetic-only benchmarks are not promotion evidence.
 
----
+## 5. RFI Knowledge Is Provisional
 
-## 3. RFI Catalog is Provisional and Not Peer-Reviewed
+The committed GBT RFI catalog is derived from public regulatory allocations and
+is useful for local rejection checks, but it is not a complete observatory
+monitoring record and has not received external validation. It may miss
+transient, site-specific, time-variable, or unregistered interference.
+Cross-target frequency matching and drift tolerances are useful heuristics, not
+proof of origin.
 
-The GBT RFI catalog (`tests/fixtures/rfi_catalog/`) contains **15 frequency
-bands** derived from ITU Radio Regulations, GPS/GNSS allocations, ICAO
-aeronautical bands, and FCC Part 25 allocations. It has **not been validated
-against actual GBT L-band observations** and has not received external peer
-review.
+## 6. Multi-Modal Baselines Have Uneven Real-Data Depth
 
-**Implications:**
-- RFI flagging based on this catalog may miss actual observatory RFI.
-- The catalog does not include transient or time-variable RFI sources.
-- Bands marked `status: inactive_pending_review` require operator sign-off
-  before admission to production scoring.
+Photometry, infrared, and spectroscopy have real-data search paths and tested
+deterministic methods, but available observations, band coverage, target
+coverage, contaminant knowledge, and sensitivity differ by modality. A
+cross-modal coincidence is a prioritization signal only; it does not establish
+a common cause or an artificial origin.
 
----
+## 7. Live Providers Are Explicit And Drift-Prone
 
-## 4. No External Expert Review
+Gaia, SIMBAD, IRSA, MAST, JWST, satellite, and other live-provider queries
+require explicit opt-in and outbound access. Offline runs may lack current
+catalog rejection evidence. Provider schemas, product availability, and rate
+limits can change, so live results require current primary-source verification
+and preserved provenance.
 
-As of 2026-06-13, **no external SETI researcher, radio astronomer, or
-institutional reviewer has independently audited** the pipeline logic, scoring
-thresholds, or candidate reports. The independent reproduction noted in
-`docs/PRODUCTION_READINESS.md` was performed within the citizen-science project,
-not by an independent external team.
+## 8. No Candidate Has Cleared The Review Chain
 
-This is a Tier 3 gap. Until external review occurs, all pipeline outputs should
-be treated as preliminary citizen-science triage results.
+There are zero independently escalation-ready candidates. No candidate-specific
+adversarial review has been required or completed, and no credentialed
+third-party expert has confirmed a candidate. Local operator triage is not
+expert review, peer review, external validation, or permission to submit.
 
----
+## 9. Storage Constrains Search Scale
 
-## 5. Calibrated Thresholds Require Independent-Method Review
+Project-managed local data must remain below 100 GB until an approved external
+drive is connected. Metadata-first inventories, bounded manifests, size
+preflights, small samples, and streaming/eviction are therefore preferred over
+broad archive mirrors or speculative raw downloads.
 
-The SNR thresholds (noise_floor=42.4, follow_up=54.8, high_interest=118.3)
-were derived from the real GBT/HIP99427 noise distribution using the
-calibration corpus. They **have not been validated by an independent method**
-(e.g., injection-recovery at known SNR levels, comparison with published GBT
-sensitivity estimates).
-
-The `calibration_ready: true` gate confirms that the corpus meets coverage
-requirements (cadences, targets, epochs, hit count) — it does not certify
-that the derived thresholds are scientifically correct.
-
----
-
-## 6. Multi-Epoch Persistence Score is Heuristic
-
-The `multi_epoch_persistence_score` feature measures how frequently a signal
-appears across ABACAD cadence observations. The scoring weight is heuristic
-and has not been calibrated against known technosignature injection-recovery
-experiments.
-
----
-
-## 7. Cross-Target RFI Suppression Uses Fixed Frequency Tolerance
-
-The cross-target RFI filter uses a fixed 500 Hz frequency tolerance window.
-This value was chosen to match turboSETI frequency resolution at GBT L-band
-but has not been validated for other observing configurations. Narrow-band
-signals that drift significantly between targets may not be correctly grouped.
-
----
-
-## 8. Infrared and Anomaly Tracks Are Synthetic Only
-
-The infrared (Gaia+WISE) and archival anomaly scoring tracks have been
-implemented and tested against synthetic fixtures only. No real Gaia or WISE
-catalog cross-match has been scored through the full pipeline. These tracks
-are engineering scaffolds pending real data ingestion.
-
----
-
-## 9. External Catalog Queries Require Manual Opt-In
-
-Live catalog queries (Gaia TAP, SIMBAD) require `TECHNO_SEARCH_ENABLE_LIVE_DATA=1`
-and outbound network access. In the default (offline) mode, cross-match
-features are zeroed out, which reduces scoring accuracy for candidates where
-known-object rejection would be informative.
-
----
-
-## 10. No Publication or External Submission Authorization
-
-Nothing in this pipeline's output authorizes publication, journal submission,
-press release, or external disclosure. All candidate reports explicitly state
-this. The escalation gate (`escalation-gate-check`) requires `operator_cleared`
-and `external_review_authorized` to be set to `true` by a human operator —
-they are always `false` by default.
-
----
-
-## Acknowledgement
-
-These limitations are documented as part of the project's commitment to
-transparent citizen-science practice. They do not prevent the pipeline from
-being useful as a local triage and provenance tool; they bound the claims that
-can responsibly be made from its output.
+These limitations bound every score, ranking, candidate packet, and negative
+result. They should be preserved in any scientific interpretation.

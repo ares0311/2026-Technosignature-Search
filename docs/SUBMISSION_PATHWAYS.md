@@ -1,159 +1,76 @@
-# SUBMISSION PATHWAYS
+# Local Candidate Routing Pathways
 
 ## Purpose
 
-Define conservative routing for technosignature-interest candidates.
+These values are conservative local routing states. They do not authorize
+label creation, candidate promotion, expert review, public disclosure, or
+external submission. Some names are retained for compatibility with persisted
+records and schemas; their current meaning is defined here.
 
-This project should not automatically submit claims. It should generate reproducible review packets and recommend appropriate next steps.
+## `known_object_annotation`
 
----
+Use when a known source, cataloged object, RFI pattern, instrument artifact, or
+other documented contaminant explains the observation. Preserve the match and
+its provenance. Do not present the result as novel.
 
-## Pathways
+## `do_not_submit_false_positive`
 
-## 1. `known_object_annotation`
+Use when false-positive evidence is strong, such as OFF-target presence,
+cross-target persistence, known RFI, a cataloged contaminant, or severe data
+quality failure. Preserve enough evidence for regression and methodology
+review; take no external action.
 
-Use when the candidate matches a known source, artifact, cataloged object, known RFI pattern, or known contaminant.
+## `github_reproducibility_only`
 
-Recommended action:
+Legacy-compatible route for weak, incomplete, exploratory, or method-development
+artifacts. It may support clearly scoped code or methodology reproduction, but
+it must not be used to publish a candidate claim or request follow-up.
 
-- annotate the result
-- do not present as new
-- compare measured features to catalog/source information
+## `human_review_queue`
 
----
+Legacy-compatible name for local deterministic follow-up triage. It must not
+create a labeling queue, ask a person to classify data, or convert an operator
+opinion into ground truth. The permitted action is to inspect provenance,
+re-run deterministic checks, identify missing evidence, and either explain the
+result or leave it unresolved.
 
-## 2. `do_not_submit_false_positive`
+## `candidate_review_packet`
 
-Use when false-positive evidence is strong.
+Local evidence-packaging route for an unresolved result that has survived the
+currently available deterministic checks. A packet must include positive and
+negative evidence, provenance, checksums, processing/config versions,
+applicable false-positive tests, limitations, and abstentions.
 
-Examples:
+This route does not mean the standalone escalation gate passed. That gate is
+currently fail-closed because no admissible calibrated SNR threshold exists.
+The packet is not a detection, discovery, expert review, external validation,
+or submission authorization.
 
-- radio hit appears in OFF-target scans
-- radio hit is persistent across unrelated sky positions
-- infrared source is clearly galaxy/AGN/dust/blend
-- archival anomaly is explained by proper motion or artifact
-- candidate has severe data-quality issues
+## `external_followup_candidate`
 
-Recommended action:
+Disabled legacy-compatible value. No current pipeline result may be routed to
+external action from this value. External scientific contact or submission is
+governed by `docs/EXTERNAL_SUBMISSION_PROTOCOL.md`, requires the full automated
+plus adversarial plus credentialed-expert review chain, and remains subject to
+explicit user approval for the particular action.
 
-- keep internally for regression tests or examples
-- do not send to external communities
-- document why it was rejected
-
----
-
-## 3. `github_reproducibility_only`
-
-Use for weak, incomplete, exploratory, or method-development findings.
-
-Recommended action:
-
-- publish reproducible notebook or report if useful
-- clearly mark as low confidence
-- do not request external follow-up
-
----
-
-## 4. `human_review_queue`
-
-Use for ambiguous candidates that may benefit from citizen-science review.
-
-Recommended action:
-
-- generate human-readable review packet
-- include positive and negative evidence
-- ask reviewers to classify likely explanation
-- avoid sensational framing
-
----
-
-## 5. `candidate_review_packet`
-
-Use for stronger candidates that survive initial vetting.
-
-Minimum criteria:
-
-- signal/anomaly appears real
-- false-positive probability is not high
-- provenance is complete
-- relevant negative evidence is documented
-- enough data exists for meaningful human review
-
-Recommended action:
-
-- generate Markdown + JSON packet
-- include plots where available
-- include exact data sources and processing version
-- seek expert or community review
-
----
-
-## 6. `external_followup_candidate`
-
-Use rarely and conservatively.
-
-Candidate should have:
-
-- strong signal/anomaly evidence
-- low false-positive evidence
-- repeated or corroborating evidence where possible
-- complete provenance
-- human review
-- clear statement of uncertainty
-
-Recommended action:
-
-- contact relevant community or project maintainers
-- present as follow-up-worthy anomaly, not confirmed technosignature
-
----
-
-## Decision Logic
+## Routing Principle
 
 ```text
-IF known object / known artifact:
-    → known_object_annotation
+known explanation or artifact
+  -> known_object_annotation or do_not_submit_false_positive
 
-ELIF false_positive_probability >= 0.80:
-    → do_not_submit_false_positive
+insufficient or ambiguous evidence
+  -> github_reproducibility_only or human_review_queue
+     (local deterministic triage only; no labels)
 
-ELIF signal_reality_confidence < 0.40:
-    → github_reproducibility_only
+unresolved after available deterministic gates
+  -> candidate_review_packet
+     (local packet only; escalation remains fail-closed)
 
-ELIF ambiguous but interesting:
-    → human_review_queue
-
-ELIF strong and well-documented:
-    → candidate_review_packet
-
-ELIF strong, reviewed, reproducible, and low false-positive:
-    → external_followup_candidate
+external action
+  -> blocked
 ```
 
----
-
-## Required Report Contents
-
-Every externally shareable packet must include:
-
-- candidate ID
-- search track
-- source dataset
-- processing version
-- config version
-- positive evidence
-- negative evidence
-- blocking issues
-- false-positive discussion
-- plots or diagnostics where available
-- conservative claim statement
-
----
-
-## Required Disclaimer
-
-Every report should include:
-
-```text
-This is an unconfirmed candidate/anomaly generated by a publication-grade technosignature search pipeline. It is not evidence of a confirmed technosignature. Further review and independent validation are required.
-```
+Every route must preserve the statement that no confirmed technosignature is
+claimed and no external submission is authorized.
