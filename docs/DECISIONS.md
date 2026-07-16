@@ -4053,3 +4053,38 @@ the bounded `prod-scan`, `prod-runs`, and `prod-show` workflow documented in the
 authoritative runbook. No calibrated threshold is restored, no candidate is
 promoted, and no detection, expert-review, external-validation, or submission
 claim is made.
+
+
+# DECISION-149: Replace Legacy Submission Procedure With Fail-Closed Boundary
+
+**Date:** 2026-07-16
+**Status:** Accepted
+**Supersedes:** DECISION-132's executable P1-P7 submission interpretation
+
+## Context
+
+The public submission and limitations documents still described the project as
+citizen science, presented the retired 42.4 GBT SNR value as calibrated, asked
+reviewers to create classifications, allowed public candidate posting before
+credentialed expert review, and described external action as something an
+operator could clear. Those instructions contradicted the current
+pre-existing-label-only boundary, the fail-closed escalation gate, and the
+required automated, adversarial, then third-party expert review chain.
+
+## Decision
+
+Replace the external-submission procedure with a non-executable stop boundary.
+Replace the known-limitations document with current measured limitations, and
+define submission-pathway strings as local compatibility routes only.
+`human_review_queue` must never create a labeling queue or ground truth, and
+`external_followup_candidate` is disabled. External scientific or official
+action requires a surviving candidate, the complete review chain, and explicit
+user approval for the exact destination and contents.
+
+## Consequences
+
+No score, pathway, packet, operator opinion, or successful validation can
+authorize candidate disclosure, external contact, telescope requests, journal
+or preprint submission, or authority-facing communication. Current work remains
+deterministic analysis, false-positive rejection, local evidence preservation,
+and honest negative-result reporting. No external action was taken.
