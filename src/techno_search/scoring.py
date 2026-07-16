@@ -43,10 +43,10 @@ def score_candidate(
 ) -> ScoredCandidate:
     """Score a candidate and assign a conservative pathway.
 
-    When scoring_calibrated_v1.json is present, calibrated SNR tiers and
-    drift-rate guardrails are applied automatically. Calibrated thresholds
-    are derived from real GBT noise distributions and are not claimed to
-    constitute expert-validated detection criteria.
+    The default configuration is an uncalibrated local-routing heuristic.
+    Optional SNR/drift tiers apply only when the caller explicitly supplies a
+    configuration with admissible provenance; no calibrated config is loaded
+    automatically.
     """
     config = scoring_config if scoring_config is not None else load_scoring_config()
     snr_thresholds = config.snr_thresholds
@@ -105,7 +105,7 @@ def score_candidates_parallel(
     When workers is None or 1, uses serial scoring (identical to
     score_candidates). When workers > 1, uses ProcessPoolExecutor.
     The scoring config is reloaded inside each worker process from the
-    default config path, so calibrated thresholds apply automatically.
+    uncalibrated default config path.
     """
     import concurrent.futures
 
@@ -147,8 +147,8 @@ def _radio_scores(
 ) -> tuple[dict[PosteriorClass, float], EvidenceSummary]:
     f = candidate.features
 
-    # SNR scoring: calibrated tiered scoring when thresholds available,
-    # otherwise synthetic divisor-based scoring.
+    # SNR scoring: optional tiered scoring only when an explicit configuration
+    # supplies tiers; otherwise use the uncalibrated routing heuristic.
     snr_raw = max(_float(f, "snr"), 0.0)
     if snr_thresholds is not None:
         snr = _tiered_snr_score(snr_raw, snr_thresholds)
@@ -159,10 +159,9 @@ def _radio_scores(
 
     bandwidth = _narrowband_score(_float(f, "bandwidth_hz", default=10.0))
 
-    # Drift scoring: when drift_rate_thresholds is present (real data), the
-    # coarse-grid turboSETI artifact makes all hits share the same drift value,
-    # rendering it non-discriminating. Use zero contribution to avoid spurious
-    # technosignature boosts from this artifact.
+    # Drift scoring: an explicitly supplied configuration may neutralize this
+    # term when its documented data show a non-discriminating coarse-grid
+    # artifact. The default uncalibrated route keeps the generic heuristic.
     if drift_thresholds is not None:
         drift = 0.0
     else:
@@ -217,8 +216,8 @@ def _radio_scores(
     raw_scores[PosteriorClass.NATURAL_SOURCE] += 0.20
     raw_scores[PosteriorClass.CATALOG_OR_PROCESSING_ERROR] += 0.20 * (1.0 - metadata)
 
-    # Below-noise-floor, non-persistent, no-off-target boost:
-    # Real GBT hits that are below the calibrated noise floor, appear in no
+    # Optional below-tier, non-persistent, no-off-target boost:
+    # Hits below an explicitly supplied SNR tier that appear in no
     # OFF-target scans, and show no frequency persistence across scan contexts
     # lack the multi-scan confirmation required for candidate_review_packet
     # routing. Boost NOISE_OR_LOW_CONFIDENCE to route these to human_review_queue.
@@ -524,15 +523,14 @@ def _scaled_positive_float(features: DictLike, name: str, divisor: float) -> flo
 
 
 def _tiered_snr_score(snr_raw: float, thresholds: SnrThresholds) -> float:
-    """Tiered SNR score using calibrated noise-floor and signal thresholds.
+    """Tiered SNR score using explicitly supplied SNR thresholds.
 
     Returns a [0, 1] score reflecting signal strength relative to the
-    calibrated noise floor. Sub-noise-floor hits receive scores in [0, 0.20];
+    configured noise floor. Sub-noise-floor hits receive scores in [0, 0.20];
     follow-up range [0.20, 0.60]; high-interest range [0.60, 0.90]; above
     high-interest asymptotes toward 1.0.
 
-    Derived from noise_threshold_calibration gate on real GBT data.
-    Not a calibrated survey sensitivity estimate.
+    This helper does not establish calibration or validate the supplied tiers.
     """
     nf = thresholds.noise_floor_snr
     fu = thresholds.follow_up_snr

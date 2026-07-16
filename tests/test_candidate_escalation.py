@@ -27,10 +27,11 @@ def _candidate(
 
 
 class TestEscalationGateCheck:
-    def test_passes_when_review_packet_and_snr_above_gate(self) -> None:
+    def test_fails_closed_when_review_packet_has_high_snr(self) -> None:
         c = _candidate("candidate_review_packet", 50.0, 0.5)
         result = escalation_gate_check(c)
-        assert result["passes"] is True
+        assert result["passes"] is False
+        assert "calibrated SNR gate is unavailable" in result["reason"]
 
     def test_fails_for_human_review_queue(self) -> None:
         c = _candidate("human_review_queue", 100.0, 0.5)
@@ -42,32 +43,35 @@ class TestEscalationGateCheck:
         result = escalation_gate_check(c)
         assert result["passes"] is False
 
-    def test_fails_when_snr_below_gate(self) -> None:
-        c = _candidate("candidate_review_packet", ESCALATION_SNR_GATE - 0.1, 0.5)
+    def test_fails_for_low_snr_without_inventing_a_gate(self) -> None:
+        c = _candidate("candidate_review_packet", 1.0, 0.5)
         result = escalation_gate_check(c)
         assert result["passes"] is False
-
-    def test_passes_at_exact_gate_snr(self) -> None:
-        c = _candidate("candidate_review_packet", ESCALATION_SNR_GATE, 0.5)
-        result = escalation_gate_check(c)
-        assert result["passes"] is True
 
     def test_fails_missing_pathway(self) -> None:
         c = {"candidate_id": "x", "snr": 100.0, "multi_epoch_persistence_score": 0.5}
         result = escalation_gate_check(c)
         assert result["passes"] is False
 
-    def test_gate_value_is_42_4(self) -> None:
-        assert ESCALATION_SNR_GATE == 42.4
+    def test_calibrated_gate_is_unavailable(self) -> None:
+        assert ESCALATION_SNR_GATE is None
 
     def test_result_is_dict_with_required_keys(self) -> None:
         c = _candidate("candidate_review_packet", 50.0, 0.5)
         result = escalation_gate_check(c)
-        for key in ("passes", "reason", "snr", "multi_epoch_persistence_score", "pathway"):
+        for key in (
+            "passes",
+            "reason",
+            "snr",
+            "multi_epoch_persistence_score",
+            "pathway",
+            "calibrated_snr_gate_available",
+            "snr_gate",
+        ):
             assert key in result, f"missing key: {key}"
 
     def test_reason_present_on_failure(self) -> None:
-        c = _candidate("candidate_review_packet", ESCALATION_SNR_GATE - 0.1, 0.5)
+        c = _candidate("candidate_review_packet", 1.0, 0.5)
         result = escalation_gate_check(c)
         assert result["passes"] is False
         assert isinstance(result["reason"], str)
@@ -87,18 +91,18 @@ class TestEscalationGateCheck:
         assert ESCALATION_MULTI_EPOCH_GATE == 0.0
 
     def test_escalation_gate_fails_without_multi_epoch(self) -> None:
-        """Candidate with good SNR and pathway but zero multi_epoch_persistence_score fails."""
+        """Missing multi-epoch evidence cannot bypass unavailable calibration."""
         c = _candidate("candidate_review_packet", 100.0, 0.0)
         result = escalation_gate_check(c)
         assert result["passes"] is False
-        assert "multi_epoch" in result["reason"] or "single-epoch" in result["reason"]
+        assert result["multi_epoch_persistence_score"] == 0.0
+        assert result["calibrated_snr_gate_available"] is False
 
-    def test_escalation_gate_passes_with_multi_epoch(self) -> None:
-        """Candidate with good SNR, pathway, and multi_epoch_persistence_score=0.5 passes."""
+    def test_multi_epoch_evidence_does_not_bypass_missing_calibration(self) -> None:
         c = _candidate("candidate_review_packet", 100.0, 0.5)
         result = escalation_gate_check(c)
-        assert result["passes"] is True
-        assert result["reason"] == "all gates passed"
+        assert result["passes"] is False
+        assert result["calibrated_snr_gate_available"] is False
 
 
 class TestCreateEscalationRecord:

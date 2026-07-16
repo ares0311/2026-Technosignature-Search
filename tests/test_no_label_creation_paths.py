@@ -10,6 +10,8 @@ def test_project_owned_label_creation_scripts_are_retired() -> None:
     assert not Path("src/techno_search/learned_scoring_model.py").exists()
     assert not Path("src/techno_search/labeled_dataset.py").exists()
     assert not Path("src/techno_search/review_queue.py").exists()
+    assert not Path("configs/scoring_calibrated_v1.json").exists()
+    assert not Path("configs/scoring_v1_template.json").exists()
 
 
 def test_cadence_module_exposes_no_label_dataset_writer() -> None:

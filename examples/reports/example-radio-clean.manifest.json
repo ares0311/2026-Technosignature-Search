@@ -1,8 +1,8 @@
 {
   "candidate_id": "example-radio-clean",
-  "code_commit": "accd7f9",
+  "code_commit": "d3ffc47",
   "config_version": "scoring_v0",
-  "generated_at_utc": "2026-06-12T10:28:31.843034+00:00",
+  "generated_at_utc": "2026-07-16T11:02:17.554972+00:00",
   "json_path": "examples/reports/example-radio-clean.json",
   "markdown_path": "examples/reports/example-radio-clean.md",
   "plot_artifacts": [
@@ -18,9 +18,9 @@
   ],
   "provenance_summary": {
     "cache_key": null,
-    "code_commit": "accd7f9",
+    "code_commit": "d3ffc47",
     "config_version": "scoring_v0",
-    "generated_at_utc": "2026-06-12T10:28:31.843044+00:00",
+    "generated_at_utc": "2026-07-16T11:02:17.554982+00:00",
     "input_path": null,
     "provider_name": null,
     "query_parameters": {},

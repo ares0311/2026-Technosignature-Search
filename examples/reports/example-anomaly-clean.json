@@ -28,6 +28,14 @@
     "variability_score": 0.1
   },
   "negative_evidence": [],
+  "operator_review": {
+    "detection_claimed": false,
+    "external_submission_allowed": false,
+    "follow_up_required": true,
+    "operator_action": "prepare_local_candidate_review_packet",
+    "pathway": "candidate_review_packet",
+    "pathway_basis": "Derived from the scoring model's recommended_pathway."
+  },
   "positive_evidence": [
     "Historical detection is strong in synthetic features.",
     "Modern non-detection or major change is strong.",
