@@ -521,37 +521,122 @@ stubbed (`_StubDict` returning fabricated zero-value keys) while dispatch
 code built on top of those stubs still assumed the old real return shape,
 causing 7 of 16 commands to crash outright with zero test coverage catching
 it — and the crashing commands were listed as literal steps in the canonical
-`docs/templates/ci.yml` CI template.
+`docs/templates/ci.yml` CI template. This section is the canonical source for
+these requirements for every agent working in this repo — Claude Code and
+Codex CLI both included (see "AGENT INSTRUCTION EXPOSURE" below for how each
+agent actually receives it).
 
-1. **Fail loudly, never silently.** A stub, fallback, or default must never
-   return a value that lets calling code proceed as if real data were
-   present. If a dependency is missing, unimplemented, or deleted, raise or
-   return an explicit "not implemented"/"not available" error — do not
-   return a placeholder zero/empty value that downstream code can silently
-   consume as if it were real.
-2. **No stubbing that hides absence.** Do not create a stand-in function
-   that mimics a deleted or unimplemented module's return shape with fake
-   data. If a module is deleted, delete its CLI surface (dispatch, parser,
+### FAIL LOUDLY
+
+1. Never silently swallow a material failure. A required operation that
+   fails must produce an explicit, visible error — not a caught-and-ignored
+   exception, not a default value substituted in place of the real result.
+2. Never report success when a required operation failed. Partial success
+   must not be represented as complete success (see "NO UNSUPPORTED
+   COMPLETION CLAIMS" below).
+3. Missing required dependencies, configuration, credentials, inputs, or
+   artifacts must produce an explicit failure, not a guessed default or an
+   empty/zero placeholder that lets calling code proceed as if real data
+   were present.
+4. Required CLI/automation entry points must return non-zero exit status on
+   failure. A command that "completes" with exit 0 while its required work
+   did not happen is a bug, full stop.
+5. A stub, fallback, or default must never return a value that lets calling
+   code proceed as if real data were present. If a dependency is missing,
+   unimplemented, or deleted, raise or return an explicit "not
+   implemented"/"not available" error — do not return a placeholder
+   zero/empty value that downstream code can silently consume as if it were
+   real. Fallback behavior must not conceal failure unless it is both
+   explicitly intended and covered by a test that proves it degrades safely
+   rather than silently.
+
+### NO FAKE COMPLETION
+
+1. Never represent incomplete required work as complete.
+2. Production paths must not silently contain unresolved stubs,
+   placeholders, hard-coded fake results, required-but-unfinished
+   TODO/FIXME work, `pass`/`NotImplementedError` standing in for required
+   concrete behavior, or mocks replacing required production behavior.
+3. A function must not report success without performing the required
+   operation (the `sqlite-log-bootstrap-summary` bug fixed the same day this
+   section was written is the canonical example: it reported real-looking
+   `network_access_allowed_count`/`external_submission_approved_count`
+   fields that were in fact always-zero fabricated values from a deleted
+   stub, while the real computed values sat unused two lines above).
+4. No stubbing that hides absence: do not create a stand-in function that
+   mimics a deleted or unimplemented module's return shape with fake data.
+   If a module is deleted, delete its full CLI surface (dispatch, parser,
    docs, schemas, fixtures) too — do not leave a command registered that
-   returns fabricated content or, worse, crashes.
-3. **Fidelity tests are required, not optional.** Every CLI command must
-   have at least one test that actually invokes it through the real
-   dispatch path (`main([...])` or equivalent), not just a unit test of its
-   underlying function. A function-level or fixture-level test can pass
-   while the actual command crashes — this happened here, and it must not
-   happen again silently.
-4. **Spec/provenance conformance.** When an agent or prior session claims a
+   returns fabricated content or, worse, crashes when downstream code
+   assumes the pre-deletion real shape.
+5. Legitimate test doubles, abstract interfaces, and intentional, documented
+   extension points are allowed and are not what this rule targets. The
+   existing Phase 0 `_StubDict` pattern (`src/techno_search/cli.py`) is
+   accepted legacy debt precisely because it is labeled, returns an
+   obviously-fake sentinel (not a plausible real value), and is tracked —
+   new code must not add undocumented stubs of this kind, and
+   `scripts/check_no_fake_completion.py` (below) enforces this going
+   forward for new/changed code.
+
+### NO UNSUPPORTED COMPLETION CLAIMS
+
+1. Do not claim work is implemented, fixed, working, tested, compliant, or
+   complete without supporting evidence from an actual run of the relevant
+   check.
+2. Explicitly distinguish **IMPLEMENTED BUT NOT VERIFIED** from **VERIFIED**.
+   Unknown or unexecuted verification is not success — if you have not run
+   the check, say so, rather than implying it passed.
+3. Treat completion as the conjunction:
+   `COMPLETE = IMPLEMENTED AND VERIFIED AND VERIFICATION_CURRENT AND SPEC_CONFORMANT`
+   If any term is false or unknown, do not report completion. `VERIFICATION_CURRENT`
+   means the verification ran against the exact code state now in the
+   repository — a prior passing result does not carry forward across
+   uncommitted or subsequent changes to the same paths (see
+   `scripts/check_verification_freshness.py` below).
+4. Fidelity tests are required, not optional. Every CLI command must have at
+   least one test that actually invokes it through the real dispatch path
+   (`main([...])` or equivalent), not just a unit test of its underlying
+   function. A function-level or fixture-level test can pass while the
+   actual command crashes — this happened here, and it must not happen
+   again silently.
+5. Spec/provenance conformance: when an agent or prior session claims a
    capability exists or a command works, that claim must be verifiable by
    actually running the command, not inferred from adjacent test coverage,
    documentation, or a prior agent's summary. Do not treat "described as
    working" as equivalent to "verified working."
-5. **Lint/fail on divergence.** Prefer an automated check (test, lint rule,
-   or CI step) that fails when implementation diverges from documented
-   behavior over relying on manual review to catch it later.
-6. **Keep this document itself scannable.** Favor structure that lets an
-   agent re-read and re-derive the current rule set accurately in one pass
-   (clear section boundaries, no information duplicated across
-   contradicting places) over prose density.
+6. Prefer an automated check (test, lint rule, or CI step) that fails when
+   implementation diverges from documented behavior over relying on manual
+   review to catch it later.
+7. Keep this document itself scannable. Favor structure that lets an agent
+   re-read and re-derive the current rule set accurately in one pass (clear
+   section boundaries, no information duplicated across contradicting
+   places) over prose density.
+
+### AGENT INSTRUCTION EXPOSURE (Claude Code and Codex CLI)
+
+This file (`AGENTS.md`) is the single canonical source for every directive in
+this repository, per the PRIMARY DIRECTIVE and GIT SYNC DIRECTIVES sections
+above. Both supported agents reach it through their own documented,
+native mechanism — no custom loader or framework is required:
+
+- **Codex CLI** reads `AGENTS.md` at the repository root directly, per its
+  own documented repository-instructions convention. `.codex/` exists in
+  this repo (currently empty) as a placeholder for future Codex-specific
+  config; it carries no instructions today.
+- **Claude Code** reads `CLAUDE.md` at the repository root. `CLAUDE.md`
+  explicitly defers to this file ("AGENTS.md is the single source of truth
+  for all directives... None of it is duplicated below... where anything
+  below appears to conflict, AGENTS.md governs") and requires it be read
+  every session before planning or executing anything (MANDATORY SESSION-START
+  PROTOCOL, above).
+
+`scripts/check_directive_parity.py` verifies both sides of this mechanically:
+that `CLAUDE.md` still contains its deference marker, and that this file
+still contains the FAIL LOUDLY / NO FAKE COMPLETION / NO UNSUPPORTED
+COMPLETION CLAIMS section headers above. It is wired into
+`scripts/run_parallel_validation.py`, the canonical validation entry point,
+so drift in either file fails validation rather than silently diverging
+between what a Claude Code session and a Codex session would each see.
 
 ---
 
