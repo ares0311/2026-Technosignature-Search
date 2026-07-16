@@ -5723,18 +5723,6 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(proc_out, indent=2, sort_keys=True), file=out)
         return 0
 
-    if args.command == "labeled-dataset-summary":
-        from techno_search.labeled_dataset import labeled_dataset_summary
-        fixture_path = getattr(args, "fixture_path", None)
-        print(json.dumps(labeled_dataset_summary(fixture_path), indent=2, sort_keys=True), file=out)
-        return 0
-
-    if args.command == "eval-against-labels":
-        from techno_search.baseline_eval import eval_against_labels
-        fixture_path = getattr(args, "fixture_path", None)
-        print(json.dumps(eval_against_labels(fixture_path), indent=2, sort_keys=True), file=out)
-        return 0
-
     if args.command == "validate-input":
         from techno_search.data_quality import validate_input
         dq_result = validate_input(Path(args.input), args.track)
@@ -10231,22 +10219,6 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     procurement_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
-    )
-
-    labeled_dataset_parser = subparsers.add_parser(
-        "labeled-dataset-summary",
-        help="Summarize labeled candidate dataset (synthetic ground-truth annotations only).",
-    )
-    labeled_dataset_parser.add_argument(
-        "--fixture-path", type=Path, help="Optional fixture path override."
-    )
-
-    eval_labels_parser = subparsers.add_parser(
-        "eval-against-labels",
-        help="Evaluate scoring model against labeled candidate dataset (synthetic only).",
-    )
-    eval_labels_parser.add_argument(
-        "--fixture-path", type=Path, help="Optional labeled candidates fixture path override."
     )
 
     validate_input_parser = subparsers.add_parser(
