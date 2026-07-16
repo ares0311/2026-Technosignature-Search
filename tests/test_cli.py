@@ -754,8 +754,6 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "candidate_score_history",
         "candidate_triage",
         "config_version_history",
-        "consensus_export",
-        "consensus_labels",
         "cross_track_references",
         "curated_dataset_admission",
         "curated_dataset_intake",
@@ -808,7 +806,6 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "real_data_admission_preflight",
         "report_manifest",
         "review_deadlines",
-        "review_queue",
         "rfi_database",
         "rfi_database_admission",
         "scoring_config_summary",
@@ -867,9 +864,6 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "schemas/candidate_extraction_handoff.schema.json"
     )
     assert result["candidate_packet"].endswith("schemas/candidate_packet.schema.json")
-    assert result["consensus_export"].endswith("schemas/consensus_export.schema.json")
-    assert result["consensus_labels"].endswith("schemas/consensus_labels.schema.json")
-    assert result["review_queue"].endswith("schemas/review_queue.schema.json")
     assert result["validation_dataset_manifest"].endswith(
         "schemas/validation_dataset_manifest.schema.json"
     )
@@ -906,56 +900,6 @@ def test_cli_injection_recovery_summary_outputs_fixture_counts() -> None:
     assert result["by_outcome"] == {"false_alarm": 2, "missed": 1, "recovered": 3}
     assert result["synthetic_recovery_rate"] == 0.75
     assert result["synthetic_false_alarm_fraction"] == 0.333333
-
-
-def test_cli_review_queue_summary_outputs_fixture_counts() -> None:
-    stdout = StringIO()
-
-    exit_code = main(["review-queue-summary"], stdout=stdout)
-    result = json.loads(stdout.getvalue())
-
-    assert exit_code == 0
-    assert result["schema_version"] == "human_review_queue_v1"
-    assert result["item_count"] == 5
-    assert result["note_count"] == 4
-    assert result["by_track"] == {"anomaly": 2, "infrared": 1, "radio": 2}
-    assert result["by_triage_label"]["needs_human_review"] == 1
-    assert result["items_missing_notes"] == ["low-confidence-demo"]
-    assert "not discovery claims" in result["disclaimer"]
-
-
-def test_cli_consensus_summary_outputs_fixture_counts() -> None:
-    stdout = StringIO()
-
-    exit_code = main(["consensus-summary"], stdout=stdout)
-    result = json.loads(stdout.getvalue())
-
-    assert exit_code == 0
-    assert result["schema_version"] == "human_review_consensus_labels_v1"
-    assert result["item_count"] == 5
-    assert result["decision_count"] == 13
-    assert result["unique_reviewer_count"] == 4
-    assert result["by_track"] == {"anomaly": 2, "infrared": 1, "radio": 2}
-    assert result["by_consensus_label"]["no_consensus"] == 1
-    assert result["by_reviewer_decision_count"] == {"2": 2, "3": 3}
-    assert "not discovery claims" in result["disclaimer"]
-
-
-def test_cli_consensus_export_summary_outputs_fixture_counts() -> None:
-    stdout = StringIO()
-
-    exit_code = main(["consensus-export-summary"], stdout=stdout)
-    result = json.loads(stdout.getvalue())
-
-    assert exit_code == 0
-    assert result["schema_version"] == "human_review_consensus_export_v1"
-    assert result["export_count"] == 5
-    assert result["reviewer_decision_total"] == 13
-    assert result["negative_evidence_total"] == 16
-    assert result["blocking_issue_total"] == 3
-    assert result["by_track"] == {"anomaly": 2, "infrared": 1, "radio": 2}
-    assert result["by_consensus_label"]["likely_false_positive"] == 1
-    assert "not discovery claims" in result["disclaimer"]
 
 
 def test_cli_validation_dataset_summary_outputs_manifest_counts() -> None:

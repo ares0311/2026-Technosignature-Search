@@ -1,6 +1,6 @@
 """Technosignature-interest candidate search tools."""
 
-__version__ = "1.2.16"
+__version__ = "1.2.17"
 
 from techno_search.ai_hardening_gate import (
     AI_HARDENING_GATE_DISCLAIMER,
@@ -284,29 +284,6 @@ from techno_search.reproducibility import (
     REPRODUCIBILITY_VERIFICATION_SCHEMA_VERSION,
     verify_packet_against_manifest,
     verify_report_directory,
-)
-from techno_search.review_queue import (
-    CONSENSUS_EXPORT_DISCLAIMER,
-    CONSENSUS_EXPORT_SCHEMA_VERSION,
-    CONSENSUS_LABEL_DISCLAIMER,
-    CONSENSUS_LABEL_SCHEMA_VERSION,
-    REVIEW_QUEUE_DISCLAIMER,
-    REVIEW_QUEUE_SCHEMA_VERSION,
-    ConsensusDecision,
-    ConsensusExportItem,
-    ConsensusItem,
-    ConsensusLabel,
-    ReviewerNote,
-    ReviewQueueItem,
-    TriageLabel,
-    allowed_consensus_labels,
-    allowed_triage_labels,
-    consensus_export_summary,
-    consensus_summary,
-    load_consensus_export_items,
-    load_consensus_items,
-    load_review_queue_items,
-    review_queue_summary,
 )
 from techno_search.schemas import Candidate, Pathway, ScoredCandidate, Track
 from techno_search.scoring import score_candidate

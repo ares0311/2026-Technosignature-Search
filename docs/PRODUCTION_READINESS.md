@@ -6,7 +6,17 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.16
+**Current app version:** 1.2.17
+
+**Synthetic human-review/consensus subsystem retired — 2026-07-16:** version
+1.2.17 deletes the residual synthetic human-review queue, consensus-label, and
+consensus-export module, CLI commands, fixtures, schemas, tests, and public
+documentation, plus the inert `triage-label-completeness` command. The root
+cause was an incomplete Phase 0 cleanup leaving project-owned review/label
+machinery executable after the pre-existing-independent-label-only directive
+superseded it. The `human_review_queue` pathway remains a conservative local
+routing value; no person is asked to create labels and no consensus label is
+produced.
 
 **Executable label-evaluation path retired — 2026-07-16:** version 1.2.16
 removes the still-callable `labeled-dataset-summary` and

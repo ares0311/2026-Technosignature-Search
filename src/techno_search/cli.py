@@ -84,11 +84,6 @@ from techno_search.reporting import (
     write_candidate_reports,
 )
 from techno_search.reproducibility import verify_report_directory
-from techno_search.review_queue import (
-    consensus_export_summary,
-    consensus_summary,
-    review_queue_summary,
-)
 from techno_search.rfi_database import rfi_database_summary
 from techno_search.rfi_database_admission import rfi_database_admission_summary
 from techno_search.schemas import Candidate, Track, candidate_from_mapping
@@ -832,9 +827,6 @@ def target_recalibration_summary(*_a: object, **_k: object) -> dict[str, Any]:
 def target_watchlist_summary(*_a: object, **_k: object) -> dict[str, Any]:
     return _StubDict({"entry_count": 0, "elevated_count": 0, "conflict_count": 0})
 
-def triage_label_completeness_check(*_a: object, **_k: object) -> dict[str, Any]:
-    return _StubDict({"coverage_fraction": 0.0})
-
 def triage_summary(*_a: object, **_k: object) -> dict[str, Any]:
     return _StubDict({"note_count": 0, "tracks_covered": [], "triage_count": 0,
                       "triage_blocked": 0})
@@ -995,11 +987,8 @@ SCHEMA_FILENAMES = {
     "benchmark_run_results": "benchmark_run_results.schema.json",
     "candidate_extraction_handoff": "candidate_extraction_handoff.schema.json",
     "candidate_packet": "candidate_packet.schema.json",
-    "consensus_export": "consensus_export.schema.json",
-    "consensus_labels": "consensus_labels.schema.json",
     "cross_track_references": "cross_track_references.schema.json",
     "report_manifest": "report_manifest.schema.json",
-    "review_queue": "review_queue.schema.json",
     "validation_dataset_manifest": "validation_dataset_manifest.schema.json",
     "validation_promotion_rules": "validation_promotion_rules.schema.json",
     "validation_readiness": "validation_readiness.schema.json",
@@ -2832,39 +2821,6 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
-    if args.command == "review-queue-summary":
-        print(
-            json.dumps(
-                review_queue_summary(args.fixture_path),
-                indent=2,
-                sort_keys=True,
-            ),
-            file=out,
-        )
-        return 0
-
-    if args.command == "consensus-summary":
-        print(
-            json.dumps(
-                consensus_summary(args.fixture_path),
-                indent=2,
-                sort_keys=True,
-            ),
-            file=out,
-        )
-        return 0
-
-    if args.command == "consensus-export-summary":
-        print(
-            json.dumps(
-                consensus_export_summary(args.fixture_path),
-                indent=2,
-                sort_keys=True,
-            ),
-            file=out,
-        )
-        return 0
-
     if args.command == "cross-track-summary":
         print(
             json.dumps(
@@ -4105,18 +4061,6 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(
             json.dumps(
                 operator_coverage_summary(Path(fixture_path) if fixture_path else None),
-                indent=2,
-                sort_keys=True,
-            ),
-            file=out,
-        )
-        return 0
-
-    if args.command == "triage-label-completeness":
-        fixture_path = getattr(args, "fixture_path", None)
-        print(
-            json.dumps(
-                triage_label_completeness_check(Path(fixture_path) if fixture_path else None),
                 indent=2,
                 sort_keys=True,
             ),
@@ -6776,33 +6720,6 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Optional synthetic precision-recall fixture JSON path.",
     )
-    review_queue_parser = subparsers.add_parser(
-        "review-queue-summary",
-        help="Summarize synthetic human-review queue fixture coverage.",
-    )
-    review_queue_parser.add_argument(
-        "--fixture-path",
-        type=Path,
-        help="Optional synthetic human-review queue fixture JSON path.",
-    )
-    consensus_parser = subparsers.add_parser(
-        "consensus-summary",
-        help="Summarize synthetic human-review consensus label fixture coverage.",
-    )
-    consensus_parser.add_argument(
-        "--fixture-path",
-        type=Path,
-        help="Optional synthetic human-review consensus fixture JSON path.",
-    )
-    consensus_export_parser = subparsers.add_parser(
-        "consensus-export-summary",
-        help="Summarize synthetic human-review consensus export fixture coverage.",
-    )
-    consensus_export_parser.add_argument(
-        "--fixture-path",
-        type=Path,
-        help="Optional synthetic human-review consensus export fixture JSON path.",
-    )
     cross_track_parser = subparsers.add_parser(
         "cross-track-summary",
         help=(
@@ -8663,14 +8580,6 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize operator coverage across triage notes.",
     )
     operator_cov_parser.add_argument(
-        "--fixture-path", type=Path, help="Optional fixture path override."
-    )
-
-    label_completeness_parser = subparsers.add_parser(
-        "triage-label-completeness",
-        help="Check which triage labels have fixture coverage.",
-    )
-    label_completeness_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 
