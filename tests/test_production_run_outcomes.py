@@ -226,7 +226,11 @@ def test_write_and_read_production_outcomes(tmp_path) -> None:
     assert (run_dir / f"{RUN_ID}_non_detections.json").exists()
     assert (run_dir / f"{RUN_ID}_follow_ups.json").exists()
     assert (run_dir / f"{RUN_ID}_target_status.json").exists()
-    assert production_run_summary(run_dir)["follow_up_count"] == 1
+    run_summary = production_run_summary(run_dir)
+    assert run_summary["target_count"] == 2
+    assert run_summary["record_count"] == 2
+    assert run_summary["candidate_count"] == 2
+    assert run_summary["follow_up_count"] == 1
     assert production_run_file(run_dir, "follow_ups")["entry_count"] == 1
     assert production_run_file(run_dir, "non_detections")["entry_count"] == 1
     target_status = production_run_file(run_dir, "target_status")

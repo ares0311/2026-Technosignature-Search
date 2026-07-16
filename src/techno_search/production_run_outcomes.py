@@ -231,13 +231,25 @@ def production_run_summary(run_dir: Path) -> dict[str, Any]:
         }
     manifest = _load_json(manifests[-1])
     run_id = str(manifest.get("run_id", manifests[-1].stem.removesuffix("_manifest")))
+    record_count = int(manifest.get("candidate_count", 0))
+    scan_summary_data = manifest.get("scan_summary", {})
+    if not isinstance(scan_summary_data, Mapping):
+        scan_summary_data = {}
+    target_count = int(
+        manifest.get(
+            "target_status_count",
+            scan_summary_data.get("targets_scanned", record_count),
+        )
+    )
     return {
         "ok": True,
         "schema_version": PRODUCTION_RUN_MANIFEST_SCHEMA_VERSION,
         "disclaimer": PRODUCTION_OUTCOME_DISCLAIMER,
         "run_id": run_id,
         "run_dir": str(run_path),
-        "candidate_count": int(manifest.get("candidate_count", 0)),
+        "target_count": target_count,
+        "record_count": record_count,
+        "candidate_count": record_count,
         "non_detection_count": int(manifest.get("non_detection_count", 0)),
         "follow_up_count": int(manifest.get("follow_up_count", 0)),
         "external_submission_allowed": False,

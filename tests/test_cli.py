@@ -2184,7 +2184,10 @@ def test_cli_prod_write_and_show_outcomes(tmp_path) -> None:
     assert runs["run_count"] == 1
     stdout = StringIO()
     assert main(["prod-runs", "--scans-dir", str(results_dir / "scans")], stdout=stdout) == 0
-    assert "1 run(s)" in stdout.getvalue()
+    run_rows = stdout.getvalue()
+    assert "1 run(s)" in run_rows
+    assert "Run ID | OK | Targets | Records | Follow-ups | Non-detections" in run_rows
+    assert f"{run_id} | yes | 1 | 1 | 1 | 0" in run_rows
     stdout = StringIO()
     assert main(["review-dashboard", "--run-dir", str(run_dir)], stdout=stdout) == 1
     dashboard_text = stdout.getvalue()
