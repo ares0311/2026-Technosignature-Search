@@ -5696,25 +5696,6 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
     if args.command == "prod-file-scan":
         return _run_prod_file_scan(args)
 
-    if args.command == "generate-peer-review-package":
-        pr_result: dict[str, Any] = {
-            "ok": False,
-            "schema_version": "peer_review_package_stub_v1",
-            "issues": ["peer_review_package deleted in Phase 0 — no candidates ready"],
-        }
-        print(json.dumps(pr_result, indent=2, sort_keys=True), file=out)
-        return 1
-
-    if args.command == "noise-threshold-calibration":
-        noise_cal_result: dict[str, Any] = {
-            "ok": True,
-            "schema_version": "noise_threshold_calibration_stub_v1",
-            "issue_count": 0,
-            "issues": [],
-        }
-        print(json.dumps(noise_cal_result, indent=2, sort_keys=True), file=out)
-        return 0
-
     if args.command == "track-a-disk-usage":
         from techno_search.track_a_data_guard import track_a_disk_usage
 
@@ -10206,46 +10187,6 @@ def _build_parser() -> argparse.ArgumentParser:
             "CF4_298.1K-760.0Torr_....xsc. When provided, runs the "
             "additional full-grid matched-filter check for whichever of "
             "the 5 known gases have a matching file present."
-        ),
-    )
-
-    peer_review_parser = subparsers.add_parser(
-        "generate-peer-review-package",
-        help=(
-            "Generate a structured public reproducibility package with pipeline "
-            "methodology, label evidence, and example candidate summaries."
-        ),
-    )
-    peer_review_parser.add_argument(
-        "output_dir",
-        type=Path,
-        help="Directory to write the peer review package into.",
-    )
-
-    noise_cal_parser = subparsers.add_parser(
-        "noise-threshold-calibration",
-        help=(
-            "Analyze SNR/drift-rate distributions from a directory of turboSETI "
-            "hit tables and suggest candidates for citizen-science threshold review."
-        ),
-    )
-    noise_cal_parser.add_argument(
-        "hit_dir",
-        type=Path,
-        help="Directory containing .dat or .csv turboSETI hit table files.",
-    )
-    noise_cal_parser.add_argument(
-        "--max-files",
-        type=int,
-        default=500,
-        help="Maximum number of files to analyze (default: 500).",
-    )
-    noise_cal_parser.add_argument(
-        "--allow-development-fixtures",
-        action="store_true",
-        help=(
-            "Allow unapproved synthetic/development fixtures. Never use this "
-            "flag for production threshold calibration."
         ),
     )
 
