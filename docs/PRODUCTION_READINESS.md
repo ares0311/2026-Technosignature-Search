@@ -6,7 +6,19 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.18
+**Current app version:** 1.2.19
+
+**Premature public-deposit path retired — 2026-07-16:** version 1.2.19
+deletes the stale Zenodo manifest generator and upload guide. The root cause
+was a pre-mission-redirect publication path surviving after project-generated
+labels were prohibited and external submission remained blocked. It described
+the project as citizen science, claimed calibration and accuracy from the
+unauthorized HIP99427 legacy artifact, selected local calibration payloads,
+could include untracked documentation through broad filesystem globs, and
+instructed the operator to publish a deposit. A regression guard now keeps the
+generator, guide, and active public-deposit instructions absent. No tracked or
+local science payload, candidate evidence, scientific threshold, or external
+service was changed.
 
 **Public entrypoint mission alignment — 2026-07-16:** version 1.2.18 replaces
 the stale pre-prime-directive README, which still advertised citizen-science
