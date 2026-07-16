@@ -6,7 +6,21 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.25
+**Current app version:** 1.2.26
+
+**Step 2 candidate-extraction-handoff-summary compact default — 2026-07-16:**
+version 1.2.26 fixes `candidate-extraction-handoff-summary`, an operator
+handoff view outside the candidate packet path named in `SYSTEMATIC_SEARCH_PLAN.md`'s
+Step 2 remaining-work note. It always printed raw indented JSON with no
+`--json` flag at all despite returning a ~20-key aggregate (per-track and
+per-extraction-status breakdowns, several count fields) — the same
+"guessed hardened because it has a command" defect already found and fixed
+twice for other operator surfaces. It now defaults to a compact summary
+(record/ready/blocked/scheduling-only counts, by-track and by-extraction-status
+breakdowns) matching the established `_print_review_dashboard` style, with
+`--json` preserved for the machine-readable form. The existing CLI contract
+test was updated to pass `--json` explicitly; a new test exercises the compact
+default. No candidate ledger, scoring threshold, or no-claim guardrail changed.
 
 **Executable external-approval writer retired — 2026-07-16:** version 1.2.25
 removes `approve_submission`, `--confirm-external-submission-approval`, and the
