@@ -6,7 +6,18 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.22
+**Current app version:** 1.2.23
+
+**Unsafe scheduled scan retired — 2026-07-16:** version 1.2.23 deletes the
+Sunday `weekly_scan.yml` job and its duplicate production-scan guide/schedule.
+The root cause was a pre-mission scheduler remaining active after raw hit tables
+became ignored local data and scoring calibration was retired. On a normal CI
+checkout it could generate recurring `no_data` bookkeeping, commit generated
+scan output, and push directly to `main`, bypassing the required feature-branch
+PR flow. Its guide also advertised the retired 42.4 SNR gate and a nonexistent
+operator-clear command. Production review remains available as an explicit,
+bounded local workflow in `docs/PRODUCTION_SCAN_RUNBOOK.md`; no science data,
+candidate ledger, or live schedule was created by this change.
 
 **Retired threshold-calibration helper chain — 2026-07-16:** version 1.2.22
 removes the residual calibration-corpus download, target-manifest, provenance,
