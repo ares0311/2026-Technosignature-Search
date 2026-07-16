@@ -14,6 +14,19 @@ def test_project_owned_label_creation_scripts_are_retired() -> None:
     assert not Path("configs/scoring_v1_template.json").exists()
 
 
+def test_retired_calibration_threshold_chain_is_absent() -> None:
+    retired_paths = (
+        "scripts/run_calibration_corpus_pipeline.sh",
+        "scripts/download_calibration_corpus.sh",
+        "scripts/fetch_bl_calibration_targets.sh",
+        "scripts/build_calibration_target_manifest.py",
+        "scripts/write_calibration_provenance.py",
+        "schemas/calibration_corpus_admission.schema.json",
+        "tests/fixtures/calibration_corpus_admission.json",
+    )
+    assert all(not Path(path).exists() for path in retired_paths)
+
+
 def test_cadence_module_exposes_no_label_dataset_writer() -> None:
     assert not hasattr(cadence_triage, "build_citizen_science_dataset")
     assert not hasattr(cadence_triage, "write_citizen_science_dataset")
@@ -34,6 +47,7 @@ def test_label_trained_model_commands_are_absent() -> None:
         "triage-label-completeness",
         "generate-peer-review-package",
         "noise-threshold-calibration",
+        "calibration-corpus-admission-summary",
     )
     assert all(command not in cli_source for command in forbidden_commands)
 

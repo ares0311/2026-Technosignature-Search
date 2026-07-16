@@ -3981,3 +3981,41 @@ escalation gate to pass. Reopening that gate requires adequate pre-existing,
 independent row-level evidence with documented provenance and a new reviewed
 decision; project-generated, inferred, synthetic, or unlabeled threshold truth
 is not admissible.
+
+
+# DECISION-147: Retire Residual Threshold-Calibration Helper Chain
+
+**Date:** 2026-07-16
+**Status:** Accepted
+**Implements:** DECISION-145/146 and the pre-existing-label-only prime directive
+
+## Context
+
+After the label-evaluation command and invalid calibrated config were retired,
+the repository still exposed a calibration-corpus acquisition and admission
+chain. Its shell pipeline invoked the deleted `noise-threshold-calibration`
+command, its provenance helper asked a human to approve unlabeled observations
+for calibration, and its CLI admission command returned unconditional success
+without reading the fixture or validating any evidence. The transfer guide also
+presented the retired GBT values as production thresholds and instructed users
+to create new labels for other instruments.
+
+## Decision
+
+Delete the calibration-corpus download, fetch, target-manifest, provenance, and
+pipeline helpers along with their dedicated test, schema, fixture, CLI stub,
+and schema registry entry. Replace the procedural threshold and transfer guides
+with fail-closed status documents that reject the legacy GBT values and define
+the independent pre-existing evidence required before a future calibration
+proposal can be considered.
+
+## Consequences
+
+No repository-supported helper can download unlabeled observations specifically
+to promote a scoring threshold, convert human provenance approval into
+calibration truth, or report a passing calibration admission gate without
+evidence. General public-data acquisition and deterministic radio analysis
+remain available through current policy-compliant workflows. Learned/anomaly
+outputs and heuristic scores remain local triage diagnostics; no threshold is
+calibrated, transferable, or authorized for candidate escalation or external
+submission.
