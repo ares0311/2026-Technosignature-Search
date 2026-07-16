@@ -172,6 +172,14 @@ default operator surface silently omitted it. Version 1.2.13 reads
 `triage_summary`, prints independent-rule agreement/disagreement, and has a
 compact-output regression assertion.
 
+**Production-run picker count regression fixed, 2026-07-16:** a real workflow
+replay found that `prod-runs` labeled the latest run's 39 loaded outcome
+records as “Candidates,” while `prod-target-status` correctly reported 34
+unique targets and zero follow-up candidates. Version 1.2.14 carries the
+manifest's unique-target count into the run summary and prints distinct
+`Targets` and `Records` columns, so zero-hit observations and repeated
+artifacts cannot inflate the operator's apparent candidate count.
+
 Remaining Step 2 work must continue from a workflow audit of the other current
 UI surfaces (especially any operator handoff views outside the candidate
 packet path) against real operator workflows: reviewing a candidate, reviewing

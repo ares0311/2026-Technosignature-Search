@@ -6,7 +6,17 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.13
+**Current app version:** 1.2.14
+
+**Step 2 production-run picker count repair — 2026-07-16:** version 1.2.14
+fixes a misleading compact `prod-runs` heading found by replaying the real
+operator workflow against the latest local production run. The picker called
+all 39 loaded outcome records “Candidates,” even though the same run contained
+34 unique targets and zero follow-up candidates; zero-hit observation records
+and repeated artifacts make those quantities intentionally different. The run
+summary now preserves the manifest's unique-target count alongside its record
+count, and the compact table labels both explicitly. Scientific ledgers,
+pathways, scores, and no-claim guardrails are unchanged.
 
 **Step 2 cadence-triage UI repair — 2026-07-14:** version 1.2.13 fixes the
 compact `gbt-cadence-abacab-review` surface after the version 1.2.11 unlabeled

@@ -1645,14 +1645,15 @@ def _print_production_run_list(data: dict[str, Any], out: TextIO) -> None:
     if not runs:
         print("Runs: none", file=out)
         return
-    print("Run ID | OK | Candidates | Follow-ups | Non-detections", file=out)
+    print("Run ID | OK | Targets | Records | Follow-ups | Non-detections", file=out)
     for run in runs:
         print(
             " | ".join(
                 [
                     str(run.get("run_id", "")),
                     "yes" if run.get("ok") else "no",
-                    str(run.get("candidate_count", "")),
+                    str(run.get("target_count", "")),
+                    str(run.get("record_count", run.get("candidate_count", ""))),
                     str(run.get("follow_up_count", "")),
                     str(run.get("non_detection_count", "")),
                 ]
