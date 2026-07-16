@@ -1292,7 +1292,9 @@ def test_cli_background_reviewed_workflow_summary_outputs_review_state() -> None
 def test_cli_candidate_extraction_handoff_summary_outputs_contract() -> None:
     stdout = StringIO()
 
-    exit_code = main(["candidate-extraction-handoff-summary"], stdout=stdout)
+    exit_code = main(
+        ["candidate-extraction-handoff-summary", "--json"], stdout=stdout
+    )
     result = json.loads(stdout.getvalue())
 
     assert exit_code == 0
@@ -1316,6 +1318,22 @@ def test_cli_candidate_extraction_handoff_summary_outputs_contract() -> None:
         "scheduling_only": 1,
     }
     assert "not detections" in result["disclaimer"]
+
+
+def test_cli_candidate_extraction_handoff_summary_compact_default() -> None:
+    stdout = StringIO()
+
+    exit_code = main(["candidate-extraction-handoff-summary"], stdout=stdout)
+    output = stdout.getvalue()
+
+    assert exit_code == 0
+    assert "4 handoff(s)" in output
+    assert "ready=1" in output
+    assert "blocked=1" in output
+    assert "By track:" in output
+    assert "By extraction status:" in output
+    with pytest.raises(json.JSONDecodeError):
+        json.loads(output)
 
 
 def test_cli_background_run_once_appends_local_ledger_entry(tmp_path) -> None:

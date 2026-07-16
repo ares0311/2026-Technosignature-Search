@@ -1619,6 +1619,43 @@ def _print_multi_modal_crossmatch_summary(data: dict[str, Any], out: TextIO) -> 
         )
 
 
+def _print_candidate_extraction_handoff_summary(data: dict[str, Any], out: TextIO) -> None:
+    """Print a compact candidate extraction handoff readiness summary."""
+    print(
+        f"{data.get('handoff_path', 'unknown')}: "
+        f"{data.get('record_count', 0)} handoff(s)",
+        file=out,
+    )
+    print(
+        " | ".join(
+            [
+                f"ready={data.get('ready_count', 0)}",
+                f"blocked={data.get('blocked_count', 0)}",
+                f"no_candidate_expected={data.get('no_candidate_expected_count', 0)}",
+                f"scheduling_only={data.get('scheduling_only_count', 0)}",
+                f"blocking_issues={data.get('blocking_issue_count', 0)}",
+                f"requires_human_review={data.get('requires_human_review_count', 0)}",
+            ]
+        ),
+        file=out,
+    )
+    by_track = dict(data.get("by_track", {}))
+    by_status = dict(data.get("by_extraction_status", {}))
+    if not by_track and not by_status:
+        print("By track / status: none", file=out)
+        return
+    print(
+        "By track: "
+        + (", ".join(f"{k}={v}" for k, v in sorted(by_track.items())) or "none"),
+        file=out,
+    )
+    print(
+        "By extraction status: "
+        + (", ".join(f"{k}={v}" for k, v in sorted(by_status.items())) or "none"),
+        file=out,
+    )
+
+
 def _print_production_run_list(data: dict[str, Any], out: TextIO) -> None:
     """Print a compact table of production runs for the operator to pick from."""
     runs = list(data.get("runs", []))
@@ -2548,14 +2585,11 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         return 0
 
     if args.command == "candidate-extraction-handoff-summary":
-        print(
-            json.dumps(
-                candidate_extraction_handoff_summary(args.handoff_path),
-                indent=2,
-                sort_keys=True,
-            ),
-            file=out,
-        )
+        _handoff_summary = candidate_extraction_handoff_summary(args.handoff_path)
+        if getattr(args, "json", False):
+            print(json.dumps(_handoff_summary, indent=2, sort_keys=True), file=out)
+        else:
+            _print_candidate_extraction_handoff_summary(_handoff_summary, out)
         return 0
 
     if args.command == "background-run-once":
@@ -7106,6 +7140,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "--handoff-path",
         type=Path,
         help="Optional candidate extraction handoff JSON path.",
+    )
+    handoff_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print machine-readable JSON instead of the compact summary.",
     )
     background_run_parser = subparsers.add_parser(
         "background-run-once",

@@ -204,6 +204,14 @@ a non-detection ledger, and approving/rejecting a follow-up. Do not guess that
 a UI is hardened because it has a command; verify the operator can answer the
 next review question without paging through raw machine output.
 
+**Candidate extraction handoff view fixed, 2026-07-16:** the workflow audit
+this section calls for found exactly the operator handoff view outside the
+candidate packet path it names: `candidate-extraction-handoff-summary` had no
+`--json` flag at all and always printed raw indented JSON for a ~20-key
+aggregate (per-track/per-extraction-status breakdowns, several count fields).
+Version 1.2.26 gives it the same compact-default/`--json`-opt-in treatment as
+its siblings.
+
 **Second workflow audit, 2026-07-10:** surveyed every real (non-deleted-stub)
 operator-facing summary command for the same defect. Ten candidates were
 raw-JSON-only with no `--json` flag at all: `escalation-gate-check`,
