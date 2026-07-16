@@ -6,7 +6,59 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.26
+**Current app version:** 1.2.27
+
+**Operations-blocker CLI family retired — 2026-07-16:** version 1.2.27 deletes
+16 `operations-*` commands (`operations-readiness-summary`,
+`operations-readiness-digest`, `operations-action-plan-summary`,
+`operations-action-resolution-summary`,
+`operations-action-resolution-consistency-summary`,
+`operations-alert-review-consistency-summary`, and 10
+`operations-blocker-*`/`operations-blocker-progress-*` variants), their
+backing `_StubDict`-based functions, JSON schemas, and test fixtures. The root
+cause: Phase 0 stubbed these functions to return fabricated zero-value dicts,
+but the surrounding dispatch code still assumed the pre-stub real return shape
+(e.g. reading a `"details"` key that the stub never provides). Since
+`_StubDict.__missing__` returns `0` for any missing key, iterating over that
+`0` crashed — confirmed live: 7 of 16 commands raised `TypeError: 'int' object
+is not iterable` on invocation, with zero CLI-dispatch test coverage catching
+it. The crashing commands were also listed as literal `run:` steps in the
+canonical `docs/templates/ci.yml` CI template (the live `.github/workflows/ci.yml`
+does not invoke them, so live CI was not actually broken). This whole family
+was pure operational scaffolding with zero real callers outside `cli.py` and
+zero science value — deleted rather than patched, per `AGENTS.md`'s
+"delete misaligned code" directive and the new "LLM MAINTENANCE DIRECTIVES"
+section added this session.
+
+A second, more consequential bug was found while checking whether
+`operations_readiness_summary` could be safely deleted: the real, kept
+`sqlite-log-bootstrap-summary` command called it and exposed several of its
+fabricated fields directly to the operator, including
+`network_access_allowed_count`/`external_submission_approved_count` always
+hardcoded to `0` regardless of the database's real state, and a
+`validated_action_ids: ["ops-action-009", "ops-action-010"]` field with no
+grounding in any real data at all. `sqlite-log-bootstrap-summary` already
+computed the real values two lines above (via `sqlite_log_weekly_digest()`,
+which itself already folds those two counts into its own real `ok` check) —
+it now reports those real values directly and no longer depends on the
+deleted stub. The existing CLI contract test asserted on the fabricated
+values (including the literal `ops-action-009`/`ops-action-010` string) and
+has been corrected to assert only the real, computed fields.
+
+Doc/schema/fixture cleanup: 15 `schemas/operations_*.schema.json` files, 11
+`tests/fixtures/operations_*.json` fixtures, the corresponding
+`test_json_schemas.py`/`test_cli.py` list entries, the `docs/templates/ci.yml`
+steps, and the `docs/CI.md`/`docs/RELEASE_CHECKLIST.md`/`docs/PUBLISHING.md`/
+`docs/Technosignatures_MCP_BOOTSTRAP.md`/`docs/VALIDATION.md` sections
+describing this family are all removed. `docs/VALIDATION.md`'s removed
+sections claimed `validate-all` enforces several of these consistency
+checks; direct inspection of `validate_all()`'s real implementation confirmed
+it never called any of them — that documentation was already describing
+fictional behavior before this change. `docs/DECISIONS.md` and
+`docs/ROADMAP.md` are historical append-only records per this project's
+existing convention and are not rewritten; DECISION-151 records the
+retirement. No candidate ledger, scoring threshold, or scientific claim
+changed.
 
 **Step 2 candidate-extraction-handoff-summary compact default — 2026-07-16:**
 version 1.2.26 fixes `candidate-extraction-handoff-summary`, an operator

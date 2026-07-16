@@ -49,10 +49,6 @@
         ],
         "help": [".venv/bin/techno-search", "--help"],
         "mypy": [".venv/bin/mypy", "src"],
-        "operations_readiness": [
-          ".venv/bin/techno-search",
-          "operations-readiness-summary"
-        ],
         "pytest": [".venv/bin/python", "-m", "pytest"],
         "ruff": [".venv/bin/ruff", "check", "."],
         "score_batch_bootstrap": [

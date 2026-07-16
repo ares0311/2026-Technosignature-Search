@@ -162,30 +162,6 @@ def test_ci_template_stays_non_networked_and_outside_workflows() -> None:
     assert "git diff --check" in template
     assert '"validate-all"' in launcher
     assert "techno-search health" in template
-    assert "techno-search operations-readiness-summary" in template
-    assert "techno-search operations-action-plan-summary" in template
-    assert "techno-search operations-action-resolution-summary" in template
-    assert "techno-search operations-blocker-detail-summary" in template
-    assert "techno-search operations-blocker-review-summary" in template
-    assert "techno-search operations-blocker-followup-summary" in template
-    assert "techno-search operations-blocker-followup-progress-summary" in template
-    assert "techno-search operations-blocker-progress-review-summary" in template
-    assert "techno-search operations-blocker-progress-next-actions-summary" in template
-    assert "techno-search operations-blocker-progress-execution-summary" in template
-    assert "techno-search operations-blocker-progress-execution-review-summary" in template
-    assert "techno-search operations-blocker-progress-execution-followup-summary" in template
-    assert "techno-search operations-readiness-summary" in ci_doc
-    assert "techno-search operations-action-plan-summary" in ci_doc
-    assert "techno-search operations-action-resolution-summary" in ci_doc
-    assert "techno-search operations-blocker-detail-summary" in ci_doc
-    assert "techno-search operations-blocker-review-summary" in ci_doc
-    assert "techno-search operations-blocker-followup-summary" in ci_doc
-    assert "techno-search operations-blocker-followup-progress-summary" in ci_doc
-    assert "techno-search operations-blocker-progress-review-summary" in ci_doc
-    assert "techno-search operations-blocker-progress-next-actions-summary" in ci_doc
-    assert "techno-search operations-blocker-progress-execution-summary" in ci_doc
-    assert "techno-search operations-blocker-progress-execution-review-summary" in ci_doc
-    assert "techno-search operations-blocker-progress-execution-followup-summary" in ci_doc
 
 
 def test_cli_docs_include_draft_report_and_decision_workflows() -> None:
@@ -216,32 +192,7 @@ def test_cli_docs_include_draft_report_and_decision_workflows() -> None:
     assert ".venv/bin/techno-search sqlite-log-consistency-summary" in doc
     assert ".venv/bin/techno-search project-status-consistency-summary" in doc
     assert ".venv/bin/techno-search mcp-server-policy-summary" in doc
-    assert (
-        ".venv/bin/techno-search operations-alert-review-consistency-summary"
-        in doc
-    )
-    assert (
-        ".venv/bin/techno-search operations-action-resolution-consistency-summary"
-        in doc
-    )
-    assert (
-        ".venv/bin/techno-search operations-blocker-progress-consistency-summary"
-        in doc
-    )
     assert ".venv/bin/techno-search scheduler-dry-run" in doc
-    assert "techno-search operations-readiness-summary" in doc
-    assert "techno-search operations-action-plan-summary" in doc
-    assert "techno-search operations-action-resolution-summary" in doc
-    assert "techno-search operations-blocker-detail-summary" in doc
-    assert "techno-search operations-blocker-review-summary" in doc
-    assert "techno-search operations-blocker-followup-summary" in doc
-    assert "techno-search operations-blocker-followup-progress-summary" in doc
-    assert "techno-search operations-blocker-progress-review-summary" in doc
-    assert "techno-search operations-blocker-progress-next-actions-summary" in doc
-    assert "techno-search operations-blocker-progress-execution-summary" in doc
-    assert "techno-search operations-blocker-progress-execution-review-summary" in doc
-    assert "techno-search operations-blocker-progress-execution-followup-summary" in doc
-    assert "techno-search operations-readiness-digest" in doc
     assert "--sqlite-log-path" in doc
     assert "--confirm-external-submission-approval" not in doc
     assert "request_more_tests` and `close_as_reviewed` are the only" in doc

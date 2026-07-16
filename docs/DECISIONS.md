@@ -4119,3 +4119,71 @@ Summaries and SQLite checks continue to expose any nonzero legacy approval
 count as an integrity failure. A future external action, if ever justified,
 must occur through a separate, explicitly approved workflow after the full
 review chain; no such action is implemented here.
+
+# DECISION-151: Retire Operations-Blocker CLI Family; Fix Dependent SQLite Bootstrap Bug
+
+**Date:** 2026-07-16
+**Status:** Accepted
+
+## Context
+
+Sixteen `operations-*` commands (`operations-readiness-summary`,
+`operations-readiness-digest`, `operations-action-plan-summary`, and thirteen
+`operations-blocker-*`/`operations-action-resolution-*`/
+`operations-alert-review-*` variants) were Phase 0 operational-overhead
+scaffolding whose backing functions were stubbed to `_StubDict`-based
+fabricated zero-value dicts. The dispatch code built on top of those stubs
+still assumed the pre-stub real return shape (e.g. `blocker_detail["details"]`),
+and since `_StubDict.__missing__` returns `0` for any missing key, iterating
+over that `0` crashed. Live invocation confirmed 7 of 16 commands raised
+`TypeError: 'int' object is not iterable`, with zero CLI-dispatch test
+coverage catching it. The crashing commands were also listed as literal steps
+in the canonical `docs/templates/ci.yml` CI template. This family had no real
+callers outside `cli.py` and no science value.
+
+Checking whether `operations_readiness_summary` could be safely deleted
+surfaced a second, more consequential bug: the real, kept
+`sqlite-log-bootstrap-summary` command called it and exposed several
+fabricated fields directly to the operator — `network_access_allowed_count`
+and `external_submission_approved_count` hardcoded to `0` regardless of real
+database state, and a `validated_action_ids: ["ops-action-009",
+"ops-action-010"]` field with no grounding in any real data.
+`sqlite-log-bootstrap-summary` already computed the real values two lines
+above via `sqlite_log_weekly_digest()`.
+
+## Decision
+
+Delete all 16 `operations-*` CLI commands (dispatch blocks, parser
+registrations, backing functions), their 15 JSON schemas, and 11 test
+fixtures. Fix `sqlite-log-bootstrap-summary` to report the real
+`network_access_allowed_count`/`external_submission_approved_count` values
+already computed by `sqlite_log_weekly_digest()` instead of the deleted
+stub's fabricated fields, and drop the ungrounded `validated_action_ids`/
+`does_not_mutate_action_resolution_fixture`/`readiness_recommendation`/
+`readiness_real_data_blocker_count` fields entirely. Update the corresponding
+CLI contract test, which had asserted on the fabricated values. Remove
+references from `docs/templates/ci.yml`, `docs/CI.md`,
+`docs/RELEASE_CHECKLIST.md`, `docs/PUBLISHING.md`,
+`docs/Technosignatures_MCP_BOOTSTRAP.md`, and `docs/VALIDATION.md`.
+`docs/DECISIONS.md` and `docs/ROADMAP.md` remain unrewritten historical
+records per existing project convention.
+
+Also add "LLM MAINTENANCE DIRECTIVES" to `AGENTS.md`: fail loudly instead of
+returning silent fabricated defaults, delete a module's full CLI surface when
+the module itself is deleted, require CLI-dispatch-level fidelity tests (not
+just unit tests of underlying functions), and treat "described as working" as
+distinct from "verified working."
+
+## Consequences
+
+The 16 deleted commands are gone; running any of their names now reports an
+unknown command rather than crashing or returning fabricated content.
+`sqlite-log-bootstrap-summary`'s `ok` status and authorization counts now
+reflect real SQLite state rather than always-passing fake values — a
+previously undetectable false-positive "ok" outcome for this bootstrap check
+is now closed. `docs/VALIDATION.md`'s removed sections had also claimed
+`validate-all` enforces several of these consistency checks; direct
+inspection of `validate_all()`'s real implementation confirmed it never
+called any of them, so that documentation was already describing fictional
+behavior independent of this change. No candidate ledger, scoring threshold,
+or scientific claim changed.

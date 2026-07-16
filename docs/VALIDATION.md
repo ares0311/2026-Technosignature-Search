@@ -795,113 +795,6 @@ paths in its JSON output. These commands are local triage and provenance aids
 only. They do not authorize live data access, external submission, or
 scientific claims.
 
-## Operations Readiness Visibility
-
-```bash
-.venv/bin/techno-search operations-readiness-summary
-.venv/bin/techno-search operations-action-plan-summary
-.venv/bin/techno-search operations-action-resolution-summary
-.venv/bin/techno-search operations-action-resolution-consistency-summary
-.venv/bin/techno-search operations-blocker-detail-summary
-.venv/bin/techno-search operations-blocker-review-summary
-.venv/bin/techno-search operations-blocker-followup-summary
-.venv/bin/techno-search operations-blocker-followup-progress-summary
-.venv/bin/techno-search operations-blocker-progress-review-summary
-.venv/bin/techno-search operations-blocker-progress-next-actions-summary
-.venv/bin/techno-search operations-blocker-progress-execution-summary
-.venv/bin/techno-search operations-blocker-progress-execution-review-summary
-.venv/bin/techno-search operations-blocker-progress-execution-followup-summary
-.venv/bin/techno-search operations-blocker-progress-consistency-summary
-.venv/bin/techno-search operations-readiness-digest
-```
-
-`validate-all` includes the operations-readiness summary as visibility rather
-than as a new hard failure gate. The summary combines QC health, open alerts,
-overdue review deadlines, route coverage, validation-readiness blockers,
-curated-intake blockers, submission provenance blockers, pipeline capacity, and
-top-level SQLite log safety fields.
-
-The blocker progress-execution summary is a local provenance layer for ordered
-next actions. It must preserve residual blockers, verified-local exclusions,
-zero live-data authorization, and zero external-submission authorization.
-
-The blocker progress-execution review summary is a local review-provenance
-layer for execution notes. It must preserve residual blockers, verified-local
-exclusions, zero live-data authorization, and zero external-submission
-authorization.
-
-The blocker progress-execution follow-up summary is a local planning layer for
-reviewed execution notes. It must preserve residual blockers, verified-local
-exclusions, zero live-data authorization, and zero external-submission
-authorization.
-
-Use `sqlite-log-bootstrap-summary --db-path logs/techno_search.sqlite3` to
-initialize a local ignored SQLite database and check the integrity and weekly
-digest gates used by operations readiness. This restores SQLite visibility for
-the supplied local database only; it does not clear QC, alert, validation,
-curated-intake, or submission-provenance blockers.
-
-`validate-all` also checks local operations action-resolution records are
-present and that both live-data and external-submission authorization counts
-remain zero. These records document operator status only; they do not clear
-blockers, change candidate scores, or reduce scientific uncertainty.
-Coverage is also checked: every current operations action-plan ID must have a
-resolution record, and missing resolution IDs are reported without clearing or
-downgrading the underlying blocker.
-
-Recommendations are conservative local states:
-
-- `local_only_ready`: local readiness inputs are clear; this still does not authorize real data intake or external submission.
-- `operator_review_required`: local validation is structurally clear, but operators have open work to review.
-- `blocked_for_real_data`: real observation intake or external workflow remains blocked by local provenance, review, SQLite, or safety issues.
-
-The digest is review-safe and must not include large data payloads, API keys,
-live-provider results, or claims of confirmed technosignatures.
-
-The action-plan summary converts readiness blockers into prioritized local
-operator tasks with categories such as `quality_control`, `alerts`,
-`validation_readiness`, `curated_intake`, `submission_provenance`, and
-`sqlite_logs`. These tasks help resolve blockers; they do not clear blockers
-automatically or authorize any external workflow.
-
-The blocker-detail summary expands those current action-plan items into
-fixture-backed local source records such as open alerts, overdue review
-deadlines, blocked pipeline health inputs, validation-readiness records,
-curated-intake records, and submission-provenance gaps. It is traceability for
-operator review only. It does not mutate fixtures, clear blockers, enable live
-data, authorize external submission, or change candidate scores.
-
-The blocker-review summary records local operator review status for those
-blocker-detail evidence bundles. It reports coverage against current action
-IDs, reviewed and unreviewed evidence counts, residual blockers, and
-authorization counts. Review records are provenance only: even full evidence
-review coverage does not clear blockers, authorize live data, authorize
-external submission, mutate SQLite logs, or change candidate scores or
-pathways.
-
-The blocker-followup summary derives next local operator actions from those
-review records. It distinguishes open attention items, local remediation,
-real-data holds, and locally resolved items ready for verification. It is a
-planning aid only and preserves residual blockers plus zero live-data and
-external-submission authorization counts.
-
-The blocker-followup progress summary records local progress notes against
-those next-action IDs. `validate-all` checks progress coverage, recommendation
-consistency, and zero live-data and external-submission authorization counts.
-Progress records do not clear blockers or change scientific interpretation.
-
-The blocker progress-review summary records second-pass local review for
-unresolved progress only. `validate-all` checks review coverage, progress-status
-consistency, residual blocker totals, and disabled authorization gates. Verified
-local progress remains excluded from the unresolved review queue and is not
-reopened by the review summary.
-
-The blocker progress next-actions summary records ordered local tasks for the
-unresolved progress-review queue. `validate-all` checks next-action coverage,
-review-status consistency, priority ordering, residual blocker totals, and
-disabled authorization gates. Next actions are workflow tasks only; they do not
-clear blockers or change scientific interpretation.
-
 ## RFI Database Guardrails
 
 Use `rfi-database-summary` to inspect the local RFI database fixture:
@@ -1027,8 +920,7 @@ discoveries, or provide external validation.
 
 Use `production-blocker-consistency-summary` to inspect local production
 blocker visibility across Tier 1 readiness blockers, RFI admission blockers,
-curated-dataset admission blockers, operations readiness, and disabled
-authorization counts:
+curated-dataset admission blockers, and disabled authorization counts:
 
 ```bash
 .venv/bin/techno-search production-blocker-consistency-summary
@@ -1036,72 +928,11 @@ authorization counts:
 ```
 
 The summary reports required Tier 1 blocker phrase coverage, missing blocker
-phrases, admission blocker counts, real-data authorization totals,
-external-submission authorization totals, network-access counts, and
-operations-readiness blocker state. `validate-all` requires the consistency
-check to pass.
+phrases, admission blocker counts, real-data authorization totals, external-submission
+authorization totals, and network-access counts. `validate-all` requires the
+consistency check to pass.
 
 Production blocker consistency records are local readiness visibility gates
 only. They do not ingest real observation data, calibrate scoring thresholds,
 clear blockers, authorize live data, authorize external submission, or
-constitute external validation.
-
-## Operations Alert Review Consistency Gates
-
-Use `operations-alert-review-consistency-summary` to inspect local alert/QC
-operator-review consistency across candidate alerts, alert resolutions, QC
-health, operations readiness, and disabled authorization counts:
-
-```bash
-.venv/bin/techno-search operations-alert-review-consistency-summary
-.venv/bin/techno-search operations-alert-review-consistency-summary --fixture-path tests/fixtures/operations_alert_review_consistency.json
-```
-
-The summary reports expected and observed open-alert counts,
-critical-open-alert counts, alert-resolution open counts, QC health,
-operations-readiness recommendation, uncovered alert IDs, and live/external
-authorization counts. `validate-all` requires the consistency check to pass.
-
-Operations alert review consistency records are local operator-review
-visibility gates only. They do not clear blockers, modify candidate scores or
-pathway routing, authorize live data, authorize external submission, or
-constitute external validation.
-
-## Operations Action Resolution Staleness Gates
-
-Use `operations-action-resolution-consistency-summary` to inspect local
-action-resolution staleness against the current operations action plan:
-
-```bash
-.venv/bin/techno-search operations-action-resolution-consistency-summary
-.venv/bin/techno-search operations-action-resolution-consistency-summary --fixture-path tests/fixtures/operations_action_resolution_consistency.json
-```
-
-The summary reports expected and observed current action counts, resolution
-record counts, stale resolution counts and IDs, residual blocker totals,
-coverage fields, and live/external authorization counts. `validate-all`
-requires the consistency check to pass.
-
-## Operations Blocker Progress Consistency Gates
-
-Use `operations-blocker-progress-consistency-summary` to inspect local
-blocker-progress chain consistency across blocker-detail, review, follow-up,
-progress, next-action, execution, execution-review, and execution-follow-up
-records:
-
-```bash
-.venv/bin/techno-search operations-blocker-progress-consistency-summary
-.venv/bin/techno-search operations-blocker-progress-consistency-summary --fixture-path tests/fixtures/operations_blocker_progress_consistency.json
-```
-
-The summary reports expected and observed chain counts, residual blocker totals
-by stage, verified-local progress action IDs, categories covered, coverage
-state, priority ordering state, mismatch totals, and live/external
-authorization totals. `validate-all` requires the consistency check to pass.
-These gates are workflow visibility checks only; they do not clear blockers or
-authorize live data or external submission.
-
-Operations action resolution consistency records are local workflow staleness
-visibility gates only. They do not clear blockers, modify candidate scores or
-pathway routing, authorize live data, authorize external submission, or
 constitute external validation.

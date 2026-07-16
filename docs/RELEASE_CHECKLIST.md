@@ -74,10 +74,6 @@ Useful commands:
 .venv/bin/techno-search sqlite-log-commit-guard
 .venv/bin/techno-search validate-sqlite-logs --db-path logs/techno_search.sqlite3
 .venv/bin/techno-search route-coverage-summary
-.venv/bin/techno-search operations-readiness-summary
-.venv/bin/techno-search operations-action-plan-summary
-.venv/bin/techno-search operations-action-resolution-summary
-.venv/bin/techno-search operations-readiness-digest
 .venv/bin/techno-search validate-all
 .venv/bin/techno-search health
 ```

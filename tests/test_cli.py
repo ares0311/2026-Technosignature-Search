@@ -780,21 +780,6 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "observation_campaign",
         "observation_schedule",
         "ai_hardening_gate",
-        "operations_action_plan",
-        "operations_action_resolution",
-        "operations_action_resolution_consistency",
-        "operations_alert_review_consistency",
-        "operations_blocker_detail",
-        "operations_blocker_followup",
-        "operations_blocker_followup_progress",
-        "operations_blocker_progress_consistency",
-        "operations_blocker_progress_execution",
-        "operations_blocker_progress_execution_followup",
-        "operations_blocker_progress_execution_review",
-        "operations_blocker_progress_next_actions",
-        "operations_blocker_progress_review",
-        "operations_blocker_review",
-        "operations_readiness_summary",
         "operator_assignment",
         "operator_handoff_template",
         "pipeline_config",
@@ -1472,13 +1457,8 @@ def test_cli_top_level_sqlite_log_commands_validate_background_run(
     assert bootstrap["sqlite_log_initialized"] is True
     assert bootstrap["sqlite_integrity_ok"] is True
     assert bootstrap["sqlite_weekly_digest_ok"] is True
-    assert bootstrap["readiness_sqlite_integrity_ok"] is True
-    assert bootstrap["readiness_sqlite_weekly_digest_ok"] is True
     assert bootstrap["network_access_allowed_count"] == 0
     assert bootstrap["external_submission_approved_count"] == 0
-    assert bootstrap["validated_action_ids"] == ["ops-action-009", "ops-action-010"]
-    assert bootstrap["does_not_mutate_action_resolution_fixture"] is True
-    assert bootstrap["readiness_recommendation"] == "blocked_for_real_data"
 
     stdout = StringIO()
     recent_exit_code = main(
