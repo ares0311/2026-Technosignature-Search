@@ -6,7 +6,16 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.14
+**Current app version:** 1.2.15
+
+**Step 2 production-scope terminology repair — 2026-07-16:** version 1.2.15
+removes stale pre-mission-redirect citizen-science wording from production-run
+disclaimers, manifest scope, and CLI help. Real `prod-show` and `prod-runs
+--json` output exposed the contradiction with this project's publication-grade
+automated-triage mission. New production outcomes use scope
+`local_production_triage_only`; all detection, discovery, expert-review,
+external-validation, and external-submission prohibitions remain unchanged.
+Historical decision records and legacy compatibility values are not rewritten.
 
 **Step 2 production-run picker count repair — 2026-07-16:** version 1.2.14
 fixes a misleading compact `prod-runs` heading found by replaying the real

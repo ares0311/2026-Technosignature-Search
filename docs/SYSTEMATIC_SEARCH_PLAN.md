@@ -180,6 +180,13 @@ manifest's unique-target count into the run summary and prints distinct
 `Targets` and `Records` columns, so zero-hit observations and repeated
 artifacts cannot inflate the operator's apparent candidate count.
 
+**Production-scope terminology fixed, 2026-07-16:** the same real operator
+replay showed that machine-readable production disclaimers and two CLI help
+strings still called this a citizen-science workflow, contradicting the active
+publication-grade automated-triage mission. Version 1.2.15 changes new outcome
+scope to `local_production_triage_only` while retaining every conservative
+no-claim and no-external-submission guardrail.
+
 Remaining Step 2 work must continue from a workflow audit of the other current
 UI surfaces (especially any operator handoff views outside the candidate
 packet path) against real operator workflows: reviewing a candidate, reviewing
