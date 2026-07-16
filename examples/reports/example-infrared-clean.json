@@ -26,6 +26,14 @@
     "w4": 6.8
   },
   "negative_evidence": [],
+  "operator_review": {
+    "detection_claimed": false,
+    "external_submission_allowed": false,
+    "follow_up_required": true,
+    "operator_action": "prepare_local_candidate_review_packet",
+    "pathway": "candidate_review_packet",
+    "pathway_basis": "Derived from the scoring model's recommended_pathway."
+  },
   "positive_evidence": [
     "Mid-infrared excess is significant in synthetic features.",
     "SED residual is not well explained by a normal stellar model.",

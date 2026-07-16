@@ -23,11 +23,7 @@ class LocalPerformanceDefaults:
 
 @dataclass(frozen=True)
 class SnrThresholds:
-    """Calibrated SNR tiers derived from real noise distributions.
-
-    Derived via noise_threshold_calibration gate on real GBT data.
-    Not calibrated survey sensitivity estimates.
-    """
+    """Optional SNR tiers for an explicitly supplied scoring configuration."""
 
     noise_floor_snr: float
     follow_up_snr: float
@@ -36,7 +32,7 @@ class SnrThresholds:
 
 @dataclass(frozen=True)
 class DriftRateThresholds:
-    """Calibrated drift-rate guardrail from real observation data."""
+    """Optional drift-rate guardrail for an explicitly supplied configuration."""
 
     max_rfi_like_drift_hz_s: float
 
@@ -64,16 +60,13 @@ class TrackConfig:
 
 
 def default_scoring_config_path() -> Path:
-    """Return the best available scoring config path (calibrated > v0)."""
+    """Return the uncalibrated heuristic routing configuration."""
 
-    calibrated = Path(__file__).resolve().parents[2] / "configs" / "scoring_calibrated_v1.json"
-    if calibrated.exists():
-        return calibrated
     return Path(__file__).resolve().parents[2] / "configs" / "scoring_v0.json"
 
 
 def v0_scoring_config_path() -> Path:
-    """Return the synthetic v0 scoring config path explicitly."""
+    """Return the uncalibrated v0 scoring config path explicitly."""
 
     return Path(__file__).resolve().parents[2] / "configs" / "scoring_v0.json"
 

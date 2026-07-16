@@ -3238,6 +3238,10 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                     "multi_epoch_persistence_score": _gate[
                         "multi_epoch_persistence_score"
                     ],
+                    "calibrated_snr_gate_available": _gate[
+                        "calibrated_snr_gate_available"
+                    ],
+                    "snr_gate": _gate["snr_gate"],
                 },
                 indent=2,
                 sort_keys=True,
@@ -6083,7 +6087,7 @@ def score_batch(
     scored_list = score_candidates_parallel(candidates, workers=workers)
 
     entries: list[dict[str, object]] = []
-    for scored in scored_list:
+    for candidate_path, scored in zip(candidate_paths, scored_list, strict=True):
         report_prefix = (
             f"{prefix}{scored.candidate.candidate_id}" if prefix
             else scored.candidate.candidate_id
@@ -6103,6 +6107,7 @@ def score_batch(
                 "config_version": str(
                     candidate.provenance.get("config_version", DEFAULT_SCORING_CONFIG_VERSION)
                 ),
+                "input_path": str(candidate_path),
                 "markdown_path": str(paths.markdown_path),
                 "json_path": str(paths.json_path),
                 "manifest_path": str(paths.manifest_path),
@@ -7978,7 +7983,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "escalation-gate-check",
         help=(
             "Check whether a candidate JSON file passes the escalation gate "
-            "(candidate_review_packet pathway + SNR >= 42.4). "
+            "(currently fail-closed because no admissible calibrated SNR gate exists). "
             "Returns escalation_required: true/false."
         ),
     )

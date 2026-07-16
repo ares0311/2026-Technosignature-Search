@@ -20,6 +20,13 @@ def test_scoring_config_loads_local_performance_defaults() -> None:
     assert config.pathway_thresholds.false_positive_probability == 0.8
 
 
+def test_default_scoring_config_is_uncalibrated_v0() -> None:
+    assert default_scoring_config_path().name == "scoring_v0.json"
+    config = load_scoring_config()
+    assert config.snr_thresholds is None
+    assert config.drift_rate_thresholds is None
+
+
 @pytest.mark.parametrize(
     ("track", "expected_version"),
     [
@@ -79,10 +86,7 @@ def test_scoring_config_rejects_descending_snr_thresholds(tmp_path) -> None:
         load_scoring_config(path)
 
 
-def test_scoring_v1_template_is_unit_safe() -> None:
-    template_path = (
-        default_scoring_config_path().parent / "scoring_v1_template.json"
-    )
-    config = load_scoring_config(template_path)
-
-    assert config.pathway_thresholds.candidate_signal_reality == 0.7
+def test_invalid_calibrated_configs_are_retired() -> None:
+    config_dir = default_scoring_config_path().parent
+    assert not (config_dir / "scoring_calibrated_v1.json").exists()
+    assert not (config_dir / "scoring_v1_template.json").exists()

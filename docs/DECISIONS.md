@@ -3942,3 +3942,42 @@ row-level provenance. If adequate labels remain unavailable, learned gates stay
 fail-closed. The permitted next work is deterministic false-positive rejection,
 unlabeled ranking/triage, or another named roadmap gap—not reconstructing a
 labeling workflow under a different name.
+
+
+# DECISION-146: Retire Invalid Default Scoring Calibration
+
+**Date:** 2026-07-16
+**Status:** Accepted
+**Supersedes:** DECISION-127/128 production-scoring and escalation-threshold interpretation
+
+## Context
+
+DECISION-145 removed project-owned label creation and label-trained models, but
+the resulting `configs/scoring_calibrated_v1.json` remained the automatic
+default for every `score_candidate()` call. Its tiered SNR scoring, drift
+neutralization, and low-SNR noise boost were evaluated and tuned against the
+same unauthorized project-generated HIP99427 cadence outcomes. The config also
+claimed a five-cadence, five-target, two-epoch calibration while the current
+threshold preflight records one cadence and one epoch and is not
+calibration-ready. A hard-coded 42.4 SNR escalation threshold derived from that
+config could still return `passes: true`.
+
+## Decision
+
+Delete `scoring_calibrated_v1.json` and its citizen-review template. Make the
+explicitly uncalibrated `scoring_v0.json` heuristic config the only automatic
+default. Preserve optional typed SNR/drift configuration support for future
+explicitly supplied configurations with admissible provenance, but never
+auto-discover a calibrated file by filename. Mark the standalone escalation
+SNR gate unavailable and fail closed until an admissible threshold exists.
+
+## Consequences
+
+Default pathway scores may change because the invalid SNR tiers, drift
+neutralization, and label-tuned noise boost no longer apply automatically.
+Those scores remain local heuristic triage aids, not calibrated probabilities
+or scientific evaluation. No SNR value can currently cause the standalone
+escalation gate to pass. Reopening that gate requires adequate pre-existing,
+independent row-level evidence with documented provenance and a new reviewed
+decision; project-generated, inferred, synthetic, or unlabeled threshold truth
+is not admissible.

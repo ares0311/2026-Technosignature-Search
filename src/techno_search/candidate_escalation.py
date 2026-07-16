@@ -14,7 +14,7 @@ ESCALATION_DISCLAIMER = (
     "operator approval."
 )
 ESCALATION_SCHEMA_VERSION = "candidate_escalation_v1"
-ESCALATION_SNR_GATE = 42.4
+ESCALATION_SNR_GATE: float | None = None
 ESCALATION_MULTI_EPOCH_GATE = 0.0  # exclusive lower bound; must be > 0.0 to pass
 
 
@@ -138,15 +138,16 @@ def escalation_gate_check(candidate_dict: dict[str, Any]) -> dict[str, Any]:
     Returns a structured dict with the result and the reason for pass/fail.
     Passes only if ALL of:
     - ``recommended_pathway`` is ``"candidate_review_packet"``
-    - SNR >= ESCALATION_SNR_GATE (42.4)
+    - an admissible calibrated SNR gate is available and the SNR passes it
     - multi_epoch_persistence_score > ESCALATION_MULTI_EPOCH_GATE (0.0)
 
     Args:
         candidate_dict: Scored candidate dict.
 
     Returns:
-        Dict with keys: ``passes`` (bool), ``reason`` (str), ``snr`` (float),
-        ``multi_epoch_persistence_score`` (float), ``pathway`` (str).
+        Dict with keys including ``passes`` (bool), ``reason`` (str), ``snr``
+        (float), ``multi_epoch_persistence_score`` (float), ``pathway`` (str),
+        and calibrated-gate availability.
     """
     pathway = candidate_dict.get("recommended_pathway", "")
     snr = _get_snr(candidate_dict)
@@ -163,6 +164,21 @@ def escalation_gate_check(candidate_dict: dict[str, Any]) -> dict[str, Any]:
             "snr": snr,
             "multi_epoch_persistence_score": multi_epoch_persistence_score,
             "pathway": pathway,
+            "calibrated_snr_gate_available": False,
+            "snr_gate": ESCALATION_SNR_GATE,
+        }
+    if ESCALATION_SNR_GATE is None:
+        return {
+            "passes": False,
+            "reason": (
+                "admissible calibrated SNR gate is unavailable; escalation "
+                "remains fail-closed"
+            ),
+            "snr": snr,
+            "multi_epoch_persistence_score": multi_epoch_persistence_score,
+            "pathway": pathway,
+            "calibrated_snr_gate_available": False,
+            "snr_gate": None,
         }
     if snr < ESCALATION_SNR_GATE:
         return {
@@ -173,6 +189,8 @@ def escalation_gate_check(candidate_dict: dict[str, Any]) -> dict[str, Any]:
             "snr": snr,
             "multi_epoch_persistence_score": multi_epoch_persistence_score,
             "pathway": pathway,
+            "calibrated_snr_gate_available": True,
+            "snr_gate": ESCALATION_SNR_GATE,
         }
     if multi_epoch_persistence_score <= ESCALATION_MULTI_EPOCH_GATE:
         return {
@@ -186,6 +204,8 @@ def escalation_gate_check(candidate_dict: dict[str, Any]) -> dict[str, Any]:
             "snr": snr,
             "multi_epoch_persistence_score": multi_epoch_persistence_score,
             "pathway": pathway,
+            "calibrated_snr_gate_available": True,
+            "snr_gate": ESCALATION_SNR_GATE,
         }
     return {
         "passes": True,
@@ -193,6 +213,8 @@ def escalation_gate_check(candidate_dict: dict[str, Any]) -> dict[str, Any]:
         "snr": snr,
         "multi_epoch_persistence_score": multi_epoch_persistence_score,
         "pathway": pathway,
+        "calibrated_snr_gate_available": True,
+        "snr_gate": ESCALATION_SNR_GATE,
     }
 
 

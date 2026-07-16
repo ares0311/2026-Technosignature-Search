@@ -544,6 +544,10 @@ def _run_escalation_step(
                     "multi_epoch_persistence_score": float(
                         gate["multi_epoch_persistence_score"]
                     ),
+                    "calibrated_snr_gate_available": bool(
+                        gate["calibrated_snr_gate_available"]
+                    ),
+                    "snr_gate": gate["snr_gate"],
                     "detection_claimed": False,
                     "external_submission_allowed": False,
                 },

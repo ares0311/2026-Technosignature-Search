@@ -6,7 +6,21 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.20
+**Current app version:** 1.2.21
+
+**Invalid default scoring calibration retired — 2026-07-16:** version 1.2.21
+supersedes DECISION-127/128's promotion interpretation and deletes
+`scoring_calibrated_v1.json` plus its citizen-review template. The root cause
+was the label-path retirement leaving a config tuned against project-generated
+HIP99427 cadence outcomes as the automatic default for every scored candidate.
+Its claimed five-cadence/two-epoch calibration also conflicts with the current
+preflight record of one cadence and one epoch. Default scoring now uses the
+explicitly uncalibrated `scoring_v0.json` local-routing heuristics; optional
+caller-supplied SNR/drift tiers remain possible only with admissible provenance.
+The standalone escalation gate reports the calibrated SNR gate unavailable and
+fails closed regardless of observed SNR or multi-epoch evidence. No candidate
+is promoted, and no scientific performance or external-submission claim is
+made.
 
 **Deleted-implementation CLI stubs retired — 2026-07-16:** version 1.2.20
 removes the still-callable `generate-peer-review-package` and
@@ -794,13 +808,14 @@ Key scientific decisions:
 - DECISION-122: First approved real GBT cadence ingestion; OFF-target rejection
 - DECISION-123: Citizen-science reproducibility standard (now superseded by
   publication-grade standard — see AGENTS.md PRIMARY DIRECTIVE)
-- DECISION-127: Calibrated scoring thresholds from real GBT noise data
-- DECISION-128: Scoring model v1 (77.42% diagnostic agreement on real labels)
+- DECISION-127: historical GBT threshold promotion (superseded by DECISION-146)
+- DECISION-128: historical label-tuned scoring model (superseded by DECISION-146)
 - DECISION-133: Model generalizability suite (cross-band features, GLOBULAR,
   semi-supervised scorer — all need real training data)
 - DECISION-139: historical injection-recovery closure (superseded by DECISION-144)
 - DECISION-144: learned/AI promotion gate reopened fail-closed; adequate pre-existing row-level labels remain unavailable
 - DECISION-145: project-owned label generation and combination paths retired
+- DECISION-146: invalid default scoring calibration and escalation threshold retired fail-closed
 - DECISION-141: Production scan history and history-aware queue
 - DECISION-143: Stratified random sampling of BL HPRC target list (31 targets,
   18 strata, Isaacson et al. 2017)
