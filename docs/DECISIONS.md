@@ -4019,3 +4019,37 @@ remain available through current policy-compliant workflows. Learned/anomaly
 outputs and heuristic scores remain local triage diagnostics; no threshold is
 calibrated, transferable, or authorized for candidate escalation or external
 submission.
+
+
+# DECISION-148: Retire Unsupervised Weekly Scan Scheduler
+
+**Date:** 2026-07-16
+**Status:** Accepted
+**Implements:** Phase 0 operational-overhead cleanup and DECISION-146
+
+## Context
+
+The scheduled `weekly_scan.yml` workflow ran every Sunday on a clean GitHub
+checkout even though raw hit tables are ignored local data. It generated a
+`no_data` scan artifact when those inputs were absent, committed generated
+results, and pushed directly to `main`. That bypassed the repository's required
+feature-branch PR workflow and risked a recurring bookkeeping loop with no
+scientific observation processed. Its duplicate operator guide also instructed
+the retired 42.4 SNR gate and a nonexistent `operator-clear-escalation` command.
+
+## Decision
+
+Delete the scheduled workflow and its duplicate production-scan guide and scan
+schedule. Keep the authoritative `docs/PRODUCTION_SCAN_RUNBOOK.md` as the
+explicit local production-review path. Add a regression test that keeps the
+retired files absent and rejects active workflows that push generated scan
+results directly to `main`.
+
+## Consequences
+
+GitHub Actions no longer creates empty weekly scan artifacts or mutates `main`
+outside the PR flow. Real local candidate manifests can still be reviewed with
+the bounded `prod-scan`, `prod-runs`, and `prod-show` workflow documented in the
+authoritative runbook. No calibrated threshold is restored, no candidate is
+promoted, and no detection, expert-review, external-validation, or submission
+claim is made.
