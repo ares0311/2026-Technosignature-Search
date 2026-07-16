@@ -1,6 +1,6 @@
 """Production scan run IDs and conservative outcome ledgers.
 
-These artifacts are operator ledgers for local citizen-science production use.
+These artifacts are operator ledgers for local production triage.
 They do not make detection, discovery, external-validation, expert-review, or
 external-submission claims.
 """
@@ -25,11 +25,11 @@ PRODUCTION_NON_DETECTIONS_SCHEMA_VERSION = "production_non_detections_v1"
 PRODUCTION_FOLLOW_UPS_SCHEMA_VERSION = "production_follow_ups_v1"
 PRODUCTION_TARGET_STATUS_SCHEMA_VERSION = "production_target_status_v1"
 PRODUCTION_OUTCOME_DISCLAIMER = (
-    "Production run outcome files are local citizen-science operations ledgers "
-    "only. They do not constitute detection, discovery, expert review, peer "
+    "Production run outcome files are local production-triage ledgers only. "
+    "They do not constitute detection, discovery, expert review, peer "
     "review, external validation, or authorization for external submission."
 )
-PRODUCTION_PROMOTION_SCOPE = "local_citizen_science_operations_only"
+PRODUCTION_PROMOTION_SCOPE = "local_production_triage_only"
 
 FOLLOW_UP_PATHWAYS = {
     "candidate_review_packet",

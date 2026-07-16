@@ -9,6 +9,7 @@ from techno_search.production_run_outcomes import (
     PRODUCTION_FOLLOW_UPS_SCHEMA_VERSION,
     PRODUCTION_NON_DETECTIONS_SCHEMA_VERSION,
     PRODUCTION_OUTCOME_DISCLAIMER,
+    PRODUCTION_PROMOTION_SCOPE,
     PRODUCTION_RUN_MANIFEST_SCHEMA_VERSION,
     PRODUCTION_TARGET_STATUS_SCHEMA_VERSION,
     build_production_outcomes,
@@ -131,6 +132,9 @@ def test_build_production_outcomes_splits_non_detections_and_follow_ups() -> Non
     assert manifest["detection_claimed"] is False
     assert follow_ups["external_submission_allowed"] is False
     assert "detection" in PRODUCTION_OUTCOME_DISCLAIMER
+    assert "citizen" not in PRODUCTION_OUTCOME_DISCLAIMER.lower()
+    assert manifest["production_promotion_scope"] == PRODUCTION_PROMOTION_SCOPE
+    assert PRODUCTION_PROMOTION_SCOPE == "local_production_triage_only"
 
 
 def test_build_production_outcomes_records_scan_level_negative_result() -> None:

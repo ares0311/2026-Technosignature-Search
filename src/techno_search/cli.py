@@ -7898,7 +7898,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "prod-write-outcomes",
         help=(
             "Write production run manifest, non-detection ledger, and follow-up "
-            "ledger files. Local citizen-science operations only."
+            "ledger files for local production triage only."
         ),
     )
     prod_write_parser.add_argument("--results-dir", required=True)
@@ -7911,7 +7911,7 @@ def _build_parser() -> argparse.ArgumentParser:
         help=(
             "Run the compact local production scan UX: validation, scan "
             "summary, RFI suppression, escalation checks, dashboard, and "
-            "outcome ledgers. Local citizen-science operations only."
+            "outcome ledgers for local production triage only."
         ),
     )
     prod_scan_parser.add_argument(
