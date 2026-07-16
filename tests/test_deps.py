@@ -49,9 +49,5 @@ def test_curated_dataset_admission_importable() -> None:
         curated_dataset_admission_summary,
     )
 
-def test_labeled_dataset_importable() -> None:
-    from techno_search.labeled_dataset import labeled_dataset_summary  # noqa: F401
-
-
 def test_baseline_eval_importable() -> None:
-    from techno_search.baseline_eval import eval_against_labels, evaluate_baseline  # noqa: F401
+    from techno_search.baseline_eval import evaluate_baseline  # noqa: F401

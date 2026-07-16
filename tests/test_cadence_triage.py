@@ -10,7 +10,6 @@ from techno_search.cadence_triage import (
     cadence_abacab_review_summary,
     group_cadence_hits,
 )
-from techno_search.labeled_dataset import labeled_dataset_summary
 
 DATASET = Path(
     "examples/real_labeled/hip99427_citizen_science_labels_v1.json"
@@ -142,14 +141,3 @@ def test_frozen_legacy_artifact_preserves_non_claim_boundaries() -> None:
         entry["primary_label"] == entry["audit_label"]
         for entry in payload["entries"]
     )
-
-
-def test_legacy_artifact_summary_preserves_review_limits() -> None:
-    summary = labeled_dataset_summary(DATASET)
-
-    assert summary["entry_count"] == 124
-    assert summary["real_observation_label_count"] == 124
-    assert summary["review_policy"] == "citizen_science_reproducibility_v1"
-    assert summary["expert_review_claimed"] is False
-    assert summary["external_validation_claimed"] is False
-    assert "not expert labels" in summary["disclaimer"]

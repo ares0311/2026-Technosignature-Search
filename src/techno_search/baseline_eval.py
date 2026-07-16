@@ -28,13 +28,6 @@ BASELINE_EVAL_DISCLAIMER = (
     "discoveries, or external validation. Accuracy metrics are computed against "
     "synthetic fixtures and have no statistical meaning for real observations."
 )
-REAL_LABEL_EVAL_DISCLAIMER = (
-    "Evaluation results compare the current uncalibrated scoring model against "
-    "citizen-science operational labels derived from real observations. They "
-    "are local diagnostics only, not expert validation, calibrated survey "
-    "performance, detections, discoveries, or external submission approval."
-)
-
 
 def _default_calibration_fixture_path() -> Path:
     return (
@@ -375,110 +368,6 @@ def classifier_rule_coverage_summary(
         "rules_fired_at_least_once": rules_fired_at_least_once,
         "rules_never_fired": rules_never_fired,
         "rule_fire_rates": dict(sorted(rule_fire_rates.items())),
-    }
-
-
-def _default_labeled_candidates_path() -> Path:
-    return (
-        Path(__file__).resolve().parents[2]
-        / "tests"
-        / "fixtures"
-        / "labeled_candidates.json"
-    )
-
-
-# Maps dataset labels to scoring pathway predictions for eval purposes.
-# follow_up → candidate_review_packet
-# false_positive / known_object → do_not_submit_false_positive
-# insufficient_evidence → needs_more_data (if implemented) or human_review_queue
-_LABEL_TO_EXPECTED_PATHWAY = {
-    "follow_up": "candidate_review_packet",
-    "false_positive": "do_not_submit_false_positive",
-    "known_object": "do_not_submit_false_positive",
-    "insufficient_evidence": "human_review_queue",
-}
-
-
-def eval_against_labels(
-    labeled_dataset_path: Path | None = None,
-) -> dict[str, Any]:
-    """Evaluate the scoring model against the labeled candidate dataset.
-
-    Maps dataset labels to expected pathways and checks scoring model predictions.
-    Results are local synthetic diagnostics only — not detection claims.
-    """
-    from techno_search.labeled_dataset import (
-        labeled_dataset_summary,
-        load_labeled_candidates,
-    )
-
-    path = labeled_dataset_path or _default_labeled_candidates_path()
-    if not path.exists():
-        return {
-            "schema_version": "eval_against_labels_v0",
-            "disclaimer": BASELINE_EVAL_DISCLAIMER,
-            "entry_count": 0,
-            "correct_count": 0,
-            "accuracy": 0.0,
-            "results": [],
-        }
-
-    dataset_summary = labeled_dataset_summary(path)
-    entries = load_labeled_candidates(path)
-    results = []
-    for entry in entries:
-        expected_pathway = _LABEL_TO_EXPECTED_PATHWAY.get(entry.label, "human_review_queue")
-        with suppress(Exception):
-            candidate = candidate_from_mapping(entry.candidate)
-            scored = score_candidate(candidate)
-            actual_pathway = scored.recommended_pathway.value
-            results.append({
-                "entry_id": entry.entry_id,
-                "candidate_id": entry.candidate_id,
-                "track": entry.track,
-                "label": entry.label,
-                "label_confidence": entry.label_confidence,
-                "expected_pathway": expected_pathway,
-                "actual_pathway": actual_pathway,
-                "match": actual_pathway == expected_pathway,
-            })
-
-    total = len(results)
-    correct = sum(1 for r in results if r["match"])
-    accuracy = correct / total if total > 0 else 0.0
-
-    by_label: dict[str, dict[str, int]] = {}
-    for r in results:
-        lbl = str(r["label"])
-        if lbl not in by_label:
-            by_label[lbl] = {"total": 0, "correct": 0}
-        by_label[lbl]["total"] += 1
-        if r["match"]:
-            by_label[lbl]["correct"] += 1
-
-    label_accuracy = {
-        lbl: (counts["correct"] / counts["total"] if counts["total"] > 0 else 0.0)
-        for lbl, counts in by_label.items()
-    }
-
-    return {
-        "schema_version": "eval_against_labels_v0",
-        "disclaimer": (
-            REAL_LABEL_EVAL_DISCLAIMER
-            if int(dataset_summary["real_observation_label_count"]) > 0
-            else BASELINE_EVAL_DISCLAIMER
-        ),
-        "dataset_classification": dataset_summary["dataset_classification"],
-        "review_policy": dataset_summary["review_policy"],
-        "expert_review_claimed": dataset_summary["expert_review_claimed"],
-        "external_validation_claimed": dataset_summary[
-            "external_validation_claimed"
-        ],
-        "entry_count": total,
-        "correct_count": correct,
-        "accuracy": round(accuracy, 4),
-        "by_label_accuracy": label_accuracy,
-        "results": results,
     }
 
 

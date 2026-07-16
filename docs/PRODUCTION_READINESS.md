@@ -6,7 +6,17 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.15
+**Current app version:** 1.2.16
+
+**Executable label-evaluation path retired — 2026-07-16:** version 1.2.16
+removes the still-callable `labeled-dataset-summary` and
+`eval-against-labels` commands, their generic label-dataset reader, and the
+function that mapped project-generated cadence outcomes to expected scoring
+pathways and accuracy. These survived the version 1.2.11 label-path cleanup
+and contradicted the pre-existing-independent-label-only boundary. The frozen
+HIP99427 JSON and its schema remain preserved solely as legacy diagnostic
+evidence; no scientific ledger, deterministic cadence-triage command, or valid
+Track A known-explanation path is removed.
 
 **Step 2 production-scope terminology repair — 2026-07-16:** version 1.2.15
 removes stale pre-mission-redirect citizen-science wording from production-run

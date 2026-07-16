@@ -132,6 +132,11 @@ anyone to create labels; they are retired.
    gaps that do not depend on unavailable labels. The current internal synthesis
    is `docs/False_Positive_Technosignature_Case_Studies.md` and its bibliography.
 
+Version 1.2.16 removes the residual executable label-dataset summary and
+score-against-labels commands that mapped project-generated legacy cadence
+outcomes to pathway accuracy. The frozen artifact remains diagnostic-only;
+there is no replacement label path.
+
 ---
 
 ## Step 2 (blocks nothing downstream directly, but must precede Step 3 per user direction): harden the UI
