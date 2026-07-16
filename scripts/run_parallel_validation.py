@@ -4,7 +4,12 @@
 pytest-xdist owns the test scheduling: six workers are six active shards, and
 ``--dist=loadfile`` keeps every test file on one worker while executing each
 collected test exactly once. After pytest succeeds, the independent app-version,
-Ruff, mypy, and scientific ``validate-all`` checks run concurrently.
+Ruff, mypy, scientific ``validate-all``, directive-parity, no-fake-completion,
+and verification-freshness checks run concurrently. This is the canonical,
+single entry point for "is this repository state currently verified" — see
+AGENTS.md's NO UNSUPPORTED COMPLETION CLAIMS section. On a fully clean pass,
+it records the tested commit via
+``scripts/check_verification_freshness.py --record-pass``.
 """
 
 from __future__ import annotations
@@ -58,6 +63,8 @@ def _run_parallel_checks(env: dict[str, str]) -> dict[str, int]:
         "ruff": [sys.executable, "-m", "ruff", "check", "."],
         "mypy": [sys.executable, "-m", "mypy", "src", "--no-error-summary"],
         "validate-all": [sys.executable, "-m", "techno_search.cli", "validate-all"],
+        "directive-parity": [sys.executable, "scripts/check_directive_parity.py"],
+        "no-fake-completion": [sys.executable, "scripts/check_no_fake_completion.py"],
     }
     processes: dict[str, subprocess.Popen[str]] = {
         name: subprocess.Popen(
@@ -140,7 +147,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     if pytest_result.returncode != 0 or args.pytest_only:
         return pytest_result.returncode
 
-    print("pytest passed; running app-version, Ruff, mypy, and validate-all concurrently.")
+    print(
+        "pytest passed; running app-version, Ruff, mypy, validate-all, "
+        "directive-parity, and no-fake-completion concurrently."
+    )
     results = _run_parallel_checks(env)
     failures = {name: code for name, code in results.items() if code != 0}
     if failures:
@@ -148,6 +158,19 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"Validation failures: {detail}", file=sys.stderr)
         return 1
     print("All parallel validation checks passed.")
+
+    from check_verification_freshness import _uncommitted_changes, record_verification_pass
+
+    if _uncommitted_changes(REPO_ROOT, ("src", "tests", "scripts", "AGENTS.md", "CLAUDE.md")):
+        print(
+            "NOTE: working tree has uncommitted changes under watched paths; not "
+            "recording a verification-pass marker. Commit, then rerun for a "
+            "traceable 'verified as of commit <sha>' record "
+            "(scripts/check_verification_freshness.py)."
+        )
+    else:
+        marker_path = record_verification_pass(REPO_ROOT)
+        print(f"Recorded verification pass at {marker_path}.")
     return 0
 
 

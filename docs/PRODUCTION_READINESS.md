@@ -6,7 +6,35 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.27
+**Current app version:** 1.2.28
+
+**Verifiable agent-reliability controls added — 2026-07-16:** version 1.2.28
+adds three new scripts wired into the canonical
+`scripts/run_parallel_validation.py` entry point: `check_directive_parity.py`
+(fails if `CLAUDE.md` loses its deference to `AGENTS.md`, or if `AGENTS.md`
+loses its FAIL LOUDLY / NO FAKE COMPLETION / NO UNSUPPORTED COMPLETION
+CLAIMS section headers — the mechanism keeping Claude Code and Codex CLI,
+which read `CLAUDE.md` and `AGENTS.md` respectively per their own native
+conventions, exposed to equivalent requirements), `check_no_fake_completion.py`
+(AST-based scan of `src/` for bare-`pass` production functions outside the
+documented Phase 0 legacy-stub signature, plus unresolved TODO/FIXME
+markers), and `check_verification_freshness.py` (git-native: fails if
+watched paths have uncommitted changes, or if a recorded verification-pass
+marker predates a relevant change to HEAD; records
+`artifacts/verification_last_pass.json` — an already-ignored local path —
+on a fully clean, fully passing run). `AGENTS.md` gained explicit FAIL
+LOUDLY / NO FAKE COMPLETION / NO UNSUPPORTED COMPLETION CLAIMS sections
+(expanding the LLM MAINTENANCE DIRECTIVES added the same day) with the
+`COMPLETE = IMPLEMENTED AND VERIFIED AND VERIFICATION_CURRENT AND
+SPEC_CONFORMANT` formula and the IMPLEMENTED-BUT-NOT-VERIFIED vs VERIFIED
+distinction. `tests/test_verification_controls.py` (16 tests) proves each
+control actually detects representative known-good, known-bad, and
+malformed inputs — mocking only the external `git` subprocess boundary
+where a real nested git repo could not be created in this sandbox
+(confirmed: `git init` under a tmp path inside this repo fails trying to
+write `.git/config` and copy hook templates), never the decision logic
+under test. See DECISION-152 for the full architecture rationale, including
+why no new framework, provenance database, or task runner was introduced.
 
 **Operations-blocker CLI family retired — 2026-07-16:** version 1.2.27 deletes
 16 `operations-*` commands (`operations-readiness-summary`,

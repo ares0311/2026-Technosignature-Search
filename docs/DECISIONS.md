@@ -4187,3 +4187,94 @@ inspection of `validate_all()`'s real implementation confirmed it never
 called any of them, so that documentation was already describing fictional
 behavior independent of this change. No candidate ledger, scoring threshold,
 or scientific claim changed.
+
+# DECISION-152: Verifiable Agent-Reliability Controls (Claude Code + Codex Parity)
+
+**Date:** 2026-07-16
+**Status:** Accepted
+**Implements:** DECISION-151 (the LLM MAINTENANCE DIRECTIVES it added are the
+normative basis this decision makes mechanically enforceable)
+
+## Context
+
+This repository is worked on by both Claude Code (reads `CLAUDE.md`) and
+Codex CLI (reads `AGENTS.md` directly, per its own documented
+repository-instructions convention). An explicit request asked for the
+smallest practical architecture making agent work reliable and
+independently verifiable by either agent, governed by "repository state and
+reproducible verification outrank agent claims" — without building a new
+framework where existing repository instructions, Git, tests, CI, linters,
+and lightweight scripts already provide equivalent guarantees.
+
+Inspection found the needed foundation already mostly in place:
+`CLAUDE.md` already explicitly defers to `AGENTS.md` ("AGENTS.md is the
+single source of truth for all directives... where anything below appears
+to conflict, `AGENTS.md` governs"); `.codex/` exists but is empty, confirming
+Codex has no repo-specific config today and reads `AGENTS.md` directly;
+`scripts/run_parallel_validation.py` is already the canonical validation
+entry point (six-shard pytest, then concurrent app-version/Ruff/mypy/
+validate-all checks, non-zero exit on any failure); `scripts/
+check_app_version.py` already establishes the git-native "compare current
+state against a base ref" pattern; `tests/test_no_label_creation_paths.py`
+already establishes the house style for presence/absence regression guards
+(plain `Path(...).read_text()` + string assertions, no framework).
+
+## Decision
+
+Reuse all of the above rather than building new infrastructure:
+
+1. Expand `AGENTS.md`'s LLM MAINTENANCE DIRECTIVES (added the same day, see
+   DECISION-151) into explicit FAIL LOUDLY / NO FAKE COMPLETION / NO
+   UNSUPPORTED COMPLETION CLAIMS subsections, losslessly preserving every
+   prior requirement, plus a new AGENT INSTRUCTION EXPOSURE subsection
+   documenting exactly how Codex and Claude Code each reach this file.
+2. Add `scripts/check_directive_parity.py`: plain string-presence checks
+   (matching the existing `test_no_label_creation_paths.py` idiom) that
+   `CLAUDE.md` still contains its deference marker and `AGENTS.md` still
+   contains the required section headers.
+3. Add `scripts/check_no_fake_completion.py`: an AST-based scan of `src/`
+   flagging bare-`pass` production functions and unresolved TODO/FIXME
+   markers. Allowlisting is structural, not a maintained name list: any
+   function matching this repo's own established Phase 0 legacy-stub
+   signature (`*_a, **_k`-style generic catch-all parameters, the exact
+   convention already used by ~180 existing `_StubDict`-returning
+   functions) is accepted; a real function with meaningful named parameters
+   that does nothing is not.
+4. Add `scripts/check_verification_freshness.py`: git-native staleness
+   detection — uncommitted changes under watched paths, or a recorded
+   verification-pass marker (`artifacts/verification_last_pass.json`, an
+   already-ignored path) whose commit predates a relevant change to HEAD —
+   both fail the gate. No provenance database; the marker is one small
+   JSON file holding a commit SHA, and Git itself is the source of truth
+   for what changed.
+5. Wire all three into `scripts/run_parallel_validation.py`'s existing
+   concurrent-check dict (zero new task runner). On a fully clean, fully
+   passing run, it now also records the verification-pass marker — but
+   only when the tree has no uncommitted changes, so a marker is only ever
+   written for real, addressable commits, never for mid-edit working state.
+6. Add `tests/test_verification_controls.py` (16 tests): known-good,
+   known-bad, and malformed cases for all three checks. Verification
+   freshness tests mock only the `_git()` subprocess call, not the decision
+   logic — a real throwaway git repo could not be created in this sandbox
+   (`git init` under a tmp path inside this repo fails: it cannot write
+   `.git/config` or copy hook templates, a real sandbox restriction found
+   and worked around during this task, not routed around by weakening the
+   test).
+
+Explicitly not built: a stable-requirement-ID ledger beyond this
+`DECISION-N` numbering already in use; a directive-management framework;
+any new task runner; a hash-based content-provenance system (git commit SHA
+already serves that role at the granularity this repository needs).
+
+## Consequences
+
+`scripts/run_parallel_validation.py` now fails if `CLAUDE.md`/`AGENTS.md`
+directive parity drifts, if a new bare-`pass` stub or TODO/FIXME lands in
+`src/`, or — when explicitly checked via `check_verification_freshness.py`
+before a completion claim — if the working tree has uncommitted changes or
+the last recorded verification pass predates a relevant change. All three
+checks are proven (not merely asserted) to detect representative failures
+via the new adversarial test file, which runs as part of the normal test
+suite and therefore itself as part of every future validation pass. No
+scientific threshold, candidate ledger, or existing directive requirement
+was weakened; `AGENTS.md` gained requirements, it did not lose any.
