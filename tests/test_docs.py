@@ -13,185 +13,77 @@ def test_cli_usage_references_existing_example_paths() -> None:
     assert Path("examples/reports/example-radio-clean.manifest.json").exists()
 
 
-def test_readme_references_existing_project_docs() -> None:
+def test_readme_references_current_authoritative_docs() -> None:
     readme = Path("README.md").read_text(encoding="utf-8")
 
     linked_paths = (
-        "docs/PROJECT_STATUS.md",
-        "docs/ROADMAP.md",
-        "docs/PIPELINE_SPEC.md",
-        "docs/SCORING_MODEL.md",
-        "docs/CLI_USAGE.md",
+        "AGENTS.md",
+        "docs/PRODUCTION_READINESS.md",
+        "docs/SYSTEMATIC_SEARCH_PLAN.md",
+        "docs/PRODUCTION_SCAN_RUNBOOK.md",
         "docs/VALIDATION.md",
         "docs/CI.md",
-        "docs/SUBMISSION_PATHWAYS.md",
         "docs/LOCAL_SYSTEM_PROFILE.md",
+        "docs/technosignature_datasets_agent_brief.md",
+        "docs/astrometrics_coding_agents_master_guide.md",
+        "docs/astrometrics_data_selection_policy.md",
+        "docs/astrometrics_external_and_cloud_storage_policy.md",
     )
     for path in linked_paths:
         assert path in readme
         assert Path(path).exists()
 
 
-def test_readme_keeps_public_entrypoint_structure() -> None:
+def test_readme_is_current_public_entrypoint() -> None:
     readme = Path("README.md").read_text(encoding="utf-8")
 
     expected_sections = (
-        "## 📑 Table of Contents",
-        "## 🌌 Introduction",
-        "## 🧠 Scientific Motivation",
-        "## 📊 Current Status",
-        "## 🛣 Project Roadmap",
-        "## ⚙️ Pipeline Architecture",
-        "## 📐 Methodology and Scoring Equations",
-        "## 🔭 Data Sources",
-        "## 🚀 Installation",
-        "## ⚡ Quick Start",
-        "## 🧭 Using and Recalibrating the Model",
-        "## 🧪 Quality Control",
-        "## 📤 Submission Pathways",
-        "## 📂 Repository Layout",
-        "## 🖥 Local System Profile",
-        "## 🛡 Guardrails",
-        "## ⚠️ Important Disclaimer",
-        "## 📚 Works Cited",
-        "## 📜 License",
-        "## 🔭 Vision",
+        "## Scientific boundary",
+        "## Current status",
+        "## Pipeline architecture",
+        "## Data and target-selection policy",
+        "## Environment",
+        "## Quick start",
+        "## Real-data workflows",
+        "## Validation and release discipline",
+        "## Repository layout",
+        "## Scientific guardrails",
+        "## Disclaimer",
+        "## License",
     )
     for section in expected_sections:
         assert section in readme
 
-    assert "[Methodology and Scoring Equations](#-methodology-and-scoring-equations)" in readme
-    assert "[Using and Recalibrating the Model](#-using-and-recalibrating-the-model)" in readme
-    assert "### Abstract" in readme
-    assert "Technosignature searches require an analysis framework" in readme
-    assert "calibrated GBT scoring thresholds" in readme
-    assert "external validation as blocked" in readme
-    assert "candidate-evaluation and reproducibility system" in readme
-    assert "Most apparent technosignature-like signals are false positives." in readme
-    assert "### Research Questions" in readme
-    assert "### Evidence and Null-Model Matrix" in readme
-    assert "### Roadmap-Aligned Methodology" in readme
-    assert "\\mathcal{M}_{\\mathrm{roadmap}}" in readme
-    assert "Advanced AI research track after calibration" in readme
-    assert "\\mathcal{H} =" in readme
-    assert "K_{ij} =" in readme
-    assert "\\mathrm{Brier} =" in readme
-    assert "\\mathrm{ECE} =" in readme
-    assert "P(H \\mid D) \\propto P(D \\mid H)P(H)" in readme
-    assert "\\sum_k w_{ik}x_k" in readme
-    assert "P(\\mathrm{false\\ positive}) =" in readme
-    assert "Breakthrough Listen-style radio data" in readme
-    assert "### What the Model Does Today" in readme
-    assert "### Recalibration Workflow" in readme
-    assert "### Target Selection and Background Search Roadmap" in readme
-    assert "### Background Logging Requirements" in readme
-    assert "T =" in readme
-    assert "search ledger" in readme
-    assert ".venv/bin/techno-search target-priority-summary" in readme
-    assert ".venv/bin/techno-search background-ledger-summary" in readme
-    assert ".venv/bin/techno-search background-reviewed-workflow-summary" in readme
-    assert ".venv/bin/techno-search reviewed-log-summary" in readme
-    assert ".venv/bin/techno-search needs-follow-up-summary" in readme
-    assert ".venv/bin/techno-search follow-up-test-summary" in readme
-    assert ".venv/bin/techno-search report-readiness-summary" in readme
-    assert ".venv/bin/techno-search submission-recommendation-summary" in readme
-    assert ".venv/bin/techno-search candidate-extraction-handoff-summary" in readme
-    assert ".venv/bin/techno-search background-run-once" in readme
-    assert ".venv/bin/techno-search init-logs" in readme
-    assert ".venv/bin/techno-search sqlite-log-summary" in readme
-    assert ".venv/bin/techno-search sqlite-log-integrity-summary" in readme
-    assert ".venv/bin/techno-search sqlite-recent-runs" in readme
-    assert ".venv/bin/techno-search sqlite-needs-follow-up" in readme
-    assert ".venv/bin/techno-search sqlite-log-export" in readme
-    assert ".venv/bin/techno-search sqlite-migration-summary" in readme
-    assert ".venv/bin/techno-search sqlite-log-pragmas" in readme
-    assert ".venv/bin/techno-search sqlite-log-backup" in readme
-    assert ".venv/bin/techno-search sqlite-log-retention-summary" in readme
-    assert ".venv/bin/techno-search sqlite-log-vacuum" in readme
-    assert ".venv/bin/techno-search sqlite-log-commit-guard" in readme
-    assert ".venv/bin/techno-search sqlite-log-consistency-summary" in readme
-    assert ".venv/bin/techno-search sqlite-operational-log-registry-summary" in readme
-    assert (
-        ".venv/bin/techno-search sqlite-operational-log-adapter-plan-summary"
-        in readme
+    required_current_claims = (
+        "No confirmed positive technosignature labels exist.",
+        "remain unlabeled",
+        "ranking diagnostic",
+        "fail-closed",
+        "Phase 0 is complete",
+        "zero independently escalation-ready candidates",
+        "100 GB",
+        "metadata target queue",
+        "scripts/run_parallel_validation.py",
+        "six non-overlapping pytest-xdist workers",
+        "track-b-candidate-readiness",
+        "No result authorizes public disclosure or external submission.",
     )
-    assert (
-        ".venv/bin/techno-search sqlite-operational-log-adapter-contract-summary"
-        in readme
+    for claim in required_current_claims:
+        assert claim in readme
+
+    retired_claims = (
+        "Citizen-Science Production Deployment Readiness",
+        "Learned real-label scoring model",
+        "Local citizen-science production promotion is allowed",
+        "124 real cadence evidence groups labeled",
+        "review labels, consensus, and exports",
+        "logs/techno_search.sqlite3",
+        "sqlite-operational-log-adapter",
+        "candidate-extraction-handoff-summary",
+        "benchmark-run-append",
     )
-    assert (
-        ".venv/bin/techno-search sqlite-operational-log-adapter-ddl-preview-summary"
-        in readme
-    )
-    assert (
-        ".venv/bin/techno-search sqlite-operational-log-adapter-row-preview-summary"
-        in readme
-    )
-    assert (
-        ".venv/bin/techno-search sqlite-operational-log-adapter-insert-preview-summary"
-        in readme
-    )
-    assert (
-        ".venv/bin/techno-search "
-        "sqlite-operational-log-adapter-execution-preview-summary"
-        in readme
-    )
-    assert (
-        ".venv/bin/techno-search "
-        "sqlite-operational-log-adapter-dry-run-manifest-summary"
-        in readme
-    )
-    assert (
-        ".venv/bin/techno-search "
-        "sqlite-operational-log-adapter-readiness-preflight-summary"
-        in readme
-    )
-    assert (
-        ".venv/bin/techno-search "
-        "sqlite-operational-log-adapter-authorization-gate-summary"
-        in readme
-    )
-    assert ".venv/bin/techno-search validate-sqlite-logs" in readme
-    assert ".venv/bin/techno-search benchmark-run-append" in readme
-    assert ".venv/bin/techno-search benchmark-run-compare" in readme
-    assert ".venv/bin/techno-search validation-readiness-summary" in readme
-    assert ".venv/bin/techno-search curated-dataset-admission-summary" in readme
-    assert ".venv/bin/techno-search project-status-consistency-summary" in readme
-    assert ".venv/bin/techno-search mcp-bootstrap-consistency-summary" in readme
-    assert ".venv/bin/techno-search mcp-server-policy-summary" in readme
-    assert ".venv/bin/techno-search production-blocker-consistency-summary" in readme
-    assert (
-        ".venv/bin/techno-search operations-alert-review-consistency-summary"
-        in readme
-    )
-    assert (
-        ".venv/bin/techno-search operations-action-resolution-consistency-summary"
-        in readme
-    )
-    assert (
-        ".venv/bin/techno-search operations-blocker-progress-consistency-summary"
-        in readme
-    )
-    assert "configs/background_priority_v0.json" in readme
-    assert "Readiness status is a gate, not a scientific result." in readme
-    assert "The selected target is a scheduling recommendation only." in readme
-    assert "reviewed_workflow_status" in readme
-    assert "background_reviewed_log.json" in readme
-    assert "background_needs_follow_up_log.json" in readme
-    assert "background_follow_up_tests.json" in readme
-    assert "background_report_readiness.json" in readme
-    assert "logs/techno_search.sqlite3" in readme
-    assert "top-level SQLite" in readme
-    assert "external_submission_allowed" in readme
-    assert "T_{\\mathrm{sched}}" in readme
-    assert "Candidate-extraction handoff records are the next local contract" in readme
-    assert "### Quality-Control Matrix" in readme
-    assert ".venv/bin/techno-search score examples/candidates/radio_clean_candidate.json" in readme
-    assert "caffeinate -i .venv/bin/python scripts/run_parallel_validation.py" in readme
-    assert "Works Cited" in readme
-    assert "Gaia Data Release 3" in readme
-    assert "No claims of confirmed technosignatures" in readme
-    assert "not unsupported claims" in readme
+    for claim in retired_claims:
+        assert claim not in readme
 
 
 def test_publishing_docs_reference_current_validation_commands() -> None:
@@ -262,8 +154,7 @@ def test_ci_template_stays_non_networked_and_outside_workflows() -> None:
     launcher = Path("scripts/run_parallel_validation.py").read_text(encoding="utf-8")
 
     assert Path("docs/templates/ci.yml").exists()
-    # CI workflow may exist once workflow scope token is available
-    _ = Path(".github/workflows/ci.yml").exists()  # presence is no longer blocked
+    _ = Path(".github/workflows/ci.yml").exists()
     assert "workflow` scope" in ci_doc
     assert "TECHNO_SEARCH_ENABLE_LIVE_DATA=0" in ci_doc
     assert 'TECHNO_SEARCH_ENABLE_LIVE_DATA: "0"' in template

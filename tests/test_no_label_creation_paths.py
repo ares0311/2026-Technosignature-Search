@@ -37,6 +37,7 @@ def test_label_trained_model_commands_are_absent() -> None:
 def test_authoritative_directives_reject_legacy_artifact_as_labels() -> None:
     directive_paths = (
         Path("CLAUDE.md"),
+        Path("README.md"),
         Path("docs/PRODUCTION_READINESS.md"),
         Path("docs/PROJECT_STATUS.md"),
         Path("docs/SYSTEMATIC_SEARCH_PLAN.md"),

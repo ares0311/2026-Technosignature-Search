@@ -6,7 +6,18 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.17
+**Current app version:** 1.2.18
+
+**Public entrypoint mission alignment — 2026-07-16:** version 1.2.18 replaces
+the stale pre-prime-directive README, which still advertised citizen-science
+deployment, project-generated labels, learned real-label promotion, synthetic
+calibration, consensus review, and retired SQLite/operational workflows. The
+new public entrypoint reflects the current four-modality pipeline, the
+pre-existing-independent-label-only boundary, the fail-closed anomaly/OOD
+gate, metadata-first target selection, the permanent 100 GB cap, and current
+repo-native validation and production-review commands. A regression test now
+requires those current claims and rejects the retired public claims. Scientific
+thresholds, candidate ledgers, and evidence outcomes are unchanged.
 
 **Synthetic human-review/consensus subsystem retired — 2026-07-16:** version
 1.2.17 deletes the residual synthetic human-review queue, consensus-label, and
