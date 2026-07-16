@@ -137,6 +137,11 @@ score-against-labels commands that mapped project-generated legacy cadence
 outcomes to pathway accuracy. The frozen artifact remains diagnostic-only;
 there is no replacement label path.
 
+Version 1.2.17 completes that boundary for the old synthetic human-review
+subsystem by deleting its queue, consensus-label, consensus-export, and label-
+completeness entry points and fixtures. `human_review_queue` remains only a
+conservative local routing value, not a labeling workflow.
+
 ---
 
 ## Step 2 (blocks nothing downstream directly, but must precede Step 3 per user direction): harden the UI

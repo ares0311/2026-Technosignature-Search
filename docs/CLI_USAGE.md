@@ -304,42 +304,6 @@ The summary reports cases by track and truth class plus synthetic precision, rec
 
 ---
 
-## Summarize Human-Review Queue Fixtures
-
-Print synthetic human-review queue fixture coverage:
-
-```bash
-.venv/bin/techno-search review-queue-summary
-```
-
-The summary reports queue items by track, triage label, and recommended pathway, plus reviewer-note coverage and items still missing notes. These packets are triage aids only; they are not discovery claims.
-
----
-
-## Summarize Consensus Label Fixtures
-
-Print synthetic repeated-reviewer consensus fixture coverage:
-
-```bash
-.venv/bin/techno-search consensus-summary
-```
-
-The summary reports consensus items by track and consensus label, reviewer decision counts, decision-label counts, and unique reviewer coverage. Consensus labels are triage summaries only; they are not discovery claims or external validation.
-
----
-
-## Summarize Consensus Export Fixtures
-
-Print conservative consensus-label export example coverage:
-
-```bash
-.venv/bin/techno-search consensus-export-summary
-```
-
-The summary reports export counts by track and consensus label, reviewer-decision totals, negative evidence totals, and blocking issue totals. Consensus exports are review handoff summaries only; they are not discovery claims, detections, or external validation.
-
----
-
 ## Summarize Validation Dataset Manifests
 
 Print validation dataset manifest coverage:
@@ -1230,16 +1194,6 @@ techno-search operator-coverage-summary [--fixture-path PATH]
 ```
 
 Summarises operator coverage across triage notes. Reports operator count and per-operator note count, label distribution, tracks covered, and follow-up required count.
-
----
-
-## Triage Label Completeness
-
-```bash
-techno-search triage-label-completeness [--fixture-path PATH]
-```
-
-Checks which triage labels have fixture coverage. Returns covered labels, uncovered labels, and a coverage fraction.
 
 ---
 

@@ -88,9 +88,6 @@ Committed schemas:
 - `schemas/candidate_packet.schema.json`
 - `schemas/report_manifest.schema.json`
 - `schemas/batch_manifest.schema.json`
-- `schemas/review_queue.schema.json`
-- `schemas/consensus_labels.schema.json`
-- `schemas/consensus_export.schema.json`
 - `schemas/validation_dataset_manifest.schema.json`
 - `schemas/benchmark_metadata.schema.json`
 - `schemas/benchmark_run_results.schema.json`
@@ -144,24 +141,6 @@ Review synthetic precision-recall fixture coverage:
 
 ```bash
 .venv/bin/techno-search precision-recall-summary
-```
-
-Review synthetic human-review queue fixture coverage:
-
-```bash
-.venv/bin/techno-search review-queue-summary
-```
-
-Review synthetic human-review consensus label coverage:
-
-```bash
-.venv/bin/techno-search consensus-summary
-```
-
-Review synthetic human-review consensus export coverage:
-
-```bash
-.venv/bin/techno-search consensus-export-summary
 ```
 
 Review validation dataset manifest coverage:
@@ -340,24 +319,6 @@ Removed synthetic false-positive class diagnostics previously reused:
 
 ```text
 tests/fixtures/calibration_false_positives.json
-```
-
-Human-review queue fixture:
-
-```text
-tests/fixtures/review_queue.json
-```
-
-Human-review consensus fixture:
-
-```text
-tests/fixtures/consensus_labels.json
-```
-
-Human-review consensus export fixture:
-
-```text
-tests/fixtures/consensus_exports.json
 ```
 
 Validation dataset manifest fixture:

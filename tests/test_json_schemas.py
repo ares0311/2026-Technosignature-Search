@@ -38,8 +38,6 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "candidate_score_history.schema.json",
         "candidate_triage.schema.json",
         "config_version_history.schema.json",
-        "consensus_export.schema.json",
-        "consensus_labels.schema.json",
         "cross_track_references.schema.json",
         "curated_dataset_admission.schema.json",
         "curated_dataset_intake.schema.json",
@@ -91,7 +89,6 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "real_data_admission_preflight.schema.json",
         "report_manifest.schema.json",
         "review_deadlines.schema.json",
-        "review_queue.schema.json",
         "rfi_database.schema.json",
         "rfi_database_admission.schema.json",
         "scoring_config_summary.schema.json",
@@ -183,15 +180,6 @@ def test_schema_required_fields_match_example_artifacts() -> None:
             encoding="utf-8"
         )
     )
-    review_queue_schema = json.loads(
-        Path("schemas/review_queue.schema.json").read_text(encoding="utf-8")
-    )
-    consensus_schema = json.loads(
-        Path("schemas/consensus_labels.schema.json").read_text(encoding="utf-8")
-    )
-    consensus_export_schema = json.loads(
-        Path("schemas/consensus_export.schema.json").read_text(encoding="utf-8")
-    )
     validation_dataset_schema = json.loads(
         Path("schemas/validation_dataset_manifest.schema.json").read_text(
             encoding="utf-8"
@@ -246,9 +234,6 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     handoffs = json.loads(
         Path("tests/fixtures/candidate_extraction_handoffs.json").read_text()
     )
-    review_queue = json.loads(Path("tests/fixtures/review_queue.json").read_text())
-    consensus = json.loads(Path("tests/fixtures/consensus_labels.json").read_text())
-    consensus_export = json.loads(Path("tests/fixtures/consensus_exports.json").read_text())
     validation_dataset = json.loads(
         Path("tests/fixtures/validation_dataset_manifest.json").read_text()
     )
@@ -276,9 +261,6 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     assert set(draft_reports_schema["required"]) <= set(draft_reports)
     assert set(user_decisions_schema["required"]) <= set(user_decisions)
     assert set(handoff_schema["required"]) <= set(handoffs)
-    assert set(review_queue_schema["required"]) <= set(review_queue)
-    assert set(consensus_schema["required"]) <= set(consensus)
-    assert set(consensus_export_schema["required"]) <= set(consensus_export)
     assert set(validation_dataset_schema["required"]) <= set(validation_dataset)
     assert set(validation_promotion_schema["required"]) <= set(validation_promotion)
     assert set(validation_readiness_schema["required"]) <= set(validation_readiness)
@@ -371,24 +353,6 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     assert "network_access_allowed" in handoff_schema["properties"]["handoffs"][
         "items"
     ]["required"]
-    assert review_queue["schema_version"] == "human_review_queue_v1"
-    assert sorted(review_queue["allowed_triage_labels"]) == [
-        "follow_up_target",
-        "insufficient_evidence",
-        "known_object_annotation",
-        "likely_false_positive",
-        "needs_human_review",
-    ]
-    assert consensus["schema_version"] == "human_review_consensus_labels_v1"
-    assert sorted(consensus["allowed_consensus_labels"]) == [
-        "follow_up_target",
-        "insufficient_evidence",
-        "known_object_annotation",
-        "likely_false_positive",
-        "no_consensus",
-    ]
-    assert consensus_export["schema_version"] == "human_review_consensus_export_v1"
-    assert len(consensus_export["exports"]) == 5
     assert validation_dataset["schema_version"] == "validation_dataset_manifest_v1"
     assert validation_dataset["removed_in_phase_0"] is True
     assert validation_dataset["datasets"] == []

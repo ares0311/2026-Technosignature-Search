@@ -9,6 +9,7 @@ def test_project_owned_label_creation_scripts_are_retired() -> None:
     assert not Path("src/techno_search/citizen_science_labels.py").exists()
     assert not Path("src/techno_search/learned_scoring_model.py").exists()
     assert not Path("src/techno_search/labeled_dataset.py").exists()
+    assert not Path("src/techno_search/review_queue.py").exists()
 
 
 def test_cadence_module_exposes_no_label_dataset_writer() -> None:
@@ -25,6 +26,10 @@ def test_label_trained_model_commands_are_absent() -> None:
         "combined-model-summary",
         "labeled-dataset-summary",
         "eval-against-labels",
+        "review-queue-summary",
+        "consensus-summary",
+        "consensus-export-summary",
+        "triage-label-completeness",
     )
     assert all(command not in cli_source for command in forbidden_commands)
 
