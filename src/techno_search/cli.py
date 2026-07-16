@@ -853,10 +853,6 @@ def append_benchmark_run_result(*_a: object, **_k: object) -> None:
     pass
 
 
-def calibration_corpus_admission_summary(*_a: object, **_k: object) -> dict[str, Any]:
-    return _StubDict({})
-
-
 def mcp_bootstrap_consistency_summary(*_a: object, **_k: object) -> dict[str, Any]:
     return _StubDict({})
 
@@ -1072,7 +1068,6 @@ SCHEMA_FILENAMES = {
     "rfi_database": "rfi_database.schema.json",
     "labeled_candidates": "labeled_candidates.schema.json",
     "labeled_candidates_citizen_science_v1": "labeled_candidates_citizen_science_v1.schema.json",
-    "calibration_corpus_admission": "calibration_corpus_admission.schema.json",
     "data_release_snapshot": "data_release_snapshot.schema.json",
     "multi_target_scan": "multi_target_scan.schema.json",
     "scan_summary": "scan_summary.schema.json",
@@ -5108,16 +5103,6 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         admission_summary = rfi_database_admission_summary(fixture_path)
         print(json.dumps(admission_summary, indent=2, sort_keys=True), file=out)
         return 0 if admission_summary["validation_ok"] else 1
-
-    if args.command == "calibration-corpus-admission-summary":
-        cal_admission: dict[str, Any] = {
-            "ok": True,
-            "schema_version": "calibration_corpus_admission_stub_v1",
-            "issue_count": 0,
-            "issues": [],
-        }
-        print(json.dumps(cal_admission, indent=2, sort_keys=True), file=out)
-        return 0
 
     if args.command == "rfi-mitigation-summary":
         fixture_path = getattr(args, "fixture_path", None)
@@ -9220,14 +9205,6 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Summarize RFI database source admission gates (local readiness only).",
     )
     rfi_database_admission_parser.add_argument(
-        "--fixture-path", type=Path, help="Optional fixture path override."
-    )
-
-    cal_corpus_admission_parser = subparsers.add_parser(
-        "calibration-corpus-admission-summary",
-        help="Summarize calibration corpus target admission gates (local readiness only).",
-    )
-    cal_corpus_admission_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
     )
 

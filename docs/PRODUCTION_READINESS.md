@@ -6,7 +6,20 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.21
+**Current app version:** 1.2.22
+
+**Retired threshold-calibration helper chain — 2026-07-16:** version 1.2.22
+removes the residual calibration-corpus download, target-manifest, provenance,
+pipeline, admission-schema, fixture, and unconditional-success CLI stub paths.
+The root cause was a retired project-generated-label calibration design
+remaining callable after its implementation and calibrated config were
+deleted. Its scripts still invoked the absent `noise-threshold-calibration`
+command and asked humans to approve unlabeled observations for threshold use.
+The procedural threshold and transfer guides are now fail-closed status
+documents: no GBT threshold is calibrated or transferable, and reopening the
+gate requires adequate pre-existing independent row-level labels plus grouped,
+leakage-safe real-background evidence. Local science payloads, deterministic
+triage, and candidate ledgers are unchanged.
 
 **Invalid default scoring calibration retired — 2026-07-16:** version 1.2.21
 supersedes DECISION-127/128's promotion interpretation and deletes

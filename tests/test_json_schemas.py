@@ -53,7 +53,6 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "follow_up_request.schema.json",
         "labeled_candidates.schema.json",
         "labeled_candidates_citizen_science_v1.schema.json",
-        "calibration_corpus_admission.schema.json",
         "mcp_bootstrap_consistency.schema.json",
         "mcp_server_policy.schema.json",
         "ml_model_registry.schema.json",

@@ -769,7 +769,6 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "follow_up_request",
         "labeled_candidates",
         "labeled_candidates_citizen_science_v1",
-        "calibration_corpus_admission",
         "mcp_bootstrap_consistency",
         "mcp_server_policy",
         "ml_model_registry",

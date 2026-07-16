@@ -25,7 +25,7 @@ schemas, checksums, manifests, small fixtures, and tests.
 | Path or pattern | Producer | Purpose | Git policy |
 |---|---|---|---|
 | `data/bl_hits/` | `scripts/download_bl_hits.sh`, `scripts/fetch_bl_alternative.sh`, `scripts/ingest_gbt_cadence.py` | Breakthrough Listen / GBT HDF5 inputs and turboSETI hit tables | Ignored payloads |
-| `data/calibration_corpus/` | `scripts/download_calibration_corpus.sh`, `scripts/fetch_bl_calibration_targets.sh`, `scripts/run_calibration_corpus_pipeline.sh` | Real `.dat` hit tables, provenance sidecars, calibration gate outputs | Ignored payloads; commit sanitized summaries only |
+| `data/calibration_corpus/` | Retired legacy threshold-calibration workflow | Locally preserved legacy `.dat` tables or provenance sidecars; not admissible threshold truth | Ignored payloads; do not regenerate through retired scripts |
 | `data/extended_corpus/` | `scripts/download_bl_extended_corpus.sh` | Held-out GBT evidence inputs from current BL Open Data HDF5 records and any derived hit tables for DECISION-134 hardening | Ignored payloads; commit review-safe manifests only |
 | `data/meerkat_hits/` | `scripts/ingest_meerkat_hits.py`, `techno-search semisupervised-corpus-build`, `techno-search semisupervised-scorer-train` | Verified MeerKAT BLUSE false-positive corpus when available, real turboSETI `.dat` normalized training corpora, and local scorer model/metadata payloads | Ignored payloads; commit methodology only |
 | `data/injection_grid/` | `scripts/setigen_injection_grid.py` | Setigen injection-recovery HDF5 files, derived hit tables, and local grid manifests | Ignored payloads; commit review-safe summaries only |
@@ -103,7 +103,7 @@ Expected ignored local evidence streams:
    (verified MeerKAT BLUSE when available, or normalized real turboSETI `.dat`
    corpora built locally)
 3. Injection-recovery grid: `data/injection_grid/`
-4. Calibration corpus holdouts: `data/calibration_corpus/*.dat`
+4. Legacy calibration-corpus payloads, if locally preserved: `data/calibration_corpus/*.dat` (diagnostic only; not threshold truth)
 
 Committed evidence should be limited to review-safe summaries, methodology,
 provenance manifests, checksums, schemas, and tests. No committed artifact

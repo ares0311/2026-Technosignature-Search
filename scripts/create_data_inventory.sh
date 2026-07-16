@@ -97,7 +97,7 @@ echo "Found: $DAT_COUNT file(s)"
 echo ""
 echo '```'
 if [[ "$DAT_COUNT" -eq 0 ]]; then
-    echo "(none found — run scripts/download_calibration_corpus.sh)"
+    echo "(none found)"
 else
     for f in "${DAT_FILES[@]}"; do
         echo "$f"
@@ -114,15 +114,16 @@ cat <<FOOTER
 | Directory | Contents |
 |---|---|
 | \`data/bl_hits/\` | Voyager 1 hit table from \`download_bl_hits.sh\` |
-| \`data/calibration_corpus/\` | BL calibration .dat files + provenance sidecars |
+| \`data/calibration_corpus/\` | Retired legacy threshold-calibration payloads, if locally preserved |
 
 ---
 
 ## Scientific Guardrail
 
-H5 files and .dat files are calibration inputs only. They do not constitute
-detection claims. No result authorizes external submission. Provenance sidecars
-(\`.dat.provenance.json\`) must be approved before pipeline ingestion.
+H5 files and .dat files are local scientific inputs only. They do not constitute
+detection claims or calibration truth, and no result authorizes external
+submission. See docs/THRESHOLD_CALIBRATION.md for the current fail-closed
+threshold boundary.
 FOOTER
 } > "$INVENTORY"
 
