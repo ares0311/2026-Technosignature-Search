@@ -1,9 +1,4 @@
 {
-  "enabledMcpjsonServers": [
-    "technosignatures_project_files",
-    "technosignatures_git_read",
-    "techno_guard"
-  ],
   "permissions": {
     "allow": [
       "Bash(pwd)",
@@ -12,9 +7,14 @@
       "Bash(git status)",
       "Bash(git status --short)",
       "Bash(basename *)",
-      "Bash(cat .agent-project-id)"
+      "Bash(cat .agent-project-id)",
+      "Bash(gh --version)",
+      "Bash(GH_DEBUG=api GODEBUG=x509usefallbackroots=1 gh api user)",
+      "Bash(gh auth *)",
+      "Bash(python3 -c ' *)",
+      "Bash(rm -f .gh_merge_response_scratch.json)",
+      "Bash(rm -f .gh_pr_response_scratch.json)"
     ],
-    "ask": [],
     "deny": [
       "Read(//Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Near Earth Objects/**)",
       "Edit(//Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Near Earth Objects/**)",
@@ -22,17 +22,31 @@
       "Read(//Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Exoplanet Research/**)",
       "Edit(//Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Exoplanet Research/**)",
       "Bash(*/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Exoplanet Research*)"
-    ]
+    ],
+    "ask": []
   },
+  "enabledMcpjsonServers": [
+    "technosignatures_project_files",
+    "technosignatures_git_read",
+    "techno_guard"
+  ],
   "sandbox": {
     "filesystem": {
-      "denyRead": [
-        "/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Near Earth Objects",
-        "/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Exoplanet Research"
-      ],
       "denyWrite": [
         "/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Near Earth Objects",
         "/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Exoplanet Research"
+      ],
+      "denyRead": [
+        "/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Near Earth Objects",
+        "/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Exoplanet Research"
+      ]
+    },
+    "excludedCommands": [
+      "gh *"
+    ],
+    "network": {
+      "allowUnixSockets": [
+        "/var/run/com.apple.launchd.wOYerxBleu/Listeners"
       ]
     }
   }
