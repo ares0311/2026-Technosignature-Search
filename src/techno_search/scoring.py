@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import json
 import math
 from collections.abc import Iterable, Mapping
-from typing import Final
+from contextlib import suppress
+from pathlib import Path
+from typing import Any, Final
 
 from techno_search.config import (
     DriftRateThresholds,
@@ -21,6 +24,7 @@ from techno_search.schemas import (
     PosteriorClass,
     ScoredCandidate,
     Track,
+    candidate_from_mapping,
 )
 
 _LOG_PRIORS: Final[dict[PosteriorClass, float]] = {
@@ -829,3 +833,63 @@ def _spectroscopy_evidence(
 def _append_if(items: list[str], condition: bool, message: str) -> None:
     if condition:
         items.append(message)
+
+
+SCORE_DETERMINISM_DISCLAIMER = (
+    "Score determinism results are a local reliability diagnostic only. They "
+    "confirm score_candidate() produces identical posteriors, scores, and "
+    "recommended pathways across repeated runs on the same input; they are "
+    "not a detection claim, calibration result, or scientific evaluation."
+)
+
+
+def score_determinism_check(candidate_path: Path, runs: int = 3) -> dict[str, Any]:
+    """Run score_candidate on the same input N times and assert identical outputs.
+
+    Returns deterministic=True when all runs produce the same posterior, scores,
+    and recommended_pathway. This is a local reliability diagnostic only — it
+    does not validate calibration quality or real-observation performance.
+    """
+    with candidate_path.open(encoding="utf-8") as handle:
+        candidate_dict = json.load(handle)
+
+    run_results: list[dict[str, Any]] = []
+    for _ in range(runs):
+        with suppress(Exception):
+            candidate = candidate_from_mapping(candidate_dict)
+            scored = score_candidate(candidate)
+            packet = scored.as_dict()
+            run_results.append(
+                {
+                    "posterior": packet.get("posterior", {}),
+                    "scores": packet.get("scores", {}),
+                    "recommended_pathway": packet.get("recommended_pathway", ""),
+                }
+            )
+
+    if len(run_results) < runs:
+        return {
+            "schema_version": "score_determinism_v0",
+            "disclaimer": SCORE_DETERMINISM_DISCLAIMER,
+            "candidate_path": str(candidate_path),
+            "runs_requested": runs,
+            "runs_completed": len(run_results),
+            "deterministic": False,
+            "differing_fields": ["scoring_failed"],
+        }
+
+    differing: list[str] = []
+    ref = run_results[0]
+    for field in ("posterior", "scores", "recommended_pathway"):
+        if any(r[field] != ref[field] for r in run_results[1:]):
+            differing.append(field)
+
+    return {
+        "schema_version": "score_determinism_v0",
+        "disclaimer": SCORE_DETERMINISM_DISCLAIMER,
+        "candidate_path": str(candidate_path),
+        "runs_requested": runs,
+        "runs_completed": len(run_results),
+        "deterministic": len(differing) == 0,
+        "differing_fields": differing,
+    }

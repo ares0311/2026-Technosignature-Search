@@ -1,6 +1,6 @@
 """Technosignature-interest candidate search tools."""
 
-__version__ = "1.2.28"
+__version__ = "1.2.29"
 
 from techno_search.ai_hardening_gate import (
     AI_HARDENING_GATE_DISCLAIMER,
@@ -63,23 +63,6 @@ from techno_search.background_search import (
     target_priority_score,
     target_priority_summary,
     target_selection_score,
-)
-from techno_search.baseline_eval import (
-    BASELINE_EVAL_DISCLAIMER,
-    BASELINE_PERFORMANCE_HISTORY_SCHEMA_VERSION,
-    baseline_pathway_drift_summary,
-    baseline_performance_history_summary,
-    classifier_rule_coverage_summary,
-    evaluate_baseline,
-    route_coverage_summary,
-    score_determinism_check,
-)
-from techno_search.baseline_model import (
-    ALL_BASELINE_RULES,
-    BASELINE_MODEL_DISCLAIMER,
-    BASELINE_MODEL_VERSION,
-    RuleBasedBaselineClassifier,
-    predict_pathway,
 )
 from techno_search.calibration import (
     CALIBRATION_TRACK_DISCLAIMER,
@@ -286,7 +269,7 @@ from techno_search.reproducibility import (
     verify_report_directory,
 )
 from techno_search.schemas import Candidate, Pathway, ScoredCandidate, Track
-from techno_search.scoring import score_candidate
+from techno_search.scoring import score_candidate, score_determinism_check
 from techno_search.signal_registry import (
     SIGNAL_REGISTRY_DISCLAIMER,
     SIGNAL_REGISTRY_SCHEMA_VERSION,

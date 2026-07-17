@@ -733,8 +733,6 @@ def test_cli_schema_paths_outputs_schema_artifacts() -> None:
         "background_search_ledger",
         "background_targets",
         "background_user_decisions",
-        "baseline_eval",
-        "baseline_performance_history",
         "batch_manifest",
         "benchmark_metadata",
         "benchmark_run_results",
@@ -1319,6 +1317,60 @@ def test_cli_candidate_extraction_handoff_summary_compact_default() -> None:
     assert "By extraction status:" in output
     with pytest.raises(json.JSONDecodeError):
         json.loads(output)
+
+
+def test_cli_score_determinism_check_reports_real_determinism() -> None:
+    """Real CLI-dispatch fidelity test: this command was silently broken by a
+    stub that shadowed the real implementation in baseline_eval.py, always
+    reporting all_deterministic=false regardless of actual scoring behavior
+    (zero prior CLI-dispatch coverage let this go unnoticed). This must
+    always be exercised through main(), not just by importing the function.
+    """
+    stdout = StringIO()
+
+    exit_code = main(["score-determinism-check"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["all_deterministic"] is True
+    assert result["runs_per_candidate"] == 3
+    assert len(result["results"]) >= 1
+    for candidate_result in result["results"]:
+        assert candidate_result["deterministic"] is True
+        assert candidate_result["differing_fields"] == []
+        assert candidate_result["runs_completed"] == 3
+
+
+def test_cli_health_reports_real_gates_without_fake_baseline() -> None:
+    """Real CLI-dispatch fidelity test for the health command after removing
+    its dependency on the deleted synthetic baseline classifier gates, which
+    always reported all_gates_pass=false regardless of real project state.
+    """
+    stdout = StringIO()
+
+    exit_code = main(["health"], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 0
+    assert result["all_gates_pass"] is True
+    assert result["watchlist_gate_ok"] is True
+    assert "baseline_accuracy_gate_ok" not in result
+    assert "baseline_drift_gate_ok" not in result
+
+
+def test_cli_retired_synthetic_baseline_commands_are_absent() -> None:
+    cli_source = Path("src/techno_search/cli.py").read_text(encoding="utf-8")
+    forbidden_commands = (
+        "baseline-eval-summary",
+        "baseline-confusion-matrix-summary",
+        "baseline-pathway-drift-summary",
+        "baseline-performance-history-summary",
+        "classifier-rule-coverage",
+        "route-coverage-summary",
+    )
+    assert all(f'"{command}"' not in cli_source for command in forbidden_commands)
+    assert not Path("src/techno_search/baseline_eval.py").exists()
+    assert not Path("src/techno_search/baseline_model.py").exists()
 
 
 def test_cli_background_run_once_appends_local_ledger_entry(tmp_path) -> None:

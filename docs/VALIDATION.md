@@ -618,22 +618,6 @@ or authorize external submission.
 
 ---
 
-## Interpretable Baseline Validation
-
-The rule-based baseline classifier is evaluated on every `validate-all` run:
-
-```bash
-.venv/bin/techno-search baseline-eval-summary
-```
-
-Gate: `pathway_accuracy >= 0.80` across calibration false-positive and clean example candidate fixtures. Results are synthetic development diagnostics only — not calibrated survey performance or external validation.
-
-Baseline pathway drift is also checked on every `validate-all` run via `baseline-pathway-drift-summary`. A non-zero drift count (baseline routing diverges from the scoring model on any example candidate) blocks the `validate-all` gate. Run `techno-search baseline-pathway-drift-summary` for a detailed breakdown.
-
-Performance history is tracked in `tests/fixtures/baseline_performance_history.json`. Use `techno-search baseline-performance-history-summary` to review snapshot trends across development iterations.
-
----
-
 ## Target Watchlist Validation
 
 ```bash
@@ -654,16 +638,13 @@ Assembles the weekly operator review template confirming network access is zero,
 
 ---
 
-## Confusion Matrix And Score Determinism
+## Score Determinism
 
 ```bash
-.venv/bin/techno-search baseline-confusion-matrix-summary
 .venv/bin/techno-search score-determinism-check
 ```
 
-The confusion matrix reports per-pathway precision, recall, and F1 from the baseline evaluation harness. All metrics are synthetic diagnostics — not calibrated survey performance.
-
-The score determinism check verifies that `score_candidate` produces identical outputs across three repeated runs for all example candidates. This is a local sanity check required before any learned model is introduced. Gate: all example candidates must be deterministic.
+Verifies that `score_candidate` produces identical posteriors, scores, and recommended pathways across three repeated runs for all example candidates. This is a local reliability diagnostic, not a detection claim, calibration result, or scientific evaluation. Gate: all example candidates must be deterministic.
 
 ---
 
@@ -688,14 +669,13 @@ Gate in `validate-all`: `synthetic_missed_injection_rate < 1.0` (at least one in
 
 ---
 
-## Scoring Config And Route Coverage
+## Scoring Config
 
 ```bash
 .venv/bin/techno-search scoring-config-summary
-.venv/bin/techno-search route-coverage-summary
 ```
 
-Gates in `validate-all`: at least 1 scoring threshold present, all six `Pathway` enum values covered, and zero uncovered pathways. Scoring config summary reports current v0 thresholds only — not calibrated detection limits. Route coverage is synthetic enum coverage; `external_followup_candidate` coverage does not authorize external submission.
+Gate in `validate-all`: at least 1 scoring threshold present. Scoring config summary reports current v0 thresholds only — not calibrated detection limits.
 
 ---
 

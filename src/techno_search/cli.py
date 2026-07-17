@@ -87,7 +87,7 @@ from techno_search.reproducibility import verify_report_directory
 from techno_search.rfi_database import rfi_database_summary
 from techno_search.rfi_database_admission import rfi_database_admission_summary
 from techno_search.schemas import Candidate, Track, candidate_from_mapping
-from techno_search.scoring import score_candidate
+from techno_search.scoring import score_candidate, score_determinism_check
 from techno_search.signal_registry import (
     signal_registry_summary,
     signal_registry_track_summary,
@@ -644,12 +644,6 @@ def workflow_state_summary(_path: object = None) -> dict[str, Any]:
 def aggregate_blockers_summary(*_a: object, **_k: object) -> dict[str, Any]:
     return _StubDict({"total_blocker_count": 0, "unique_candidate_count": 0})
 
-def baseline_pathway_drift_summary(*_a: object, **_k: object) -> dict[str, Any]:
-    return _StubDict({"drift_count": 0})
-
-def baseline_performance_history_summary(*_a: object, **_k: object) -> dict[str, Any]:
-    return _StubDict({"record_count": 0, "above_baseline_count": 0})
-
 def benchmark_run_result_comparison(*_a: object, **_k: object) -> dict[str, Any]:
     return _StubDict({"ok": True, "entry_count": 0})
 
@@ -668,19 +662,11 @@ def candidate_lifecycle_summary(*_a: object, **_k: object) -> dict[str, Any]:
 def candidate_rescore_summary(*_a: object, **_k: object) -> dict[str, Any]:
     return _StubDict({"event_count": 0, "pathway_change_count": 0})
 
-def classifier_rule_coverage_summary(*_a: object, **_k: object) -> dict[str, Any]:
-    return _StubDict(
-        {"covered_pathway_count": 0, "uncovered_pathway_count": 0, "coverage_fraction": 0.0}
-    )
-
 def config_version_history_summary(*_a: object, **_k: object) -> dict[str, Any]:
     return _StubDict({"entry_count": 0})
 
 def epoch_plan_summary(*_a: object, **_k: object) -> dict[str, Any]:
     return _StubDict({"entry_count": 0, "pending_count": 0})
-
-def evaluate_baseline(*_a: object, **_k: object) -> dict[str, Any]:
-    return _StubDict({"ok": True, "entry_count": 0, "accuracy": 0.0})
 
 def lifecycle_transition_summary(*_a: object, **_k: object) -> dict[str, Any]:
     return _StubDict({"invalid_transition_count": 0})
@@ -756,12 +742,6 @@ def quality_control_summary(*_a: object, **_k: object) -> dict[str, Any]:
 
 def review_deadlines_summary(*_a: object, **_k: object) -> dict[str, Any]:
     return _StubDict({"deadline_count": 0, "overdue_count": 0})
-
-def route_coverage_summary(*_a: object, **_k: object) -> dict[str, Any]:
-    return _StubDict({"covered_pathway_count": 0, "uncovered_pathway_count": 0})
-
-def score_determinism_check(*_a: object, **_k: object) -> dict[str, Any]:
-    return _StubDict({"ok": True, "issue_count": 0})
 
 def score_history_summary(*_a: object, **_k: object) -> dict[str, Any]:
     return _StubDict({"entry_count": 0, "unique_candidate_count": 0})
@@ -910,8 +890,6 @@ SCHEMA_FILENAMES = {
     "target_watchlist": "target_watchlist.schema.json",
     "top_level_sqlite_log_consistency": "top_level_sqlite_log_consistency.schema.json",
     "weekly_review_template": "weekly_review_template.schema.json",
-    "baseline_eval": "baseline_eval.schema.json",
-    "baseline_performance_history": "baseline_performance_history.schema.json",
     "candidate_lifecycle": "candidate_lifecycle.schema.json",
     "candidate_triage": "candidate_triage.schema.json",
     "observation_schedule": "observation_schedule.schema.json",
@@ -2824,17 +2802,6 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(catalog_result, indent=2, sort_keys=True), file=out)
         return 0 if catalog_result["ok"] else 1
 
-    if args.command == "baseline-eval-summary":
-        eval_result = evaluate_baseline(
-            calibration_fixture_path=getattr(args, "calibration_fixture", None),
-            example_candidates_dir=getattr(args, "example_candidates_dir", None),
-        )
-        result_without_details = {
-            k: v for k, v in eval_result.items() if k != "results"
-        }
-        print(json.dumps(result_without_details, indent=2, sort_keys=True), file=out)
-        return 0
-
     if args.command == "target-watchlist-summary":
         print(
             json.dumps(
@@ -2855,20 +2822,6 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             file=out,
         )
         return 1
-
-    if args.command == "baseline-performance-history-summary":
-        history = baseline_performance_history_summary(
-            getattr(args, "history_path", None)
-        )
-        print(json.dumps(history, indent=2, sort_keys=True), file=out)
-        return 0
-
-    if args.command == "baseline-pathway-drift-summary":
-        drift = baseline_pathway_drift_summary(
-            getattr(args, "example_candidates_dir", None)
-        )
-        print(json.dumps(drift, indent=2, sort_keys=True), file=out)
-        return 0 if drift["zero_drift"] else 1
 
     if args.command == "sqlite-log-track-summary":
         _db_path = getattr(args, "db_path", None) or default_sqlite_log_path(
@@ -3167,20 +3120,6 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         return 0
 
-    if args.command == "baseline-confusion-matrix-summary":
-        confusion_result = evaluate_baseline()
-        confusion_output = {
-            "schema_version": "baseline_eval_v0",
-            "disclaimer": confusion_result["disclaimer"],
-            "total_cases": confusion_result["total_cases"],
-            "confusion_matrix": confusion_result["confusion_matrix"],
-            "per_pathway_precision": confusion_result["per_pathway_precision"],
-            "per_pathway_recall": confusion_result["per_pathway_recall"],
-            "per_pathway_f1": confusion_result["per_pathway_f1"],
-        }
-        print(json.dumps(confusion_output, indent=2, sort_keys=True), file=out)
-        return 0
-
     if args.command == "score-determinism-check":
         candidate_paths = getattr(args, "candidate_paths", None)
         runs = int(getattr(args, "runs", 3))
@@ -3232,11 +3171,6 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             Path(config_path) if config_path else None
         )
         print(json.dumps(sc_summary, indent=2, sort_keys=True), file=out)
-        return 0
-
-    if args.command == "route-coverage-summary":
-        rc_summary = route_coverage_summary()
-        print(json.dumps(rc_summary, indent=2, sort_keys=True), file=out)
         return 0
 
     if args.command == "lifecycle-transition-summary":
@@ -3370,13 +3304,6 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                 indent=2,
                 sort_keys=True,
             ),
-            file=out,
-        )
-        return 0
-
-    if args.command == "classifier-rule-coverage":
-        print(
-            json.dumps(classifier_rule_coverage_summary(), indent=2, sort_keys=True),
             file=out,
         )
         return 0
@@ -5853,25 +5780,16 @@ def _sqlite_log_track_summary(db_path: Path) -> dict[str, object]:
 
 def _project_health_summary(out: TextIO | None = None) -> dict[str, object]:
     """Concise health dashboard combining key gate statuses."""
-    baseline = evaluate_baseline()
     wl = target_watchlist_summary()
     schema_count = len(schema_paths())
-    baseline_accuracy = float(baseline.get("pathway_accuracy", 0.0))
-    baseline_ok = baseline_accuracy >= 0.80
     watchlist_conflicts = int(wl.get("conflict_count", 0))
     watchlist_ok = watchlist_conflicts == 0
-    drift = baseline_pathway_drift_summary()
-    drift_ok = bool(drift.get("zero_drift", True))
-    all_gates = baseline_ok and watchlist_ok and drift_ok
+    all_gates = watchlist_ok
     return {
         "all_gates_pass": all_gates,
         "schema_count": schema_count,
-        "baseline_pathway_accuracy": baseline_accuracy,
-        "baseline_accuracy_gate_ok": baseline_ok,
         "watchlist_conflict_count": watchlist_conflicts,
         "watchlist_gate_ok": watchlist_ok,
-        "baseline_drift_count": drift.get("drift_count", 0),
-        "baseline_drift_gate_ok": drift_ok,
         "recommended_action": (
             "Run `techno-search validate-all` for detailed diagnostics."
             if not all_gates
@@ -6872,24 +6790,6 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Paths to validate before commit or release.",
     )
-    baseline_eval_parser = subparsers.add_parser(
-        "baseline-eval-summary",
-        help=(
-            "Evaluate the rule-based interpretable baseline classifier against "
-            "synthetic calibration fixtures. Results are local diagnostics only — "
-            "not detections, discoveries, or external validation."
-        ),
-    )
-    baseline_eval_parser.add_argument(
-        "--calibration-fixture",
-        type=Path,
-        help="Optional calibration false-positive fixture JSON path.",
-    )
-    baseline_eval_parser.add_argument(
-        "--example-candidates-dir",
-        type=Path,
-        help="Optional example candidates directory.",
-    )
     target_watchlist_parser = subparsers.add_parser(
         "target-watchlist-summary",
         help=(
@@ -6937,28 +6837,6 @@ def _build_parser() -> argparse.ArgumentParser:
         "--operator-notes",
         default="",
         help="Optional free-text operator notes to include in the template.",
-    )
-    perf_history_parser = subparsers.add_parser(
-        "baseline-performance-history-summary",
-        help="Summarize the append-only baseline performance history fixture.",
-    )
-    perf_history_parser.add_argument(
-        "--history-path",
-        type=Path,
-        help="Optional baseline performance history fixture JSON path.",
-    )
-    drift_parser = subparsers.add_parser(
-        "baseline-pathway-drift-summary",
-        help=(
-            "Compare scoring-model recommended_pathway vs baseline predicted_pathway "
-            "for all example candidates. Zero drift is required. "
-            "Returns exit 1 if any drift is detected."
-        ),
-    )
-    drift_parser.add_argument(
-        "--example-candidates-dir",
-        type=Path,
-        help="Optional example candidates directory override.",
     )
     subparsers.add_parser(
         "sqlite-log-track-summary",
@@ -7298,13 +7176,6 @@ def _build_parser() -> argparse.ArgumentParser:
         type=str,
         help="Path to a candidate JSON file (e.g. a report manifest).",
     )
-    subparsers.add_parser(
-        "baseline-confusion-matrix-summary",
-        help=(
-            "Print per-pathway confusion matrix and precision/recall/F1 metrics "
-            "from the baseline evaluation harness. Synthetic diagnostics only."
-        ),
-    )
     det_parser = subparsers.add_parser(
         "score-determinism-check",
         help=(
@@ -7362,13 +7233,6 @@ def _build_parser() -> argparse.ArgumentParser:
         "--config-path",
         type=Path,
         help="Optional scoring config JSON path.",
-    )
-    subparsers.add_parser(
-        "route-coverage-summary",
-        help=(
-            "Check that calibration fixtures cover all Pathway enum values. "
-            "Synthetic diagnostic only."
-        ),
     )
     lt_parser = subparsers.add_parser(
         "lifecycle-transition-summary",
@@ -7517,11 +7381,6 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     multi_epoch_parser.add_argument(
         "--fixture-path", type=Path, help="Optional fixture path override."
-    )
-
-    subparsers.add_parser(
-        "classifier-rule-coverage",
-        help="Report which baseline classifier rules fire across evaluation cases.",
     )
 
     recalibration_parser = subparsers.add_parser(
