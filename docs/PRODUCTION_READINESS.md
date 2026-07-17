@@ -6,7 +6,22 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.31
+**Current app version:** 1.2.32
+
+**Sandbox network allowlist fixed; HTRU2 source-host doc bug corrected —
+2026-07-17:** the agent sandbox's `sandbox.network.allowedDomains` had no
+entries for any real Track A/B data-acquisition host, so BL archive
+downloads, CelesTrak/SatNOGS, Gaia, SIMBAD/VizieR, ATNF, and skyfield's
+leap-second data all failed outright (not merely slow) from this session.
+Fixed in `.claude/settings.local.json` after a full sweep of every host
+actually contacted by this project's own acquisition code and its real
+third-party libraries (not just literal URL strings in our own source —
+`psrqpy`'s and `ucimlrepo`'s real hosts live inside those packages, invisible
+to a grep of our own code). The sweep also caught a real, separate doc-
+accuracy bug: `track_a_htru2.py`'s docstring, `HTRU2_SOURCE_URL`, and the
+`track-a-htru2-acquire` CLI help text all cited `archive-beta.ics.uci.edu`,
+which is not `ucimlrepo`'s real API host (`archive.ics.uci.edu`) — fixed to
+the verified-correct host in all three places.
 
 **Target-priority queue coverage-state bug fixed — 2026-07-17:** version
 1.2.31 fixes `target_priority_queue._load_coverage_state()`, which only read

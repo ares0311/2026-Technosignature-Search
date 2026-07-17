@@ -6,9 +6,11 @@ from RFI/noise on the HTRU2 dataset (Lyon et al., UCI ML Repository id=372,
 CC BY 4.0). This is Track A only — a known-explanation classifier. It is not a
 technosignature detector and makes no claim about candidate anomaly status.
 
-Acquisition requires network access to archive-beta.ics.uci.edu via the
-`ucimlrepo` package, per the brief's verified access method. This module does
-not fabricate an alternate source or URL if that access method fails.
+Acquisition requires network access to archive.ics.uci.edu (the `ucimlrepo`
+package's real API host is `archive.ics.uci.edu/api/...`; the dataset's
+landing page at the same host is cited below for provenance) per the brief's
+verified access method. This module does not fabricate an alternate source
+or URL if that access method fails.
 """
 from __future__ import annotations
 
@@ -25,7 +27,7 @@ from techno_search.track_a_data_guard import (
     log_progress,
 )
 
-HTRU2_SOURCE_URL = "https://archive-beta.ics.uci.edu/dataset/372/htru2"
+HTRU2_SOURCE_URL = "https://archive.ics.uci.edu/dataset/372/htru2"
 HTRU2_EXPECTED_ROW_COUNT = 17898
 HTRU2_REQUIRED_FEATURE_COLUMNS = (
     "Profile_mean",

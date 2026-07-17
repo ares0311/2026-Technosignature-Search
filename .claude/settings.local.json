@@ -47,6 +47,20 @@
     "network": {
       "allowUnixSockets": [
         "/var/run/com.apple.launchd.wOYerxBleu/Listeners"
+      ],
+      "allowedDomains": [
+        "archive.ics.uci.edu",
+        "bldata.berkeley.edu",
+        "blpd0.ssl.berkeley.edu",
+        "celestrak.org",
+        "datacenter.iers.org",
+        "db.satnogs.org",
+        "fermi.gsfc.nasa.gov",
+        "gea.esac.esa.int",
+        "hpiers.obspm.fr",
+        "simbad.cds.unistra.fr",
+        "vizier.cds.unistra.fr",
+        "www.atnf.csiro.au"
       ]
     }
   }

@@ -50,7 +50,7 @@ def test_manifest_append_and_load_round_trips(tmp_path) -> None:
     manifest_path = tmp_path / "artifacts" / "manifests" / "data_manifest.jsonl"
     record = AcquisitionManifestRecord(
         source_name="htru2",
-        source_url="https://archive-beta.ics.uci.edu/dataset/372/htru2",
+        source_url="https://archive.ics.uci.edu/dataset/372/htru2",
         access_method="ucimlrepo.fetch_ucirepo(id=372)",
         downloaded_at_utc="2026-07-02T00:00:00+00:00",
         local_path=str(tmp_path / "htru2_features.parquet"),
