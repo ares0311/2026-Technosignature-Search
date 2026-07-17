@@ -143,9 +143,27 @@ def _load_coverage_state(
 ) -> _CoverageState:
     with path.open(encoding="utf-8") as handle:
         payload = json.load(handle)
-    run = payload.get("runs", {}).get("download_bl_extended_corpus", {})
+    all_runs = payload.get("runs", {})
+    run = all_runs.get("download_bl_extended_corpus", {})
     reused = {str(target) for target in run.get("reused_targets", [])}
     downloaded = {str(target) for target in run.get("downloaded_targets", [])}
+    # stream_process_evict batches (the bounded download->process->evict acquisition
+    # path used since Step 0) record their own downloaded_targets under separate,
+    # per-batch run keys rather than "download_bl_extended_corpus" — and by design
+    # they evict the raw HDF5 after processing, so a target's local raw-file
+    # presence cannot be used to detect prior completion either. Every run entry
+    # with acquisition_mode == "stream_process_evict" and ok is True (excluding any
+    # interrupted/raced run recorded with ok: False) contributes its
+    # downloaded_targets here so already-completed targets are not silently
+    # re-selected into a future batch.
+    for run_entry in all_runs.values():
+        if not isinstance(run_entry, dict):
+            continue
+        if run_entry.get("acquisition_mode") != "stream_process_evict":
+            continue
+        if run_entry.get("ok") is not True:
+            continue
+        downloaded |= {str(target) for target in run_entry.get("downloaded_targets", [])}
     skipped: dict[str, str] = {}
     for item in run.get("skipped_targets", []):
         if not isinstance(item, dict):

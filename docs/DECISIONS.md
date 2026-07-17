@@ -4412,3 +4412,65 @@ Running any of these 12 commands now tells an operator or agent exactly
 why nothing happened, instead of an empty object that could be mistaken
 for a real (if trivial) failure. No CLI surface removed, no exit-code
 contract changed, no scientific claim affected.
+
+# DECISION-155: Target-Priority Queue Must Read All `stream_process_evict` Run Keys
+
+**Date:** 2026-07-17
+**Status:** Accepted
+**Implements:** a coverage-state bug fix in `target_priority_queue.py`
+
+## Context
+
+`target_priority_queue._load_coverage_state()` only read the single
+`download_bl_extended_corpus` key from `docs/data_collection_status.json`'s
+`runs` object to decide which targets already have local coverage. The
+Step 0 bounded batch (`local_coverage_first_bounded_batch_manifest.json`,
+198 targets) was executed via the newer `stream_process_evict` acquisition
+path, which records its results under six separate
+`stream_process_evict_batch__local_coverage_first_bounded_batch_shard{1-6}_manifest`
+run keys instead — keys `_load_coverage_state()` never looked at. Worse,
+`stream_process_evict` deletes the raw HDF5 payload immediately after
+processing by design (the whole point of the eviction step, to stay under
+the 100 GB local storage cap), so a local-file-presence check cannot serve
+as a fallback either: the only record of completion is the status-JSON run
+entry itself. Net effect: all 198 already-downloaded, already-processed,
+already-evicted Step 0 targets were still shown in
+`data_selection/target_priority_queue.csv` as
+`raw_download_approval_required` and included in
+`data_selection/batch_manifests/local_coverage_raw_download_approval_manifest.json`
+— silently eligible for re-selection and re-download into a future batch.
+Discovered while preparing a routine next-batch sizing proposal, not from a
+user report.
+
+## Decision
+
+`_load_coverage_state()` now additionally iterates every entry in `runs`,
+and for any entry with `acquisition_mode == "stream_process_evict"` and
+`ok is True`, merges its `downloaded_targets` into the coverage set (the
+one interrupted/raced shard entry recorded with `ok: false` is correctly
+excluded, matching the existing all-or-nothing per-run semantics used for
+`download_bl_extended_corpus`). Added
+`test_build_target_priority_queue_recognizes_stream_process_evict_completions`.
+Regenerated both derived artifacts from the real, unmodified
+`docs/data_collection_status.json`:
+- `data_selection/target_priority_queue.csv`: 198 rows moved
+  `raw_download_approval_required` → `already_acquired_local_cache`
+  (1,147→949 and 16→214 respectively; all other statuses unchanged).
+- `data_selection/batch_manifests/local_coverage_raw_download_approval_manifest.json`:
+  949 targets, 239.059451 GB (down from 1,147 targets, 288.97 GB). The
+  49.91 GB difference matches the Step 0 batch's own recorded size almost
+  exactly, an internal consistency check that passed.
+
+## Consequences
+
+The queue and approval manifest now correctly exclude targets the project
+has already downloaded, processed, and evicted, so a future bounded batch
+proposal drawn from `raw_download_approval_required` cannot silently
+re-select and re-download them. This is a bookkeeping correction to an
+existing inventory artifact — it changes no discovery result, no
+size-preflight measurement, and no approval decision, and it makes no new
+scientific, detection, or external-submission claim. Any acquisition
+mechanism added in the future that writes its own non-uniform run-key
+naming convention to `docs/data_collection_status.json` will need the same
+treatment unless the status schema is unified — noted as a real, unresolved
+design smell, not fixed here (out of scope for this bug fix).

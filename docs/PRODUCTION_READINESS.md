@@ -1,12 +1,37 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-07-14
+**Last updated:** 2026-07-17
 **Current phase:** Phase 0 complete; Phases 1-5 all have real, tested baseline
 implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.30
+**Current app version:** 1.2.31
+
+**Target-priority queue coverage-state bug fixed — 2026-07-17:** version
+1.2.31 fixes `target_priority_queue._load_coverage_state()`, which only read
+the `download_bl_extended_corpus` run key from
+`docs/data_collection_status.json` and never looked at the six
+`stream_process_evict_batch__local_coverage_first_bounded_batch_shard{1-6}_manifest`
+run keys where the Step 0 batch's 198 real completions were actually
+recorded — because `stream_process_evict` evicts the raw HDF5 payload after
+processing by design, local raw-file presence cannot substitute for reading
+those run records either. Effect: those 198 already-downloaded,
+already-processed targets remained shown as `raw_download_approval_required`
+and would have been silently eligible for re-selection into a future batch.
+Fixed by merging `downloaded_targets` from every run entry with
+`acquisition_mode == "stream_process_evict"` and `ok is True` (the one
+interrupted/raced `ok: false` entry is correctly excluded) into the coverage
+set. Regenerated `data_selection/target_priority_queue.csv` (198 rows moved
+`raw_download_approval_required` → `already_acquired_local_cache`: 1,147→949
+and 16→214) and
+`data_selection/batch_manifests/local_coverage_raw_download_approval_manifest.json`
+(949 targets, 239.059451 GB, down from 1,147/288.97 GB — the removed 198
+targets account for exactly the prior 49.91 GB difference, an internal
+consistency check that passed). New regression test
+`test_build_target_priority_queue_recognizes_stream_process_evict_completions`.
+No download, discovery, or size-preflight decision changed — this is a
+bookkeeping correction to an existing inventory, not new acquisition.
 
 **Not-yet-implemented future-phase stubs now self-describe — 2026-07-17:**
 version 1.2.30 fixes the remaining 12 findings from the stub-consumer audit
@@ -738,13 +763,18 @@ Initial local-coverage target selection is implemented:
 `techno-search build-target-priority-queue` writes
 `data_selection/target_priority_queue.csv` from the full HPRC metadata seed and
 tracked acquisition status. The current queue contains 1,703 unique target IDs:
-1,147 URL-discovered rows promoted to `raw_download_approval_required`, 540
+949 URL-discovered rows promoted to `raw_download_approval_required`, 540
 rows with completed no-product metadata results retained for future retry, and
-16 already-acquired local-cache controls. Discovery and HEAD-only size
+214 already-acquired local-cache controls (16 pre-existing plus the 198
+targets from the Step 0 `stream_process_evict` batch — see the 2026-07-17
+correction below; the totals in the per-round history immediately following
+predate that fix and describe each round's real state at the time). Discovery and HEAD-only size
 preflight are complete for `top25`, `next25`, `batch3`-`batch13`, and the
 1,358-target `batch14_bulk` round. The consolidated approval manifest is
-approximately 288.97 GB, so it is a priority-ranked inventory, not a download
-plan; any raw acquisition remains explicitly approved, bounded,
+approximately 239.06 GB (949 targets, after the 2026-07-17 coverage-state
+correction removed the 198 targets already completed by the Step 0
+`stream_process_evict` batch), so it is a priority-ranked inventory, not a
+download plan; any raw acquisition remains explicitly approved, bounded,
 `stream_process_evict`, and subject to the permanent 100 GB cap.
 `techno-search build-target-priority-manifest` also writes a bounded manifest
 per discovery round (e.g.
@@ -766,7 +796,7 @@ silently regressed `top25`'s promotion — fixed by merging every committed
 `test_build_target_priority_queue_merges_multiple_size_preflight_reports`).
 The review input for any future bounded raw-download decision is the consolidated
 `data_selection/batch_manifests/local_coverage_raw_download_approval_manifest.json`
-covering all 1,147 promoted targets (~288.97 GB combined). Full round-by-round
+covering all 949 promoted targets (~239.06 GB combined). Full round-by-round
 detail is in `data_selection/batch_manifests/README.md` and
 `docs/SYSTEMATIC_SEARCH_PLAN.md` Step 3a.
 These are metadata-first acquisition-planning artifacts only; they do not
