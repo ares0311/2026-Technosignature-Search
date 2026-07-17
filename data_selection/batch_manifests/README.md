@@ -197,3 +197,24 @@ actually succeeded. The fixed URL-encoded one-target retry completed on
 fixed a second status-semantics bug: a successfully completed zero-product
 query is now `ok: true`, while any `discovery_request_failed` outcome still
 fails closed. No raw payload was downloaded.
+
+**Coverage-state bug fixed, queue corrected, Step 3a batch 1 proposed —
+2026-07-17:** `target_priority_queue._load_coverage_state()` never read the
+`stream_process_evict_batch__*` run keys under
+`docs/data_collection_status.json`, so the 198 targets from the Step 0
+bounded batch (already downloaded, processed, and evicted) stayed listed as
+`raw_download_approval_required` (see `docs/DECISIONS.md` DECISION-155).
+Fixed; the consolidated approval manifest above is now 949 targets
+(~239.06 GB), not 1,147 (~288.97 GB).
+
+From the corrected queue, `local_coverage_step3a_batch1_manifest.json`
+proposes the next bounded batch: the top 198 targets by `total_priority`
+that fit within a 50 GB budget (198 targets, 49.963 GB — sized consistently
+with the Step 0 precedent), independently confirmed to have zero overlap
+with any target already recorded downloaded in
+`docs/data_collection_status.json`. Real local storage usage as of this
+round is ~9GB against the permanent 100GB cap (~91GB headroom), so this
+batch fits comfortably even before eviction. **Not yet authorized for raw
+download** — per the storage-reserve policy, actual acquisition requires
+the user's own explicit per-batch approval; this manifest is planning-only,
+same as every prior round.
