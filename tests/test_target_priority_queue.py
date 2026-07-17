@@ -184,6 +184,64 @@ def test_write_target_priority_queue_summary_counts_statuses(tmp_path: Path) -> 
     assert result["top_targets"][0]["target_id"] == "HIP2"
 
 
+def test_build_target_priority_queue_recognizes_stream_process_evict_completions(
+    tmp_path: Path,
+) -> None:
+    """Real bug, found live: a target downloaded, processed, and evicted by a
+    ``stream_process_evict`` batch keeps its raw HDF5 deleted by design, so
+    local-file presence cannot detect prior completion, and the six real Step 0
+    shard runs are recorded under separate ``stream_process_evict_batch__*`` run
+    keys that ``_load_coverage_state`` never read at all — every one of 198
+    already-completed targets was silently re-classified as
+    ``raw_download_approval_required``, ready to be re-selected into a future
+    batch and re-downloaded. A run recorded with ``ok: false`` (an interrupted or
+    raced batch) must NOT be trusted as evidence of completion.
+    """
+    seed_path = tmp_path / "seed.csv"
+    status_path = tmp_path / "status.json"
+    _write_seed_csv(seed_path)
+    status_path.write_text(
+        json.dumps(
+            {
+                "runs": {
+                    "download_bl_extended_corpus": {
+                        "reused_targets": [],
+                        "downloaded_targets": [],
+                        "skipped_targets": [],
+                    },
+                    "stream_process_evict_batch__shard1_manifest": {
+                        "acquisition_mode": "stream_process_evict",
+                        "ok": True,
+                        "downloaded_targets": ["HIP2"],
+                        "evicted_targets": ["HIP2"],
+                    },
+                    "stream_process_evict_batch__interrupted_raced_run": {
+                        "acquisition_mode": "stream_process_evict",
+                        "ok": False,
+                        "downloaded_targets": ["HIP71681"],
+                        "evicted_targets": [],
+                    },
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = write_target_priority_queue(
+        tmp_path / "data_selection" / "target_priority_queue.csv",
+        seed_csv_path=seed_path,
+        data_status_path=status_path,
+    )
+
+    assert result["by_status"]["already_acquired_local_cache"] == 1
+    with (tmp_path / "data_selection" / "target_priority_queue.csv").open(
+        encoding="utf-8"
+    ) as handle:
+        rows = {row["target_id"]: row["status"] for row in csv.DictReader(handle)}
+    assert rows["HIP2"] == "already_acquired_local_cache"
+    assert rows["HIP71681"] != "already_acquired_local_cache"
+
+
 def test_cli_build_and_summarize_target_priority_queue(tmp_path: Path) -> None:
     seed_path = tmp_path / "seed.csv"
     status_path = tmp_path / "status.json"
