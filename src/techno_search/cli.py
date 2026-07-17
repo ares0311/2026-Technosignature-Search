@@ -9477,7 +9477,7 @@ def _build_parser() -> argparse.ArgumentParser:
         help=(
             "Download the real HTRU2 pulsar-candidate dataset (CC BY 4.0) via "
             "ucimlrepo and record an acquisition manifest entry. Requires network "
-            "access to archive-beta.ics.uci.edu and the ucimlrepo package."
+            "access to archive.ics.uci.edu and the ucimlrepo package."
         ),
     )
     subparsers.add_parser(
