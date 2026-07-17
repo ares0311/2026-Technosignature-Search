@@ -4371,3 +4371,44 @@ gone; running any of their names now reports an unknown command rather than
 silently returning fabricated content. No candidate ledger, scoring
 threshold, or scientific claim changed — this is a reliability and
 correctness fix, not a science change.
+
+# DECISION-154: Not-Yet-Implemented Future-Phase Stubs Must Self-Describe
+
+**Date:** 2026-07-17
+**Status:** Accepted
+**Implements:** the 12 remaining findings from DECISION-153's stub-consumer
+audit that were deferred pending triage
+
+## Context
+
+`mcp-server-policy-summary`, `mcp-bootstrap-consistency-summary`,
+`sqlite-operational-log-registry-summary`, and 9
+`sqlite-operational-log-adapter-*` commands each printed a bare `{}` with
+exit code 1 — their backing functions return `_StubDict({})`, and the
+consumer subscripts `["ok"]`, a key the stub never provides, silently
+getting `0` (falsy) via `__missing__`. Unlike DECISION-153's two bugs, the
+resulting signal (exit 1, "not ok") happens to be directionally correct:
+per `docs/CLI_USAGE.md`, this whole family is intentionally-deferred
+placeholder scaffolding for a future SQLite adapter phase that was never
+started, not real functionality that regressed. But an empty `{}` gives an
+operator or agent zero way to distinguish "correctly not built yet" from
+"broken," which fails AGENTS.md's NO FAKE COMPLETION section just as much
+as an outright wrong answer would — silence is not evidence.
+
+## Decision
+
+Give all 12 an explicit, honest body:
+`{"ok": false, "status": "not_yet_implemented", "reason": "..."}`, matching
+the shape `production_blocker_consistency_summary`/
+`project_status_consistency_summary` (right next to this cluster in
+`cli.py`) already use for their own `{"ok": true, ...}` case. Exit code is
+unchanged (still 1) — this is a diagnostic-content fix, not a behavior
+change. Added 12 parametrized CLI-dispatch tests asserting the real,
+self-describing output.
+
+## Consequences
+
+Running any of these 12 commands now tells an operator or agent exactly
+why nothing happened, instead of an empty object that could be mistaken
+for a real (if trivial) failure. No CLI surface removed, no exit-code
+contract changed, no scientific claim affected.
