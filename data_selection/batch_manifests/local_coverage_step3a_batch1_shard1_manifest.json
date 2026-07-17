@@ -1,0 +1,218 @@
+{
+  "batch_id": "step3a_batch1_shard1",
+  "project": "technosignatures",
+  "role": "live_search",
+  "acquisition_mode": "stream_process_evict",
+  "source_archive": "breakthrough_listen_open_data_archive",
+  "target_queue_snapshot": "data_selection/target_priority_queue.csv",
+  "estimated_download_gb": 8.185151,
+  "max_allowed_download_gb": 50.0,
+  "expected_raw_files": 33,
+  "free_space_before_gb": null,
+  "free_space_required_after_gb": null,
+  "eviction_rule": "delete raw HDF5 payload from data/extended_corpus/<target>/ immediately after turboSETI + pipeline candidate report generation completes for that target",
+  "pin_rule": "pin only the compact derived candidate report/manifest, never the raw HDF5",
+  "stop_condition": "stop if TECHNO_LOCAL_STORAGE_CAP_GB (100GB) would be exceeded, or if this batch cap (50GB) is reached",
+  "manifest_owner": "agent-prepared, user-approved for download 2026-07-17",
+  "notes": "Shard 1/6 of 6, part of the 198-target/49.963GB step3a_batch1 download, drawn from the corrected 949-target raw_download_approval_required queue (DECISION-155). Approved by the user 2026-07-17.",
+  "targets": [
+    {
+      "hip": "HIP10279",
+      "estimated_download_gb": 0.263956,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_40/holding/spliced_blc0001020304050607_guppi_57669_18392_HIP10279_0039.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP102851",
+      "estimated_download_gb": 0.264452,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_75/holding/spliced_blc0001020304050607_guppi_57715_77815_HIP102851_0045.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP102870",
+      "estimated_download_gb": 0.237822,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_50/holding/spliced_blc0001020304050607_guppi_57683_06216_HIP102870_0015.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP103256",
+      "estimated_download_gb": 0.241104,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16A_999_220/holding/spliced_blc0001020304050607_guppi_57552_32356_HIP103256_0039.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP103388",
+      "estimated_download_gb": 0.242807,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16A_999_220/holding/spliced_blc0001020304050607_guppi_57552_34521_HIP103388_0045.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP103441",
+      "estimated_download_gb": 0.241047,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16A_999_220/holding/spliced_blc0001020304050607_guppi_57552_36657_HIP103441_0051.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP103800",
+      "estimated_download_gb": 0.236374,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_56/holding/spliced_blc1011121314151617_guppi_57691_02230_HIP103800_0039.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP103859",
+      "estimated_download_gb": 0.240741,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT17B_999_24/holding/spliced_blc0001020304050607_guppi_58002_16483_HIP103859_0008.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP104092",
+      "estimated_download_gb": 0.26353,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_40/holding/spliced_blc0001020304050607_guppi_57669_07873_HIP104092_0009.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP10416",
+      "estimated_download_gb": 0.263635,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_40/holding/spliced_blc0001020304050607_guppi_57669_22527_HIP10416_0051.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP104239",
+      "estimated_download_gb": 0.26389,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_40/holding/spliced_blc0001020304050607_guppi_57669_12029_HIP104239_0021.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP104887",
+      "estimated_download_gb": 0.237026,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_56/holding/spliced_blc1011121314151617_guppi_57691_04379_HIP104887_0045.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP105038",
+      "estimated_download_gb": 0.237777,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16A_999_245/holding/spliced_blc0001020304050607_guppi_57594_20896_Hip105038_0003.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP105152",
+      "estimated_download_gb": 0.238207,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16A_999_245/holding/spliced_blc0001020304050607_guppi_57594_23021_Hip105152_0009.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP105341",
+      "estimated_download_gb": 0.23721,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16A_999_245/holding/spliced_blc0001020304050607_guppi_57594_25139_Hip105341_0015.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP10542",
+      "estimated_download_gb": 0.264404,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_40/holding/spliced_blc0001020304050607_guppi_57669_24571_HIP10542_0057.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP105932",
+      "estimated_download_gb": 0.23935,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_30/holding/spliced_blc0001020304050607_guppi_57659_08153_HIP105932_0003.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP106147",
+      "estimated_download_gb": 0.244732,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT18A_999_36/holding/spliced_blc0001020304050607_guppi_58210_39531_HIP106147_0036.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP106231",
+      "estimated_download_gb": 0.237921,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16A_999_241/holding/spliced_blc0001020304050607_guppi_57587_31524_Hip106231_0045.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP106400",
+      "estimated_download_gb": 0.238007,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_34/holding/spliced_blc0001020304050607_guppi_57662_11492_HIP106400_0015.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP10644",
+      "estimated_download_gb": 0.242161,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16A_999_212/holding/spliced_blc0001020304050607_guppi_57541_55054_HIP10644_0002.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP10723",
+      "estimated_download_gb": 0.238806,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16A_999_224/holding/spliced_blc0001020304050607_guppi_57557_43044_HIP10723_0009.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP107346",
+      "estimated_download_gb": 0.237936,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_13/holding/spliced_blc0001020304050607_guppi_57622_25363_Hip107346_0017.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP108028",
+      "estimated_download_gb": 0.243802,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_72/holding/spliced_blc0001020304050607_guppi_57901_41745_HIP108028_0045.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP108092",
+      "estimated_download_gb": 0.237695,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_13/holding/spliced_blc0001020304050607_guppi_57622_26741_Hip108092_0021.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP108156",
+      "estimated_download_gb": 0.23795,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16A_999_250/holding/spliced_blc0001020304050607_guppi_57601_23223_Hip108156_0015.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP108752",
+      "estimated_download_gb": 0.263457,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_18/holding/spliced_blc0001020304050607_guppi_57628_27965_Hip108752_0015.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP108782",
+      "estimated_download_gb": 0.266225,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_18/holding/spliced_blc0001020304050607_guppi_57628_30047_Hip108782_0021.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP109176",
+      "estimated_download_gb": 0.263257,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_18/holding/spliced_blc0001020304050607_guppi_57628_32116_Hip109176_0027.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP109527",
+      "estimated_download_gb": 0.243218,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_86/holding/spliced_blc0001020304050607_guppi_57928_41619_HIP109527_0008.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP109555",
+      "estimated_download_gb": 0.238915,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT16A_999_233/holding/spliced_blc0001020304050607_guppi_57574_41493_HIP109555_0057.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP109926",
+      "estimated_download_gb": 0.268528,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_05/holding/spliced_blc0001020304050607_guppi_57798_65362_HIP109926_0176.gpuspec.0002.h5"
+    },
+    {
+      "hip": "HIP109980",
+      "estimated_download_gb": 0.269209,
+      "total_priority": 17.5,
+      "source_hdf5_url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_03/holding/spliced_blc0001020304050607_guppi_57793_12315_HIP109980_0012.gpuspec.0002.h5"
+    }
+  ]
+}
