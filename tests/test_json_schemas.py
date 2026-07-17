@@ -17,8 +17,6 @@ def test_json_schema_files_are_parseable_and_named() -> None:
         "background_search_ledger.schema.json",
         "background_targets.schema.json",
         "background_user_decisions.schema.json",
-        "baseline_eval.schema.json",
-        "baseline_performance_history.schema.json",
         "batch_manifest.schema.json",
         "benchmark_metadata.schema.json",
         "benchmark_run_results.schema.json",

@@ -934,18 +934,6 @@ Persisted reports also include a manifest with:
 
 ---
 
-## Interpretable Baseline Evaluation
-
-```bash
-techno-search baseline-eval-summary
-```
-
-Evaluates the rule-based baseline classifier against synthetic calibration false-positive fixtures and clean example candidates. Returns pathway accuracy, false-positive recall, candidate precision, per-track accuracy, and mean rule coverage. All metrics are local synthetic diagnostics only.
-
-Validation gate: pathway accuracy must be >= 0.80. Enforced by `validate-all`.
-
----
-
 ## Target Watchlist Summary
 
 ```bash
@@ -966,26 +954,6 @@ Assembles a weekly review template combining the SQLite log weekly digest and cr
 
 ---
 
-## Baseline Performance History Summary
-
-```bash
-techno-search baseline-performance-history-summary [--history-path PATH]
-```
-
-Loads the committed `tests/fixtures/baseline_performance_history.json` fixture and reports snapshot count, latest pathway accuracy, model version, and schema version. Each snapshot is a dated record of baseline classifier accuracy against the synthetic calibration fixtures. All values are local synthetic diagnostics only.
-
----
-
-## Baseline Pathway Drift Summary
-
-```bash
-techno-search baseline-pathway-drift-summary [--examples-dir DIR]
-```
-
-Runs the rule-based baseline classifier over all example candidates in `examples/candidates/` and compares each predicted pathway to the main scoring model pathway. Reports zero-drift status, drift count, and drift cases. A non-zero drift count indicates that baseline routing has diverged from the current scoring model and requires investigation before the next observation cycle.
-
----
-
 ## SQLite Log Track Summary
 
 ```bash
@@ -1002,17 +970,7 @@ Reports background run counts grouped by candidate track (radio, infrared, anoma
 techno-search health
 ```
 
-Prints a concise local health dashboard combining baseline pathway accuracy, watchlist conflict count, and baseline drift count. Returns exit code 0 when all health gates pass. Intended as a quick operator status check before scheduling the next observation cycle.
-
----
-
-## Baseline Confusion Matrix Summary
-
-```bash
-techno-search baseline-confusion-matrix-summary
-```
-
-Prints the per-pathway confusion matrix and precision/recall/F1 metrics from the baseline evaluation harness. All metrics are computed against synthetic fixtures and are local development diagnostics only — not calibrated survey performance estimates.
+Prints a concise local health dashboard combining watchlist conflict count and schema-file count. Returns exit code 0 when all health gates pass. Intended as a quick operator status check before scheduling the next observation cycle.
 
 ---
 
@@ -1063,20 +1021,6 @@ techno-search scoring-config-summary [--config-path PATH]
 ```
 
 Reports the current pathway threshold values from `configs/scoring_v0.json`. Includes threshold count, named threshold values, and local performance defaults. These are synthetic v0 development parameters only — not calibrated detection thresholds.
-
----
-
-## Route Coverage Summary
-
-```bash
-techno-search route-coverage-summary
-```
-
-Checks which `Pathway` enum values have calibration fixture coverage. Reports covered and uncovered pathway names, per-pathway case counts, and a full-coverage flag. Uncovered pathways indicate areas where synthetic fixture coverage should be extended. Synthetic diagnostic only.
-
-Current route-coverage fixtures exercise every `Pathway` enum value, including
-`external_followup_candidate` as a synthetic enum-coverage case only. That
-coverage does not authorize external submission or imply external validation.
 
 ---
 
@@ -1180,16 +1124,6 @@ techno-search observation-gap-analysis [--fixture-path PATH]
 ```
 
 Identifies scheduling gaps between planned and completed observation windows per target. Returns targets with no completed windows and per-target gap counts. This is a scheduling provenance aid only — gaps do not imply missed detections.
-
----
-
-## Classifier Rule Coverage
-
-```bash
-techno-search classifier-rule-coverage
-```
-
-Reports which baseline classifier rules fire across evaluation cases. Returns fired/never-fired rule lists and a coverage fraction. This is a local development diagnostic only.
 
 ---
 

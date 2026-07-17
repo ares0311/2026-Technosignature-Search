@@ -6,7 +6,38 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.28
+**Current app version:** 1.2.29
+
+**Synthetic baseline-classifier CLI surface finally retired; two real bugs
+found and fixed — 2026-07-16:** version 1.2.29 completes the Phase 0 "must be
+deleted" item for `baseline_model.py`/`baseline_eval.py` (recorded in this
+document's own "What Must Be Deleted" section since the mission redirect but
+never fully executed) and, in the process, found and fixed two real, live
+correctness bugs the new `scripts/check_no_fake_completion.py`-style
+stub-consumer audit surfaced: `score-determinism-check` — a command whose
+entire purpose is verifying `score_candidate()` produces identical output
+across repeated runs — was silently calling a Phase 0 stub instead of its
+real implementation, so it reported `all_deterministic: false` on every
+single run regardless of the real scoring pipeline's actual behavior, with
+zero CLI-dispatch test coverage to catch it. `health`'s `all_gates_pass` had
+the same problem one level removed: it depended on `evaluate_baseline()`/
+`baseline_pathway_drift_summary()`, both stubs, via `.get(key, default)`
+lookups that silently returned `0.0`/fake defaults instead of raising, so
+`health` reported `all_gates_pass: false` unconditionally. `score_determinism_check`
+was moved to `scoring.py` (what it actually tests) rather than left as a real
+dependency inside a file marked for deletion; `health` was fixed to report
+only its one genuinely real gate (target watchlist conflicts). Four
+CLI commands that were irreducibly synthetic-classifier-dependent
+(`baseline-eval-summary`, `baseline-confusion-matrix-summary`,
+`baseline-pathway-drift-summary`, `route-coverage-summary`,
+`classifier-rule-coverage`, `baseline-performance-history-summary` — six
+total) were retired rather than fixed, since there is no way to make
+evaluation against a synthetic rule-based classifier and synthetic
+calibration fixtures into real science. See DECISION-153 for full rationale.
+Both bugs were found using the new stub-consumer static-analysis pattern
+from the reliability-controls work above (search for `FUNC(...)["key"]`
+where `FUNC` is a known stub and `key` isn't in its literal key set) —
+confirming that pattern's real value beyond its own test suite.
 
 **Verifiable agent-reliability controls added — 2026-07-16:** version 1.2.28
 adds three new scripts wired into the canonical

@@ -4278,3 +4278,96 @@ via the new adversarial test file, which runs as part of the normal test
 suite and therefore itself as part of every future validation pass. No
 scientific threshold, candidate ledger, or existing directive requirement
 was weakened; `AGENTS.md` gained requirements, it did not lose any.
+
+# DECISION-153: Retire Synthetic Baseline-Classifier CLI Surface; Fix Two Real Fake-Completion Bugs
+
+**Date:** 2026-07-16
+**Status:** Accepted
+**Implements:** the Phase 0 "must be deleted" item for `baseline_model.py`/
+`baseline_eval.py` recorded in `docs/PRODUCTION_READINESS.md` since the
+2026-06-26 mission redirect (never fully executed); applies the
+stub-consumer detection pattern introduced by DECISION-152's reliability
+controls
+
+## Context
+
+A static-analysis pass looking for the same class of bug fixed in
+DECISION-151 (a caller subscripting a stub function's result with a key the
+stub never provides) found 19 instances across `cli.py`. Investigation
+narrowed these to two genuinely serious, live bugs, both traced to the same
+root cause: `baseline_eval.py` (real code, still present despite being
+listed for Phase 0 deletion) defines real functions including
+`score_determinism_check`, `evaluate_baseline`, and
+`baseline_pathway_drift_summary` — but `cli.py` never imports any of them.
+Instead it defines its own same-named local stub for each, which silently
+shadows the real function.
+
+`score-determinism-check` — a command whose entire purpose is verifying
+`score_candidate()` produces identical output across repeated runs — called
+the stub, which discards its real candidate-path/runs arguments and always
+returns `{"ok": True, "issue_count": 0}`. The caller then read
+`det["deterministic"]`, a key the stub never provides, silently getting `0`
+(falsy) via `_StubDict.__missing__`. Live-verified: the command reported
+`all_deterministic: false` unconditionally, on every real candidate,
+regardless of the real scoring pipeline's actual determinism, with zero
+CLI-dispatch test coverage to catch it.
+
+`health`'s `_project_health_summary()` had the same root cause one layer
+removed: `baseline = evaluate_baseline()` (a stub) then
+`baseline.get("pathway_accuracy", 0.0)` — using `.get()` with an explicit
+default rather than a bare subscript, so it never crashed, just silently
+returned the fake default `0.0` every time. `0.0 >= 0.80` is always false,
+so `health`'s `baseline_accuracy_gate_ok` (and therefore `all_gates_pass`)
+was unconditionally `false` regardless of real project state — confirmed
+via a real, previously-recorded live test earlier the same session, before
+this root cause was known.
+
+Separately, `evaluate_baseline`, `baseline_pathway_drift_summary`,
+`baseline_performance_history_summary`, `classifier_rule_coverage_summary`,
+and `route_coverage_summary` (backing five more CLI commands) all
+irreducibly depend on `RuleBasedBaselineClassifier` (`baseline_model.py`)
+evaluated against synthetic calibration fixtures — there is no way to wire
+these up as real science, only as correctly-labeled synthetic diagnostics,
+which this project's prime directive already excludes from production
+paths.
+
+## Decision
+
+Move `score_determinism_check` to `scoring.py` (what it actually tests —
+`score_candidate()`), not `baseline_eval.py` (marked for deletion), so a
+real dependency doesn't survive inside doomed code. Fix `health` to report
+only its one genuinely real gate (target watchlist conflicts), dropping the
+two gates that were always-false synthetic-classifier artifacts. Retire six
+CLI commands entirely (dispatch, parser, local stub functions):
+`baseline-eval-summary`, `baseline-confusion-matrix-summary`,
+`baseline-pathway-drift-summary`, `baseline-performance-history-summary`,
+`classifier-rule-coverage`, `route-coverage-summary`. Delete
+`baseline_eval.py` and `baseline_model.py` entirely (nothing else in the
+codebase depends on them once `score_determinism_check` is moved out) along
+with their now-orphaned schemas (`baseline_eval.schema.json`,
+`baseline_performance_history.schema.json`) and fixtures
+(`baseline_performance_history.json`, `route_coverage_fixtures.json`).
+Remove `tests/test_deps.py`'s `test_baseline_eval_importable` — an
+import-only test, exactly the "a module imports" pattern AGENTS.md's NO
+UNSUPPORTED COMPLETION CLAIMS section calls out as insufficient evidence of
+working behavior. Add real CLI-dispatch fidelity tests for the two fixed
+commands, per AGENTS.md's requirement that every command have at least one
+test exercising the real dispatch path, not just its underlying function.
+
+`docs/VALIDATION.md` claimed `validate-all` enforces baseline pathway drift
+and route coverage as gates; direct inspection of `validate_all()`'s real
+implementation (same check already performed for DECISION-151) confirmed it
+never referenced any of these — that documentation was already describing
+fictional behavior independent of this change.
+
+## Consequences
+
+`score-determinism-check` and `health` now report real, verified state:
+live-tested after the fix, `score-determinism-check` correctly reports
+`all_deterministic: true` after actually running `score_candidate()` three
+times each on three real example candidates, and `health` reports
+`all_gates_pass: true` from its one real gate. The six retired commands are
+gone; running any of their names now reports an unknown command rather than
+silently returning fabricated content. No candidate ledger, scoring
+threshold, or scientific claim changed — this is a reliability and
+correctness fix, not a science change.
