@@ -1373,6 +1373,39 @@ def test_cli_retired_synthetic_baseline_commands_are_absent() -> None:
     assert not Path("src/techno_search/baseline_model.py").exists()
 
 
+@pytest.mark.parametrize(
+    "command",
+    [
+        "mcp-server-policy-summary",
+        "mcp-bootstrap-consistency-summary",
+        "sqlite-operational-log-registry-summary",
+        "sqlite-operational-log-adapter-plan-summary",
+        "sqlite-operational-log-adapter-contract-summary",
+        "sqlite-operational-log-adapter-ddl-preview-summary",
+        "sqlite-operational-log-adapter-row-preview-summary",
+        "sqlite-operational-log-adapter-insert-preview-summary",
+        "sqlite-operational-log-adapter-execution-preview-summary",
+        "sqlite-operational-log-adapter-dry-run-manifest-summary",
+        "sqlite-operational-log-adapter-readiness-preflight-summary",
+        "sqlite-operational-log-adapter-authorization-gate-summary",
+    ],
+)
+def test_cli_not_yet_implemented_future_phase_stubs_self_describe(command: str) -> None:
+    """These commands used to silently print an empty `{}` with exit 1 — no
+    way to tell 'correctly not implemented yet' from 'broken'. They must now
+    self-describe why, per AGENTS.md's NO FAKE COMPLETION section.
+    """
+    stdout = StringIO()
+
+    exit_code = main([command], stdout=stdout)
+    result = json.loads(stdout.getvalue())
+
+    assert exit_code == 1
+    assert result["ok"] is False
+    assert result["status"] == "not_yet_implemented"
+    assert "not-yet-built future phase" in result["reason"]
+
+
 def test_cli_background_run_once_appends_local_ledger_entry(tmp_path) -> None:
     ledger_path = tmp_path / "background_ledger.json"
     sqlite_log_path = tmp_path / "logs" / "techno_search.sqlite3"

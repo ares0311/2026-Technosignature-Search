@@ -6,7 +6,25 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.29
+**Current app version:** 1.2.30
+
+**Not-yet-implemented future-phase stubs now self-describe — 2026-07-17:**
+version 1.2.30 fixes the remaining 12 findings from the stub-consumer audit
+(DECISION-153): `mcp-server-policy-summary`, `mcp-bootstrap-consistency-summary`,
+`sqlite-operational-log-registry-summary`, and 9
+`sqlite-operational-log-adapter-*` commands all printed an uninformative
+empty `{}` with exit code 1, silently relying on `_StubDict.__missing__`
+returning `0` for a subscripted `["ok"]` key the stub never provided —
+functionally correct (all currently unimplemented, so "not ok" is the right
+signal) but indistinguishable from a real failure. Unlike DECISION-151's
+operations-blocker family (real functionality later deleted) or
+DECISION-153's baseline-classifier family (irreducibly synthetic), this
+cluster is intentionally-deferred placeholder scaffolding for a future
+SQLite adapter phase that was never started — so the fix is neither
+"restore real behavior" nor "retire," but "say clearly what these already
+correctly report": each now returns an explicit
+`{"ok": false, "status": "not_yet_implemented", "reason": "..."}`, exit code
+unchanged. 12 new parametrized CLI-dispatch tests added.
 
 **Synthetic baseline-classifier CLI surface finally retired; two real bugs
 found and fixed — 2026-07-16:** version 1.2.29 completes the Phase 0 "must be

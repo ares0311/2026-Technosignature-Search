@@ -790,12 +790,23 @@ def append_benchmark_run_result(*_a: object, **_k: object) -> None:
     pass
 
 
+_NOT_YET_IMPLEMENTED_REASON = (
+    "This is placeholder scaffolding for a not-yet-built future phase; no real "
+    "check, adapter, or database access has been implemented. This is not a "
+    "failure of a real system — it is an honest 'not built yet' signal."
+)
+
+
 def mcp_bootstrap_consistency_summary(*_a: object, **_k: object) -> dict[str, Any]:
-    return _StubDict({})
+    return _StubDict(
+        {"ok": False, "status": "not_yet_implemented", "reason": _NOT_YET_IMPLEMENTED_REASON}
+    )
 
 
 def mcp_server_policy_summary(*_a: object, **_k: object) -> dict[str, Any]:
-    return _StubDict({})
+    return _StubDict(
+        {"ok": False, "status": "not_yet_implemented", "reason": _NOT_YET_IMPLEMENTED_REASON}
+    )
 
 
 def pipeline_integration_summary(*_a: object, **_k: object) -> dict[str, Any]:
@@ -819,43 +830,63 @@ def reliability_summary(*_a: object, **_k: object) -> dict[str, Any]:
 
 
 def sqlite_operational_log_adapter_authorization_gate_summary(*_a: object, **_k: object) -> dict[str, Any]:  # noqa: E501
-    return _StubDict({})
+    return _StubDict(
+        {"ok": False, "status": "not_yet_implemented", "reason": _NOT_YET_IMPLEMENTED_REASON}
+    )
 
 
 def sqlite_operational_log_adapter_contract_summary(*_a: object, **_k: object) -> dict[str, Any]:
-    return _StubDict({})
+    return _StubDict(
+        {"ok": False, "status": "not_yet_implemented", "reason": _NOT_YET_IMPLEMENTED_REASON}
+    )
 
 
 def sqlite_operational_log_adapter_ddl_preview_summary(*_a: object, **_k: object) -> dict[str, Any]:
-    return _StubDict({})
+    return _StubDict(
+        {"ok": False, "status": "not_yet_implemented", "reason": _NOT_YET_IMPLEMENTED_REASON}
+    )
 
 
 def sqlite_operational_log_adapter_dry_run_manifest_summary(*_a: object, **_k: object) -> dict[str, Any]:  # noqa: E501
-    return _StubDict({})
+    return _StubDict(
+        {"ok": False, "status": "not_yet_implemented", "reason": _NOT_YET_IMPLEMENTED_REASON}
+    )
 
 
 def sqlite_operational_log_adapter_execution_preview_summary(*_a: object, **_k: object) -> dict[str, Any]:  # noqa: E501
-    return _StubDict({})
+    return _StubDict(
+        {"ok": False, "status": "not_yet_implemented", "reason": _NOT_YET_IMPLEMENTED_REASON}
+    )
 
 
 def sqlite_operational_log_adapter_insert_preview_summary(*_a: object, **_k: object) -> dict[str, Any]:  # noqa: E501
-    return _StubDict({})
+    return _StubDict(
+        {"ok": False, "status": "not_yet_implemented", "reason": _NOT_YET_IMPLEMENTED_REASON}
+    )
 
 
 def sqlite_operational_log_adapter_plan_summary(*_a: object, **_k: object) -> dict[str, Any]:
-    return _StubDict({})
+    return _StubDict(
+        {"ok": False, "status": "not_yet_implemented", "reason": _NOT_YET_IMPLEMENTED_REASON}
+    )
 
 
 def sqlite_operational_log_adapter_readiness_preflight_summary(*_a: object, **_k: object) -> dict[str, Any]:  # noqa: E501
-    return _StubDict({})
+    return _StubDict(
+        {"ok": False, "status": "not_yet_implemented", "reason": _NOT_YET_IMPLEMENTED_REASON}
+    )
 
 
 def sqlite_operational_log_adapter_row_preview_summary(*_a: object, **_k: object) -> dict[str, Any]:
-    return _StubDict({})
+    return _StubDict(
+        {"ok": False, "status": "not_yet_implemented", "reason": _NOT_YET_IMPLEMENTED_REASON}
+    )
 
 
 def sqlite_operational_log_registry_summary(*_a: object, **_k: object) -> dict[str, Any]:
-    return _StubDict({})
+    return _StubDict(
+        {"ok": False, "status": "not_yet_implemented", "reason": _NOT_YET_IMPLEMENTED_REASON}
+    )
 
 
 def top_level_sqlite_log_consistency_summary(*_a: object, **_k: object) -> dict[str, Any]:
