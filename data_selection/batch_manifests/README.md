@@ -214,7 +214,16 @@ with the Step 0 precedent), independently confirmed to have zero overlap
 with any target already recorded downloaded in
 `docs/data_collection_status.json`. Real local storage usage as of this
 round is ~9GB against the permanent 100GB cap (~91GB headroom), so this
-batch fits comfortably even before eviction. **Not yet authorized for raw
-download** — per the storage-reserve policy, actual acquisition requires
-the user's own explicit per-batch approval; this manifest is planning-only,
-same as every prior round.
+batch fits comfortably even before eviction.
+
+**Downloaded, processed, and evicted — 2026-07-17, same day:** the user
+approved this batch, the sandbox network fix above was applied and
+live-verified, and `scripts/run_six_shard_downloads.py` ran it end-to-end:
+198/198 targets downloaded (49.962586GB, matching the manifest), processed
+through turboSETI, and evicted; all six shard run entries recorded
+`ok: true`. Re-running `build-target-priority-queue` moved all 198 targets
+`raw_download_approval_required` → `already_acquired_local_cache` (412
+total already-acquired, 751 remaining). The consolidated approval manifest
+is now regenerated to 751 targets (~189.10GB). See
+`docs/PRODUCTION_READINESS.md` for the full result and a real
+`scan-summary`/`--json` bug this run surfaced and fixed.

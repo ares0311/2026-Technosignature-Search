@@ -4474,3 +4474,122 @@ mechanism added in the future that writes its own non-uniform run-key
 naming convention to `docs/data_collection_status.json` will need the same
 treatment unless the status schema is unified — noted as a real, unresolved
 design smell, not fixed here (out of scope for this bug fix).
+
+# DECISION-156: Sandbox Network Allowlist Must Cover Every Real Acquisition Host
+
+**Date:** 2026-07-17
+**Status:** Accepted
+**Implements:** a sandbox configuration fix plus a related doc-accuracy bug fix
+
+## Context
+
+The agent sandbox's `.claude/settings.local.json` had a `sandbox.network`
+block with `allowUnixSockets` but no `allowedDomains` at all, so every real
+Track A/B data-acquisition host was unreachable outright (a hard connection
+timeout, not merely slow) from this session — confirmed live when the
+approved `step3a_batch1` download attempt failed against
+`bldata.berkeley.edu`. A prior session note had attributed a similar
+symptom to a ~200KB/s aggregate sandbox throughput cap; that explanation
+was never re-verified and turned out to be wrong (see DECISION-157).
+
+## Decision
+
+Added `sandbox.network.allowedDomains` covering every host this project's
+acquisition code and its real third-party libraries actually contact, found
+by reading the installed library source directly rather than grepping only
+this repo's own code (`psrqpy`'s and `ucimlrepo`'s real hosts live inside
+those packages): `bldata.berkeley.edu`, `blpd0.ssl.berkeley.edu`,
+`celestrak.org`, `db.satnogs.org`, `fermi.gsfc.nasa.gov`,
+`gea.esac.esa.int`, `simbad.cds.unistra.fr`, `vizier.cds.unistra.fr`,
+`archive.ics.uci.edu`, `www.atnf.csiro.au`, `hpiers.obspm.fr`,
+`datacenter.iers.org`. Excluded five hosts from an initial draft list after
+confirming by direct call-site inspection that they are provenance/citation
+strings only, never fetched (`seti.berkeley.edu`,
+`breakthroughinitiatives.org`, `greenbankobservatory.org`,
+`www.gb.nrao.edu`, `heasarc.gsfc.nasa.gov`) — a narrower, correct list
+beats a broader, padded one.
+
+The same sweep found a real, separate bug: `track_a_htru2.py`'s docstring,
+`HTRU2_SOURCE_URL`, and the `track-a-htru2-acquire` CLI help text all cited
+`archive-beta.ics.uci.edu`, which is not `ucimlrepo`'s real API host
+(confirmed via the installed package's own `fetch.py`:
+`API_BASE_URL = 'https://archive.ics.uci.edu/api/dataset'`). Fixed to the
+verified-correct host in all three places plus the test fixture that used
+the same string. `.claude/settings.local.json` cannot be edited by the
+agent directly (settings files are sandbox-protected at every scope,
+confirmed live); the change was applied by the user from a generated
+`python3 -c` script, matching the precedent already established for the
+`gh` CLI fix earlier this session.
+
+## Consequences
+
+Live-verified after the fix: `curl` reached `bldata.berkeley.edu`,
+`celestrak.org`, `www.atnf.csiro.au`, `gea.esac.esa.int`, and
+`archive.ics.uci.edu` directly from this session with real 200 OK
+responses, including a confirmed real `Content-Length` match against a
+target's manifest-recorded size. This unblocks the agent from running
+approved bounded download batches itself instead of asking the user to run
+them — see DECISION-157 for the first real run under this fix.
+
+# DECISION-157: Step 3a Batch 1 Downloaded; Real `scan-summary --json` Bug Found and Fixed
+
+**Date:** 2026-07-17
+**Status:** Accepted
+**Implements:** the first agent-executed bounded download under DECISION-156's
+sandbox fix, plus a real production-scan script bug found while reviewing
+its output
+
+## Context
+
+With DECISION-156's sandbox network fix live-verified, the user-approved
+`step3a_batch1` manifest (198 targets, 49.963GB, proposed against the
+DECISION-155-corrected queue) was run end-to-end via
+`scripts/run_six_shard_downloads.py` directly by the agent — the first
+bounded batch this project executed without the user running it on their
+own machine. All six shards completed successfully: 198/198 targets
+downloaded (49.962586GB, matching the manifest), processed through
+turboSETI, and evicted; every
+`stream_process_evict_batch__local_coverage_step3a_batch1_shard{1-6}_manifest`
+run entry recorded `ok: true`. Corpus grew from 215 to 413 `.dat` files;
+local storage returned to ~9GB after eviction, confirming the design holds
+under this session's real network conditions too, not only the user's
+machine. Re-running `build-target-priority-queue` correctly moved all 198
+targets to `already_acquired_local_cache` with no manual bookkeeping,
+verifying DECISION-155's fix end-to-end on new real data. A follow-on
+production scan (`RUN-2026-07-17_223155Z-5ARN-prod-scan`) processed 396
+pending targets, 0 failed, 0 escalations.
+
+While reviewing that scan's console output, a real bug surfaced:
+`scripts/run_production_scan.sh` called `techno-search scan-summary`
+without `--json`, receiving a human-readable text table instead of the
+machine-readable summary its own next line tries to `json.load()`. The
+caught `JSONDecodeError` silently became a literal `"?"` in the printed
+"Total candidates" line, and the persisted `${RUN_ID}_scan_summary.json`
+artifact held the wrong (non-JSON) content. Traced the actual consequence
+rather than assuming the worst: `write_production_outcomes()` loads that
+file via `_load_json()`, which also swallows the parse failure and returns
+`{}`, but `build_production_outcomes()` falls back to
+`scan_summary_data or scan_summary(candidates)` — an empty dict is falsy in
+Python, so it recomputed the real summary from the candidates directly.
+**The follow-up/non-detection/target-status ledgers were never wrong**;
+this was a cosmetic-but-real bug, not a silent science defect.
+
+## Decision
+
+Fixed by adding `--json` to the `scan-summary` call in
+`run_production_scan.sh`. Added a static regression test
+(`test_run_production_scan_script_calls_scan_summary_with_json_flag`)
+asserting the flag stays present in the script text, rather than a full
+subprocess-level test, since exercising the real script requires a live
+turboSETI/CLI environment disproportionate to this bug's scope.
+
+## Consequences
+
+Also confirms the earlier "~200KB/s aggregate sandbox throughput cap" note
+from an earlier session (recorded without re-verification) was actually
+this same domain-block all along: real observed throughput once the domain
+allowlist was fixed was on the order of tens of MB/s aggregate across six
+shards, not kilobytes/s. Future agents should not reuse that throughput
+figure as a constraint. This closes the loop the user opened by asking
+"why are you asking me to run this?" — the agent now runs its own approved
+bounded batches end-to-end.
