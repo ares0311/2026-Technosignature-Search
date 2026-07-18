@@ -6,7 +6,23 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.33
+**Current app version:** 1.2.34
+
+**Step 3a batch 2 downloaded, processed, and evicted — 2026-07-18:** the
+same six-shard pipeline ran again against `step3a_batch2` (194 targets,
+49.834185GB, drawn from the 751-target queue left after batch 1):
+194/194 downloaded (matching the manifest exactly), processed through
+turboSETI, evicted; all six shard run entries recorded `ok: true`. Corpus
+now has 607 `.dat` files (up from 413); local storage returned to ~9GB
+after eviction. Re-running `build-target-priority-queue` moved all 194
+targets to `already_acquired_local_cache` (606 total, 557 remaining
+`raw_download_approval_required`; regenerated approval manifest
+accordingly). A follow-on production scan
+(`RUN-2026-07-18_093631Z-OM38-prod-scan`) processed 194 pending targets, 0
+failed, 0 escalations, 545 cross-target-RFI flagged — and its console
+output correctly printed `Total candidates in results/: 1417` instead of
+the prior run's `"?"`, confirming the `scan-summary --json` fix from
+DECISION-157 works in a real run, not just the added unit test.
 
 **Step 3a batch 1 downloaded, processed, and evicted; real scan-summary
 bug fixed — 2026-07-17:** with the sandbox network fix above verified live,
