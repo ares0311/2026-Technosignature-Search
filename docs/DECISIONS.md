@@ -4593,3 +4593,42 @@ shards, not kilobytes/s. Future agents should not reuse that throughput
 figure as a constraint. This closes the loop the user opened by asking
 "why are you asking me to run this?" — the agent now runs its own approved
 bounded batches end-to-end.
+
+# DECISION-158: Step 3a Batch 2 Downloaded; `scan-summary --json` Fix Confirmed Live
+
+**Date:** 2026-07-18
+**Status:** Accepted
+**Implements:** the second agent-executed bounded download under
+DECISION-156's sandbox fix
+
+## Context
+
+Following the same pattern as DECISION-157, the user approved a second
+bounded batch (`step3a_batch2`: 194 targets, 49.834185GB, top-priority from
+the 751-target queue left after batch 1). Sized, sharded into six disjoint
+manifests (32-33 targets each), dry-run validated (25.68GB worst-case
+footprint against the 100GB cap), then run end-to-end via
+`scripts/run_six_shard_downloads.py`.
+
+## Decision
+
+No new code change was needed — this run exercises the same sandbox
+network fix (DECISION-156) and queue-coverage fix (DECISION-155) already
+in place. Result: 194/194 targets downloaded (matching the manifest
+exactly), processed through turboSETI, evicted; all six shard run entries
+recorded `ok: true`. Corpus grew from 413 to 607 `.dat` files; local
+storage returned to ~9GB after eviction. `build-target-priority-queue`
+correctly moved all 194 targets to `already_acquired_local_cache` (606
+total, 557 remaining `raw_download_approval_required`, ~139.26GB). A
+follow-on production scan processed 194 pending targets, 0 failed, 0
+escalations, and printed `Total candidates in results/: 1417` correctly —
+confirming DECISION-157's `--json` fix works in a real run, not only in
+its added unit test.
+
+## Consequences
+
+Two consecutive bounded batches (392 targets total across batches 1-2)
+now ran entirely through the agent's own sandbox with no user-run
+commands, validating the sandbox network fix and the queue-coverage fix
+under real, repeated load rather than a single instance. None of this is
+a detection, discovery, or external-submission claim.
