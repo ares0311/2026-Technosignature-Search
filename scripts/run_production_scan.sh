@@ -397,7 +397,7 @@ fi
 if [[ -d "${RESULTS_BASE}" ]]; then
     info "Running scan-summary on ${RESULTS_BASE} ..."
     set +e
-    SCAN_JSON=$("${TECHNO_SEARCH}" scan-summary "${RESULTS_BASE}" 2>&1)
+    SCAN_JSON=$("${TECHNO_SEARCH}" scan-summary --json "${RESULTS_BASE}" 2>&1)
     set -e
     echo "${SCAN_JSON}" | tee "${SCAN_SUMMARY_PATH}" >/dev/null
     TOTAL=$(echo "${SCAN_JSON}" | "${PYTHON}" \

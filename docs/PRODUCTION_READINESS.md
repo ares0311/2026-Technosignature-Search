@@ -6,7 +6,46 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.32
+**Current app version:** 1.2.33
+
+**Step 3a batch 1 downloaded, processed, and evicted; real scan-summary
+bug fixed — 2026-07-17:** with the sandbox network fix above verified live,
+the 198-target/49.963GB `step3a_batch1` manifest (proposed and approved
+earlier this round) ran end-to-end via
+`scripts/run_six_shard_downloads.py`: all six shards completed
+successfully, 198/198 targets downloaded (49.962586GB, matching the
+manifest exactly), processed through turboSETI, and evicted. All six
+`stream_process_evict_batch__local_coverage_step3a_batch1_shard{1-6}_manifest`
+run entries recorded `ok: true` in `docs/data_collection_status.json`.
+Corpus now has 413 `.dat` files (up from 215) and 633 candidate report
+manifests. Re-running `build-target-priority-queue` correctly moved all
+198 targets `raw_download_approval_required` → `already_acquired_local_cache`
+(412 total already-acquired, 751 remaining `raw_download_approval_required`,
+regenerated approval manifest ~189.10GB), confirming DECISION-155's fix
+recognizes real `stream_process_evict` completions with no manual
+bookkeeping. A follow-on production scan
+(`RUN-2026-07-17_223155Z-5ARN-prod-scan`) processed 396 pending targets, 0
+failed, 0 escalations flagged, 360 cross-target-RFI flagged. None of this
+is a detection, discovery, or external-submission claim.
+
+While reviewing that scan's console output, a real bug surfaced:
+`scripts/run_production_scan.sh` called `techno-search scan-summary`
+without the `--json` flag, so it received a human-readable text table
+instead of the machine-readable summary its own next line tries to
+`json.load()`. The resulting `JSONDecodeError` was caught and silently
+replaced with a literal `"?"` for the printed "Total candidates" line, and
+the persisted `${RUN_ID}_scan_summary.json` artifact held the wrong
+(non-JSON) content. Traced the consequence: `write_production_outcomes()`
+loads that same file via `_load_json()`, which also swallows the parse
+failure and returns `{}` -- but `build_production_outcomes()` then falls
+back to `scan_summary_data or scan_summary(candidates)`, and an empty
+dict is falsy in Python, so it recomputed the real summary from the
+candidates directly. **The actual follow-up/non-detection/target-status
+ledgers were never wrong** -- this was a cosmetic-but-real bug (wrong
+console number, wrong persisted-artifact content), not a silent science
+defect. Fixed by adding `--json` to the `scan-summary` call; added a
+static regression test asserting the flag stays present, since a full
+subprocess-level test would require a real turboSETI/CLI environment.
 
 **Sandbox network allowlist fixed; HTRU2 source-host doc bug corrected —
 2026-07-17:** the agent sandbox's `sandbox.network.allowedDomains` had no

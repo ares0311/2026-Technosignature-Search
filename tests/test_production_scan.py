@@ -169,6 +169,19 @@ def test_run_production_scan_sanitizes_project_paths_in_artifacts(tmp_path: Path
     assert "tests/fixtures/background_targets.json" in validate_text
 
 
+def test_run_production_scan_script_calls_scan_summary_with_json_flag() -> None:
+    """`scan-summary` without --json prints a human-readable table, not JSON.
+
+    The script pipes that output straight into a `json.load()` call and
+    silently falls back to printing "?" on decode failure -- catching a
+    dropped --json flag here is cheaper than re-deriving this from a live
+    run, since the failure is otherwise silent (a caught JSONDecodeError,
+    not a crash).
+    """
+    script_text = RUN_PRODUCTION_SCAN_SCRIPT.read_text(encoding="utf-8")
+    assert 'scan-summary --json "${RESULTS_BASE}"' in script_text
+
+
 def test_run_production_scan_fails_closed_without_candidates(tmp_path: Path) -> None:
     results_dir = tmp_path / "results"
     scans_dir = tmp_path / "scans"
