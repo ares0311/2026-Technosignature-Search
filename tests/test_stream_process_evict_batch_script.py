@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
+import sys
 from pathlib import Path
 
 SCRIPT_PATH = Path(__file__).resolve().parents[1] / "scripts" / (
@@ -109,6 +111,7 @@ def test_local_dat_only_manifest_executes_real_dry_run_dispatch(tmp_path: Path) 
         check=False,
         capture_output=True,
         text=True,
+        env={**os.environ, "TECHNO_STREAM_PROCESS_PYTHON": sys.executable},
     )
 
     assert result.returncode == 0, result.stderr

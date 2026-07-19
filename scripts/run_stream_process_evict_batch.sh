@@ -31,7 +31,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-VENV_PYTHON="${REPO_ROOT}/.venv/bin/python"
+VENV_PYTHON="${TECHNO_STREAM_PROCESS_PYTHON:-${REPO_ROOT}/.venv/bin/python}"
 OUT_DIR="${REPO_ROOT}/data/extended_corpus"
 RESULTS_DIR="${REPO_ROOT}/results"
 MANIFEST=""
@@ -94,6 +94,11 @@ fi
 
 if [[ -n "${STATUS_KEY:-}" && ! "${STATUS_KEY}" =~ ^[A-Za-z0-9_.-]+$ ]]; then
   log "[ERROR] --status-key may contain only letters, numbers, dot, underscore, and hyphen."
+  exit 2
+fi
+if [[ ! -x "${VENV_PYTHON}" ]]; then
+  log "[ERROR] Python interpreter not executable: ${VENV_PYTHON}"
+  log "[ERROR] Create .venv or set TECHNO_STREAM_PROCESS_PYTHON to the active project interpreter."
   exit 2
 fi
 
