@@ -201,6 +201,11 @@ def load_search(searches_dir: Path, search_id: str) -> dict[str, Any]:
     if manifest.get("search_id") != search_id:
         raise SearchLifecycleError(f"search ID/path mismatch: {manifest_path}")
     events = _load_events(events_path, search_id)
+    recorded_hash = str(events[0].get("manifest_sha256", "")) if events else ""
+    if not recorded_hash or recorded_hash != _sha256(manifest_path):
+        raise SearchLifecycleError(
+            f"immutable search manifest hash does not match its creation event: {manifest_path}"
+        )
     return {"manifest": manifest, "events": events, "status": _event_status(events)}
 
 
@@ -240,6 +245,13 @@ def run_search(
     resolved_id = search_id or latest_pending_search_id(searches_dir)
     loaded = load_search(searches_dir, resolved_id)
     manifest = dict(loaded["manifest"])
+    manifest_app_version = str(manifest.get("app_version", ""))
+    if manifest_app_version != __version__:
+        raise SearchLifecycleError(
+            f"search {resolved_id} was created by app version {manifest_app_version}; "
+            f"current version is {__version__}. Create a new immutable search so changed "
+            "release logic cannot be substituted silently"
+        )
     if loaded["status"] == "completed":
         raise SearchLifecycleError(f"search is already complete: {resolved_id}")
     targets = list(manifest.get("targets", []))
@@ -279,6 +291,7 @@ def run_search(
             "at_utc": _utc_now(),
             "manifest_sha256": _sha256(search_dir / "manifest.json"),
             "app_version": __version__,
+            "code_commit": git_commit(),
             "pipeline_workers": pipeline_workers,
             "chunk_size": chunk_size,
         },
@@ -455,9 +468,11 @@ def follow_up_registry(
                     "prior_search_provenance": [provenance],
                 }
             else:
-                existing["follow_up_priority"] = max(
-                    float(existing["follow_up_priority"]), priority
-                )
+                if priority > float(existing["follow_up_priority"]):
+                    existing["follow_up_priority"] = priority
+                    existing["selection_reason"] = _follow_up_action(raw_entry)
+                    existing["recommended_next_action"] = _follow_up_action(raw_entry)
+                    existing["evidence"] = _follow_up_evidence(raw_entry)
                 existing["prior_search_provenance"].append(provenance)
     eligible = sorted(
         by_target.values(),

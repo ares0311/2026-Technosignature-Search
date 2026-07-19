@@ -143,7 +143,11 @@ def _print_created_search(
         return
     print("Rank | Target | Score | GB | Selection reason", file=out)
     for rank, target in enumerate(targets, 1):
-        score = target.get("target_selection_score", target.get("follow_up_priority", 0.0))
+        score = (
+            target.get("follow_up_priority", 0.0)
+            if manifest["mode"] == "follow-up"
+            else target.get("target_selection_score", 0.0)
+        )
         print(
             " | ".join(
                 [

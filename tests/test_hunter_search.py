@@ -9,6 +9,7 @@ from typing import Any
 
 import pytest
 
+import techno_search.hunter_search as hunter_search_module
 from techno_search.hunter_cli import create_new_search, show_follow_ups
 from techno_search.hunter_search import (
     SearchApprovalRequired,
@@ -69,8 +70,9 @@ def _write_follow_up_ledger(
     *,
     rfi: bool = False,
     schema_version: str = PRODUCTION_FOLLOW_UPS_SCHEMA_VERSION,
+    run_id: str = "RUN-2026-07-19_120000Z-ABCD-prod-scan",
+    score: float = 0.9,
 ) -> None:
-    run_id = "RUN-2026-07-19_120000Z-ABCD-prod-scan"
     run_dir = scans_dir / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
     (run_dir / f"{run_id}_follow_ups.json").write_text(
@@ -84,7 +86,7 @@ def _write_follow_up_ledger(
                         "candidate_id": target_name,
                         "target_name": target_name,
                         "pathway": "candidate_review_packet",
-                        "score": 0.9,
+                        "score": score,
                         "snr": 42.0,
                         "frequency_hz": 1.42e9,
                         "drift_rate_hz_per_sec": 0.2,
@@ -183,6 +185,47 @@ def test_run_search_fails_closed_before_unapproved_acquisition(tmp_path: Path) -
         )
 
     assert load_search(searches, manifest["search_id"])["status"] == "pending"
+
+
+def test_load_search_rejects_manifest_tampering(tmp_path: Path) -> None:
+    queue = tmp_path / "queue.csv"
+    searches = tmp_path / "searches"
+    _write_queue(queue, 1)
+    manifest = create_search(
+        target_count=1,
+        mode="new",
+        queue_path=queue,
+        searches_dir=searches,
+        search_id="SEARCH-20260719T123000Z-A1B2C3D4",
+    )
+    manifest_path = searches / manifest["search_id"] / "manifest.json"
+    manifest_path.write_text(manifest_path.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+
+    with pytest.raises(SearchLifecycleError, match="manifest hash"):
+        load_search(searches, manifest["search_id"])
+
+
+def test_run_search_refuses_changed_app_version(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    queue = tmp_path / "queue.csv"
+    searches = tmp_path / "searches"
+    _write_queue(queue, 1)
+    manifest = create_search(
+        target_count=1,
+        mode="new",
+        queue_path=queue,
+        searches_dir=searches,
+        search_id="SEARCH-20260719T123000Z-A1B2C3D4",
+    )
+    monkeypatch.setattr(hunter_search_module, "__version__", "9.0.0")
+
+    with pytest.raises(SearchLifecycleError, match="changed release logic"):
+        run_search(
+            searches_dir=searches,
+            search_id=manifest["search_id"],
+            stdout=StringIO(),
+        )
 
 
 def test_run_search_replays_manifest_and_appends_completion_history(tmp_path: Path) -> None:
@@ -355,6 +398,31 @@ def test_follow_up_registry_reads_legacy_v1_ledgers(tmp_path: Path) -> None:
     assert follow_up_registry(scans_dirs=(scans,), queue_path=queue)["eligible_count"] == 1
 
 
+def test_follow_up_registry_carries_evidence_from_winning_priority(tmp_path: Path) -> None:
+    queue = tmp_path / "queue.csv"
+    scans = tmp_path / "scans"
+    _write_queue(queue, 1, status="already_acquired_local_cache")
+    _write_follow_up_ledger(
+        scans,
+        "capture_HIP990000_0001",
+        run_id="RUN-2026-07-19_120000Z-AAAA-prod-scan",
+        score=0.5,
+    )
+    _write_follow_up_ledger(
+        scans,
+        "capture_HIP990000_0001",
+        run_id="RUN-2026-07-19_130000Z-BBBB-prod-scan",
+        score=0.9,
+    )
+
+    entry = follow_up_registry(scans_dirs=(scans,), queue_path=queue)[
+        "eligible_entries"
+    ][0]
+    assert entry["follow_up_priority"] == 0.9
+    assert entry["evidence"]["score"] == 0.9
+    assert len(entry["prior_search_provenance"]) == 2
+
+
 def test_required_cli_entrypoints_invoke_real_dispatch_paths(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -377,6 +445,21 @@ def test_required_cli_entrypoints_invoke_real_dispatch_paths(
         ]
     ) == 0
     assert "Created pending new search" in capsys.readouterr().out
+    assert create_new_search(
+        [
+            "--targets",
+            "1",
+            "--mode",
+            "follow-up",
+            "--candidate-catalog",
+            str(queue),
+            "--scans-dir",
+            str(scans),
+            "--searches-dir",
+            str(tmp_path / "follow-up-searches"),
+        ]
+    ) == 0
+    assert "| 0.900 |" in capsys.readouterr().out
     assert show_follow_ups(
         [
             "--candidate-catalog",
