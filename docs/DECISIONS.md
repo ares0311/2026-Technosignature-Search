@@ -4890,5 +4890,43 @@ The real 1.2.39 search remains a valid completed deterministic reanalysis with
 one actionable follow-up, not evidence that the later-epoch observation
 occurred. Its tracked acquisition status records one local-DAT reuse and zero
 raw evictions. A new-target raw acquisition, an actual later-epoch follow-up,
-and expansion beyond the current 1,703-target universe remain separate Hunter
-PROD acceptance gaps.
+and expansion from the 1,703-target ranked queue to 10,000 viable identities
+remain separate Hunter PROD acceptance gaps.
+
+# DECISION-166: Archive Labels Enter The Candidate Universe Before Eligibility
+
+**Date:** 2026-07-19
+**Status:** Accepted
+**Implements:** Hunter PROD candidate-universe expansion
+
+## Context
+
+The HPRC-derived queue exhausts its real source at 1,703 unique usable targets,
+so another pass over that catalog cannot satisfy Hunter's 10,000+ candidate-
+universe goal. The official Breakthrough Listen backend exposes one metadata-
+only `api/list-targets` request backed by distinct target names in its files
+database. The live response has 12,086 nonempty unique labels, but labels such
+as `_R`, `_S`, `_B<n>`, ON/OFF fields, and calibrator variants are not documented
+as safe physical-object identity rules.
+
+## Decision
+
+Add a distinct `bl_archive_candidate_catalog_v1` durable candidate catalog.
+Each live archive label receives a stable content-derived ID and source/retrieval
+provenance. Identity resolution uses only exact case-insensitive aliases already
+documented in the target-priority queue. Ambiguous and unresolved labels remain
+unranked with blank coordinates, canonical identity, and score. The raw endpoint
+response remains ignored cache; the row-level catalog, checksum-bound status,
+and unique per-attempt success/failure keys are the committed continuity layer.
+`hunter_search_manifest_v3` binds this candidate catalog and the distinct
+eligibility/ranking queue with independent schemas, hashes, and counts; v1/v2
+search history stays readable but is not silently executed under changed logic.
+
+## Consequences
+
+The real candidate universe now has 12,086 rows: 1,184 exact queue identities,
+one ambiguous alias (`GJ725`), and 10,901 unresolved archive labels. Only 358
+rows inherit existing ranking eligibility, so neither 10,000 viable targets nor
+PROD is claimed. Future work must enrich file metadata and resolve identities
+without a guessed suffix rule or an unbounded request fan-out. The inventory
+used one serial metadata request and downloaded no raw science payload.

@@ -2,6 +2,30 @@
 
 Date checked: 2026-07-04
 
+## 2026-07-19 archive-wide target namespace update
+
+The current public archive backend documentation identifies
+`api/list-targets` as returning all distinct target names in the files database,
+and the backend implementation executes `SELECT DISTINCT target_name FROM
+files`. A live metadata-only request to the stable endpoint returned 12,087
+JSON rows: one blank and 12,086 unique nonempty case-insensitive labels. This is
+an archive-label namespace, not proof of 12,086 distinct physical objects or
+HDF5-eligible pointings. The same documentation states that `api/query-files`
+returns file-level telescope, time, coordinates, type, size, checksum, URL, and
+quality metadata, subject to a result limit.
+
+Primary implementation/documentation:
+
+- `http://seti.berkeley.edu/opendata/api/list-targets`
+- `https://github.com/ggroode/bl-opendata/blob/master/README.md`
+- `https://github.com/ggroode/bl-opendata/blob/master/blopendata/core.py`
+
+The project therefore preserves every label with a stable ID but resolves only
+exact aliases already documented in the HPRC-derived queue. It does not infer
+that `_R`, `_S`, `_B<n>`, `ON`, or `OFF` suffixes denote separate objects or
+safe canonicalization rules. No raw science payload was downloaded in this
+inventory.
+
 ## Agent Instructions
 
 This note is intended to be consumed by a coding agent. Treat all URLs, catalog IDs, table names, column names, and row counts below as verified facts from the cited sources or from the live retrieval described here. Do not substitute adjacent-looking identifiers, do not reconstruct target properties from other catalogs, and do not silently "correct" the row count to match project memory.

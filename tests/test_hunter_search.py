@@ -131,8 +131,10 @@ def test_create_new_search_freezes_exact_ranked_targets(tmp_path: Path) -> None:
     )
 
     assert [target["hip"] for target in manifest["targets"]] == ["HIP990000", "HIP990001"]
-    assert manifest["candidate_catalog"]["candidate_count"] == 3
-    assert manifest["candidate_catalog"]["viable_candidate_count"] == 3
+    assert manifest["candidate_catalog"]["candidate_count"] == 12086
+    assert manifest["candidate_catalog"]["identity_resolved_count"] == 1184
+    assert manifest["eligibility_queue"]["candidate_count"] == 3
+    assert manifest["eligibility_queue"]["viable_candidate_count"] == 3
     assert manifest["selection"]["projected_download_gb"] == 0.5
     assert manifest["selection"]["execution_kind_counts"] == {
         "novel_target_archive_processing": 2
@@ -513,7 +515,7 @@ def test_required_cli_entrypoints_invoke_real_dispatch_paths(
             "1",
             "--mode",
             "new",
-            "--candidate-catalog",
+            "--priority-queue",
             str(queue),
             "--searches-dir",
             str(searches),
@@ -526,7 +528,7 @@ def test_required_cli_entrypoints_invoke_real_dispatch_paths(
             "1",
             "--mode",
             "follow-up",
-            "--candidate-catalog",
+            "--priority-queue",
             str(queue),
             "--scans-dir",
             str(scans),
@@ -537,7 +539,7 @@ def test_required_cli_entrypoints_invoke_real_dispatch_paths(
     assert "| 0.900 |" in capsys.readouterr().out
     assert show_follow_ups(
         [
-            "--candidate-catalog",
+            "--priority-queue",
             str(queue),
             "--scans-dir",
             str(scans),

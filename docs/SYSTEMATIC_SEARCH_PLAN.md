@@ -51,7 +51,9 @@ action. The real local read-only registry resolves 555 follow-up targets from
 13 ledgers and excludes 210 rows whose target identity cannot be reliably tied
 to the candidate catalog. Focused end-to-end tests pass, but no new raw archive
 payload was downloaded: the first approval-gated real lifecycle run remains an
-acceptance gap, and the current 1,703-target catalog remains below 10,000.
+acceptance gap. The durable public-archive namespace now contains 12,086
+nonempty unique labels, but only 1,184 resolve exactly to current queue
+identities and 358 are ranking-eligible; unresolved labels remain fail-closed.
 
 **Step 0 completion handoff — 2026-07-12 23:58 UTC:** PR #251/version 1.2.1
 is merged (`5507030`) and all six isolated shards completed 33/33 targets with
@@ -75,7 +77,7 @@ acquisition is permanently outside project scope.
 | Track B 9-condition gate | ✅ Real, implemented, conservative-by-construction |
 | Semisupervised anomaly/OOD calibration | ❌ Blocked — see Step 1 |
 | Operator UI hardening | ⚠️ Substantially underway — the three Hunter lifecycle entry points now provide compact tables/progress, scriptable JSON where useful, clear non-zero failures, and actionable follow-up recommendations. Existing production surfaces remain as documented in Step 2. A real approval-gated `Run-New-Search` has not yet supplied terminal evidence. |
-| Detection-optimized target selection algorithm | ⚠️ 3a ranks by the real config-driven `target_selection_score`, including production-scan history; the policy sum remains auditable but is no longer the selector. `Create-New-Search` durably freezes exact selections, while follow-up mode ranks resolved real ledger evidence separately. Metadata discovery/size preflight cover the full 1,703-target HPRC queue. Successful batch-3 resume records bring completed controls to 805, leaving 358 sized URL-available targets (89.274678 GB) and 540 completed no-product results. This is an inventory, not raw-download approval. The universe remains below Hunter PROD's 10,000+ goal. See Step 3a. |
+| Detection-optimized target selection algorithm | ⚠️ 3a ranks by the real config-driven `target_selection_score`, including production-scan history; the policy sum remains auditable but is no longer the selector. `Create-New-Search` durably freezes exact selections, while follow-up mode ranks resolved real ledger evidence separately. Metadata discovery/size preflight cover the full 1,703-target HPRC queue. Successful batch-3 resume records bring completed controls to 805, leaving 358 sized URL-available targets (89.274678 GB) and 540 completed no-product results. The live archive namespace adds 12,086 durable candidate labels, but exact queue-alias resolution currently yields 1,184 identities and only those same 358 ranking-eligible targets; the remaining labels are not guessed into viability. This is an inventory, not raw-download approval. See Step 3a. |
 | Extended-corpus completion | ✅ Complete — corrected v1.2.1 six-shard rerun finished 198/198 targets with zero download-task duplication. The full 215-target local corpus is at 10 Hz/s; ingestion removes 3,134 exact duplicate hit rows from 8,988 raw rows, leaving 5,854 unique triage rows and zero follow-up/escalation-ready candidates. See Step 0 completion below. |
 
 ---
@@ -300,6 +302,21 @@ requirements:
    retry after prior `no_hdf5_url_discovered` results, and 16 already-acquired
    local-cache controls. One status-manifest reused target (`HIP75676`) is not
    present in the full HPRC seed CSV and is therefore not forced into the queue.
+
+   **Archive-wide namespace expansion, 2026-07-19:** the official backend
+   documents `api/list-targets` as the distinct target names currently present
+   in its files database. A real serial request returned 12,087 rows (one blank,
+   12,086 unique nonempty labels). The committed
+   `data_selection/bl_archive_candidate_catalog.csv` assigns stable IDs and
+   resolves only exact aliases already documented by the priority queue:
+   1,184 resolved, one ambiguous, and 10,901 unresolved. Only 358 resolved rows
+   inherit existing ranking eligibility. Suffixes such as `_R`, `_S`, and
+   `_B1` are preserved as unresolved archive labels rather than guessed to be
+   distinct objects or silently collapsed. File-level coordinate/type/URL
+   enrichment remains required before an unresolved row can become viable.
+   `Create-New-Search` binds this catalog and the separate priority queue into
+   `hunter_search_manifest_v3` with independent hashes/counts, so the universe
+   is no longer conflated with or manually bridged to the eligibility stage.
 2. **External-coverage gap (real, but needs research before building):**
    a stronger "nobody has looked here" claim would require cross-referencing
    against other surveys' published target lists (not just this project's

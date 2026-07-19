@@ -34,8 +34,10 @@ from techno_search.target_priority_queue import (
     read_target_priority_queue,
 )
 
-SEARCH_MANIFEST_SCHEMA_VERSION = "hunter_search_manifest_v2"
-LEGACY_SEARCH_MANIFEST_SCHEMA_VERSIONS = frozenset({"hunter_search_manifest_v1"})
+SEARCH_MANIFEST_SCHEMA_VERSION = "hunter_search_manifest_v3"
+LEGACY_SEARCH_MANIFEST_SCHEMA_VERSIONS = frozenset(
+    {"hunter_search_manifest_v1", "hunter_search_manifest_v2"}
+)
 SEARCH_EVENT_SCHEMA_VERSION = "hunter_search_event_v2"
 LEGACY_SEARCH_EVENT_SCHEMA_VERSIONS = frozenset({"hunter_search_event_v1"})
 FOLLOW_UP_REGISTRY_SCHEMA_VERSION = "hunter_follow_up_registry_v1"
@@ -72,6 +74,9 @@ def create_search(
     *,
     target_count: int,
     mode: str,
+    candidate_catalog_path: Path = Path(
+        "data_selection/bl_archive_candidate_catalog.csv"
+    ),
     queue_path: Path = Path("data_selection/target_priority_queue.csv"),
     scans_dir: Path = Path("results/scans"),
     searches_dir: Path = Path("results/searches"),
@@ -85,9 +90,10 @@ def create_search(
     if mode not in {"new", "follow-up"}:
         raise ValueError("mode must be 'new' or 'follow-up'")
     if not queue_path.is_file():
-        raise SearchLifecycleError(f"candidate catalog not found: {queue_path}")
+        raise SearchLifecycleError(f"eligibility queue not found: {queue_path}")
 
     queue_rows = _validated_queue_rows(queue_path)
+    candidate_catalog = _candidate_catalog_summary(candidate_catalog_path)
     generated_at = created_at_utc or _utc_now()
     resolved_id = search_id or make_search_id()
     search_dir = searches_dir / resolved_id
@@ -134,6 +140,11 @@ def create_search(
         "mode": mode,
         "initial_status": "pending",
         "candidate_catalog": {
+            **candidate_catalog,
+            "path": str(candidate_catalog_path),
+            "sha256": _sha256(candidate_catalog_path),
+        },
+        "eligibility_queue": {
             "path": str(queue_path),
             "sha256": queue_sha,
             "schema_version": TARGET_PRIORITY_QUEUE_SCHEMA_VERSION,
@@ -581,6 +592,45 @@ def _validated_queue_rows(path: Path) -> list[dict[str, str]]:
         seen.add(target_id)
         float(row["target_selection_score"])
     return rows
+
+
+def _candidate_catalog_summary(path: Path) -> dict[str, Any]:
+    if not path.is_file():
+        raise SearchLifecycleError(f"candidate catalog not found: {path}")
+    with path.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+    if not rows:
+        raise SearchLifecycleError(f"candidate catalog is empty: {path}")
+    required = {
+        "candidate_id",
+        "archive_target_label",
+        "identity_status",
+        "ranking_eligible",
+        "schema_version",
+    }
+    missing = required - set(rows[0])
+    if missing:
+        raise SearchLifecycleError(
+            f"candidate catalog is missing required columns: {', '.join(sorted(missing))}"
+        )
+    if {row["schema_version"] for row in rows} != {
+        "bl_archive_candidate_catalog_v1"
+    }:
+        raise SearchLifecycleError(f"candidate catalog has mixed/unsupported schema: {path}")
+    ids = [row["candidate_id"] for row in rows]
+    labels = [row["archive_target_label"].casefold() for row in rows]
+    if any(not value for value in ids) or len(set(ids)) != len(ids):
+        raise SearchLifecycleError(f"candidate catalog has missing/duplicate stable IDs: {path}")
+    if any(not value for value in labels) or len(set(labels)) != len(labels):
+        raise SearchLifecycleError(f"candidate catalog has missing/duplicate labels: {path}")
+    return {
+        "schema_version": "bl_archive_candidate_catalog_v1",
+        "candidate_count": len(rows),
+        "identity_resolved_count": sum(
+            row["identity_status"] == "resolved_existing_queue_alias" for row in rows
+        ),
+        "ranking_eligible_count": sum(row["ranking_eligible"] == "true" for row in rows),
+    }
 
 
 def _record_run_history(

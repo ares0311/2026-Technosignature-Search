@@ -25,6 +25,11 @@ def create_new_search(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--candidate-catalog",
         type=Path,
+        default=Path("data_selection/bl_archive_candidate_catalog.csv"),
+    )
+    parser.add_argument(
+        "--priority-queue",
+        type=Path,
         default=Path("data_selection/target_priority_queue.csv"),
     )
     parser.add_argument("--scans-dir", type=Path, default=Path("results/scans"))
@@ -38,7 +43,8 @@ def create_new_search(argv: Sequence[str] | None = None) -> int:
         manifest = create_search(
             target_count=args.targets,
             mode=args.mode,
-            queue_path=args.candidate_catalog,
+            candidate_catalog_path=args.candidate_catalog,
+            queue_path=args.priority_queue,
             scans_dir=args.scans_dir,
             searches_dir=args.searches_dir,
             manifest_dir=args.manifest_dir,
@@ -101,7 +107,7 @@ def show_follow_ups(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--scans-dir", type=Path, default=Path("results/scans"))
     parser.add_argument("--searches-dir", type=Path, default=Path("results/searches"))
     parser.add_argument(
-        "--candidate-catalog",
+        "--priority-queue",
         type=Path,
         default=Path("data_selection/target_priority_queue.csv"),
     )
@@ -110,7 +116,7 @@ def show_follow_ups(argv: Sequence[str] | None = None) -> int:
     try:
         registry = follow_up_registry(
             scans_dirs=(args.scans_dir, args.searches_dir),
-            queue_path=args.candidate_catalog,
+            queue_path=args.priority_queue,
         )
     except SearchLifecycleError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
@@ -134,7 +140,7 @@ def _print_created_search(
     print(f"Durable manifest: {searches_dir / search_id / 'manifest.json'}", file=out)
     print(
         f"Candidate universe: {manifest['candidate_catalog']['candidate_count']}; "
-        f"eligible: {manifest['candidate_catalog']['viable_candidate_count']}; "
+        f"eligible: {manifest['eligibility_queue']['viable_candidate_count']}; "
         f"projected acquisition: {manifest['selection']['projected_download_gb']:.3f} GB",
         file=out,
     )

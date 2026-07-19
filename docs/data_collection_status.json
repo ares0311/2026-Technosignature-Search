@@ -1,6 +1,68 @@
 {
   "disclaimer": "This manifest records real local data-collection run outcomes (counts of items found/downloaded/skipped/failed) for compact progress review. It is not a detection, discovery, external validation, or external-submission claim.",
   "runs": {
+    "acquire_bl_archive_candidate_catalog__before_20260719T135709Z_network_failure": {
+      "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "ok": false,
+      "raw_science_payload_downloaded": false,
+      "recording_limitation": "The original exact timestamp was overwritten by the subsequent success before unique per-attempt status keys were implemented; ordering relative to the 2026-07-19T13:57:09Z success is known.",
+      "schema_version": "bl_archive_candidate_catalog_v1",
+      "source_endpoint": "http://seti.berkeley.edu/opendata/api/list-targets"
+    },
+    "acquire_bl_archive_candidate_catalog__20260719T135709319537Z": {
+      "blank_label_count": 1,
+      "candidate_count": 12086,
+      "catalog_output": "data_selection/bl_archive_candidate_catalog.csv",
+      "catalog_sha256": "b2abe03f6af4fd5b55b8517353d54bb8c62b33dfca95a80944d534908d1b803f",
+      "identity_counts": {
+        "ambiguous_existing_queue_alias": 1,
+        "resolved_existing_queue_alias": 1184,
+        "unresolved_archive_label": 10901
+      },
+      "last_run_utc": "2026-07-19T13:57:09.319537+00:00",
+      "ok": true,
+      "per_item_detail": {
+        "path": "data_selection/bl_archive_candidate_catalog.csv",
+        "row_count": 12086,
+        "schema_version": "bl_archive_candidate_catalog_v1"
+      },
+      "queue_candidate_count": 1703,
+      "ranking_eligible_count": 358,
+      "raw_output": "data/bl_archive_target_labels.json",
+      "raw_response_count": 12087,
+      "raw_science_payload_downloaded": false,
+      "retrieved_at_utc": "2026-07-19T13:57:09.260514Z",
+      "schema_version": "bl_archive_candidate_catalog_v1",
+      "source_documentation": "https://github.com/ggroode/bl-opendata/blob/master/README.md",
+      "source_endpoint": "http://seti.berkeley.edu/opendata/api/list-targets"
+    },
+    "acquire_bl_archive_candidate_catalog__20260719T135902184284Z": {
+      "blank_label_count": 1,
+      "candidate_count": 12086,
+      "catalog_output": "data_selection/bl_archive_candidate_catalog.csv",
+      "catalog_sha256": "cd9fdd30fbb5d8233c8d9736d6b51928886ea09f9a6852be14f5465c866f6131",
+      "identity_counts": {
+        "ambiguous_existing_queue_alias": 1,
+        "resolved_existing_queue_alias": 1184,
+        "unresolved_archive_label": 10901
+      },
+      "last_run_utc": "2026-07-19T13:59:04.171706+00:00",
+      "ok": true,
+      "per_item_detail": {
+        "path": "data_selection/bl_archive_candidate_catalog.csv",
+        "row_count": 12086,
+        "schema_version": "bl_archive_candidate_catalog_v1"
+      },
+      "queue_candidate_count": 1703,
+      "ranking_eligible_count": 358,
+      "raw_output": "data/bl_archive_target_labels.json",
+      "raw_response_count": 12087,
+      "raw_science_payload_downloaded": false,
+      "retrieved_at_utc": "2026-07-19T13:59:03.811968Z",
+      "schema_version": "bl_archive_candidate_catalog_v1",
+      "source_documentation": "https://github.com/ggroode/bl-opendata/blob/master/README.md",
+      "source_endpoint": "http://seti.berkeley.edu/opendata/api/list-targets"
+    },
     "acquire_bl_hprc_full_catalog": {
       "csv_output": "/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Technosignatures/data/bl_hprc_full_targets_vizier.csv",
       "first_star": "HIP2",
@@ -132,18 +194,18 @@
       "downloaded_targets": [],
       "evicted_count": 0,
       "evicted_targets": [],
+      "failed_count": 0,
+      "failed_targets": [],
+      "last_run_utc": "2026-07-19T13:31:55.932875+00:00",
       "local_dat_reuse_count": 1,
       "local_dat_reuse_targets": [
         "HIP103096"
       ],
+      "manifest": "results/searches/SEARCH-20260719T133145Z-3650F32A/manifest.json",
       "newly_processed_count": 1,
       "newly_processed_targets": [
         "HIP103096"
       ],
-      "failed_count": 0,
-      "failed_targets": [],
-      "last_run_utc": "2026-07-19T13:31:55.932875+00:00",
-      "manifest": "results/searches/SEARCH-20260719T133145Z-3650F32A/manifest.json",
       "ok": true,
       "raw_retention_policy": "evicted_after_candidate_report_generation",
       "status_note": "Corrected before publication: the retained DAT was reprocessed; no raw HDF5 payload existed or was deleted.",

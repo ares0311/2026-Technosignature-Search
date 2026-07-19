@@ -5,8 +5,29 @@
 Hunter PROD remains open: the durable create/run/follow-up lifecycle is now
 implemented and locally verified through existing-data reanalysis, but a
 new-target approval-gated raw acquisition and a later-epoch follow-up observation
-have not executed, and the viable candidate universe remains below 10,000.
-**Current app version:** 1.2.40
+have not executed. The durable public-archive namespace now exceeds 10,000,
+but only 358 entries are identity-resolved and currently ranking-eligible.
+**Current app version:** 1.2.41
+
+**Public archive candidate universe exceeds 10,000 without fabricating viable
+targets — 2026-07-19:** the live, documented Breakthrough Listen
+`api/list-targets` endpoint returned 12,087 rows: one blank and 12,086 unique
+nonempty archive labels. Version 1.2.41 adds a one-request, metadata-only
+acquisition that atomically preserves the ignored raw response and writes the
+row-level `bl_archive_candidate_catalog_v1` durable map. Exact
+case-insensitive matches against aliases already documented in the 1,703-row
+target-priority queue resolve 1,184 labels; one label (`GJ725`) is ambiguous
+across existing queue aliases and 10,901 remain unresolved. Only the 358 exact
+matches already carrying `raw_download_approval_required` remain ranking-
+eligible. Unresolved and ambiguous labels have no coordinates, score, or
+canonical identity and cannot enter selection. Stable candidate IDs, source
+endpoint, retrieval time, catalog checksum, portable paths, and unique
+per-attempt success/failure status preserve provenance. This closes the raw
+candidate-universe size gap, not the separate 10,000 **viable** target gap; no
+raw science payload was requested or downloaded. `Create-New-Search` now
+consumes both durable concepts through `hunter_search_manifest_v3`: the archive
+catalog supplies the universe count/hash, while the separate priority queue
+supplies eligibility and deterministic ranking.
 
 **First real Hunter end-to-end run completes; data-action provenance is
 corrected — 2026-07-19:** search `SEARCH-20260719T133145Z-3650F32A` froze
