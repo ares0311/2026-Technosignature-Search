@@ -22,7 +22,8 @@ from techno_search.scan_summary import load_candidates_from_batch_dir, scan_summ
 
 PRODUCTION_RUN_MANIFEST_SCHEMA_VERSION = "production_run_manifest_v1"
 PRODUCTION_NON_DETECTIONS_SCHEMA_VERSION = "production_non_detections_v1"
-PRODUCTION_FOLLOW_UPS_SCHEMA_VERSION = "production_follow_ups_v1"
+PRODUCTION_FOLLOW_UPS_SCHEMA_VERSION = "production_follow_ups_v2"
+LEGACY_PRODUCTION_FOLLOW_UPS_SCHEMA_VERSIONS = frozenset({"production_follow_ups_v1"})
 PRODUCTION_TARGET_STATUS_SCHEMA_VERSION = "production_target_status_v1"
 PRODUCTION_OUTCOME_DISCLAIMER = (
     "Production run outcome files are local production-triage ledgers only. "
@@ -477,12 +478,22 @@ def _follow_up_entry(
         "frequency_hz": float(candidate.get("frequency_hz", 0.0)),
         "snr": float(candidate.get("snr", 0.0)),
         **_drift_fields(candidate),
-        "status": "needs_local_citizen_science_review",
+        "status": "needs_local_deterministic_follow_up_triage",
         "reason": "candidate_entered_follow_up_pathway",
         "detection_claimed": False,
         "external_submission_allowed": False,
     }
-    return _with_cross_target_rfi(entry, rfi_flag)
+    entry = _with_cross_target_rfi(entry, rfi_flag)
+    entry["recommended_next_action"] = _recommended_follow_up_action(entry)
+    return entry
+
+
+def _recommended_follow_up_action(entry: Mapping[str, Any]) -> str:
+    if bool(entry.get("cross_target_rfi_flagged")):
+        return "reject or resolve cross-target RFI before any repeat observation"
+    if not bool(entry.get("drift_evidence_available", False)):
+        return "recover drift-rate evidence before follow-up selection"
+    return "repeat an ON/OFF cadence at a later epoch and compare persistence"
 
 
 def _non_detection_entry(

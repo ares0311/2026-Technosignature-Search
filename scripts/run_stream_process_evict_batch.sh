@@ -14,6 +14,7 @@
 # Usage:
 #   caffeinate -i bash scripts/run_stream_process_evict_batch.sh \
 #       --manifest data_selection/batch_manifests/local_coverage_first_bounded_batch_manifest.json \
+#       [--out-dir PATH] [--results-dir PATH] [--status-key NAME] \
 #       [--chunk-size 25] [--limit N] [--dry-run]
 #
 # Scientific guardrail:
@@ -45,6 +46,8 @@ FREE_SPACE_RESERVE_GB="${TECHNO_EXTENDED_CORPUS_FREE_SPACE_RESERVE_GB:-10}"
 PROCESSING_SLOT_DIR="${TECHNO_STREAM_PROCESS_SLOT_DIR:-}"
 PROCESSING_SLOT_COUNT="${TECHNO_STREAM_PROCESS_SLOT_COUNT:-0}"
 ACTIVE_PROCESSING_SLOT=""
+STATUS_KEY=""
+REQUIRE_STATUS_RECORD=0
 
 # Always prints to the console AND (once LOG_FILE is set, right after
 # manifest validation below) appends to a log file -- the caller must not
@@ -64,6 +67,9 @@ log() {
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --manifest) MANIFEST="$2"; shift 2 ;;
+    --out-dir) OUT_DIR="$2"; shift 2 ;;
+    --results-dir) RESULTS_DIR="$2"; shift 2 ;;
+    --status-key) STATUS_KEY="$2"; REQUIRE_STATUS_RECORD=1; shift 2 ;;
     --chunk-size) CHUNK_SIZE="$2"; shift 2 ;;
     --limit) LIMIT="$2"; shift 2 ;;
     --pipeline-workers) PIPELINE_WORKERS="$2"; shift 2 ;;
@@ -85,6 +91,13 @@ if [[ ! -f "${MANIFEST}" ]]; then
   log "[ERROR] Manifest not found: ${MANIFEST}"
   exit 2
 fi
+
+if [[ -n "${STATUS_KEY:-}" && ! "${STATUS_KEY}" =~ ^[A-Za-z0-9_.-]+$ ]]; then
+  log "[ERROR] --status-key may contain only letters, numbers, dot, underscore, and hyphen."
+  exit 2
+fi
+
+mkdir -p "${OUT_DIR}" "${RESULTS_DIR}"
 
 if [[ -z "${LOG_FILE}" ]]; then
   LOG_FILE="${REPO_ROOT}/data_cache/logs/$(basename "${MANIFEST}" .json)_run.log"
@@ -175,9 +188,9 @@ for row in rows:
     hip = str(row.get("hip", "")).strip()
     url = str(row.get("source_hdf5_url", "")).strip()
     gb = row.get("estimated_download_gb", 0)
-    if not hip or not url:
+    if not hip:
         continue
-    print(f"{hip}\t{url}\t{gb}")
+    print(f"{hip}\t{url or 'LOCAL_DAT_ONLY'}\t{gb or 0}")
 ' "${MANIFEST}" "${LIMIT}" > "${TARGET_ROWS_FILE}"
 
 TOTAL=$(wc -l < "${TARGET_ROWS_FILE}" | tr -d ' ')
@@ -187,7 +200,7 @@ log "[INFO]  Targets: ${TOTAL} (chunk size ${CHUNK_SIZE})"
 log "[INFO]  Local storage cap: ${LOCAL_STORAGE_CAP_GB}GB; free-space reserve: ${FREE_SPACE_RESERVE_GB}GB"
 
 if [[ "${TOTAL}" -eq 0 ]]; then
-  log "[ERROR] No usable target rows (missing hip/source_hdf5_url) in manifest."
+  log "[ERROR] No usable target rows (missing hip) in manifest."
   exit 1
 fi
 
@@ -215,6 +228,11 @@ target_has_completed_evidence() {
   dat_stem="$(basename "${dat_file}" .dat)"
   report_hit="$(find "${RESULTS_DIR}" -name '*.manifest.json' -path "*${dat_stem}*" 2>/dev/null | head -1)"
   [[ -n "${report_hit}" ]]
+}
+
+target_has_hit_table() {
+  local hip="$1"
+  find "${OUT_DIR}/${hip}" -maxdepth 1 -name '*.dat' -print -quit 2>/dev/null | grep -q .
 }
 
 download_target() {
@@ -345,7 +363,8 @@ process_chunk() {
     fi
     log "[CHUNK] ${hip}: running isolated pipeline (${PIPELINE_WORKERS} workers)"
     if ! bash "${REPO_ROOT}/scripts/run_pipeline_on_bl_data.sh" \
-      --dat-dir "${OUT_DIR}/${hip}" --workers "${PIPELINE_WORKERS}"; then
+      --dat-dir "${OUT_DIR}/${hip}" --results-dir "${RESULTS_DIR}" \
+      --workers "${PIPELINE_WORKERS}"; then
       log "[WARN] ${hip}: pipeline reported a failure; continuing to eviction check"
     fi
   done
@@ -353,6 +372,10 @@ process_chunk() {
     if evict_target_if_processed "${hip}"; then
       EVICTED_COUNT=$((EVICTED_COUNT + 1))
       EVICTED_NAMES+=("${hip}")
+    else
+      FAILED_COUNT=$((FAILED_COUNT + 1))
+      FAILED_NAMES+=("${hip}")
+      FAILED_REASONS+=("pipeline_evidence_incomplete")
     fi
   done
   release_processing_slot
@@ -388,6 +411,22 @@ while IFS=$'\t' read -r hip url gb; do
     ALREADY_PROCESSED_COUNT=$((ALREADY_PROCESSED_COUNT + 1))
     ALREADY_PROCESSED_NAMES+=("${hip}")
     log "[DONE] ${hip}: existing .dat and candidate report; no re-download needed"
+    continue
+  fi
+  if target_has_hit_table "${hip}"; then
+    CHUNK_NAMES+=("${hip}")
+    log "[REUSE] ${hip}: existing .dat will be scored into this search; no re-download needed"
+    if [[ "${#CHUNK_NAMES[@]}" -ge "${CHUNK_SIZE}" ]]; then
+      process_chunk CHUNK_NAMES
+      CHUNK_NAMES=()
+    fi
+    continue
+  fi
+  if [[ "${url}" == "LOCAL_DAT_ONLY" ]]; then
+    FAILED_COUNT=$((FAILED_COUNT + 1))
+    FAILED_NAMES+=("${hip}")
+    FAILED_REASONS+=("source_url_missing_and_no_local_dat")
+    log "[ERROR] ${hip}: no source URL and no reusable local .dat evidence"
     continue
   fi
   if download_target "${hip}" "${url}" "${gb}"; then
@@ -467,6 +506,9 @@ RECORD_STATUS=0
 case "${MANIFEST_REALPATH}" in
   "${CANONICAL_MANIFEST_DIR}"/*) RECORD_STATUS=1 ;;
 esac
+if [[ -n "${STATUS_KEY:-}" ]]; then
+  RECORD_STATUS=1
+fi
 
 TECHNO_SEARCH_BIN="${REPO_ROOT}/.venv/bin/techno-search"
 if [[ "${RECORD_STATUS}" -eq 0 ]]; then
@@ -533,11 +575,17 @@ summary = {
 print(json.dumps(summary))
 '
   )"
-  STATUS_KEY="stream_process_evict_batch__$(basename "${MANIFEST}" .json)"
-  "${TECHNO_SEARCH_BIN}" record-data-collection-status \
+  STATUS_KEY="${STATUS_KEY:-stream_process_evict_batch__$(basename "${MANIFEST}" .json)}"
+  if ! "${TECHNO_SEARCH_BIN}" record-data-collection-status \
     --script "${STATUS_KEY}" \
     --summary-json "${SUMMARY_JSON}" \
-    >/dev/null 2>&1 || log "[INFO]  Status manifest update/commit skipped (non-fatal)."
+    >/dev/null 2>&1; then
+    if [[ "${REQUIRE_STATUS_RECORD}" -eq 1 ]]; then
+      log "[ERROR] Required Hunter acquisition status record failed."
+      exit 1
+    fi
+    log "[INFO]  Status manifest update/commit skipped (non-fatal)."
+  fi
 fi
 
 echo ""

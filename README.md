@@ -53,8 +53,8 @@ exists.
 | Multi-modal | Sky-position crossmatching and deterministic adversarial-review dossiers are implemented. No real candidate has advanced through them. |
 | Learned calibration | Permanently fail-closed with currently available data: no adequate pre-existing independent row-level calibration set was found. |
 | Operator UI | Compact review surfaces are substantially hardened; workflow-level audit work remains open. |
-| Novel-target selection | Metadata discovery and size preflight are complete for the current HPRC queue. The approximately 289 GB inventory is not a raw-download authorization and cannot be materialized under the 100 GB cap. |
-| Follow-up selection | Design-only until a real qualifying partial-evidence candidate exists. |
+| Novel-target selection | The durable Hunter create/run lifecycle uses the real configured rank and freezes exact selections. The current 1,703-target queue has 358 size-preflighted acquisition candidates totaling 89.274678 GB; this inventory is not a raw-download authorization. |
+| Follow-up selection | Durable run ledgers now feed an identity-resolved, deterministic follow-up registry with evidence, provenance, priority, and recommended next actions. Unresolved outputs remain excluded rather than guessed. |
 
 The current real combined radio review leaves unresolved unlabeled triage rows
 but zero independently escalation-ready candidates. No current result is ready

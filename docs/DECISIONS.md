@@ -4758,3 +4758,64 @@ cannot be reselected. Rebuilding the real 1,703-target queue produces 805
 already-acquired controls, 540 completed no-product results, and 358 remaining
 download-approval rows totaling 89.274678 GB. No raw download is authorized;
 no candidate, detection, or external-submission claim changes.
+
+# DECISION-161: Immutable Hunter Searches Bind Selection To Exact Execution
+
+**Date:** 2026-07-19
+**Status:** Accepted
+**Implements:** Hunter PROD durable lifecycle and required shell entry points
+
+## Context
+
+The candidate catalog, target-priority manifest, acquisition scripts,
+production-run ledgers, scan history, and follow-up files each existed, but no
+durable search entity bound them together. Selection wrote a review manifest;
+later production commands scanned whichever result files happened to be in a
+directory. There was no invariant that the targets shown at creation were the
+targets acquired and scored, no append-only lifecycle history for a failed
+search attempt, and no unified follow-up view with identity resolution and a
+recommended next action.
+
+## Decision
+
+Add an immutable `hunter_search_manifest_v1` plus append-only
+`hunter_search_event_v1` journal. `Create-New-Search` freezes exact deterministic
+new or follow-up targets, catalog hash, configuration/version provenance, and
+projected cost. `Run-New-Search` consumes only that manifest, isolates pipeline
+results, reuses completed local evidence, records acquisition status, fails
+before unapproved raw acquisition, and appends target history only after
+output-to-manifest identity verification. Failed stages append explicit,
+resumable failure events. `Show-Follow-Ups` aggregates existing immutable run
+ledgers, resolves HIP identities against the catalog, preserves every source
+run, applies deterministic evidence penalties, and reports an action. Newly
+written production follow-up ledgers use schema v2 and deterministic triage
+language rather than the legacy citizen-science-review state.
+
+## Consequences
+
+Focused tests exercise the real CLI dispatch paths, exact selection replay,
+immutable manifest preservation, no-partial creation, approval gating,
+resumable failures, isolated result directories, history append, legacy-ledger
+compatibility, and follow-up recommendations. A real read-only local exercise
+found 358 eligible new targets and 555 identity-resolved follow-up targets.
+No raw acquisition was run, so the first approval-gated lifecycle execution is
+still required before Hunter PROD can be claimed. The catalog has 1,703—not
+10,000+—targets, which remains a separate PROD limitation.
+
+# DECISION-162: Generic Photometry FITS Uses The Documented Explicit Reader
+
+**Date:** 2026-07-19
+**Status:** Accepted
+**Implements:** Full-validation blocker found during Hunter lifecycle release
+
+The clean lock-resolved environment installed Lightkurve 2.5.1 and exposed that
+`lightkurve.read()` is a mission-product auto-reader, not a reliable generic
+FITS contract. The project fixture is an explicit TIME/FLUX/FLUX_ERR table with
+`TUNIT=jd`; it is valid but not a recognized mission product. Current
+Lightkurve documentation identifies `io.generic.read_generic_lightcurve()` as
+the supported custom-FITS path. The loader now tries the mission reader first,
+then uses that generic reader only when FITS metadata proves all required
+columns and one of the supported explicit time systems (`jd`, `mjd`, `bkjd`,
+or `btjd`). Missing/ambiguous metadata still fails loudly. This restores the
+six real photometry integration/crossmatch tests without a version pin, data
+substitution, or guessed time base.

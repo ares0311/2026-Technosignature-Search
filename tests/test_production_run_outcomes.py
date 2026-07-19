@@ -125,6 +125,12 @@ def test_build_production_outcomes_splits_non_detections_and_follow_ups() -> Non
     assert follow_ups["entries"][0]["is_earth_drift_consistent"] is True
     assert follow_ups["entries"][0]["drift_evidence_available"] is True
     assert follow_ups["entries"][0]["drift_evidence_limitation"] == ""
+    assert follow_ups["entries"][0]["status"] == (
+        "needs_local_deterministic_follow_up_triage"
+    )
+    assert follow_ups["entries"][0]["recommended_next_action"] == (
+        "repeat an ON/OFF cadence at a later epoch and compare persistence"
+    )
     assert outcomes["target_status"]["entries"][0]["normalized_drift_hz_s_per_ghz"] == (
         0.28169014084507044
     )
@@ -175,6 +181,9 @@ def test_build_production_outcomes_flags_missing_drift_evidence() -> None:
     assert follow_up["is_earth_drift_consistent"] is False
     assert follow_up["drift_evidence_available"] is False
     assert "did not include drift-rate evidence" in follow_up["drift_evidence_limitation"]
+    assert follow_up["recommended_next_action"] == (
+        "recover drift-rate evidence before follow-up selection"
+    )
     assert target_status["drift_evidence_available"] is False
 
 
@@ -204,6 +213,9 @@ def test_build_production_outcomes_carries_cross_target_rfi_flags() -> None:
     target_entries = outcomes["target_status"]["entries"]
 
     assert follow_up["cross_target_rfi_flagged"] is True
+    assert follow_up["recommended_next_action"] == (
+        "reject or resolve cross-target RFI before any repeat observation"
+    )
     assert follow_up["cross_target_rfi_match_count"] == 2
     assert follow_up["cross_target_rfi_matched_targets"] == ["HIP100670", "HIP99427"]
     assert non_detection["cross_target_rfi_flagged"] is True
