@@ -80,6 +80,7 @@ class MultiEpochResult:
     total_hits: int
     groups: list[MultiEpochGroup]
     disclaimer: str = MULTI_EPOCH_DISCLAIMER
+    failed_epoch_ids: list[str] = field(default_factory=list)
 
     @property
     def multi_epoch_groups(self) -> list[MultiEpochGroup]:
@@ -99,6 +100,8 @@ class MultiEpochResult:
             "multi_epoch_group_count": len(self.multi_epoch_groups),
             "max_persistence_score": self.max_persistence_score,
             "groups": [g.as_dict() for g in self.groups],
+            "failed_epoch_count": len(self.failed_epoch_ids),
+            "failed_epoch_ids": list(self.failed_epoch_ids),
             "disclaimer": self.disclaimer,
         }
 
@@ -122,8 +125,8 @@ def compare_epochs(
     """
     from techno_search.radio.hit_table_reader import read_hit_table_csv
 
-    total_epochs = len(dat_files)
     all_hits: list[MultiEpochHit] = []
+    failed_epoch_ids: list[str] = []
 
     for dat_file in dat_files:
         epoch_id = dat_file.stem
@@ -142,8 +145,15 @@ def compare_epochs(
                 )
                 all_hits.append(hit)
         except Exception:  # noqa: BLE001
-            pass
+            # This epoch's hit table could not be read or parsed -- it was
+            # NOT actually checked, so it must not silently count toward
+            # total_epochs_checked (that would understate persistence_score
+            # for a real recurring signal without any visible sign the
+            # epoch was skipped). Surfaced explicitly in the result instead
+            # of being dropped, per AGENTS.md's FAIL LOUDLY directive.
+            failed_epoch_ids.append(epoch_id)
 
+    total_epochs = len(dat_files) - len(failed_epoch_ids)
     freq_tolerance_mhz = freq_tolerance_hz / 1e6
     groups: list[MultiEpochGroup] = []
 
@@ -170,6 +180,7 @@ def compare_epochs(
         epoch_count=total_epochs,
         total_hits=len(all_hits),
         groups=groups,
+        failed_epoch_ids=failed_epoch_ids,
     )
 
 

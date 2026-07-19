@@ -345,6 +345,10 @@ def _build_radio_candidate(
         extra_provenance["multi_epoch_max_persistence_score"] = (
             me_result.max_persistence_score
         )
+        extra_provenance["multi_epoch_failed_epoch_count"] = len(me_result.failed_epoch_ids)
+        extra_provenance["multi_epoch_failed_epoch_ids"] = (
+            ", ".join(me_result.failed_epoch_ids) or "none"
+        )
 
     semisupervised_features, semisupervised_provenance = (
         _semisupervised_model_context(

@@ -4632,3 +4632,90 @@ now ran entirely through the agent's own sandbox with no user-run
 commands, validating the sandbox network fix and the queue-coverage fix
 under real, repeated load rather than a single instance. None of this is
 a detection, discovery, or external-submission claim.
+
+# DECISION-159: `review-dashboard --json` And Multi-Epoch Silent-Failure Bugs Fixed
+
+**Date:** 2026-07-18
+**Status:** Accepted
+**Implements:** a targeted follow-on audit for the same silent-degradation
+bug class DECISION-157 found, per the operational note in that decision
+("Future agents should not reuse that throughput figure...") and the
+project's standing FAIL LOUDLY directive (`AGENTS.md`)
+
+## Context
+
+Two candidate patterns from a scripted/grep-assisted sweep of `scripts/*.sh`
+and `src/techno_search/*.py` were manually traced to real, live,
+consequential bugs (a third pass over the ~167 `_StubDict`-returning
+functions in `cli.py`, via an AST-based caller-key audit identical in
+method to DECISION-153, found zero new same-function-scope instances --
+that class is already exhausted by DECISIONS 151/153/154).
+
+1. `scripts/run_production_scan.sh` called `techno-search review-dashboard
+   --results-dir "${RESULTS_BASE}"` without `--json`. Until the 2026-07-09
+   operator-UI hardening pass (`docs/SYSTEMATIC_SEARCH_PLAN.md` Step 2),
+   `review-dashboard` printed raw JSON by default, so the script's
+   omission was harmless; that pass flipped the default to a compact
+   human-readable table and added `--json` as an explicit opt-in (matching
+   `scan-summary`'s own shape, the same command DECISION-157 fixed), but
+   this script's call site was never updated to match. Live-verified
+   against the real local `results/` corpus (822 targets): the command
+   without `--json` prints a human table while the real dashboard state is
+   `needs_attention=yes` (590 follow-up candidates, 545 cross-target-RFI
+   flags); piping that table into `json.load()` raises
+   `JSONDecodeError`, caught by `2>/dev/null || echo "False"`. The script
+   then prints "review-dashboard: OK" -- the opposite of the real state --
+   and `tee`s the human-readable text into
+   `${RUN_ID}_review_dashboard.json`, corrupting an artifact whose
+   filename promises JSON. This is a live regression, not a hypothetical:
+   it has been silently wrong on every real `run_production_scan.sh` run
+   since 2026-07-09.
+2. `multi_epoch.compare_epochs()` wrapped each epoch's `.dat`-file
+   read-and-normalize loop in a bare `except Exception: pass`, and
+   separately computed `total_epochs_checked` as `len(dat_files)`
+   unconditionally -- not the count of epochs actually read. A single
+   epoch whose file could not be parsed (corrupt, truncated, unexpected
+   format) therefore silently contributed zero hits while still counting
+   toward the "checked" denominator, deflating
+   `MultiEpochGroup.persistence_score` for a real recurring signal with no
+   visible error anywhere. `multi_epoch_persistence_score` is injected as
+   a real feature into radio candidate packets
+   (`pipeline_runner.py`) and is one of the two blocking Track B
+   conditions recorded in this file's Track B history section, so a
+   silently wrong value here is scientifically consequential, not merely
+   cosmetic.
+
+## Decision
+
+Fixed both at the smallest correct scope. (1)
+`run_production_scan.sh`'s `review-dashboard` call now passes `--json`.
+Added a static regression test in the same style as DECISION-157's
+(`test_run_production_scan_script_calls_review_dashboard_with_json_flag`),
+asserting the flag stays in the script text. (2) `compare_epochs()` now
+tracks which epoch IDs failed to read/parse in a new
+`MultiEpochResult.failed_epoch_ids` field (included in `as_dict()` as
+`failed_epoch_count`/`failed_epoch_ids`), and `total_epochs_checked` is
+computed from `len(dat_files) - len(failed_epoch_ids)` instead of
+`len(dat_files)` alone, so a parse failure can no longer silently deflate
+the persistence score of hits found in the epochs that did read
+successfully. `pipeline_runner.py` now also carries
+`multi_epoch_failed_epoch_ids` into candidate provenance, per AGENTS.md's
+"always expose negative evidence and blocking issues." Added
+`TestCompareEpochs::test_unreadable_epoch_is_reported_not_silently_dropped`,
+which exercises the real failure path (a directory in place of a `.dat`
+file, raising a real `IsADirectoryError` from `Path.read_text()`) rather
+than a mocked exception.
+
+## Consequences
+
+`run_production_scan.sh` now correctly reports operator-facing
+"NEEDS ATTENTION" state and writes valid JSON to
+`${RUN_ID}_review_dashboard.json` on every future run.
+`multi_epoch_persistence_score` can no longer be silently understated by
+an unrelated file-read failure in one epoch; a failed epoch is now visible
+in both the function's return value and in candidate provenance instead of
+vanishing. Neither fix retroactively changes any already-written ledger,
+candidate report, or historical `review_dashboard.json` artifact -- both
+are forward-looking correctness fixes for future runs. No candidate
+ledger, scoring threshold, detection claim, or external-submission
+authorization changed.

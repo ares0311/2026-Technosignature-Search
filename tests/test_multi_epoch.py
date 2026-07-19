@@ -217,8 +217,39 @@ class TestCompareEpochs:
         for key in (
             "epoch_count", "total_hits", "group_count",
             "multi_epoch_group_count", "max_persistence_score", "groups", "disclaimer",
+            "failed_epoch_count", "failed_epoch_ids",
         ):
             assert key in d
+
+    def test_unreadable_epoch_is_reported_not_silently_dropped(self, tmp_path):
+        """A .dat file that raises while being read/normalized must be surfaced.
+
+        Previously the per-file `except Exception: pass` silently discarded
+        the whole epoch's hits *and* still counted it toward
+        `total_epochs_checked` (which came from `len(dat_files)`, not from
+        how many files were actually read successfully). That silently
+        biased `persistence_score` downward for a real recurring signal
+        whenever any one epoch's file happened to be corrupt/unreadable,
+        with no visible sign anything had gone wrong.
+        """
+        f1 = tmp_path / "epoch1.dat"
+        f2 = tmp_path / "epoch2.dat"
+        _write_hit_csv(f1, _make_hit_rows(1420.0e6, snr=30.0))
+        # A directory, not a file: read_hit_table_csv's Path.read_text() call
+        # raises IsADirectoryError, exercising the real failure path rather
+        # than a mocked one.
+        f2.mkdir()
+
+        result = compare_epochs([f1, f2])
+
+        assert result.failed_epoch_ids == ["epoch2"]
+        assert result.as_dict()["failed_epoch_count"] == 1
+        # Only the one real, successfully-read epoch should count toward
+        # "checked" -- the unreadable epoch must not silently deflate the
+        # persistence score of the signal actually found in epoch1.
+        assert result.epoch_count == 1
+        assert result.groups[0].total_epochs_checked == 1
+        assert result.groups[0].persistence_score == pytest.approx(1.0)
 
 
 # ---------------------------------------------------------------------------
