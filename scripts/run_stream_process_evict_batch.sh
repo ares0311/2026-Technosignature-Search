@@ -186,11 +186,11 @@ if limit > 0:
     rows = rows[:limit]
 for row in rows:
     hip = str(row.get("hip", "")).strip()
-    url = str(row.get("source_hdf5_url", "")).strip()
+    url = str(row.get("source_hdf5_url", "")).strip() or "LOCAL_DAT_ONLY"
     gb = row.get("estimated_download_gb", 0)
     if not hip:
         continue
-    print(f"{hip}\t{url or 'LOCAL_DAT_ONLY'}\t{gb or 0}")
+    print(f"{hip}\t{url}\t{gb or 0}")
 ' "${MANIFEST}" "${LIMIT}" > "${TARGET_ROWS_FILE}"
 
 TOTAL=$(wc -l < "${TARGET_ROWS_FILE}" | tr -d ' ')

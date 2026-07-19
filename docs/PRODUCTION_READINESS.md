@@ -5,7 +5,21 @@
 Hunter PROD remains open: the durable create/run/follow-up lifecycle is now
 implemented and locally verified, but its first approval-gated real acquisition
 run has not executed and the viable candidate universe remains below 10,000.
-**Current app version:** 1.2.38
+**Current app version:** 1.2.39
+
+**First real Hunter run fails loudly before work and exposes shell-dispatch
+bug — 2026-07-19:** version 1.2.39 fixes the next defect found by the real
+bounded follow-up run. Search `SEARCH-20260719T132059Z-D154F10B` correctly
+froze HIP103096 with zero projected acquisition and began a durable attempt,
+then the stream runner exited non-zero before processing: its single-quoted
+embedded Python program used a nested single-quoted `LOCAL_DAT_ONLY` sentinel,
+so the shell removed the quotes and Python raised `NameError`. The search
+preserves `run_started` and `run_failed` events with the exact run ID and
+resumable stage. The sentinel is now assigned with quote-safe syntax, and a
+real shell subprocess dry-run test executes the embedded manifest parser so
+static string assertions cannot miss this class again. No data, score, or
+result was produced; the 1.2.38 search will not be silently retried under
+changed code.
 
 **First real Hunter create smoke test catches provenance/UI defects before
 execution — 2026-07-19:** version 1.2.38 follows the merged lifecycle with

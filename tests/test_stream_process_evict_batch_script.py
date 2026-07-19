@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+import subprocess
 from pathlib import Path
 
 SCRIPT_PATH = Path(__file__).resolve().parents[1] / "scripts" / (
@@ -71,3 +73,43 @@ def test_explicit_hunter_status_key_keeps_real_acquisition_visible() -> None:
     assert '--status-key) STATUS_KEY="$2"' in script
     assert 'if [[ -n "${STATUS_KEY:-}" ]]; then' in script
     assert "Required Hunter acquisition status record failed" in script
+
+
+def test_local_dat_only_manifest_executes_real_dry_run_dispatch(tmp_path: Path) -> None:
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "targets": [
+                    {
+                        "hip": "HIP123",
+                        "source_hdf5_url": "",
+                        "estimated_download_gb": None,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            "bash",
+            str(SCRIPT_PATH),
+            "--manifest",
+            str(manifest),
+            "--out-dir",
+            str(tmp_path / "data"),
+            "--results-dir",
+            str(tmp_path / "results"),
+            "--log-file",
+            str(tmp_path / "run.log"),
+            "--dry-run",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "Would process 1 targets" in result.stdout
