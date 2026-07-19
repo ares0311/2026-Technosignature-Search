@@ -2263,6 +2263,7 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                     size_preflight_report_path=args.size_preflight_report_path,
                     extra_size_preflight_report_paths=extra_size_preflight_report_paths,
                     extra_discovery_result_paths=extra_discovery_result_paths,
+                    scan_history_path=args.scan_history_path,
                 ),
                 indent=2,
                 sort_keys=True,
@@ -6135,6 +6136,17 @@ def _build_parser() -> argparse.ArgumentParser:
             "queued_metadata_discovery and get re-selected into a later "
             "batch. When omitted, defaults to every *_discovery_result.json "
             "file already committed under data_selection/batch_manifests/."
+        ),
+    )
+    build_target_queue_parser.add_argument(
+        "--scan-history-path",
+        type=Path,
+        default=Path("results/scan_history.ndjson"),
+        help=(
+            "Real production-scan history (prod_scan_history_v1 ndjson). Targets "
+            "already scanned by this project get a real, evidence-based novelty "
+            "penalty instead of scoring identically to never-scanned targets. "
+            "Missing file is treated as 'nothing scanned yet', not an error."
         ),
     )
     build_target_queue_parser.add_argument(

@@ -4719,3 +4719,42 @@ candidate report, or historical `review_dashboard.json` artifact -- both
 are forward-looking correctness fixes for future runs. No candidate
 ledger, scoring threshold, detection claim, or external-submission
 authorization changed.
+
+# DECISION-160: Acquisition Ranking Uses Configured Selection Score And Complete Resume Evidence
+
+**Date:** 2026-07-19
+**Status:** Accepted
+**Implements:** Hunter PROD target-ranking gap and batch-3 coverage correction
+
+## Context
+
+The acquisition queue computed `background_target_priority_score` but never
+used it: deduplication, sorting, and manifest selection all used the coarse
+policy sum `total_priority`. The existing, reviewed
+`target_selection_score()` and its real prior-review adjustment therefore had
+no effect on actual acquisition order. A live rebuild against the current
+status ledger exposed a second gap: successful resumed batch-3 shards recorded
+196 completed inputs as `already_processed_targets`, but coverage reconstruction
+read only `downloaded_targets`, putting processed targets back into the
+download-approval queue.
+
+## Decision
+
+Queue schema v2 keeps `total_priority` as the auditable data-selection-policy
+sum, records the base background score separately, and adds
+`target_selection_score` plus `priority_config_version`. Deduplication and
+sorting use the selection score, with the policy sum and stable target ID only
+as deterministic tie-breakers. Manifest schema v2 independently sorts eligible
+rows by the same key and records the key/config version, so a manually reordered
+CSV cannot change the selected targets. Scan-history parsing now fails loudly
+on malformed or incompatible records. Successful `stream_process_evict` runs
+contribute both `downloaded_targets` and `already_processed_targets` to coverage.
+
+## Consequences
+
+Focused tests prove prior history changes real queue order, manifest selection
+does not trust CSV order, invalid history raises, and resumed processed targets
+cannot be reselected. Rebuilding the real 1,703-target queue produces 805
+already-acquired controls, 540 completed no-product results, and 358 remaining
+download-approval rows totaling 89.274678 GB. No raw download is authorized;
+no candidate, detection, or external-submission claim changes.

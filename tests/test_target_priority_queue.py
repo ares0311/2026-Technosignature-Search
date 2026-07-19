@@ -5,6 +5,8 @@ import json
 from io import StringIO
 from pathlib import Path
 
+import pytest
+
 from techno_search.cli import main
 from techno_search.target_priority_queue import (
     TARGET_PRIORITY_QUEUE_FIELDS,
@@ -174,7 +176,8 @@ def test_write_target_priority_queue_summary_counts_statuses(tmp_path: Path) -> 
     )
 
     assert output_path.exists()
-    assert result["schema_version"] == "target_priority_queue_v1"
+    assert b"\r\n" not in output_path.read_bytes()
+    assert result["schema_version"] == "target_priority_queue_v2"
     assert result["target_count"] == 3
     assert result["by_status"] == {
         "already_acquired_local_cache": 1,
@@ -194,8 +197,10 @@ def test_build_target_priority_queue_recognizes_stream_process_evict_completions
     keys that ``_load_coverage_state`` never read at all — every one of 198
     already-completed targets was silently re-classified as
     ``raw_download_approval_required``, ready to be re-selected into a future
-    batch and re-downloaded. A run recorded with ``ok: false`` (an interrupted or
-    raced batch) must NOT be trusted as evidence of completion.
+    batch and re-downloaded. Resumed shards may record completed targets as
+    ``already_processed_targets`` instead of ``downloaded_targets``; both are
+    durable completion evidence when the run is successful. A run recorded with
+    ``ok: false`` (an interrupted or raced batch) must NOT be trusted.
     """
     seed_path = tmp_path / "seed.csv"
     status_path = tmp_path / "status.json"
@@ -213,6 +218,7 @@ def test_build_target_priority_queue_recognizes_stream_process_evict_completions
                         "acquisition_mode": "stream_process_evict",
                         "ok": True,
                         "downloaded_targets": ["HIP2"],
+                        "already_processed_targets": ["HIP99427"],
                         "evicted_targets": ["HIP2"],
                     },
                     "stream_process_evict_batch__interrupted_raced_run": {
@@ -233,21 +239,95 @@ def test_build_target_priority_queue_recognizes_stream_process_evict_completions
         data_status_path=status_path,
     )
 
-    assert result["by_status"]["already_acquired_local_cache"] == 1
+    assert result["by_status"]["already_acquired_local_cache"] == 2
     with (tmp_path / "data_selection" / "target_priority_queue.csv").open(
         encoding="utf-8"
     ) as handle:
         rows = {row["target_id"]: row["status"] for row in csv.DictReader(handle)}
     assert rows["HIP2"] == "already_acquired_local_cache"
+    assert rows["GJ99427"] == "already_acquired_local_cache"
     assert rows["HIP71681"] != "already_acquired_local_cache"
+
+
+def test_build_target_priority_queue_uses_selection_score_as_real_rank_key(
+    tmp_path: Path,
+) -> None:
+    """Prior scan history must affect real queue order, not an unused CSV column."""
+    seed_path = tmp_path / "seed.csv"
+    status_path = tmp_path / "status.json"
+    history_path = tmp_path / "scan_history.ndjson"
+    _write_seed_csv(seed_path)
+    _write_status_json(status_path)
+    history_path.write_text(
+        "".join(
+            json.dumps(
+                {
+                    "schema_version": "prod_scan_history_v1",
+                    "target_stem": f"observation_{index}_HIP2_0001",
+                }
+            )
+            + "\n"
+            for index in range(3)
+        ),
+        encoding="utf-8",
+    )
+
+    rows = build_target_priority_queue(
+        seed_csv_path=seed_path,
+        data_status_path=status_path,
+        scan_history_path=history_path,
+    )
+    rows_by_id = {row["target_id"]: row for row in rows}
+
+    assert rows[0]["target_id"] == "HIP71681"
+    assert float(rows_by_id["HIP2"]["total_priority"]) > float(
+        rows_by_id["HIP71681"]["total_priority"]
+    )
+    assert float(rows_by_id["HIP2"]["target_selection_score"]) < float(
+        rows_by_id["HIP71681"]["target_selection_score"]
+    )
+    assert rows_by_id["HIP2"]["prior_review_adjustment"] == "-0.12"
+    assert rows_by_id["HIP2"]["priority_config_version"] == "background_priority_v0"
+
+
+def test_build_target_priority_queue_fails_loudly_on_invalid_scan_history(
+    tmp_path: Path,
+) -> None:
+    seed_path = tmp_path / "seed.csv"
+    status_path = tmp_path / "status.json"
+    history_path = tmp_path / "scan_history.ndjson"
+    _write_seed_csv(seed_path)
+    _write_status_json(status_path)
+    history_path.write_text("not-json\n", encoding="utf-8")
+
+    with pytest.raises(json.JSONDecodeError):
+        build_target_priority_queue(
+            seed_csv_path=seed_path,
+            data_status_path=status_path,
+            scan_history_path=history_path,
+        )
 
 
 def test_cli_build_and_summarize_target_priority_queue(tmp_path: Path) -> None:
     seed_path = tmp_path / "seed.csv"
     status_path = tmp_path / "status.json"
+    history_path = tmp_path / "scan_history.ndjson"
     output_path = tmp_path / "target_priority_queue.csv"
     _write_seed_csv(seed_path)
     _write_status_json(status_path)
+    history_path.write_text(
+        "".join(
+            json.dumps(
+                {
+                    "schema_version": "prod_scan_history_v1",
+                    "target_stem": f"observation_{index}_HIP2_0001",
+                }
+            )
+            + "\n"
+            for index in range(3)
+        ),
+        encoding="utf-8",
+    )
 
     build_stdout = StringIO()
     exit_code = main(
@@ -257,6 +337,8 @@ def test_cli_build_and_summarize_target_priority_queue(tmp_path: Path) -> None:
             str(seed_path),
             "--data-status-path",
             str(status_path),
+            "--scan-history-path",
+            str(history_path),
             "--output-path",
             str(output_path),
         ],
@@ -267,6 +349,8 @@ def test_cli_build_and_summarize_target_priority_queue(tmp_path: Path) -> None:
     assert exit_code == 0
     assert build_result["ok"] is True
     assert build_result["queue_path"] == str(output_path)
+    assert build_result["ranking_key"] == "target_selection_score"
+    assert build_result["top_targets"][0]["target_id"] == "HIP71681"
 
     summary_stdout = StringIO()
     exit_code = main(
@@ -299,10 +383,14 @@ def test_build_target_priority_manifest_selects_top_unsearched_targets(
         generated_at_utc="2026-07-09T12:00:00+00:00",
     )
 
-    assert manifest["schema_version"] == "target_priority_manifest_v1"
+    assert manifest["schema_version"] == "target_priority_manifest_v2"
     assert manifest["generated_at_utc"] == "2026-07-09T12:00:00+00:00"
     assert manifest["selection"]["selected_count"] == 1
     assert manifest["selection"]["include_statuses"] == ["queued_metadata_discovery"]
+    assert manifest["selection"]["ranking_key"] == "target_selection_score"
+    assert manifest["selection"]["priority_config_versions"] == [
+        "background_priority_v0"
+    ]
     assert manifest["targets"][0]["hip"] == "HIP2"
     assert manifest["targets"][0]["queue_status"] == "queued_metadata_discovery"
     assert manifest["targets"][0]["ra_deg"] == 0.004167
@@ -367,6 +455,8 @@ def test_cli_build_target_priority_manifest_replaces_default_status_filter(
                 "status": "queued_metadata_discovery",
                 "local_coverage_status": "not_searched_by_project",
                 "total_priority": "20",
+                "target_selection_score": "0.5",
+                "priority_config_version": "background_priority_v0",
                 "background_target_priority_score": "0.5",
                 "data_products_available": "requires_product_metadata_discovery",
                 "notes": "queued",
@@ -382,6 +472,8 @@ def test_cli_build_target_priority_manifest_replaces_default_status_filter(
                 "status": "size_preflight_required",
                 "local_coverage_status": "not_searched_hdf5_url_discovered",
                 "total_priority": "19.75",
+                "target_selection_score": "0.6",
+                "priority_config_version": "background_priority_v0",
                 "background_target_priority_score": "0.5",
                 "data_products_available": "hdf5_url_discovered",
                 "source_hdf5_url": "https://bldata.berkeley.edu/example/HIPREADY.h5",
@@ -411,6 +503,43 @@ def test_cli_build_target_priority_manifest_replaces_default_status_filter(
     assert manifest["selection"]["include_statuses"] == ["size_preflight_required"]
     assert [target["hip"] for target in manifest["targets"]] == ["HIPREADY"]
     assert manifest["targets"][0]["source_hdf5_url"].endswith("HIPREADY.h5")
+
+
+def test_build_target_priority_manifest_sorts_by_selection_score_not_csv_order(
+    tmp_path: Path,
+) -> None:
+    queue_path = tmp_path / "target_priority_queue.csv"
+    with queue_path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=TARGET_PRIORITY_QUEUE_FIELDS)
+        writer.writeheader()
+        base_row = {field: "" for field in TARGET_PRIORITY_QUEUE_FIELDS}
+        for target_id, policy_score, selection_score in (
+            ("HIPOLD", "22", "0.31"),
+            ("HIPBEST", "16", "0.77"),
+        ):
+            writer.writerow(
+                {
+                    **base_row,
+                    "target_id": target_id,
+                    "ra_deg": "1",
+                    "dec_deg": "2",
+                    "search_category": "new_parameter_space",
+                    "status": "queued_metadata_discovery",
+                    "local_coverage_status": "not_searched_by_project",
+                    "total_priority": policy_score,
+                    "target_selection_score": selection_score,
+                    "priority_config_version": "background_priority_v0",
+                    "background_target_priority_score": selection_score,
+                    "data_products_available": "requires_product_metadata_discovery",
+                    "notes": "test",
+                }
+            )
+
+    manifest = build_target_priority_manifest(queue_path=queue_path, max_targets=1)
+
+    assert manifest["targets"][0]["hip"] == "HIPBEST"
+    assert manifest["targets"][0]["target_selection_score"] == 0.77
+    assert manifest["selection"]["ranking_key"] == "target_selection_score"
 
 
 def test_target_priority_size_preflight_records_header_metadata(tmp_path: Path) -> None:

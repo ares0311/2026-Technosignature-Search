@@ -1,12 +1,27 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-07-17
-**Current phase:** Phase 0 complete; Phases 1-5 all have real, tested baseline
-implementations. Remaining gaps per phase are either genuinely blocked on
-real data/network access the agent's sandbox cannot reach, or correctly
-deferred pending a surviving candidate (see the Phase 1-5 tables below for
-specifics).
-**Current app version:** 1.2.35
+**Last updated:** 2026-07-19
+**Current phase:** Phase 0 complete; Phases 1-5 have real, tested baselines.
+Hunter PROD remains open: target ranking is now wired to real search history,
+while durable create/run/follow-up lifecycle unification and a 10,000+ viable
+candidate universe remain gaps.
+**Current app version:** 1.2.36
+
+**Hunter target selection uses the real config-driven rank key — 2026-07-19:**
+version 1.2.36 closes the highest-priority target-selection gap recorded in the
+Hunter directive. The queue previously computed a background score but
+sorted/deduplicated rows and selected manifests by the coarse policy sum
+`total_priority`; production-scan history therefore could not affect
+acquisition order. Queue schema v2 preserves the policy sum for audit and uses
+the existing config-versioned `target_selection_score` (including real prior
+reviews) as the deterministic rank key. Manifest schema v2 independently sorts
+by that key and stamps its config version; malformed history fails loudly.
+A real rebuild also found 196 successful batch-3 resume completions recorded as
+`already_processed_targets` that coverage reconstruction ignored. Counting
+that explicit completion evidence moves 609→805 targets to
+`already_acquired_local_cache` and reduces remaining
+`raw_download_approval_required` targets 554→358 (89.274678 GB). This corrects
+planning state only; it authorizes no download and makes no candidate claim.
 
 **Two more real silent-degradation bugs found and fixed — 2026-07-18:** a
 targeted follow-on audit for the same "fails silently instead of loudly"
