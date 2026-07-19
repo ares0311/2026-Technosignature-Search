@@ -253,3 +253,14 @@ worst-case chunks = 25.16GB / 100.00GB cap.
 **Raw download still requires the user's explicit approval and has not been
 run.** This entry is a sizing/proposal only, matching the batch 1/batch 2
 precedent before their respective approvals.
+
+**Batch 3 execution recorded — 2026-07-19:** all six shard records now report
+`ok: true`. Their latest resume summaries contain 196
+`already_processed_targets` plus 3 newly downloaded/processed/evicted targets,
+covering all 199 manifest targets with zero reported failures. Queue schema v2
+now treats both successful completion fields as durable coverage evidence and
+ranks by the config-versioned `target_selection_score`, not the retained policy
+sum. The regenerated queue has 805 already-acquired targets and 358 remaining
+`raw_download_approval_required` targets; the consolidated approval manifest is
+89.274678 GB. This is corrected inventory state, not authorization to download
+the remaining queue and not a candidate claim.

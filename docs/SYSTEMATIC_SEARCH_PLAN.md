@@ -28,7 +28,7 @@ step that's already blocked on an earlier one.
 
 ---
 
-## Current honest state (updated 2026-07-13; originally recorded 2026-07-05)
+## Current honest state (updated 2026-07-19; originally recorded 2026-07-05)
 
 **Execution-tooling handoff — 2026-07-13:** future explicitly approved
 six-manifest Step 3a batches no longer require six terminal tabs.
@@ -63,7 +63,7 @@ acquisition is permanently outside project scope.
 | Track B 9-condition gate | ✅ Real, implemented, conservative-by-construction |
 | Semisupervised anomaly/OOD calibration | ❌ Blocked — see Step 1 |
 | Operator UI hardening | ⚠️ Substantially underway — 12 operator-facing commands now default to compact summaries with `--json` opt-in, across three rounds of hardening: `prod-target-status`/`prod-follow-ups`/`prod-non-detections` (before 2026-07-09), `review-dashboard` (2026-07-09), and `track-b-unknown-candidate-gate`/`track-b-candidate-readiness`/`gbt-cadence-abacab-review`/`gbt-cadence-raw-status`/`adversarial-review-dossier`/`multi-modal-crossmatch-summary`/`prod-runs`/`scan-summary` (2026-07-10/11, 8 commands — the commit message for this round undercounted it as "7 more", missing `scan-summary`; verified by counting `_print_*` functions directly, not trusting the commit message). `escalation-gate-check`/`cross-target-rfi-summary`/`health`/`prod-show` deliberately left alone — small flat dicts, already scannable. See Step 2 for what a future audit should still check. |
-| Detection-optimized target selection algorithm | ⚠️ 3a (novel-target selection) metadata discovery and size preflight are complete for the full current HPRC queue: `top25`/`next25`/`batch3`-`batch13` plus the 1,358-target `batch14_bulk` round. The queue has 557 sized URL-available targets (~139.26 GB), 540 completed no-product results, and 606 already-acquired controls (2026-07-17/18: a coverage-state fix recognized 198 Step 0 `stream_process_evict` completions, then `step3a_batch1` (198 targets) and `step3a_batch2` (194 targets) were downloaded/processed/evicted). This is an inventory, not raw-download approval, and cannot fit the permanent 100 GB cap as a bulk pull. 3b remains design-only per its documented gate (no real qualifying candidate exists yet). See Step 3a. |
+| Detection-optimized target selection algorithm | ⚠️ 3a now ranks by the real config-driven `target_selection_score`, including production-scan history; the policy sum remains auditable but is no longer the selector. Metadata discovery/size preflight cover the full 1,703-target HPRC queue. Successful batch-3 resume records bring completed controls to 805, leaving 358 sized URL-available targets (89.274678 GB) and 540 completed no-product results. This is an inventory, not raw-download approval. The universe remains below Hunter PROD's 10,000+ goal, and 3b remains gated on a real qualifying candidate. See Step 3a. |
 | Extended-corpus completion | ✅ Complete — corrected v1.2.1 six-shard rerun finished 198/198 targets with zero download-task duplication. The full 215-target local corpus is at 10 Hz/s; ingestion removes 3,134 exact duplicate hit rows from 8,988 raw rows, leaving 5,854 unique triage rows and zero follow-up/escalation-ready candidates. See Step 0 completion below. |
 
 ---
@@ -367,11 +367,12 @@ requirements:
    `DENIS-P J1048.0-3956` result: the request succeeded and found no current
    GBT HDF5 product. No raw payload was downloaded.
 4. Wire the computed `novelty_score` into `target_priority_score()`'s
-   existing weighting, don't reinvent the scoring formula. **Initial
-   implementation done:** queue rows include a normalized
-   `background_target_priority_score` using the existing
-   `target_priority_score()` component shape; the data-selection
-   `total_priority` remains the policy-required 0-3 live-search sum.
+   existing weighting, don't reinvent the scoring formula. **Done in queue
+   schema v2:** rows retain the policy-required additive `total_priority` for
+   audit, record the base `background_target_priority_score`, and use the
+   existing config-versioned `target_selection_score()` (including real
+   production-scan review history) as the queue/manifest ranking key.
+   Manifests sort independently instead of trusting incoming CSV order.
 
 ### 3b. Follow-up-target selection ("candidates needing follow-on checks")
 

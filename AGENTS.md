@@ -640,6 +640,157 @@ between what a Claude Code session and a Codex session would each see.
 
 ---
 
+## HUNTER PROD DIRECTIVE — NON-NEGOTIABLE (added 2026-07-19)
+
+This project is one of a family of "Hunter" search tools (NEO-Hunter,
+Techno-Hunter — this repo, EXO-Hunter). Each runs in an isolated sandbox and
+must remain independently buildable, testable, and runnable; do not assume
+access to another repo. The projects share this directive's architecture
+contract where practical; domain specifics (candidate sources, scientific
+features, ranking, scorers, thresholds, interpretation) remain project-owned.
+
+**Standing user instruction, 2026-07-19:** "This is the mistake to stop
+making — you are supposed to be training the AI to recognize all known
+objects. When it finds something it can't identify, that's an unknown
+anomaly that could be a technosignature and needs an adversarial agent to
+figure out what it really is." This is already this project's Track A/B
+architecture (Track A = known-explanation classifier; Track B =
+`unknown_candidate` routing to the adversarial-review agent, Step 2 of the
+review chain) — it is NOT blocked and does not require any positive
+technosignature label to function, because it is built entirely on
+pre-existing labels for *known* objects (pulsars, FRBs, blazars, gamma-ray
+sources, satellites) plus deterministic rule-based checks (RFI, cadence,
+instrument artifacts). **Do not conflate this with the separate, narrower,
+genuinely-blocked gate**: `production_promotion_allowed: false` in the AI
+hardening gate refers only to calibrating the *semisupervised anomaly
+scorer's* quantitative threshold — one input signal, not the Track A/B
+architecture itself. A future agent must never answer "how close to PROD"
+by citing that narrower gate as if it blocked the whole known-vs-unknown
+classification system; verify against `track_b_gate.py`'s actual 9
+conditions before making that claim.
+
+### Hard invariants
+
+Always optimize for this sequence: **READ HISTORY → MAP PIPELINE → CLOSE
+GAPS → BUILD END-TO-END → VERIFY → DOCUMENT PR → CONTINUE LOOP.**
+
+Never violate:
+1. Core application logic must work without AI.
+2. No required pipeline gaps or undocumented manual bridges.
+3. Never overwrite search history or provenance.
+4. Never silently substitute targets, data, results, or failed work.
+5. Never declare partial work PROD.
+6. Do not stop for routine, reversible, nondestructive work.
+7. Do not repeat failed strategies in a doom loop.
+8. Write compact, direct, maintainable code.
+
+### Definition of PROD for this repo
+
+Do not claim PROD until the repo demonstrably performs, without AI or
+undocumented manual intervention, this complete path: **candidate universe
+→ identity/history resolution → eligibility → ranking/selection → manifest
+→ durable search creation → data acquisition → preprocessing → scoring →
+composite interpretation → durable results/provenance → follow-up creation
+→ follow-up recommendation → recover correctly after restart.** Mocks,
+scaffolding, planned work, and partial paths do not count. Candidate
+selection specifically must evaluate a much larger pool than requested
+(target roughly 100 selected from 10,000+ viable candidates when data
+permits — this repo's current 1,703-target HPRC seed list is well short of
+that and is itself a gap), be deterministic/explainable/reproducible/
+testable, use project-appropriate scientific metrics, and weigh prior
+searches, novelty, expected information gain, suitability, data
+availability, storage/compute cost, prior results, follow-up value, and
+identity resolution. **Do not use opaque LLM judgment as core ranking
+logic** — this matches the existing Track A/B deterministic-gate
+philosophy above; scoring must be auditable arithmetic over real features,
+same standard as `target_priority_score`/`target_selection_score` in
+`background_search.py`.
+
+**Known real gap, found 2026-07-19 (see `docs/DECISIONS.md` for the full
+writeup):** `target_priority_queue.py`'s actual sort/selection key
+(`total_priority`) is a coarse additive sum dominated by acquisition-status
+buckets and several always-zero fields (`followup_leverage`,
+`false_positive_probability` as wired), not the more principled, continuous,
+config-driven `target_priority_score`/`target_selection_score` this
+document already names as correct — that function is computed and stored in
+an unused CSV column (`background_target_priority_score`) but never used to
+rank or select. Fixing this — wiring the real tool into the real selection
+path, including the prior-review-count novelty adjustment already built in
+`target_selection_score()` — is a standing highest-priority gap until
+closed and verified.
+
+### Required CLI (target contract, not yet fully built — see gap above)
+
+```
+/Create-New-Search --targets <N> --mode <new|follow-up>
+/Run-New-Search
+/Show-Follow-Ups
+```
+Polished, scriptable/non-interactive, restrained semantic color, readable
+tables, clear failures. Visual polish is secondary to correctness and
+pipeline completeness.
+
+**New mode**: select promising eligible targets not previously searched
+under the applicable revisit policy. **Follow-up mode**: select prior
+targets searched by this project, another internal project, or external
+researchers/projects with reliable provenance — never erase or overwrite
+that history; preserve who/when/why/source/method/result/follow-up
+relationships.
+
+### Durable state (target model, not yet fully unified — see gap above)
+
+Maintain distinct durable concepts, each with stable IDs, explicit
+relationships, timestamps, provenance, and versioned schemas:
+1. candidate catalog
+2. search manifest
+3. search run
+4. target search history
+5. follow-up registry
+
+CSV manifests (this repo's `data_selection/target_priority_queue.csv` and
+`data_selection/batch_manifests/*.json`) are for operator review, not the
+durable system of record — the durable record is
+`docs/data_collection_status.json` (search run), `results/scan_history.ndjson`
+(target search history), and the per-run `results/scans/RUN-*` ledgers
+(follow-up registry) already in this repo, but they are not yet unified
+under one coherent model with the explicit cross-references this section
+requires. Every search run must preserve exact selected targets,
+configuration, inputs/data provenance, code/model/scorer versions,
+individual scores, composite result, interpretation, failures, execution
+state, and follow-up disposition.
+
+### No doom loops (reinforces ANTI-DOOM-LOOP DIRECTIVES above)
+
+On repeated failure: diagnose → gather new evidence → change approach →
+test again. Escalate only for genuine blockers (missing credentials,
+unavailable required access, destructive-action approval, an irreducible
+material product/scientific decision) using:
+```
+BLOCKER:
+<problem>
+
+WHY I NEED YOU:
+<why autonomous resolution is exhausted>
+
+WHAT I TRIED:
+<evidence>
+
+RECOMMENDATION:
+<best path>
+
+QUESTION:
+<one precise question>
+```
+
+### PR handoff (reinforces PR LINK + CONTINUATION DIRECTIVE above)
+
+Every PR must leave enough context for the next agent to reconstruct the
+session without guessing: objective, material changes, important
+decisions, tests and results, known gaps/risks, exact next work. Do not
+write vague summaries.
+
+---
+
 ## FIVE-PHASE SCIENCE ROADMAP
 
 This section describes each phase's scope and methodology — it is not a

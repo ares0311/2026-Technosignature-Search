@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
+import re
 import ssl
 import urllib.error
 import urllib.request
@@ -15,16 +16,24 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from techno_search.background_search import BackgroundTarget, target_priority_score
+from techno_search.background_search import (
+    BackgroundPriorityConfig,
+    BackgroundTarget,
+    load_background_priority_config,
+    target_priority_score,
+    target_selection_score,
+)
 from techno_search.schemas import Track
 
-TARGET_PRIORITY_QUEUE_SCHEMA_VERSION = "target_priority_queue_v1"
+_HIP_ALIAS_PATTERN = re.compile(r"(?i)hip(\d+)")
+
+TARGET_PRIORITY_QUEUE_SCHEMA_VERSION = "target_priority_queue_v2"
 TARGET_PRIORITY_QUEUE_DISCLAIMER = (
     "Target priority queues are metadata-first scheduling aids for local search "
     "planning. They are not detections, discovery claims, expert review, external "
     "validation, or authorization for external submission."
 )
-TARGET_PRIORITY_MANIFEST_SCHEMA_VERSION = "target_priority_manifest_v1"
+TARGET_PRIORITY_MANIFEST_SCHEMA_VERSION = "target_priority_manifest_v2"
 TARGET_PRIORITY_SIZE_PREFLIGHT_SCHEMA_VERSION = "target_priority_size_preflight_v1"
 DEFAULT_PROJECT = "2026 Technosignature Search"
 DEFAULT_SOURCE = "Breakthrough Listen HPRC full target catalog"
@@ -53,7 +62,10 @@ TARGET_PRIORITY_QUEUE_FIELDS = [
     "community_integration",
     "new_followup_balance",
     "storage_cost_penalty",
+    "prior_review_adjustment",
     "total_priority",
+    "target_selection_score",
+    "priority_config_version",
     "status",
     "notes",
     "citations",
@@ -164,6 +176,9 @@ def _load_coverage_state(
         if run_entry.get("ok") is not True:
             continue
         downloaded |= {str(target) for target in run_entry.get("downloaded_targets", [])}
+        downloaded |= {
+            str(target) for target in run_entry.get("already_processed_targets", [])
+        }
     skipped: dict[str, str] = {}
     for item in run.get("skipped_targets", []):
         if not isinstance(item, dict):
@@ -349,7 +364,67 @@ def _classification_for_aliases(
     )
 
 
-def _queue_row(row: dict[str, str], coverage: _CoverageState) -> dict[str, str]:
+def _load_prior_review_counts(scan_history_path: Path) -> Counter[str]:
+    """Count real prior production-scan reviews per target alias.
+
+    ``results/scan_history.ndjson`` is this project's real target search
+    history (`docs/DECISIONS.md`'s HUNTER PROD DIRECTIVE names this as one
+    of the required durable-state concepts). A target already scanned by
+    this project's own pipeline is not novel; one never scanned is. This is
+    real, evidence-based novelty differentiation from actual search history,
+    not an invented weight — the adjustment itself reuses
+    ``target_selection_score``'s existing, already-approved
+    ``never_reviewed_target_boost`` / ``prior_review_penalty_per_entry`` /
+    ``max_prior_review_penalty`` config (`background_search.py`), not a new
+    ad hoc constant.
+
+    Returns an empty ``Counter`` (every target treated as never-reviewed) if
+    the history file does not exist yet -- a fresh checkout with no scan
+    history is a real "nothing reviewed yet" state, not a failure.
+    """
+
+    counts: Counter[str] = Counter()
+    if not scan_history_path.exists():
+        return counts
+    with scan_history_path.open(encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, start=1):
+            line = line.strip()
+            if not line:
+                continue
+            entry = json.loads(line)
+            if not isinstance(entry, dict):
+                raise ValueError(
+                    f"Invalid scan-history record at {scan_history_path}:{line_number}: "
+                    "expected a JSON object"
+                )
+            if entry.get("schema_version") != "prod_scan_history_v1":
+                raise ValueError(
+                    f"Invalid scan-history record at {scan_history_path}:{line_number}: "
+                    "unsupported or missing schema_version"
+                )
+            target_stem = str(entry.get("target_stem", "")).strip()
+            if not target_stem:
+                raise ValueError(
+                    f"Invalid scan-history record at {scan_history_path}:{line_number}: "
+                    "target_stem is required"
+                )
+            for match in _HIP_ALIAS_PATTERN.finditer(target_stem):
+                counts[f"HIP{match.group(1)}"] += 1
+    return counts
+
+
+def _prior_review_count_for_aliases(
+    aliases: frozenset[str], prior_review_counts: Counter[str]
+) -> int:
+    return max((prior_review_counts.get(alias, 0) for alias in aliases), default=0)
+
+
+def _queue_row(
+    row: dict[str, str],
+    coverage: _CoverageState,
+    prior_review_counts: Counter[str] | None = None,
+    priority_config: BackgroundPriorityConfig | None = None,
+) -> dict[str, str]:
     target_id = _target_id_from_row(row)
     aliases = _aliases_for_row(row)
     (
@@ -380,17 +455,10 @@ def _queue_row(row: dict[str, str], coverage: _CoverageState) -> dict[str, str]:
     publication_value = _publication_value(row)
     community_integration = 3.0
     storage_cost_penalty = 0.0
-    total_priority = (
-        scientific_novelty
-        + prior_significance
-        + followup_leverage
-        + data_quality
-        + method_advantage
-        + publication_value
-        + community_integration
-        + new_followup_balance
-        - storage_cost_penalty
+    prior_review_count = _prior_review_count_for_aliases(
+        aliases, prior_review_counts or Counter()
     )
+    active_priority_config = priority_config or load_background_priority_config()
     background_target = BackgroundTarget(
         target_id=target_id,
         track=Track.RADIO,
@@ -401,6 +469,27 @@ def _queue_row(row: dict[str, str], coverage: _CoverageState) -> dict[str, str]:
         observability_score=publication_value / 3.0,
         false_positive_probability=0.0,
         blocking_issue_count=0 if status != "metadata_discovery_required" else 1,
+    )
+    # Real, evidence-based novelty adjustment: a target this project's own
+    # pipeline has already scanned is not novel; one it hasn't is. Reuses
+    # target_selection_score's existing, already-approved config weights
+    # (never_reviewed_target_boost / prior_review_penalty_per_entry /
+    # max_prior_review_penalty) rather than inventing a new constant.
+    prior_review_adjustment = target_selection_score(
+        background_target,
+        config=active_priority_config,
+        prior_review_count=prior_review_count,
+    ) - target_priority_score(background_target, config=active_priority_config)
+    total_priority = (
+        scientific_novelty
+        + prior_significance
+        + followup_leverage
+        + data_quality
+        + method_advantage
+        + publication_value
+        + community_integration
+        + new_followup_balance
+        - storage_cost_penalty
     )
     notes = (
         "Metadata-first queue row. Raw download not authorized until product "
@@ -445,13 +534,22 @@ def _queue_row(row: dict[str, str], coverage: _CoverageState) -> dict[str, str]:
         "community_integration": _format_score(community_integration),
         "new_followup_balance": _format_score(new_followup_balance),
         "storage_cost_penalty": _format_score(storage_cost_penalty),
+        "prior_review_adjustment": _format_score(prior_review_adjustment),
         "total_priority": _format_score(total_priority),
+        "target_selection_score": _format_score(
+            target_selection_score(
+                background_target,
+                config=active_priority_config,
+                prior_review_count=prior_review_count,
+            )
+        ),
+        "priority_config_version": active_priority_config.config_version,
         "status": status,
         "notes": notes,
         "citations": DEFAULT_CITATIONS,
         "local_coverage_status": local_coverage_status,
         "background_target_priority_score": _format_score(
-            target_priority_score(background_target)
+            target_priority_score(background_target, config=active_priority_config)
         ),
         "source_hdf5_url": source_hdf5_url,
     }
@@ -466,6 +564,7 @@ def build_target_priority_queue(
     ),
     extra_size_preflight_report_paths: Sequence[Path] = (),
     extra_discovery_result_paths: Sequence[Path] = (),
+    scan_history_path: Path = Path("results/scan_history.ndjson"),
 ) -> list[dict[str, str]]:
     """Build sorted target-priority rows from committed metadata and status.
 
@@ -492,21 +591,24 @@ def build_target_priority_queue(
         ),
         discovery_result_paths=extra_discovery_result_paths,
     )
+    prior_review_counts = _load_prior_review_counts(scan_history_path)
+    priority_config = load_background_priority_config()
     queue_rows = [
-        _queue_row(row, coverage)
+        _queue_row(row, coverage, prior_review_counts, priority_config)
         for row in _load_seed_targets(seed_csv_path)
         if _target_id_from_row(row)
     ]
     rows_by_target: dict[str, dict[str, str]] = {}
     for queue_row in queue_rows:
         previous = rows_by_target.get(queue_row["target_id"])
-        if previous is None or float(queue_row["total_priority"]) > float(
-            previous["total_priority"]
+        if previous is None or float(queue_row["target_selection_score"]) > float(
+            previous["target_selection_score"]
         ):
             rows_by_target[queue_row["target_id"]] = queue_row
     rows = list(rows_by_target.values())
     rows.sort(
         key=lambda item: (
+            -float(item["target_selection_score"]),
             -float(item["total_priority"]),
             item["status"] != "queued_metadata_discovery",
             item["target_id"],
@@ -525,6 +627,7 @@ def write_target_priority_queue(
     ),
     extra_size_preflight_report_paths: Sequence[Path] = (),
     extra_discovery_result_paths: Sequence[Path] = (),
+    scan_history_path: Path = Path("results/scan_history.ndjson"),
 ) -> dict[str, Any]:
     """Write a target-priority queue CSV and return a compact summary."""
 
@@ -534,10 +637,15 @@ def write_target_priority_queue(
         size_preflight_report_path=size_preflight_report_path,
         extra_size_preflight_report_paths=extra_size_preflight_report_paths,
         extra_discovery_result_paths=extra_discovery_result_paths,
+        scan_history_path=scan_history_path,
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=TARGET_PRIORITY_QUEUE_FIELDS)
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=TARGET_PRIORITY_QUEUE_FIELDS,
+            lineterminator="\n",
+        )
         writer.writeheader()
         writer.writerows(rows)
     return target_priority_queue_summary(output_path)
@@ -572,6 +680,13 @@ def build_target_priority_manifest(
         for row in read_target_priority_queue(queue_path)
         if row.get("status") in include_statuses
     ]
+    rows.sort(
+        key=lambda row: (
+            -float(row["target_selection_score"]),
+            -float(row["total_priority"]),
+            row["target_id"],
+        )
+    )
     selected = rows[:max_targets]
     generated_at = generated_at_utc or datetime.now(UTC).isoformat()
     priorities = [float(row["total_priority"]) for row in selected]
@@ -588,8 +703,20 @@ def build_target_priority_manifest(
             "max_targets": max_targets,
             "include_statuses": list(include_statuses),
             "selected_count": len(selected),
+            "ranking_key": "target_selection_score",
+            "priority_config_versions": sorted(
+                {row["priority_config_version"] for row in selected}
+            ),
             "min_total_priority": min(priorities) if priorities else None,
             "max_total_priority": max(priorities) if priorities else None,
+            "min_target_selection_score": min(
+                (float(row["target_selection_score"]) for row in selected),
+                default=None,
+            ),
+            "max_target_selection_score": max(
+                (float(row["target_selection_score"]) for row in selected),
+                default=None,
+            ),
         },
         "targets": [
             {
@@ -601,6 +728,8 @@ def build_target_priority_manifest(
                 "queue_status": row["status"],
                 "local_coverage_status": row["local_coverage_status"],
                 "total_priority": float(row["total_priority"]),
+                "target_selection_score": float(row["target_selection_score"]),
+                "priority_config_version": row["priority_config_version"],
                 "background_target_priority_score": float(
                     row["background_target_priority_score"]
                 ),
@@ -650,6 +779,7 @@ def write_target_priority_manifest(
                 "rank": index,
                 "target_id": target["hip"],
                 "total_priority": target["total_priority"],
+                "target_selection_score": target["target_selection_score"],
             }
             for index, target in enumerate(manifest["targets"][:10], start=1)
         ],
@@ -876,11 +1006,14 @@ def target_priority_queue_summary(
         else False,
         "by_status": dict(sorted(by_status.items())),
         "by_search_category": dict(sorted(by_category.items())),
+        "ranking_key": "target_selection_score",
         "top_targets": [
             {
                 "rank": index,
                 "target_id": row["target_id"],
                 "total_priority": float(row["total_priority"]),
+                "target_selection_score": float(row["target_selection_score"]),
+                "priority_config_version": row["priority_config_version"],
                 "status": row["status"],
                 "search_category": row["search_category"],
                 "local_coverage_status": row["local_coverage_status"],
