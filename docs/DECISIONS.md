@@ -4838,3 +4838,21 @@ the manifest bytes against the SHA-256 in the creation event; execution refuses
 an app-version mismatch. These checks prevent edited targets or changed release
 logic from silently replacing the frozen search. The first smoke manifest was
 not executed; a new manifest must be created under the corrected version.
+
+# DECISION-164: Shell-Embedded Manifest Parsing Requires Fidelity Execution
+
+**Date:** 2026-07-19
+**Status:** Accepted
+**Implements:** First real Hunter run failure
+
+The first corrected real follow-up run failed before processing because the
+stream runner wrapped an embedded Python program in shell single quotes while
+also placing `LOCAL_DAT_ONLY` in nested single quotes. Shell parsing removed
+the inner quotes; Python received an undefined identifier and raised
+`NameError`. The lifecycle correctly recorded a non-zero resumable failure and
+did not acquire, score, or report anything. The sentinel assignment now uses a
+quote-safe double-quoted Python literal outside the f-string. A subprocess test
+executes the actual shell script in dry-run mode against a local-DAT-only
+manifest, replacing reliance on static script-text assertions for this dispatch
+path. The failed v1.2.38 search remains immutable and is not migrated to the
+corrected release.

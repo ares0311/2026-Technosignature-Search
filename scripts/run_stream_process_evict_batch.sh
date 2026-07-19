@@ -31,7 +31,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-VENV_PYTHON="${REPO_ROOT}/.venv/bin/python"
+VENV_PYTHON="${TECHNO_STREAM_PROCESS_PYTHON:-${REPO_ROOT}/.venv/bin/python}"
 OUT_DIR="${REPO_ROOT}/data/extended_corpus"
 RESULTS_DIR="${REPO_ROOT}/results"
 MANIFEST=""
@@ -94,6 +94,11 @@ fi
 
 if [[ -n "${STATUS_KEY:-}" && ! "${STATUS_KEY}" =~ ^[A-Za-z0-9_.-]+$ ]]; then
   log "[ERROR] --status-key may contain only letters, numbers, dot, underscore, and hyphen."
+  exit 2
+fi
+if [[ ! -x "${VENV_PYTHON}" ]]; then
+  log "[ERROR] Python interpreter not executable: ${VENV_PYTHON}"
+  log "[ERROR] Create .venv or set TECHNO_STREAM_PROCESS_PYTHON to the active project interpreter."
   exit 2
 fi
 
@@ -186,11 +191,11 @@ if limit > 0:
     rows = rows[:limit]
 for row in rows:
     hip = str(row.get("hip", "")).strip()
-    url = str(row.get("source_hdf5_url", "")).strip()
+    url = str(row.get("source_hdf5_url", "")).strip() or "LOCAL_DAT_ONLY"
     gb = row.get("estimated_download_gb", 0)
     if not hip:
         continue
-    print(f"{hip}\t{url or 'LOCAL_DAT_ONLY'}\t{gb or 0}")
+    print(f"{hip}\t{url}\t{gb or 0}")
 ' "${MANIFEST}" "${LIMIT}" > "${TARGET_ROWS_FILE}"
 
 TOTAL=$(wc -l < "${TARGET_ROWS_FILE}" | tr -d ' ')
