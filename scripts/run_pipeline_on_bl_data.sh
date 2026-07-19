@@ -3,7 +3,8 @@
 #
 # Usage:
 #   git pull origin main
-#   caffeinate -i bash scripts/run_pipeline_on_bl_data.sh [--dat-dir PATH] [--workers N]
+#   caffeinate -i bash scripts/run_pipeline_on_bl_data.sh \
+#       [--dat-dir PATH] [--results-dir PATH] [--workers N]
 #
 # Production role:
 #   This is the required bridge between local turboSETI .dat files and
@@ -38,6 +39,7 @@ log() { echo "[$(date '+%Y-%m-%dT%H:%M:%S')] $*"; }
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --dat-dir)   DATA_DIR="$2";   shift 2 ;;
+    --results-dir) RESULTS_DIR="$2"; shift 2 ;;
     --workers)   WORKERS="$2";    shift 2 ;;
     *) log "Unknown argument: $1"; exit 1 ;;
   esac

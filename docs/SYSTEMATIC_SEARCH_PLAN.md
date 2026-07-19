@@ -41,6 +41,18 @@ Step 0 or authorize another bulk download. Repository validation likewise uses
 `scripts/run_parallel_validation.py` with six xdist workers/six non-overlapping
 test shards.
 
+**Hunter lifecycle handoff — 2026-07-19:** `Create-New-Search` now freezes the
+exact new or follow-up selection in an immutable, hash-stamped durable search
+manifest; `Run-New-Search` consumes that manifest without regenerating targets,
+uses append-only lifecycle events, isolates output, and remains resumable;
+`Show-Follow-Ups` aggregates durable production ledgers with resolved identity,
+evidence, prior-run provenance, deterministic priority, and a recommended next
+action. The real local read-only registry resolves 555 follow-up targets from
+13 ledgers and excludes 210 rows whose target identity cannot be reliably tied
+to the candidate catalog. Focused end-to-end tests pass, but no new raw archive
+payload was downloaded: the first approval-gated real lifecycle run remains an
+acceptance gap, and the current 1,703-target catalog remains below 10,000.
+
 **Step 0 completion handoff — 2026-07-12 23:58 UTC:** PR #251/version 1.2.1
 is merged (`5507030`) and all six isolated shards completed 33/33 targets with
 198 combined downloads, 198 evictions, zero failures, zero warnings/errors,
@@ -62,8 +74,8 @@ acquisition is permanently outside project scope.
 | Track A known-explanation classification | ✅ Real, implemented |
 | Track B 9-condition gate | ✅ Real, implemented, conservative-by-construction |
 | Semisupervised anomaly/OOD calibration | ❌ Blocked — see Step 1 |
-| Operator UI hardening | ⚠️ Substantially underway — 12 operator-facing commands now default to compact summaries with `--json` opt-in, across three rounds of hardening: `prod-target-status`/`prod-follow-ups`/`prod-non-detections` (before 2026-07-09), `review-dashboard` (2026-07-09), and `track-b-unknown-candidate-gate`/`track-b-candidate-readiness`/`gbt-cadence-abacab-review`/`gbt-cadence-raw-status`/`adversarial-review-dossier`/`multi-modal-crossmatch-summary`/`prod-runs`/`scan-summary` (2026-07-10/11, 8 commands — the commit message for this round undercounted it as "7 more", missing `scan-summary`; verified by counting `_print_*` functions directly, not trusting the commit message). `escalation-gate-check`/`cross-target-rfi-summary`/`health`/`prod-show` deliberately left alone — small flat dicts, already scannable. See Step 2 for what a future audit should still check. |
-| Detection-optimized target selection algorithm | ⚠️ 3a now ranks by the real config-driven `target_selection_score`, including production-scan history; the policy sum remains auditable but is no longer the selector. Metadata discovery/size preflight cover the full 1,703-target HPRC queue. Successful batch-3 resume records bring completed controls to 805, leaving 358 sized URL-available targets (89.274678 GB) and 540 completed no-product results. This is an inventory, not raw-download approval. The universe remains below Hunter PROD's 10,000+ goal, and 3b remains gated on a real qualifying candidate. See Step 3a. |
+| Operator UI hardening | ⚠️ Substantially underway — the three Hunter lifecycle entry points now provide compact tables/progress, scriptable JSON where useful, clear non-zero failures, and actionable follow-up recommendations. Existing production surfaces remain as documented in Step 2. A real approval-gated `Run-New-Search` has not yet supplied terminal evidence. |
+| Detection-optimized target selection algorithm | ⚠️ 3a ranks by the real config-driven `target_selection_score`, including production-scan history; the policy sum remains auditable but is no longer the selector. `Create-New-Search` durably freezes exact selections, while follow-up mode ranks resolved real ledger evidence separately. Metadata discovery/size preflight cover the full 1,703-target HPRC queue. Successful batch-3 resume records bring completed controls to 805, leaving 358 sized URL-available targets (89.274678 GB) and 540 completed no-product results. This is an inventory, not raw-download approval. The universe remains below Hunter PROD's 10,000+ goal. See Step 3a. |
 | Extended-corpus completion | ✅ Complete — corrected v1.2.1 six-shard rerun finished 198/198 targets with zero download-task duplication. The full 215-target local corpus is at 10 Hz/s; ingestion removes 3,134 exact duplicate hit rows from 8,988 raw rows, leaving 5,854 unique triage rows and zero follow-up/escalation-ready candidates. See Step 0 completion below. |
 
 ---

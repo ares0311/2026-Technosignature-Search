@@ -13,6 +13,7 @@ The CLI is for reproducible review-packet generation. It does not claim a confir
 Use the project virtual environment:
 
 ```bash
+git pull origin main
 source .venv/bin/activate
 pip install -e ".[dev]"
 ```
@@ -20,8 +21,40 @@ pip install -e ".[dev]"
 After installation, the console script should be available as:
 
 ```bash
+git pull origin main
 .venv/bin/techno-search --help
 ```
+
+## Hunter Search Lifecycle
+
+The three top-level Hunter commands bind ranked selection to the exact data
+acquisition, processing, scoring, interpretation, provenance, and follow-up
+path. JSON under `results/searches/SEARCH-*/manifest.json` is the immutable
+system of record; the CSV emitted for searches over 100 targets is an operator
+review artifact only. Lifecycle state is append-only in `events.ndjson`.
+
+```bash
+git pull origin main
+.venv/bin/Create-New-Search --targets 100 --mode new
+.venv/bin/Run-New-Search
+.venv/bin/Show-Follow-Ups
+```
+
+Creation never downloads data. `Run-New-Search` consumes the newest incomplete
+search unless `--search-id` is supplied, never regenerates its targets, and
+returns exit 2 before any required raw acquisition. After reviewing the exact
+manifest and projected size, acquisition can be explicitly authorized:
+
+```bash
+git pull origin main
+caffeinate -i .venv/bin/Run-New-Search --search-id SEARCH-... --approve-acquisition
+```
+
+Failures append a resumable failure event and return non-zero; repeating the
+same command reuses the same run ID, partial download, local hit tables, and
+completed interpretation artifacts. `Show-Follow-Ups --json` provides the
+scriptable registry. Follow-up entries are unlabeled triage evidence, never
+positive labels, detections, expert review, or external-submission approval.
 
 ## Production Run UX
 
@@ -114,7 +147,7 @@ target rows. Target kind labels are best-effort local metadata labels only; a
 future committed target taxonomy is still required for reliable single-star,
 binary, and massive-body classification.
 
-These files are local citizen-science operations ledgers only. They do not
+These files are local scientific operations ledgers only. They do not
 constitute detection, discovery, expert review, peer review, external
 validation, or authorization for external submission.
 

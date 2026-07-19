@@ -27,7 +27,7 @@ def test_post_processing_is_scoped_to_each_chunk_target() -> None:
 def test_status_entries_are_per_shard_and_include_success_details() -> None:
     script = _script_text()
 
-    assert 'STATUS_KEY="stream_process_evict_batch__$(basename' in script
+    assert 'STATUS_KEY="${STATUS_KEY:-stream_process_evict_batch__$(basename' in script
     assert '"downloaded_targets": downloaded_names' in script
     assert '"evicted_targets": evicted_names' in script
     assert '"app_version": __version__' in script
@@ -51,3 +51,23 @@ def test_completed_targets_are_not_downloaded_again_on_resume() -> None:
     assert "existing .dat and candidate report; no re-download needed" in script
     assert '"already_processed_targets": already_processed_names' in script
     assert '"completed_count": int(os.environ["COMPLETED_COUNT"])' in script
+
+
+def test_hunter_search_can_isolate_results_and_reuse_existing_hit_tables() -> None:
+    script = _script_text()
+
+    assert '--results-dir) RESULTS_DIR="$2"' in script
+    assert '--out-dir) OUT_DIR="$2"' in script
+    assert '--results-dir "${RESULTS_DIR}"' in script
+    assert "target_has_hit_table" in script
+    assert "existing .dat will be scored into this search" in script
+    assert "source_url_missing_and_no_local_dat" in script
+    assert "pipeline_evidence_incomplete" in script
+
+
+def test_explicit_hunter_status_key_keeps_real_acquisition_visible() -> None:
+    script = _script_text()
+
+    assert '--status-key) STATUS_KEY="$2"' in script
+    assert 'if [[ -n "${STATUS_KEY:-}" ]]; then' in script
+    assert "Required Hunter acquisition status record failed" in script

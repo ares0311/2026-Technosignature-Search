@@ -1,6 +1,6 @@
 """Technosignature-interest candidate search tools."""
 
-__version__ = "1.2.36"
+__version__ = "1.2.37"
 
 from techno_search.ai_hardening_gate import (
     AI_HARDENING_GATE_DISCLAIMER,

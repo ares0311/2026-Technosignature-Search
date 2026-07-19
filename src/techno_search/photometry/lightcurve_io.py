@@ -1,9 +1,10 @@
 """Real Kepler/K2/TESS light curve loading (Phase 2: Transit Photometry).
 
 Loads real, locally present light curve FITS files using lightkurve's public
-``lightkurve.read()`` entry point, which auto-detects the Kepler/K2/TESS/
-generic light curve format from the FITS header. This module never fabricates
-or downloads a light curve on its own -- callers supply a real local file,
+``lightkurve.read()`` entry point for recognized Kepler/K2/TESS products and
+its documented ``io.generic.read_generic_lightcurve()`` path for explicit
+TIME/FLUX/FLUX_ERR tables. This module never fabricates or downloads a light
+curve on its own -- callers supply a real local file,
 typically obtained via ``lightkurve.search_lightcurve(...).download()`` run on
 a machine with real NASA MAST network access (this sandbox cannot reach
 MAST; verified live, not assumed -- ``https://mast.stsci.edu`` returns a
@@ -35,7 +36,19 @@ def load_lightcurve_file(path: Path) -> LightCurve:
         msg = f"Light curve file not found: {path}"
         raise FileNotFoundError(msg)
 
-    loaded = lk.read(str(path))
+    try:
+        loaded = lk.read(str(path))
+    except lk.LightkurveError:
+        time_format = _generic_fits_time_format(path)
+        if time_format is None:
+            raise
+        loaded = lk.io.generic.read_generic_lightcurve(
+            filename=str(path),
+            time_column="time",
+            flux_column="flux",
+            flux_err_column="flux_err",
+            time_format=time_format,
+        )
     if not isinstance(loaded, lk.LightCurve):
         msg = (
             f"{path} did not load as a LightCurve (got {type(loaded).__name__}). "
@@ -44,3 +57,19 @@ def load_lightcurve_file(path: Path) -> LightCurve:
         )
         raise TypeError(msg)
     return loaded
+
+
+def _generic_fits_time_format(path: Path) -> str | None:
+    """Return an explicit generic-table time format, or fail closed."""
+    from astropy.io import fits
+
+    try:
+        with fits.open(path, memmap=False) as hdus:
+            table_hdu = hdus[1]
+            names = {str(name).lower() for name in (table_hdu.columns.names or [])}
+            if not {"time", "flux", "flux_err"}.issubset(names):
+                return None
+            unit = str(table_hdu.columns["TIME"].unit or "").strip().lower()
+    except (OSError, IndexError, KeyError, TypeError):
+        return None
+    return unit if unit in {"jd", "mjd", "bkjd", "btjd"} else None

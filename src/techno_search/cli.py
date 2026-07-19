@@ -1672,7 +1672,7 @@ def _print_production_follow_ups(data: dict[str, Any], out: TextIO) -> None:
     if not entries:
         print("Follow-up candidates: none", file=out)
         return
-    print("Follow-up | Target | Track | Score | SNR | Pathway", file=out)
+    print("Follow-up | Target | Track | Score | SNR | Pathway | Recommended next action", file=out)
     for entry in entries:
         print(
             " | ".join(
@@ -1683,6 +1683,7 @@ def _print_production_follow_ups(data: dict[str, Any], out: TextIO) -> None:
                     _format_score(entry.get("score")),
                     _format_score(entry.get("snr")),
                     str(entry.get("pathway", "")),
+                    str(entry.get("recommended_next_action", "")),
                 ]
             ),
             file=out,

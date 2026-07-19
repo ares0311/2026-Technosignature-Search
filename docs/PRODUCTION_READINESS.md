@@ -2,10 +2,44 @@
 
 **Last updated:** 2026-07-19
 **Current phase:** Phase 0 complete; Phases 1-5 have real, tested baselines.
-Hunter PROD remains open: target ranking is now wired to real search history,
-while durable create/run/follow-up lifecycle unification and a 10,000+ viable
-candidate universe remain gaps.
-**Current app version:** 1.2.36
+Hunter PROD remains open: the durable create/run/follow-up lifecycle is now
+implemented and locally verified, but its first approval-gated real acquisition
+run has not executed and the viable candidate universe remains below 10,000.
+**Current app version:** 1.2.37
+
+**Hunter durable lifecycle closes the selection-to-run bridge — 2026-07-19:**
+version 1.2.37 adds the required `Create-New-Search`, `Run-New-Search`, and
+`Show-Follow-Ups` shell entry points. A create operation freezes the exact
+ranked targets, candidate-catalog hash, selection configuration, projected
+storage, app version, and pipeline contract in an immutable JSON manifest;
+append-only events preserve every execution attempt and failure. The run path
+consumes only that manifest, isolates its pipeline results, reuses local hit
+tables without re-downloading, fails closed before raw acquisition unless the
+operator explicitly approves the reviewed manifest, records real acquisition
+status, executes the existing deterministic preprocessing/scoring/composite
+interpretation stack, and appends target history only for outputs that resolve
+back to selected identities. Follow-up mode aggregates durable run ledgers,
+resolves HIP identity against the candidate catalog, preserves per-run
+provenance, penalizes cross-target RFI/missing drift evidence, and exposes a
+deterministic recommended next action. Newly written follow-up ledgers use
+schema v2 and `needs_local_deterministic_follow_up_triage`, replacing the
+misaligned legacy citizen-science-review status. Focused tests and a real local
+read-only exercise verify 1,703 catalog targets, 358 eligible new targets, and
+555 identity-resolved follow-up targets across 13 ledgers. No raw acquisition
+was authorized or run, so the first real `Run-New-Search` execution remains an
+honest PROD acceptance gap; the 1,703-target universe also remains below the
+Hunter 10,000+ goal.
+
+The same release fixes a real photometry compatibility failure exposed by the
+canonical clean-environment validation: Lightkurve 2.5.1 correctly rejects the
+project's generic TIME/FLUX/FLUX_ERR FITS fixture through its mission-product
+auto-reader, whereas the previously installed 2.6.0 happened to accept it.
+The loader now keeps `lightkurve.read()` for recognized Kepler/K2/TESS products
+and uses Lightkurve's documented generic FITS reader only when the file declares
+all three required columns and an explicit supported FITS time unit. It never
+guesses an absent time system or substitutes data. The six previously failing
+photometry integration/crossmatch tests pass against the lock-resolved 2.5.1
+environment.
 
 **Hunter target selection uses the real config-driven rank key — 2026-07-19:**
 version 1.2.36 closes the highest-priority target-selection gap recorded in the
