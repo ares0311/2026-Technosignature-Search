@@ -5,7 +5,20 @@
 Hunter PROD remains open: the durable create/run/follow-up lifecycle is now
 implemented and locally verified, but its first approval-gated real acquisition
 run has not executed and the viable candidate universe remains below 10,000.
-**Current app version:** 1.2.37
+**Current app version:** 1.2.38
+
+**First real Hunter create smoke test catches provenance/UI defects before
+execution — 2026-07-19:** version 1.2.38 follows the merged lifecycle with
+fail-closed corrections found by creating a real one-target follow-up search
+from the existing local catalog/ledgers. No acquisition or scoring ran. The
+creation table incorrectly preferred the catalog `target_selection_score` over
+the actual `follow_up_priority`; the durable manifest itself had the correct
+rank key. More materially, when multiple ledgers resolved to the same target,
+the registry retained the maximum priority but could display the first, lower-
+priority evidence row. The registry now moves the evidence/action fields with
+the winning priority. Search loading also verifies the immutable manifest hash
+against its creation event, and execution refuses an app-version mismatch so
+edited manifests or changed release logic cannot be substituted silently.
 
 **Hunter durable lifecycle closes the selection-to-run bridge — 2026-07-19:**
 version 1.2.37 adds the required `Create-New-Search`, `Run-New-Search`, and

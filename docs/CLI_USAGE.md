@@ -55,6 +55,9 @@ same command reuses the same run ID, partial download, local hit tables, and
 completed interpretation artifacts. `Show-Follow-Ups --json` provides the
 scriptable registry. Follow-up entries are unlabeled triage evidence, never
 positive labels, detections, expert review, or external-submission approval.
+The run command also verifies the manifest hash and creating app version before
+execution; if either differs, create a new immutable search rather than editing
+or silently migrating the existing target set.
 
 ## Production Run UX
 

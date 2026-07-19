@@ -4819,3 +4819,22 @@ columns and one of the supported explicit time systems (`jd`, `mjd`, `bkjd`,
 or `btjd`). Missing/ambiguous metadata still fails loudly. This restores the
 six real photometry integration/crossmatch tests without a version pin, data
 substitution, or guessed time base.
+
+# DECISION-163: Follow-Up Displays Must Match The Evidence That Won Ranking
+
+**Date:** 2026-07-19
+**Status:** Accepted
+**Implements:** Real Hunter creation smoke-test findings
+
+A real one-target follow-up creation selected the correct target and wrote the
+correct `follow_up_priority` into its immutable manifest, but the terminal table
+displayed that targets lower catalog score. Inspection also showed that the
+registry took the maximum priority across repeated durable ledgers without
+moving the displayed evidence/action fields to the ledger entry that supplied
+that maximum. The CLI now selects the score column by search mode, and registry
+evidence/action fields move atomically with a newly winning priority while all
+source-run provenance remains preserved. Search loading additionally verifies
+the manifest bytes against the SHA-256 in the creation event; execution refuses
+an app-version mismatch. These checks prevent edited targets or changed release
+logic from silently replacing the frozen search. The first smoke manifest was
+not executed; a new manifest must be created under the corrected version.
