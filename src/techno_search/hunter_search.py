@@ -34,8 +34,10 @@ from techno_search.target_priority_queue import (
     read_target_priority_queue,
 )
 
-SEARCH_MANIFEST_SCHEMA_VERSION = "hunter_search_manifest_v1"
-SEARCH_EVENT_SCHEMA_VERSION = "hunter_search_event_v1"
+SEARCH_MANIFEST_SCHEMA_VERSION = "hunter_search_manifest_v2"
+LEGACY_SEARCH_MANIFEST_SCHEMA_VERSIONS = frozenset({"hunter_search_manifest_v1"})
+SEARCH_EVENT_SCHEMA_VERSION = "hunter_search_event_v2"
+LEGACY_SEARCH_EVENT_SCHEMA_VERSIONS = frozenset({"hunter_search_event_v1"})
 FOLLOW_UP_REGISTRY_SCHEMA_VERSION = "hunter_follow_up_registry_v1"
 SEARCH_DISCLAIMER = (
     "Hunter searches and follow-up records are local scientific workflow artifacts. "
@@ -111,6 +113,11 @@ def create_search(
             f"requested {target_count} targets but only {len(selected)} eligible {mode} "
             "targets are available; no partial search was created"
         )
+    selected = [_with_execution_contract(target, mode=mode) for target in selected]
+    execution_kind_counts: dict[str, int] = {}
+    for target in selected:
+        kind = str(target["execution_kind"])
+        execution_kind_counts[kind] = execution_kind_counts.get(kind, 0) + 1
 
     queue_sha = _sha256(queue_path)
     projected_gb = round(
@@ -141,6 +148,11 @@ def create_search(
             ),
             "deterministic_tie_breaker": "canonical_target_id",
             "projected_download_gb": projected_gb,
+            "execution_kind_counts": execution_kind_counts,
+            "follow_up_observation_fulfilled_count": sum(
+                bool(target["follow_up_observation_fulfilled"])
+                for target in selected
+            ),
             "partial_selection_allowed": False,
         },
         "pipeline": {
@@ -196,7 +208,10 @@ def load_search(searches_dir: Path, search_id: str) -> dict[str, Any]:
     if not manifest_path.is_file():
         raise SearchLifecycleError(f"search manifest not found: {manifest_path}")
     manifest = _load_json(manifest_path)
-    if manifest.get("schema_version") != SEARCH_MANIFEST_SCHEMA_VERSION:
+    if manifest.get("schema_version") not in {
+        SEARCH_MANIFEST_SCHEMA_VERSION,
+        *LEGACY_SEARCH_MANIFEST_SCHEMA_VERSIONS,
+    }:
         raise SearchLifecycleError(f"unsupported search manifest schema: {manifest_path}")
     if manifest.get("search_id") != search_id:
         raise SearchLifecycleError(f"search ID/path mismatch: {manifest_path}")
@@ -294,6 +309,10 @@ def run_search(
             "code_commit": git_commit(),
             "pipeline_workers": pipeline_workers,
             "chunk_size": chunk_size,
+            "execution_kind_counts": manifest["selection"]["execution_kind_counts"],
+            "follow_up_observation_fulfilled_count": manifest["selection"][
+                "follow_up_observation_fulfilled_count"
+            ],
         },
     )
     command = [
@@ -393,6 +412,10 @@ def run_search(
         "history_records_appended": history_records,
         "app_version": __version__,
         "candidate_report_config_versions": config_versions,
+        "execution_kind_counts": manifest["selection"]["execution_kind_counts"],
+        "follow_up_observation_fulfilled_count": manifest["selection"][
+            "follow_up_observation_fulfilled_count"
+        ],
     }
     _append_event(events_path, completion)
     return completion
@@ -515,6 +538,23 @@ def _select_new_targets(queue_path: Path, target_count: int) -> tuple[list[dict[
             }
         )
     return selected, viable_count
+
+
+def _with_execution_contract(target: Mapping[str, Any], *, mode: str) -> dict[str, Any]:
+    """State what data this search can process without overstating follow-up work."""
+    if mode == "new":
+        execution_kind = "novel_target_archive_processing"
+    elif str(target.get("source_hdf5_url", "")).strip():
+        execution_kind = "follow_up_archive_data_processing"
+    else:
+        execution_kind = "existing_data_reanalysis"
+    return {
+        **target,
+        "execution_kind": execution_kind,
+        # The current catalog does not prove that any archive URL is a later-epoch
+        # observation satisfying the recommended follow-up. Never infer that it is.
+        "follow_up_observation_fulfilled": False,
+    }
 
 
 def _validated_queue_rows(path: Path) -> list[dict[str, str]]:
@@ -705,7 +745,10 @@ def _load_events(path: Path, search_id: str) -> list[dict[str, Any]]:
             event = json.loads(raw)
         except json.JSONDecodeError as exc:
             raise SearchLifecycleError(f"invalid search event at {path}:{line_number}") from exc
-        if event.get("schema_version") != SEARCH_EVENT_SCHEMA_VERSION:
+        if event.get("schema_version") not in {
+            SEARCH_EVENT_SCHEMA_VERSION,
+            *LEGACY_SEARCH_EVENT_SCHEMA_VERSIONS,
+        }:
             raise SearchLifecycleError(f"unsupported search event at {path}:{line_number}")
         if event.get("search_id") != search_id:
             raise SearchLifecycleError(f"search event ID mismatch at {path}:{line_number}")
@@ -723,6 +766,8 @@ def _write_review_csv(path: Path, targets: list[dict[str, Any]]) -> None:
         "estimated_download_gb",
         "target_selection_score",
         "follow_up_priority",
+        "execution_kind",
+        "follow_up_observation_fulfilled",
         "selection_reason",
         "recommended_next_action",
     ]

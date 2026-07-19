@@ -3,9 +3,28 @@
 **Last updated:** 2026-07-19
 **Current phase:** Phase 0 complete; Phases 1-5 have real, tested baselines.
 Hunter PROD remains open: the durable create/run/follow-up lifecycle is now
-implemented and locally verified, but its first approval-gated real acquisition
-run has not executed and the viable candidate universe remains below 10,000.
-**Current app version:** 1.2.39
+implemented and locally verified through existing-data reanalysis, but a
+new-target approval-gated raw acquisition and a later-epoch follow-up observation
+have not executed, and the viable candidate universe remains below 10,000.
+**Current app version:** 1.2.40
+
+**First real Hunter end-to-end run completes; data-action provenance is
+corrected — 2026-07-19:** search `SEARCH-20260719T133145Z-3650F32A` froze
+HIP103096 from 555 resolved follow-up targets and completed as production run
+`RUN-2026-07-19_133153Z-BGK7-hunter-search`. It reused one retained real DAT
+table without downloading raw data, generated an isolated candidate report,
+ran deterministic composite interpretation, wrote one complete target outcome,
+appended one search-history record, and durably registered one follow-up with
+score 0.997193 and the recommendation to repeat an ON/OFF cadence at a later
+epoch. The run does **not** fulfill that recommendation; it is an
+existing-evidence reanalysis. Version 1.2.40 stamps this distinction into the
+versioned v2 manifest and start/completion event contracts instead of allowing
+“follow-up run” to imply a new observation; v1 history remains readable but is
+not silently migrated. Post-run audit also found the acquisition summary falsely
+counted an evidence-complete target with no HDF5 present as an eviction. The
+runner now records newly processed, local-DAT reuse, and actual raw eviction as
+separate facts; the tracked status entry is corrected to zero raw payloads
+deleted and one retained-DAT reuse.
 
 **First real Hunter run fails loudly before work and exposes shell-dispatch
 bug — 2026-07-19:** version 1.2.39 fixes the next defect found by the real

@@ -4856,3 +4856,39 @@ executes the actual shell script in dry-run mode against a local-DAT-only
 manifest, replacing reliance on static script-text assertions for this dispatch
 path. The failed v1.2.38 search remains immutable and is not migrated to the
 corrected release.
+
+# DECISION-165: Follow-Up Reanalysis Is Not A New Follow-Up Observation
+
+**Date:** 2026-07-19
+**Status:** Accepted
+**Implements:** Real Hunter end-to-end audit and truthful acquisition provenance
+
+## Context
+
+The first successful real Hunter run reused HIP103096's retained DAT table,
+scored it into an isolated search, completed composite interpretation, and
+created a durable follow-up. Its recommended next action is a later-epoch
+ON/OFF cadence, which the run did not acquire. The acquisition summary also
+reported the target as “evicted” even though no HDF5 payload existed: the helper
+returned success for complete DAT/report evidence, and its caller treated all
+successes as raw deletions.
+
+## Decision
+
+The versioned `hunter_search_manifest_v2` and `hunter_search_event_v2` contracts
+record an explicit execution kind and whether the recommended follow-up
+observation was fulfilled. Existing local DAT processing is
+`existing_data_reanalysis` and never implies a new epoch. Version 1 artifacts
+remain readable as immutable history but cannot be executed by the changed app.
+Stream processing separately counts newly processed targets, existing-DAT
+reuse, previously completed targets, and actual raw-payload eviction. Completion
+depends on processing evidence, not on a deletion counter.
+
+## Consequences
+
+The real 1.2.39 search remains a valid completed deterministic reanalysis with
+one actionable follow-up, not evidence that the later-epoch observation
+occurred. Its tracked acquisition status records one local-DAT reuse and zero
+raw evictions. A new-target raw acquisition, an actual later-epoch follow-up,
+and expansion beyond the current 1,703-target universe remain separate Hunter
+PROD acceptance gaps.

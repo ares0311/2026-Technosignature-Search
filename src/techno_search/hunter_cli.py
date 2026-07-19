@@ -141,7 +141,7 @@ def _print_created_search(
     if len(targets) > 100:
         print(f"Review CSV: {manifest_dir / f'{search_id}.csv'}", file=out)
         return
-    print("Rank | Target | Score | GB | Selection reason", file=out)
+    print("Rank | Target | Score | GB | Execution | Selection reason", file=out)
     for rank, target in enumerate(targets, 1):
         score = (
             target.get("follow_up_priority", 0.0)
@@ -155,6 +155,7 @@ def _print_created_search(
                     str(target.get("hip", "")),
                     f"{float(score):.3f}",
                     f"{float(target.get('estimated_download_gb') or 0.0):.3f}",
+                    str(target.get("execution_kind", "")),
                     str(target.get("selection_reason", "")),
                 ]
             ),

@@ -214,6 +214,10 @@ DOWNLOADED_GB="0"
 DOWNLOADED_NAMES=()
 EVICTED_COUNT=0
 EVICTED_NAMES=()
+NEWLY_PROCESSED_COUNT=0
+NEWLY_PROCESSED_NAMES=()
+LOCAL_DAT_REUSE_COUNT=0
+LOCAL_DAT_REUSE_NAMES=()
 ALREADY_PROCESSED_COUNT=0
 ALREADY_PROCESSED_NAMES=()
 FAILED_COUNT=0
@@ -340,10 +344,12 @@ evict_target_if_processed() {
   fi
   local h5_count
   h5_count=$(find "${target_dir}" -maxdepth 1 -name '*.h5' | wc -l | tr -d ' ')
+  EVICTION_OCCURRED=0
   if [[ "${h5_count}" -eq 0 ]]; then
     return 0
   fi
   find "${target_dir}" -maxdepth 1 -name '*.h5' -delete
+  EVICTION_OCCURRED=1
   log "[EVICT] ${hip}: raw HDF5 payload deleted (report: $(basename "${report_hit}"))"
   return 0
 }
@@ -375,8 +381,15 @@ process_chunk() {
   done
   for hip in "${names_ref[@]}"; do
     if evict_target_if_processed "${hip}"; then
-      EVICTED_COUNT=$((EVICTED_COUNT + 1))
-      EVICTED_NAMES+=("${hip}")
+      NEWLY_PROCESSED_COUNT=$((NEWLY_PROCESSED_COUNT + 1))
+      NEWLY_PROCESSED_NAMES+=("${hip}")
+      if [[ "${EVICTION_OCCURRED}" -eq 1 ]]; then
+        EVICTED_COUNT=$((EVICTED_COUNT + 1))
+        EVICTED_NAMES+=("${hip}")
+      else
+        LOCAL_DAT_REUSE_COUNT=$((LOCAL_DAT_REUSE_COUNT + 1))
+        LOCAL_DAT_REUSE_NAMES+=("${hip}")
+      fi
     else
       FAILED_COUNT=$((FAILED_COUNT + 1))
       FAILED_NAMES+=("${hip}")
@@ -412,7 +425,10 @@ while IFS=$'\t' read -r hip url gb; do
   processed_in_run=$((processed_in_run + 1))
   log "[${processed_in_run}/${TOTAL}] ${hip}"
   if target_has_completed_evidence "${hip}"; then
-    evict_target_if_processed "${hip}" || true
+    if evict_target_if_processed "${hip}" && [[ "${EVICTION_OCCURRED}" -eq 1 ]]; then
+      EVICTED_COUNT=$((EVICTED_COUNT + 1))
+      EVICTED_NAMES+=("${hip}")
+    fi
     ALREADY_PROCESSED_COUNT=$((ALREADY_PROCESSED_COUNT + 1))
     ALREADY_PROCESSED_NAMES+=("${hip}")
     log "[DONE] ${hip}: existing .dat and candidate report; no re-download needed"
@@ -485,14 +501,16 @@ REPORT_COUNT=$(find "${RESULTS_DIR}" -name '*.manifest.json' 2>/dev/null | wc -l
 log "[DONE]  stream_process_evict batch complete"
 log "[INFO]  Targets attempted: ${processed_in_run}/${TOTAL}"
 log "[INFO]  Downloaded: ${DOWNLOADED_COUNT} (~${DOWNLOADED_GB}GB)"
+log "[INFO]  Newly processed: ${NEWLY_PROCESSED_COUNT}"
 log "[INFO]  Evicted (raw payload deleted after processing): ${EVICTED_COUNT}"
+log "[INFO]  Reused local DAT (no raw payload present): ${LOCAL_DAT_REUSE_COUNT}"
 log "[INFO]  Already processed (download skipped): ${ALREADY_PROCESSED_COUNT}"
 log "[INFO]  Failed: ${FAILED_COUNT}"
 log "[INFO]  Total .dat files now in ${OUT_DIR}: ${DAT_PRODUCED_COUNT}"
 log "[INFO]  Total candidate report manifests in ${RESULTS_DIR}: ${REPORT_COUNT}"
 
 RUN_OK=1
-COMPLETED_COUNT=$((EVICTED_COUNT + ALREADY_PROCESSED_COUNT))
+COMPLETED_COUNT=$((NEWLY_PROCESSED_COUNT + ALREADY_PROCESSED_COUNT))
 if [[ "${COMPLETED_COUNT}" -ne "${TOTAL}" || "${FAILED_COUNT}" -gt 0 ]]; then
   RUN_OK=0
 fi
@@ -521,7 +539,9 @@ if [[ "${RECORD_STATUS}" -eq 0 ]]; then
 elif [[ -x "${TECHNO_SEARCH_BIN}" ]]; then
   SUMMARY_JSON="$(
     DOWNLOADED_NAMES="$(printf '%s\n' "${DOWNLOADED_NAMES[@]:-}")" \
+    NEWLY_PROCESSED_NAMES="$(printf '%s\n' "${NEWLY_PROCESSED_NAMES[@]:-}")" \
     EVICTED_NAMES="$(printf '%s\n' "${EVICTED_NAMES[@]:-}")" \
+    LOCAL_DAT_REUSE_NAMES="$(printf '%s\n' "${LOCAL_DAT_REUSE_NAMES[@]:-}")" \
     ALREADY_PROCESSED_NAMES="$(printf '%s\n' "${ALREADY_PROCESSED_NAMES[@]:-}")" \
     FAILED_NAMES="$(printf '%s\n' "${FAILED_NAMES[@]:-}")" \
     FAILED_REASONS="$(printf '%s\n' "${FAILED_REASONS[@]:-}")" \
@@ -530,7 +550,9 @@ elif [[ -x "${TECHNO_SEARCH_BIN}" ]]; then
     ATTEMPTED="${processed_in_run}" \
     DOWNLOADED_COUNT="${DOWNLOADED_COUNT}" \
     DOWNLOADED_GB="${DOWNLOADED_GB}" \
+    NEWLY_PROCESSED_COUNT="${NEWLY_PROCESSED_COUNT}" \
     EVICTED_COUNT="${EVICTED_COUNT}" \
+    LOCAL_DAT_REUSE_COUNT="${LOCAL_DAT_REUSE_COUNT}" \
     ALREADY_PROCESSED_COUNT="${ALREADY_PROCESSED_COUNT}" \
     COMPLETED_COUNT="${COMPLETED_COUNT}" \
     FAILED_COUNT="${FAILED_COUNT}" \
@@ -552,7 +574,9 @@ def _lines(name):
 failed_names = _lines("FAILED_NAMES")
 failed_reasons = _lines("FAILED_REASONS")
 downloaded_names = _lines("DOWNLOADED_NAMES")
+newly_processed_names = _lines("NEWLY_PROCESSED_NAMES")
 evicted_names = _lines("EVICTED_NAMES")
+local_dat_reuse_names = _lines("LOCAL_DAT_REUSE_NAMES")
 already_processed_names = _lines("ALREADY_PROCESSED_NAMES")
 summary = {
     "ok": os.environ["RUN_OK"] == "1",
@@ -565,8 +589,12 @@ summary = {
     "downloaded_count": int(os.environ["DOWNLOADED_COUNT"]),
     "downloaded_gb": float(os.environ["DOWNLOADED_GB"]),
     "downloaded_targets": downloaded_names,
+    "newly_processed_count": int(os.environ["NEWLY_PROCESSED_COUNT"]),
+    "newly_processed_targets": newly_processed_names,
     "evicted_count": int(os.environ["EVICTED_COUNT"]),
     "evicted_targets": evicted_names,
+    "local_dat_reuse_count": int(os.environ["LOCAL_DAT_REUSE_COUNT"]),
+    "local_dat_reuse_targets": local_dat_reuse_names,
     "already_processed_count": int(os.environ["ALREADY_PROCESSED_COUNT"]),
     "already_processed_targets": already_processed_names,
     "completed_count": int(os.environ["COMPLETED_COUNT"]),

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 from datetime import UTC, datetime
 from io import StringIO
@@ -28,7 +29,13 @@ from techno_search.production_scan import ProductionScanResult
 from techno_search.target_priority_queue import TARGET_PRIORITY_QUEUE_FIELDS
 
 
-def _write_queue(path: Path, count: int, *, status: str = "raw_download_approval_required") -> None:
+def _write_queue(
+    path: Path,
+    count: int,
+    *,
+    status: str = "raw_download_approval_required",
+    include_source_url: bool = True,
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=TARGET_PRIORITY_QUEUE_FIELDS)
@@ -57,7 +64,11 @@ def _write_queue(path: Path, count: int, *, status: str = "raw_download_approval
                         else "searched_by_project"
                     ),
                     "background_target_priority_score": "0.5",
-                    "source_hdf5_url": f"https://example.test/{target_id}.h5",
+                    "source_hdf5_url": (
+                        f"https://example.test/{target_id}.h5"
+                        if include_source_url
+                        else ""
+                    ),
                     "notes": "test row",
                 }
             )
@@ -123,6 +134,9 @@ def test_create_new_search_freezes_exact_ranked_targets(tmp_path: Path) -> None:
     assert manifest["candidate_catalog"]["candidate_count"] == 3
     assert manifest["candidate_catalog"]["viable_candidate_count"] == 3
     assert manifest["selection"]["projected_download_gb"] == 0.5
+    assert manifest["selection"]["execution_kind_counts"] == {
+        "novel_target_archive_processing": 2
+    }
     loaded = load_search(tmp_path / "searches", manifest["search_id"])
     assert loaded["status"] == "pending"
     assert [event["event"] for event in loaded["events"]] == ["created"]
@@ -203,6 +217,37 @@ def test_load_search_rejects_manifest_tampering(tmp_path: Path) -> None:
 
     with pytest.raises(SearchLifecycleError, match="manifest hash"):
         load_search(searches, manifest["search_id"])
+
+
+def test_load_search_preserves_read_access_to_v1_history(tmp_path: Path) -> None:
+    queue = tmp_path / "queue.csv"
+    searches = tmp_path / "searches"
+    _write_queue(queue, 1)
+    manifest = create_search(
+        target_count=1,
+        mode="new",
+        queue_path=queue,
+        searches_dir=searches,
+        search_id="SEARCH-20260719T123000Z-A1B2C3D4",
+    )
+    search_dir = searches / manifest["search_id"]
+    manifest_path = search_dir / "manifest.json"
+    legacy_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    legacy_manifest["schema_version"] = "hunter_search_manifest_v1"
+    manifest_path.write_text(
+        json.dumps(legacy_manifest, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    events_path = search_dir / "events.ndjson"
+    event = json.loads(events_path.read_text(encoding="utf-8"))
+    event["schema_version"] = "hunter_search_event_v1"
+    event["manifest_sha256"] = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+    events_path.write_text(json.dumps(event, sort_keys=True) + "\n", encoding="utf-8")
+
+    loaded = load_search(searches, manifest["search_id"])
+
+    assert loaded["status"] == "pending"
+    assert loaded["manifest"]["schema_version"] == "hunter_search_manifest_v1"
 
 
 def test_run_search_refuses_changed_app_version(
@@ -383,6 +428,36 @@ def test_follow_up_registry_resolves_identity_and_recommends_action(tmp_path: Pa
     assert entry["follow_up_priority"] == 0.45
     assert "cross-target RFI" in entry["recommended_next_action"]
     assert entry["prior_search_provenance"][0]["run_id"].startswith("RUN-")
+
+
+def test_follow_up_search_marks_existing_data_as_reanalysis_not_new_observation(
+    tmp_path: Path,
+) -> None:
+    queue = tmp_path / "queue.csv"
+    scans = tmp_path / "scans"
+    _write_queue(
+        queue,
+        1,
+        status="already_acquired_local_cache",
+        include_source_url=False,
+    )
+    _write_follow_up_ledger(scans, "capture_HIP990000_0001")
+
+    manifest = create_search(
+        target_count=1,
+        mode="follow-up",
+        queue_path=queue,
+        scans_dir=scans,
+        searches_dir=tmp_path / "searches",
+        search_id="SEARCH-20260719T123000Z-A1B2C3D4",
+    )
+
+    assert manifest["targets"][0]["execution_kind"] == "existing_data_reanalysis"
+    assert manifest["targets"][0]["follow_up_observation_fulfilled"] is False
+    assert manifest["selection"]["execution_kind_counts"] == {
+        "existing_data_reanalysis": 1
+    }
+    assert manifest["selection"]["follow_up_observation_fulfilled_count"] == 0
 
 
 def test_follow_up_registry_reads_legacy_v1_ledgers(tmp_path: Path) -> None:
