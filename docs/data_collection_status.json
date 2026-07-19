@@ -119,6 +119,37 @@
       ],
       "total": 1
     },
+    "hunter_search__SEARCH-20260719T133145Z-3650F32A": {
+      "acquisition_mode": "stream_process_evict",
+      "already_processed_count": 0,
+      "already_processed_targets": [],
+      "app_version": "1.2.39",
+      "candidate_report_manifests_total": 1,
+      "completed_count": 1,
+      "dat_files_total": 806,
+      "downloaded_count": 0,
+      "downloaded_gb": 0.0,
+      "downloaded_targets": [],
+      "evicted_count": 0,
+      "evicted_targets": [],
+      "local_dat_reuse_count": 1,
+      "local_dat_reuse_targets": [
+        "HIP103096"
+      ],
+      "newly_processed_count": 1,
+      "newly_processed_targets": [
+        "HIP103096"
+      ],
+      "failed_count": 0,
+      "failed_targets": [],
+      "last_run_utc": "2026-07-19T13:31:55.932875+00:00",
+      "manifest": "results/searches/SEARCH-20260719T133145Z-3650F32A/manifest.json",
+      "ok": true,
+      "raw_retention_policy": "evicted_after_candidate_report_generation",
+      "status_note": "Corrected before publication: the retained DAT was reprocessed; no raw HDF5 payload existed or was deleted.",
+      "targets_attempted": 1,
+      "total_targets_in_manifest": 1
+    },
     "stream_process_evict_batch": {
       "acquisition_mode": "stream_process_evict",
       "candidate_report_manifests_total": 237,

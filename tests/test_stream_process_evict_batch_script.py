@@ -67,6 +67,10 @@ def test_hunter_search_can_isolate_results_and_reuse_existing_hit_tables() -> No
     assert "existing .dat will be scored into this search" in script
     assert "source_url_missing_and_no_local_dat" in script
     assert "pipeline_evidence_incomplete" in script
+    assert 'EVICTION_OCCURRED=1' in script
+    assert 'LOCAL_DAT_REUSE_COUNT=$((LOCAL_DAT_REUSE_COUNT + 1))' in script
+    assert 'COMPLETED_COUNT=$((NEWLY_PROCESSED_COUNT + ALREADY_PROCESSED_COUNT))' in script
+    assert '"local_dat_reuse_targets": local_dat_reuse_names' in script
 
 
 def test_explicit_hunter_status_key_keeps_real_acquisition_visible() -> None:
@@ -116,3 +120,51 @@ def test_local_dat_only_manifest_executes_real_dry_run_dispatch(tmp_path: Path) 
 
     assert result.returncode == 0, result.stderr
     assert "Would process 1 targets" in result.stdout
+
+
+def test_completed_local_evidence_is_not_reported_as_raw_eviction(tmp_path: Path) -> None:
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "targets": [
+                    {
+                        "hip": "HIP123",
+                        "source_hdf5_url": "",
+                        "estimated_download_gb": None,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    target_dir = tmp_path / "data" / "HIP123"
+    target_dir.mkdir(parents=True)
+    (target_dir / "capture.dat").write_text("", encoding="utf-8")
+    report_dir = tmp_path / "results" / "capture"
+    report_dir.mkdir(parents=True)
+    (report_dir / "capture.manifest.json").write_text("{}\n", encoding="utf-8")
+
+    result = subprocess.run(
+        [
+            "bash",
+            str(SCRIPT_PATH),
+            "--manifest",
+            str(manifest),
+            "--out-dir",
+            str(tmp_path / "data"),
+            "--results-dir",
+            str(tmp_path / "results"),
+            "--log-file",
+            str(tmp_path / "run.log"),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "TECHNO_STREAM_PROCESS_PYTHON": sys.executable},
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "Newly processed: 0" in result.stdout
+    assert "Evicted (raw payload deleted after processing): 0" in result.stdout
+    assert "Already processed (download skipped): 1" in result.stdout
