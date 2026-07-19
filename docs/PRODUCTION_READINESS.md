@@ -6,7 +6,41 @@ implementations. Remaining gaps per phase are either genuinely blocked on
 real data/network access the agent's sandbox cannot reach, or correctly
 deferred pending a surviving candidate (see the Phase 1-5 tables below for
 specifics).
-**Current app version:** 1.2.34
+**Current app version:** 1.2.35
+
+**Two more real silent-degradation bugs found and fixed — 2026-07-18:** a
+targeted follow-on audit for the same "fails silently instead of loudly"
+class DECISION-157 found turned up two more real, traced (not assumed)
+bugs. (1) `scripts/run_production_scan.sh`'s `review-dashboard` call was
+missing `--json`, the same missing-flag pattern as DECISION-157's
+`scan-summary` bug — but worse: `review-dashboard` defaulted to JSON output
+until a 2026-07-09 hardening pass flipped its default to a compact
+human-readable table (docs/SYSTEMATIC_SEARCH_PLAN.md Step 2), and the shell
+script was never updated to match, so this regression has been live for
+over a week. Live-verified against the real local `results/` corpus: the
+real dashboard reports `needs_attention=yes` (590 follow-up candidates, 545
+cross-target-RFI flags), but the script's `json.load()` on the un-flagged
+text output raises `JSONDecodeError`, which the caught-and-ignored fallback
+silently turns into `False` — printing "review-dashboard: OK" instead of
+the real "NEEDS ATTENTION" warning, and corrupting the persisted
+`${RUN_ID}_review_dashboard.json` artifact with non-JSON text. Fixed by
+adding `--json`. (2) `multi_epoch.compare_epochs()` wrapped an entire
+per-epoch `.dat`-file read+normalize loop in `except Exception: pass`,
+silently dropping every hit from any epoch whose file failed to parse --
+while still counting that epoch in `total_epochs_checked` (`len(dat_files)`,
+unconditionally). A single corrupt/unreadable epoch file therefore
+silently deflated `multi_epoch_persistence_score` for a real recurring
+signal, with no visible error, and that score is injected as a real Track
+A/B feature (`pipeline_runner.py`). Fixed: failed epochs are now recorded
+in a new `failed_epoch_ids` field (surfaced in `as_dict()` and in
+candidate provenance) and excluded from the `total_epochs_checked`
+denominator, so a parse failure can no longer silently understate
+persistence evidence. Neither bug changed any existing candidate ledger's
+recorded outcome (no historical `review_dashboard.json` or multi-epoch
+persistence score is retroactively corrected) -- both are forward-looking
+correctness fixes with new regression tests
+(`tests/test_production_scan.py::test_run_production_scan_script_calls_review_dashboard_with_json_flag`,
+`tests/test_multi_epoch.py::TestCompareEpochs::test_unreadable_epoch_is_reported_not_silently_dropped`).
 
 **Step 3a batch 2 downloaded, processed, and evicted — 2026-07-18:** the
 same six-shard pipeline ran again against `step3a_batch2` (194 targets,

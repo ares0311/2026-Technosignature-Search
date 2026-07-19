@@ -182,6 +182,27 @@ def test_run_production_scan_script_calls_scan_summary_with_json_flag() -> None:
     assert 'scan-summary --json "${RESULTS_BASE}"' in script_text
 
 
+def test_run_production_scan_script_calls_review_dashboard_with_json_flag() -> None:
+    """`review-dashboard` without --json prints a compact operator table, not JSON.
+
+    Since the 2026-07-09 hardening pass gave `review-dashboard` the same
+    compact-by-default / --json-opt-in shape as `scan-summary` (see
+    docs/SYSTEMATIC_SEARCH_PLAN.md Step 2), this script's `review-dashboard`
+    call -- written before that change, when JSON was still the default --
+    was never updated to pass --json. The script pipes its output straight
+    into a `json.load()` call and silently falls back to `False` (i.e.
+    "OK") on decode failure, which is worse than a visible "?": a real
+    `needs_attention: true` result (verified live against the real local
+    results/ corpus, which reports needs_attention=yes with hundreds of
+    follow-up candidates) is misreported as "review-dashboard: OK" instead
+    of surfacing the real escalation-relevant state. Also corrupts the
+    persisted `${RUN_ID}_review_dashboard.json` artifact with a
+    human-readable table instead of the JSON its filename promises.
+    """
+    script_text = RUN_PRODUCTION_SCAN_SCRIPT.read_text(encoding="utf-8")
+    assert 'review-dashboard --json --results-dir "${RESULTS_BASE}"' in script_text
+
+
 def test_run_production_scan_fails_closed_without_candidates(tmp_path: Path) -> None:
     results_dir = tmp_path / "results"
     scans_dir = tmp_path / "scans"

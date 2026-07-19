@@ -417,7 +417,7 @@ info "Cross-target RFI flagged: ${FLAGGED}"
 
 # review-dashboard
 set +e
-DASH_JSON=$("${TECHNO_SEARCH}" review-dashboard --results-dir "${RESULTS_BASE}" 2>&1)
+DASH_JSON=$("${TECHNO_SEARCH}" review-dashboard --json --results-dir "${RESULTS_BASE}" 2>&1)
 set -e
 echo "${DASH_JSON}" | tee "${REVIEW_DASHBOARD_PATH}" >/dev/null
 NEEDS_ATTENTION=$(echo "${DASH_JSON}" | "${PYTHON}" \
