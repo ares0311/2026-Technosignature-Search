@@ -227,3 +227,29 @@ total already-acquired, 751 remaining). The consolidated approval manifest
 is now regenerated to 751 targets (~189.10GB). See
 `docs/PRODUCTION_READINESS.md` for the full result and a real
 `scan-summary`/`--json` bug this run surfaced and fixed.
+
+**Step 3a batch 3 proposed — 2026-07-18:** following the same pattern as
+batches 1-2 (DECISION-157, DECISION-158), `local_coverage_step3a_batch3_manifest.json`
+proposes the next bounded batch from the 557-target `raw_download_approval_required`
+queue left after batch 2: the top targets by `total_priority` (descending,
+stable order) that fit within the 50 GB budget without exceeding it. **199
+targets, 49.988002 GB** (loaded and summed directly from the manifest JSON,
+not estimated) — the 200th-ranked target would have pushed the total to
+50.252355 GB, over budget. Independently confirmed **zero overlap** against
+every target already recorded downloaded in `docs/data_collection_status.json`
+(union of `download_bl_extended_corpus`'s `reused_targets`/`downloaded_targets`
+plus every `ok: true` `stream_process_evict` run's `downloaded_targets` — 607
+targets tracked, 0 in common with this batch's 199).
+
+Sharded into six disjoint manifests,
+`local_coverage_step3a_batch3_shard{1-6}_manifest.json` (34/33/33/33/33/33
+targets, remainder distributed to shard 1), each summing exactly to its
+listed `estimated_download_gb` and together covering all 199 targets with no
+duplication. Dry-run validated via
+`python scripts/run_six_shard_downloads.py data_selection/batch_manifests/local_coverage_step3a_batch3 --dry-run`:
+6 shards, 199 targets, worst-case storage 9.03GB current + 16.13GB
+worst-case chunks = 25.16GB / 100.00GB cap.
+
+**Raw download still requires the user's explicit approval and has not been
+run.** This entry is a sizing/proposal only, matching the batch 1/batch 2
+precedent before their respective approvals.
