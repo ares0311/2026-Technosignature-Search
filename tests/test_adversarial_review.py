@@ -18,7 +18,10 @@ def _base_report(**overrides: object) -> dict[str, object]:
 
 
 def test_zero_refutations_and_advancing_pathway_requires_human_review() -> None:
-    dossier = build_adversarial_review_dossier(_base_report())
+    dossier = build_adversarial_review_dossier(
+        _base_report(),
+        track_b_gate_result={"eligible_for_unknown_candidate": True, "conditions": []},
+    )
 
     assert dossier.refutation_count == 0
     assert dossier.requires_human_expert_review is True
@@ -43,7 +46,8 @@ def test_blocking_issues_prevent_human_review_requirement_even_with_zero_refutat
     dossier = build_adversarial_review_dossier(report)
 
     assert dossier.refutation_count == 0
-    assert dossier.blocking_issues == ("Observation metadata is incomplete.",)
+    assert "Observation metadata is incomplete." in dossier.blocking_issues
+    assert any("Track B gate" in item for item in dossier.blocking_issues)
     assert dossier.requires_human_expert_review is False
 
 
@@ -53,6 +57,13 @@ def test_human_review_queue_pathway_does_not_require_expert_review() -> None:
     dossier = build_adversarial_review_dossier(report)
 
     assert dossier.requires_human_expert_review is False
+
+
+def test_radio_advancement_without_track_b_gate_is_fail_closed() -> None:
+    dossier = build_adversarial_review_dossier(_base_report())
+
+    assert dossier.requires_human_expert_review is False
+    assert any("Track B gate" in item for item in dossier.blocking_issues)
 
 
 def test_track_b_gate_unsatisfied_condition_is_a_real_refutation() -> None:

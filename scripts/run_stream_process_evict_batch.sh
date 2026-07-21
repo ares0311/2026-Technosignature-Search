@@ -367,9 +367,19 @@ process_chunk() {
   # outputs. Target directories are disjoint across the prepared manifests,
   # making these per-target calls safe for bounded shard parallelism.
   for hip in "${names_ref[@]}"; do
+    source_url=$("${VENV_PYTHON}" -c '
+import json, sys
+manifest = json.load(open(sys.argv[1], encoding="utf-8"))
+hip = sys.argv[2]
+print(next((str(row.get("source_hdf5_url", "")) for row in manifest.get("targets", []) if str(row.get("hip", "")) == hip), ""))
+' "${MANIFEST}" "${hip}")
     log "[CHUNK] ${hip}: running isolated turboSETI"
+    turboseti_args=(--corpus-dir "${OUT_DIR}/${hip}")
+    if [[ -n "${source_url}" ]]; then
+      turboseti_args+=(--approved-real-data --source-url "${source_url}")
+    fi
     if ! bash "${REPO_ROOT}/scripts/run_turboseti_on_extended_corpus.sh" \
-      --corpus-dir "${OUT_DIR}/${hip}"; then
+      "${turboseti_args[@]}"; then
       log "[WARN] ${hip}: turboSETI reported a failure; continuing to pipeline/eviction for whatever succeeded"
     fi
     log "[CHUNK] ${hip}: running isolated pipeline (${PIPELINE_WORKERS} workers)"

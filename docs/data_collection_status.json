@@ -1,14 +1,89 @@
 {
-  "disclaimer": "This manifest records real local data-collection run outcomes (counts of items found/downloaded/skipped/failed) for compact progress review. It is not a detection, discovery, external validation, or external-submission claim.",
-  "runs": {
-    "acquire_bl_archive_candidate_catalog__before_20260719T135709Z_network_failure": {
-      "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>",
+  "attempts": [
+    {
+      "app_version": "1.2.41",
+      "attempt_id": "hunter_search__SEARCH-20260719T141028Z-6D7C655C__2026-07-21T17:10:47.974821Z",
+      "error": "curl could not resolve bldata.berkeley.edu from the network-restricted sandbox; four bounded retries failed",
+      "failed_count": 1,
+      "failed_targets": [
+        {
+          "reason": "download_failed_dns_resolution",
+          "target": "HIP107788"
+        }
+      ],
       "ok": false,
       "raw_science_payload_downloaded": false,
-      "recording_limitation": "The original exact timestamp was overwritten by the subsequent success before unique per-attempt status keys were implemented; ordering relative to the 2026-07-19T13:57:09Z success is known.",
-      "schema_version": "bl_archive_candidate_catalog_v1",
-      "source_endpoint": "http://seti.berkeley.edu/opendata/api/list-targets"
+      "recorded_at_utc": "2026-07-21T17:10:47.974821Z",
+      "resumable": true,
+      "run_id": "RUN-2026-07-21_171047Z-DPGE-hunter-search",
+      "script": "hunter_search__SEARCH-20260719T141028Z-6D7C655C",
+      "source_url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_19/holding/spliced_blc0001020304050607_guppi_57634_24543_Hip107788_0027.gpuspec.0002.h5",
+      "stage": "acquisition_preprocessing_scoring"
     },
+    {
+      "acquisition_mode": "stream_process_evict",
+      "app_version": "1.2.41",
+      "attempt_id": "hunter_search__SEARCH-20260719T141028Z-6D7C655C__2026-07-21T17:17:36.301025Z",
+      "completed_count": 1,
+      "downloaded_count": 1,
+      "downloaded_gb": 0.264353,
+      "downloaded_targets": [
+        "HIP107788"
+      ],
+      "evicted_count": 1,
+      "evicted_targets": [
+        "HIP107788"
+      ],
+      "failed_count": 0,
+      "newly_processed_count": 1,
+      "newly_processed_targets": [
+        "HIP107788"
+      ],
+      "ok": true,
+      "raw_retention_policy": "evicted_after_candidate_report_generation",
+      "recorded_at_utc": "2026-07-21T17:17:36.301025+00:00",
+      "run_id": "RUN-2026-07-21_171047Z-DPGE-hunter-search",
+      "script": "hunter_search__SEARCH-20260719T141028Z-6D7C655C"
+    },
+    {
+      "acquisition_mode": "stream_process_evict",
+      "already_processed_count": 0,
+      "already_processed_targets": [],
+      "app_version": "1.2.42",
+      "attempt_id": "hunter_search__SEARCH-20260721T173605Z-0F6693E8__2026-07-21T17:36:18.200929+00:00",
+      "candidate_report_manifests_total": 3,
+      "completed_count": 3,
+      "dat_files_total": 807,
+      "downloaded_count": 0,
+      "downloaded_gb": 0.0,
+      "downloaded_targets": [],
+      "evicted_count": 0,
+      "evicted_targets": [],
+      "failed_count": 0,
+      "failed_targets": [],
+      "local_dat_reuse_count": 3,
+      "local_dat_reuse_targets": [
+        "HIP103096",
+        "HIP106147",
+        "HIP107788"
+      ],
+      "manifest": "results/searches/SEARCH-20260721T173605Z-0F6693E8/manifest.json",
+      "newly_processed_count": 3,
+      "newly_processed_targets": [
+        "HIP103096",
+        "HIP106147",
+        "HIP107788"
+      ],
+      "ok": true,
+      "raw_retention_policy": "evicted_after_candidate_report_generation",
+      "recorded_at_utc": "2026-07-21T17:36:18.200929+00:00",
+      "script": "hunter_search__SEARCH-20260721T173605Z-0F6693E8",
+      "targets_attempted": 3,
+      "total_targets_in_manifest": 3
+    }
+  ],
+  "disclaimer": "This manifest records real local data-collection run outcomes (counts of items found/downloaded/skipped/failed) for compact progress review. It is not a detection, discovery, external validation, or external-submission claim.",
+  "runs": {
     "acquire_bl_archive_candidate_catalog__20260719T135709319537Z": {
       "blank_label_count": 1,
       "candidate_count": 12086,
@@ -61,6 +136,14 @@
       "retrieved_at_utc": "2026-07-19T13:59:03.811968Z",
       "schema_version": "bl_archive_candidate_catalog_v1",
       "source_documentation": "https://github.com/ggroode/bl-opendata/blob/master/README.md",
+      "source_endpoint": "http://seti.berkeley.edu/opendata/api/list-targets"
+    },
+    "acquire_bl_archive_candidate_catalog__before_20260719T135709Z_network_failure": {
+      "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "ok": false,
+      "raw_science_payload_downloaded": false,
+      "recording_limitation": "The original exact timestamp was overwritten by the subsequent success before unique per-attempt status keys were implemented; ordering relative to the 2026-07-19T13:57:09Z success is known.",
+      "schema_version": "bl_archive_candidate_catalog_v1",
       "source_endpoint": "http://seti.berkeley.edu/opendata/api/list-targets"
     },
     "acquire_bl_hprc_full_catalog": {
@@ -211,6 +294,72 @@
       "status_note": "Corrected before publication: the retained DAT was reprocessed; no raw HDF5 payload existed or was deleted.",
       "targets_attempted": 1,
       "total_targets_in_manifest": 1
+    },
+    "hunter_search__SEARCH-20260719T141028Z-6D7C655C": {
+      "acquisition_mode": "stream_process_evict",
+      "already_processed_count": 0,
+      "already_processed_targets": [],
+      "app_version": "1.2.41",
+      "candidate_report_manifests_total": 1,
+      "completed_count": 1,
+      "dat_files_total": 807,
+      "downloaded_count": 1,
+      "downloaded_gb": 0.264353,
+      "downloaded_targets": [
+        "HIP107788"
+      ],
+      "evicted_count": 1,
+      "evicted_targets": [
+        "HIP107788"
+      ],
+      "failed_count": 0,
+      "failed_targets": [],
+      "last_run_utc": "2026-07-21T17:17:36.301025+00:00",
+      "local_dat_reuse_count": 0,
+      "local_dat_reuse_targets": [],
+      "manifest": "results/searches/SEARCH-20260719T141028Z-6D7C655C/manifest.json",
+      "newly_processed_count": 1,
+      "newly_processed_targets": [
+        "HIP107788"
+      ],
+      "ok": true,
+      "raw_retention_policy": "evicted_after_candidate_report_generation",
+      "targets_attempted": 1,
+      "total_targets_in_manifest": 1
+    },
+    "hunter_search__SEARCH-20260721T173605Z-0F6693E8": {
+      "acquisition_mode": "stream_process_evict",
+      "already_processed_count": 0,
+      "already_processed_targets": [],
+      "app_version": "1.2.42",
+      "candidate_report_manifests_total": 3,
+      "completed_count": 3,
+      "dat_files_total": 807,
+      "downloaded_count": 0,
+      "downloaded_gb": 0.0,
+      "downloaded_targets": [],
+      "evicted_count": 0,
+      "evicted_targets": [],
+      "failed_count": 0,
+      "failed_targets": [],
+      "last_run_utc": "2026-07-21T17:36:18.200929+00:00",
+      "local_dat_reuse_count": 3,
+      "local_dat_reuse_targets": [
+        "HIP103096",
+        "HIP106147",
+        "HIP107788"
+      ],
+      "manifest": "results/searches/SEARCH-20260721T173605Z-0F6693E8/manifest.json",
+      "newly_processed_count": 3,
+      "newly_processed_targets": [
+        "HIP103096",
+        "HIP106147",
+        "HIP107788"
+      ],
+      "ok": true,
+      "raw_retention_policy": "evicted_after_candidate_report_generation",
+      "targets_attempted": 3,
+      "total_targets_in_manifest": 3
     },
     "stream_process_evict_batch": {
       "acquisition_mode": "stream_process_evict",
@@ -2613,5 +2762,5 @@
       "ok": false
     }
   },
-  "schema_version": "data_collection_status_v1"
+  "schema_version": "data_collection_status_v2"
 }

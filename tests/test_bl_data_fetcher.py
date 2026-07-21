@@ -430,6 +430,9 @@ def _write_coarse_resolution_h5(path: Path) -> None:
         )
         dataset.attrs["foff"] = -0.00286102294921875
         dataset.attrs["tsamp"] = 1.0
+        dataset.attrs["tstart"] = 57634.2840625
+        dataset.attrs["source_name"] = b"Hip107788"
+        dataset.attrs["telescope_id"] = 6
 
 
 def test_drift_rate_resolution_matches_bl_0002_scale(tmp_path: Path) -> None:
@@ -453,6 +456,40 @@ def test_run_turboseti_cli_preserves_fine_resolution_default() -> None:
     assert args.max_drift == 4.0
     assert args.min_drift == 1e-4
     assert args.snr == 10.0
+
+
+def test_real_observation_provenance_preserves_raw_hash_before_eviction(
+    tmp_path: Path,
+) -> None:
+    from techno_search.gbt_cadence import cadence_candidate_context
+    from techno_search.observation_artifact import assess_observation_artifact
+
+    h5_path = tmp_path / "observation.h5"
+    _write_coarse_resolution_h5(h5_path)
+    dat_path = tmp_path / "observation.dat"
+    dat_path.write_text(
+        "# Source:Hip107788\n# Top_Hit_# Drift_Rate SNR\n",
+        encoding="utf-8",
+    )
+
+    sidecar = bl_fetch.write_real_observation_provenance(
+        h5_path=h5_path,
+        dat_path=dat_path,
+        source_url="https://example.test/observation.h5",
+        max_drift_hz_s=10.0,
+        min_drift_hz_s=0.0001,
+        snr_threshold=10.0,
+    )
+    payload = json.loads(sidecar.read_text(encoding="utf-8"))
+
+    assert len(payload["source_hdf5_sha256"]) == 64
+    assert payload["source_hdf5_size_bytes"] == h5_path.stat().st_size
+    assert payload["processing_parameters"]["max_drift_hz_per_sec"] == 10.0
+    assert assess_observation_artifact(dat_path).approved_for_pipeline is True
+    source_ids, provenance = cadence_candidate_context(dat_path)
+    assert source_ids == ("observation.dat",)
+    assert provenance["classification"] == "derived_real_observation_hit_table"
+    assert provenance["source_hdf5_sha256"] == payload["source_hdf5_sha256"]
 
 
 def test_extended_corpus_runner_passes_reviewed_0002_drift_ceiling() -> None:

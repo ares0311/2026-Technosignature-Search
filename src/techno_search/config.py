@@ -45,6 +45,14 @@ class ScoringConfig:
     local_performance_defaults: LocalPerformanceDefaults
     snr_thresholds: SnrThresholds | None = field(default=None)
     drift_rate_thresholds: DriftRateThresholds | None = field(default=None)
+    calibration_status: str = "uncalibrated"
+    calibration_dataset_id: str | None = None
+
+    @property
+    def probability_interpretation_allowed(self) -> bool:
+        """Return whether normalized scores may be described as probabilities."""
+
+        return self.calibration_status == "calibrated"
 
 
 @dataclass(frozen=True)
@@ -98,6 +106,12 @@ def load_scoring_config(path: Path | None = None) -> ScoringConfig:
         ),
         snr_thresholds=snr_thresh,
         drift_rate_thresholds=drift_thresh,
+        calibration_status=str(data.get("calibration_status", "uncalibrated")),
+        calibration_dataset_id=(
+            str(data["calibration_dataset_id"])
+            if data.get("calibration_dataset_id")
+            else None
+        ),
     )
 
 
@@ -121,6 +135,15 @@ def validate_scoring_config_data(data: dict[str, Any]) -> None:
             raise ValueError(
                 f"pathway_thresholds.{field_name} must be a probability in [0, 1]."
             )
+
+    calibration_status = str(data.get("calibration_status", "uncalibrated"))
+    if calibration_status not in {"uncalibrated", "calibrated"}:
+        raise ValueError("calibration_status must be 'uncalibrated' or 'calibrated'.")
+    calibration_dataset_id = data.get("calibration_dataset_id")
+    if calibration_status == "calibrated" and (
+        calibration_dataset_id is None or not str(calibration_dataset_id).strip()
+    ):
+        raise ValueError("calibrated scoring requires calibration_dataset_id.")
 
     snr_thresholds = data.get("snr_thresholds")
     if snr_thresholds is not None:

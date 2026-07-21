@@ -25,6 +25,19 @@ def test_default_scoring_config_is_uncalibrated_v0() -> None:
     config = load_scoring_config()
     assert config.snr_thresholds is None
     assert config.drift_rate_thresholds is None
+    assert config.calibration_status == "uncalibrated"
+    assert config.calibration_dataset_id is None
+    assert config.probability_interpretation_allowed is False
+
+
+def test_calibrated_scoring_config_requires_dataset_provenance(tmp_path) -> None:
+    data = json.loads(default_scoring_config_path().read_text(encoding="utf-8"))
+    data["calibration_status"] = "calibrated"
+    path = tmp_path / "invalid.json"
+    path.write_text(json.dumps(data), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="requires calibration_dataset_id"):
+        load_scoring_config(path)
 
 
 @pytest.mark.parametrize(

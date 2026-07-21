@@ -168,6 +168,16 @@ def validate_report_packet(data: Mapping[str, Any]) -> ValidationResult:
             missing = {item.value for item in PosteriorClass} - set(posterior)
             if missing:
                 errors.append(f"report packet posterior missing fields: {sorted(missing)}")
+    if "score_calibration" in data:
+        calibration = data["score_calibration"]
+        if not isinstance(calibration, Mapping):
+            errors.append("report packet score_calibration must be a mapping")
+        elif calibration.get("status") != "calibrated" and calibration.get(
+            "probability_interpretation_allowed"
+        ) is not False:
+            errors.append(
+                "uncalibrated report packets must disable probability interpretation"
+            )
     if "provenance" in data and not isinstance(data["provenance"], Mapping):
         errors.append("report packet provenance must be a mapping")
     if "negative_evidence" in data and not isinstance(data["negative_evidence"], list):

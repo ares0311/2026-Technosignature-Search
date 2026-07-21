@@ -37,6 +37,7 @@ import types
 import urllib.error
 import urllib.request
 from collections.abc import Callable
+from datetime import UTC, datetime
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
@@ -673,6 +674,8 @@ def run_turboseti(
     max_drift_hz_s: float = DEFAULT_MAX_DRIFT_HZ_S,
     min_drift_hz_s: float = DEFAULT_MIN_DRIFT_HZ_S,
     snr_threshold: float = DEFAULT_SNR_THRESHOLD,
+    source_url: str | None = None,
+    approved_real_data: bool = False,
 ) -> None:
     """
     Run turboSETI FindDoppler on h5_path, writing .dat hit table to out_dir.
@@ -710,6 +713,88 @@ def run_turboseti(
         log_level_int=30,
     )
     fd.search()
+    if approved_real_data:
+        if not source_url:
+            raise ValueError("approved real-data processing requires source_url")
+        dat_path = Path(out_dir) / f"{Path(h5_path).stem}.dat"
+        if not dat_path.is_file():
+            raise FileNotFoundError(
+                f"turboSETI completed but the expected DAT artifact is missing: {dat_path}"
+            )
+        write_real_observation_provenance(
+            h5_path=Path(h5_path),
+            dat_path=dat_path,
+            source_url=source_url,
+            max_drift_hz_s=max_drift_hz_s,
+            min_drift_hz_s=min_drift_hz_s,
+            snr_threshold=snr_threshold,
+        )
+
+
+def write_real_observation_provenance(
+    *,
+    h5_path: Path,
+    dat_path: Path,
+    source_url: str,
+    max_drift_hz_s: float,
+    min_drift_hz_s: float,
+    snr_threshold: float,
+) -> Path:
+    """Persist the acquisition-to-DAT chain before disposable HDF5 eviction."""
+
+    import h5py  # type: ignore[import]
+
+    from techno_search.observation_artifact import (
+        OBSERVATION_ARTIFACT_SCHEMA_VERSION,
+        provenance_path_for,
+        sha256_file,
+    )
+
+    with h5py.File(h5_path, "r") as handle:
+        dataset = handle["data"]
+        attrs = dataset.attrs
+        source_name = _header_text(attrs.get("source_name", "unknown"))
+        telescope_id = int(attrs.get("telescope_id", 0) or 0)
+        payload = {
+            "schema_version": OBSERVATION_ARTIFACT_SCHEMA_VERSION,
+            "artifact_filename": dat_path.name,
+            "sha256": sha256_file(dat_path),
+            "classification": "real_observation",
+            "source_archive": "Breakthrough Listen Open Data Archive",
+            "source_url": source_url,
+            "instrument": "GBT" if telescope_id == 6 else f"telescope_id_{telescope_id}",
+            "downloaded_utc": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            "data_use_review_status": "approved",
+            "provenance_review_status": "approved",
+            "human_approval_status": "approved",
+            "approved_for_local_real_data": True,
+            "external_submission_authorized": False,
+            "target_id": source_name,
+            "source_name": source_name,
+            "source_hdf5_filename": h5_path.name,
+            "source_hdf5_size_bytes": h5_path.stat().st_size,
+            "source_hdf5_sha256": sha256_file(h5_path),
+            "observation_mjd": float(attrs.get("tstart", 0.0) or 0.0),
+            "processing_tool": "turboSETI",
+            "processing_tool_version": importlib.metadata.version("turbo-seti"),
+            "processing_parameters": {
+                "max_drift_hz_per_sec": max_drift_hz_s,
+                "min_drift_hz_per_sec": min_drift_hz_s,
+                "snr_threshold": snr_threshold,
+            },
+            "raw_retention_policy": "stream_process_evict",
+        }
+    destination = provenance_path_for(dat_path)
+    destination.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    return destination
+
+
+def _header_text(value: object) -> str:
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return str(value)
 
 
 # ---------------------------------------------------------------------------
@@ -990,6 +1075,15 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=DEFAULT_SNR_THRESHOLD,
         help="turboSETI signal-to-noise threshold.",
     )
+    p_ts.add_argument(
+        "--source-url",
+        help="Exact HTTPS archive URL used for an approved real-data acquisition.",
+    )
+    p_ts.add_argument(
+        "--approved-real-data",
+        action="store_true",
+        help="Persist an approved real-observation provenance sidecar before eviction.",
+    )
 
     # run-pipeline
     p_rp = sub.add_parser(
@@ -1043,6 +1137,8 @@ def main(argv: list[str] | None = None) -> int:
             max_drift_hz_s=args.max_drift,
             min_drift_hz_s=args.min_drift,
             snr_threshold=args.snr,
+            source_url=args.source_url,
+            approved_real_data=args.approved_real_data,
         )
         return 0
 

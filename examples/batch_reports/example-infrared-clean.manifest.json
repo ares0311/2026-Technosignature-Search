@@ -1,8 +1,8 @@
 {
   "candidate_id": "example-infrared-clean",
-  "code_commit": "d3ffc47",
+  "code_commit": "c20a5fb",
   "config_version": "scoring_v0",
-  "generated_at_utc": "2026-07-16T11:02:17.587729+00:00",
+  "generated_at_utc": "2026-07-21T17:32:13.873894+00:00",
   "json_path": "examples/batch_reports/example-infrared-clean.json",
   "markdown_path": "examples/batch_reports/example-infrared-clean.md",
   "plot_artifacts": [
@@ -18,9 +18,9 @@
   ],
   "provenance_summary": {
     "cache_key": null,
-    "code_commit": "d3ffc47",
+    "code_commit": "c20a5fb",
     "config_version": "scoring_v0",
-    "generated_at_utc": "2026-07-16T11:02:17.587756+00:00",
+    "generated_at_utc": "2026-07-21T17:32:13.873912+00:00",
     "input_path": null,
     "provider_name": null,
     "query_parameters": {},
@@ -31,7 +31,7 @@
       "Gaia DR3 synthetic infrared example"
     ]
   },
-  "recommended_pathway": "candidate_review_packet",
+  "recommended_pathway": "human_review_queue",
   "schema_version": "techno_search_packet_v1",
   "track": "infrared"
 }

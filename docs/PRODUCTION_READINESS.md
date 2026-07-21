@@ -1,13 +1,67 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-07-19
-**Current phase:** Phase 0 complete; Phases 1-5 have real, tested baselines.
-Hunter PROD remains open: the durable create/run/follow-up lifecycle is now
-implemented and locally verified through existing-data reanalysis, but a
-new-target approval-gated raw acquisition and a later-epoch follow-up observation
-have not executed. The durable public-archive namespace now exceeds 10,000,
-but only 358 entries are identity-resolved and currently ranking-eligible.
-**Current app version:** 1.2.41
+**Last updated:** 2026-07-21
+**Current phase:** Phase 0 complete; Phases 1-5 have real, tested baselines;
+Hunter core workflow meets its production lifecycle contract.
+The durable lifecycle has completed an approval-gated new-target raw
+acquisition, processing, scoring, interpretation, durable outcome, and
+follow-up recommendation with a real failure/resume cycle. Version 1.2.42
+closes the science/provenance defects that run exposed and search
+`SEARCH-20260721T173605Z-0F6693E8` verifies the corrected implementation by
+reusing three retained DAT artifacts with zero downloads. All three targets
+were routed to local deterministic follow-up triage; no candidate promotion,
+detection, or external-submission permission was produced. A later-epoch
+observation is recommended scientific work, not a missing lifecycle stage. The
+durable public-archive namespace now exceeds 10,000, but only 358 entries are
+identity-resolved and currently ranking-eligible.
+**Current app version:** 1.2.42
+
+**First approval-gated new-target run completes and exposes a fail-open scoring
+gate — 2026-07-21:** immutable search
+`SEARCH-20260719T141028Z-6D7C655C` selected HIP107788 from the 12,086-entry
+archive namespace. Its first attempt failed loudly when the sandbox blocked DNS,
+preserved `run_started`/`run_failed`, and resumed under the operator-approved
+network exception without regenerating targets. The resumed run downloaded the
+exact 264,353,134-byte HDF5 inside the repository workspace, ran turboSETI 2.3.2
+at the reviewed 10 Hz/s ceiling, produced 10 hit rows, completed the isolated
+pipeline and production outcome ledgers, appended target history, registered a
+follow-up recommendation, and evicted the raw HDF5. Audit correctly rejects the
+old interpretation: the single ON observation has no complete OFF cadence, its
+5.214355 Hz/s best-hit drift is outside the configured Earth-motion consistency
+bound, no repeat exists, and the anomaly/routing scores are uncalibrated.
+
+Version 1.2.42 therefore makes uncalibrated scoring fail closed before
+`candidate_review_packet`, records normalized outputs as routing indices rather
+than probabilities, treats missing OFF observations as missing evidence rather
+than OFF absence, blocks radio expert-review escalation without an explicitly
+eligible Track B result, and fixes real-observation language. The acquisition
+runner now hashes the raw HDF5 and writes an admitted DAT provenance sidecar
+before eviction. HIP107788's retained DAT was backfilled from its immutable
+manifest and acquisition log with the exact source URL, byte count, DAT hash,
+tool/parameter versions, target, and observation metadata; the unavailable
+pre-eviction raw SHA-256 is explicitly recorded as a limitation and is not
+guessed. Data-collection status schema v2 keeps an append-only attempt ledger in
+addition to the latest-per-script view, so the failed DNS attempt is no longer
+overwritten by its success.
+
+**Corrected Hunter lifecycle acceptance — 2026-07-21:** follow-up search
+`SEARCH-20260721T173605Z-0F6693E8` froze three exact targets from the durable
+registry at app version 1.2.42 and code commit `63713b0`, then completed as
+`RUN-2026-07-21_173612Z-FRNC-hunter-search`. It reused HIP103096, HIP106147,
+and HIP107788 retained DAT artifacts, downloaded and evicted zero raw files,
+generated three isolated candidate reports, persisted three complete target
+outcomes and history records, and registered three actionable follow-ups. Each
+result is `human_review_queue` with status
+`needs_local_deterministic_follow_up_triage`; the HIP107788 report explicitly
+blocks on missing ON/OFF cadence, Earth-drift inconsistency, and uncalibrated
+scoring. Its archive URL, DAT SHA-256, observation metadata, turboSETI 2.3.2
+version, and raw-checksum limitation are preserved. The immutable manifest hash
+is `b13dc8e4f3390872f800e2df7795e14837c85bbf4482bb9af38229872585c4c8`.
+Attempting to run the completed search again exits nonzero and leaves both the
+manifest and three-event lifecycle log byte-for-byte unchanged. This verifies
+exact selection consumption, retained-evidence reuse, durable results and
+provenance, follow-up creation/recommendation, and restart protection without
+an AI dependency or manual bridge.
 
 **Public archive candidate universe exceeds 10,000 without fabricating viable
 targets — 2026-07-19:** the live, documented Breakthrough Listen
