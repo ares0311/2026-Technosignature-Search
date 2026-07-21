@@ -38,6 +38,8 @@ MAX_DRIFT="10"
 MIN_DRIFT="0.0001"
 SNR_THRESHOLD="10"
 DRY_RUN=false
+SOURCE_URL=""
+APPROVED_REAL_DATA=false
 
 info()  { echo "[$(date '+%H:%M:%S')] [INFO]  $*"; }
 ok()    { echo "[$(date '+%H:%M:%S')] [OK]    $*"; }
@@ -51,6 +53,8 @@ while [[ $# -gt 0 ]]; do
         --max-drift)   MAX_DRIFT="$2"; shift 2 ;;
         --min-drift)   MIN_DRIFT="$2"; shift 2 ;;
         --snr)         SNR_THRESHOLD="$2"; shift 2 ;;
+        --source-url)  SOURCE_URL="$2"; shift 2 ;;
+        --approved-real-data) APPROVED_REAL_DATA=true; shift ;;
         --dry-run)     DRY_RUN=true;   shift   ;;
         -h|--help)
             sed -n '2,30p' "$0" | grep '^#' | sed 's/^# \?//'
@@ -125,10 +129,15 @@ while IFS= read -r -d '' h5_file; do
         continue
     fi
 
+    provenance_args=()
+    if [[ "${APPROVED_REAL_DATA}" == "true" ]]; then
+        provenance_args+=(--approved-real-data --source-url "${SOURCE_URL}")
+    fi
     if "${VENV}" "${BL_FETCH}" run-turboseti "${h5_file}" "${target_dir}" \
         --max-drift "${MAX_DRIFT}" \
         --min-drift "${MIN_DRIFT}" \
-        --snr "${SNR_THRESHOLD}"; then
+        --snr "${SNR_THRESHOLD}" \
+        "${provenance_args[@]}"; then
         new_dat="$(find "${target_dir}" -maxdepth 1 -name "*.dat" | head -1)"
         if [[ -n "${new_dat}" ]]; then
             ok "${target_name}: produced $(basename "${new_dat}")"

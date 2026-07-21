@@ -119,6 +119,8 @@ class ScoredCandidate:
     scores: CandidateScores
     recommended_pathway: Pathway
     evidence: EvidenceSummary
+    calibration_status: str = "uncalibrated"
+    calibration_dataset_id: str | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -128,6 +130,20 @@ class ScoredCandidate:
             "features": dict(self.candidate.features),
             "posterior": {key.value: value for key, value in self.posterior.items()},
             "scores": self.scores.as_dict(),
+            "score_calibration": {
+                "schema_version": "score_calibration_v1",
+                "status": self.calibration_status,
+                "calibration_dataset_id": self.calibration_dataset_id,
+                "probability_interpretation_allowed": self.calibration_status
+                == "calibrated",
+                "limitation": (
+                    "Normalized heuristic routing weights are not calibrated "
+                    "probabilities and must not be interpreted as false-positive, "
+                    "signal-reality, or technosignature probabilities."
+                    if self.calibration_status != "calibrated"
+                    else ""
+                ),
+            },
             "recommended_pathway": self.recommended_pathway.value,
             **self.evidence.as_dict(),
             "provenance": dict(self.candidate.provenance),

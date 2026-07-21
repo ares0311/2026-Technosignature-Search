@@ -369,10 +369,33 @@ def cadence_candidate_context(path: Path) -> tuple[tuple[str, ...], dict[str, An
     payload = json.loads(sidecar.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         return (), {}
+    if payload.get("schema_version") == OBSERVATION_ARTIFACT_SCHEMA_VERSION:
+        assessment = assess_observation_artifact(path)
+        if not assessment.approved_for_pipeline:
+            raise ValueError(
+                "Observation provenance sidecar failed admission: "
+                + "; ".join(assessment.issues)
+            )
+        return (
+            (str(payload["artifact_filename"]),),
+            {
+                "source_dataset": str(payload["source_archive"]),
+                "source_url": str(payload["source_url"]),
+                "input_sha256": assessment.sha256,
+                "classification": "derived_real_observation_hit_table",
+                "instrument": str(payload["instrument"]),
+                "source_hdf5_filename": str(payload.get("source_hdf5_filename", "")),
+                "source_hdf5_sha256": str(payload.get("source_hdf5_sha256", "")),
+                "provenance_limitation": str(payload.get("provenance_limitation", "")),
+                "processing_tool": str(payload.get("processing_tool", "")),
+                "processing_tool_version": str(
+                    payload.get("processing_tool_version", "")
+                ),
+                "external_submission_authorized": False,
+            },
+        )
     if payload.get("schema_version") != CADENCE_DERIVATION_SCHEMA_VERSION:
-        # Sidecar is an artifact-level provenance record (observation_artifact_provenance_v1),
-        # not a cadence derivation record. Ignore it gracefully — cadence context is optional.
-        return (), {}
+        raise ValueError("Observation provenance sidecar has an unsupported schema version.")
     if payload.get("artifact_filename") != path.name:
         raise ValueError("Cadence provenance artifact_filename does not match the input.")
     if payload.get("sha256") != sha256_file(path):

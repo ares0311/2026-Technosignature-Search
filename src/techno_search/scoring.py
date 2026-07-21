@@ -76,12 +76,33 @@ def score_candidate(
             pathway_thresholds,
         )
 
+    # The default model is an explicitly uncalibrated ranking heuristic. It
+    # may prioritize local follow-up, but it cannot support candidate-review
+    # promotion or probability claims. Fail closed until a versioned,
+    # provenance-stamped calibration dataset is supplied.
+    if (
+        pathway == Pathway.CANDIDATE_REVIEW_PACKET
+        and not config.probability_interpretation_allowed
+    ):
+        pathway = Pathway.HUMAN_REVIEW_QUEUE
+        evidence = EvidenceSummary(
+            evidence.positive_evidence,
+            evidence.negative_evidence,
+            evidence.blocking_issues
+            + (
+                "Candidate-review promotion is blocked because scoring is an "
+                "uncalibrated local-routing heuristic.",
+            ),
+        )
+
     return ScoredCandidate(
         candidate=candidate,
         posterior=posterior,
         scores=scores,
         recommended_pathway=pathway,
         evidence=evidence,
+        calibration_status=config.calibration_status,
+        calibration_dataset_id=config.calibration_dataset_id,
     )
 
 
@@ -94,9 +115,11 @@ def score_candidates(
     return [score_candidate(candidate, scoring_config=scoring_config) for candidate in candidates]
 
 
-def _score_one(candidate: Candidate) -> ScoredCandidate:
+def _score_one(item: tuple[Candidate, ScoringConfig | None]) -> ScoredCandidate:
     """Worker function — must be module-level to be picklable."""
-    return score_candidate(candidate)
+
+    candidate, scoring_config = item
+    return score_candidate(candidate, scoring_config=scoring_config)
 
 
 def score_candidates_parallel(
@@ -108,8 +131,8 @@ def score_candidates_parallel(
 
     When workers is None or 1, uses serial scoring (identical to
     score_candidates). When workers > 1, uses ProcessPoolExecutor.
-    The scoring config is reloaded inside each worker process from the
-    uncalibrated default config path.
+    An explicitly supplied scoring config is passed unchanged to each worker;
+    workers never silently substitute the default config.
     """
     import concurrent.futures
 
@@ -120,7 +143,12 @@ def score_candidates_parallel(
         return score_candidates(candidate_list, scoring_config=scoring_config)
     try:
         with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
-            return list(executor.map(_score_one, candidate_list))
+            return list(
+                executor.map(
+                    _score_one,
+                    ((candidate, scoring_config) for candidate in candidate_list),
+                )
+            )
     except (NotImplementedError, OSError):
         return score_candidates(candidate_list, scoring_config=scoring_config)
 
@@ -174,7 +202,11 @@ def _radio_scores(
 
     on_target = _score(f, "on_target_presence_score")
     off_target = _score(f, "off_target_presence_score")
-    absent_off = 1.0 - off_target
+    cadence = _score(f, "abacab_cadence_score", default=0.5)
+    cadence_passed = cadence >= 1.0
+    # No matching OFF hit is positive evidence only when a real ON/OFF cadence
+    # was actually observed. A single ON scan is missing evidence, not absence.
+    absent_off = (1.0 - off_target) if cadence_passed else 0.0
     rfi = _score(f, "rfi_band_overlap_score")
     persistence = _score(f, "frequency_persistence_score")
     recurrence = _score(f, "nearby_target_recurrence_score")
@@ -184,8 +216,8 @@ def _radio_scores(
     known = _score(f, "known_object_score")
     metadata = _score(f, "metadata_completeness_score", default=0.5)
     off_target_rejection = 1.0 if off_target >= 0.4 else 0.0
-    real_observation = str(candidate.provenance.get("classification", "")).startswith(
-        "derived_real_observation"
+    real_observation = "real_observation" in str(
+        candidate.provenance.get("classification", "")
     )
 
     raw_scores = _empty_scores()
@@ -247,6 +279,8 @@ def _radio_scores(
         repeat=repeat,
         metadata=metadata,
         real_observation=real_observation,
+        cadence=cadence,
+        earth_drift_consistent=_score(f, "is_earth_drift_consistent") >= 0.5,
     )
     return raw_scores, evidence
 
@@ -581,6 +615,8 @@ def _radio_evidence(
     repeat: float,
     metadata: float,
     real_observation: bool,
+    cadence: float,
+    earth_drift_consistent: bool,
 ) -> EvidenceSummary:
     positive: list[str] = []
     negative: list[str] = []
@@ -598,7 +634,11 @@ def _radio_evidence(
     _append_if(positive, bandwidth >= 0.7, "Signal morphology is narrowband.")
     _append_if(positive, drift >= 0.4, "Signal has nonzero Doppler drift.")
     _append_if(positive, on_target >= 0.7, "Signal appears in ON-target scans.")
-    _append_if(positive, off_target <= 0.2, "Signal is weak or absent in OFF-target scans.")
+    _append_if(
+        positive,
+        cadence >= 1.0 and off_target <= 0.2,
+        "Signal is weak or absent across a complete ON/OFF cadence.",
+    )
     _append_if(positive, injection >= 0.7, "Similar synthetic injections are recoverable.")
     _append_if(positive, repeat >= 0.7, "Repeat observation support is present.")
 
@@ -617,8 +657,23 @@ def _radio_evidence(
         "Independent repeat or injection-recovery support is not strong.",
     )
     _append_if(negative, repeat < 0.7, "No strong repeat observation support is present.")
+    _append_if(
+        negative,
+        not earth_drift_consistent,
+        "Measured drift is outside the configured Earth-motion consistency bound.",
+    )
 
     _append_if(blocking, metadata < 0.5, "Observation metadata is incomplete.")
+    _append_if(
+        blocking,
+        cadence == 0.5,
+        "A complete ON/OFF cadence was not observed; OFF-target absence is unresolved.",
+    )
+    _append_if(
+        blocking,
+        not earth_drift_consistent,
+        "Earth-drift inconsistency requires deterministic interference and metadata review.",
+    )
     _append_if(
         blocking,
         off_target >= 0.4,

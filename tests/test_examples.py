@@ -89,7 +89,7 @@ def test_batch_example_manifest_covers_all_candidates() -> None:
         assert set(report) == BATCH_REPORT_FIELDS
         candidate_id = report["candidate_id"]
         assert report["track"] == EXPECTED_BATCH_CANDIDATES[candidate_id]
-        assert report["recommended_pathway"] == "candidate_review_packet"
+        assert report["recommended_pathway"] == "human_review_queue"
 
         markdown_path = Path(report["markdown_path"])
         json_path = Path(report["json_path"])
@@ -125,6 +125,7 @@ def test_golden_example_reports_match_regenerated_stable_fields(tmp_path) -> Non
         "config_version",
         "posterior",
         "scores",
+        "score_calibration",
         "recommended_pathway",
         "positive_evidence",
         "negative_evidence",

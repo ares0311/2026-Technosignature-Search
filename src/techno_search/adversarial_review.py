@@ -86,6 +86,8 @@ class AdversarialReviewDossier:
         """
         if self.refutation_count > 0 or self.blocking_issues:
             return False
+        if self.track == "radio" and self.track_b_gate_result is None:
+            return False
         if self.track_b_gate_result is not None and not self.track_b_gate_result.get(
             "eligible_for_unknown_candidate", False
         ):
@@ -134,6 +136,14 @@ def build_adversarial_review_dossier(
     negative_evidence = [str(item) for item in scored_report.get("negative_evidence", [])]
     positive_evidence = [str(item) for item in scored_report.get("positive_evidence", [])]
     blocking_issues = [str(item) for item in scored_report.get("blocking_issues", [])]
+    if (
+        str(scored_report.get("track", "")) == "radio"
+        and str(scored_report.get("recommended_pathway", "")) in _ADVANCING_PATHWAYS
+        and track_b_gate_result is None
+    ):
+        blocking_issues.append(
+            "Radio expert-review escalation requires an explicit eligible Track B gate result."
+        )
 
     refutations = [
         RefutationCheckResult(source="scoring_negative_evidence", detail=item, refuted=True)

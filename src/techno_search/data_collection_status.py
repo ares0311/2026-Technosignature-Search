@@ -34,7 +34,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-DATA_COLLECTION_STATUS_SCHEMA_VERSION = "data_collection_status_v1"
+DATA_COLLECTION_STATUS_SCHEMA_VERSION = "data_collection_status_v2"
 DATA_COLLECTION_STATUS_RELATIVE_PATH = Path("docs/data_collection_status.json")
 DATA_COLLECTION_STATUS_LOCK_RELATIVE_PATH = Path(
     "data_cache/locks/data_collection_status.lock"
@@ -89,8 +89,18 @@ def _update_data_collection_status_unlocked(
     manifest["schema_version"] = DATA_COLLECTION_STATUS_SCHEMA_VERSION
     manifest["disclaimer"] = DATA_COLLECTION_STATUS_DISCLAIMER
     manifest.setdefault("runs", {})
+    manifest.setdefault("attempts", [])
+    recorded_at = datetime.now(UTC).isoformat()
+    manifest["attempts"].append(
+        {
+            "attempt_id": f"{script}__{recorded_at}",
+            "script": script,
+            "recorded_at_utc": recorded_at,
+            **summary,
+        }
+    )
     manifest["runs"][script] = {
-        "last_run_utc": datetime.now(UTC).isoformat(),
+        "last_run_utc": recorded_at,
         **summary,
     }
 

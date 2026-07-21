@@ -90,6 +90,59 @@ def test_off_target_presence_blocks_high_snr_radio_promotion() -> None:
     assert any("OFF-target presence" in issue for issue in scored.evidence.blocking_issues)
 
 
+def test_missing_off_cadence_is_not_scored_as_off_target_absence() -> None:
+    base_features = {
+        "snr": 1501.0,
+        "bandwidth_hz": 2.79,
+        "drift_rate_hz_per_sec": 5.214,
+        "on_target_presence_score": 1.0,
+        "off_target_presence_score": 0.0,
+        "rfi_band_overlap_score": 0.0,
+        "frequency_persistence_score": 0.0,
+        "instrumental_artifact_score": 0.0,
+        "metadata_completeness_score": 1.0,
+        "data_quality_score": 1.0,
+        "provenance_completeness_score": 1.0,
+        "is_earth_drift_consistent": False,
+    }
+    incomplete = Candidate(
+        candidate_id="single-on",
+        track=Track.RADIO,
+        features={**base_features, "abacab_cadence_score": 0.5},
+        provenance={"classification": "derived_real_observation_hit_table"},
+    )
+    complete = Candidate(
+        candidate_id="complete-cadence",
+        track=Track.RADIO,
+        features={
+            **base_features,
+            "abacab_cadence_score": 1.0,
+            "is_earth_drift_consistent": True,
+        },
+        provenance={"classification": "derived_real_observation_cadence"},
+    )
+
+    incomplete_score = score_candidate(incomplete)
+    complete_score = score_candidate(complete)
+
+    assert incomplete_score.posterior[PosteriorClass.TECHNOSIGNATURE_INTEREST] < (
+        complete_score.posterior[PosteriorClass.TECHNOSIGNATURE_INTEREST]
+    )
+    assert incomplete_score.recommended_pathway == Pathway.HUMAN_REVIEW_QUEUE
+    assert any(
+        "OFF-target absence is unresolved" in issue
+        for issue in incomplete_score.evidence.blocking_issues
+    )
+    assert any(
+        "High SNR supports signal reality" in item
+        for item in incomplete_score.evidence.positive_evidence
+    )
+    assert all(
+        "synthetic SNR" not in item
+        for item in incomplete_score.evidence.positive_evidence
+    )
+
+
 def test_clean_infrared_excess_scores_above_blended_agn_like_source() -> None:
     clean = Candidate(
         candidate_id="ir-clean",

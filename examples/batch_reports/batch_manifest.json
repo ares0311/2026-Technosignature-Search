@@ -1,7 +1,7 @@
 {
   "candidate_count": 3,
   "config_version": "scoring_v0",
-  "generated_at_utc": "2026-07-16T11:02:17.608936+00:00",
+  "generated_at_utc": "2026-07-21T17:32:13.893013+00:00",
   "input_dir": "examples/candidates",
   "output_dir": "examples/batch_reports",
   "reports": [
@@ -15,7 +15,7 @@
       "plot_artifact_paths": [
         "examples/batch_reports/example-anomaly-clean-anomaly-crossmatch.svg"
       ],
-      "recommended_pathway": "candidate_review_packet",
+      "recommended_pathway": "human_review_queue",
       "track": "anomaly"
     },
     {
@@ -28,7 +28,7 @@
       "plot_artifact_paths": [
         "examples/batch_reports/example-infrared-clean-infrared-sed.svg"
       ],
-      "recommended_pathway": "candidate_review_packet",
+      "recommended_pathway": "human_review_queue",
       "track": "infrared"
     },
     {
@@ -41,7 +41,7 @@
       "plot_artifact_paths": [
         "examples/batch_reports/example-radio-clean-radio-waterfall.svg"
       ],
-      "recommended_pathway": "candidate_review_packet",
+      "recommended_pathway": "human_review_queue",
       "track": "radio"
     }
   ],

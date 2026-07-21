@@ -23,6 +23,11 @@ REQUIRED_DISCLAIMER = (
     "technosignature search pipeline. It is not evidence of a confirmed "
     "technosignature. Further review and independent validation are required."
 )
+UNCALIBRATED_SCORE_NOTICE = (
+    "The configured scorer is uncalibrated. Numeric class weights and derived "
+    "routing indices are deterministic ranking aids, not probabilities, false-"
+    "positive estimates, or promotion evidence."
+)
 
 
 @dataclass(frozen=True)
@@ -171,18 +176,23 @@ def candidate_markdown_report(
             f"- Candidate ID: `{packet['candidate_id']}`",
             f"- Track: `{packet['track']}`",
             f"- Recommended pathway: `{packet['recommended_pathway']}`",
-            "- False-positive probability: "
+            "- False-positive routing index: "
             f"{_format_probability(scores['false_positive_probability'])}",
-            "- Signal reality confidence: "
+            "- Signal-reality routing index: "
             f"{_format_probability(scores['signal_reality_confidence'])}",
-            f"- Follow-up value: {_format_probability(scores['followup_value'])}",
-            f"- Review readiness: {_format_probability(scores['review_readiness'])}",
+            f"- Follow-up routing index: {_format_probability(scores['followup_value'])}",
+            f"- Review-readiness routing index: "
+            f"{_format_probability(scores['review_readiness'])}",
             "",
             "## Operator Review",
             "",
             *_format_mapping(packet["operator_review"]),
             "",
-            "## Posterior",
+            "## Score Calibration",
+            "",
+            *_format_mapping(packet["score_calibration"]),
+            "",
+            "## Normalized Heuristic Class Weights",
             "",
             *_format_mapping(packet["posterior"]),
             "",
@@ -239,7 +249,9 @@ def _operator_review(scored: ScoredCandidate) -> dict[str, Any]:
         Pathway.KNOWN_OBJECT_ANNOTATION: "record_known_explanation",
         Pathway.DO_NOT_SUBMIT_FALSE_POSITIVE: "record_non_detection_or_false_positive",
         Pathway.GITHUB_REPRODUCIBILITY_ONLY: "preserve_reproducibility_artifact",
-        Pathway.HUMAN_REVIEW_QUEUE: "local_human_review_required",
+        # Legacy pathway value retained for schema compatibility. This action
+        # is deterministic follow-up triage, never a labeling request.
+        Pathway.HUMAN_REVIEW_QUEUE: "local_deterministic_follow_up_triage",
         Pathway.CANDIDATE_REVIEW_PACKET: "prepare_local_candidate_review_packet",
         Pathway.EXTERNAL_FOLLOWUP_CANDIDATE: "local_follow_up_review_required",
     }
@@ -257,6 +269,14 @@ def _false_positive_discussion(scored: ScoredCandidate) -> str:
     negative_count = len(scored.evidence.negative_evidence)
     blocking_count = len(scored.evidence.blocking_issues)
     probability = scored.scores.false_positive_probability
+
+    if scored.calibration_status != "calibrated":
+        return (
+            f"{UNCALIBRATED_SCORE_NOTICE} The false-positive routing index is "
+            f"{_format_probability(probability)}; it must not be reported as a "
+            f"false-positive probability. The packet records {negative_count} "
+            f"negative evidence item(s) and {blocking_count} blocking issue(s)."
+        )
 
     if negative_count == 0 and blocking_count == 0:
         return (

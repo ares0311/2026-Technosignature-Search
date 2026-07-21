@@ -32,5 +32,7 @@ def test_installed_console_script_scores_example_candidate() -> None:
     packet = json.loads(result.stdout)
 
     assert packet["candidate_id"] == "example-radio-clean"
-    assert packet["recommended_pathway"] == "candidate_review_packet"
+    assert packet["recommended_pathway"] == "human_review_queue"
+    assert packet["score_calibration"]["status"] == "uncalibrated"
+    assert packet["score_calibration"]["probability_interpretation_allowed"] is False
     assert packet["disclaimer"]

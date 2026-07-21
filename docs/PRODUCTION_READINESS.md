@@ -1,13 +1,45 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-07-19
+**Last updated:** 2026-07-21
 **Current phase:** Phase 0 complete; Phases 1-5 have real, tested baselines.
-Hunter PROD remains open: the durable create/run/follow-up lifecycle is now
-implemented and locally verified through existing-data reanalysis, but a
-new-target approval-gated raw acquisition and a later-epoch follow-up observation
-have not executed. The durable public-archive namespace now exceeds 10,000,
-but only 358 entries are identity-resolved and currently ranking-eligible.
-**Current app version:** 1.2.41
+Hunter PROD acceptance is in final verification: the durable lifecycle has now
+completed an approval-gated new-target raw acquisition, processing, scoring,
+interpretation, durable outcome, and follow-up recommendation with a real
+failure/resume cycle. Version 1.2.42 closes the science/provenance defects that
+run exposed; a corrected retained-evidence run and full validation remain the
+last acceptance checks. A later-epoch observation is recommended scientific
+work, not a missing lifecycle stage. The durable public-archive namespace now
+exceeds 10,000, but only 358 entries are identity-resolved and currently
+ranking-eligible.
+**Current app version:** 1.2.42
+
+**First approval-gated new-target run completes and exposes a fail-open scoring
+gate — 2026-07-21:** immutable search
+`SEARCH-20260719T141028Z-6D7C655C` selected HIP107788 from the 12,086-entry
+archive namespace. Its first attempt failed loudly when the sandbox blocked DNS,
+preserved `run_started`/`run_failed`, and resumed under the operator-approved
+network exception without regenerating targets. The resumed run downloaded the
+exact 264,353,134-byte HDF5 inside the repository workspace, ran turboSETI 2.3.2
+at the reviewed 10 Hz/s ceiling, produced 10 hit rows, completed the isolated
+pipeline and production outcome ledgers, appended target history, registered a
+follow-up recommendation, and evicted the raw HDF5. Audit correctly rejects the
+old interpretation: the single ON observation has no complete OFF cadence, its
+5.214355 Hz/s best-hit drift is outside the configured Earth-motion consistency
+bound, no repeat exists, and the anomaly/routing scores are uncalibrated.
+
+Version 1.2.42 therefore makes uncalibrated scoring fail closed before
+`candidate_review_packet`, records normalized outputs as routing indices rather
+than probabilities, treats missing OFF observations as missing evidence rather
+than OFF absence, blocks radio expert-review escalation without an explicitly
+eligible Track B result, and fixes real-observation language. The acquisition
+runner now hashes the raw HDF5 and writes an admitted DAT provenance sidecar
+before eviction. HIP107788's retained DAT was backfilled from its immutable
+manifest and acquisition log with the exact source URL, byte count, DAT hash,
+tool/parameter versions, target, and observation metadata; the unavailable
+pre-eviction raw SHA-256 is explicitly recorded as a limitation and is not
+guessed. Data-collection status schema v2 keeps an append-only attempt ledger in
+addition to the latest-per-script view, so the failed DNS attempt is no longer
+overwritten by its success.
 
 **Public archive candidate universe exceeds 10,000 without fabricating viable
 targets — 2026-07-19:** the live, documented Breakthrough Listen

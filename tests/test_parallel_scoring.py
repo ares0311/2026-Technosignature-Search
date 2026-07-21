@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
+from techno_search.config import load_scoring_config
 from techno_search.schemas import Candidate, Track
 from techno_search.scoring import score_candidates_parallel
 
@@ -73,6 +75,22 @@ class TestParallelVsSerial:
         parallel = score_candidates_parallel(candidates, workers=2)
         for s, p in zip(serial, parallel, strict=True):
             assert s.scores.as_dict() == pytest.approx(p.scores.as_dict(), rel=1e-6)
+
+    def test_parallel_preserves_explicit_scoring_config(self):
+        candidates = self._example_candidates()
+        config = replace(
+            load_scoring_config(),
+            calibration_status="calibrated",
+            calibration_dataset_id="test-calibration-manifest",
+        )
+
+        results = score_candidates_parallel(candidates, workers=2, scoring_config=config)
+
+        assert all(result.calibration_status == "calibrated" for result in results)
+        assert all(
+            result.calibration_dataset_id == "test-calibration-manifest"
+            for result in results
+        )
 
     def test_none_workers_falls_back_to_serial(self):
         candidates = self._example_candidates()

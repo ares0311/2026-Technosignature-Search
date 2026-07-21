@@ -53,7 +53,9 @@ def test_candidate_packet_contains_required_report_fields() -> None:
     assert packet["scores"]["false_positive_probability"] >= 0.0
     assert packet["positive_evidence"]
     assert packet["negative_evidence"]
-    assert packet["blocking_issues"] == []
+    assert any("uncalibrated" in item for item in packet["blocking_issues"])
+    assert packet["score_calibration"]["status"] == "uncalibrated"
+    assert packet["score_calibration"]["probability_interpretation_allowed"] is False
     assert packet["provenance"]["source_dataset"] == "synthetic-fixture"
     assert packet["schema_version"] == "techno_search_packet_v1"
     assert packet["config_version"] == "scoring_v0"
@@ -61,7 +63,9 @@ def test_candidate_packet_contains_required_report_fields() -> None:
     assert packet["operator_review"]["pathway"] == packet["recommended_pathway"]
     assert packet["operator_review"]["detection_claimed"] is False
     assert packet["operator_review"]["external_submission_allowed"] is False
-    assert "negative evidence item(s)" in packet["false_positive_discussion"]
+    assert "must not be reported as a false-positive probability" in packet[
+        "false_positive_discussion"
+    ]
 
 
 def test_candidate_packet_json_is_deterministic_and_parseable() -> None:
@@ -85,6 +89,8 @@ def test_candidate_markdown_report_includes_conservative_sections() -> None:
     assert "## Blocking Issues" in report
     assert "## False-Positive Discussion" in report
     assert "## Operator Review" in report
+    assert "## Score Calibration" in report
+    assert "## Normalized Heuristic Class Weights" in report
     assert "`external_submission_allowed`: False" in report
     assert "`detection_claimed`: False" in report
     assert "## Provenance" in report

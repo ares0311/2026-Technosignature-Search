@@ -1,8 +1,8 @@
 {
   "candidate_id": "example-anomaly-clean",
-  "code_commit": "d3ffc47",
+  "code_commit": "c20a5fb",
   "config_version": "scoring_v0",
-  "generated_at_utc": "2026-07-16T11:02:17.573171+00:00",
+  "generated_at_utc": "2026-07-21T17:32:13.860471+00:00",
   "json_path": "examples/batch_reports/example-anomaly-clean.json",
   "markdown_path": "examples/batch_reports/example-anomaly-clean.md",
   "plot_artifacts": [
@@ -18,9 +18,9 @@
   ],
   "provenance_summary": {
     "cache_key": null,
-    "code_commit": "d3ffc47",
+    "code_commit": "c20a5fb",
     "config_version": "scoring_v0",
-    "generated_at_utc": "2026-07-16T11:02:17.573181+00:00",
+    "generated_at_utc": "2026-07-21T17:32:13.860481+00:00",
     "input_path": null,
     "provider_name": null,
     "query_parameters": {},
@@ -31,7 +31,7 @@
       "synthetic historical source"
     ]
   },
-  "recommended_pathway": "candidate_review_packet",
+  "recommended_pathway": "human_review_queue",
   "schema_version": "techno_search_packet_v1",
   "track": "anomaly"
 }

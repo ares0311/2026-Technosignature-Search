@@ -28,7 +28,21 @@ step that's already blocked on an earlier one.
 
 ---
 
-## Current honest state (updated 2026-07-19; originally recorded 2026-07-05)
+## Current honest state (updated 2026-07-21; originally recorded 2026-07-05)
+
+**First approval-gated Hunter acquisition — 2026-07-21:** HIP107788 completed
+the immutable new-target lifecycle after one loud, durable DNS failure and an
+approved resumable retry. The 264,353,134-byte raw HDF5 was downloaded inside
+the repository workspace, processed at the reviewed 10 Hz/s drift ceiling, and
+evicted only after its DAT and candidate report existed. The real run exposed a
+fail-open interpretation defect: uncalibrated heuristic weights had been labeled
+as probabilities and missing OFF observations were rewarded as OFF absence.
+Version 1.2.42 fails closed to deterministic local follow-up triage, makes the
+missing cadence/Earth-drift/repeat/calibration limitations explicit, requires an
+eligible Track B result before radio expert-review escalation, persists raw-to-
+DAT provenance before future evictions, and keeps every acquisition attempt in
+append-only status history. No detection, unknown-candidate, or calibrated
+performance claim follows from the 10 HIP107788 hit rows.
 
 **Execution-tooling handoff — 2026-07-13:** future explicitly approved
 six-manifest Step 3a batches no longer require six terminal tabs.
@@ -76,7 +90,7 @@ acquisition is permanently outside project scope.
 | Track A known-explanation classification | ✅ Real, implemented |
 | Track B 9-condition gate | ✅ Real, implemented, conservative-by-construction |
 | Semisupervised anomaly/OOD calibration | ❌ Blocked — see Step 1 |
-| Operator UI hardening | ⚠️ Substantially underway — the three Hunter lifecycle entry points now provide compact tables/progress, scriptable JSON where useful, clear non-zero failures, and actionable follow-up recommendations. Existing production surfaces remain as documented in Step 2. A real approval-gated `Run-New-Search` has not yet supplied terminal evidence. |
+| Operator UI hardening | ✅ Hunter lifecycle surface verified with a real approval-gated `Run-New-Search`: compact create/follow-up tables, visible acquisition progress, scriptable JSON where useful, loud non-zero failure, same-search resume, and actionable follow-up recommendation. Existing broader production surfaces remain as documented in Step 2. |
 | Detection-optimized target selection algorithm | ⚠️ 3a ranks by the real config-driven `target_selection_score`, including production-scan history; the policy sum remains auditable but is no longer the selector. `Create-New-Search` durably freezes exact selections, while follow-up mode ranks resolved real ledger evidence separately. Metadata discovery/size preflight cover the full 1,703-target HPRC queue. Successful batch-3 resume records bring completed controls to 805, leaving 358 sized URL-available targets (89.274678 GB) and 540 completed no-product results. The live archive namespace adds 12,086 durable candidate labels, but exact queue-alias resolution currently yields 1,184 identities and only those same 358 ranking-eligible targets; the remaining labels are not guessed into viability. This is an inventory, not raw-download approval. See Step 3a. |
 | Extended-corpus completion | ✅ Complete — corrected v1.2.1 six-shard rerun finished 198/198 targets with zero download-task duplication. The full 215-target local corpus is at 10 Hz/s; ingestion removes 3,134 exact duplicate hit rows from 8,988 raw rows, leaving 5,854 unique triage rows and zero follow-up/escalation-ready candidates. See Step 0 completion below. |
 

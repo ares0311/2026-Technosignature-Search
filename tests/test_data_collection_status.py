@@ -36,6 +36,8 @@ def test_update_creates_manifest_with_disclaimer(tmp_path: Path) -> None:
     assert "disclaimer" in manifest
     assert manifest["runs"]["example_script"]["downloaded"] == 3
     assert "last_run_utc" in manifest["runs"]["example_script"]
+    assert manifest["attempts"][0]["script"] == "example_script"
+    assert manifest["attempts"][0]["downloaded"] == 3
     assert json.loads(status_path.read_text()) == manifest
 
 
@@ -51,7 +53,7 @@ def test_update_preserves_other_scripts_entries(tmp_path: Path) -> None:
     assert manifest["runs"]["script_b"]["downloaded"] == 2
 
 
-def test_update_overwrites_same_script_entry(tmp_path: Path) -> None:
+def test_update_keeps_latest_view_and_append_only_attempts(tmp_path: Path) -> None:
     status_path = tmp_path / "docs" / "data_collection_status.json"
 
     update_data_collection_status(tmp_path, "script_a", {"downloaded": 1}, status_path=status_path)
@@ -60,6 +62,7 @@ def test_update_overwrites_same_script_entry(tmp_path: Path) -> None:
     )
 
     assert manifest["runs"]["script_a"]["downloaded"] == 5
+    assert [attempt["downloaded"] for attempt in manifest["attempts"]] == [1, 5]
 
 
 def test_parallel_updates_preserve_each_shard_entry(tmp_path: Path) -> None:
