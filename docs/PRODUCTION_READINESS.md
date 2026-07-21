@@ -1,16 +1,19 @@
 # Production Readiness Assessment
 
 **Last updated:** 2026-07-21
-**Current phase:** Phase 0 complete; Phases 1-5 have real, tested baselines.
-Hunter PROD acceptance is in final verification: the durable lifecycle has now
-completed an approval-gated new-target raw acquisition, processing, scoring,
-interpretation, durable outcome, and follow-up recommendation with a real
-failure/resume cycle. Version 1.2.42 closes the science/provenance defects that
-run exposed; a corrected retained-evidence run and full validation remain the
-last acceptance checks. A later-epoch observation is recommended scientific
-work, not a missing lifecycle stage. The durable public-archive namespace now
-exceeds 10,000, but only 358 entries are identity-resolved and currently
-ranking-eligible.
+**Current phase:** Phase 0 complete; Phases 1-5 have real, tested baselines;
+Hunter core workflow meets its production lifecycle contract.
+The durable lifecycle has completed an approval-gated new-target raw
+acquisition, processing, scoring, interpretation, durable outcome, and
+follow-up recommendation with a real failure/resume cycle. Version 1.2.42
+closes the science/provenance defects that run exposed and search
+`SEARCH-20260721T173605Z-0F6693E8` verifies the corrected implementation by
+reusing three retained DAT artifacts with zero downloads. All three targets
+were routed to local deterministic follow-up triage; no candidate promotion,
+detection, or external-submission permission was produced. A later-epoch
+observation is recommended scientific work, not a missing lifecycle stage. The
+durable public-archive namespace now exceeds 10,000, but only 358 entries are
+identity-resolved and currently ranking-eligible.
 **Current app version:** 1.2.42
 
 **First approval-gated new-target run completes and exposes a fail-open scoring
@@ -40,6 +43,25 @@ pre-eviction raw SHA-256 is explicitly recorded as a limitation and is not
 guessed. Data-collection status schema v2 keeps an append-only attempt ledger in
 addition to the latest-per-script view, so the failed DNS attempt is no longer
 overwritten by its success.
+
+**Corrected Hunter lifecycle acceptance — 2026-07-21:** follow-up search
+`SEARCH-20260721T173605Z-0F6693E8` froze three exact targets from the durable
+registry at app version 1.2.42 and code commit `63713b0`, then completed as
+`RUN-2026-07-21_173612Z-FRNC-hunter-search`. It reused HIP103096, HIP106147,
+and HIP107788 retained DAT artifacts, downloaded and evicted zero raw files,
+generated three isolated candidate reports, persisted three complete target
+outcomes and history records, and registered three actionable follow-ups. Each
+result is `human_review_queue` with status
+`needs_local_deterministic_follow_up_triage`; the HIP107788 report explicitly
+blocks on missing ON/OFF cadence, Earth-drift inconsistency, and uncalibrated
+scoring. Its archive URL, DAT SHA-256, observation metadata, turboSETI 2.3.2
+version, and raw-checksum limitation are preserved. The immutable manifest hash
+is `b13dc8e4f3390872f800e2df7795e14837c85bbf4482bb9af38229872585c4c8`.
+Attempting to run the completed search again exits nonzero and leaves both the
+manifest and three-event lifecycle log byte-for-byte unchanged. This verifies
+exact selection consumption, retained-evidence reuse, durable results and
+provenance, follow-up creation/recommendation, and restart protection without
+an AI dependency or manual bridge.
 
 **Public archive candidate universe exceeds 10,000 without fabricating viable
 targets — 2026-07-19:** the live, documented Breakthrough Listen

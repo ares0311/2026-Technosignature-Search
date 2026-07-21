@@ -44,6 +44,17 @@ DAT provenance before future evictions, and keeps every acquisition attempt in
 append-only status history. No detection, unknown-candidate, or calibrated
 performance claim follows from the 10 HIP107788 hit rows.
 
+The corrected retained-evidence acceptance search
+`SEARCH-20260721T173605Z-0F6693E8` subsequently completed three targets at code
+commit `63713b0` with zero downloads and three local DAT reuses. All results
+fail closed to `human_review_queue` /
+`needs_local_deterministic_follow_up_triage`, preserve their evidence and
+recommended next action, and deny detection and external submission. A second
+execution attempt fails without changing the immutable manifest or append-only
+event ledger. The Hunter core lifecycle is therefore production-complete;
+later-epoch ON/OFF observations and broader identity resolution remain science
+coverage work, not hidden workflow bridges.
+
 **Execution-tooling handoff — 2026-07-13:** future explicitly approved
 six-manifest Step 3a batches no longer require six terminal tabs.
 `scripts/run_six_shard_downloads.py` launches the six disjoint
@@ -61,10 +72,9 @@ manifest; `Run-New-Search` consumes that manifest without regenerating targets,
 uses append-only lifecycle events, isolates output, and remains resumable;
 `Show-Follow-Ups` aggregates durable production ledgers with resolved identity,
 evidence, prior-run provenance, deterministic priority, and a recommended next
-action. The real local read-only registry resolves 555 follow-up targets from
-13 ledgers and excludes 210 rows whose target identity cannot be reliably tied
-to the candidate catalog. Focused end-to-end tests pass, but no new raw archive
-payload was downloaded: the first approval-gated real lifecycle run remains an
+action. The real local read-only registry excludes rows whose target identity
+cannot be reliably tied to the candidate catalog. The approval-gated HIP107788
+run and corrected retained-evidence rerun now close the Hunter lifecycle
 acceptance gap. The durable public-archive namespace now contains 12,086
 nonempty unique labels, but only 1,184 resolve exactly to current queue
 identities and 358 are ranking-eligible; unresolved labels remain fail-closed.
