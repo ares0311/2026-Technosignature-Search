@@ -14,7 +14,21 @@ detection, or external-submission permission was produced. A later-epoch
 observation is recommended scientific work, not a missing lifecycle stage. The
 durable public-archive namespace now exceeds 10,000, but only 358 entries are
 identity-resolved and currently ranking-eligible.
-**Current app version:** 1.2.42
+**Current app version:** 1.2.43
+
+**Hunter README becomes the production operator entry point — 2026-07-21:**
+version 1.2.43 aligns the public README with the verified Hunter lifecycle. It
+now leads with `Create-New-Search`, `Run-New-Search`, and `Show-Follow-Ups`;
+documents new and follow-up modes, immutable manifest review, acquisition
+approval, exit statuses, resume behavior, durable output locations, optional
+AI boundaries, and the 100 GB storage contract; and replaces stale pre-Hunter
+queue/inventory claims with the current 12,086-label universe, 1,184 resolved
+identities, 358 eligible targets, and approximately 89.275 GB preflighted
+inventory. README contract tests bind the documented commands and safety
+semantics to the installed entry points so the operator guide cannot silently
+drift from the application again. This closes the remaining Hunter-specific
+Step 2 operator-documentation gap; it changes no target, score, history,
+scientific threshold, or external-action permission.
 
 **First approval-gated new-target run completes and exposes a fail-open scoring
 gate — 2026-07-21:** immutable search

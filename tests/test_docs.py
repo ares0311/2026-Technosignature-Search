@@ -1,4 +1,7 @@
+import csv
 import json
+import re
+import tomllib
 from pathlib import Path
 
 
@@ -84,6 +87,63 @@ def test_readme_is_current_public_entrypoint() -> None:
     )
     for claim in retired_claims:
         assert claim not in readme
+
+
+def test_readme_documents_the_installed_hunter_lifecycle() -> None:
+    readme = Path("README.md").read_text(encoding="utf-8")
+    pyproject = Path("pyproject.toml").read_text(encoding="utf-8")
+
+    for command in ("Create-New-Search", "Run-New-Search", "Show-Follow-Ups"):
+        assert f"{command} =" in pyproject
+        assert f".venv/bin/{command}" in readme
+
+    required_contract = (
+        "Creation performs selection only. It does not download or process raw data.",
+        "executes that exact search without regenerating its targets",
+        "exits with status 2 before downloading anything",
+        "rerunning the same search ID resumes the same immutable target list",
+        "a completed search rejects another execution instead of duplicating history",
+        "results/searches/SEARCH-*/manifest.json",
+        "results/searches/SEARCH-*/events.ndjson",
+        "results/scan_history.ndjson",
+        "--approve-acquisition",
+        "--json",
+    )
+    for claim in required_contract:
+        assert claim in readme
+
+
+def test_readme_shell_examples_start_by_syncing_main() -> None:
+    readme = Path("README.md").read_text(encoding="utf-8")
+    bash_blocks = re.findall(r"```bash\n(.*?)```", readme, flags=re.DOTALL)
+
+    assert bash_blocks
+    assert all(block.startswith("git pull origin main\n") for block in bash_blocks)
+
+
+def test_readme_status_matches_current_version_and_candidate_inventory() -> None:
+    readme = Path("README.md").read_text(encoding="utf-8")
+    pyproject = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+    with Path("data_selection/bl_archive_candidate_catalog.csv").open(
+        newline="", encoding="utf-8"
+    ) as handle:
+        catalog = list(csv.DictReader(handle))
+    with Path("data_selection/target_priority_queue.csv").open(
+        newline="", encoding="utf-8"
+    ) as handle:
+        queue = list(csv.DictReader(handle))
+
+    resolved_count = sum(
+        row["identity_status"] == "resolved_existing_queue_alias" for row in catalog
+    )
+    eligible = [row for row in queue if row["status"] == "raw_download_approval_required"]
+    eligible_gb = sum(float(row["estimated_download_gb"]) for row in eligible)
+
+    assert f"version-{pyproject['project']['version']}-blue" in readme
+    assert f"{len(catalog):,} unique Breakthrough Listen archive labels" in readme
+    assert f"resolves {resolved_count:,} identities" in readme
+    assert f"{len(eligible):,} are currently ranking-eligible" in readme
+    assert f"approximately {eligible_gb:.3f} GB" in readme
 
 
 def test_publishing_docs_reference_current_validation_commands() -> None:
