@@ -11,6 +11,7 @@ def _radio_candidate(**feature_overrides) -> Candidate:
         "instrumental_artifact_score": 0.0,
         "abacab_cadence_score": 1.0,
         "semisupervised_anomaly_score": 0.9,
+        "snr": 20.0,
         **feature_overrides,
     }
     return Candidate(
@@ -18,7 +19,7 @@ def _radio_candidate(**feature_overrides) -> Candidate:
         track=Track.RADIO,
         features=features,
         source_ids=("dat-file-1",),
-        provenance={"source_dataset": "gbt-test"},
+        provenance={"source_dataset": "gbt-test", "processing_snr_threshold": 10.0},
     )
 
 
@@ -26,9 +27,8 @@ def _no_known_match_crossmatch() -> dict:
     return {"classification": "no_known_match"}
 
 
-def test_gate_blocks_on_uncalibrated_anomaly_threshold() -> None:
-    """Even a candidate that passes every other check cannot be eligible,
-    because condition 8 (high anomaly score) has no calibrated threshold."""
+def test_gate_unknown_does_not_depend_on_anomaly_calibration() -> None:
+    """Unknownness is exhausted known-class checking, not an anomaly threshold."""
     candidate = _radio_candidate()
 
     result = track_b_unknown_candidate_gate(
@@ -37,13 +37,41 @@ def test_gate_blocks_on_uncalibrated_anomaly_threshold() -> None:
         satellite_result={"classification": "no_known_match"},
     )
 
-    assert result["eligible_for_unknown_candidate"] is False
-    assert result["unresolved_count"] >= 1
-    anomaly_condition = next(
-        c for c in result["conditions"] if c["condition_id"] == "has_high_anomaly_score"
+    assert result["eligible_for_unknown_candidate"] is True
+    assert result["classification_state"] == "unknown"
+    assert result["unresolved_count"] == 0
+    assert all(
+        condition["condition_id"] != "has_high_anomaly_score"
+        for condition in result["conditions"]
     )
-    assert anomaly_condition["satisfied"] is None
-    assert anomaly_condition["evidence"]["semisupervised_anomaly_score"] == 0.9
+    assert result["ranking_evidence"]["semisupervised_anomaly_score"] == 0.9
+    assert result["ranking_evidence"]["affects_classification_state"] is False
+
+
+def test_gate_missing_provenance_is_unresolved_not_unknown() -> None:
+    candidate = _radio_candidate()
+    candidate = Candidate(
+        candidate_id=candidate.candidate_id,
+        track=candidate.track,
+        features=candidate.features,
+        source_ids=(),
+        provenance={},
+    )
+
+    result = track_b_unknown_candidate_gate(
+        candidate,
+        crossmatch_result=_no_known_match_crossmatch(),
+        satellite_result={"classification": "no_known_match"},
+    )
+
+    assert result["classification_state"] == "unresolved"
+    assert result["eligible_for_unknown_candidate"] is False
+    provenance = next(
+        condition
+        for condition in result["conditions"]
+        if condition["condition_id"] == "has_preserved_provenance"
+    )
+    assert provenance["satisfied"] is None
 
 
 def test_gate_fails_when_crossmatch_finds_known_pulsar() -> None:
@@ -172,7 +200,8 @@ def test_gate_fails_provenance_when_no_source_ids() -> None:
     provenance_condition = next(
         c for c in result["conditions"] if c["condition_id"] == "has_preserved_provenance"
     )
-    assert provenance_condition["satisfied"] is False
+    assert provenance_condition["satisfied"] is None
+    assert result["classification_state"] == "unresolved"
 
 
 def test_gate_disclaimer_present() -> None:
@@ -230,8 +259,8 @@ def test_candidate_packet_readiness_runs_gate_when_crossmatch_is_supplied() -> N
     assert result["gate_evaluated"] is True
     assert result["track_a_crossmatch"]["status"] == "provided"
     assert result["satellite_match"]["status"] == "provided"
-    assert result["gate_result"]["unresolved_count"] == 1
-    assert result["eligible_for_unknown_candidate"] is False
+    assert result["gate_result"]["unresolved_count"] == 0
+    assert result["eligible_for_unknown_candidate"] is True
 
 
 def test_candidate_packet_readiness_blocks_zero_hit_non_detection() -> None:
@@ -256,5 +285,5 @@ def test_candidate_packet_readiness_blocks_zero_hit_non_detection() -> None:
     assert "zero_hit_non_detection_is_not_a_track_b_candidate" in result[
         "blocking_reason_ids"
     ]
-    assert "semisupervised_anomaly_score" in result["missing_candidate_feature_ids"]
+    assert "semisupervised_anomaly_score" not in result["missing_candidate_feature_ids"]
     assert result["eligible_for_unknown_candidate"] is False

@@ -162,17 +162,35 @@ classifies or rejects known explanations: pulsars, FRBs, blazars/AGN, known
 gamma-ray sources, satellite/transmitter matches, terrestrial RFI, instrument
 artifacts, and noise.
 
-Current status: Track A HTRU2 baseline training, known-source catalog
-cross-matching, satellite-transmitter matching, and small historical replay are
-implemented. Track B's Phase 4 gate is available as
-`track-b-unknown-candidate-gate`, and `track-b-candidate-readiness` audits real
-packet metadata/evidence completeness before the gate is attempted. The
-unresolved anomaly/OOD threshold still blocks `eligible_for_unknown_candidate`
-by construction. Production radio runs may produce non-detection ledgers,
-follow-up-review triage rows, public-null context summaries, and
-`low_confidence` known-explanation outcomes. They must not treat an unresolved
-or ineligible Track B gate result as a detection, discovery, expert-review,
-external-validation, or external-submission claim.
+Current status: version 1.2.44 integrates the Track A catalog and satellite
+components into the production radio runner and removes learned anomaly
+calibration from the known/unknown decision. The retained real corpus verifies
+`known` and `unresolved`; `unknown` and its automatic adversarial dossier are
+dispatch-tested, but no retained real cadence-complete observation can yet
+exercise that branch through an installed Hunter run. PROD remains open on
+that real acceptance evidence, not on learned-score calibration.
+
+Installed-path evidence: retained-data follow-up
+`SEARCH-20260722T012439Z-6285F141` completed without a download and durably
+propagated HIP103096 as `unresolved` through its candidate report, report
+manifest, scan summary, target-status ledger, and follow-up registry. The
+recommended action is to complete the three unresolved known-explanation
+checks. This verifies the installed unresolved branch; it does not substitute
+for the required real `unknown`/adversarial acceptance.
+
+Every hit-bearing radio run must durably finish as exactly one of:
+
+- `known`: a completed check supplies a reliable known explanation;
+- `unknown`: all required known-explanation checks completed and none matched;
+- `unresolved`: no known explanation was found but at least one required check
+  or input was unavailable.
+
+Anomaly/OOD scores are optional ranking evidence and never decide this state.
+The same `run-pipeline` path used by `Run-New-Search` must execute the checks,
+persist the state and exact evidence, and automatically write an adversarial
+dossier for `unknown`. Running sidecar CLI commands manually is not an
+acceptable bridge. Until dispatch-level and installed-Hunter acceptance tests
+prove this behavior, the Hunter workflow is not PROD.
 
 Track A acquisition work must follow the brief's source order and disk cap. Raw
 downloads and temporary extraction products stay local in ignored paths:

@@ -1,7 +1,9 @@
-"""Track B: the unknown_candidate gate (Phase 4 of the dataset brief).
+"""Deterministic known-explanation resolution for radio candidates.
 
-Per docs/technosignature_datasets_agent_brief.md Phase 4, `unknown_candidate`
-may only be emitted when nine conditions are all true:
+``unknown`` is constructed only when every required known-explanation and
+readiness check completes and none explains the event. ``known`` means at
+least one completed check supplies an explanation. ``unresolved`` means no
+explanation was found but required evidence is missing.
 
     1. not confidently pulsar
     2. not confidently FRB
@@ -10,26 +12,10 @@ may only be emitted when nine conditions are all true:
     5. not known RFI region
     6. not instrument/band-edge/notch artifact
     7. passes ON/OFF cadence checks
-    8. has high anomaly/OOD score
-    9. has preserved provenance and reproducible extraction script
+    8. has preserved provenance and a reproducible extraction script
 
-This is a deliberately separate, additive gate function -- it does NOT add a
-value to the shared `Pathway` enum and does NOT change `score_candidate()`.
-Real production radio transient pipelines (e.g. CHIME/FRB's L1b -> L2/L3 ->
-L4 staged classification) keep this kind of terminal triage decision as a
-distinct downstream stage rather than folding it into the primary scorer;
-extending a shared enum that existing tested code depends on is also a
-well-documented breaking-change risk. This module follows the same additive
-pattern already used by track_a_crossmatch.py and track_a_satellites.py.
-
-Condition 8 ("has high anomaly/OOD score") requires a calibrated threshold
-that has not been established by any calibration study in this repository.
-Rather than inventing one, this module reports the raw anomaly score as
-evidence and marks that condition `satisfied=None` (cannot be evaluated)
-until real calibration exists. A None condition blocks the overall gate by
-construction, so `unknown_candidate` is never emitted on an unsupported
-threshold guess -- the gate can only ever be as permissive as its most
-conservative unresolved condition.
+Anomaly/OOD scores are retained as ranking evidence only. They never define or
+block the known/unknown boundary and no score threshold is invented here.
 """
 from __future__ import annotations
 
@@ -38,7 +24,7 @@ from typing import Any
 
 from techno_search.schemas import Candidate
 
-TRACK_B_GATE_SCHEMA_VERSION = "track_b_unknown_candidate_gate_v1"
+TRACK_B_GATE_SCHEMA_VERSION = "track_b_unknown_candidate_gate_v2"
 
 TRACK_B_GATE_DISCLAIMER = (
     "This is a Track B known-explanation gate evaluation, not a detection or "
@@ -73,7 +59,20 @@ TRACK_B_REQUIRED_CANDIDATE_FEATURES = (
     "rfi_band_overlap_score",
     "instrumental_artifact_score",
     "abacab_cadence_score",
-    "semisupervised_anomaly_score",
+)
+
+KNOWN_EXPLANATION_CONDITION_IDS = frozenset(
+    {
+        "not_confidently_pulsar",
+        "not_confidently_frb",
+        "not_known_blazar_agn_or_gamma",
+        "not_known_satellite_transmitter",
+        "not_locally_identified_known_object",
+        "not_known_rfi_region",
+        "not_instrument_artifact",
+        "not_below_search_threshold",
+        "passes_cadence_checks",
+    }
 )
 
 
@@ -149,6 +148,20 @@ def _satellite_condition(satellite_result: dict[str, Any] | None) -> GateConditi
     )
 
 
+def _local_known_object_condition(candidate: Candidate) -> GateCondition:
+    score = candidate.features.get("known_object_score", 0.0)
+    matched = float(score or 0.0) >= 0.9
+    return GateCondition(
+        condition_id="not_locally_identified_known_object",
+        description="Local provenance does not identify a known calibration object",
+        satisfied=not matched,
+        evidence={
+            "known_object_score": score,
+            "reason": candidate.features.get("local_known_object_reason"),
+        },
+    )
+
+
 def _rfi_condition(candidate: Candidate) -> GateCondition:
     score = candidate.features.get("rfi_band_overlap_score")
     if score is None:
@@ -207,27 +220,29 @@ def _cadence_condition(candidate: Candidate) -> GateCondition:
     )
 
 
-def _anomaly_condition(candidate: Candidate) -> GateCondition:
-    score = candidate.features.get("semisupervised_anomaly_score")
+def _search_threshold_condition(candidate: Candidate) -> GateCondition:
+    snr = candidate.features.get("snr")
+    threshold = candidate.provenance.get("processing_snr_threshold")
+    if snr is None or threshold in (None, "") or float(threshold) <= 0.0:
+        return GateCondition(
+            condition_id="not_below_search_threshold",
+            description="Event is above the provenance-stamped detector search threshold",
+            satisfied=None,
+            evidence={"snr": snr, "processing_snr_threshold": threshold},
+        )
+    satisfied = float(snr) >= float(threshold)
     return GateCondition(
-        condition_id="has_high_anomaly_score",
-        description="Event has a high anomaly/out-of-distribution score",
-        satisfied=None,  # no calibrated "high" threshold exists yet -- see module docstring
-        evidence={
-            "semisupervised_anomaly_score": score,
-            "note": (
-                "No calibration study has established a threshold for 'high' on this "
-                "score. Reported as evidence only; this condition cannot be resolved "
-                "true/false until a real calibration pass exists."
-            ),
-        },
+        condition_id="not_below_search_threshold",
+        description="Event is above the provenance-stamped detector search threshold",
+        satisfied=satisfied,
+        evidence={"snr": snr, "processing_snr_threshold": threshold},
     )
 
 
 def _provenance_condition(candidate: Candidate) -> GateCondition:
     has_source_ids = len(candidate.source_ids) > 0
     has_provenance = len(candidate.provenance) > 0
-    satisfied = has_source_ids and has_provenance
+    satisfied: bool | None = True if has_source_ids and has_provenance else None
     return GateCondition(
         condition_id="has_preserved_provenance",
         description="Event has preserved source provenance and a reproducible extraction path",
@@ -245,32 +260,44 @@ def track_b_unknown_candidate_gate(
     crossmatch_result: dict[str, Any],
     satellite_result: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Evaluate the Phase 4 nine-condition Track B gate for one radio candidate.
+    """Resolve one radio candidate as known, unknown, or unresolved.
 
     Callers must first run track_a_crossmatch.cross_match_known_sources()
     and (optionally) track_a_satellites.match_satellite_transmitter() and
     pass their results in -- this function only combines already-computed
     evidence, it does not perform any network or catalog lookups itself.
 
-    Returns eligible_for_unknown_candidate=True only when every condition is
-    explicitly satisfied=True. Any condition that is unresolved (satisfied
-    is None, e.g. a missing catalog or the uncalibrated anomaly threshold)
-    blocks eligibility -- this function never guesses.
+    Returns eligible_for_unknown_candidate=True only when every required
+    condition is explicitly satisfied. Missing evidence remains unresolved;
+    anomaly/OOD scoring is recorded separately as ranking evidence.
     """
 
     conditions: list[GateCondition] = []
     conditions.extend(_catalog_conditions(crossmatch_result))
     conditions.append(_satellite_condition(satellite_result))
+    conditions.append(_local_known_object_condition(candidate))
     conditions.append(_rfi_condition(candidate))
     conditions.append(_instrument_artifact_condition(candidate))
     conditions.append(_cadence_condition(candidate))
-    conditions.append(_anomaly_condition(candidate))
+    conditions.append(_search_threshold_condition(candidate))
     conditions.append(_provenance_condition(candidate))
 
     satisfied_count = sum(1 for c in conditions if c.satisfied is True)
     failed_count = sum(1 for c in conditions if c.satisfied is False)
     unresolved_count = sum(1 for c in conditions if c.satisfied is None)
-    eligible = satisfied_count == len(conditions)
+    known_explanations = [
+        condition
+        for condition in conditions
+        if condition.condition_id in KNOWN_EXPLANATION_CONDITION_IDS
+        and condition.satisfied is False
+    ]
+    if known_explanations:
+        classification_state = "known"
+    elif unresolved_count:
+        classification_state = "unresolved"
+    else:
+        classification_state = "unknown"
+    eligible = classification_state == "unknown"
 
     return {
         "schema_version": TRACK_B_GATE_SCHEMA_VERSION,
@@ -281,6 +308,16 @@ def track_b_unknown_candidate_gate(
         "failed_count": failed_count,
         "unresolved_count": unresolved_count,
         "eligible_for_unknown_candidate": eligible,
+        "classification_state": classification_state,
+        "known_explanation_count": len(known_explanations),
+        "known_explanations": [condition.as_dict() for condition in known_explanations],
+        "ranking_evidence": {
+            "semisupervised_anomaly_score": candidate.features.get(
+                "semisupervised_anomaly_score"
+            ),
+            "calibrated_threshold_applied": False,
+            "affects_classification_state": False,
+        },
         "conditions": [c.as_dict() for c in conditions],
     }
 

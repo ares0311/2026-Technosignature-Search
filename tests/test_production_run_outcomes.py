@@ -157,6 +157,51 @@ def test_build_production_outcomes_records_scan_level_negative_result() -> None:
     )
 
 
+def test_known_explanation_state_controls_production_disposition() -> None:
+    known = _candidate("known", "human_review_queue", score=0.9)
+    known["known_explanation_state"] = "known"
+    unknown = _candidate("unknown", "known_object_annotation", score=0.1)
+    unknown["known_explanation_state"] = "unknown"
+    unknown["adversarial_review"] = {"schema_version": "adversarial_review_v1"}
+    unresolved = _candidate("unresolved", "known_object_annotation", score=0.2)
+    unresolved["known_explanation_state"] = "unresolved"
+
+    outcomes = build_production_outcomes(
+        [known, unknown, unresolved],
+        run_id=RUN_ID,
+        started_at_utc="2026-06-18T20:13:25Z",
+        completed_at_utc="2026-06-18T20:13:30Z",
+    )
+
+    assert [entry["candidate_id"] for entry in outcomes["non_detections"]["entries"]] == [
+        "known"
+    ]
+    assert {
+        entry["candidate_id"] for entry in outcomes["follow_ups"]["entries"]
+    } == {"unknown", "unresolved"}
+    follow_ups = {
+        entry["candidate_id"]: entry for entry in outcomes["follow_ups"]["entries"]
+    }
+    assert follow_ups["unknown"]["reason"] == (
+        "all_required_known_explanation_checks_completed_without_match"
+    )
+    assert follow_ups["unresolved"]["reason"] == (
+        "required_known_explanation_checks_incomplete"
+    )
+    assert outcomes["manifest"]["known_explanation_state_counts"] == {
+        "known": 1,
+        "unknown": 1,
+        "unresolved": 1,
+    }
+    assert outcomes["manifest"]["automatic_adversarial_review_count"] == 1
+    assert outcomes["manifest"]["scan_level_negative_result"] == {
+        "applies": False,
+        "reason": "follow_up_candidates_present",
+        "candidate_count": 3,
+        "follow_up_count": 2,
+    }
+
+
 def test_build_production_outcomes_flags_missing_drift_evidence() -> None:
     legacy_candidate = {
         "candidate_id": "legacy-cand",

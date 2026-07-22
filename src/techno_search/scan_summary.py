@@ -22,6 +22,15 @@ _FOLLOW_UP_PATHWAYS = {
 _CANDIDATE_REVIEW_PATHWAYS = {"candidate_review_packet"}
 
 
+def _requires_follow_up(candidate: Mapping[str, Any]) -> bool:
+    state = str(candidate.get("known_explanation_state", ""))
+    if state in {"unknown", "unresolved"}:
+        return True
+    if state == "known":
+        return False
+    return str(candidate.get("recommended_pathway", "")) in _FOLLOW_UP_PATHWAYS
+
+
 def scan_summary(
     candidate_lists: list[dict[str, Any]],
     top_k: int = 10,
@@ -50,7 +59,7 @@ def scan_summary(
     follow_up_count = sum(
         1
         for c in candidates
-        if c.get("recommended_pathway") in _FOLLOW_UP_PATHWAYS
+        if _requires_follow_up(c)
     )
     candidate_review_count = sum(
         1
@@ -69,6 +78,9 @@ def scan_summary(
                 "target_name": cand.get("target_name", ""),
                 "score": float(cand.get("score", 0.0)),
                 "pathway": cand.get("recommended_pathway", "unknown"),
+                "known_explanation_state": cand.get(
+                    "known_explanation_state", "not_evaluated"
+                ),
                 "frequency_hz": float(cand.get("frequency_hz", 0.0)),
                 "snr": float(cand.get("snr", 0.0)),
                 **_drift_fields(cand),
@@ -147,6 +159,10 @@ def load_candidates_from_batch_dir(batch_dir: Path) -> list[dict[str, Any]]:
             )
         )
         features = _mapping(report_data.get("features", {}))
+        known_explanation_resolution = _mapping(
+            report_data.get("known_explanation_resolution", {})
+        )
+        adversarial_review = _mapping(report_data.get("adversarial_review", {}))
         snr = float(features.get("snr", merged.get("snr", 0.0)))
         freq = float(features.get("frequency_hz", merged.get("frequency_hz", 0.0)))
         drift = float(
@@ -179,6 +195,14 @@ def load_candidates_from_batch_dir(batch_dir: Path) -> list[dict[str, Any]]:
                 "drift_evidence_available": drift_available,
                 "drift_evidence_limitation": "" if drift_available else _NO_DRIFT_LIMITATION,
                 "track": merged.get("track", "unknown"),
+                "known_explanation_state": str(
+                    known_explanation_resolution.get(
+                        "classification_state",
+                        merged.get("known_explanation_state", "not_evaluated"),
+                    )
+                ),
+                "known_explanation_resolution": dict(known_explanation_resolution),
+                "adversarial_review": dict(adversarial_review),
             }
         )
 

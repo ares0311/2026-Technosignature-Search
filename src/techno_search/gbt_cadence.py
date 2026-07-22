@@ -391,6 +391,11 @@ def cadence_candidate_context(path: Path) -> tuple[tuple[str, ...], dict[str, An
                 "processing_tool_version": str(
                     payload.get("processing_tool_version", "")
                 ),
+                "processing_snr_threshold": float(
+                    _mapping(payload.get("processing_parameters", {})).get(
+                        "snr_threshold", 0.0
+                    )
+                ),
                 "external_submission_authorized": False,
             },
         )

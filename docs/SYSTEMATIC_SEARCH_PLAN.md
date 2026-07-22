@@ -30,6 +30,25 @@ step that's already blocked on an earlier one.
 
 ## Current honest state (updated 2026-07-21; originally recorded 2026-07-05)
 
+**Current open phase — real unknown/adversarial acceptance:** a code-path audit
+found that `run_pipeline` scored radio candidates
+without calling the implemented Track A catalog resolver, satellite matcher,
+Track B gate, or adversarial dossier. In addition, the pre-1.2.44 Track B gate
+requires an anomaly threshold that cannot be established from the available
+pre-existing labels, making `unknown_candidate` unreachable. This was an
+architecture error: anomaly scoring ranks results; it does not define whether
+all known explanations failed. Version 1.2.44 repairs the integrated code path:
+it durably emits `known`, `unknown`, or `unresolved`, and automatically creates
+an adversarial dossier for `unknown`. Real retained Voyager and HIP107788 data
+verify `known` and `unresolved`; unit and dispatch tests verify `unknown` and its
+dossier. The retained corpus has no real cadence-complete observation that can
+reach `unknown`. Do not call Hunter PROD before an installed-entry-point run on
+real complete evidence proves that remaining branch.
+Retained-data follow-up `SEARCH-20260722T012439Z-6285F141` now proves the
+installed entry points propagate HIP103096's `unresolved` state and exact
+evidence into the durable follow-up ledger; it does not close the missing real
+`unknown` branch.
+
 **First approval-gated Hunter acquisition — 2026-07-21:** HIP107788 completed
 the immutable new-target lifecycle after one loud, durable DNS failure and an
 approved resumable retry. The 264,353,134-byte raw HDF5 was downloaded inside
@@ -97,9 +116,9 @@ acquisition is permanently outside project scope.
 | Capability | Status |
 |---|---|
 | Pipeline processes real data end-to-end per file/target | ✅ Real, repeatedly demonstrated (Voyager, HIP99427, all 18 KIC 8462852 quarters) |
-| Track A known-explanation classification | ✅ Real, implemented |
-| Track B 9-condition gate | ✅ Real, implemented, conservative-by-construction |
-| Semisupervised anomaly/OOD calibration | ❌ Blocked — see Step 1 |
+| Track A known-explanation classification | ✅ Integrated into the production radio path; real Voyager=`known`, HIP107788=`unresolved` |
+| Track B known/unknown resolution | ⚠️ Implemented; `unknown` is reachable without anomaly calibration and dispatch-tested, but lacks a real cadence-complete installed-Hunter acceptance observation |
+| Semisupervised anomaly/OOD calibration | ❌ Unavailable for probability/threshold claims; ranking-only and not a blocker for known/unknown resolution |
 | Operator UI hardening | ✅ Hunter lifecycle surface verified with a real approval-gated `Run-New-Search`: compact create/follow-up tables, visible acquisition progress, scriptable JSON where useful, loud non-zero failure, same-search resume, and actionable follow-up recommendation. Existing broader production surfaces remain as documented in Step 2. |
 | Detection-optimized target selection algorithm | ⚠️ 3a ranks by the real config-driven `target_selection_score`, including production-scan history; the policy sum remains auditable but is no longer the selector. `Create-New-Search` durably freezes exact selections, while follow-up mode ranks resolved real ledger evidence separately. Metadata discovery/size preflight cover the full 1,703-target HPRC queue. Successful batch-3 resume records bring completed controls to 805, leaving 358 sized URL-available targets (89.274678 GB) and 540 completed no-product results. The live archive namespace adds 12,086 durable candidate labels, but exact queue-alias resolution currently yields 1,184 identities and only those same 358 ranking-eligible targets; the remaining labels are not guessed into viability. This is an inventory, not raw-download approval. See Step 3a. |
 | Extended-corpus completion | ✅ Complete — corrected v1.2.1 six-shard rerun finished 198/198 targets with zero download-task duplication. The full 215-target local corpus is at 10 Hz/s; ingestion removes 3,134 exact duplicate hit rows from 8,988 raw rows, leaving 5,854 unique triage rows and zero follow-up/escalation-ready candidates. See Step 0 completion below. |

@@ -297,10 +297,12 @@ def test_cli_track_b_unknown_candidate_gate_combines_explicit_evidence(tmp_path)
     assert result["candidate_id"] == "cli-radio"
     assert result["eligible_for_unknown_candidate"] is False
     assert result["unresolved_count"] == 1
-    anomaly_condition = next(
-        c for c in result["conditions"] if c["condition_id"] == "has_high_anomaly_score"
+    assert all(
+        condition["condition_id"] != "has_high_anomaly_score"
+        for condition in result["conditions"]
     )
-    assert anomaly_condition["satisfied"] is None
+    assert result["ranking_evidence"]["semisupervised_anomaly_score"] == 0.91
+    assert result["ranking_evidence"]["affects_classification_state"] is False
     assert "local triage queue state only" in result["disclaimer"]
 
     compact_stdout = StringIO()
@@ -316,7 +318,7 @@ def test_cli_track_b_unknown_candidate_gate_combines_explicit_evidence(tmp_path)
         stdout=compact_stdout,
     )
     assert "eligible_for_unknown_candidate=False" in compact_stdout.getvalue()
-    assert "has_high_anomaly_score | unresolved" in compact_stdout.getvalue()
+    assert "not_below_search_threshold | unresolved" in compact_stdout.getvalue()
 
 
 def test_cli_track_b_candidate_readiness_reports_missing_inputs(tmp_path) -> None:

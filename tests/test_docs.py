@@ -169,15 +169,16 @@ def test_dataset_brief_is_wired_into_authoritative_docs() -> None:
         doc = Path(doc_path).read_text(encoding="utf-8")
         assert "docs/technosignature_datasets_agent_brief.md" in doc
         assert "Track A" in doc
-        assert "unknown_candidate" in doc
+        assert "unknown_candidate" in doc or "`unknown`" in doc
 
 
-def test_project_status_tracks_track_b_gate_progress() -> None:
+def test_project_status_tracks_integrated_known_explanation_progress() -> None:
     status = Path("docs/PROJECT_STATUS.md").read_text(encoding="utf-8")
 
-    assert "Track B Phase 4 gate exists and has CLI wiring" in status
-    assert "fail-closed packet-readiness audit" in status
-    assert "hit-bearing real-candidate gate review remain open" in status
+    assert "emits exactly `known`, `unknown`, or `unresolved`" in status
+    assert "Anomaly/OOD scores are ranking evidence only" in status
+    assert "cadence-complete installed-Hunter run" in status
+    assert "receives a durable adversarial dossier" in status
     assert "Not started — brief is merged locally" not in status
 
 

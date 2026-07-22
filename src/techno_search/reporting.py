@@ -38,9 +38,16 @@ class ReportPaths:
     json_path: Path
     manifest_path: Path
     plot_artifact_paths: tuple[Path, ...] = ()
+    known_explanation_path: Path | None = None
+    adversarial_review_path: Path | None = None
 
 
-def candidate_packet(scored: ScoredCandidate) -> dict[str, Any]:
+def candidate_packet(
+    scored: ScoredCandidate,
+    *,
+    known_explanation_resolution: dict[str, Any] | None = None,
+    adversarial_review: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Return the canonical JSON-serializable candidate packet."""
 
     packet = scored.as_dict()
@@ -49,13 +56,34 @@ def candidate_packet(scored: ScoredCandidate) -> dict[str, Any]:
     packet["disclaimer"] = REQUIRED_DISCLAIMER
     packet["operator_review"] = _operator_review(scored)
     packet["false_positive_discussion"] = _false_positive_discussion(scored)
+    if known_explanation_resolution is not None:
+        packet["known_explanation_resolution"] = known_explanation_resolution
+        packet["known_explanation_state"] = known_explanation_resolution.get(
+            "classification_state", "unresolved"
+        )
+    if adversarial_review is not None:
+        packet["adversarial_review"] = adversarial_review
     return packet
 
 
-def candidate_packet_json(scored: ScoredCandidate, *, indent: int = 2) -> str:
+def candidate_packet_json(
+    scored: ScoredCandidate,
+    *,
+    known_explanation_resolution: dict[str, Any] | None = None,
+    adversarial_review: dict[str, Any] | None = None,
+    indent: int = 2,
+) -> str:
     """Serialize the canonical candidate packet as deterministic JSON."""
 
-    return json.dumps(candidate_packet(scored), indent=indent, sort_keys=True)
+    return json.dumps(
+        candidate_packet(
+            scored,
+            known_explanation_resolution=known_explanation_resolution,
+            adversarial_review=adversarial_review,
+        ),
+        indent=indent,
+        sort_keys=True,
+    )
 
 
 def write_candidate_reports(
@@ -64,6 +92,8 @@ def write_candidate_reports(
     *,
     filename_prefix: str | None = None,
     include_plot_artifacts: bool = True,
+    known_explanation_resolution: dict[str, Any] | None = None,
+    adversarial_review: dict[str, Any] | None = None,
 ) -> ReportPaths:
     """Write Markdown and JSON review packets to ``output_dir``.
 
@@ -78,6 +108,14 @@ def write_candidate_reports(
     markdown_path = destination / f"{stem}.md"
     json_path = destination / f"{stem}.json"
     manifest_path = destination / f"{stem}.manifest.json"
+    known_explanation_path = (
+        destination / f"{stem}.known-explanation.json"
+        if known_explanation_resolution is not None
+        else None
+    )
+    adversarial_review_path = (
+        destination / f"{stem}.adversarial.json" if adversarial_review is not None else None
+    )
     plot_artifacts = (
         write_synthetic_plot_artifacts(scored, destination, filename_prefix=stem)
         if include_plot_artifacts
@@ -85,16 +123,42 @@ def write_candidate_reports(
     )
 
     markdown_path.write_text(
-        candidate_markdown_report(scored, plot_artifacts=plot_artifacts),
+        candidate_markdown_report(
+            scored,
+            plot_artifacts=plot_artifacts,
+            known_explanation_resolution=known_explanation_resolution,
+            adversarial_review=adversarial_review,
+        ),
         encoding="utf-8",
     )
-    json_path.write_text(candidate_packet_json(scored) + "\n", encoding="utf-8")
+    json_path.write_text(
+        candidate_packet_json(
+            scored,
+            known_explanation_resolution=known_explanation_resolution,
+            adversarial_review=adversarial_review,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    if known_explanation_path is not None:
+        known_explanation_path.write_text(
+            json.dumps(known_explanation_resolution, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+    if adversarial_review_path is not None:
+        adversarial_review_path.write_text(
+            json.dumps(adversarial_review, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
     manifest_path.write_text(
         report_manifest_json(
             scored,
             markdown_path=markdown_path,
             json_path=json_path,
             plot_artifacts=plot_artifacts,
+            known_explanation_resolution=known_explanation_resolution,
+            known_explanation_path=known_explanation_path,
+            adversarial_review_path=adversarial_review_path,
         )
         + "\n",
         encoding="utf-8",
@@ -105,6 +169,8 @@ def write_candidate_reports(
         json_path=json_path,
         manifest_path=manifest_path,
         plot_artifact_paths=tuple(artifact.path for artifact in plot_artifacts),
+        known_explanation_path=known_explanation_path,
+        adversarial_review_path=adversarial_review_path,
     )
 
 
@@ -114,6 +180,9 @@ def report_manifest(
     markdown_path: Path,
     json_path: Path,
     plot_artifacts: tuple[PlotArtifact, ...] = (),
+    known_explanation_resolution: dict[str, Any] | None = None,
+    known_explanation_path: Path | None = None,
+    adversarial_review_path: Path | None = None,
 ) -> dict[str, Any]:
     """Return a persistence manifest for written candidate reports."""
 
@@ -129,6 +198,17 @@ def report_manifest(
         "generated_at_utc": datetime.now(UTC).isoformat(),
         "provenance_summary": candidate_provenance_record(scored.candidate).as_dict(),
         "plot_artifacts": [artifact.as_manifest_entry() for artifact in plot_artifacts],
+        "known_explanation_state": (
+            known_explanation_resolution.get("classification_state")
+            if known_explanation_resolution is not None
+            else None
+        ),
+        "known_explanation_path": (
+            str(known_explanation_path) if known_explanation_path is not None else None
+        ),
+        "adversarial_review_path": (
+            str(adversarial_review_path) if adversarial_review_path is not None else None
+        ),
     }
 
 
@@ -138,6 +218,9 @@ def report_manifest_json(
     markdown_path: Path,
     json_path: Path,
     plot_artifacts: tuple[PlotArtifact, ...] = (),
+    known_explanation_resolution: dict[str, Any] | None = None,
+    known_explanation_path: Path | None = None,
+    adversarial_review_path: Path | None = None,
     indent: int = 2,
 ) -> str:
     """Serialize a report persistence manifest."""
@@ -148,6 +231,9 @@ def report_manifest_json(
             markdown_path=markdown_path,
             json_path=json_path,
             plot_artifacts=plot_artifacts,
+            known_explanation_resolution=known_explanation_resolution,
+            known_explanation_path=known_explanation_path,
+            adversarial_review_path=adversarial_review_path,
         ),
         indent=indent,
         sort_keys=True,
@@ -158,10 +244,16 @@ def candidate_markdown_report(
     scored: ScoredCandidate,
     *,
     plot_artifacts: tuple[PlotArtifact, ...] = (),
+    known_explanation_resolution: dict[str, Any] | None = None,
+    adversarial_review: dict[str, Any] | None = None,
 ) -> str:
     """Render a conservative Markdown candidate review packet."""
 
-    packet = candidate_packet(scored)
+    packet = candidate_packet(
+        scored,
+        known_explanation_resolution=known_explanation_resolution,
+        adversarial_review=adversarial_review,
+    )
     scores = packet["scores"]
     return "\n".join(
         [
@@ -176,6 +268,8 @@ def candidate_markdown_report(
             f"- Candidate ID: `{packet['candidate_id']}`",
             f"- Track: `{packet['track']}`",
             f"- Recommended pathway: `{packet['recommended_pathway']}`",
+            "- Known-explanation state: "
+            f"`{packet.get('known_explanation_state', 'not_evaluated')}`",
             "- False-positive routing index: "
             f"{_format_probability(scores['false_positive_probability'])}",
             "- Signal-reality routing index: "
@@ -187,6 +281,14 @@ def candidate_markdown_report(
             "## Operator Review",
             "",
             *_format_mapping(packet["operator_review"]),
+            "",
+            "## Known-Explanation Resolution",
+            "",
+            *_format_resolution_summary(known_explanation_resolution),
+            "",
+            "## Adversarial Review",
+            "",
+            *_format_adversarial_summary(adversarial_review),
             "",
             "## Score Calibration",
             "",
@@ -309,6 +411,33 @@ def _format_list(items: list[str]) -> list[str]:
     if not items:
         return ["- None recorded"]
     return [f"- {item}" for item in items]
+
+
+def _format_resolution_summary(result: dict[str, Any] | None) -> list[str]:
+    if result is None:
+        return ["- Not evaluated for this report."]
+    gate = result.get("gate_result") or {}
+    unresolved_count = int(
+        gate.get("unresolved_count", result.get("unresolved_count", 0)) or 0
+    )
+    return [
+        f"- State: `{result.get('classification_state', 'unresolved')}`",
+        f"- Reason: `{result.get('classification_reason', '')}`",
+        f"- Known explanations: {len(result.get('known_explanations', []))}",
+        f"- Unresolved required checks: {unresolved_count}",
+        "- Anomaly/OOD score affects this state: `False`",
+    ]
+
+
+def _format_adversarial_summary(result: dict[str, Any] | None) -> list[str]:
+    if result is None:
+        return ["- Not required or not evaluated for this report."]
+    return [
+        "- Dossier generated automatically: `True`",
+        f"- Refutations: {int(result.get('refutation_count', 0) or 0)}",
+        f"- Blocking issues: {int(result.get('blocking_issue_count', 0) or 0)}",
+        "- Detection claimed: `False`",
+    ]
 
 
 def _format_plot_artifacts(plot_artifacts: tuple[PlotArtifact, ...]) -> list[str]:
