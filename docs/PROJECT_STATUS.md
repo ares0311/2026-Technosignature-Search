@@ -7,15 +7,21 @@ Technosignature Search
 Multi-modal publication-grade technosignature search — Phase 1 radio hardening
 
 ## Current Phase
-Phase 0 complete; Phase 1 deterministic radio hardening is active
+Phase 0 complete; integrated radio resolution is implemented, but real
+cadence-complete `unknown`/adversarial Hunter acceptance remains open
 
 ## Package Name
 `techno_search`
 
 ## Current Production Gate
 
-Local deterministic radio pipeline operations are functional. Learned-model
-calibration and promotion remain explicitly open and fail-closed.
+Local deterministic radio pipeline operations are functional. Hunter is not
+currently PROD: the retained real corpus verifies the integrated `known` and
+`unresolved` branches, but contains no cadence-complete observation that can
+exercise the automatic `unknown`/adversarial branch through the installed
+Hunter entry points. Learned-model calibration and promotion remain separately
+open and fail-closed; that limitation does not block deterministic
+known/unknown resolution.
 
 **AI hardening production blocker:** DECISION-134 is open and fail-closed under
 DECISION-144. DECISION-139's
@@ -44,17 +50,19 @@ all 2,028,537 raw MeerKAT rows found no additional ±500 Hz neighbor for the
 three rows that clear target-concentration checks; full-band family analysis of
 their observation artifacts also did not flag those three rows.
 `docs/technosignature_datasets_agent_brief.md` is now the formal Track A dataset
-handoff for known-explanation classification before any Track B
-`unknown_candidate` routing. Track A baseline training, known-source catalog
-cross-match, satellite-transmitter matching, and small historical replay are
-implemented. The Track B Phase 4 gate exists and has CLI wiring; calibrated
-anomaly/OOD threshold work remains open. Real-candidate validation now has a
-fail-closed packet-readiness audit so missing coordinates, observation time,
-telescope location, crossmatch evidence, or satellite evidence are reported
-explicitly instead of being guessed. Real turboSETI headers with tabbed
-sexagesimal RA/Dec now populate packet RA/Dec, MJD, and derived UTC timestamps;
-the remaining measured packet-level satellite blocker is verified observer-site
-coordinates.
+handoff for known-explanation classification before any Track B `unknown`
+routing. Version 1.2.44 integrates the catalog and satellite checks into the
+production radio path and emits exactly `known`, `unknown`, or `unresolved`.
+Anomaly/OOD scores are ranking evidence only and do not define or block
+`unknown`. Missing coordinates, observation time, telescope location, cadence,
+crossmatch evidence, or satellite evidence resolve loudly to `unresolved`
+rather than a guessed negative match. An `unknown` result automatically
+receives a durable adversarial dossier. PROD remains revoked until a real
+cadence-complete installed-Hunter run exercises that branch.
+Retained-data search `SEARCH-20260722T012732Z-759A1D93` from code commit
+`10dfb9e` proves that the
+installed entry points propagate HIP103096's `unresolved` state and exact
+evidence into the durable follow-up ledger; it does not close `unknown`.
 
 ---
 
@@ -68,9 +76,8 @@ MeerKAT BLUSE/SETICORE corpus. The current local summary reports
 `public_null_search_context_candidate_count: 200000`,
 `follow_up_candidate_count: 1072`, and
 `independent_escalation_ready_candidate_count: 0`; no candidate is ready for
-external escalation. Track B `unknown_candidate` eligibility remains blocked by
-the intentionally unresolved anomaly/OOD threshold unless and until a real
-calibration study sets one.
+external escalation. The learned score remains uncalibrated and ranking-only;
+it does not control the deterministic known/unknown boundary.
 
 **Photometry, IR, spectroscopy:** Real, tested baseline implementations exist;
 their current evidence and remaining Phase 2-4 gaps are tracked in
@@ -79,8 +86,10 @@ their current evidence and remaining Phase 2-4 gaps are tracked in
 **Candidate output:** Radio pipeline produces candidate manifests from real GBT data
 (stratified sample of 31 targets, 18 strata). No multi-modal candidates yet.
 
-**Review chain:** Steps 2 (adversarial agent) and 3 (expert review) not yet functional.
-Step 3 blocked pending surviving candidates.
+**Review chain:** The deterministic adversarial dossier is automatically
+persisted for `unknown`; no retained real observation has reached that branch.
+External expert review remains blocked pending a surviving candidate and is
+never automatically authorized.
 
 ---
 
@@ -127,7 +136,7 @@ Step 3 blocked pending surviving candidates.
 
 | Task | Status |
 |---|---|
-| Track A known-explanation classifier before Track B `unknown_candidate` routing | ⚠️ Partial — Track A HTRU2 baseline, known-source catalogs, satellite-transmitter matching, historical replay, Track B gate CLI, and fail-closed real-packet readiness audit are implemented; calibrated anomaly/OOD threshold and hit-bearing real-candidate gate review remain open |
+| Integrated known-explanation resolution before `unknown` routing | ⚠️ Code complete and verified for real `known`/`unresolved` plus dispatch-tested `unknown`; real cadence-complete installed-Hunter `unknown`/adversarial acceptance remains open |
 | Proper ON/OFF cadence verification (ABACAB from raw files) | ⚠️ Partial — HIP99427 raw HDF5 status and derived cadence review are wired locally |
 | MeerKAT BLUSE real training corpus loaded into semisupervised_scorer | ✅ Done locally — 200,000 verified real rows train the ignored local scorer |
 | Drift rate analysis: Earth-rotation-consistent candidates flagged | ⚠️ Partial — real-corpus summary exposes stationary, Earth-consistent, and inconsistent rows |

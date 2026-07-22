@@ -1,8 +1,9 @@
 # Production Readiness Assessment
 
 **Last updated:** 2026-07-21
-**Current phase:** Phase 0 complete; Phases 1-5 have real, tested baselines;
-Hunter core workflow meets its production lifecycle contract.
+**Current phase:** Phase 0 complete; Phase 1/5 code integration is implemented;
+real cadence-complete `unknown`/adversarial acceptance remains open. Hunter is
+**not PROD**.
 The durable lifecycle has completed an approval-gated new-target raw
 acquisition, processing, scoring, interpretation, durable outcome, and
 follow-up recommendation with a real failure/resume cycle. Version 1.2.42
@@ -14,7 +15,59 @@ detection, or external-submission permission was produced. A later-epoch
 observation is recommended scientific work, not a missing lifecycle stage. The
 durable public-archive namespace now exceeds 10,000, but only 358 entries are
 identity-resolved and currently ranking-eligible.
-**Current app version:** 1.2.43
+**Current app version:** 1.2.44
+
+**Integrated known-explanation repair implemented — 2026-07-21:** version
+1.2.44 makes the real radio `run-pipeline` path automatically execute all four
+local Track A source catalogs, time/direction-specific satellite/transmitter
+matching, RFI, instrument, cadence, detector-threshold, local-known-object, and
+provenance checks. It durably emits exactly `known`, `unknown`, or `unresolved`
+in the candidate JSON, a dedicated known-explanation artifact, and the report
+manifest. Anomaly/OOD score is now ranking evidence with
+`affects_classification_state: false`; the unsupported anomaly threshold was
+removed from the gate. `unknown` automatically writes a dedicated adversarial
+dossier and production outcome ledgers use the resolution state, not merely the
+heuristic scorer pathway. The GBT observer coordinates are injected only when
+the admitted provenance identifies `instrument: GBT`, with the Green Bank
+Observatory instruments page preserved as their source. Fresh local execution
+resolves retained Voyager data as `known` and real HIP107788 as `unresolved`:
+ATNF, CHIME-FRB, Roma-BZCAT, Fermi-4FGL, SatNOGS, and CelesTrak all ran with no
+match; only its incomplete single-ON cadence remains unresolved. Unit and
+dispatch tests prove the `unknown` branch writes its dossier without any
+anomaly score. The retained corpus contains no real cadence-complete
+observation that reaches `unknown`, so PROD is not restored until that branch
+is exercised through an installed Hunter run on real evidence.
+
+**Installed Hunter integration acceptance — 2026-07-21:** retained-data
+follow-up `SEARCH-20260722T012732Z-759A1D93` executed the exact frozen
+HIP103096 target through `.venv/bin/Run-New-Search` with no download. The
+pipeline loaded every Track A catalog, persisted
+`known_explanation_state: unresolved` in the candidate report, report
+manifest, scan summary, target status, and follow-up ledger, and recommended
+completing the three unresolved checks before promotion. The run completed as
+`RUN-2026-07-22_012736Z-SMK3-hunter-search`; its immutable manifest records
+code commit `10dfb9e`, and its production manifest records
+`known: 0`, `unknown: 0`, `unresolved: 1`. This proves installed-path state and
+provenance propagation, not the still-missing real `unknown`/adversarial
+branch.
+
+**Hunter PROD claim revoked after integrated-path audit — 2026-07-21:** before
+version 1.2.44, the
+mechanical create/run/resume/history lifecycle is real, but the production
+radio path currently builds and scores a candidate without invoking Track A's
+known-source resolver, the satellite/transmitter matcher, the Track B gate, or
+the adversarial dossier. The sidecar Track B gate also makes anomaly-score
+calibration a permanently unresolved required condition, so
+`unknown_candidate` is unreachable even when every known-explanation check
+passes. Separate CLI commands were incorrectly conflated with one end-to-end
+pipeline. PROD was revoked until every hit-bearing radio run durably resolved to
+exactly `known`, `unknown`, or `unresolved`; anomaly scores are ranking-only;
+and `unknown` automatically received a persisted adversarial dossier during the
+same Hunter run. Version 1.2.44 implements that code contract; the remaining
+acceptance gap is a real cadence-complete installed-Hunter execution of the
+`unknown` branch. Missing evidence resolves to `unresolved`, never a silent
+negative match. Existing older lifecycle evidence remains valid only for
+mechanical durability and recovery, not for this scientific integration claim.
 
 **Hunter README becomes the production operator entry point — 2026-07-21:**
 version 1.2.43 aligns the public README with the verified Hunter lifecycle. It
@@ -1019,7 +1072,7 @@ false-positive analysis or another named science gap.
 |---|---|
 | Cross-modal candidate matching by sky position | ✅ Done — `multi_modal_crossmatch.py` groups candidate reports across tracks using real `astropy.coordinates.SkyCoord.separation()` (the same verified API already used for Track A catalog/satellite matching) via union-find over pairwise separations, so transitive matches (A-B, B-C) join correctly even when A-C alone would miss the radius. Exposed as `techno-search multi-modal-crossmatch-summary --report-dir DIR`. The match radius is a caller-supplied parameter (default 60 arcsec, documented as a conservative generic cross-survey value, not a per-instrument-calibrated one — real GBT beam/Kepler-TESS pixel/WISE PSF sizes differ by orders of magnitude). **Real bug found and fixed while verifying this end-to-end**: `_build_infrared_candidate()` only injected `ra_deg`/`dec_deg` into candidate features when a live catalog cross-match query ran (`TECHNO_SEARCH_ENABLE_LIVE_DATA=1`); with live queries off (the default), every infrared candidate reported no position under the `ra_deg`/`dec_deg` convention the radio and photometry tracks already use (`infrared/prototype.py` stores it as `ra`/`dec` instead). Fixed to always inject `ra_deg`/`dec_deg` when available, mirroring the radio track's existing pattern exactly. Verified end-to-end: a real radio candidate and a real infrared candidate sharing the same fixture RA/Dec (83.8221, 22.0145) are correctly grouped as one multi-modal match. |
 | Multi-modal priority scoring (targets appearing in ≥2 modalities) | ✅ Done — `multi_modal_crossmatch_summary()`'s groups expose `is_multi_modal`/`distinct_track_count`; a group spanning ≥2 tracks is the priority signal AGENTS.md Phase 5 calls for. This identifies which candidates to prioritize; it does not itself run the adversarial review agent (still not started, see below). |
-| Adversarial review agent (purpose-built per candidate) | ⚠️ Partial — `adversarial_review.py` implements Step 2 as a deterministic, reproducible dossier that aggregates every refutation check already computed by `scoring.py` (and, when available, the Track B 9-condition gate) into one itemized checklist per candidate. Design choice researched and grounded in the real published precedent: Sheikh et al. 2021 (Nature Astronomy) verified/refuted Breakthrough Listen's one real signal of interest (blc1) using a deterministic itemized checklist, not a freeform LLM argument — this module follows that same approach rather than inventing a novel LLM-red-team design. Exposed as `techno-search adversarial-review-dossier <report.json> [--track-b-gate-json PATH]`. A candidate reports `requires_human_expert_review: true` only when zero refutations, zero blocking issues, and (when Track B evidence is supplied) Track B eligibility all agree; per AGENTS.md, this still requires a real human to review the dossier before any Step 3 escalation — nothing here claims a candidate is confirmed or ready for external submission. An optional freeform LLM "devil's advocate" pass could layer on top of this deterministic dossier in the future; not built here and not required for this step. Verified end-to-end against a real scored candidate report. |
+| Adversarial review agent (purpose-built per candidate) | ⚠️ Partial — `adversarial_review.py` implements Step 2 as a deterministic, reproducible dossier that aggregates every refutation check already computed by `scoring.py` and the integrated Track B known-explanation result into one itemized checklist per candidate. Version 1.2.44 automatically persists this dossier whenever the production radio path resolves an observation to `unknown`; retained real data have not yet exercised that branch. Design choice researched and grounded in the real published precedent: Sheikh et al. 2021 (Nature Astronomy) verified/refuted Breakthrough Listen's one real signal of interest (blc1) using a deterministic itemized checklist, not a freeform LLM argument — this module follows that same approach rather than inventing a novel LLM-red-team design. Exposed separately for audit as `techno-search adversarial-review-dossier <report.json> [--track-b-gate-json PATH]`. A candidate reports `requires_human_expert_review: true` only when zero refutations, zero blocking issues, and Track B eligibility all agree; per AGENTS.md, this still requires a real human to review the dossier before any Step 3 escalation — nothing here claims a candidate is confirmed or ready for external submission. An optional freeform LLM "devil's advocate" pass could layer on top of this deterministic dossier in the future; not built here and not required for this step. |
 | Candidate submission package (IAU post-detection protocol) | ❌ Not started |
 | Third-party expert contact (BL, Penn State, Galileo Project) | ❌ Blocked pending surviving candidate |
 

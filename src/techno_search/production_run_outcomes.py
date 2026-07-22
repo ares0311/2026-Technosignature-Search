@@ -40,6 +40,18 @@ FOLLOW_UP_PATHWAYS = {
 }
 
 
+def _requires_follow_up(candidate: Mapping[str, Any]) -> bool:
+    state = str(candidate.get("known_explanation_state", ""))
+    if state in {"unknown", "unresolved"}:
+        return True
+    if state == "known":
+        return False
+    pathway = str(
+        candidate.get("recommended_pathway") or candidate.get("pathway") or "unknown"
+    )
+    return pathway in FOLLOW_UP_PATHWAYS
+
+
 def make_production_run_id(
     *,
     now: datetime | None = None,
@@ -79,9 +91,8 @@ def build_production_outcomes(
     rfi_flags = _cross_target_rfi_flags_by_candidate(candidates)
 
     for candidate in candidates:
-        pathway = str(candidate.get("recommended_pathway") or candidate.get("pathway") or "unknown")
         rfi_flag = rfi_flags.get(str(candidate.get("candidate_id", "")))
-        if pathway in FOLLOW_UP_PATHWAYS:
+        if _requires_follow_up(candidate):
             follow_up_entries.append(
                 _follow_up_entry(
                     candidate,
@@ -100,12 +111,17 @@ def build_production_outcomes(
                 )
             )
 
+    negative_result_applies = not follow_up_entries
     scan_level_negative_result = {
-        "applies": not follow_up_entries,
+        "applies": negative_result_applies,
         "reason": (
-            "no_follow_up_pathway_candidates"
-            if candidates
-            else "no_candidates_loaded_from_results"
+            "no_candidates_loaded_from_results"
+            if not candidates
+            else (
+                "no_follow_up_pathway_candidates"
+                if negative_result_applies
+                else "follow_up_candidates_present"
+            )
         ),
         "candidate_count": len(candidates),
         "follow_up_count": len(follow_up_entries),
@@ -145,6 +161,17 @@ def build_production_outcomes(
         "zero_hit_observation_count": zero_hit_observation_count,
         "non_detection_count": len(non_detection_entries),
         "follow_up_count": len(follow_up_entries),
+        "known_explanation_state_counts": {
+            state: sum(
+                1
+                for candidate in candidates
+                if candidate.get("known_explanation_state") == state
+            )
+            for state in ("known", "unknown", "unresolved")
+        },
+        "automatic_adversarial_review_count": sum(
+            bool(candidate.get("adversarial_review")) for candidate in candidates
+        ),
         "target_status_count": int(target_status["target_count"]),
         "scan_level_negative_result": scan_level_negative_result,
         "files": files,
@@ -335,11 +362,7 @@ def build_target_status_summary(
             key=lambda item: float(item.get("score", 0.0)),
         )
         observation_only = bool(best_candidate.get("observation_only"))
-        follow_up_required = any(
-            str(item.get("recommended_pathway") or item.get("pathway") or "unknown")
-            in FOLLOW_UP_PATHWAYS
-            for item in target_candidates
-        )
+        follow_up_required = any(_requires_follow_up(item) for item in target_candidates)
         scored_candidate_count = sum(
             1 for item in target_candidates if not bool(item.get("observation_only"))
         )
@@ -370,6 +393,9 @@ def build_target_status_summary(
                     best_candidate.get("recommended_pathway")
                     or best_candidate.get("pathway")
                     or "unknown"
+                ),
+                "known_explanation_state": str(
+                    best_candidate.get("known_explanation_state", "not_evaluated")
                 ),
                 "cross_target_rfi_flagged": bool(rfi_flag.get("flagged")),
                 "cross_target_rfi_match_count": int(rfi_flag.get("match_count", 0) or 0),
@@ -479,7 +505,14 @@ def _follow_up_entry(
         "snr": float(candidate.get("snr", 0.0)),
         **_drift_fields(candidate),
         "status": "needs_local_deterministic_follow_up_triage",
-        "reason": "candidate_entered_follow_up_pathway",
+        "reason": _follow_up_reason(candidate),
+        "known_explanation_state": str(
+            candidate.get("known_explanation_state", "not_evaluated")
+        ),
+        "known_explanation_resolution": candidate.get(
+            "known_explanation_resolution", {}
+        ),
+        "adversarial_review": candidate.get("adversarial_review", {}),
         "detection_claimed": False,
         "external_submission_allowed": False,
     }
@@ -489,11 +522,22 @@ def _follow_up_entry(
 
 
 def _recommended_follow_up_action(entry: Mapping[str, Any]) -> str:
+    if entry.get("known_explanation_state") == "unresolved":
+        return "complete the unresolved known-explanation checks before candidate promotion"
     if bool(entry.get("cross_target_rfi_flagged")):
         return "reject or resolve cross-target RFI before any repeat observation"
     if not bool(entry.get("drift_evidence_available", False)):
         return "recover drift-rate evidence before follow-up selection"
     return "repeat an ON/OFF cadence at a later epoch and compare persistence"
+
+
+def _follow_up_reason(candidate: Mapping[str, Any]) -> str:
+    state = str(candidate.get("known_explanation_state", ""))
+    if state == "unknown":
+        return "all_required_known_explanation_checks_completed_without_match"
+    if state == "unresolved":
+        return "required_known_explanation_checks_incomplete"
+    return "candidate_entered_follow_up_pathway"
 
 
 def _non_detection_entry(
@@ -547,7 +591,17 @@ def _non_detection_entry(
         "snr": float(candidate.get("snr", 0.0)),
         **_drift_fields(candidate),
         "status": "reviewed_no_follow_up_required",
-        "reason": "candidate_did_not_enter_follow_up_pathway",
+        "reason": (
+            "known_explanation_identified"
+            if candidate.get("known_explanation_state") == "known"
+            else "candidate_did_not_enter_follow_up_pathway"
+        ),
+        "known_explanation_state": str(
+            candidate.get("known_explanation_state", "not_evaluated")
+        ),
+        "known_explanation_resolution": candidate.get(
+            "known_explanation_resolution", {}
+        ),
         "negative_evidence": [
             "No production follow-up pathway assigned by local pipeline routing."
         ],

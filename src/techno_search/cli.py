@@ -1291,7 +1291,7 @@ def _print_review_dashboard(data: dict[str, Any], out: TextIO) -> None:
 
 
 def _print_gate_conditions(conditions: list[dict[str, Any]], out: TextIO) -> None:
-    """Print the shared Track B 9-condition gate table (tri-state satisfied)."""
+    """Print the shared Track B known-explanation gate table."""
     if not conditions:
         print("Conditions: none", file=out)
         return
@@ -1312,7 +1312,7 @@ def _print_gate_conditions(conditions: list[dict[str, Any]], out: TextIO) -> Non
 
 
 def _print_track_b_unknown_candidate_gate(data: dict[str, Any], out: TextIO) -> None:
-    """Print a compact Track B 9-condition gate result for operator review."""
+    """Print a compact Track B known-explanation result for operator review."""
     print(
         f"Candidate: {data.get('candidate_id', 'unknown')} | "
         f"eligible_for_unknown_candidate={data.get('eligible_for_unknown_candidate')}",

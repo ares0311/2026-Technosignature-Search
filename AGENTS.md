@@ -389,6 +389,41 @@ There are no confirmed positive technosignature labels. Do not use pretrained
 models, Kaggle SETI, Setigen, or any synthetic training set for the first Track A
 milestone unless the user explicitly approves a later synthetic benchmark.
 
+### Known / Unknown / Unresolved Production Contract — NON-NEGOTIABLE
+
+Every production radio observation with one or more candidate hits must finish
+the automated known-explanation pass in exactly one durable state:
+
+- `known`: at least one completed deterministic or valid Track A check provides
+  a reliable known explanation (including a known catalog source, satellite or
+  transmitter, terrestrial RFI, cadence failure, instrument artifact, or
+  noise/non-detection where the applicable evidence supports that conclusion).
+- `unknown`: every required known-explanation check completed successfully and
+  none supplied a known explanation. This is a construction from exhausted
+  known-class checks, not a learned label, positive technosignature class,
+  detection, or discovery.
+- `unresolved`: no reliable known explanation was found, but one or more required
+  checks could not run or lacked required evidence. Missing catalogs, sky/time/
+  observatory metadata, cadence, provenance, or another required input must not
+  be silently treated as a negative match.
+
+An anomaly, OOD, CNN, posterior, or heuristic score may rank observations within
+these states. It must not define, block, or manufacture `unknown`. Learned-score
+calibration is therefore not a prerequisite for the deterministic
+known-versus-unknown boundary.
+
+The real production path must perform this resolution automatically after
+candidate construction and before follow-up registration. A durably `unknown`
+observation must automatically receive a deterministic adversarial-review
+dossier in the same run. Separate Track A, Track B, or adversarial CLI commands
+do not satisfy this contract unless `Run-New-Search` invokes the same integrated
+path and persists its outputs. `unresolved` must remain loud and actionable;
+`known` must preserve the exact explanation and evidence; no state may overwrite
+prior search history or provenance.
+
+Do not claim the Hunter workflow is PROD until a current end-to-end acceptance
+run proves this integrated transition through the installed Hunter entry points.
+
 ### CNN / Learned-Model Promotion Gate — NON-NEGOTIABLE
 
 `docs/astrometrics_coding_agents_master_guide.md` changes the formal roadmap

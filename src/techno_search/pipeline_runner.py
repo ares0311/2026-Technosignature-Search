@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from techno_search.data_quality import DataQualityResult, validate_input
-from techno_search.reporting import ReportPaths, write_candidate_reports
+from techno_search.reporting import ReportPaths, candidate_packet, write_candidate_reports
 from techno_search.schemas import Candidate, FeatureValue, Track
 from techno_search.scoring import score_candidate
 
@@ -18,6 +18,12 @@ PIPELINE_RUN_DISCLAIMER = (
 )
 KNOWN_SPACECRAFT_TOKENS = ("voyager", "spacecraft", "probe")
 MJD_EPOCH = datetime(1858, 11, 17, tzinfo=UTC)
+GBT_OBSERVER_LOCATION = {
+    "observer_lat_deg": 38.43312111111111,
+    "observer_lon_deg": -79.839835,
+    "observer_elevation_m": 807.43,
+}
+GBT_LOCATION_SOURCE_URL = "https://greenbankobservatory.org/portal/gbt/instruments/"
 
 
 @dataclass
@@ -32,6 +38,7 @@ class PipelineRunResult:
     reader_type: str = ""
     row_count: int = 0
     input_validation: dict[str, Any] = field(default_factory=dict)
+    known_explanation_state: str | None = None
     disclaimer: str = PIPELINE_RUN_DISCLAIMER
 
     def as_dict(self) -> dict[str, Any]:
@@ -47,6 +54,17 @@ class PipelineRunResult:
             "markdown_path": str(self.report_paths.markdown_path),
             "json_path": str(self.report_paths.json_path),
             "manifest_path": str(self.report_paths.manifest_path),
+            "known_explanation_state": self.known_explanation_state,
+            "known_explanation_path": (
+                str(self.report_paths.known_explanation_path)
+                if self.report_paths.known_explanation_path is not None
+                else None
+            ),
+            "adversarial_review_path": (
+                str(self.report_paths.adversarial_review_path)
+                if self.report_paths.adversarial_review_path is not None
+                else None
+            ),
             "ok": self.ok,
             "error": self.error,
         }
@@ -116,7 +134,24 @@ def run_pipeline(
             jwst_hitran_xsc_dir=jwst_hitran_xsc_dir,
         )
         scored = score_candidate(candidate)
-        paths = write_candidate_reports(scored, output_dir)
+        known_explanation = None
+        adversarial_review = None
+        if track_enum == Track.RADIO:
+            from techno_search.adversarial_review import build_adversarial_review_dossier
+            from techno_search.known_explanation import resolve_radio_known_explanations
+
+            known_explanation = resolve_radio_known_explanations(candidate)
+            if known_explanation["classification_state"] == "unknown":
+                adversarial_review = build_adversarial_review_dossier(
+                    candidate_packet(scored),
+                    track_b_gate_result=known_explanation["gate_result"],
+                ).as_dict()
+        paths = write_candidate_reports(
+            scored,
+            output_dir,
+            known_explanation_resolution=known_explanation,
+            adversarial_review=adversarial_review,
+        )
         return PipelineRunResult(
             candidate_id=cid,
             track=track_enum,
@@ -127,6 +162,11 @@ def run_pipeline(
             reader_type=_reader_type(track_enum),
             row_count=validation.row_count,
             input_validation=validation_data,
+            known_explanation_state=(
+                str(known_explanation["classification_state"])
+                if known_explanation is not None
+                else None
+            ),
         )
     except Exception as exc:  # noqa: BLE001
         return _error_result(
@@ -291,6 +331,10 @@ def _build_radio_candidate(
         if observation_time_utc is not None:
             extra_features["observation_time_utc"] = observation_time_utc
             extra_provenance["observation_time_utc"] = observation_time_utc
+    if str(provenance.get("instrument", "")).strip().upper() == "GBT":
+        extra_features.update(GBT_OBSERVER_LOCATION)
+        extra_provenance.update(GBT_OBSERVER_LOCATION)
+        extra_provenance["observer_location_source"] = GBT_LOCATION_SOURCE_URL
     if xmatch.get("query_attempted"):
         extra_features["known_object_score"] = known_score
         extra_features["catalog_crossmatch_provider"] = str(xmatch.get("provider", ""))

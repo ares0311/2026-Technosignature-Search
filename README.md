@@ -1,7 +1,7 @@
 # Techno-Hunter
 
-![Status](https://img.shields.io/badge/Hunter%20workflow-PROD-brightgreen)
-![Version](https://img.shields.io/badge/version-1.2.43-blue)
+![Status](https://img.shields.io/badge/Hunter%20workflow-NOT%20PROD-red)
+![Version](https://img.shields.io/badge/version-1.2.44-blue)
 ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 ![Focus](https://img.shields.io/badge/focus-multimodal%20technosignature%20search-purple)
 
@@ -12,9 +12,15 @@ targets, freezes the exact selection, acquires or reuses data, runs the
 scientific pipeline, preserves results and provenance, and recommends the next
 follow-up action.
 
-The Hunter core workflow is production-complete. Its outputs are local triage
-evidence and documented null results—not detections, discoveries, expert
-review, external validation, or permission to contact an outside party.
+The Hunter lifecycle mechanics and integrated known-explanation code are
+operational, but the workflow is not currently PROD. Version 1.2.44 now
+automatically resolves every hit-bearing radio report to `known`, `unknown`, or
+`unresolved`, and automatically persists an adversarial dossier for `unknown`.
+The retained real corpus verifies the `known` and `unresolved` branches; it has
+no cadence-complete real observation that can honestly exercise `unknown`, so
+the final real-acceptance claim remains open. Outputs are local triage evidence
+and documented null results—not detections, discoveries, expert review,
+external validation, or permission to contact an outside party.
 
 ## Pipeline architecture
 
@@ -56,8 +62,12 @@ with documented provenance.
   remain unlabeled.
 - An anomaly score is a ranking diagnostic, not a class probability or a
   detection claim.
-- `unknown_candidate` is a local Track B triage state, not a positive label,
-  discovery, or authorization for external submission.
+- Every hit-bearing radio observation must resolve to `known`, `unknown`, or
+  `unresolved`. `unknown` means all required known-explanation checks completed
+  and none matched; `unresolved` means required evidence or a check was missing.
+- `unknown` is a local triage state, not a positive label, discovery, or
+  authorization for external submission.
+- Anomaly/OOD scores may rank results but do not define or gate `unknown`.
 - Missing calibration evidence keeps dependent learned-model gates
   fail-closed.
 - False positive is always the default hypothesis.
@@ -70,19 +80,21 @@ science plan is in
 
 ## Current status
 
-Phase 0 is complete. Phases 1–5 have real, tested baselines, and the Hunter
-core workflow meets its production lifecycle contract.
+Phase 0 is complete. Version 1.2.44 closes the code-path integration defect.
+Hunter must not be called PROD until a real cadence-complete observation
+exercises the automatic `unknown` and adversarial branch through the installed
+Hunter entry points.
 
 | Area | Current state |
 |---|---|
-| Hunter lifecycle | Production-complete and verified with a real approval-gated new-target run, a durable failure/resume cycle, retained-data follow-up execution, and restart protection. |
+| Hunter lifecycle | Mechanical create/run/resume/history behavior is verified. Real retained-data search `SEARCH-20260722T012732Z-759A1D93` from committed version 1.2.44 proved the installed entry points persist `unresolved` evidence and an actionable follow-up; PROD remains revoked pending a real installed-entry-point `unknown`/adversarial acceptance run. |
 | Candidate universe | 12,086 unique Breakthrough Listen archive labels are durable. Exact evidence resolves 1,184 identities; 358 are currently ranking-eligible. Unresolved identities are excluded rather than guessed. |
 | Radio | Real GBT/MeerKAT ingest, turboSETI preprocessing, ABACAB cadence checks, known-explanation checks, drift analysis, cross-target recurrence, and frequency-family diagnostics are implemented. |
 | Transit photometry | BLS, aperiodic-dip, ingress/egress asymmetry, and transit-shape checks are wired end to end. |
 | Infrared | AllWISE ingest, photosphere fitting, W3/W4 excess significance, and AGN-color checks are implemented; live IRSA use is network-dependent. |
 | Spectroscopy | JWST MIRI LRS ingest and HITRAN-derived artificial-gas band checks are implemented; a corrected real WASP-43 run produced negative evidence. |
-| Multi-modal review | Sky-position crossmatching and deterministic adversarial-review dossiers are implemented. No real candidate has advanced to outside expert review. |
-| Learned calibration | Fail-closed: no adequate pre-existing independent row-level calibration set is available. Uncalibrated scores remain routing indices only. |
+| Multi-modal review | Sky-position crossmatching exists. The production radio path automatically writes a deterministic adversarial dossier for `unknown`; no retained real observation currently meets the complete-evidence boundary, and no candidate has advanced to outside expert review. |
+| Learned calibration | No adequate pre-existing independent row-level calibration set is available. Uncalibrated scores remain ranking aids only; this limitation does not block deterministic known/unknown resolution. |
 
 The current real radio review has unresolved, unlabeled follow-up rows but
 zero independently escalation-ready candidates. No current result is ready for

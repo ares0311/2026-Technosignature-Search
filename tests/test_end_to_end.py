@@ -7,6 +7,7 @@ from pathlib import Path
 import joblib
 import pytest
 
+import techno_search.known_explanation as known_explanation_module
 from techno_search.cli import main
 from techno_search.pipeline_runner import PipelineRunResult, run_pipeline
 from techno_search.semisupervised_scorer import SemisupervisedScorer
@@ -63,6 +64,58 @@ def test_radio_pipeline_writes_report_files(tmp_path: Path) -> None:
     assert result.report_paths.markdown_path.exists()
     assert result.report_paths.json_path.exists()
     assert result.report_paths.manifest_path.exists()
+    assert result.report_paths.known_explanation_path is not None
+    assert result.report_paths.known_explanation_path.exists()
+
+
+def test_radio_pipeline_automatically_persists_resolution(tmp_path: Path) -> None:
+    result = run_pipeline(RADIO_FIXTURE, "radio", tmp_path)
+
+    assert result.ok
+    packet = json.loads(result.report_paths.json_path.read_text(encoding="utf-8"))
+    resolution = packet["known_explanation_resolution"]
+    assert result.known_explanation_state in {"known", "unknown", "unresolved"}
+    assert resolution["classification_state"] == result.known_explanation_state
+    assert resolution["ranking_evidence"]["affects_classification_state"] is False
+
+
+def test_radio_pipeline_automatically_writes_adversarial_dossier_for_unknown(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    gate = {
+        "eligible_for_unknown_candidate": True,
+        "classification_state": "unknown",
+        "conditions": [],
+    }
+    resolution = {
+        "classification_state": "unknown",
+        "classification_reason": (
+            "all_required_known_explanation_checks_completed_without_match"
+        ),
+        "known_explanations": [],
+        "unresolved_count": 0,
+        "gate_result": gate,
+        "eligible_for_unknown_candidate": True,
+        "adversarial_review_required": True,
+        "ranking_evidence": {
+            "semisupervised_anomaly_score": None,
+            "affects_classification_state": False,
+        },
+    }
+    monkeypatch.setattr(
+        known_explanation_module,
+        "resolve_radio_known_explanations",
+        lambda candidate: resolution,
+    )
+
+    result = run_pipeline(RADIO_FIXTURE, "radio", tmp_path)
+
+    assert result.ok
+    assert result.known_explanation_state == "unknown"
+    assert result.report_paths.adversarial_review_path is not None
+    assert result.report_paths.adversarial_review_path.exists()
+    packet = json.loads(result.report_paths.json_path.read_text(encoding="utf-8"))
+    assert packet["adversarial_review"]["candidate_id"] == result.candidate_id
 
 
 def test_radio_pipeline_report_has_disclaimer(tmp_path: Path) -> None:
@@ -147,6 +200,7 @@ def test_radio_pipeline_routes_known_spacecraft_to_annotation(tmp_path: Path) ->
     assert packet["features"]["local_known_object_reason"] == (
         "spacecraft_calibration_target"
     )
+    assert packet["known_explanation_state"] == "known"
 
 
 def test_infrared_pipeline_runs_successfully(tmp_path: Path) -> None:
