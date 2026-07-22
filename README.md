@@ -87,7 +87,7 @@ Hunter entry points.
 
 | Area | Current state |
 |---|---|
-| Hunter lifecycle | Mechanical create/run/resume/history behavior is verified. Real retained-data search `SEARCH-20260722T012439Z-6285F141` proved the installed entry points persist `unresolved` evidence and an actionable follow-up; PROD remains revoked pending a real installed-entry-point `unknown`/adversarial acceptance run. |
+| Hunter lifecycle | Mechanical create/run/resume/history behavior is verified. Real retained-data search `SEARCH-20260722T012732Z-759A1D93` from committed version 1.2.44 proved the installed entry points persist `unresolved` evidence and an actionable follow-up; PROD remains revoked pending a real installed-entry-point `unknown`/adversarial acceptance run. |
 | Candidate universe | 12,086 unique Breakthrough Listen archive labels are durable. Exact evidence resolves 1,184 identities; 358 are currently ranking-eligible. Unresolved identities are excluded rather than guessed. |
 | Radio | Real GBT/MeerKAT ingest, turboSETI preprocessing, ABACAB cadence checks, known-explanation checks, drift analysis, cross-target recurrence, and frequency-family diagnostics are implemented. |
 | Transit photometry | BLS, aperiodic-dip, ingress/egress asymmetry, and transit-shape checks are wired end to end. |

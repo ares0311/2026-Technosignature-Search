@@ -44,7 +44,8 @@ verify `known` and `unresolved`; unit and dispatch tests verify `unknown` and it
 dossier. The retained corpus has no real cadence-complete observation that can
 reach `unknown`. Do not call Hunter PROD before an installed-entry-point run on
 real complete evidence proves that remaining branch.
-Retained-data follow-up `SEARCH-20260722T012439Z-6285F141` now proves the
+Retained-data follow-up `SEARCH-20260722T012732Z-759A1D93` from code commit
+`10dfb9e` now proves the
 installed entry points propagate HIP103096's `unresolved` state and exact
 evidence into the durable follow-up ledger; it does not close the missing real
 `unknown` branch.

@@ -39,13 +39,14 @@ observation that reaches `unknown`, so PROD is not restored until that branch
 is exercised through an installed Hunter run on real evidence.
 
 **Installed Hunter integration acceptance — 2026-07-21:** retained-data
-follow-up `SEARCH-20260722T012439Z-6285F141` executed the exact frozen
+follow-up `SEARCH-20260722T012732Z-759A1D93` executed the exact frozen
 HIP103096 target through `.venv/bin/Run-New-Search` with no download. The
 pipeline loaded every Track A catalog, persisted
 `known_explanation_state: unresolved` in the candidate report, report
 manifest, scan summary, target status, and follow-up ledger, and recommended
 completing the three unresolved checks before promotion. The run completed as
-`RUN-2026-07-22_012446Z-9YHW-hunter-search`; its production manifest records
+`RUN-2026-07-22_012736Z-SMK3-hunter-search`; its immutable manifest records
+code commit `10dfb9e`, and its production manifest records
 `known: 0`, `unknown: 0`, `unresolved: 1`. This proves installed-path state and
 provenance propagation, not the still-missing real `unknown`/adversarial
 branch.

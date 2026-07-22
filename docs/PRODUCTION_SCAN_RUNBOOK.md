@@ -171,7 +171,8 @@ exercise that branch through an installed Hunter run. PROD remains open on
 that real acceptance evidence, not on learned-score calibration.
 
 Installed-path evidence: retained-data follow-up
-`SEARCH-20260722T012439Z-6285F141` completed without a download and durably
+`SEARCH-20260722T012732Z-759A1D93` completed from code commit `10dfb9e` without
+a download and durably
 propagated HIP103096 as `unresolved` through its candidate report, report
 manifest, scan summary, target-status ledger, and follow-up registry. The
 recommended action is to complete the three unresolved known-explanation

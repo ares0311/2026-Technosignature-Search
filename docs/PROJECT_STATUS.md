@@ -59,7 +59,8 @@ crossmatch evidence, or satellite evidence resolve loudly to `unresolved`
 rather than a guessed negative match. An `unknown` result automatically
 receives a durable adversarial dossier. PROD remains revoked until a real
 cadence-complete installed-Hunter run exercises that branch.
-Retained-data search `SEARCH-20260722T012439Z-6285F141` proves that the
+Retained-data search `SEARCH-20260722T012732Z-759A1D93` from code commit
+`10dfb9e` proves that the
 installed entry points propagate HIP103096's `unresolved` state and exact
 evidence into the durable follow-up ledger; it does not close `unknown`.
 
