@@ -564,6 +564,7 @@ def build_target_priority_queue(
     ),
     extra_size_preflight_report_paths: Sequence[Path] = (),
     extra_discovery_result_paths: Sequence[Path] = (),
+    extra_seed_csv_paths: Sequence[Path] = (),
     scan_history_path: Path = Path("results/scan_history.ndjson"),
 ) -> list[dict[str, str]]:
     """Build sorted target-priority rows from committed metadata and status.
@@ -581,6 +582,16 @@ def build_target_priority_queue(
     only ever lived in the single-slot ``download_bl_extended_corpus_discovery``
     entry of ``data_status_path``), causing them to fall back to
     ``queued_metadata_discovery`` and get re-selected into a future batch.
+
+    ``extra_seed_csv_paths`` merges additional real-identity target sources
+    beyond the primary curated HPRC seed list -- e.g.
+    ``data/bl_archive_resolved_stellar_seed_targets.csv``
+    (``scripts/build_archive_resolved_stellar_seed.py``), real SIMBAD-
+    resolved BL archive labels SIMBAD itself classifies as stellar. Each
+    extra seed CSV must use the same schema as the primary seed CSV. A
+    target_id that appears in more than one seed source keeps whichever row
+    scores higher (the existing dedup rule below), so a star already in the
+    curated HPRC list is never silently downgraded by a second source.
     """
 
     coverage = _load_coverage_state(
@@ -595,7 +606,8 @@ def build_target_priority_queue(
     priority_config = load_background_priority_config()
     queue_rows = [
         _queue_row(row, coverage, prior_review_counts, priority_config)
-        for row in _load_seed_targets(seed_csv_path)
+        for seed_path in (seed_csv_path, *extra_seed_csv_paths)
+        for row in _load_seed_targets(seed_path)
         if _target_id_from_row(row)
     ]
     rows_by_target: dict[str, dict[str, str]] = {}
@@ -627,6 +639,7 @@ def write_target_priority_queue(
     ),
     extra_size_preflight_report_paths: Sequence[Path] = (),
     extra_discovery_result_paths: Sequence[Path] = (),
+    extra_seed_csv_paths: Sequence[Path] = (),
     scan_history_path: Path = Path("results/scan_history.ndjson"),
 ) -> dict[str, Any]:
     """Write a target-priority queue CSV and return a compact summary."""
@@ -637,6 +650,7 @@ def write_target_priority_queue(
         size_preflight_report_path=size_preflight_report_path,
         extra_size_preflight_report_paths=extra_size_preflight_report_paths,
         extra_discovery_result_paths=extra_discovery_result_paths,
+        extra_seed_csv_paths=extra_seed_csv_paths,
         scan_history_path=scan_history_path,
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
