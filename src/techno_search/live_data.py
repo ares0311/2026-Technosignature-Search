@@ -51,6 +51,7 @@ CATALOG_CACHE_COMMITTED_DATA_ALLOWLIST = frozenset(
         "data/bl_hprc_full_seed_targets.csv",
         "data/bl_hprc_full_targets_vizier.csv",
         "data/target_sample_manifest.json",
+        "data/bl_archive_resolved_stellar_seed_targets.csv",
     ]
 )
 
