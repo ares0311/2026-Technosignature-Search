@@ -347,6 +347,38 @@
       "source_documentation": "https://simbad.cds.unistra.fr/guide/sim-url.htx",
       "source_endpoint": "https://simbad.cds.unistra.fr/simbad/sim-script",
       "still_unresolved_count": 4894
+    },
+    {
+      "acquisition_mode": "metadata_only_discovery",
+      "acquisition_role": "live_search_bootstrap_cache",
+      "attempt_id": "download_bl_extended_corpus_discovery__2026-07-24T17:33:54.626899+00:00",
+      "available": 2,
+      "available_targets": [
+        {
+          "target": "HIP2",
+          "url": "https://bldata.berkeley.edu/pipeline/AGBT16A_999_232/holding/spliced_blc0001020304050607_guppi_57573_50527_HIP2_0021.gpuspec.0002.h5"
+        },
+        {
+          "target": "HIP99427",
+          "url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_105/holding/spliced_blc0001020304050607_guppi_57752_83026_HIP99427_0033.gpuspec.0002.h5"
+        }
+      ],
+      "checked": 3,
+      "downloaded": 0,
+      "mode": "discover_only",
+      "ok": true,
+      "raw_retention_policy": "public_raw_archive_cache_not_pinned",
+      "recorded_at_utc": "2026-07-24T17:33:54.626899+00:00",
+      "reused": 0,
+      "script": "download_bl_extended_corpus_discovery",
+      "skipped": 1,
+      "skipped_targets": [
+        {
+          "reason": "no_hdf5_url_discovered",
+          "target": "HIP999999999"
+        }
+      ],
+      "total": 3
     }
   ],
   "disclaimer": "This manifest records real local data-collection run outcomes (counts of items found/downloaded/skipped/failed) for compact progress review. It is not a detection, discovery, external validation, or external-submission claim.",
@@ -513,11 +545,20 @@
     "download_bl_extended_corpus_discovery": {
       "acquisition_mode": "metadata_only_discovery",
       "acquisition_role": "live_search_bootstrap_cache",
-      "available": 0,
-      "available_targets": [],
-      "checked": 1,
+      "available": 2,
+      "available_targets": [
+        {
+          "target": "HIP2",
+          "url": "https://bldata.berkeley.edu/pipeline/AGBT16A_999_232/holding/spliced_blc0001020304050607_guppi_57573_50527_HIP2_0021.gpuspec.0002.h5"
+        },
+        {
+          "target": "HIP99427",
+          "url": "https://bldata.berkeley.edu/pipeline/AGBT16B_999_105/holding/spliced_blc0001020304050607_guppi_57752_83026_HIP99427_0033.gpuspec.0002.h5"
+        }
+      ],
+      "checked": 3,
       "downloaded": 0,
-      "last_run_utc": "2026-07-14T21:46:16.203519+00:00",
+      "last_run_utc": "2026-07-24T17:33:54.626899+00:00",
       "mode": "discover_only",
       "ok": true,
       "raw_retention_policy": "public_raw_archive_cache_not_pinned",
@@ -526,10 +567,10 @@
       "skipped_targets": [
         {
           "reason": "no_hdf5_url_discovered",
-          "target": "DENIS-P J1048.0-3956"
+          "target": "HIP999999999"
         }
       ],
-      "total": 1
+      "total": 3
     },
     "enrich_bl_archive_candidate_identity__20260724T065209534194Z": {
       "error": "IdentityEnrichmentError: Unexpected SIMBAD response shape: '::script::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\\n\\nformat object form1 \"%IDLIST(1) | %COO(d;A) | %COO(d;D)\"\\nquery id G15.17-6.06\\nquery id G15.28+6.26\\nquery id G15.28-3.4'",
