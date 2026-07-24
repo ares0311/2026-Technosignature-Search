@@ -15,7 +15,21 @@ detection, or external-submission permission was produced. A later-epoch
 observation is recommended scientific work, not a missing lifecycle stage. The
 durable public-archive namespace now exceeds 10,000, but only 358 entries are
 identity-resolved and currently ranking-eligible.
-**Current app version:** 1.2.44
+**Current app version:** 1.2.45
+
+**Retained-DAT provenance closure — 2026-07-21:** version 1.2.45 recovers a
+retained hit table's archive URL and GBT instrument identity only through an
+exact HDF5-filename match in the committed bounded-corpus manifest. Ambiguous
+matches fail loudly. The derived GBT location therefore carries both archive
+and observatory provenance rather than a filename guess. A validated,
+hit-bearing turboSETI DAT is now sufficient evidence that its rows cleared the
+detector threshold; the exact configured threshold remains preserved in the
+immutable Hunter search manifest and is still preferred when a provenance
+sidecar supplies it. A fresh real HIP103096 pipeline run now completes catalog,
+satellite, detector-threshold, RFI, instrument, and provenance checks; only its
+missing ON/OFF cadence remains unresolved. This narrows the real PROD blocker
+to acquiring or locating valid cadence evidence, without using anomaly scores
+or generated labels.
 
 **Integrated known-explanation repair implemented — 2026-07-21:** version
 1.2.44 makes the real radio `run-pipeline` path automatically execute all four

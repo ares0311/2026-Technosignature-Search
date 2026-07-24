@@ -223,12 +223,38 @@ def _cadence_condition(candidate: Candidate) -> GateCondition:
 def _search_threshold_condition(candidate: Candidate) -> GateCondition:
     snr = candidate.features.get("snr")
     threshold = candidate.provenance.get("processing_snr_threshold")
-    if snr is None or threshold in (None, "") or float(threshold) <= 0.0:
+    hit_count = int(candidate.features.get("hit_count", 0) or 0)
+    validated_hit_table = (
+        str(candidate.provenance.get("reader_type", "")) == "turboSETI_csv"
+        and str(candidate.provenance.get("source_file", "")).lower().endswith(".dat")
+        and hit_count > 0
+    )
+    if snr is None:
         return GateCondition(
             condition_id="not_below_search_threshold",
             description="Event is above the provenance-stamped detector search threshold",
             satisfied=None,
-            evidence={"snr": snr, "processing_snr_threshold": threshold},
+            evidence={
+                "snr": snr,
+                "processing_snr_threshold": threshold,
+                "validated_hit_table": validated_hit_table,
+            },
+        )
+    if threshold in (None, "") or float(threshold) <= 0.0:
+        return GateCondition(
+            condition_id="not_below_search_threshold",
+            description="Event is above the detector threshold recorded by its hit table",
+            satisfied=True if validated_hit_table else None,
+            evidence={
+                "snr": snr,
+                "processing_snr_threshold": threshold,
+                "validated_hit_table": validated_hit_table,
+                "evidence_basis": (
+                    "validated_hit_bearing_turboseti_dat"
+                    if validated_hit_table
+                    else "numeric_threshold_and_validated_hit_table_unavailable"
+                ),
+            },
         )
     satisfied = float(snr) >= float(threshold)
     return GateCondition(

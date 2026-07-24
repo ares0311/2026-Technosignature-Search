@@ -63,6 +63,8 @@ Retained-data search `SEARCH-20260722T012732Z-759A1D93` from code commit
 `10dfb9e` proves that the
 installed entry points propagate HIP103096's `unresolved` state and exact
 evidence into the durable follow-up ledger; it does not close `unknown`.
+Version 1.2.45 recovers its exact GBT archive provenance and detector-threshold
+evidence, leaving only the genuinely absent ON/OFF cadence unresolved.
 
 ---
 

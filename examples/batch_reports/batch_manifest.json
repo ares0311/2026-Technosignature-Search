@@ -1,7 +1,7 @@
 {
   "candidate_count": 3,
   "config_version": "scoring_v0",
-  "generated_at_utc": "2026-07-21T17:32:13.893013+00:00",
+  "generated_at_utc": "2026-07-22T02:03:13.520466+00:00",
   "input_dir": "examples/candidates",
   "output_dir": "examples/batch_reports",
   "reports": [

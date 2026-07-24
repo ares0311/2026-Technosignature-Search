@@ -8,7 +8,7 @@ from typing import Any
 
 from techno_search.data_quality import DataQualityResult, validate_input
 from techno_search.reporting import ReportPaths, candidate_packet, write_candidate_reports
-from techno_search.schemas import Candidate, FeatureValue, Track
+from techno_search.schemas import Candidate, FeatureMap, FeatureValue, Track
 from techno_search.scoring import score_candidate
 
 PIPELINE_RUN_DISCLAIMER = (
@@ -307,9 +307,18 @@ def _build_radio_candidate(
 
     # Optional live catalog cross-match (requires TECHNO_SEARCH_ENABLE_LIVE_DATA=1)
     raw_rows = read_hit_table_csv(path)
-    ra = next((r["ra_deg"] for r in raw_rows if r.get("ra_deg") is not None), None)
-    dec = next((r["dec_deg"] for r in raw_rows if r.get("dec_deg") is not None), None)
-    mjd = next((r["mjd"] for r in raw_rows if r.get("mjd") is not None), None)
+    selected_row = _selected_radio_observation_row(
+        path,
+        raw_rows,
+        frequency_hz=_required_float(candidate.features, "frequency_hz"),
+        drift_rate_hz_per_sec=_required_float(
+            candidate.features, "drift_rate_hz_per_sec"
+        ),
+        snr=_required_float(candidate.features, "snr"),
+    )
+    ra = selected_row.get("ra_deg")
+    dec = selected_row.get("dec_deg")
+    mjd = selected_row.get("mjd")
     xmatch = catalog_crossmatch(ra, dec)
     known_score = float(xmatch.get("known_object_score", 0.0))
 
@@ -331,7 +340,7 @@ def _build_radio_candidate(
         if observation_time_utc is not None:
             extra_features["observation_time_utc"] = observation_time_utc
             extra_provenance["observation_time_utc"] = observation_time_utc
-    if str(provenance.get("instrument", "")).strip().upper() == "GBT":
+    if _is_gbt_instrument(provenance.get("instrument")):
         extra_features.update(GBT_OBSERVER_LOCATION)
         extra_provenance.update(GBT_OBSERVER_LOCATION)
         extra_provenance["observer_location_source"] = GBT_LOCATION_SOURCE_URL
@@ -720,6 +729,78 @@ def _build_infrared_candidate(path: Path, candidate_id: str) -> Candidate:
             provenance={**candidate.provenance, **extra_provenance},
         )
     return candidate
+
+
+def _selected_radio_observation_row(
+    path: Path,
+    rows: list[dict[str, Any]],
+    *,
+    frequency_hz: float,
+    drift_rate_hz_per_sec: float,
+    snr: float,
+) -> dict[str, Any]:
+    """Return metadata for the exact selected signal row.
+
+    Older derived cadence CSVs can lack coordinates even though their verified
+    source DAT artifacts contain them. In that case recover metadata from the
+    exact source artifact named by the selected row; never substitute a
+    different cadence position or timestamp.
+    """
+
+    selected = next(
+        (
+            row
+            for row in rows
+            if abs(float(row["frequency_hz"]) - frequency_hz) <= 0.001
+            and abs(float(row["drift_rate_hz_per_sec"]) - drift_rate_hz_per_sec)
+            <= 0.000001
+            and abs(float(row["snr"]) - snr) <= 0.000001
+        ),
+        None,
+    )
+    if selected is None:
+        raise ValueError("Selected radio signal has no exact source row.")
+    if all(selected.get(field) is not None for field in ("ra_deg", "dec_deg", "mjd")):
+        return selected
+    source_artifact = str(selected.get("source_artifact", "")).strip()
+    if not source_artifact:
+        return selected
+    source_path = path.parent / source_artifact
+    if not source_path.is_file():
+        raise ValueError(
+            f"Selected cadence source artifact is unavailable: {source_artifact}"
+        )
+    from techno_search.radio.hit_table_reader import read_hit_table_csv
+
+    source_rows = read_hit_table_csv(source_path)
+    recovered = next(
+        (
+            row
+            for row in source_rows
+            if abs(float(row["frequency_hz"]) - frequency_hz) <= 0.001
+            and abs(float(row["drift_rate_hz_per_sec"]) - drift_rate_hz_per_sec)
+            <= 0.000001
+            and abs(float(row["snr"]) - snr) <= 0.000001
+        ),
+        None,
+    )
+    if recovered is None:
+        raise ValueError(
+            f"Selected cadence signal is absent from source artifact: {source_artifact}"
+        )
+    return {**selected, **recovered, "source_artifact": source_artifact}
+
+
+def _is_gbt_instrument(value: object) -> bool:
+    normalized = str(value or "").strip().casefold()
+    return normalized in {"gbt", "green bank telescope"}
+
+
+def _required_float(features: FeatureMap, key: str) -> float:
+    value = features[key]
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        raise ValueError(f"Candidate feature {key!r} must be numeric, got {value!r}.")
+    return float(value)
 
 
 def _build_anomaly_candidate(path: Path, candidate_id: str) -> Candidate:

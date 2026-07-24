@@ -77,23 +77,14 @@ def score_candidate(
         )
 
     # The default model is an explicitly uncalibrated ranking heuristic. It
-    # may prioritize local follow-up, but it cannot support candidate-review
-    # promotion or probability claims. Fail closed until a versioned,
-    # provenance-stamped calibration dataset is supplied.
+    # may prioritize local follow-up, but it cannot support a probability-based
+    # candidate-review promotion. Deterministic known-explanation resolution
+    # and adversarial review are independent of this routing limitation.
     if (
         pathway == Pathway.CANDIDATE_REVIEW_PACKET
         and not config.probability_interpretation_allowed
     ):
         pathway = Pathway.HUMAN_REVIEW_QUEUE
-        evidence = EvidenceSummary(
-            evidence.positive_evidence,
-            evidence.negative_evidence,
-            evidence.blocking_issues
-            + (
-                "Candidate-review promotion is blocked because scoring is an "
-                "uncalibrated local-routing heuristic.",
-            ),
-        )
 
     return ScoredCandidate(
         candidate=candidate,

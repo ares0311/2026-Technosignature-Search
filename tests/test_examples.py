@@ -26,6 +26,9 @@ PER_CANDIDATE_MANIFEST_FIELDS = {
     "generated_at_utc",
     "provenance_summary",
     "plot_artifacts",
+    "known_explanation_state",
+    "known_explanation_path",
+    "adversarial_review_path",
 }
 BATCH_MANIFEST_FIELDS = {
     "generated_at_utc",

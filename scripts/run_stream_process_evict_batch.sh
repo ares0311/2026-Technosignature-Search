@@ -121,7 +121,7 @@ project_storage_usage_kb() {
   printf '%s\n' "${total}"
 }
 
-# TSV rows: hip<TAB>url<TAB>estimated_gb
+# TSV rows: hip<TAB>url<TAB>estimated_gb<TAB>preserved_source_data_path
 # Written under the repo's own ignored data_cache/ (not /tmp): this session's
 # sandbox confines writes to the repo root, so mktemp against $TMPDIR fails.
 SCRATCH_DIR="${REPO_ROOT}/data_cache"
@@ -193,9 +193,10 @@ for row in rows:
     hip = str(row.get("hip", "")).strip()
     url = str(row.get("source_hdf5_url", "")).strip() or "LOCAL_DAT_ONLY"
     gb = row.get("estimated_download_gb", 0)
+    source_data_path = str(row.get("source_data_path", "")).strip()
     if not hip:
         continue
-    print(f"{hip}\t{url}\t{gb or 0}")
+    print(f"{hip}\t{url}\t{gb or 0}\t{source_data_path}")
 ' "${MANIFEST}" "${LIMIT}" > "${TARGET_ROWS_FILE}"
 
 TOTAL=$(wc -l < "${TARGET_ROWS_FILE}" | tr -d ' ')
@@ -228,8 +229,16 @@ REPORT_COUNT=0
 
 target_has_completed_evidence() {
   local hip="$1"
+  local source_data_path="${2:-}"
   local target_dir="${OUT_DIR}/${hip}"
   local dat_file dat_stem report_hit
+  if [[ -n "${source_data_path}" ]]; then
+    dat_stem="$(basename "${source_data_path}")"
+    dat_stem="${dat_stem%.*}"
+    report_hit="$(find "${RESULTS_DIR}" -name '*.manifest.json' -path "*${dat_stem}*" 2>/dev/null | head -1)"
+    [[ -n "${report_hit}" ]]
+    return
+  fi
   dat_file="$(find "${target_dir}" -maxdepth 1 -name '*.dat' 2>/dev/null | head -1)"
   if [[ -z "${dat_file}" ]]; then
     return 1
@@ -241,6 +250,11 @@ target_has_completed_evidence() {
 
 target_has_hit_table() {
   local hip="$1"
+  local source_data_path="${2:-}"
+  if [[ -n "${source_data_path}" ]]; then
+    [[ -f "${source_data_path}" ]]
+    return
+  fi
   find "${OUT_DIR}/${hip}" -maxdepth 1 -name '*.dat' -print -quit 2>/dev/null | grep -q .
 }
 
@@ -327,8 +341,18 @@ download_target() {
 
 evict_target_if_processed() {
   local hip="$1"
+  local source_data_path="${2:-}"
   local target_dir="${OUT_DIR}/${hip}"
   local dat_file
+  if [[ -n "${source_data_path}" ]]; then
+    local source_stem source_report
+    source_stem="$(basename "${source_data_path}")"
+    source_stem="${source_stem%.*}"
+    source_report="$(find "${RESULTS_DIR}" -name '*.manifest.json' -path "*${source_stem}*" 2>/dev/null | head -1)"
+    [[ -n "${source_report}" ]]
+    EVICTION_OCCURRED=0
+    return
+  fi
   dat_file="$(find "${target_dir}" -maxdepth 1 -name '*.dat' 2>/dev/null | head -1)"
   if [[ -z "${dat_file}" ]]; then
     log "[HOLD] ${hip}: no .dat produced yet; keeping raw payload"
@@ -373,6 +397,27 @@ manifest = json.load(open(sys.argv[1], encoding="utf-8"))
 hip = sys.argv[2]
 print(next((str(row.get("source_hdf5_url", "")) for row in manifest.get("targets", []) if str(row.get("hip", "")) == hip), ""))
 ' "${MANIFEST}" "${hip}")
+    source_data_path=$("${VENV_PYTHON}" -c '
+import json, sys
+manifest = json.load(open(sys.argv[1], encoding="utf-8"))
+hip = sys.argv[2]
+print(next((str(row.get("source_data_path", "")) for row in manifest.get("targets", []) if str(row.get("hip", "")) == hip), ""))
+' "${MANIFEST}" "${hip}")
+    if [[ -n "${source_data_path}" ]]; then
+      if [[ ! -f "${source_data_path}" ]]; then
+        log "[ERROR] ${hip}: preserved source data is unavailable: ${source_data_path}"
+        continue
+      fi
+      source_stem="$(basename "${source_data_path}")"
+      source_stem="${source_stem%.*}"
+      log "[CHUNK] ${hip}: scoring preserved local evidence ${source_stem}"
+      if ! "${REPO_ROOT}/.venv/bin/techno-search" run-pipeline \
+        "${source_data_path}" --track radio \
+        --output-dir "${RESULTS_DIR}/${source_stem}"; then
+        log "[WARN] ${hip}: preserved local evidence pipeline failed"
+      fi
+      continue
+    fi
     log "[CHUNK] ${hip}: running isolated turboSETI"
     turboseti_args=(--corpus-dir "${OUT_DIR}/${hip}")
     if [[ -n "${source_url}" ]]; then
@@ -390,7 +435,13 @@ print(next((str(row.get("source_hdf5_url", "")) for row in manifest.get("targets
     fi
   done
   for hip in "${names_ref[@]}"; do
-    if evict_target_if_processed "${hip}"; then
+    source_data_path=$("${VENV_PYTHON}" -c '
+import json, sys
+manifest = json.load(open(sys.argv[1], encoding="utf-8"))
+hip = sys.argv[2]
+print(next((str(row.get("source_data_path", "")) for row in manifest.get("targets", []) if str(row.get("hip", "")) == hip), ""))
+' "${MANIFEST}" "${hip}")
+    if evict_target_if_processed "${hip}" "${source_data_path}"; then
       NEWLY_PROCESSED_COUNT=$((NEWLY_PROCESSED_COUNT + 1))
       NEWLY_PROCESSED_NAMES+=("${hip}")
       if [[ "${EVICTION_OCCURRED}" -eq 1 ]]; then
@@ -419,7 +470,7 @@ import sys
 total = 0.0
 for line in open(sys.argv[1], encoding='utf-8'):
     parts = line.rstrip('\n').split('\t')
-    if len(parts) == 3:
+    if len(parts) >= 3:
         total += float(parts[2])
 print(total)
 " "${TARGET_ROWS_FILE}")
@@ -428,14 +479,14 @@ BATCH_START_EPOCH=$(date +%s)
 CHUNK_NAMES=()
 processed_in_run=0
 STOP=0
-while IFS=$'\t' read -r hip url gb; do
+while IFS=$'\t' read -r hip url gb source_data_path; do
   if [[ "${STOP}" -eq 1 ]]; then
     break
   fi
   processed_in_run=$((processed_in_run + 1))
   log "[${processed_in_run}/${TOTAL}] ${hip}"
-  if target_has_completed_evidence "${hip}"; then
-    if evict_target_if_processed "${hip}" && [[ "${EVICTION_OCCURRED}" -eq 1 ]]; then
+  if target_has_completed_evidence "${hip}" "${source_data_path}"; then
+    if evict_target_if_processed "${hip}" "${source_data_path}" && [[ "${EVICTION_OCCURRED}" -eq 1 ]]; then
       EVICTED_COUNT=$((EVICTED_COUNT + 1))
       EVICTED_NAMES+=("${hip}")
     fi
@@ -444,7 +495,7 @@ while IFS=$'\t' read -r hip url gb; do
     log "[DONE] ${hip}: existing .dat and candidate report; no re-download needed"
     continue
   fi
-  if target_has_hit_table "${hip}"; then
+  if target_has_hit_table "${hip}" "${source_data_path}"; then
     CHUNK_NAMES+=("${hip}")
     log "[REUSE] ${hip}: existing .dat will be scored into this search; no re-download needed"
     if [[ "${#CHUNK_NAMES[@]}" -ge "${CHUNK_SIZE}" ]]; then

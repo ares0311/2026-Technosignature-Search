@@ -1,9 +1,12 @@
 {
+  "adversarial_review_path": null,
   "candidate_id": "example-radio-clean",
-  "code_commit": "c20a5fb",
+  "code_commit": "275d9ac",
   "config_version": "scoring_v0",
-  "generated_at_utc": "2026-07-21T17:32:13.887036+00:00",
+  "generated_at_utc": "2026-07-22T02:03:13.512707+00:00",
   "json_path": "examples/batch_reports/example-radio-clean.json",
+  "known_explanation_path": null,
+  "known_explanation_state": null,
   "markdown_path": "examples/batch_reports/example-radio-clean.md",
   "plot_artifacts": [
     {
@@ -18,9 +21,9 @@
   ],
   "provenance_summary": {
     "cache_key": null,
-    "code_commit": "c20a5fb",
+    "code_commit": "275d9ac",
     "config_version": "scoring_v0",
-    "generated_at_utc": "2026-07-21T17:32:13.887054+00:00",
+    "generated_at_utc": "2026-07-22T02:03:13.512720+00:00",
     "input_path": null,
     "provider_name": null,
     "query_parameters": {},

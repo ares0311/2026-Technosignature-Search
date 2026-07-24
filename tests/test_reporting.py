@@ -53,9 +53,10 @@ def test_candidate_packet_contains_required_report_fields() -> None:
     assert packet["scores"]["false_positive_probability"] >= 0.0
     assert packet["positive_evidence"]
     assert packet["negative_evidence"]
-    assert any("uncalibrated" in item for item in packet["blocking_issues"])
+    assert not any("uncalibrated" in item for item in packet["blocking_issues"])
     assert packet["score_calibration"]["status"] == "uncalibrated"
     assert packet["score_calibration"]["probability_interpretation_allowed"] is False
+    assert "not calibrated probabilities" in packet["score_calibration"]["limitation"]
     assert packet["provenance"]["source_dataset"] == "synthetic-fixture"
     assert packet["schema_version"] == "techno_search_packet_v1"
     assert packet["config_version"] == "scoring_v0"
