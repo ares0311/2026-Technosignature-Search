@@ -66,9 +66,24 @@ correctly reports `requires_human_expert_review: false` because a real,
 separate Earth-drift-inconsistency blocking issue remains open -- reaching
 `unknown` is necessary, not sufficient, for expert-review eligibility. This
 was exercised via a direct `run-pipeline` CLI call, not yet through the
-installed `Create-New-Search`/`Run-New-Search` entry points; that
-installed-path exercise, and resolving or accepting the drift blocking issue,
-are the current highest-priority real acceptance gaps.
+installed `Create-New-Search`/`Run-New-Search` entry points.
+
+Version 1.2.47 closes that remaining installed-path gap: `Create-New-Search
+--targets 61 --mode follow-up` froze the top 61 real durable follow-up
+entries by `follow_up_priority` (HIP99427 ranks 61st, 0.992456, correctly
+reusing its `source_data_path`), projecting only 0.264 GB of real new
+acquisition -- HIP99427 itself required zero new acquisition.
+`Run-New-Search --approve-acquisition` completed as
+`RUN-2026-07-24_062446Z-WE1V-hunter-search` with a full `run_started` ->
+`run_completed` event pair, isolating a fresh per-search copy of every
+candidate's pipeline result. HIP99427's isolated copy reproduces
+`known_explanation_state: unknown`, `eligible_for_unknown_candidate: true`,
+10/10 conditions satisfied, and its own adversarial dossier -- proving the
+installed lifecycle preserves identity and evidence, not just the standalone
+CLI path. The current highest-priority real acceptance gap is now
+candidate-pool scale (358 ranking-eligible of a 10,000+ goal), plus
+separately resolving or accepting HIP99427's own still-open Earth-drift
+blocking issue.
 
 **First approval-gated Hunter acquisition — 2026-07-21:** HIP107788 completed
 the immutable new-target lifecycle after one loud, durable DNS failure and an
@@ -138,7 +153,7 @@ acquisition is permanently outside project scope.
 |---|---|
 | Pipeline processes real data end-to-end per file/target | ✅ Real, repeatedly demonstrated (Voyager, HIP99427, all 18 KIC 8462852 quarters) |
 | Track A known-explanation classification | ✅ Integrated into the production radio path; real Voyager=`known`, HIP107788=`unresolved` |
-| Track B known/unknown resolution | ⚠️ Implemented and now proven on real cadence-complete evidence (HIP99427, `run-pipeline`): `unknown` is reachable without anomaly calibration, and a real result correctly still withholds expert-review eligibility on an open drift blocking issue. Not yet exercised through the installed `Create-New-Search`/`Run-New-Search` entry points. |
+| Track B known/unknown resolution | ✅ Implemented and proven through the installed `Create-New-Search`/`Run-New-Search` entry points on real cadence-complete evidence (HIP99427): `unknown` is reachable without anomaly calibration, identity/evidence survive the full lifecycle, and a real result correctly still withholds expert-review eligibility on an open drift blocking issue. |
 | Semisupervised anomaly/OOD calibration | ❌ Unavailable for probability/threshold claims; ranking-only and not a blocker for known/unknown resolution |
 | Operator UI hardening | ✅ Hunter lifecycle surface verified with a real approval-gated `Run-New-Search`: compact create/follow-up tables, visible acquisition progress, scriptable JSON where useful, loud non-zero failure, same-search resume, and actionable follow-up recommendation. Existing broader production surfaces remain as documented in Step 2. |
 | Detection-optimized target selection algorithm | ⚠️ 3a ranks by the real config-driven `target_selection_score`, including production-scan history; the policy sum remains auditable but is no longer the selector. `Create-New-Search` durably freezes exact selections, while follow-up mode ranks resolved real ledger evidence separately. Metadata discovery/size preflight cover the full 1,703-target HPRC queue. Successful batch-3 resume records bring completed controls to 805, leaving 358 sized URL-available targets (89.274678 GB) and 540 completed no-product results. The live archive namespace adds 12,086 durable candidate labels, but exact queue-alias resolution currently yields 1,184 identities and only those same 358 ranking-eligible targets; the remaining labels are not guessed into viability. This is an inventory, not raw-download approval. See Step 3a. |

@@ -1,7 +1,7 @@
 # Techno-Hunter
 
 ![Status](https://img.shields.io/badge/Hunter%20workflow-NOT%20PROD-red)
-![Version](https://img.shields.io/badge/version-1.2.46-blue)
+![Version](https://img.shields.io/badge/version-1.2.47-blue)
 ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 ![Focus](https://img.shields.io/badge/focus-multimodal%20technosignature%20search-purple)
 
@@ -13,16 +13,16 @@ scientific pipeline, preserves results and provenance, and recommends the next
 follow-up action.
 
 The Hunter lifecycle mechanics and integrated known-explanation code are
-operational, but the workflow is not currently PROD. Versions 1.2.44-1.2.46
+operational, but the workflow is not currently PROD. Versions 1.2.44-1.2.47
 automatically resolve every hit-bearing radio report to `known`, `unknown`, or
 `unresolved`, and automatically persist an adversarial dossier for `unknown`.
-The retained real corpus now verifies all three branches -- a real 6-scan
-HIP99427 cadence reached `unknown` for the first time via `run-pipeline`, with
-its adversarial dossier correctly still withholding expert-review eligibility
-on an open Earth-drift blocking issue -- but this has not yet been exercised
-through the installed `Create-New-Search`/`Run-New-Search` entry points, so
-the final real-acceptance claim remains open. Outputs are local triage
-evidence and documented null results—not detections, discoveries, expert
+The retained real corpus now verifies all three branches through the
+installed `Create-New-Search`/`Run-New-Search` entry points -- a real 6-scan
+HIP99427 cadence reached `unknown` there too, with its adversarial dossier
+correctly still withholding expert-review eligibility on an open Earth-drift
+blocking issue. The remaining PROD gap is candidate-pool scale: only 358 of a
+10,000+-viable-target goal are currently ranking-eligible. Outputs are local
+triage evidence and documented null results—not detections, discoveries, expert
 review, external validation, or permission to contact an outside party.
 
 ## Pipeline architecture
@@ -90,7 +90,7 @@ Hunter entry points.
 
 | Area | Current state |
 |---|---|
-| Hunter lifecycle | Mechanical create/run/resume/history behavior is verified. Version 1.2.45 recovers exact GBT archive provenance for retained DAT files and accepts validated hit-table presence as detector-threshold evidence. Real HIP103096 now remains unresolved only on missing ON/OFF cadence; PROD remains revoked pending a real installed-entry-point `unknown`/adversarial acceptance run. |
+| Hunter lifecycle | Mechanical create/run/resume/history behavior is verified. Version 1.2.47 proves the real `unknown`/adversarial branch through the installed `Create-New-Search`/`Run-New-Search` entry points (real 6-scan HIP99427 cadence, `RUN-2026-07-24_062446Z-WE1V-hunter-search`); real HIP103096 remains unresolved only on missing ON/OFF cadence. PROD remains revoked on candidate-pool scale (358 of a 10,000+ goal), not workflow completeness. |
 | Candidate universe | 12,086 unique Breakthrough Listen archive labels are durable. Exact evidence resolves 1,184 identities; 358 are currently ranking-eligible. Unresolved identities are excluded rather than guessed. |
 | Radio | Real GBT/MeerKAT ingest, turboSETI preprocessing, ABACAB cadence checks, known-explanation checks, drift analysis, cross-target recurrence, and frequency-family diagnostics are implemented. |
 | Transit photometry | BLS, aperiodic-dip, ingress/egress asymmetry, and transit-shape checks are wired end to end. |
