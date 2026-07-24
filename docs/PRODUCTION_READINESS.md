@@ -22,7 +22,20 @@ observation is recommended scientific work, not a missing lifecycle stage. The
 durable public-archive namespace now exceeds 10,000, and the real target
 priority queue now covers 6,879 unique target IDs (up from 1,703), though only
 357 currently carry real HDF5 URL/size evidence and are ranking-eligible.
-**Current app version:** 1.2.51
+**Current app version:** 1.2.52
+
+**Bounded concurrent size-preflight workers — 2026-07-24:** version 1.2.52
+adds `workers` to `build_target_priority_size_preflight()`/`write_target_
+priority_size_preflight()` (`--workers` on `target-priority-size-preflight`),
+a bounded `ThreadPoolExecutor` for the URL HEAD-probe pass. Defaults to 1
+(sequential, unchanged prior behavior). A real 4,478-target run against
+`stellar_bridge_size_preflight_manifest.json` found this gap matters at
+scale -- discovery already had a bounded worker pool
+(`TECHNO_EXTENDED_CORPUS_DISCOVERY_WORKERS`), but size-preflight's HEAD
+requests were purely sequential. Row order and every aggregate field are
+identical to the sequential path regardless of worker count or request
+completion order (verified with a real test where later-ranked targets are
+made to finish first).
 
 **Real discovery-tooling sandbox bug found and fixed — 2026-07-24:** version
 1.2.51 fixes a real, previously-misdiagnosed bug: `mktemp -d` against
