@@ -495,7 +495,15 @@ if [[ "${DISCOVER_ONLY}" -eq 1 && "${DRY_RUN}" -eq 0 && "${MAX_TARGETS}" == "0" 
   # (stop once N available targets are found) depend on strict sequential
   # order and are not reproduced under concurrent dispatch.
   log "[INFO]  Discovery workers: ${DISCOVERY_WORKERS} (bounded; no published BL rate limit exists -- see docs/bl_hprc_target_list_research.md -- conservative default, not a verified archive-published limit)"
-  discovery_work_dir="$(mktemp -d "${TMPDIR:-/tmp}/bl_discovery.XXXXXX")"
+  # mktemp -d against $TMPDIR fails under this project's sandbox (directory
+  # creation is denied even though writes under $TMPDIR are otherwise
+  # allowed; confirmed both here and independently for a bare `mktemp -d`
+  # call with no project code involved). scripts/run_stream_process_evict_
+  # batch.sh already works around the same restriction by using a
+  # repo-local data_cache/ scratch directory instead; do the same here.
+  discovery_work_dir="${REPO_ROOT}/data_cache/bl_discovery.$$"
+  rm -rf "${discovery_work_dir}"
+  mkdir -p "${discovery_work_dir}"
   trap 'rm -rf "${discovery_work_dir}"' EXIT
   discovery_start_epoch="$(date +%s)"
   discovery_running=0
