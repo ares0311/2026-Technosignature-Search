@@ -31,6 +31,10 @@ EXPECTED_ROLES = ("on", "off", "on", "off", "on", "off")
 HDF5_MAGIC = b"\x89HDF"
 TURBOSETI_NUMPY_PATCH_OLD = '" is: %i" % max_val.total_n_hits)'
 TURBOSETI_NUMPY_PATCH_NEW = '" is: %i" % int(max_val.total_n_hits[0]))'
+# Some turbo_seti releases already index the scalar upstream without our
+# defensive int() cast (e.g. `% max_val.total_n_hits[0])`). numpy 2.x formats
+# an indexed scalar fine either way, so this variant needs no patch.
+TURBOSETI_NUMPY_ALREADY_INDEXED = '" is: %i" % max_val.total_n_hits[0])'
 RETAINED_CORPUS_MANIFEST = Path(
     "data_selection/batch_manifests/local_coverage_first_bounded_batch_manifest.json"
 )
@@ -98,7 +102,7 @@ def apply_turboseti_numpy_compatibility(package_dir: Path) -> bool:
     """Patch turboSETI's array-to-scalar debug formatting for NumPy 2.x."""
     source_path = package_dir / "find_doppler" / "find_doppler.py"
     source = source_path.read_text(encoding="utf-8")
-    if TURBOSETI_NUMPY_PATCH_NEW in source:
+    if TURBOSETI_NUMPY_PATCH_NEW in source or TURBOSETI_NUMPY_ALREADY_INDEXED in source:
         return False
     if TURBOSETI_NUMPY_PATCH_OLD not in source:
         raise RuntimeError("Unsupported turboSETI source; NumPy compatibility patch not applied.")

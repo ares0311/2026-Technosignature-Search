@@ -244,6 +244,20 @@ def test_turboseti_numpy_compatibility_patch_is_idempotent(tmp_path: Path) -> No
     assert apply_turboseti_numpy_compatibility(tmp_path) is False
 
 
+def test_turboseti_numpy_compatibility_accepts_already_indexed_upstream_source(
+    tmp_path: Path,
+) -> None:
+    """Some turbo_seti releases already index the scalar without our int() cast."""
+    source_dir = tmp_path / "find_doppler"
+    source_dir.mkdir()
+    source = source_dir / "find_doppler.py"
+    original = 'logger.debug("Total" + " is: %i" % max_val.total_n_hits[0])\n'
+    source.write_text(original, encoding="utf-8")
+
+    assert apply_turboseti_numpy_compatibility(tmp_path) is False
+    assert source.read_text(encoding="utf-8") == original
+
+
 def test_provenance_approves_derived_real_hit_table(tmp_path: Path) -> None:
     manifest = load_cadence_manifest(MANIFEST)
     scan = manifest["scans"][0]
