@@ -2325,6 +2325,7 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             manifest_path=args.manifest_path,
             timeout_seconds=args.timeout_seconds,
             generated_at_utc=args.generated_at_utc,
+            workers=args.workers,
         )
         from techno_search.data_collection_status import (
             record_and_publish_data_collection_status,
@@ -6267,6 +6268,18 @@ def _build_parser() -> argparse.ArgumentParser:
     target_size_preflight_parser.add_argument(
         "--generated-at-utc",
         help="Optional fixed generated_at_utc timestamp for reproducible reports.",
+    )
+    target_size_preflight_parser.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help=(
+            "Bounded concurrent HEAD-request workers (I/O-bound; no published BL "
+            "rate limit exists -- see docs/bl_hprc_target_list_research.md -- "
+            "conservative default, not a verified archive-published limit). "
+            "Default 1 (sequential, unchanged prior behavior); a real 4,478-"
+            "target run found this matters at scale."
+        ),
     )
     background_ledger_parser = subparsers.add_parser(
         "background-ledger-summary",

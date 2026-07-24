@@ -10,7 +10,8 @@ import ssl
 import urllib.error
 import urllib.request
 from collections import Counter
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -857,6 +858,56 @@ def _checksum_headers(headers: dict[str, str]) -> dict[str, str]:
     }
 
 
+def _size_preflight_row(
+    index: int,
+    target: Mapping[str, Any],
+    *,
+    fn: Any,
+    timeout_seconds: float,
+) -> dict[str, Any]:
+    url = str(target.get("source_hdf5_url", "")).strip()
+    target_id = str(target.get("hip", "")).strip()
+    if not url:
+        return {
+            "rank": index,
+            "target_id": target_id,
+            "url": url,
+            "ok": False,
+            "status_code": None,
+            "content_length_bytes": None,
+            "content_length_gb": None,
+            "accept_ranges": "",
+            "etag": "",
+            "last_modified": "",
+            "content_type": "",
+            "checksum_headers": {},
+            "error": "missing source_hdf5_url",
+        }
+    result = fn(url, timeout_seconds)
+    headers = {
+        str(key).lower(): str(value) for key, value in dict(result.get("headers", {})).items()
+    }
+    size_bytes = _int_header(headers, "content-length")
+    checksum_headers = _checksum_headers(headers)
+    return {
+        "rank": index,
+        "target_id": target_id,
+        "url": url,
+        "ok": bool(result.get("ok")),
+        "status_code": result.get("status_code"),
+        "content_length_bytes": size_bytes,
+        "content_length_gb": round(size_bytes / 1_000_000_000, 6)
+        if size_bytes is not None
+        else None,
+        "accept_ranges": headers.get("accept-ranges", ""),
+        "etag": headers.get("etag", ""),
+        "last_modified": headers.get("last-modified", ""),
+        "content_type": headers.get("content-type", ""),
+        "checksum_headers": checksum_headers,
+        "error": str(result.get("error", "")),
+    }
+
+
 def build_target_priority_size_preflight(
     manifest_path: Path = Path(
         "data_selection/batch_manifests/local_coverage_top25_size_preflight_manifest.json"
@@ -865,72 +916,46 @@ def build_target_priority_size_preflight(
     timeout_seconds: float = 30.0,
     head_fn: Any | None = None,
     generated_at_utc: str | None = None,
+    workers: int = 1,
 ) -> dict[str, Any]:
-    """HEAD-probe URL-discovered target rows before raw acquisition."""
+    """HEAD-probe URL-discovered target rows before raw acquisition.
 
+    ``workers`` bounds a thread pool for the HEAD requests (I/O-bound; no
+    published BL rate limit exists, same conservative-default reasoning as
+    ``download_bl_extended_corpus.sh``'s discovery worker pool). Row order
+    always matches input order regardless of completion order or worker
+    count -- each row is produced independently and re-sorted by its
+    original ``rank`` before aggregation, so results are identical to a
+    sequential run.
+    """
+
+    if workers <= 0:
+        raise ValueError("workers must be positive")
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     targets = manifest.get("targets", [])
     fn = head_fn or _default_head_metadata
-    rows: list[dict[str, Any]] = []
-    total_bytes = 0
-    sized_count = 0
-    ok_count = 0
-    checksum_header_count = 0
-    for index, target in enumerate(targets, start=1):
-        url = str(target.get("source_hdf5_url", "")).strip()
-        target_id = str(target.get("hip", "")).strip()
-        if not url:
-            rows.append(
-                {
-                    "rank": index,
-                    "target_id": target_id,
-                    "url": url,
-                    "ok": False,
-                    "status_code": None,
-                    "content_length_bytes": None,
-                    "content_length_gb": None,
-                    "accept_ranges": "",
-                    "etag": "",
-                    "last_modified": "",
-                    "content_type": "",
-                    "checksum_headers": {},
-                    "error": "missing source_hdf5_url",
-                }
+    indexed_targets = list(enumerate(targets, start=1))
+    if workers > 1 and len(indexed_targets) > 1:
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            rows = list(
+                executor.map(
+                    lambda pair: _size_preflight_row(
+                        pair[0], pair[1], fn=fn, timeout_seconds=timeout_seconds
+                    ),
+                    indexed_targets,
+                )
             )
-            continue
-        result = fn(url, timeout_seconds)
-        headers = {
-            str(key).lower(): str(value)
-            for key, value in dict(result.get("headers", {})).items()
-        }
-        size_bytes = _int_header(headers, "content-length")
-        checksum_headers = _checksum_headers(headers)
-        if size_bytes is not None:
-            sized_count += 1
-            total_bytes += size_bytes
-        if bool(result.get("ok")):
-            ok_count += 1
-        if checksum_headers:
-            checksum_header_count += 1
-        rows.append(
-            {
-                "rank": index,
-                "target_id": target_id,
-                "url": url,
-                "ok": bool(result.get("ok")),
-                "status_code": result.get("status_code"),
-                "content_length_bytes": size_bytes,
-                "content_length_gb": round(size_bytes / 1_000_000_000, 6)
-                if size_bytes is not None
-                else None,
-                "accept_ranges": headers.get("accept-ranges", ""),
-                "etag": headers.get("etag", ""),
-                "last_modified": headers.get("last-modified", ""),
-                "content_type": headers.get("content-type", ""),
-                "checksum_headers": checksum_headers,
-                "error": str(result.get("error", "")),
-            }
-        )
+    else:
+        rows = [
+            _size_preflight_row(index, target, fn=fn, timeout_seconds=timeout_seconds)
+            for index, target in indexed_targets
+        ]
+    rows.sort(key=lambda row: row["rank"])
+
+    total_bytes = sum(row["content_length_bytes"] or 0 for row in rows)
+    sized_count = sum(1 for row in rows if row["content_length_bytes"] is not None)
+    ok_count = sum(1 for row in rows if row["ok"])
+    checksum_header_count = sum(1 for row in rows if row["checksum_headers"])
     return {
         "schema_version": TARGET_PRIORITY_SIZE_PREFLIGHT_SCHEMA_VERSION,
         "disclaimer": TARGET_PRIORITY_QUEUE_DISCLAIMER,
@@ -968,6 +993,7 @@ def write_target_priority_size_preflight(
     timeout_seconds: float = 30.0,
     head_fn: Any | None = None,
     generated_at_utc: str | None = None,
+    workers: int = 1,
 ) -> dict[str, Any]:
     """Write URL HEAD preflight output for a size-preflight target manifest."""
 
@@ -976,6 +1002,7 @@ def write_target_priority_size_preflight(
         timeout_seconds=timeout_seconds,
         head_fn=head_fn,
         generated_at_utc=generated_at_utc,
+        workers=workers,
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(

@@ -615,6 +615,58 @@ def test_target_priority_size_preflight_records_header_metadata(tmp_path: Path) 
     assert written == preflight
 
 
+def test_target_priority_size_preflight_concurrent_workers_preserve_order(
+    tmp_path: Path,
+) -> None:
+    """Concurrent HEAD-probing must return byte-identical results, in the
+    same rank order, as the sequential (workers=1) path -- regardless of
+    which request actually completes first."""
+    import time
+
+    manifest_path = tmp_path / "manifest.json"
+    targets = [
+        {"hip": f"HIP{i}", "source_hdf5_url": f"https://bldata.berkeley.edu/example/{i}.h5"}
+        for i in range(1, 21)
+    ]
+    manifest_path.write_text(json.dumps({"targets": targets}), encoding="utf-8")
+
+    def head_fn(url: str, timeout_seconds: float) -> dict[str, object]:
+        # Deliberately make later-numbered targets finish first, so a
+        # naive "append in completion order" implementation would produce
+        # a visibly wrong (reversed-ish) row order if it existed.
+        index = int(url.rsplit("/", 1)[-1].removesuffix(".h5"))
+        time.sleep(0.002 * (21 - index))
+        return {
+            "ok": True,
+            "status_code": 200,
+            "headers": {"content-length": str(1000 * index)},
+            "error": "",
+        }
+
+    sequential = build_target_priority_size_preflight(
+        manifest_path, head_fn=head_fn, workers=1, generated_at_utc="fixed"
+    )
+    concurrent = build_target_priority_size_preflight(
+        manifest_path, head_fn=head_fn, workers=8, generated_at_utc="fixed"
+    )
+
+    assert concurrent == sequential
+    assert [row["rank"] for row in concurrent["targets"]] == list(range(1, 21))
+    assert concurrent["total_content_length_bytes"] == sum(1000 * i for i in range(1, 21))
+
+
+def test_target_priority_size_preflight_rejects_non_positive_workers(tmp_path: Path) -> None:
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(json.dumps({"targets": []}), encoding="utf-8")
+
+    try:
+        build_target_priority_size_preflight(manifest_path, workers=0)
+    except ValueError as exc:
+        assert "workers must be positive" in str(exc)
+    else:
+        raise AssertionError("expected a ValueError")
+
+
 def test_build_target_priority_queue_promotes_sized_urls_to_download_approval(
     tmp_path: Path,
 ) -> None:
