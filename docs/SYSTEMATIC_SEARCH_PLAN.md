@@ -412,6 +412,18 @@ requirements:
    remains a required, separate, not-yet-run step before any of them can
    become viable -- this only closes real-identity resolution, not the full
    3a eligibility pipeline.
+
+   **Real object-type characterization, 2026-07-24:** the open question the
+   6,007-label resolution above raised -- are these real candidate stars or
+   mostly radio calibrators/survey grid points -- is now answered with real
+   SIMBAD `%OTYPE(S)` evidence for all 7,191 rows with a resolved identity
+   (6,007 SIMBAD-resolved + 1,184 queue-alias-resolved): overwhelmingly
+   stellar (`HighPM*` 2,572, `Star` 2,449, `**` 657, `SB*` 572, assorted
+   variable-star subtypes), with non-stellar categories (`Galaxy` 31,
+   `AGN_Candidate` 23, `Seyfert2` 21, `Pulsar` 19) a small minority. This is
+   necessary real evidence for a future decision to wire identity-resolved
+   archive labels into `build_target_priority_queue()` (currently keyed only
+   off the curated HPRC seed list); it does not itself build that bridge.
 2. **External-coverage gap (real, but needs research before building):**
    a stronger "nobody has looked here" claim would require cross-referencing
    against other surveys' published target lists (not just this project's

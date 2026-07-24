@@ -79,8 +79,8 @@ def test_resolve_batch_aligns_by_explicit_error_index_not_row_order() -> None:
     names = ["AAAFAIL", "HIP99427", "HIP100"]
     response = _simbad_response(
         data_lines=[
-            "HD 193202 | 302.7184064746421 | +77.2389729444722",
-            "HD 224844 | 000.3163726343500 | +19.7412486221300",
+            "HD 193202 | 302.7184064746421 | +77.2389729444722 | HighPM*",
+            "HD 224844 | 000.3163726343500 | +19.7412486221300 | Star",
         ],
         errors={2: "AAAFAIL"},
     )
@@ -89,8 +89,8 @@ def test_resolve_batch_aligns_by_explicit_error_index_not_row_order() -> None:
     result = enrich.resolve_batch(names, fetcher=fetcher)
 
     assert "AAAFAIL" not in result
-    assert result["HIP99427"] == ("HD 193202", 302.7184064746421, 77.2389729444722)
-    assert result["HIP100"] == ("HD 224844", 0.31637263435, 19.74124862213)
+    assert result["HIP99427"] == ("HD 193202", 302.7184064746421, 77.2389729444722, "HighPM*")
+    assert result["HIP100"] == ("HD 224844", 0.31637263435, 19.74124862213, "Star")
 
 
 def test_resolve_batch_handles_all_queries_failing_with_no_data_section() -> None:
@@ -120,13 +120,35 @@ def test_resolve_batch_retries_on_missing_console_marker() -> None:
         if len(attempts) < 2:
             return "::script::::::::::::::::::::::::::::::::::::::::::\n\nquery id HIP99427"
         return _simbad_response(
-            data_lines=["HD 193202 | 302.7184064746421 | +77.2389729444722"], errors={}
+            data_lines=["HD 193202 | 302.7184064746421 | +77.2389729444722 | HighPM*"],
+            errors={},
         )
 
     result = enrich.resolve_batch(["HIP99427"], fetcher=fetcher, retry_delay_seconds=0.0)
 
     assert len(attempts) == 2
-    assert result["HIP99427"] == ("HD 193202", 302.7184064746421, 77.2389729444722)
+    assert result["HIP99427"] == ("HD 193202", 302.7184064746421, 77.2389729444722, "HighPM*")
+
+
+def test_resolve_batch_retries_on_network_exception_from_fetcher() -> None:
+    # A real live run raised http.client.IncompleteRead from inside the
+    # fetcher itself (not a malformed-but-returned response) -- that must be
+    # retried the same way, not propagate as an unhandled exception.
+    attempts: list[str] = []
+
+    def fetcher(script: str) -> str:
+        attempts.append(script)
+        if len(attempts) < 2:
+            raise ConnectionResetError("connection reset by peer")
+        return _simbad_response(
+            data_lines=["HD 193202 | 302.7184064746421 | +77.2389729444722 | HighPM*"],
+            errors={},
+        )
+
+    result = enrich.resolve_batch(["HIP99427"], fetcher=fetcher, retry_delay_seconds=0.0)
+
+    assert len(attempts) == 2
+    assert result["HIP99427"] == ("HD 193202", 302.7184064746421, 77.2389729444722, "HighPM*")
 
 
 def test_resolve_batch_raises_rather_than_guess_on_count_mismatch() -> None:
@@ -136,7 +158,7 @@ def test_resolve_batch_raises_rather_than_guess_on_count_mismatch() -> None:
         return (
             "::console::::::::::::::::::::::::::::::::::::::::::\n\nok\n\n"
             "::data::::::::::::::::::::::::::::::::::::::::::::::\n\n"
-            "ONLY ONE | 1.0 | 2.0\n\n"
+            "ONLY ONE | 1.0 | 2.0 | Star\n\n"
         )
 
     try:
@@ -158,7 +180,7 @@ def test_resolve_unresolved_rows_leaves_already_resolved_rows_untouched() -> Non
     unresolved_row = _row("HIP99427")
     rows = [resolved_row, unresolved_row]
     response = _simbad_response(
-        data_lines=["HD 193202 | 302.7184064746421 | +77.2389729444722"], errors={}
+        data_lines=["HD 193202 | 302.7184064746421 | +77.2389729444722 | HighPM*"], errors={}
     )
     fetcher = _fake_simbad({frozenset(["HIP99427"]): response})
 
@@ -175,6 +197,7 @@ def test_resolve_unresolved_rows_leaves_already_resolved_rows_untouched() -> Non
     assert unresolved_row["identity_status"] == "resolved_via_simbad_name_lookup"
     assert unresolved_row["canonical_target_id"] == "HD 193202"
     assert unresolved_row["ra_deg"] == repr(302.7184064746421)
+    assert unresolved_row["object_type"] == "HighPM*"
     assert unresolved_row["ranking_eligible"] == "false"
     assert (
         unresolved_row["eligibility_reason"]
@@ -188,7 +211,7 @@ def test_resolve_unresolved_rows_tries_pks_prefix_only_for_pks_shaped_names() ->
         data_lines=[], errors={2: "0407-658", 3: "NOTPKSSHAPE"}
     )
     pks_response = _simbad_response(
-        data_lines=["ICRF J040820.3-654509 | 62.08491183 | -65.75252239"], errors={}
+        data_lines=["ICRF J040820.3-654509 | 62.08491183 | -65.75252239 | Blazar"], errors={}
     )
     fetcher = _fake_simbad(
         {
@@ -202,6 +225,7 @@ def test_resolve_unresolved_rows_tries_pks_prefix_only_for_pks_shaped_names() ->
     assert counts == {"resolved": 1, "unresolved": 1}
     pks_row = next(row for row in rows if row["archive_target_label"] == "0407-658")
     assert pks_row["canonical_target_id"] == "ICRF J040820.3-654509"
+    assert pks_row["object_type"] == "Blazar"
     assert pks_row["identity_provenance"] == "simbad_pks_prefix_match;direct_label"
     other_row = next(row for row in rows if row["archive_target_label"] == "NOTPKSSHAPE")
     assert other_row["identity_status"] == "unresolved_archive_label"
@@ -210,7 +234,7 @@ def test_resolve_unresolved_rows_tries_pks_prefix_only_for_pks_shaped_names() ->
 def test_suffix_variant_inherits_base_resolution() -> None:
     rows = [_row("0407-658_S")]
     response = _simbad_response(
-        data_lines=["ICRF J040820.3-654509 | 62.08491183 | -65.75252239"], errors={}
+        data_lines=["ICRF J040820.3-654509 | 62.08491183 | -65.75252239 | Blazar"], errors={}
     )
     fetcher = _fake_simbad({frozenset(["0407-658"]): response})
 
@@ -218,9 +242,37 @@ def test_suffix_variant_inherits_base_resolution() -> None:
 
     assert counts == {"resolved": 1, "unresolved": 0}
     assert rows[0]["canonical_target_id"] == "ICRF J040820.3-654509"
+    assert rows[0]["object_type"] == "Blazar"
     assert rows[0]["identity_provenance"] == (
         "simbad_direct_name_match;suffix_stripped:_S:arxiv:1906.07391"
     )
+
+
+def test_backfill_object_types_uses_canonical_target_id_not_original_label() -> None:
+    already_resolved = _row(
+        "OLDROW",
+        identity_status="resolved_existing_queue_alias",
+        canonical_target_id="HD 193202",
+        ra_deg="302.7184064746421",
+        dec_deg="77.2389729444722",
+    )
+    already_has_otype = _row(
+        "SKIPME",
+        identity_status="resolved_existing_queue_alias",
+        canonical_target_id="HD 999999",
+        object_type="Star",
+    )
+    rows = [already_resolved, already_has_otype]
+    response = _simbad_response(
+        data_lines=["HD 193202 | 302.7184064746421 | +77.2389729444722 | HighPM*"], errors={}
+    )
+    fetcher = _fake_simbad({frozenset(["HD 193202"]): response})
+
+    filled = enrich.backfill_object_types(rows, fetcher=fetcher, request_delay_seconds=0.0)
+
+    assert filled == 1
+    assert already_resolved["object_type"] == "HighPM*"
+    assert already_has_otype["object_type"] == "Star"
 
 
 def test_enrich_catalog_preserves_schema_and_row_count(tmp_path: Path) -> None:
@@ -232,7 +284,7 @@ def test_enrich_catalog_preserves_schema_and_row_count(tmp_path: Path) -> None:
         writer.writerows(rows)
 
     response = _simbad_response(
-        data_lines=["HD 193202 | 302.7184064746421 | +77.2389729444722"],
+        data_lines=["HD 193202 | 302.7184064746421 | +77.2389729444722 | HighPM*"],
         errors={3: "STAYSUNRESOLVED"},
     )
     fetcher = _fake_simbad({frozenset(["HIP99427", "STAYSUNRESOLVED"]): response})
@@ -242,11 +294,47 @@ def test_enrich_catalog_preserves_schema_and_row_count(tmp_path: Path) -> None:
     assert summary["ok"] is True
     assert summary["resolved_count"] == 1
     assert summary["still_unresolved_count"] == 1
+    assert summary["object_type_backfilled_count"] == 0
     assert summary["raw_science_payload_downloaded"] is False
 
     with catalog_path.open(newline="", encoding="utf-8") as handle:
         out_rows = list(csv.DictReader(handle))
     assert [r["archive_target_label"] for r in out_rows] == ["HIP99427", "STAYSUNRESOLVED"]
     assert out_rows[0]["identity_status"] == "resolved_via_simbad_name_lookup"
+    assert out_rows[0]["object_type"] == "HighPM*"
     assert out_rows[0]["ranking_eligible"] == "false"
     assert out_rows[1]["identity_status"] == "unresolved_archive_label"
+    assert out_rows[1]["object_type"] == ""
+
+
+def test_enrich_catalog_migrates_missing_object_type_column_and_backfills(
+    tmp_path: Path,
+) -> None:
+    catalog_path = tmp_path / "catalog.csv"
+    pre_migration_row = _row(
+        "OLDROW",
+        identity_status="resolved_existing_queue_alias",
+        canonical_target_id="HD 193202",
+        ra_deg="302.7184064746421",
+        dec_deg="77.2389729444722",
+    )
+    # ``_row()`` never includes object_type -- this row simulates a catalog
+    # written before that column existed.
+    with catalog_path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(pre_migration_row), lineterminator="\n")
+        writer.writeheader()
+        writer.writerow(pre_migration_row)
+
+    response = _simbad_response(
+        data_lines=["HD 193202 | 302.7184064746421 | +77.2389729444722 | HighPM*"], errors={}
+    )
+    fetcher = _fake_simbad({frozenset(["HD 193202"]): response})
+
+    summary = enrich.enrich_catalog(catalog_path, fetcher=fetcher)
+
+    assert summary["object_type_backfilled_count"] == 1
+    with catalog_path.open(newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        assert "object_type" in (reader.fieldnames or ())
+        out_rows = list(reader)
+    assert out_rows[0]["object_type"] == "HighPM*"

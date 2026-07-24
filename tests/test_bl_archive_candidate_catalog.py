@@ -72,9 +72,24 @@ def test_unresolved_or_ambiguous_archive_labels_are_never_ranked() -> None:
     assert all(row["canonical_target_id"] != "" for row in simbad_resolved)
     assert all(row["ra_deg"] and row["dec_deg"] for row in simbad_resolved)
     assert all(row["identity_provenance"].split(";")[0] for row in simbad_resolved)
+    # object_type is real evidence (SIMBAD's own classification), never a
+    # guess about whether a resolved label belongs in a stellar pipeline.
+    assert all(row["object_type"] for row in simbad_resolved)
 
     ranked = [row for row in rows if row["ranking_eligible"] == "true"]
     assert ranked
     assert all(row["identity_status"] == "resolved_existing_queue_alias" for row in ranked)
     assert all(row["queue_status"] == "raw_download_approval_required" for row in ranked)
     assert all(row["target_selection_score"] for row in ranked)
+
+
+def test_queue_alias_resolved_rows_also_have_real_object_type() -> None:
+    # The same conservative SIMBAD object_type backfill applies uniformly to
+    # every row with a resolved canonical_target_id, not just newly-SIMBAD-
+    # resolved ones -- it adds real evidence, never re-derives identity.
+    rows = list(csv.DictReader(CATALOG.open(encoding="utf-8")))
+    queue_resolved = [
+        row for row in rows if row["identity_status"] == "resolved_existing_queue_alias"
+    ]
+    assert queue_resolved
+    assert all(row["object_type"] for row in queue_resolved)

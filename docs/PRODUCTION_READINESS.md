@@ -20,7 +20,30 @@ detection, or external-submission permission was produced. A later-epoch
 observation is recommended scientific work, not a missing lifecycle stage. The
 durable public-archive namespace now exceeds 10,000, but only 358 entries are
 identity-resolved and currently ranking-eligible.
-**Current app version:** 1.2.48
+**Current app version:** 1.2.49
+
+**Real object-type evidence shows the newly-resolved candidate pool is
+overwhelmingly stellar, not calibrators — 2026-07-24:** version 1.2.49 adds
+a real `object_type` column, fetched from SIMBAD's own `%OTYPE(S)`
+classification (never inferred from label text), for every row with a
+resolved `canonical_target_id` -- both the 6,007 newly SIMBAD-resolved
+labels and the pre-existing 1,184 queue-alias-resolved ones (7,191 total,
+matching exactly). Real distribution: dominated by `HighPM*` (2,572),
+`Star` (2,449), `**`/binary systems (657), `SB*` (572), and assorted stellar
+variable subtypes; non-stellar categories (`Galaxy` 31, `AGN_Candidate` 23,
+`Seyfert2` 21, `Pulsar` 19) are small minorities. This directly answers the
+real open question the 6,007-label resolution raised: whether those newly
+identity-resolved archive labels are mostly radio calibrators/survey grid
+points (scientifically uninteresting for a stellar technosignature search)
+or real candidate stars. They are overwhelmingly real stars. This is
+necessary evidence for, but does not itself perform, any future decision to
+wire identity-resolved archive labels into the target-selection/ranking
+pipeline (`target_priority_queue.py`, currently keyed only off the curated
+HPRC seed list) -- that remains a distinct, deliberately-unbuilt bridge. A
+real live run also surfaced and fixed a second transient-network bug:
+`http.client.IncompleteRead` raised inside the fetcher itself was not
+covered by the existing malformed-response retry loop, which only retried
+after a fetch *returned*, not one that raised.
 
 **Second real archive-identity source closes over half the unresolved
 candidate-pool gap — 2026-07-24:** the 10,901 archive labels the queue-alias
