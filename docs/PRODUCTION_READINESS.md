@@ -1,11 +1,13 @@
 # Production Readiness Assessment
 
 **Last updated:** 2026-07-23
-**Current phase:** Phase 0 complete; Phase 1/5 code integration is implemented;
-the real cadence-complete `unknown`/adversarial acceptance branch is now
-demonstrated via a direct `run-pipeline` execution, but not yet through the
-installed `Create-New-Search`/`Run-New-Search` Hunter entry points. Hunter is
-**not PROD**.
+**Current phase:** Phase 0 complete; Phase 1/5 code integration is implemented.
+The real cadence-complete `unknown`/adversarial acceptance branch is now
+proven through the installed `Create-New-Search`/`Run-New-Search` Hunter
+entry points, not just a direct `run-pipeline` call. Hunter is **not PROD**:
+the candidate pool remains far short of the 10,000+ viable target goal (358
+ranking-eligible), and this is a science-coverage limitation, not a workflow
+gap.
 The durable lifecycle has completed an approval-gated new-target raw
 acquisition, processing, scoring, interpretation, durable outcome, and
 follow-up recommendation with a real failure/resume cycle. Version 1.2.42
@@ -17,7 +19,36 @@ detection, or external-submission permission was produced. A later-epoch
 observation is recommended scientific work, not a missing lifecycle stage. The
 durable public-archive namespace now exceeds 10,000, but only 358 entries are
 identity-resolved and currently ranking-eligible.
-**Current app version:** 1.2.46
+**Current app version:** 1.2.47
+
+**Installed-entry-point `unknown` acceptance closed — 2026-07-24:** the real
+HIP99427 cadence-complete result below was exercised only via a direct
+`run-pipeline` call; the installed-lifecycle acceptance gap (named repeatedly
+in this document and `docs/SYSTEMATIC_SEARCH_PLAN.md`) remained open. This
+session closed it for real: `Create-New-Search --targets 61 --mode follow-up`
+froze the top 61 real durable follow-up entries by `follow_up_priority`
+(HIP99427 ranks 61st at 0.992456, correctly reusing its `source_data_path`
+rather than the local `.dat`/HDF5 convention other entries use), projecting
+only 0.264 GB of real new acquisition (one already-approved-pattern target;
+everything else, including HIP99427, is `existing_data_reanalysis`/`0 GB`).
+`Run-New-Search --approve-acquisition` completed as
+`RUN-2026-07-24_062446Z-WE1V-hunter-search` (durable events: `run_started` ->
+`run_completed`, both at code commit `5eb4d43`/app version 1.2.46), isolating
+a fresh copy of every candidate's pipeline result under the search's own
+`pipeline_results/` directory. HIP99427's isolated copy reproduces the exact
+same real result: `known_explanation_state: unknown`,
+`eligible_for_unknown_candidate: true`, 10/10 Track B conditions satisfied,
+and its own adversarial dossier -- proving the installed lifecycle preserves
+identity and evidence rather than only the standalone CLI path. Its follow-up
+ledger entry (`FU-2026-07-24_062446Z-WE1V-001`) correctly carries forward as
+`human_review_queue`, not a detection or expert-review authorization. This
+also exercised, for the first time in this session, the
+DATA COLLECTION STATUS REPORTING DIRECTIVE's real auto-commit path on `main`
+(commit `75957ea`, pushed automatically by `Run-New-Search` itself, per its
+documented design). Do not reopen this specific acceptance question without
+new evidence; the remaining honest PROD gaps are candidate-pool scale (358 of
+a 10,000+ goal) and the still-open, real Earth-drift blocking issue on this
+one candidate -- neither is a workflow defect.
 
 **Real cadence-complete `unknown` branch exercised for the first time —
 2026-07-23:** the retained corpus previously had no target with all 6 real
