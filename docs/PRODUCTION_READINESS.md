@@ -1,8 +1,10 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-07-21
+**Last updated:** 2026-07-23
 **Current phase:** Phase 0 complete; Phase 1/5 code integration is implemented;
-real cadence-complete `unknown`/adversarial acceptance remains open. Hunter is
+the real cadence-complete `unknown`/adversarial acceptance branch is now
+demonstrated via a direct `run-pipeline` execution, but not yet through the
+installed `Create-New-Search`/`Run-New-Search` Hunter entry points. Hunter is
 **not PROD**.
 The durable lifecycle has completed an approval-gated new-target raw
 acquisition, processing, scoring, interpretation, durable outcome, and
@@ -15,7 +17,38 @@ detection, or external-submission permission was produced. A later-epoch
 observation is recommended scientific work, not a missing lifecycle stage. The
 durable public-archive namespace now exceeds 10,000, but only 358 entries are
 identity-resolved and currently ranking-eligible.
-**Current app version:** 1.2.45
+**Current app version:** 1.2.46
+
+**Real cadence-complete `unknown` branch exercised for the first time —
+2026-07-23:** the retained corpus previously had no target with all 6 real
+ABACAD cadence scans present (only 1 of HIP99427's 6 scans survived from the
+historical, now-retired citizen-science ingestion). Version 1.2.46 re-ran
+`scripts/ingest_gbt_cadence.py` against the already human-approved
+`configs/gbt_hip99427_cadence_v1.json` manifest, downloading and reprocessing
+the 5 missing real scans (verified by archive size/MD5 against the manifest)
+and combining all 6 into a real 213-row cadence CSV, exactly matching the
+row count this document has cited from the historical evidence for years.
+Running that CSV through the fixed `run-pipeline` (`--track radio`) produced
+this project's first real `known_explanation_state: unknown` result: all 10
+Track B conditions are satisfied (`eligible_for_unknown_candidate: true`,
+`abacab_cadence_score: 1.0`, SNR 24.87 against a 10.0 threshold, no
+pulsar/FRB/blazar/gamma-ray/satellite/RFI/instrument match), and the pipeline
+automatically wrote an adversarial dossier in the same run. The dossier
+correctly still reports `requires_human_expert_review: false`, because one
+real, separate blocking issue remains open: "Earth-drift inconsistency
+requires deterministic interference and metadata review." This is not a
+defect in the fix -- it is the conservative-by-design behavior this project
+requires: reaching `unknown` is necessary but not sufficient for expert-review
+eligibility. A live re-run also surfaced and fixed a real bug in
+`apply_turboseti_numpy_compatibility()`, which only recognized two exact
+`find_doppler.py` source states and raised on this environment's actual
+(already partially fixed upstream) third state, blocking every turboSETI
+call. No detection, discovery, candidate promotion, or external-submission
+claim follows from this result. The remaining PROD gap is narrower than
+before: prove the same `unknown`/adversarial/blocking-issue resolution
+through the installed `Create-New-Search`/`Run-New-Search` entry points
+rather than a direct `run-pipeline` CLI call, and separately resolve or
+accept the Earth-drift blocking issue as a real, still-open review item.
 
 **Retained-DAT provenance closure — 2026-07-21:** version 1.2.45 recovers a
 retained hit table's archive URL and GBT instrument identity only through an
