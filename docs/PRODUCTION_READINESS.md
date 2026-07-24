@@ -22,7 +22,22 @@ observation is recommended scientific work, not a missing lifecycle stage. The
 durable public-archive namespace now exceeds 10,000, and the real target
 priority queue now covers 6,879 unique target IDs (up from 1,703), though only
 357 currently carry real HDF5 URL/size evidence and are ranking-eligible.
-**Current app version:** 1.2.50
+**Current app version:** 1.2.51
+
+**Real discovery-tooling sandbox bug found and fixed — 2026-07-24:** version
+1.2.51 fixes a real, previously-misdiagnosed bug: `mktemp -d` against
+`$TMPDIR` fails in this project's sandbox (directory creation denied even
+though writes under `$TMPDIR` are otherwise allowed), which silently blocked
+every real `--discover-only` bounded-parallel discovery run and was the
+actual root cause of `tests/test_download_bl_extended_corpus_script.py`'s 18
+tests being excluded from every full-suite run this session as a
+"pre-existing, environment-specific limitation" -- it was real and fixable,
+not environmental noise. `scripts/run_stream_process_evict_batch.sh` already
+works around the identical restriction using a repo-local `data_cache/`
+scratch directory instead of `$TMPDIR`; `download_bl_extended_corpus.sh` now
+does the same. Verified with a real live discovery run and the full test
+suite with zero exclusions: 1638 passed, 0 failed (up from 1620 passed, 18
+silently excluded).
 
 **Real SIMBAD-confirmed stellar candidates bridged into target selection —
 2026-07-24:** version 1.2.50 closes the gap the object-type evidence above
