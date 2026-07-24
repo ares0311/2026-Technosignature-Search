@@ -8,8 +8,13 @@ coordinates. This script adds a second, independent real-identity source:
 SIMBAD name resolution via its public batch script interface
 (https://simbad.cds.unistra.fr/simbad/sim-script), used the same
 conservative way as the queue-alias path -- a positive match sets real
-``ra_deg``/``dec_deg``/``canonical_target_id`` from SIMBAD's own response;
-anything SIMBAD does not resolve is left exactly as it was.
+``ra_deg``/``dec_deg``/``canonical_target_id``/``object_type`` from SIMBAD's
+own response; anything SIMBAD does not resolve is left exactly as it was.
+``object_type`` (SIMBAD's short-form classification, e.g. ``Star``, ``QSO``,
+``PM*``) is also backfilled for rows resolved by an earlier run of this
+script or by the queue-alias path, since it is real independent evidence
+about what an identity-resolved label actually is -- not a guess about
+whether it belongs in a stellar target-selection pipeline.
 
 Two query strategies, both with documented provenance, no guessing:
 
@@ -48,6 +53,7 @@ import argparse
 import contextlib
 import csv
 import hashlib
+import http.client
 import io
 import os
 import re
@@ -73,7 +79,7 @@ SCHEMA_VERSION = "bl_archive_candidate_catalog_v1"
 RESOLVED_STATUS = "resolved_via_simbad_name_lookup"
 BATCH_SIZE = 200
 REQUEST_DELAY_SECONDS = 1.0
-FORMAT_LINE = 'format object form1 "%IDLIST(1) | %COO(d;A) | %COO(d;D)"'
+FORMAT_LINE = 'format object form1 "%IDLIST(1) | %COO(d;A) | %COO(d;D) | %OTYPE(S)"'
 _FIELD_SEP = " | "
 _ERROR_INDEX_RE = re.compile(r"^\[(\d+)\]")
 _SECTION_DECORATION_RE = re.compile(r"^:+$")
@@ -129,7 +135,7 @@ def resolve_batch(
     fetcher: BatchFetcher = fetch_simbad_script,
     max_attempts: int = 3,
     retry_delay_seconds: float = 2.0,
-) -> dict[str, tuple[str, float, float]]:
+) -> dict[str, tuple[str, float, float, str]]:
     """Resolve many SIMBAD names in one request, aligned by explicit error index.
 
     ``::console::`` (the script-execution confirmation, e.g. "simbatch done")
@@ -151,7 +157,16 @@ def resolve_batch(
     text = ""
     last_error: IdentityEnrichmentError | None = None
     for attempt in range(1, max_attempts + 1):
-        text = fetcher(script)
+        try:
+            text = fetcher(script)
+        except (OSError, http.client.HTTPException) as exc:
+            last_error = IdentityEnrichmentError(
+                f"SIMBAD request failed (attempt {attempt}/{max_attempts}): "
+                f"{type(exc).__name__}: {exc}"
+            )
+            if attempt < max_attempts:
+                time.sleep(retry_delay_seconds)
+            continue
         if "::console::" in text:
             last_error = None
             break
@@ -193,17 +208,17 @@ def resolve_batch(
             "refusing to guess alignment."
         )
 
-    resolved: dict[str, tuple[str, float, float]] = {}
+    resolved: dict[str, tuple[str, float, float, str]] = {}
     for position, row in zip(surviving_positions, data_rows, strict=True):
         parts = row.split(_FIELD_SEP)
-        if len(parts) != 3:
+        if len(parts) != 4:
             raise IdentityEnrichmentError(f"Unparseable SIMBAD data row: {row!r}")
-        main_id, ra_text, dec_text = (part.strip() for part in parts)
+        main_id, ra_text, dec_text, otype = (part.strip() for part in parts)
         try:
             ra_deg, dec_deg = float(ra_text), float(dec_text)
         except ValueError as exc:
             raise IdentityEnrichmentError(f"Non-numeric SIMBAD coordinates: {row!r}") from exc
-        resolved[names[position]] = (main_id, ra_deg, dec_deg)
+        resolved[names[position]] = (main_id, ra_deg, dec_deg, otype)
     return resolved
 
 
@@ -221,12 +236,14 @@ def resolve_unresolved_rows(
     }
     unique_names = sorted({name for name, _provenance in query_by_label.values()})
 
-    resolved_by_name: dict[str, tuple[str, float, float, str]] = {}
+    resolved_by_name: dict[str, tuple[str, float, float, str, str]] = {}
     for start in range(0, len(unique_names), BATCH_SIZE):
         batch = unique_names[start : start + BATCH_SIZE]
         log(f"[SIMBAD] direct query batch {start // BATCH_SIZE + 1}: {len(batch)} name(s)")
-        for name, (main_id, ra_deg, dec_deg) in resolve_batch(batch, fetcher=fetcher).items():
-            resolved_by_name[name] = (main_id, ra_deg, dec_deg, "simbad_direct_name_match")
+        for name, (main_id, ra_deg, dec_deg, otype) in resolve_batch(
+            batch, fetcher=fetcher
+        ).items():
+            resolved_by_name[name] = (main_id, ra_deg, dec_deg, otype, "simbad_direct_name_match")
         if start + BATCH_SIZE < len(unique_names):
             time.sleep(request_delay_seconds)
 
@@ -240,8 +257,14 @@ def resolve_unresolved_rows(
         for prefixed_name, original in zip(prefixed_names, pks_candidates, strict=True):
             pks_match = matches.get(prefixed_name)
             if pks_match is not None:
-                main_id, ra_deg, dec_deg = pks_match
-                resolved_by_name[original] = (main_id, ra_deg, dec_deg, "simbad_pks_prefix_match")
+                main_id, ra_deg, dec_deg, otype = pks_match
+                resolved_by_name[original] = (
+                    main_id,
+                    ra_deg,
+                    dec_deg,
+                    otype,
+                    "simbad_pks_prefix_match",
+                )
 
     counts = {"resolved": 0, "unresolved": 0}
     for row in targets:
@@ -250,15 +273,56 @@ def resolve_unresolved_rows(
         if match is None:
             counts["unresolved"] += 1
             continue
-        main_id, ra_deg, dec_deg, method = match
+        main_id, ra_deg, dec_deg, otype, method = match
         row["canonical_target_id"] = main_id
         row["identity_status"] = RESOLVED_STATUS
         row["identity_provenance"] = f"{method};{suffix_provenance}"
         row["ra_deg"] = repr(ra_deg)
         row["dec_deg"] = repr(dec_deg)
+        row["object_type"] = otype
         row["eligibility_reason"] = "identity_resolved_pending_file_metadata_enrichment"
         counts["resolved"] += 1
     return counts
+
+
+def backfill_object_types(
+    rows: list[dict[str, str]],
+    *,
+    fetcher: BatchFetcher = fetch_simbad_script,
+    request_delay_seconds: float = REQUEST_DELAY_SECONDS,
+    log: Callable[[str], None] = lambda _msg: None,
+) -> int:
+    """Fill in ``object_type`` for already-resolved rows that predate it.
+
+    Re-queries by each row's own ``canonical_target_id`` (SIMBAD's real main
+    identifier from the earlier resolution), not the original archive label,
+    so this never re-derives or second-guesses an existing identity match --
+    it only adds the one new field.
+    """
+    targets = [
+        row
+        for row in rows
+        if row.get("canonical_target_id") and not row.get("object_type")
+    ]
+    if not targets:
+        return 0
+    unique_ids = sorted({row["canonical_target_id"] for row in targets})
+    otype_by_id: dict[str, str] = {}
+    for start in range(0, len(unique_ids), BATCH_SIZE):
+        batch = unique_ids[start : start + BATCH_SIZE]
+        log(f"[SIMBAD] object-type backfill batch {start // BATCH_SIZE + 1}: {len(batch)} name(s)")
+        for name, (_main_id, _ra, _dec, otype) in resolve_batch(batch, fetcher=fetcher).items():
+            otype_by_id[name] = otype
+        if start + BATCH_SIZE < len(unique_ids):
+            time.sleep(request_delay_seconds)
+
+    filled = 0
+    for row in targets:
+        found_otype = otype_by_id.get(row["canonical_target_id"])
+        if found_otype:
+            row["object_type"] = found_otype
+            filled += 1
+    return filled
 
 
 def _atomic_write(path: Path, text: str) -> None:
@@ -290,8 +354,19 @@ def enrich_catalog(
         rows = list(reader)
     if "canonical_target_id" not in fieldnames:
         raise IdentityEnrichmentError(f"catalog is missing expected columns: {catalog_path}")
+    if "object_type" not in fieldnames:
+        # Schema migration for a catalog written before object_type existed:
+        # insert it right after dec_deg to match acquire_bl_archive_candidate_
+        # catalog.py's CATALOG_FIELDS ordering, and backfill "" for every row.
+        insert_at = (
+            fieldnames.index("dec_deg") + 1 if "dec_deg" in fieldnames else len(fieldnames)
+        )
+        fieldnames = fieldnames[:insert_at] + ["object_type"] + fieldnames[insert_at:]
+        for row in rows:
+            row["object_type"] = ""
 
     counts = resolve_unresolved_rows(rows, fetcher=fetcher, log=log)
+    backfilled = backfill_object_types(rows, fetcher=fetcher, log=log)
 
     buffer = io.StringIO(newline="")
     writer = csv.DictWriter(buffer, fieldnames=fieldnames, lineterminator="\n")
@@ -307,6 +382,7 @@ def enrich_catalog(
         "candidate_count": len(rows),
         "resolved_count": counts["resolved"],
         "still_unresolved_count": counts["unresolved"],
+        "object_type_backfilled_count": backfilled,
         "source_endpoint": SIMBAD_SCRIPT_URL,
         "source_documentation": SIMBAD_SOURCE_DOCUMENTATION,
         "cadence_suffix_source": CADENCE_SUFFIX_SOURCE,
@@ -354,7 +430,8 @@ def main(argv: list[str] | None = None) -> int:
 
     print(
         f"[OK] resolved {summary['resolved_count']} new identities; "
-        f"{summary['still_unresolved_count']} remain unresolved"
+        f"{summary['still_unresolved_count']} remain unresolved; "
+        f"backfilled object_type for {summary['object_type_backfilled_count']} row(s)"
     )
     return 0
 

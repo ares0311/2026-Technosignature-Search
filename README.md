@@ -1,7 +1,7 @@
 # Techno-Hunter
 
 ![Status](https://img.shields.io/badge/Hunter%20workflow-NOT%20PROD-red)
-![Version](https://img.shields.io/badge/version-1.2.48-blue)
+![Version](https://img.shields.io/badge/version-1.2.49-blue)
 ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 ![Focus](https://img.shields.io/badge/focus-multimodal%20technosignature%20search-purple)
 
@@ -91,7 +91,7 @@ Hunter entry points.
 | Area | Current state |
 |---|---|
 | Hunter lifecycle | Mechanical create/run/resume/history behavior is verified. Version 1.2.47 proves the real `unknown`/adversarial branch through the installed `Create-New-Search`/`Run-New-Search` entry points (real 6-scan HIP99427 cadence, `RUN-2026-07-24_062446Z-WE1V-hunter-search`); real HIP103096 remains unresolved only on missing ON/OFF cadence. PROD remains revoked on candidate-pool scale (358 of a 10,000+ goal), not workflow completeness. |
-| Candidate universe | 12,086 unique Breakthrough Listen archive labels are durable. Exact evidence resolves 1,184 identities; 358 are currently ranking-eligible. A second, independent real-identity source (SIMBAD name resolution, documented BL cadence-suffix convention only, no guessing) resolves 6,007 more archive labels' real sky positions -- none yet ranking-eligible, since that still requires separate file-metadata (HDF5 URL/size) enrichment. 4,894 archive labels remain genuinely unresolved. Unresolved identities are excluded rather than guessed. |
+| Candidate universe | 12,086 unique Breakthrough Listen archive labels are durable. Exact evidence resolves 1,184 identities; 358 are currently ranking-eligible. A second, independent real-identity source (SIMBAD name resolution, documented BL cadence-suffix convention only, no guessing) resolves 6,007 more archive labels' real sky positions -- none yet ranking-eligible, since that still requires separate file-metadata (HDF5 URL/size) enrichment. 4,894 archive labels remain genuinely unresolved. Real SIMBAD object-type evidence (not guessed) shows the resolved pool is overwhelmingly stellar (`HighPM*`, `Star`, binaries, variable-star subtypes), not calibrators -- necessary evidence for, but not itself, a future ranking-pipeline bridge. Unresolved identities are excluded rather than guessed. |
 | Radio | Real GBT/MeerKAT ingest, turboSETI preprocessing, ABACAB cadence checks, known-explanation checks, drift analysis, cross-target recurrence, and frequency-family diagnostics are implemented. |
 | Transit photometry | BLS, aperiodic-dip, ingress/egress asymmetry, and transit-shape checks are wired end to end. |
 | Infrared | AllWISE ingest, photosphere fitting, W3/W4 excess significance, and AGN-color checks are implemented; live IRSA use is network-dependent. |
