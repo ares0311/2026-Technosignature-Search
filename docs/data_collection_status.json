@@ -296,6 +296,15 @@
       "script": "hunter_search__SEARCH-20260724T062429Z-D7FA314D",
       "targets_attempted": 61,
       "total_targets_in_manifest": 61
+    },
+    {
+      "attempt_id": "enrich_bl_archive_candidate_identity__20260724T065209534194Z__2026-07-24T06:52:19.085799+00:00",
+      "error": "IdentityEnrichmentError: Unexpected SIMBAD response shape: '::script::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\\n\\nformat object form1 \"%IDLIST(1) | %COO(d;A) | %COO(d;D)\"\\nquery id G15.17-6.06\\nquery id G15.28+6.26\\nquery id G15.28-3.4'",
+      "ok": false,
+      "raw_science_payload_downloaded": false,
+      "recorded_at_utc": "2026-07-24T06:52:19.085799+00:00",
+      "schema_version": "bl_archive_candidate_catalog_v1",
+      "script": "enrich_bl_archive_candidate_identity__20260724T065209534194Z"
     }
   ],
   "disclaimer": "This manifest records real local data-collection run outcomes (counts of items found/downloaded/skipped/failed) for compact progress review. It is not a detection, discovery, external validation, or external-submission claim.",
@@ -479,6 +488,13 @@
         }
       ],
       "total": 1
+    },
+    "enrich_bl_archive_candidate_identity__20260724T065209534194Z": {
+      "error": "IdentityEnrichmentError: Unexpected SIMBAD response shape: '::script::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\\n\\nformat object form1 \"%IDLIST(1) | %COO(d;A) | %COO(d;D)\"\\nquery id G15.17-6.06\\nquery id G15.28+6.26\\nquery id G15.28-3.4'",
+      "last_run_utc": "2026-07-24T06:52:19.085799+00:00",
+      "ok": false,
+      "raw_science_payload_downloaded": false,
+      "schema_version": "bl_archive_candidate_catalog_v1"
     },
     "hunter_search__SEARCH-20260719T133145Z-3650F32A": {
       "acquisition_mode": "stream_process_evict",
