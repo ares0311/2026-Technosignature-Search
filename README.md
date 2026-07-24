@@ -1,7 +1,7 @@
 # Techno-Hunter
 
 ![Status](https://img.shields.io/badge/Hunter%20workflow-NOT%20PROD-red)
-![Version](https://img.shields.io/badge/version-1.2.45-blue)
+![Version](https://img.shields.io/badge/version-1.2.46-blue)
 ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 ![Focus](https://img.shields.io/badge/focus-multimodal%20technosignature%20search-purple)
 
@@ -13,14 +13,17 @@ scientific pipeline, preserves results and provenance, and recommends the next
 follow-up action.
 
 The Hunter lifecycle mechanics and integrated known-explanation code are
-operational, but the workflow is not currently PROD. Versions 1.2.44-1.2.45
-automatically resolves every hit-bearing radio report to `known`, `unknown`, or
-`unresolved`, and automatically persists an adversarial dossier for `unknown`.
-The retained real corpus verifies the `known` and `unresolved` branches; it has
-no cadence-complete real observation that can honestly exercise `unknown`, so
-the final real-acceptance claim remains open. Outputs are local triage evidence
-and documented null results—not detections, discoveries, expert review,
-external validation, or permission to contact an outside party.
+operational, but the workflow is not currently PROD. Versions 1.2.44-1.2.46
+automatically resolve every hit-bearing radio report to `known`, `unknown`, or
+`unresolved`, and automatically persist an adversarial dossier for `unknown`.
+The retained real corpus now verifies all three branches -- a real 6-scan
+HIP99427 cadence reached `unknown` for the first time via `run-pipeline`, with
+its adversarial dossier correctly still withholding expert-review eligibility
+on an open Earth-drift blocking issue -- but this has not yet been exercised
+through the installed `Create-New-Search`/`Run-New-Search` entry points, so
+the final real-acceptance claim remains open. Outputs are local triage
+evidence and documented null results—not detections, discoveries, expert
+review, external validation, or permission to contact an outside party.
 
 ## Pipeline architecture
 
