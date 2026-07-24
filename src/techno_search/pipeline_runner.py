@@ -8,7 +8,7 @@ from typing import Any
 
 from techno_search.data_quality import DataQualityResult, validate_input
 from techno_search.reporting import ReportPaths, candidate_packet, write_candidate_reports
-from techno_search.schemas import Candidate, FeatureValue, Track
+from techno_search.schemas import Candidate, FeatureMap, FeatureValue, Track
 from techno_search.scoring import score_candidate
 
 PIPELINE_RUN_DISCLAIMER = (
@@ -310,9 +310,11 @@ def _build_radio_candidate(
     selected_row = _selected_radio_observation_row(
         path,
         raw_rows,
-        frequency_hz=float(candidate.features["frequency_hz"]),
-        drift_rate_hz_per_sec=float(candidate.features["drift_rate_hz_per_sec"]),
-        snr=float(candidate.features["snr"]),
+        frequency_hz=_required_float(candidate.features, "frequency_hz"),
+        drift_rate_hz_per_sec=_required_float(
+            candidate.features, "drift_rate_hz_per_sec"
+        ),
+        snr=_required_float(candidate.features, "snr"),
     )
     ra = selected_row.get("ra_deg")
     dec = selected_row.get("dec_deg")
@@ -792,6 +794,13 @@ def _selected_radio_observation_row(
 def _is_gbt_instrument(value: object) -> bool:
     normalized = str(value or "").strip().casefold()
     return normalized in {"gbt", "green bank telescope"}
+
+
+def _required_float(features: FeatureMap, key: str) -> float:
+    value = features[key]
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        raise ValueError(f"Candidate feature {key!r} must be numeric, got {value!r}.")
+    return float(value)
 
 
 def _build_anomaly_candidate(path: Path, candidate_id: str) -> Candidate:
