@@ -1,13 +1,14 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-07-23
+**Last updated:** 2026-07-24
 **Current phase:** Phase 0 complete; Phase 1/5 code integration is implemented.
-The real cadence-complete `unknown`/adversarial acceptance branch is now
-proven through the installed `Create-New-Search`/`Run-New-Search` Hunter
-entry points, not just a direct `run-pipeline` call. Hunter is **not PROD**:
-the candidate pool remains far short of the 10,000+ viable target goal (358
-ranking-eligible), and this is a science-coverage limitation, not a workflow
-gap.
+The real cadence-complete `unknown`/adversarial acceptance branch is proven
+through the installed `Create-New-Search`/`Run-New-Search` Hunter entry
+points, not just a direct `run-pipeline` call. Hunter is **not PROD**: the
+candidate pool remains far short of the 10,000+ viable target goal (358
+ranking-eligible of 12,086 archive labels, 6,007 more now identity-resolved
+but not yet file-metadata-enriched), and this is a science-coverage
+limitation, not a workflow gap.
 The durable lifecycle has completed an approval-gated new-target raw
 acquisition, processing, scoring, interpretation, durable outcome, and
 follow-up recommendation with a real failure/resume cycle. Version 1.2.42
@@ -19,7 +20,41 @@ detection, or external-submission permission was produced. A later-epoch
 observation is recommended scientific work, not a missing lifecycle stage. The
 durable public-archive namespace now exceeds 10,000, but only 358 entries are
 identity-resolved and currently ranking-eligible.
-**Current app version:** 1.2.47
+**Current app version:** 1.2.48
+
+**Second real archive-identity source closes over half the unresolved
+candidate-pool gap — 2026-07-24:** the 10,901 archive labels the queue-alias
+path could not resolve were previously "identity and file-metadata
+enrichment required" with no further work done. Version 1.2.48 adds
+`scripts/enrich_bl_archive_candidate_identity.py`, a real, conservative
+second identity source using SIMBAD's public batch script interface
+(https://simbad.cds.unistra.fr/simbad/sim-script). It only ever trusts
+SIMBAD's own resolution: a direct name query for the archive label, or (for
+labels documented by Lebofsky et al. 2019, arXiv:1906.07391, to use Parkes's
+own `_S`/`_R` = source/reference cadence-role suffix) the label with that
+exact suffix stripped; separately, labels matching the PKS catalog's own
+B1950 `HHMM+-DD` naming format that fail direct resolution get one retry
+with a `PKS ` prefix -- recognizing a standard catalog format, not guessing
+an identity. Undocumented suffixes (`_B1`..`_B17`, compound forms like
+`_N1_R`) are never touched. A real live run resolved **6,007** of the
+10,902 unresolved archive labels to real SIMBAD positions (5,983 direct
+matches, 24 PKS-prefix matches), leaving 4,894 genuinely unresolved. None of
+the 6,007 becomes `ranking_eligible`: that still requires the separate real
+archive file-metadata enrichment (HDF5 URL discovery, size preflight) this
+project already has (`download_bl_extended_corpus.sh --discover-only`,
+`target-priority-size-preflight`) -- a distinct, not-yet-run next step. Two
+real implementation bugs were found and fixed live during this run, both
+from actual SIMBAD response shapes this project had not seen before: (1) a
+batch where every query fails omits the `::data::` section entirely rather
+than emitting an empty one, which the first version of the alignment check
+misread as truncation; (2) a genuinely truncated response (verified: an
+identical retry of the same batch reproduced a clean, fully parseable
+response) needed bounded retries rather than failing the whole run outright.
+No candidate became ranking-eligible, no raw science payload was downloaded,
+and no identity was guessed; `tests/test_bl_archive_candidate_catalog.py`'s
+invariants were extended, not loosened, to require every non-queue-alias
+identity source to still leave `ranking_eligible`/`target_selection_score`
+empty.
 
 **Installed-entry-point `unknown` acceptance closed — 2026-07-24:** the real
 HIP99427 cadence-complete result below was exercised only via a direct

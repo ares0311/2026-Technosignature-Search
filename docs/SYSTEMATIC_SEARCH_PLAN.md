@@ -156,7 +156,7 @@ acquisition is permanently outside project scope.
 | Track B known/unknown resolution | ✅ Implemented and proven through the installed `Create-New-Search`/`Run-New-Search` entry points on real cadence-complete evidence (HIP99427): `unknown` is reachable without anomaly calibration, identity/evidence survive the full lifecycle, and a real result correctly still withholds expert-review eligibility on an open drift blocking issue. |
 | Semisupervised anomaly/OOD calibration | ❌ Unavailable for probability/threshold claims; ranking-only and not a blocker for known/unknown resolution |
 | Operator UI hardening | ✅ Hunter lifecycle surface verified with a real approval-gated `Run-New-Search`: compact create/follow-up tables, visible acquisition progress, scriptable JSON where useful, loud non-zero failure, same-search resume, and actionable follow-up recommendation. Existing broader production surfaces remain as documented in Step 2. |
-| Detection-optimized target selection algorithm | ⚠️ 3a ranks by the real config-driven `target_selection_score`, including production-scan history; the policy sum remains auditable but is no longer the selector. `Create-New-Search` durably freezes exact selections, while follow-up mode ranks resolved real ledger evidence separately. Metadata discovery/size preflight cover the full 1,703-target HPRC queue. Successful batch-3 resume records bring completed controls to 805, leaving 358 sized URL-available targets (89.274678 GB) and 540 completed no-product results. The live archive namespace adds 12,086 durable candidate labels, but exact queue-alias resolution currently yields 1,184 identities and only those same 358 ranking-eligible targets; the remaining labels are not guessed into viability. This is an inventory, not raw-download approval. See Step 3a. |
+| Detection-optimized target selection algorithm | ⚠️ 3a ranks by the real config-driven `target_selection_score`, including production-scan history; the policy sum remains auditable but is no longer the selector. `Create-New-Search` durably freezes exact selections, while follow-up mode ranks resolved real ledger evidence separately. Metadata discovery/size preflight cover the full 1,703-target HPRC queue. Successful batch-3 resume records bring completed controls to 805, leaving 358 sized URL-available targets (89.274678 GB) and 540 completed no-product results. The live archive namespace adds 12,086 durable candidate labels; exact queue-alias resolution yields 1,184 identities and those same 358 ranking-eligible targets, and a second independent real-identity source (SIMBAD name resolution) now resolves 6,007 more real positions -- none yet ranking-eligible, since file-metadata (HDF5 URL/size) enrichment is a separate, not-yet-run step; 4,894 labels remain genuinely unresolved and are not guessed into viability. This is an inventory, not raw-download approval. See Step 3a. |
 | Extended-corpus completion | ✅ Complete — corrected v1.2.1 six-shard rerun finished 198/198 targets with zero download-task duplication. The full 215-target local corpus is at 10 Hz/s; ingestion removes 3,134 exact duplicate hit rows from 8,988 raw rows, leaving 5,854 unique triage rows and zero follow-up/escalation-ready candidates. See Step 0 completion below. |
 
 ---
@@ -396,6 +396,22 @@ requirements:
    `Create-New-Search` binds this catalog and the separate priority queue into
    `hunter_search_manifest_v3` with independent hashes/counts, so the universe
    is no longer conflated with or manually bridged to the eligibility stage.
+
+   **Real second identity source, 2026-07-24:** `scripts/enrich_bl_archive_
+   candidate_identity.py` resolves real positions for the 10,901 labels the
+   queue-alias path could not, using SIMBAD's public batch script interface
+   -- direct name resolution, or (only for the exact `_S`/`_R` suffix
+   Lebofsky et al. 2019, arXiv:1906.07391, documents as Parkes's own
+   source/reference cadence-role convention) the label with that suffix
+   stripped; a documented PKS B1950 `HHMM+-DD` catalog-format retry for
+   names direct resolution misses. `_B1`-`_B17` and other undocumented
+   suffixes are still never guessed at. A real run resolved 6,007 of the
+   10,902 unresolved labels (5,983 direct, 24 PKS-prefix); 4,894 remain
+   genuinely unresolved. None of the 6,007 is ranking-eligible: file-level
+   coordinate/type/URL enrichment (HDF5 URL discovery, size preflight)
+   remains a required, separate, not-yet-run step before any of them can
+   become viable -- this only closes real-identity resolution, not the full
+   3a eligibility pipeline.
 2. **External-coverage gap (real, but needs research before building):**
    a stronger "nobody has looked here" claim would require cross-referencing
    against other surveys' published target lists (not just this project's

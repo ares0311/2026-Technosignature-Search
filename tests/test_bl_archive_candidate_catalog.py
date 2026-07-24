@@ -12,6 +12,12 @@ CATALOG = ROOT / "data_selection" / "bl_archive_candidate_catalog.csv"
 STATUS = ROOT / "docs" / "data_collection_status.json"
 
 
+_ACQUISITION_SCRIPT_PREFIXES = (
+    "acquire_bl_archive_candidate_catalog__",
+    "enrich_bl_archive_candidate_identity__",
+)
+
+
 def test_committed_archive_catalog_is_large_unique_and_status_bound() -> None:
     rows = list(csv.DictReader(CATALOG.open(encoding="utf-8")))
     assert len(rows) >= 10_000
@@ -21,11 +27,14 @@ def test_committed_archive_catalog_is_large_unique_and_status_bound() -> None:
         "bl_archive_candidate_catalog_v1"
     }
 
+    # Either the original list-targets acquisition or a later identity-
+    # enrichment pass (e.g. SIMBAD name resolution) may be the most recent
+    # writer of the committed catalog; whichever ran last must match exactly.
     status = json.loads(STATUS.read_text(encoding="utf-8"))["runs"]
     successful = [
         value
         for key, value in status.items()
-        if key.startswith("acquire_bl_archive_candidate_catalog__") and value.get("ok")
+        if key.startswith(_ACQUISITION_SCRIPT_PREFIXES) and value.get("ok")
     ]
     latest = max(successful, key=lambda value: value["retrieved_at_utc"])
     assert hashlib.sha256(CATALOG.read_bytes()).hexdigest() == latest["catalog_sha256"]
@@ -35,11 +44,34 @@ def test_committed_archive_catalog_is_large_unique_and_status_bound() -> None:
 
 def test_unresolved_or_ambiguous_archive_labels_are_never_ranked() -> None:
     rows = list(csv.DictReader(CATALOG.open(encoding="utf-8")))
-    unresolved = [row for row in rows if row["identity_status"] != "resolved_existing_queue_alias"]
-    assert unresolved
-    assert all(row["canonical_target_id"] == "" for row in unresolved)
-    assert all(row["ranking_eligible"] == "false" for row in unresolved)
-    assert all(row["target_selection_score"] == "" for row in unresolved)
+    non_queue_resolved = [
+        row for row in rows if row["identity_status"] != "resolved_existing_queue_alias"
+    ]
+    assert non_queue_resolved
+    # No identity source populates ranking_eligible/target_selection_score
+    # directly: even a real SIMBAD-resolved identity still requires the
+    # separate archive file-metadata (HDF5 URL/size preflight) enrichment
+    # step before it can become viable for acquisition.
+    assert all(row["ranking_eligible"] == "false" for row in non_queue_resolved)
+    assert all(row["target_selection_score"] == "" for row in non_queue_resolved)
+
+    still_unidentified = [
+        row
+        for row in non_queue_resolved
+        if row["identity_status"] in {"unresolved_archive_label", "ambiguous_existing_queue_alias"}
+    ]
+    assert still_unidentified
+    assert all(row["canonical_target_id"] == "" for row in still_unidentified)
+
+    simbad_resolved = [
+        row
+        for row in non_queue_resolved
+        if row["identity_status"] == "resolved_via_simbad_name_lookup"
+    ]
+    assert simbad_resolved
+    assert all(row["canonical_target_id"] != "" for row in simbad_resolved)
+    assert all(row["ra_deg"] and row["dec_deg"] for row in simbad_resolved)
+    assert all(row["identity_provenance"].split(";")[0] for row in simbad_resolved)
 
     ranked = [row for row in rows if row["ranking_eligible"] == "true"]
     assert ranked
