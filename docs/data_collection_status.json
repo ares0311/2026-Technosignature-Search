@@ -314,6 +314,22 @@
       "recorded_at_utc": "2026-07-24T06:54:22.092126+00:00",
       "schema_version": "bl_archive_candidate_catalog_v1",
       "script": "enrich_bl_archive_candidate_identity__20260724T065403216609Z"
+    },
+    {
+      "attempt_id": "enrich_bl_archive_candidate_identity__20260724T065820333140Z__2026-07-24T07:03:18.391217+00:00",
+      "cadence_suffix_source": "arxiv:1906.07391",
+      "candidate_count": 12086,
+      "catalog_sha256": "2c0a28270202eb5e4adaf9f32aea4c6d4d50652056a94eb072f1e7354dc6c704",
+      "ok": true,
+      "raw_science_payload_downloaded": false,
+      "recorded_at_utc": "2026-07-24T07:03:18.391217+00:00",
+      "resolved_count": 6007,
+      "retrieved_at_utc": "2026-07-24T07:03:18.387780Z",
+      "schema_version": "bl_archive_candidate_catalog_v1",
+      "script": "enrich_bl_archive_candidate_identity__20260724T065820333140Z",
+      "source_documentation": "https://simbad.cds.unistra.fr/guide/sim-url.htx",
+      "source_endpoint": "https://simbad.cds.unistra.fr/simbad/sim-script",
+      "still_unresolved_count": 4894
     }
   ],
   "disclaimer": "This manifest records real local data-collection run outcomes (counts of items found/downloaded/skipped/failed) for compact progress review. It is not a detection, discovery, external validation, or external-submission claim.",
@@ -511,6 +527,20 @@
       "ok": false,
       "raw_science_payload_downloaded": false,
       "schema_version": "bl_archive_candidate_catalog_v1"
+    },
+    "enrich_bl_archive_candidate_identity__20260724T065820333140Z": {
+      "cadence_suffix_source": "arxiv:1906.07391",
+      "candidate_count": 12086,
+      "catalog_sha256": "2c0a28270202eb5e4adaf9f32aea4c6d4d50652056a94eb072f1e7354dc6c704",
+      "last_run_utc": "2026-07-24T07:03:18.391217+00:00",
+      "ok": true,
+      "raw_science_payload_downloaded": false,
+      "resolved_count": 6007,
+      "retrieved_at_utc": "2026-07-24T07:03:18.387780Z",
+      "schema_version": "bl_archive_candidate_catalog_v1",
+      "source_documentation": "https://simbad.cds.unistra.fr/guide/sim-url.htx",
+      "source_endpoint": "https://simbad.cds.unistra.fr/simbad/sim-script",
+      "still_unresolved_count": 4894
     },
     "hunter_search__SEARCH-20260719T133145Z-3650F32A": {
       "acquisition_mode": "stream_process_evict",
