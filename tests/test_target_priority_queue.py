@@ -308,7 +308,16 @@ def test_build_target_priority_queue_fails_loudly_on_invalid_scan_history(
         )
 
 
-def test_cli_build_and_summarize_target_priority_queue(tmp_path: Path) -> None:
+def test_cli_build_and_summarize_target_priority_queue(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The CLI's extra-seed/preflight/discovery-result auto-glob defaults scan
+    # fixed repo-relative directories (data/, data_selection/batch_manifests/)
+    # regardless of the explicit --seed-csv-path/--data-status-path given
+    # below. Running from an empty cwd keeps this test's queue build isolated
+    # to only its own synthetic fixtures, not whatever real committed extra
+    # sources happen to exist in the checked-out repo.
+    monkeypatch.chdir(tmp_path)
     seed_path = tmp_path / "seed.csv"
     status_path = tmp_path / "status.json"
     history_path = tmp_path / "scan_history.ndjson"
@@ -727,6 +736,120 @@ def test_build_target_priority_queue_merges_multiple_size_preflight_reports(
 
     assert rows_by_target["HIP2"]["status"] == "raw_download_approval_required"
     assert rows_by_target["GJ99427"]["status"] == "raw_download_approval_required"
+
+
+def test_build_target_priority_queue_merges_extra_seed_csv_sources(tmp_path: Path) -> None:
+    seed_path = tmp_path / "seed.csv"
+    extra_seed_path = tmp_path / "extra_seed.csv"
+    status_path = tmp_path / "status.json"
+    _write_seed_csv(seed_path)
+    status_path.write_text(json.dumps({"runs": {}}), encoding="utf-8")
+    with extra_seed_path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "hip",
+                "name",
+                "ra_deg",
+                "dec_deg",
+                "dist_pc",
+                "spec_type",
+                "gal_lat",
+                "exoplanet",
+                "bl_paper",
+            ],
+        )
+        writer.writeheader()
+        writer.writerow(
+            {
+                "hip": "555555",
+                "name": "NEWSTELLARTARGET",
+                "ra_deg": "100.0",
+                "dec_deg": "-30.0",
+                "dist_pc": "",
+                "spec_type": "",
+                "gal_lat": "",
+                "exoplanet": "",
+                "bl_paper": "",
+            }
+        )
+
+    rows = build_target_priority_queue(
+        seed_csv_path=seed_path,
+        data_status_path=status_path,
+        extra_seed_csv_paths=[extra_seed_path],
+    )
+    rows_by_target = {row["target_id"]: row for row in rows}
+
+    assert "NEWSTELLARTARGET" in rows_by_target
+    assert "HIP2" in rows_by_target
+
+
+def test_build_target_priority_queue_extra_seed_row_never_regresses_primary_seed(
+    tmp_path: Path,
+) -> None:
+    """A duplicate target_id from an extra seed source must not silently
+    replace the primary seed's row with a lower-scoring one."""
+
+    seed_path = tmp_path / "seed.csv"
+    extra_seed_path = tmp_path / "extra_seed.csv"
+    status_path = tmp_path / "status.json"
+    _write_seed_csv(seed_path)
+    status_path.write_text(
+        json.dumps(
+            {
+                "runs": {
+                    "download_bl_extended_corpus": {
+                        "reused_targets": ["HIP2"],
+                        "downloaded_targets": [],
+                        "skipped_targets": [],
+                    }
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    # HIP2's primary seed row (already-acquired local cache) scores higher
+    # than an extra-source duplicate with no acquisition history at all.
+    with extra_seed_path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "hip",
+                "name",
+                "ra_deg",
+                "dec_deg",
+                "dist_pc",
+                "spec_type",
+                "gal_lat",
+                "exoplanet",
+                "bl_paper",
+            ],
+        )
+        writer.writeheader()
+        writer.writerow(
+            {
+                "hip": "2",
+                "name": "HIP2",
+                "ra_deg": "0.004167",
+                "dec_deg": "-19.498611",
+                "dist_pc": "",
+                "spec_type": "",
+                "gal_lat": "",
+                "exoplanet": "",
+                "bl_paper": "",
+            }
+        )
+
+    rows = build_target_priority_queue(
+        seed_csv_path=seed_path,
+        data_status_path=status_path,
+        extra_seed_csv_paths=[extra_seed_path],
+    )
+    rows_by_target = {row["target_id"]: row for row in rows}
+
+    assert rows_by_target["HIP2"]["status"] == "already_acquired_local_cache"
+    assert len([row for row in rows if row["target_id"] == "HIP2"]) == 1
 
 
 def test_build_target_priority_queue_merges_multiple_discovery_results(

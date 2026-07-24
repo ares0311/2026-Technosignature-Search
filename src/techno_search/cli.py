@@ -2262,6 +2262,14 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
             extra_discovery_result_paths = sorted(
                 batch_manifest_dir.glob("*_discovery_result.json")
             )
+        extra_seed_csv_paths = args.extra_seed_csv_path
+        if extra_seed_csv_paths is None:
+            seed_dir = Path("data")
+            extra_seed_csv_paths = sorted(
+                path
+                for path in seed_dir.glob("*_resolved_stellar_seed_targets.csv")
+                if path != args.seed_csv_path
+            )
         print(
             json.dumps(
                 write_target_priority_queue(
@@ -2271,6 +2279,7 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                     size_preflight_report_path=args.size_preflight_report_path,
                     extra_size_preflight_report_paths=extra_size_preflight_report_paths,
                     extra_discovery_result_paths=extra_discovery_result_paths,
+                    extra_seed_csv_paths=extra_seed_csv_paths,
                     scan_history_path=args.scan_history_path,
                 ),
                 indent=2,
@@ -6144,6 +6153,22 @@ def _build_parser() -> argparse.ArgumentParser:
             "queued_metadata_discovery and get re-selected into a later "
             "batch. When omitted, defaults to every *_discovery_result.json "
             "file already committed under data_selection/batch_manifests/."
+        ),
+    )
+    build_target_queue_parser.add_argument(
+        "--extra-seed-csv-path",
+        type=Path,
+        action="append",
+        default=None,
+        help=(
+            "Additional real-identity target seed CSV using the primary seed "
+            "CSV's schema, merged alongside the curated HPRC seed list; repeat "
+            "for multiple sources. E.g. "
+            "data/bl_archive_resolved_stellar_seed_targets.csv (built by "
+            "scripts/build_archive_resolved_stellar_seed.py from real SIMBAD-"
+            "resolved, SIMBAD-classified-stellar BL archive labels). When "
+            "omitted, defaults to every "
+            "data/*_resolved_stellar_seed_targets.csv file already committed."
         ),
     )
     build_target_queue_parser.add_argument(

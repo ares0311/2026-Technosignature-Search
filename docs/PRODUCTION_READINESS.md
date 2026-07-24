@@ -5,10 +5,11 @@
 The real cadence-complete `unknown`/adversarial acceptance branch is proven
 through the installed `Create-New-Search`/`Run-New-Search` Hunter entry
 points, not just a direct `run-pipeline` call. Hunter is **not PROD**: the
-candidate pool remains far short of the 10,000+ viable target goal (358
-ranking-eligible of 12,086 archive labels, 6,007 more now identity-resolved
-but not yet file-metadata-enriched), and this is a science-coverage
-limitation, not a workflow gap.
+candidate pool remains far short of the 10,000+ viable target goal (357
+ranking-eligible with real HDF5 URL/size evidence; 5,458 more real,
+SIMBAD-confirmed stellar targets now feed target selection, pending that same
+file-metadata enrichment), and this is a science-coverage limitation, not a
+workflow gap.
 The durable lifecycle has completed an approval-gated new-target raw
 acquisition, processing, scoring, interpretation, durable outcome, and
 follow-up recommendation with a real failure/resume cycle. Version 1.2.42
@@ -18,9 +19,48 @@ reusing three retained DAT artifacts with zero downloads. All three targets
 were routed to local deterministic follow-up triage; no candidate promotion,
 detection, or external-submission permission was produced. A later-epoch
 observation is recommended scientific work, not a missing lifecycle stage. The
-durable public-archive namespace now exceeds 10,000, but only 358 entries are
-identity-resolved and currently ranking-eligible.
-**Current app version:** 1.2.49
+durable public-archive namespace now exceeds 10,000, and the real target
+priority queue now covers 6,879 unique target IDs (up from 1,703), though only
+357 currently carry real HDF5 URL/size evidence and are ranking-eligible.
+**Current app version:** 1.2.50
+
+**Real SIMBAD-confirmed stellar candidates bridged into target selection —
+2026-07-24:** version 1.2.50 closes the gap the object-type evidence above
+was gathered for. `scripts/build_archive_resolved_stellar_seed.py` filters
+the 6,007 SIMBAD-resolved archive labels to the 5,774 SIMBAD itself
+classifies as stellar (excluding known pulsars -- already a dedicated Track A
+catalog check, not a novel star target -- and every extragalactic/AGN/
+radio-source/cluster type), deduplicates cadence-role suffix variants
+(`_S`/`_R`) that resolve to the same real object, and writes
+`data/bl_archive_resolved_stellar_seed_targets.csv` (5,458 rows) in the exact
+schema `target_priority_queue.py`'s primary HPRC seed CSV already uses.
+`build_target_priority_queue()`/`write_target_priority_queue()` gain
+`extra_seed_csv_paths`, merged the same way multiple size-preflight reports
+already are; the CLI defaults to auto-globbing every
+`data/*_resolved_stellar_seed_targets.csv` file, matching the existing
+`--extra-size-preflight-report-path`/`--extra-discovery-result-path`
+pattern. No scoring formula changed and no `dist_pc`/`spec_type`/`exoplanet`
+value was fabricated for a row this project has no real value for -- the
+existing scoring functions already treat those as "no evidence", not zero.
+
+A real live run against the actual committed catalog found and fixed two
+real bugs before landing: (1) several genuinely stellar SIMBAD types
+(`RRLyrae`, `Cepheid`, `BlueSG`, `EllipVar`, `ClassicalCep`, `HighMassXBin`,
+`Type2Cep`) do not end in SIMBAD's usual stellar `*` suffix and were
+initially misclassified as non-stellar -- caught by a test asserting the
+real, full 56-type distribution, not a partial sample; (2) a HIP-designated
+seed row using its raw archive label (e.g. `HIP36817_R`) as both `name` and
+`target_id` would still alias-match an already-covered `HIP36817`'s real
+size-preflight evidence in the primary seed while remaining a *distinct,
+undeduplicated* queue row -- silently duplicating an already-known star
+under a spurious second identity rather than the intended dedup. Fixed by
+always seeding a HIP-designated row's `name` as the bare `HIP<number>` form.
+Regenerating the real queue after the fix also surfaced an unrelated, real,
+independent bookkeeping catch-up: `HIP107788` (the subject of the real
+2026-07-19 approval-gated acquisition documented below) had genuinely moved
+to `already_acquired_local_cache` since `target_priority_queue.csv` was last
+regenerated, dropping the real ranking-eligible count from 358 to 357 --
+this is accurate, current status, not a regression from this change.
 
 **Real object-type evidence shows the newly-resolved candidate pool is
 overwhelmingly stellar, not calibrators — 2026-07-24:** version 1.2.49 adds
