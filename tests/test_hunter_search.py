@@ -83,6 +83,7 @@ def _write_follow_up_ledger(
     schema_version: str = PRODUCTION_FOLLOW_UPS_SCHEMA_VERSION,
     run_id: str = "RUN-2026-07-19_120000Z-ABCD-prod-scan",
     score: float = 0.9,
+    source_data_path: str = "",
 ) -> None:
     run_dir = scans_dir / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -103,6 +104,7 @@ def _write_follow_up_ledger(
                         "drift_rate_hz_per_sec": 0.2,
                         "drift_evidence_available": True,
                         "cross_target_rfi_flagged": rfi,
+                        "source_data_path": source_data_path,
                     }
                 ],
             }
@@ -420,7 +422,12 @@ def test_follow_up_registry_resolves_identity_and_recommends_action(tmp_path: Pa
     queue = tmp_path / "queue.csv"
     scans = tmp_path / "scans"
     _write_queue(queue, 1, status="already_acquired_local_cache")
-    _write_follow_up_ledger(scans, "capture_HIP990000_0001", rfi=True)
+    _write_follow_up_ledger(
+        scans,
+        "capture_HIP990000_0001",
+        rfi=True,
+        source_data_path="/data/cadence_HIP990000.csv",
+    )
 
     registry = follow_up_registry(scans_dirs=(scans,), queue_path=queue)
 
@@ -428,6 +435,7 @@ def test_follow_up_registry_resolves_identity_and_recommends_action(tmp_path: Pa
     entry = registry["eligible_entries"][0]
     assert entry["hip"] == "HIP990000"
     assert entry["follow_up_priority"] == 0.45
+    assert entry["source_data_path"] == "/data/cadence_HIP990000.csv"
     assert "cross-target RFI" in entry["recommended_next_action"]
     assert entry["prior_search_provenance"][0]["run_id"].startswith("RUN-")
 

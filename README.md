@@ -1,7 +1,7 @@
 # Techno-Hunter
 
 ![Status](https://img.shields.io/badge/Hunter%20workflow-NOT%20PROD-red)
-![Version](https://img.shields.io/badge/version-1.2.44-blue)
+![Version](https://img.shields.io/badge/version-1.2.45-blue)
 ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 ![Focus](https://img.shields.io/badge/focus-multimodal%20technosignature%20search-purple)
 
@@ -13,7 +13,7 @@ scientific pipeline, preserves results and provenance, and recommends the next
 follow-up action.
 
 The Hunter lifecycle mechanics and integrated known-explanation code are
-operational, but the workflow is not currently PROD. Version 1.2.44 now
+operational, but the workflow is not currently PROD. Versions 1.2.44-1.2.45
 automatically resolves every hit-bearing radio report to `known`, `unknown`, or
 `unresolved`, and automatically persists an adversarial dossier for `unknown`.
 The retained real corpus verifies the `known` and `unresolved` branches; it has
@@ -87,7 +87,7 @@ Hunter entry points.
 
 | Area | Current state |
 |---|---|
-| Hunter lifecycle | Mechanical create/run/resume/history behavior is verified. Real retained-data search `SEARCH-20260722T012732Z-759A1D93` from committed version 1.2.44 proved the installed entry points persist `unresolved` evidence and an actionable follow-up; PROD remains revoked pending a real installed-entry-point `unknown`/adversarial acceptance run. |
+| Hunter lifecycle | Mechanical create/run/resume/history behavior is verified. Version 1.2.45 recovers exact GBT archive provenance for retained DAT files and accepts validated hit-table presence as detector-threshold evidence. Real HIP103096 now remains unresolved only on missing ON/OFF cadence; PROD remains revoked pending a real installed-entry-point `unknown`/adversarial acceptance run. |
 | Candidate universe | 12,086 unique Breakthrough Listen archive labels are durable. Exact evidence resolves 1,184 identities; 358 are currently ranking-eligible. Unresolved identities are excluded rather than guessed. |
 | Radio | Real GBT/MeerKAT ingest, turboSETI preprocessing, ABACAB cadence checks, known-explanation checks, drift analysis, cross-target recurrence, and frequency-family diagnostics are implemented. |
 | Transit photometry | BLS, aperiodic-dip, ingress/egress asymmetry, and transit-shape checks are wired end to end. |

@@ -493,6 +493,7 @@ def follow_up_registry(
                         row.get("estimated_download_gb")
                     ),
                     "source_hdf5_url": row.get("source_hdf5_url", ""),
+                    "source_data_path": str(raw_entry.get("source_data_path", "")),
                     "queue_status": row.get("status", ""),
                     "target_selection_score": float(row["target_selection_score"]),
                     "follow_up_priority": priority,

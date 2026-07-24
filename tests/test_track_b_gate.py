@@ -74,6 +74,39 @@ def test_gate_missing_provenance_is_unresolved_not_unknown() -> None:
     assert provenance["satisfied"] is None
 
 
+def test_validated_hit_table_satisfies_detector_threshold_without_duplicate_number(
+) -> None:
+    candidate = _radio_candidate(hit_count=1)
+    candidate = Candidate(
+        candidate_id=candidate.candidate_id,
+        track=candidate.track,
+        features=candidate.features,
+        source_ids=candidate.source_ids,
+        provenance={
+            "source_dataset": "retained-real-data",
+            "source_file": "retained.dat",
+            "reader_type": "turboSETI_csv",
+        },
+    )
+
+    result = track_b_unknown_candidate_gate(
+        candidate,
+        crossmatch_result=_no_known_match_crossmatch(),
+        satellite_result={"classification": "no_known_match"},
+    )
+
+    threshold = next(
+        condition
+        for condition in result["conditions"]
+        if condition["condition_id"] == "not_below_search_threshold"
+    )
+    assert threshold["satisfied"] is True
+    assert threshold["evidence"]["evidence_basis"] == (
+        "validated_hit_bearing_turboseti_dat"
+    )
+    assert result["classification_state"] == "unknown"
+
+
 def test_gate_fails_when_crossmatch_finds_known_pulsar() -> None:
     candidate = _radio_candidate()
 

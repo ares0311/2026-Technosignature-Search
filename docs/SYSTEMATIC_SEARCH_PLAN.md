@@ -49,6 +49,11 @@ Retained-data follow-up `SEARCH-20260722T012732Z-759A1D93` from code commit
 installed entry points propagate HIP103096's `unresolved` state and exact
 evidence into the durable follow-up ledger; it does not close the missing real
 `unknown` branch.
+Version 1.2.45 then recovered exact retained-DAT GBT provenance from the
+committed archive manifest and recognized validated hit-table presence as
+detector-threshold evidence. HIP103096 now remains unresolved only because no
+valid ON/OFF cadence is retained; that is the current highest-priority real
+acceptance gap.
 
 **First approval-gated Hunter acquisition — 2026-07-21:** HIP107788 completed
 the immutable new-target lifecycle after one loud, durable DNS failure and an

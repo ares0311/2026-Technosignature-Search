@@ -305,6 +305,79 @@ def test_abacab_cadence_score_fails_on_off_detection() -> None:
     assert candidate.features["off_scan_distinct_source_count"] == 1
 
 
+def test_cadence_selects_strongest_surviving_signal_group_not_target_wide_rfi() -> None:
+    passing = [
+        {
+            **_make_on_hit(f"pass_on_{index}.dat", snr=20.0 + index),
+            "frequency_hz": 1_420_449_257.0,
+            "drift_rate_hz_per_sec": 5.214355,
+        }
+        for index in range(1, 4)
+    ]
+    stronger_rfi = [
+        {
+            **_make_on_hit("rfi_on.dat", snr=140.0),
+            "frequency_hz": 1_600_000_000.0,
+            "drift_rate_hz_per_sec": -5.214355,
+        },
+        {
+            **_make_off_hit("rfi_off.dat", snr=130.0),
+            "frequency_hz": 1_600_000_000.0,
+            "drift_rate_hz_per_sec": -5.214355,
+        },
+    ]
+
+    candidate = build_radio_candidate("cadence-group", [*passing, *stronger_rfi])
+
+    assert candidate.features["frequency_hz"] == 1_420_449_257.0
+    assert candidate.features["snr"] == 23.0
+    assert candidate.features["abacab_cadence_score"] == 1.0
+    assert candidate.features["cadence_survivor_group_count"] == 1
+    assert candidate.features["cadence_candidate_selection_applied"] is True
+
+
+def test_cadence_groups_require_matching_drift_as_well_as_frequency() -> None:
+    rows = [
+        {
+            **_make_on_hit(f"on_{index}.dat", snr=20.0 + index),
+            "drift_rate_hz_per_sec": 5.214355,
+        }
+        for index in range(1, 4)
+    ]
+    rows.append(
+        {
+            **_make_off_hit("off_opposite_drift.dat", snr=100.0),
+            "drift_rate_hz_per_sec": -5.214355,
+        }
+    )
+
+    candidate = build_radio_candidate("cadence-drift", rows)
+
+    assert candidate.features["abacab_cadence_score"] == 1.0
+    assert candidate.features["off_scan_distinct_source_count"] == 0
+
+
+def test_cadence_does_not_merge_distinct_frequency_bins() -> None:
+    rows = [
+        {
+            **_make_on_hit(f"on_{index}.dat", snr=20.0 + index),
+            "frequency_hz": 1_420_000_000.0,
+        }
+        for index in range(1, 4)
+    ]
+    rows.append(
+        {
+            **_make_off_hit("nearby_off.dat", snr=100.0),
+            "frequency_hz": 1_420_000_002.0,
+        }
+    )
+
+    candidate = build_radio_candidate("cadence-frequency-bin", rows)
+
+    assert candidate.features["abacab_cadence_score"] == 1.0
+    assert candidate.features["off_scan_distinct_source_count"] == 0
+
+
 def test_abacab_cadence_score_neutral_without_cadence_data() -> None:
     candidate = build_radio_candidate(
         "single-dat",

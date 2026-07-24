@@ -163,6 +163,7 @@ def load_candidates_from_batch_dir(batch_dir: Path) -> list[dict[str, Any]]:
             report_data.get("known_explanation_resolution", {})
         )
         adversarial_review = _mapping(report_data.get("adversarial_review", {}))
+        provenance = _mapping(report_data.get("provenance", {}))
         snr = float(features.get("snr", merged.get("snr", 0.0)))
         freq = float(features.get("frequency_hz", merged.get("frequency_hz", 0.0)))
         drift = float(
@@ -203,6 +204,9 @@ def load_candidates_from_batch_dir(batch_dir: Path) -> list[dict[str, Any]]:
                 ),
                 "known_explanation_resolution": dict(known_explanation_resolution),
                 "adversarial_review": dict(adversarial_review),
+                "source_data_path": str(
+                    provenance.get("source_file", manifest.get("source_data_path", ""))
+                ),
             }
         )
 

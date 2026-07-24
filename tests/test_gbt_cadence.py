@@ -14,6 +14,7 @@ from techno_search.gbt_cadence import (
     load_cadence_manifest,
     md5_file,
     raw_cadence_status,
+    retained_archive_candidate_context,
     validate_cadence_manifest,
     verify_archive_file,
     write_hit_provenance,
@@ -43,6 +44,73 @@ def _write_dat(path: Path, source: str) -> Path:
         encoding="utf-8",
     )
     return path
+
+
+def test_retained_archive_context_recovers_exact_gbt_provenance(tmp_path: Path) -> None:
+    manifest = (
+        tmp_path
+        / "data_selection"
+        / "batch_manifests"
+        / "local_coverage_first_bounded_batch_manifest.json"
+    )
+    manifest.parent.mkdir(parents=True)
+    manifest.write_text(
+        json.dumps(
+            {
+                "targets": [
+                    {
+                        "hip": "HIP103096",
+                        "source_hdf5_url": (
+                            "https://bldata.berkeley.edu/pipeline/AGBT16B_999_50/"
+                            "holding/capture_HIP103096.h5"
+                        ),
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    dat = tmp_path / "capture_HIP103096.dat"
+    dat.write_text("# retained hit table\n", encoding="utf-8")
+
+    source_ids, provenance = retained_archive_candidate_context(
+        dat, project_root=tmp_path
+    )
+
+    assert source_ids == ("capture_HIP103096.dat",)
+    assert provenance["instrument"] == "GBT"
+    assert provenance["archive_provenance_match"] == "exact_hdf5_filename"
+    assert provenance["instrument_provenance_basis"] == (
+        "archive_program_path_prefix_AGBT"
+    )
+
+
+def test_retained_archive_context_rejects_ambiguous_filename_match(
+    tmp_path: Path,
+) -> None:
+    manifest = (
+        tmp_path
+        / "data_selection"
+        / "batch_manifests"
+        / "local_coverage_first_bounded_batch_manifest.json"
+    )
+    manifest.parent.mkdir(parents=True)
+    manifest.write_text(
+        json.dumps(
+            {
+                "targets": [
+                    {"source_hdf5_url": "https://one.test/AGBT1/capture.h5"},
+                    {"source_hdf5_url": "https://two.test/AGBT2/capture.h5"},
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="Ambiguous retained archive provenance"):
+        retained_archive_candidate_context(
+            tmp_path / "capture.dat", project_root=tmp_path
+        )
 
 
 def _tiny_manifest(tmp_path: Path) -> dict:
@@ -217,6 +285,11 @@ def test_cadence_csv_preserves_on_off_roles(tmp_path: Path) -> None:
     source_ids, provenance = cadence_candidate_context(destination)
     assert source_ids == ("scan_1.dat", "scan_2.dat")
     assert provenance["source_dataset"] == manifest["cadence_id"]
+    assert provenance["instrument"] == "Green Bank Telescope"
+    assert provenance["processing_tool"] == "turboSETI"
+    assert provenance["processing_tool_version"] == "2.3.2"
+    assert provenance["processing_snr_threshold"] == 10.0
+    assert provenance["source_url_count"] == 2
     assert provenance["external_submission_authorized"] is False
 
 

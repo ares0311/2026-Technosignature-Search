@@ -31,6 +31,9 @@ EXPECTED_ROLES = ("on", "off", "on", "off", "on", "off")
 HDF5_MAGIC = b"\x89HDF"
 TURBOSETI_NUMPY_PATCH_OLD = '" is: %i" % max_val.total_n_hits)'
 TURBOSETI_NUMPY_PATCH_NEW = '" is: %i" % int(max_val.total_n_hits[0]))'
+RETAINED_CORPUS_MANIFEST = Path(
+    "data_selection/batch_manifests/local_coverage_first_bounded_batch_manifest.json"
+)
 
 
 def load_cadence_manifest(path: Path) -> dict[str, Any]:
@@ -365,7 +368,7 @@ def build_cadence_csv(
 def cadence_candidate_context(path: Path) -> tuple[tuple[str, ...], dict[str, Any]]:
     sidecar = path.with_name(path.name + ".provenance.json")
     if not sidecar.exists():
-        return (), {}
+        return retained_archive_candidate_context(path)
     payload = json.loads(sidecar.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         return (), {}
@@ -412,6 +415,7 @@ def cadence_candidate_context(path: Path) -> tuple[tuple[str, ...], dict[str, An
     if not isinstance(source_artifacts, list) or not source_artifacts:
         raise ValueError("Cadence provenance must name source artifacts.")
     source_ids: list[str] = []
+    source_provenance: list[Mapping[str, Any]] = []
     for source in source_artifacts:
         if not isinstance(source, dict):
             raise ValueError("Cadence provenance source artifact must be a JSON object.")
@@ -423,6 +427,25 @@ def cadence_candidate_context(path: Path) -> tuple[tuple[str, ...], dict[str, An
         if assessment.sha256 != source.get("sha256"):
             raise ValueError(f"Cadence source artifact SHA-256 does not match: {filename}.")
         source_ids.append(filename)
+        raw_provenance = json.loads(
+            provenance_path_for(source_path).read_text(encoding="utf-8")
+        )
+        if not isinstance(raw_provenance, Mapping):
+            raise ValueError(f"Cadence source provenance is not an object: {filename}.")
+        source_provenance.append(raw_provenance)
+
+    instruments = _consistent_values(source_provenance, "instrument")
+    processing_tools = _consistent_values(source_provenance, "processing_tool")
+    processing_versions = _consistent_values(
+        source_provenance, "processing_tool_version"
+    )
+    thresholds = {
+        float(_mapping(item.get("processing_parameters", {}))["snr_threshold"])
+        for item in source_provenance
+    }
+    if len(thresholds) != 1:
+        raise ValueError("Cadence source artifacts use inconsistent detector thresholds.")
+    source_urls = _consistent_or_distinct_values(source_provenance, "source_url")
 
     provenance = {
         "source_dataset": str(payload["cadence_id"]),
@@ -430,9 +453,74 @@ def cadence_candidate_context(path: Path) -> tuple[tuple[str, ...], dict[str, An
         "classification": str(payload["classification"]),
         "scan_count": int(payload["scan_count"]),
         "row_count": int(payload["row_count"]),
+        "instrument": instruments,
+        "processing_tool": processing_tools,
+        "processing_tool_version": processing_versions,
+        "processing_snr_threshold": thresholds.pop(),
+        "source_url": source_urls[0],
+        "source_url_count": len(source_urls),
         "external_submission_authorized": False,
     }
     return tuple(source_ids), provenance
+
+
+def retained_archive_candidate_context(
+    path: Path,
+    *,
+    project_root: Path | None = None,
+) -> tuple[tuple[str, ...], dict[str, Any]]:
+    """Recover retained-DAT archive provenance by exact HDF5 filename.
+
+    The committed bounded-corpus manifest is metadata evidence, not a guessed
+    target-name association. Ambiguous filename matches fail loudly.
+    """
+
+    root = project_root or Path(__file__).resolve().parents[2]
+    manifest_path = root / RETAINED_CORPUS_MANIFEST
+    if path.suffix.lower() != ".dat" or not manifest_path.is_file():
+        return (), {}
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if not isinstance(payload, Mapping):
+        raise ValueError(f"Retained corpus manifest is not a JSON object: {manifest_path}")
+    expected_hdf5 = path.with_suffix(".h5").name.casefold()
+    urls = {
+        str(row.get("source_hdf5_url", "")).strip()
+        for row in _sequence(payload.get("targets", []))
+        if Path(urlparse(str(row.get("source_hdf5_url", ""))).path).name.casefold()
+        == expected_hdf5
+    }
+    urls.discard("")
+    if not urls:
+        return (), {}
+    if len(urls) != 1:
+        raise ValueError(
+            f"Ambiguous retained archive provenance for {path.name}: {sorted(urls)}"
+        )
+    source_url = urls.pop()
+    program_segment = next(
+        (
+            segment
+            for segment in Path(urlparse(source_url).path).parts
+            if segment.upper().startswith("AGBT")
+        ),
+        "",
+    )
+    instrument = "GBT" if program_segment else ""
+    return (
+        (path.name,),
+        {
+            "source_dataset": "Breakthrough Listen public archive",
+            "source_url": source_url,
+            "classification": "derived_public_archive_hit_table",
+            "instrument": instrument,
+            "instrument_provenance_basis": (
+                "archive_program_path_prefix_AGBT" if instrument else "unresolved"
+            ),
+            "archive_manifest_path": str(RETAINED_CORPUS_MANIFEST),
+            "archive_provenance_match": "exact_hdf5_filename",
+            "external_submission_authorized": False,
+        },
+    )
 
 
 def _mapping(value: object) -> Mapping[str, Any]:
@@ -450,3 +538,19 @@ def _sequence(value: object) -> Sequence[Mapping[str, Any]]:
             raise ValueError("Expected a JSON object.")
         scans.append(item)
     return scans
+
+
+def _consistent_values(rows: Sequence[Mapping[str, Any]], field: str) -> str:
+    values = _consistent_or_distinct_values(rows, field)
+    if len(values) != 1:
+        raise ValueError(f"Cadence source artifacts use inconsistent {field} values.")
+    return values[0]
+
+
+def _consistent_or_distinct_values(
+    rows: Sequence[Mapping[str, Any]], field: str
+) -> list[str]:
+    values = sorted({str(row.get(field, "")).strip() for row in rows})
+    if not values or "" in values:
+        raise ValueError(f"Cadence source artifacts are missing {field} provenance.")
+    return values

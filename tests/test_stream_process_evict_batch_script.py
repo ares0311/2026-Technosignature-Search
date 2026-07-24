@@ -69,6 +69,8 @@ def test_hunter_search_can_isolate_results_and_reuse_existing_hit_tables() -> No
     assert "pipeline_evidence_incomplete" in script
     assert 'EVICTION_OCCURRED=1' in script
     assert 'LOCAL_DAT_REUSE_COUNT=$((LOCAL_DAT_REUSE_COUNT + 1))' in script
+    assert 'row.get("source_data_path", "")' in script
+    assert 'scoring preserved local evidence' in script
     assert 'COMPLETED_COUNT=$((NEWLY_PROCESSED_COUNT + ALREADY_PROCESSED_COUNT))' in script
     assert '"local_dat_reuse_targets": local_dat_reuse_names' in script
 

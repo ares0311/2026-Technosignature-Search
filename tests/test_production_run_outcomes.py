@@ -67,6 +67,7 @@ def _write_result_pair(
                 },
                 "scores": {"followup_value": score},
                 "track": "radio",
+                "provenance": {"source_file": f"/data/{target_name}.csv"},
             }
         ),
         encoding="utf-8",
@@ -125,6 +126,7 @@ def test_build_production_outcomes_splits_non_detections_and_follow_ups() -> Non
     assert follow_ups["entries"][0]["is_earth_drift_consistent"] is True
     assert follow_ups["entries"][0]["drift_evidence_available"] is True
     assert follow_ups["entries"][0]["drift_evidence_limitation"] == ""
+    assert follow_ups["entries"][0]["source_data_path"] == ""
     assert follow_ups["entries"][0]["status"] == (
         "needs_local_deterministic_follow_up_triage"
     )

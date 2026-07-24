@@ -162,7 +162,7 @@ classifies or rejects known explanations: pulsars, FRBs, blazars/AGN, known
 gamma-ray sources, satellite/transmitter matches, terrestrial RFI, instrument
 artifacts, and noise.
 
-Current status: version 1.2.44 integrates the Track A catalog and satellite
+Current status: versions 1.2.44-1.2.45 integrate the Track A catalog and satellite
 components into the production radio runner and removes learned anomaly
 calibration from the known/unknown decision. The retained real corpus verifies
 `known` and `unresolved`; `unknown` and its automatic adversarial dossier are
@@ -175,8 +175,11 @@ Installed-path evidence: retained-data follow-up
 a download and durably
 propagated HIP103096 as `unresolved` through its candidate report, report
 manifest, scan summary, target-status ledger, and follow-up registry. The
-recommended action is to complete the three unresolved known-explanation
-checks. This verifies the installed unresolved branch; it does not substitute
+originally exposed three unresolved checks. Version 1.2.45 closes the discarded
+archive/instrument and detector-threshold provenance bridges: an exact
+committed-manifest HDF5 filename match recovers GBT identity, and a validated
+hit-bearing turboSETI DAT proves detector-threshold passage. A fresh direct
+HIP103096 run leaves only ON/OFF cadence unresolved. This does not substitute
 for the required real `unknown`/adversarial acceptance.
 
 Every hit-bearing radio run must durably finish as exactly one of:

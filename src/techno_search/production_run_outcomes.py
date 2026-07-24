@@ -513,6 +513,7 @@ def _follow_up_entry(
             "known_explanation_resolution", {}
         ),
         "adversarial_review": candidate.get("adversarial_review", {}),
+        "source_data_path": str(candidate.get("source_data_path", "")),
         "detection_claimed": False,
         "external_submission_allowed": False,
     }

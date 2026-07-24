@@ -424,6 +424,40 @@ prior search history or provenance.
 Do not claim the Hunter workflow is PROD until a current end-to-end acceptance
 run proves this integrated transition through the installed Hunter entry points.
 
+### Cadence Candidate Identity and Review Evidence — NON-NEGOTIABLE
+
+A multi-scan cadence is a collection of candidate signal groups, not one
+target-wide candidate. Group radio hits by the same detector frequency/drift
+bin used by `cadence_triage.group_cadence_hits`; evaluate the ON/OFF pattern
+inside each group; preserve every source scan; and rank the surviving groups
+deterministically. Never select the globally highest-SNR row across the whole
+cadence and then attach unrelated ON/OFF rows to it. That failure mode can let
+strong RFI in one group hide a valid ON-only group in another.
+
+For an integrated radio run:
+
+1. Track A/B structured checks alone determine `known`, `unknown`, or
+   `unresolved`.
+2. Learned anomaly and heuristic routing scores may order local work only.
+   Their calibration status is a `ranking_limitation`, never a known
+   explanation, a missing Track A/B input, or a veto on `unknown`.
+3. The adversarial dossier must keep three concepts distinct: a `refutation`
+   is an implemented check that supplies a known explanation; a
+   `review_concern` is cautionary evidence or missing corroboration such as no
+   repeat epoch; and a `blocking_issue` is a concrete unresolved review check.
+   Do not convert all negative score prose into refutations.
+4. The numerical `false_positive_probability` field in legacy scored packets is
+   an uncalibrated routing score unless `score_calibration` explicitly allows
+   probability interpretation. New adversarial artifacts must call it
+   `routing_false_positive_score` and preserve the calibration record.
+
+The real HIP99427 six-scan cadence is the regression acceptance case for this
+contract: 213 hit rows contain 124 frequency/drift groups, including two
+three-ON/zero-OFF survivors. The production runner must select the strongest
+surviving group rather than the stronger target-wide RFI row, resolve all ten
+known-explanation conditions independently of the anomaly score, and preserve
+the follow-up concerns without relabeling the observation.
+
 ### CNN / Learned-Model Promotion Gate — NON-NEGOTIABLE
 
 `docs/astrometrics_coding_agents_master_guide.md` changes the formal roadmap
@@ -701,7 +735,7 @@ hardening gate refers only to calibrating the *semisupervised anomaly
 scorer's* quantitative threshold — one input signal, not the Track A/B
 architecture itself. A future agent must never answer "how close to PROD"
 by citing that narrower gate as if it blocked the whole known-vs-unknown
-classification system; verify against `track_b_gate.py`'s actual 9
+classification system; verify against `track_b_gate.py`'s actual ten
 conditions before making that claim.
 
 ### Hard invariants
@@ -730,8 +764,7 @@ composite interpretation → durable results/provenance → follow-up creation
 scaffolding, planned work, and partial paths do not count. Candidate
 selection specifically must evaluate a much larger pool than requested
 (target roughly 100 selected from 10,000+ viable candidates when data
-permits — this repo's current 1,703-target HPRC seed list is well short of
-that and is itself a gap), be deterministic/explainable/reproducible/
+permits), be deterministic/explainable/reproducible/
 testable, use project-appropriate scientific metrics, and weigh prior
 searches, novelty, expected information gain, suitability, data
 availability, storage/compute cost, prior results, follow-up value, and
@@ -741,20 +774,15 @@ philosophy above; scoring must be auditable arithmetic over real features,
 same standard as `target_priority_score`/`target_selection_score` in
 `background_search.py`.
 
-**Known real gap, found 2026-07-19 (see `docs/DECISIONS.md` for the full
-writeup):** `target_priority_queue.py`'s actual sort/selection key
-(`total_priority`) is a coarse additive sum dominated by acquisition-status
-buckets and several always-zero fields (`followup_leverage`,
-`false_positive_probability` as wired), not the more principled, continuous,
-config-driven `target_priority_score`/`target_selection_score` this
-document already names as correct — that function is computed and stored in
-an unused CSV column (`background_target_priority_score`) but never used to
-rank or select. Fixing this — wiring the real tool into the real selection
-path, including the prior-review-count novelty adjustment already built in
-`target_selection_score()` — is a standing highest-priority gap until
-closed and verified.
+The 2026-07-19 selection-key gap is closed: new-target selection uses the
+config-driven `target_selection_score`, including production-scan history,
+while follow-up mode ranks durable follow-up evidence separately. The current
+public-archive namespace contains 12,086 labels, but only 1,184 identities are
+resolved and 358 have viable, preflighted acquisition products. Treat that as
+an explicit science-coverage limitation; never fabricate coordinates or
+eligibility for the unresolved labels merely to reach 10,000 viable targets.
 
-### Required CLI (target contract, not yet fully built — see gap above)
+### Required CLI (operational contract)
 
 ```
 /Create-New-Search --targets <N> --mode <new|follow-up>
@@ -772,7 +800,7 @@ researchers/projects with reliable provenance — never erase or overwrite
 that history; preserve who/when/why/source/method/result/follow-up
 relationships.
 
-### Durable state (target model, not yet fully unified — see gap above)
+### Durable state (operational model)
 
 Maintain distinct durable concepts, each with stable IDs, explicit
 relationships, timestamps, provenance, and versioned schemas:
@@ -784,12 +812,11 @@ relationships, timestamps, provenance, and versioned schemas:
 
 CSV manifests (this repo's `data_selection/target_priority_queue.csv` and
 `data_selection/batch_manifests/*.json`) are for operator review, not the
-durable system of record — the durable record is
-`docs/data_collection_status.json` (search run), `results/scan_history.ndjson`
-(target search history), and the per-run `results/scans/RUN-*` ledgers
-(follow-up registry) already in this repo, but they are not yet unified
-under one coherent model with the explicit cross-references this section
-requires. Every search run must preserve exact selected targets,
+durable system of record. Immutable `hunter_search_manifest_v3` searches,
+append-only lifecycle events and target history, per-run production manifests,
+and versioned follow-up ledgers carry explicit search/run/target references.
+`docs/data_collection_status.json` separately records acquisition attempts.
+Every search run must preserve exact selected targets,
 configuration, inputs/data provenance, code/model/scorer versions,
 individual scores, composite result, interpretation, failures, execution
 state, and follow-up disposition.

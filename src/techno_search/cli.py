@@ -1470,7 +1470,8 @@ def _print_adversarial_review_dossier(data: dict[str, Any], out: TextIO) -> None
     print(
         " | ".join(
             [
-                f"false_positive_probability={_format_score(data.get('false_positive_probability'))}",
+                "routing_false_positive_score="
+                f"{_format_score(data.get('routing_false_positive_score'))}",
                 f"refutation_count={data.get('refutation_count', 0)}",
                 f"requires_human_expert_review={data.get('requires_human_expert_review')}",
             ]
@@ -1480,6 +1481,12 @@ def _print_adversarial_review_dossier(data: dict[str, Any], out: TextIO) -> None
     blocking_issues = list(data.get("blocking_issues", []))
     if blocking_issues:
         print(f"Blocking issues: {'; '.join(blocking_issues)}", file=out)
+    ranking_limitations = list(data.get("ranking_limitations", []))
+    if ranking_limitations:
+        print(f"Ranking limitations: {'; '.join(ranking_limitations)}", file=out)
+    review_concerns = list(data.get("review_concerns", []))
+    if review_concerns:
+        print(f"Review concerns: {'; '.join(review_concerns)}", file=out)
     refutations = list(data.get("refutations", []))
     if not refutations:
         print("Refutations: none", file=out)

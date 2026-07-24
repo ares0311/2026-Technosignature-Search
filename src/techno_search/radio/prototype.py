@@ -106,15 +106,17 @@ def build_radio_candidate(
     hits = parse_hit_table(rows, track_config=track_config)
     on_hits = [hit for hit in hits if hit.scan_role == "on"]
     off_hits = [hit for hit in hits if hit.scan_role == "off"]
-    best_hit = _best_hit(on_hits or hits)
-    matched_on_hits = _frequency_matched_hits(on_hits, best_hit)
-    matched_off_hits = _frequency_matched_hits(off_hits, best_hit)
+    best_hit, cadence_survivor_count = _best_explainable_hit(on_hits, off_hits, hits)
+    frequency_matched_on_hits = _frequency_matched_hits(on_hits, best_hit)
+    frequency_matched_off_hits = _frequency_matched_hits(off_hits, best_hit)
+    cadence_matched_on_hits = _frequency_and_drift_matched_hits(on_hits, best_hit)
+    cadence_matched_off_hits = _frequency_and_drift_matched_hits(off_hits, best_hit)
 
-    max_on_snr = max((hit.snr for hit in matched_on_hits), default=0.0)
-    max_off_snr = max((hit.snr for hit in matched_off_hits), default=0.0)
+    max_on_snr = max((hit.snr for hit in frequency_matched_on_hits), default=0.0)
+    max_off_snr = max((hit.snr for hit in frequency_matched_off_hits), default=0.0)
     recurrence_targets = {
         hit.target_id
-        for hit in (*matched_on_hits, *matched_off_hits)
+        for hit in (*frequency_matched_on_hits, *frequency_matched_off_hits)
         if hit.target_id != best_hit.target_id and hit.snr >= 8.0
     }
     rfi_database_features = _rfi_database_features(
@@ -125,7 +127,7 @@ def build_radio_candidate(
     database_rfi_overlap = _float(rfi_database_features["rfi_database_overlap_score"])
 
     abacab_score, on_src_count, off_src_count = _abacab_cadence_score(
-        matched_on_hits, matched_off_hits
+        cadence_matched_on_hits, cadence_matched_off_hits
     )
     cross_band_features = extract_cross_band_features(
         _hit_feature_row(best_hit),
@@ -142,6 +144,8 @@ def build_radio_candidate(
         "abacab_cadence_score": abacab_score,
         "on_scan_distinct_source_count": on_src_count,
         "off_scan_distinct_source_count": off_src_count,
+        "cadence_survivor_group_count": cadence_survivor_count,
+        "cadence_candidate_selection_applied": cadence_survivor_count > 0,
         "rfi_band_overlap_score": max(configured_rfi_overlap, database_rfi_overlap),
         "frequency_persistence_score": _frequency_persistence_score(hits, best_hit),
         "nearby_target_recurrence_score": _clamp(len(recurrence_targets) / 3.0),
@@ -207,6 +211,37 @@ def _best_hit(hits: Sequence[RadioHit]) -> RadioHit:
     return max(hits, key=lambda hit: hit.snr)
 
 
+def _best_explainable_hit(
+    on_hits: Sequence[RadioHit],
+    off_hits: Sequence[RadioHit],
+    all_hits: Sequence[RadioHit],
+) -> tuple[RadioHit, int]:
+    """Select the strongest signal group that survives a complete cadence.
+
+    A cadence CSV is a collection of signal groups, not one target-wide
+    candidate. Selecting the globally strongest row can therefore replace a
+    valid ON-only group with unrelated RFI seen in an OFF scan. When the input
+    contains one or more three-ON/zero-OFF groups, choose the strongest such
+    group deterministically. Otherwise retain the strongest-row behavior so a
+    failed or incomplete cadence is still reported honestly.
+    """
+
+    survivors: dict[tuple[float, float], RadioHit] = {}
+    for hit in on_hits:
+        matched_on = _frequency_and_drift_matched_hits(on_hits, hit)
+        matched_off = _frequency_and_drift_matched_hits(off_hits, hit)
+        cadence_score, _, _ = _abacab_cadence_score(matched_on, matched_off)
+        if cadence_score != 1.0:
+            continue
+        key = (round(hit.frequency_hz, 3), round(hit.drift_rate_hz_per_sec, 6))
+        current = survivors.get(key)
+        if current is None or hit.snr > current.snr:
+            survivors[key] = hit
+    if survivors:
+        return _best_hit(tuple(survivors.values())), len(survivors)
+    return _best_hit(on_hits or all_hits), 0
+
+
 def _hit_feature_row(hit: RadioHit) -> dict[str, FeatureValue]:
     return {
         "frequency_hz": hit.frequency_hz,
@@ -233,6 +268,25 @@ def _frequency_matched_hits(
         for hit in hits
         if abs(hit.frequency_hz - reference.frequency_hz)
         <= FREQUENCY_MATCH_TOLERANCE_HZ
+    ]
+
+
+def _frequency_and_drift_matched_hits(
+    hits: Sequence[RadioHit],
+    reference: RadioHit,
+) -> list[RadioHit]:
+    """Return the exact turboSETI frequency/drift evidence group.
+
+    This deliberately matches ``cadence_triage.group_cadence_hits``. The wider
+    frequency tolerance used for general RFI context must not merge distinct
+    detector bins into one ON/OFF cadence candidate.
+    """
+    return [
+        hit
+        for hit in hits
+        if round(hit.frequency_hz, 3) == round(reference.frequency_hz, 3)
+        and round(hit.drift_rate_hz_per_sec, 6)
+        == round(reference.drift_rate_hz_per_sec, 6)
     ]
 
 
