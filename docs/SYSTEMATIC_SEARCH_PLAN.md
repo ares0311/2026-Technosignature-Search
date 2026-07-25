@@ -80,12 +80,14 @@ candidate's pipeline result. HIP99427's isolated copy reproduces
 `known_explanation_state: unknown`, `eligible_for_unknown_candidate: true`,
 10/10 conditions satisfied, and its own adversarial dossier -- proving the
 installed lifecycle preserves identity and evidence, not just the standalone
-CLI path. The current highest-priority real acceptance gap is now
-candidate-pool scale (357 ranking-eligible of a 10,000+ goal -- 5,458 more
-real SIMBAD-confirmed stellar candidates now feed target selection via
-version 1.2.50's seed bridge, pending the same file-metadata enrichment
-those 357 already have), plus separately resolving or accepting HIP99427's
-own still-open Earth-drift blocking issue.
+CLI path. Version 1.2.53 then closed the file-metadata enrichment gap for
+version 1.2.50's stellar bridge: a real, complete discovery + size-preflight
+pass found real HDF5 URLs for 4,480 of the 5,363 HIP-numbered new stellar
+candidates, bringing the real ranking-eligible pool to 4,835 (up from 357).
+The current highest-priority real acceptance gap is now candidate-pool scale
+toward the 10,000+ goal (the 95 non-HIP-named new stellar candidates and the
+4,894 archive labels that remain genuinely unresolved), plus separately
+resolving or accepting HIP99427's own still-open Earth-drift blocking issue.
 
 **First approval-gated Hunter acquisition — 2026-07-21:** HIP107788 completed
 the immutable new-target lifecycle after one loud, durable DNS failure and an
@@ -158,7 +160,7 @@ acquisition is permanently outside project scope.
 | Track B known/unknown resolution | ✅ Implemented and proven through the installed `Create-New-Search`/`Run-New-Search` entry points on real cadence-complete evidence (HIP99427): `unknown` is reachable without anomaly calibration, identity/evidence survive the full lifecycle, and a real result correctly still withholds expert-review eligibility on an open drift blocking issue. |
 | Semisupervised anomaly/OOD calibration | ❌ Unavailable for probability/threshold claims; ranking-only and not a blocker for known/unknown resolution |
 | Operator UI hardening | ✅ Hunter lifecycle surface verified with a real approval-gated `Run-New-Search`: compact create/follow-up tables, visible acquisition progress, scriptable JSON where useful, loud non-zero failure, same-search resume, and actionable follow-up recommendation. Existing broader production surfaces remain as documented in Step 2. |
-| Detection-optimized target selection algorithm | ⚠️ 3a ranks by the real config-driven `target_selection_score`, including production-scan history; the policy sum remains auditable but is no longer the selector. `Create-New-Search` durably freezes exact selections, while follow-up mode ranks resolved real ledger evidence separately. Metadata discovery/size preflight cover the full 1,703-target HPRC queue. Successful batch-3 resume records bring completed controls to 805, leaving 358 sized URL-available targets (89.274678 GB) and 540 completed no-product results. The live archive namespace adds 12,086 durable candidate labels; exact queue-alias resolution yields 1,184 identities and 357 currently ranking-eligible targets (358 minus one real bookkeeping catch-up -- HIP107788 moved to already_acquired_local_cache), and a second independent real-identity source (SIMBAD name resolution) resolves 6,007 more real positions. Version 1.2.50 bridges the 5,458 SIMBAD-confirmed-stellar subset of those into real target selection (`data/bl_archive_resolved_stellar_seed_targets.csv`, merged via `extra_seed_csv_paths`), bringing the real queue to 6,879 unique target IDs -- none yet ranking-eligible, since file-metadata (HDF5 URL/size) enrichment is a separate, not-yet-run step; 4,894 labels remain genuinely unresolved and are not guessed into viability. This is an inventory, not raw-download approval. See Step 3a. |
+| Detection-optimized target selection algorithm | ⚠️ 3a ranks by the real config-driven `target_selection_score`, including production-scan history; the policy sum remains auditable but is no longer the selector. `Create-New-Search` durably freezes exact selections, while follow-up mode ranks resolved real ledger evidence separately. Metadata discovery/size preflight cover the full 1,703-target HPRC queue. Successful batch-3 resume records bring completed controls to 805, leaving 358 sized URL-available targets (89.274678 GB) and 540 completed no-product results. The live archive namespace adds 12,086 durable candidate labels; exact queue-alias resolution yields 1,184 identities, and a second independent real-identity source (SIMBAD name resolution) resolves 6,007 more real positions. Version 1.2.50 bridges the 5,458 SIMBAD-confirmed-stellar subset of those into real target selection (`data/bl_archive_resolved_stellar_seed_targets.csv`, merged via `extra_seed_csv_paths`), bringing the real queue to 6,879 unique target IDs. Version 1.2.53 then completed real file-metadata (HDF5 URL/size) enrichment for the HIP-numbered subset of that bridge, bringing the real ranking-eligible pool to **4,835** (up from 357); 4,894 labels remain genuinely unresolved and are not guessed into viability. This is an inventory, not raw-download approval. See Step 3a. |
 | Extended-corpus completion | ✅ Complete — corrected v1.2.1 six-shard rerun finished 198/198 targets with zero download-task duplication. The full 215-target local corpus is at 10 Hz/s; ingestion removes 3,134 exact duplicate hit rows from 8,988 raw rows, leaving 5,854 unique triage rows and zero follow-up/escalation-ready candidates. See Step 0 completion below. |
 
 ---
@@ -439,14 +441,31 @@ requirements:
    merged the same way multiple size-preflight reports already are; a
    duplicate `target_id` from the new source never regresses the primary
    seed's row (existing collision rule: keep the higher-scoring one). The
-   real queue now covers 6,879 unique target IDs (up from 1,703); still only
-   357 carry real HDF5 URL/size evidence and are ranking-eligible, since that
-   remains a separate, not-yet-run step for the 5,458 new candidates. A real
+   real queue now covers 6,879 unique target IDs (up from 1,703). A real
    live run found and fixed a real bug before landing: seeding a HIP-
    designated row's `name`/`target_id` as its raw suffixed archive label
    (e.g. `HIP36817_R`) still alias-matched the primary seed's real
    `HIP36817` coverage evidence while remaining an undeduplicated separate
    row -- fixed by always using the bare `HIP<number>` form.
+
+   **Real file-metadata enrichment completes the bridge, 2026-07-24:**
+   version 1.2.53 ran the real, complete discover -> preflight -> promote
+   sequence for the 5,363 HIP-numbered new stellar candidates (95 non-HIP-
+   named ones -- GJ/HD/BD-designated -- are out of scope for the existing
+   HIP-keyed discovery tooling, a separate future gap). Discovery found real
+   HDF5 URLs for 4,480 of them; a real, complete size-preflight HEAD-probed
+   all 4,478 promoted rows, 4,478/4,478 ok, 1,956.965258 GB total. The real
+   ranking-eligible pool is now **4,835** (up from 357; not a simple 357+4,478
+   sum, since HIP107788 independently moved to `already_acquired_local_cache`
+   between rebuilds), approximately 2045.976 GB across the full pool -- still
+   only an inventory, no raw payload downloaded. This run also found and
+   fixed a real, dangerous CLI bug: an explicit `--extra-size-preflight-
+   report-path` (or the discovery-result/seed-csv equivalents) **replaced**,
+   rather than added to, the auto-globbed set of every already-committed
+   report -- silently dropping the original 357 already-promoted targets the
+   first time this session actually supplied one of these flags explicitly.
+   Every `--extra-*-path` flag on `build-target-priority-queue` is now
+   strictly additive to its auto-glob default.
 2. **External-coverage gap (real, but needs research before building):**
    a stronger "nobody has looked here" claim would require cross-referencing
    against other surveys' published target lists (not just this project's

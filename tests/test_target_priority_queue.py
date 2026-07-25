@@ -13,6 +13,7 @@ from techno_search.target_priority_queue import (
     build_target_priority_manifest,
     build_target_priority_queue,
     build_target_priority_size_preflight,
+    read_target_priority_queue,
     target_priority_queue_summary,
     write_target_priority_queue,
     write_target_priority_size_preflight,
@@ -370,6 +371,83 @@ def test_cli_build_and_summarize_target_priority_queue(
 
     assert exit_code == 0
     assert summary == target_priority_queue_summary(output_path)
+
+
+def test_cli_extra_path_flags_add_to_not_replace_auto_glob_defaults(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A real incident: passing --extra-size-preflight-report-path once
+    silently replaced, rather than extended, the auto-globbed set of every
+    already-committed report -- dropping 357 already-promoted
+    raw_download_approval_required targets from a freshly rebuilt queue.
+    An explicit --extra-*-path flag must only ever add a path, never cause
+    an auto-globbed, already-committed report/result to be dropped."""
+    monkeypatch.chdir(tmp_path)
+    seed_path = tmp_path / "seed.csv"
+    status_path = tmp_path / "status.json"
+    output_path = tmp_path / "target_priority_queue.csv"
+    _write_seed_csv(seed_path)
+    status_path.write_text(json.dumps({"runs": {}}), encoding="utf-8")
+
+    batch_dir = tmp_path / "data_selection" / "batch_manifests"
+    batch_dir.mkdir(parents=True)
+    auto_globbed_report = batch_dir / "auto_globbed_size_preflight_report.json"
+    auto_globbed_report.write_text(
+        json.dumps(
+            {
+                "schema_version": "target_priority_size_preflight_v1",
+                "targets": [
+                    {
+                        "target_id": "HIP2",
+                        "url": "https://bldata.berkeley.edu/example/HIP2.h5",
+                        "ok": True,
+                        "content_length_gb": 0.242659,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    explicit_report = tmp_path / "explicit_size_preflight_report.json"
+    explicit_report.write_text(
+        json.dumps(
+            {
+                "schema_version": "target_priority_size_preflight_v1",
+                "targets": [
+                    {
+                        "target_id": "HIP99427",
+                        "url": "https://bldata.berkeley.edu/example/HIP99427.h5",
+                        "ok": True,
+                        "content_length_gb": 0.5,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    build_stdout = StringIO()
+    exit_code = main(
+        [
+            "build-target-priority-queue",
+            "--seed-csv-path",
+            str(seed_path),
+            "--data-status-path",
+            str(status_path),
+            "--output-path",
+            str(output_path),
+            "--extra-size-preflight-report-path",
+            str(explicit_report),
+        ],
+        stdout=build_stdout,
+    )
+
+    assert exit_code == 0
+    rows_by_target = {row["target_id"]: row for row in read_target_priority_queue(output_path)}
+    # Both the auto-globbed report (HIP2) and the explicitly-passed one
+    # (GJ99427/HIP99427) must be reflected -- neither replaces the other.
+    assert rows_by_target["HIP2"]["status"] == "raw_download_approval_required"
+    assert rows_by_target["GJ99427"]["status"] == "raw_download_approval_required"
 
 
 def test_build_target_priority_manifest_selects_top_unsearched_targets(
