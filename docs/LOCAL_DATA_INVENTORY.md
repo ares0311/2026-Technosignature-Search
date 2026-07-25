@@ -51,27 +51,31 @@ depending on local-only state:
 | `data_selection/batch_manifests/local_coverage_top25_manifest.json` / `local_coverage_next25_manifest.json` | `techno-search build-target-priority-manifest` | Per-round bounded manifest for BL product metadata discovery from the target-priority queue | Committed scheduling artifact |
 | `data_selection/batch_manifests/local_coverage_top25_size_preflight_manifest.json` / `local_coverage_next25_size_preflight_manifest.json` | `techno-search build-target-priority-manifest --include-status size_preflight_required` | Per-round URL-discovered subset for size/checksum/storage preflight before any raw download | Committed scheduling artifact |
 | `data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json` / `local_coverage_next25_size_preflight_report.json` | `techno-search target-priority-size-preflight` | Per-round HEAD-only content-length and header preflight for URL-discovered HDF5 files | Committed scheduling artifact |
-| `data_selection/batch_manifests/local_coverage_raw_download_approval_manifest.json` | `techno-search build-target-priority-manifest --include-status raw_download_approval_required` | Consolidated human-review input for the 1,147 sized HDF5 rows (~288.97 GB) promoted across all completed rounds; inventory only, not raw-download approval | Committed scheduling artifact |
+| `data_selection/batch_manifests/local_coverage_raw_download_approval_manifest.json` | `techno-search build-target-priority-manifest --include-status raw_download_approval_required` | Consolidated human-review input for the HDF5 rows promoted across all completed rounds; inventory only, not raw-download approval | Committed scheduling artifact |
+| `data_selection/batch_manifests/stellar_bridge_*` | `scripts/download_bl_extended_corpus.sh --discover-only`, `techno-search target-priority-size-preflight --workers 6` | Metadata discovery + size preflight for the 5,363 HIP-numbered new stellar candidates from the SIMBAD-resolved archive-identity bridge | Committed scheduling artifact |
+| `data/bl_archive_resolved_stellar_seed_targets.csv` | `scripts/build_archive_resolved_stellar_seed.py` | Real SIMBAD-object-type-confirmed stellar seed rows, merged into the queue via `extra_seed_csv_paths` | Committed metadata map |
 | `data_selection/data_role_registry.yaml` | Data-selection policy workflow | Role separation for live-search metadata and local-cache status | Committed policy artifact |
 
-The current target-priority queue contains 1,703 unique target IDs derived from
-the 1,709-row full HPRC metadata seed. After all metadata-only discovery and
-HEAD-only size-preflight rounds (`top25`, `next25`, `batch3`-`batch13`, and
-`batch14_bulk`), it records 1,147 targets requiring explicit raw-download
-approval, 540 completed no-product results retained for future metadata retry,
-and 16 already-acquired local-cache controls. `HIP75676` appears in the
-extended-corpus status manifest but not in the full HPRC seed CSV, so it is
-documented as a source-list limitation rather than forced into the queue.
+As of version 1.2.53, the target-priority queue contains 6,879 unique target
+IDs: the original 1,703-row HPRC-seed queue plus the 5,458-row deduplicated
+stellar-candidate bridge (`data/bl_archive_resolved_stellar_seed_targets.csv`,
+built from real SIMBAD identity + object-type resolution over the 12,086-row
+public archive-label namespace). After the HPRC-seed rounds
+(`top25`, `next25`, `batch3`-`batch14_bulk`) and the stellar-bridge discovery +
+size-preflight round, 4,835 targets are `raw_download_approval_required`, up
+from the original 358. `HIP75676` appears in the extended-corpus status
+manifest but not in the full HPRC seed CSV, so it is documented as a
+source-list limitation rather than forced into the queue.
 
-The regenerated queue moved the 1,147 URL-sized targets from
-`size_preflight_required` to
-`raw_download_approval_required`. That state is planning evidence only; raw
-download still requires explicit operator approval and a storage-reserve
-check. `techno-search build-target-priority-queue` merges every committed
-`*_size_preflight_report.json` under `data_selection/batch_manifests/` (see
-`--extra-size-preflight-report-path`, default: auto-glob) so a later round's
-report does not regress an earlier round's promotion — see the "next25"
-round entry below for the real regression this fixed.
+Each round's promotion is planning evidence only; raw download still requires
+explicit operator approval and a storage-reserve check.
+`techno-search build-target-priority-queue` always auto-globs every committed
+`*_size_preflight_report.json` / `*_discovery_result.json` under
+`data_selection/batch_manifests/` and every explicit `--extra-*-path` union
+into (never replaces) that auto-glob, so a later round's report never
+regresses an earlier round's promotion — see the "next25" round entry below,
+and the stellar-bridge additive-flags CLI fix in `PRODUCTION_READINESS.md`,
+for the real regressions this rule now prevents.
 
 ## Broadly Ignored File Classes
 
