@@ -20,7 +20,33 @@ observation is recommended scientific work, not a missing lifecycle stage. The
 durable public-archive namespace now exceeds 10,000, and the real target
 priority queue now covers 6,879 unique target IDs (up from 1,703), of which
 4,835 currently carry real HDF5 URL/size evidence and are ranking-eligible.
-**Current app version:** 1.2.55
+**Current app version:** 1.2.56
+
+**`create_search` no longer fails a normal top-N request short of the
+requested count — 2026-07-25:** an audit of the HUNTER PROD DIRECTIVE's
+explicit "Do not fail a normal top-N request... Return fewer than N only when
+fewer than N valid candidates actually exist after sufficient exploration"
+requirement found `create_search()` violated it outright: whenever fewer than
+`target_count` eligible candidates existed, it raised `SearchLifecycleError`
+and created no search at all -- silently returning nothing rather than the
+best available N. The always-`False`, never-read `partial_selection_allowed`
+manifest field (present since the schema was introduced) confirms this was a
+known, stubbed-but-unimplemented gap, not an intentional design choice. Fixed:
+`create_search()` now returns the best available N with an honest
+`selection.shortfall` report (`requested_count`, `returned_count`,
+`shortfall_count`, `reason`, and for `new` mode a real
+`expansion_headroom_count` -- candidates with a known identity that have not
+yet completed HDF5 discovery/size preflight and could become eligible via
+further `build-target-priority-queue` expansion) instead of raising. A truly
+empty result (zero eligible candidates) still fails closed, since there is
+nothing to freeze. `Create-New-Search`'s human-readable output prints a
+visible `SHORTFALL:` line so this is never silently buried. Verified live
+against the real production queue: `Create-New-Search --targets 5000 --mode
+new` returned all 4,835 currently-eligible targets with
+`expansion_headroom_count: 1237` (the real count of `metadata_discovery_
+required` + `queued_metadata_discovery` queue rows) rather than failing
+outright. This closes the "weak absolute candidate quality does not prevent
+returning the best available N" required business validation.
 
 **First real multi-target `new`-mode live-acquisition batch against the
 enlarged candidate pool — 2026-07-25:** every prior real new-mode acquisition

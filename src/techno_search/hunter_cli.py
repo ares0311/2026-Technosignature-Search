@@ -144,6 +144,13 @@ def _print_created_search(
         f"projected acquisition: {manifest['selection']['projected_download_gb']:.3f} GB",
         file=out,
     )
+    shortfall = manifest["selection"].get("shortfall")
+    if shortfall:
+        print(
+            f"SHORTFALL: returned {shortfall['returned_count']} of "
+            f"{shortfall['requested_count']} requested target(s) -- {shortfall['reason']}.",
+            file=out,
+        )
     if len(targets) > 100:
         print(f"Review CSV: {manifest_dir / f'{search_id}.csv'}", file=out)
         return

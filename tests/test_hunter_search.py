@@ -36,11 +36,22 @@ def _write_queue(
     status: str = "raw_download_approval_required",
     include_source_url: bool = True,
 ) -> None:
+    _write_queue_with_statuses(
+        path, [status] * count, include_source_url=include_source_url
+    )
+
+
+def _write_queue_with_statuses(
+    path: Path,
+    statuses: list[str],
+    *,
+    include_source_url: bool = True,
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=TARGET_PRIORITY_QUEUE_FIELDS)
         writer.writeheader()
-        for index in range(count):
+        for index, status in enumerate(statuses):
             target_id = f"HIP{990000 + index}"
             row = dict.fromkeys(TARGET_PRIORITY_QUEUE_FIELDS, "")
             row.update(
@@ -146,12 +157,72 @@ def test_create_new_search_freezes_exact_ranked_targets(tmp_path: Path) -> None:
     assert [event["event"] for event in loaded["events"]] == ["created"]
 
 
-def test_create_search_refuses_partial_selection(tmp_path: Path) -> None:
+def test_create_search_returns_best_available_n_with_shortfall_report(
+    tmp_path: Path,
+) -> None:
+    """A normal top-N request must not fail outright short of the requested count.
+
+    Per the Hunter business contract, rank and absolute quality are distinct: the
+    search must freeze the best available N and report the shortfall, not raise.
+    """
     queue = tmp_path / "queue.csv"
     searches = tmp_path / "searches"
     _write_queue(queue, 1)
 
-    with pytest.raises(SearchLifecycleError, match="no partial search was created"):
+    manifest = create_search(
+        target_count=2,
+        mode="new",
+        queue_path=queue,
+        searches_dir=searches,
+        search_id="SEARCH-20260719T123000Z-A1B2C3D4",
+        created_at_utc="2026-07-19T12:30:00Z",
+    )
+
+    assert [target["hip"] for target in manifest["targets"]] == ["HIP990000"]
+    assert manifest["selection"]["selected_count"] == 1
+    assert manifest["selection"]["requested_count"] == 2
+    assert manifest["selection"]["partial_selection_allowed"] is True
+    shortfall = manifest["selection"]["shortfall"]
+    assert shortfall["requested_count"] == 2
+    assert shortfall["returned_count"] == 1
+    assert shortfall["shortfall_count"] == 1
+    assert shortfall["expansion_headroom_count"] == 0
+    assert "1 of 2 requested new targets" in shortfall["reason"]
+    assert (searches / manifest["search_id"] / "manifest.json").is_file()
+
+
+def test_create_search_shortfall_reports_real_expansion_headroom(
+    tmp_path: Path,
+) -> None:
+    """Rows awaiting discovery/preflight are real, reportable expansion headroom."""
+    queue = tmp_path / "queue.csv"
+    _write_queue_with_statuses(
+        queue,
+        ["raw_download_approval_required"]
+        + ["metadata_discovery_required"] * 3
+        + ["queued_metadata_discovery"] * 2,
+    )
+
+    manifest = create_search(
+        target_count=5,
+        mode="new",
+        queue_path=queue,
+        searches_dir=tmp_path / "searches",
+    )
+
+    shortfall = manifest["selection"]["shortfall"]
+    assert shortfall["returned_count"] == 1
+    assert shortfall["shortfall_count"] == 4
+    assert shortfall["expansion_headroom_count"] == 5
+
+
+def test_create_search_zero_eligible_targets_still_fails_closed(tmp_path: Path) -> None:
+    """Zero real candidates means there is nothing to freeze -- a hard failure remains correct."""
+    queue = tmp_path / "queue.csv"
+    searches = tmp_path / "searches"
+    _write_queue(queue, 1, status="metadata_discovery_required")
+
+    with pytest.raises(SearchLifecycleError, match="no eligible new targets are available"):
         create_search(
             target_count=2,
             mode="new",
@@ -160,6 +231,31 @@ def test_create_search_refuses_partial_selection(tmp_path: Path) -> None:
         )
 
     assert not searches.exists()
+
+
+def test_create_follow_up_search_returns_best_available_n_with_shortfall_report(
+    tmp_path: Path,
+) -> None:
+    queue = tmp_path / "queue.csv"
+    scans = tmp_path / "scans"
+    _write_queue(queue, 1, status="already_acquired_local_cache", include_source_url=False)
+    _write_follow_up_ledger(scans, "capture_HIP990000_0001")
+
+    manifest = create_search(
+        target_count=3,
+        mode="follow-up",
+        queue_path=queue,
+        scans_dir=scans,
+        searches_dir=tmp_path / "searches",
+    )
+
+    assert manifest["selection"]["selected_count"] == 1
+    shortfall = manifest["selection"]["shortfall"]
+    assert shortfall["requested_count"] == 3
+    assert shortfall["returned_count"] == 1
+    assert shortfall["shortfall_count"] == 2
+    assert shortfall["expansion_headroom_count"] is None
+    assert "1 of 3 requested follow-up targets" in shortfall["reason"]
 
 
 def test_create_large_search_writes_review_csv_but_json_is_system_of_record(
@@ -556,3 +652,25 @@ def test_required_cli_entrypoints_invoke_real_dispatch_paths(
         ]
     ) == 0
     assert "actionable follow-up target" in capsys.readouterr().out
+
+
+def test_cli_prints_visible_shortfall_line_when_returning_fewer_than_requested(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    queue = tmp_path / "queue.csv"
+    _write_queue(queue, 1)
+
+    assert create_new_search(
+        [
+            "--targets",
+            "5",
+            "--mode",
+            "new",
+            "--priority-queue",
+            str(queue),
+            "--searches-dir",
+            str(tmp_path / "searches"),
+        ]
+    ) == 0
+    out = capsys.readouterr().out
+    assert "SHORTFALL: returned 1 of 5 requested target(s)" in out

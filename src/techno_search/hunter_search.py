@@ -114,11 +114,9 @@ def create_search(
 
     if not selected:
         raise SearchLifecycleError(f"no eligible {mode} targets are available")
-    if len(selected) < target_count:
-        raise SearchLifecycleError(
-            f"requested {target_count} targets but only {len(selected)} eligible {mode} "
-            "targets are available; no partial search was created"
-        )
+    shortfall = _selection_shortfall(
+        mode=mode, requested_count=target_count, selected_count=len(selected), queue_rows=queue_rows
+    )
     selected = [_with_execution_contract(target, mode=mode) for target in selected]
     execution_kind_counts: dict[str, int] = {}
     for target in selected:
@@ -164,7 +162,8 @@ def create_search(
                 bool(target["follow_up_observation_fulfilled"])
                 for target in selected
             ),
-            "partial_selection_allowed": False,
+            "partial_selection_allowed": shortfall is not None,
+            "shortfall": shortfall,
         },
         "pipeline": {
             "acquisition": "scripts/run_stream_process_evict_batch.sh",
@@ -550,6 +549,63 @@ def _select_new_targets(queue_path: Path, target_count: int) -> tuple[list[dict[
             }
         )
     return selected, viable_count
+
+
+_EXPANSION_HEADROOM_STATUSES = frozenset(
+    {"metadata_discovery_required", "queued_metadata_discovery"}
+)
+
+
+def _selection_shortfall(
+    *,
+    mode: str,
+    requested_count: int,
+    selected_count: int,
+    queue_rows: Sequence[Mapping[str, str]],
+) -> dict[str, Any] | None:
+    """Report, never hide, a best-available-N result short of the request.
+
+    A normal top-N request must not fail outright merely because fewer than N
+    candidates currently clear eligibility; it must return the best available
+    N and explain why, per the Hunter PROD business contract. Only a request
+    with zero eligible candidates remains a hard failure (handled by the
+    caller before this function runs).
+    """
+    shortfall_count = requested_count - selected_count
+    if shortfall_count <= 0:
+        return None
+    if mode == "new":
+        headroom = sum(
+            row.get("status") in _EXPANSION_HEADROOM_STATUSES for row in queue_rows
+        )
+        reason = (
+            f"only {selected_count} of {requested_count} requested new targets are "
+            "currently eligible (status raw_download_approval_required) in the target "
+            f"priority queue; {headroom} additional candidate(s) have a known identity "
+            "but have not yet completed HDF5 discovery/size preflight and may become "
+            "eligible after running 'techno-search build-target-priority-queue' with "
+            "fresh discovery/preflight evidence"
+        )
+        return {
+            "requested_count": requested_count,
+            "returned_count": selected_count,
+            "shortfall_count": shortfall_count,
+            "expansion_headroom_count": headroom,
+            "reason": reason,
+        }
+    reason = (
+        f"only {selected_count} of {requested_count} requested follow-up targets have "
+        "actionable durable evidence in the follow-up registry; no further expansion "
+        "is possible without first completing additional new-target searches to "
+        "generate new follow-up evidence"
+    )
+    return {
+        "requested_count": requested_count,
+        "returned_count": selected_count,
+        "shortfall_count": shortfall_count,
+        "expansion_headroom_count": None,
+        "reason": reason,
+    }
 
 
 def _with_execution_contract(target: Mapping[str, Any], *, mode: str) -> dict[str, Any]:
