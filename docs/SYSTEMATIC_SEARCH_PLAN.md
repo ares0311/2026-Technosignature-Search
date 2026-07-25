@@ -466,6 +466,24 @@ requirements:
    first time this session actually supplied one of these flags explicitly.
    Every `--extra-*-path` flag on `build-target-priority-queue` is now
    strictly additive to its auto-glob default.
+
+   **First real multi-target `new`-mode live-acquisition batch, 2026-07-25:**
+   every real prior new-mode acquisition was either a single target
+   (`SEARCH-20260719T141028Z-6D7C655C`, HIP107788) or a zero-download reuse of
+   already-retained DAT files (`SEARCH-20260721T173605Z-0F6693E8`); neither
+   drew from the post-1.2.53 enlarged 4,835-target pool, and neither exercised
+   a real multi-target `stream_process_evict` batch through the installed
+   `Create-New-Search`/`Run-New-Search` lifecycle. `Create-New-Search
+   --targets 10 --mode new` froze `SEARCH-20260725T033433Z-21EE3252` (10
+   never-before-searched stellar-bridge targets, 2.387 GB projected).
+   `Run-New-Search --approve-acquisition` completed as
+   `RUN-2026-07-25_033508Z-7GDV-hunter-search`: 10/10 real HDF5 downloads
+   (2.386564 GB), 10/10 turboSETI runs, 10/10 isolated candidate reports, 0
+   failures, raw-payload eviction after each report, 10 durable history
+   records, 10 follow-up recommendations (all `human_review_queue`). This
+   closes the remaining real gap in the "New targets" required
+   business-validation scenario -- see `docs/PRODUCTION_READINESS.md` for the
+   full evidence trail.
 2. **External-coverage gap (real, but needs research before building):**
    a stronger "nobody has looked here" claim would require cross-referencing
    against other surveys' published target lists (not just this project's

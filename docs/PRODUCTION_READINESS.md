@@ -1,6 +1,6 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-07-24
+**Last updated:** 2026-07-25
 **Current phase:** Phase 0 complete; Phase 1/5 code integration is implemented.
 The real cadence-complete `unknown`/adversarial acceptance branch is proven
 through the installed `Create-New-Search`/`Run-New-Search` Hunter entry
@@ -20,7 +20,43 @@ observation is recommended scientific work, not a missing lifecycle stage. The
 durable public-archive namespace now exceeds 10,000, and the real target
 priority queue now covers 6,879 unique target IDs (up from 1,703), of which
 4,835 currently carry real HDF5 URL/size evidence and are ranking-eligible.
-**Current app version:** 1.2.54
+**Current app version:** 1.2.55
+
+**First real multi-target `new`-mode live-acquisition batch against the
+enlarged candidate pool — 2026-07-25:** every prior real new-mode acquisition
+was a single target (`SEARCH-20260719T141028Z-6D7C655C`, HIP107788) or a
+zero-download reuse of already-retained DAT files
+(`SEARCH-20260721T173605Z-0F6693E8`); neither exercised a real multi-target
+`stream_process_evict` batch through the installed lifecycle, and neither
+drew from the post-1.2.53 enlarged 4,835-target pool. This session ran
+`Create-New-Search --targets 10 --mode new` for real against the current
+queue (candidate universe 12,086, eligible 4,835): it froze
+`SEARCH-20260725T033433Z-21EE3252`, ranking ten never-before-searched
+stellar-bridge targets (HIP107975, HIP108036, HIP108506, HIP1086, HIP109474,
+HIP109822, HIP109857, HIP11000, HIP11029, HIP110341) by the deterministic
+`target_selection_score`, projecting 2.387 GB of real new acquisition.
+`Run-New-Search --approve-acquisition` correctly refused to run without the
+flag first (`APPROVAL REQUIRED`, exit code 2), then completed as
+`RUN-2026-07-25_033508Z-7GDV-hunter-search`: 10/10 real HDF5 downloads
+(2.386564 GB total), 10/10 turboSETI runs, 10/10 isolated candidate reports,
+0 failures, real raw-payload eviction after each candidate report (local
+storage never exceeded the 100GB cap), 10 durable target-history records
+appended, and 10 real follow-up recommendations registered (all
+`human_review_queue`). The durable event log records exactly
+`created` -> `run_started` -> `run_completed`
+(`results/searches/SEARCH-20260725T033433Z-21EE3252/events.ndjson`), and
+`docs/data_collection_status.json` carries the real per-target acquisition
+outcome under `hunter_search__SEARCH-20260725T033433Z-21EE3252`. No detection,
+discovery, expert review, or external-submission claim follows; every result
+routed to local deterministic follow-up triage. This closes the last real gap
+in the "New targets" required business-validation scenario: the installed
+lifecycle now has real evidence of adaptive candidate-universe discovery,
+eligibility, ranking, exact durable selection, approval-gated live
+multi-target acquisition, processing, scoring, durable results, and
+follow-up-registry update, all in one run. The remaining honest PROD gap is
+unchanged: candidate-pool scale relative to the 10,000+ goal, and the
+separate, already-tracked semisupervised-anomaly-scorer calibration and
+HIP99427 Earth-drift blockers.
 
 **Real metadata enrichment completes for the stellar candidate bridge --
 4,835 targets now ranking-eligible — 2026-07-24:** version 1.2.53 closes the
