@@ -1,7 +1,7 @@
 # Techno-Hunter
 
 ![Status](https://img.shields.io/badge/Hunter%20workflow-NOT%20PROD-red)
-![Version](https://img.shields.io/badge/version-1.2.53-blue)
+![Version](https://img.shields.io/badge/version-1.2.54-blue)
 ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 ![Focus](https://img.shields.io/badge/focus-multimodal%20technosignature%20search-purple)
 
@@ -20,7 +20,7 @@ The retained real corpus now verifies all three branches through the
 installed `Create-New-Search`/`Run-New-Search` entry points -- a real 6-scan
 HIP99427 cadence reached `unknown` there too, with its adversarial dossier
 correctly still withholding expert-review eligibility on an open Earth-drift
-blocking issue. The remaining PROD gap is candidate-pool scale: only 358 of a
+blocking issue. The remaining PROD gap is candidate-pool scale: 4,835 of a
 10,000+-viable-target goal are currently ranking-eligible. Outputs are local
 triage evidence and documented null results—not detections, discoveries, expert
 review, external validation, or permission to contact an outside party.

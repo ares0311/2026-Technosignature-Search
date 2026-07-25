@@ -20,7 +20,7 @@ observation is recommended scientific work, not a missing lifecycle stage. The
 durable public-archive namespace now exceeds 10,000, and the real target
 priority queue now covers 6,879 unique target IDs (up from 1,703), of which
 4,835 currently carry real HDF5 URL/size evidence and are ranking-eligible.
-**Current app version:** 1.2.53
+**Current app version:** 1.2.54
 
 **Real metadata enrichment completes for the stellar candidate bridge --
 4,835 targets now ranking-eligible — 2026-07-24:** version 1.2.53 closes the
