@@ -2248,28 +2248,45 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         return 0
 
     if args.command == "build-target-priority-queue":
-        extra_size_preflight_report_paths = args.extra_size_preflight_report_path
-        if extra_size_preflight_report_paths is None:
-            batch_manifest_dir = Path("data_selection/batch_manifests")
-            extra_size_preflight_report_paths = sorted(
-                path
-                for path in batch_manifest_dir.glob("*_size_preflight_report.json")
-                if path != args.size_preflight_report_path
-            )
-        extra_discovery_result_paths = args.extra_discovery_result_path
-        if extra_discovery_result_paths is None:
-            batch_manifest_dir = Path("data_selection/batch_manifests")
-            extra_discovery_result_paths = sorted(
-                batch_manifest_dir.glob("*_discovery_result.json")
-            )
-        extra_seed_csv_paths = args.extra_seed_csv_path
-        if extra_seed_csv_paths is None:
-            seed_dir = Path("data")
-            extra_seed_csv_paths = sorted(
-                path
-                for path in seed_dir.glob("*_resolved_stellar_seed_targets.csv")
-                if path != args.seed_csv_path
-            )
+        # Every one of these three --extra-*-path flags is additive to its
+        # auto-glob default, never a replacement for it: each already-
+        # committed report/result/seed file represents a real, separate
+        # acquisition batch or identity source, and dropping any of them
+        # silently regresses that batch's promotions back to an unresolved
+        # status (a real incident: an explicit
+        # --extra-size-preflight-report-path once replaced, rather than
+        # extended, the auto-glob, silently dropping 357 already-promoted
+        # raw_download_approval_required targets from a freshly rebuilt
+        # queue). A caller who wants only the auto-globbed set can still get
+        # it by passing no --extra-*-path flags at all.
+        batch_manifest_dir = Path("data_selection/batch_manifests")
+        extra_size_preflight_report_paths = sorted(
+            {
+                *(
+                    path
+                    for path in batch_manifest_dir.glob("*_size_preflight_report.json")
+                    if path != args.size_preflight_report_path
+                ),
+                *(args.extra_size_preflight_report_path or []),
+            }
+        )
+        extra_discovery_result_paths = sorted(
+            {
+                *batch_manifest_dir.glob("*_discovery_result.json"),
+                *(args.extra_discovery_result_path or []),
+            }
+        )
+        seed_dir = Path("data")
+        extra_seed_csv_paths = sorted(
+            {
+                *(
+                    path
+                    for path in seed_dir.glob("*_resolved_stellar_seed_targets.csv")
+                    if path != args.seed_csv_path
+                ),
+                *(args.extra_seed_csv_path or []),
+            }
+        )
         print(
             json.dumps(
                 write_target_priority_queue(

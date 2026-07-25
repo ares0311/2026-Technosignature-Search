@@ -5,11 +5,9 @@
 The real cadence-complete `unknown`/adversarial acceptance branch is proven
 through the installed `Create-New-Search`/`Run-New-Search` Hunter entry
 points, not just a direct `run-pipeline` call. Hunter is **not PROD**: the
-candidate pool remains far short of the 10,000+ viable target goal (357
-ranking-eligible with real HDF5 URL/size evidence; 5,458 more real,
-SIMBAD-confirmed stellar targets now feed target selection, pending that same
-file-metadata enrichment), and this is a science-coverage limitation, not a
-workflow gap.
+candidate pool is real and now much larger (4,835 ranking-eligible with real
+HDF5 URL/size evidence, up from 357), but still short of the 10,000+ viable
+target goal, and this is a science-coverage limitation, not a workflow gap.
 The durable lifecycle has completed an approval-gated new-target raw
 acquisition, processing, scoring, interpretation, durable outcome, and
 follow-up recommendation with a real failure/resume cycle. Version 1.2.42
@@ -20,9 +18,42 @@ were routed to local deterministic follow-up triage; no candidate promotion,
 detection, or external-submission permission was produced. A later-epoch
 observation is recommended scientific work, not a missing lifecycle stage. The
 durable public-archive namespace now exceeds 10,000, and the real target
-priority queue now covers 6,879 unique target IDs (up from 1,703), though only
-357 currently carry real HDF5 URL/size evidence and are ranking-eligible.
-**Current app version:** 1.2.52
+priority queue now covers 6,879 unique target IDs (up from 1,703), of which
+4,835 currently carry real HDF5 URL/size evidence and are ranking-eligible.
+**Current app version:** 1.2.53
+
+**Real metadata enrichment completes for the stellar candidate bridge --
+4,835 targets now ranking-eligible — 2026-07-24:** version 1.2.53 closes the
+file-metadata enrichment step version 1.2.50's stellar bridge left open. A
+real, complete `--discover-only` pass (using version 1.2.51's `mktemp` fix)
+against the 5,363 HIP-numbered new stellar candidates found real HDF5 URLs
+for 4,480 of them (883 confirmed genuinely unavailable; the 95 non-HIP-named
+candidates -- GJ/HD/BD-designated -- are a separate, not-yet-covered gap,
+since the discovery tooling is HIP-number-keyed). A real, complete
+size-preflight pass (using version 1.2.52's concurrent workers) HEAD-probed
+all 4,478 promoted rows: 4,478/4,478 ok, totaling a real 1,956.965258 GB.
+Regenerating the queue brings **4,835 targets to `raw_download_approval_
+required`** (up from 357; the total is not 357+4,478 because HIP107788
+independently moved to `already_acquired_local_cache` between rebuilds, and
+the 4,478 preflight rows compose with, not just add to, all previously
+committed discovery/preflight evidence), totaling approximately 2045.976 GB
+across the full eligible pool.
+
+A real, dangerous CLI bug was found and fixed during this same work: passing
+`--extra-size-preflight-report-path` (or the discovery-result/seed-csv
+equivalents) explicitly **replaced** `build-target-priority-queue`'s
+auto-globbed set of every already-committed report, rather than adding to
+it -- silently dropping 357 already-promoted `raw_download_approval_required`
+targets from a freshly rebuilt queue the first time this session actually
+supplied one of these flags explicitly. Every `--extra-*-path` flag is now
+strictly additive to its auto-glob default; a regression test proves an
+auto-globbed report and an explicitly-passed one are both honored together.
+No raw science payload was downloaded; `raw_download_authorized: false`
+throughout. This closes real-identity resolution, real object-type
+classification, and real file-metadata enrichment for the SIMBAD-resolved
+stellar candidate pool -- the next real gap is candidate-pool scale toward
+10,000+ (the 95 non-HIP-named candidates, plus the 4,894 archive labels that
+remain genuinely unresolved).
 
 **Bounded concurrent size-preflight workers — 2026-07-24:** version 1.2.52
 adds `workers` to `build_target_priority_size_preflight()`/`write_target_
