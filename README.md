@@ -1,7 +1,7 @@
 # Techno-Hunter
 
 ![Status](https://img.shields.io/badge/Hunter%20workflow-NOT%20PROD-red)
-![Version](https://img.shields.io/badge/version-1.2.56-blue)
+![Version](https://img.shields.io/badge/version-1.2.57-blue)
 ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 ![Focus](https://img.shields.io/badge/focus-multimodal%20technosignature%20search-purple)
 
@@ -20,7 +20,7 @@ The retained real corpus now verifies all three branches through the
 installed `Create-New-Search`/`Run-New-Search` entry points -- a real 6-scan
 HIP99427 cadence reached `unknown` there too, with its adversarial dossier
 correctly still withholding expert-review eligibility on an open Earth-drift
-blocking issue. The remaining PROD gap is candidate-pool scale: 4,835 of a
+blocking issue. The remaining PROD gap is candidate-pool scale: 4,825 of a
 10,000+-viable-target goal are currently ranking-eligible. Outputs are local
 triage evidence and documented null results—not detections, discoveries, expert
 review, external validation, or permission to contact an outside party.
@@ -90,8 +90,8 @@ Hunter entry points.
 
 | Area | Current state |
 |---|---|
-| Hunter lifecycle | Mechanical create/run/resume/history behavior is verified. Version 1.2.47 proves the real `unknown`/adversarial branch through the installed `Create-New-Search`/`Run-New-Search` entry points (real 6-scan HIP99427 cadence, `RUN-2026-07-24_062446Z-WE1V-hunter-search`); real HIP103096 remains unresolved only on missing ON/OFF cadence. PROD remains revoked on candidate-pool scale (4,835 of a 10,000+ goal), not workflow completeness. |
-| Candidate universe | 12,086 unique Breakthrough Listen archive labels are durable. Exact evidence resolves 1,184 identities. A second, independent real-identity source (SIMBAD name resolution, documented BL cadence-suffix convention only, no guessing) resolves 6,007 more archive labels' real sky positions; real SIMBAD object-type evidence (not guessed) confirms 5,774 of those are stellar, not calibrators. Version 1.2.50 bridges the 5,458-row deduplicated stellar subset into real target selection (`data/bl_archive_resolved_stellar_seed_targets.csv`), bringing the real queue to 6,879 unique target IDs. A real metadata-only discovery + size-preflight pass then found HDF5 URLs for 4,480 of those 5,363 HIP-numbered new candidates (95 non-HIP-named ones are a separate, not-yet-covered gap); 4,835 are currently ranking-eligible (up from 357), totaling approximately 2045.976 GB by preflight. 4,894 archive labels remain genuinely unresolved. Unresolved identities are excluded rather than guessed. |
+| Hunter lifecycle | Mechanical create/run/resume/history behavior is verified. Version 1.2.47 proves the real `unknown`/adversarial branch through the installed `Create-New-Search`/`Run-New-Search` entry points (real 6-scan HIP99427 cadence, `RUN-2026-07-24_062446Z-WE1V-hunter-search`); real HIP103096 remains unresolved only on missing ON/OFF cadence. PROD remains revoked on candidate-pool scale (4,825 of a 10,000+ goal), not workflow completeness. |
+| Candidate universe | 12,086 unique Breakthrough Listen archive labels are durable. Exact evidence resolves 1,184 identities. A second, independent real-identity source (SIMBAD name resolution, documented BL cadence-suffix convention only, no guessing) resolves 6,007 more archive labels' real sky positions; real SIMBAD object-type evidence (not guessed) confirms 5,774 of those are stellar, not calibrators. Version 1.2.50 bridges the 5,458-row deduplicated stellar subset into real target selection (`data/bl_archive_resolved_stellar_seed_targets.csv`), bringing the real queue to 6,879 unique target IDs. A real metadata-only discovery + size-preflight pass then found HDF5 URLs for 4,480 of those 5,363 HIP-numbered new candidates (95 non-HIP-named ones are a separate, not-yet-covered gap); 4,825 are currently ranking-eligible (up from 357; 10 of the original 4,835 were then really acquired and moved to `already_acquired_local_cache`), totaling approximately 2043.589 GB by preflight. 4,894 archive labels remain genuinely unresolved. Unresolved identities are excluded rather than guessed. |
 | Radio | Real GBT/MeerKAT ingest, turboSETI preprocessing, ABACAB cadence checks, known-explanation checks, drift analysis, cross-target recurrence, and frequency-family diagnostics are implemented. |
 | Transit photometry | BLS, aperiodic-dip, ingress/egress asymmetry, and transit-shape checks are wired end to end. |
 | Infrared | AllWISE ingest, photosphere fitting, W3/W4 excess significance, and AGN-color checks are implemented; live IRSA use is network-dependent. |
@@ -306,7 +306,7 @@ Acquisition is metadata-first and begins with a metadata target queue:
 7. process in bounded chunks and evict re-downloadable raw cache;
 8. retain provenance, derived evidence, results, failures, and follow-ups.
 
-The 4,835 currently eligible archive targets total approximately 2045.976 GB
+The 4,825 currently eligible archive targets total approximately 2043.589 GB
 by preflight. That is an inventory, not blanket download authorization -- any
 real acquisition batch remains a small bounded subset, well under the 100 GB
 local storage cap.

@@ -5,7 +5,7 @@
 The real cadence-complete `unknown`/adversarial acceptance branch is proven
 through the installed `Create-New-Search`/`Run-New-Search` Hunter entry
 points, not just a direct `run-pipeline` call. Hunter is **not PROD**: the
-candidate pool is real and now much larger (4,835 ranking-eligible with real
+candidate pool is real and now much larger (4,825 ranking-eligible with real
 HDF5 URL/size evidence, up from 357), but still short of the 10,000+ viable
 target goal, and this is a science-coverage limitation, not a workflow gap.
 The durable lifecycle has completed an approval-gated new-target raw
@@ -19,8 +19,52 @@ detection, or external-submission permission was produced. A later-epoch
 observation is recommended scientific work, not a missing lifecycle stage. The
 durable public-archive namespace now exceeds 10,000, and the real target
 priority queue now covers 6,879 unique target IDs (up from 1,703), of which
-4,835 currently carry real HDF5 URL/size evidence and are ranking-eligible.
-**Current app version:** 1.2.56
+4,825 currently carry real HDF5 URL/size evidence and are ranking-eligible.
+**Current app version:** 1.2.57
+
+**`target_selection_score` was tied across nearly the entire eligible pool —
+fixed with a real, non-fabricated observability differentiator — 2026-07-25:**
+after fixing `create_search`'s shortfall handling (below), inspecting the real
+production queue found only 2 distinct `target_selection_score` values across
+all 4,835 then-eligible candidates: 4,478 stellar-bridge rows tied at exactly
+one score, 357 original-HPRC rows tied at another. Root cause, traced to real
+code, not assumed: three of the four weighted scoring components
+(`followup_leverage`, hardcoded `0.0`; `scientific_novelty`, a constant
+per `status` bucket; `publication_value`, constant `1.0` across nearly the
+whole pool since it only varies with `dist_pc`/`exoplanet`, both blank by
+design for SIMBAD-identity-only stellar-bridge rows) never varied per star,
+leaving only `data_quality` (weight 0.2 of the total) to differentiate --
+and `_format_score()` then rounded every CSV field, including the ranking key
+itself, to 3 decimal places, discarding what little differentiation existed.
+Practical effect: any `--targets N` request up to thousands was selecting an
+essentially arbitrary alphabetical subset of a multi-thousand-way tie, not a
+genuine ranking, violating the HUNTER PROD DIRECTIVE's requirement to "weigh
+... expected information gain, suitability ... follow-up value."
+
+Fixed with a real, always-computable, non-fabricated differentiator: galactic
+latitude, computed exactly via `astropy.coordinates.SkyCoord` from each row's
+own real RA/Dec (never absent, unlike distance/spectral type) -- a standard
+radio-SETI scheduling consideration (Galactic-plane source confusion/
+synchrotron background), continuous rather than bucketed so it does not
+recreate the tie problem at a smaller scale, capped at the true 0-90 degree
+range rather than a lower cutoff that would have saturated for about half the
+sky. `_data_quality`'s existing cap was raised from 3.0 to 3.5 (the prior cap
+silently zeroed the new term for the fully-populated HPRC rows, which already
+summed to exactly 3.0 from other fields alone) with its normalization divisor
+updated to match. `_format_score()` now writes 6 decimal places, not 3, so
+real per-target precision survives to the persisted ranking key. The new
+`galactic_latitude_deg` column is persisted on every queue row for
+auditability, and `TARGET_PRIORITY_QUEUE_SCHEMA_VERSION` was bumped to v3 for
+the real schema change.
+
+Verified on the real regenerated queue: 4,408 of 4,825 rows (91.4%) now carry
+a distinct `target_selection_score`, versus 2 of 4,835 before; the largest
+remaining tie group is 4 rows (real near-coincidental RA/Dec), not thousands.
+The eligible count itself also genuinely dropped from 4,835 to 4,825: the 10
+real targets acquired in the prior entry below correctly moved to
+`already_acquired_local_cache`, not a regression. No labels created or
+inferred; this is pure ranking-formula and coordinate-transform work over
+already-real, already-committed data.
 
 **`create_search` no longer fails a normal top-N request short of the
 requested count — 2026-07-25:** an audit of the HUNTER PROD DIRECTIVE's
