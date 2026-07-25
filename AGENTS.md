@@ -777,11 +777,13 @@ same standard as `target_priority_score`/`target_selection_score` in
 The 2026-07-19 selection-key gap is closed: new-target selection uses the
 config-driven `target_selection_score`, including production-scan history,
 while follow-up mode ranks durable follow-up evidence separately. The current
-public-archive namespace contains 12,086 labels; as of version 1.2.53, 7,191
+public-archive namespace contains 12,086 labels; as of version 1.2.56, 7,191
 identities are resolved (6,007 via real SIMBAD lookup, 1,184 via existing
-queue alias) and 4,835 have viable, preflighted acquisition products
+queue alias) and 4,825 have viable, preflighted acquisition products
 (`raw_download_approval_required` in `data_selection/target_priority_queue.csv`),
-up from the original 358. The remaining 4,894 archive labels have no resolved
+up from the original 358 (a real 10-target batch has since been genuinely
+acquired and moved to `already_acquired_local_cache`, not lost). The
+remaining 4,894 archive labels have no resolved
 identity (no SIMBAD match, no queue alias) and 95 resolved-stellar candidates
 are non-HIP-named (GJ/HD/BD-designated), out of scope for the current
 HIP-keyed discovery tooling. Treat both as explicit, real science-coverage

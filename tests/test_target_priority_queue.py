@@ -178,7 +178,7 @@ def test_write_target_priority_queue_summary_counts_statuses(tmp_path: Path) -> 
 
     assert output_path.exists()
     assert b"\r\n" not in output_path.read_bytes()
-    assert result["schema_version"] == "target_priority_queue_v2"
+    assert result["schema_version"] == "target_priority_queue_v3"
     assert result["target_count"] == 3
     assert result["by_status"] == {
         "already_acquired_local_cache": 1,

@@ -160,7 +160,7 @@ acquisition is permanently outside project scope.
 | Track B known/unknown resolution | ✅ Implemented and proven through the installed `Create-New-Search`/`Run-New-Search` entry points on real cadence-complete evidence (HIP99427): `unknown` is reachable without anomaly calibration, identity/evidence survive the full lifecycle, and a real result correctly still withholds expert-review eligibility on an open drift blocking issue. |
 | Semisupervised anomaly/OOD calibration | ❌ Unavailable for probability/threshold claims; ranking-only and not a blocker for known/unknown resolution |
 | Operator UI hardening | ✅ Hunter lifecycle surface verified with a real approval-gated `Run-New-Search`: compact create/follow-up tables, visible acquisition progress, scriptable JSON where useful, loud non-zero failure, same-search resume, and actionable follow-up recommendation. Existing broader production surfaces remain as documented in Step 2. |
-| Detection-optimized target selection algorithm | ⚠️ 3a ranks by the real config-driven `target_selection_score`, including production-scan history; the policy sum remains auditable but is no longer the selector. `Create-New-Search` durably freezes exact selections, while follow-up mode ranks resolved real ledger evidence separately. Metadata discovery/size preflight cover the full 1,703-target HPRC queue. Successful batch-3 resume records bring completed controls to 805, leaving 358 sized URL-available targets (89.274678 GB) and 540 completed no-product results. The live archive namespace adds 12,086 durable candidate labels; exact queue-alias resolution yields 1,184 identities, and a second independent real-identity source (SIMBAD name resolution) resolves 6,007 more real positions. Version 1.2.50 bridges the 5,458 SIMBAD-confirmed-stellar subset of those into real target selection (`data/bl_archive_resolved_stellar_seed_targets.csv`, merged via `extra_seed_csv_paths`), bringing the real queue to 6,879 unique target IDs. Version 1.2.53 then completed real file-metadata (HDF5 URL/size) enrichment for the HIP-numbered subset of that bridge, bringing the real ranking-eligible pool to **4,835** (up from 357); 4,894 labels remain genuinely unresolved and are not guessed into viability. This is an inventory, not raw-download approval. See Step 3a. |
+| Detection-optimized target selection algorithm | ⚠️ 3a ranks by the real config-driven `target_selection_score`, including production-scan history; the policy sum remains auditable but is no longer the selector. `Create-New-Search` durably freezes exact selections, while follow-up mode ranks resolved real ledger evidence separately. Metadata discovery/size preflight cover the full 1,703-target HPRC queue. Successful batch-3 resume records bring completed controls to 805, leaving 358 sized URL-available targets (89.274678 GB) and 540 completed no-product results. The live archive namespace adds 12,086 durable candidate labels; exact queue-alias resolution yields 1,184 identities, and a second independent real-identity source (SIMBAD name resolution) resolves 6,007 more real positions. Version 1.2.50 bridges the 5,458 SIMBAD-confirmed-stellar subset of those into real target selection (`data/bl_archive_resolved_stellar_seed_targets.csv`, merged via `extra_seed_csv_paths`), bringing the real queue to 6,879 unique target IDs. Version 1.2.53 then completed real file-metadata (HDF5 URL/size) enrichment for the HIP-numbered subset of that bridge, bringing the real ranking-eligible pool to 4,835 (up from 357); 4,894 labels remain genuinely unresolved and are not guessed into viability. A real 10-target acquisition batch (version 1.2.55) and a scoring-diversity fix (version 1.2.57) leave **4,825** currently ranking-eligible. This is an inventory, not raw-download approval. See Step 3a. |
 | Extended-corpus completion | ✅ Complete — corrected v1.2.1 six-shard rerun finished 198/198 targets with zero download-task duplication. The full 215-target local corpus is at 10 Hz/s; ingestion removes 3,134 exact duplicate hit rows from 8,988 raw rows, leaving 5,854 unique triage rows and zero follow-up/escalation-ready candidates. See Step 0 completion below. |
 
 ---
@@ -496,6 +496,19 @@ requirements:
    live: `Create-New-Search --targets 5000 --mode new` against the real
    4,835-eligible queue returned all 4,835 with
    `expansion_headroom_count: 1237`, not an outright failure. See
+   `docs/PRODUCTION_READINESS.md` for the full write-up.
+
+   **Scoring-diversity fix, 2026-07-25:** inspecting the real queue right
+   after the above fix found only 2 distinct `target_selection_score` values
+   across all 4,835 then-eligible candidates -- three of the four weighted
+   scoring components never varied per star, and the fourth was rounded to 3
+   decimal places before being persisted as the ranking key, discarding what
+   little differentiation existed. Fixed by adding a real, always-computable
+   galactic-latitude term (exact `astropy` transform of each row's own
+   RA/Dec, never fabricated), raising `_data_quality`'s cap so the new term
+   is not silently zeroed for fully-populated rows, and writing 6 decimal
+   places instead of 3. The real regenerated queue now has 4,408 of 4,825
+   distinct scores (91.4%), versus 2 of 4,835 before. See
    `docs/PRODUCTION_READINESS.md` for the full write-up.
 2. **External-coverage gap (real, but needs research before building):**
    a stronger "nobody has looked here" claim would require cross-referencing

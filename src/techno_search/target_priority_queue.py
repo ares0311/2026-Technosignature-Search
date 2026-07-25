@@ -28,7 +28,7 @@ from techno_search.schemas import Track
 
 _HIP_ALIAS_PATTERN = re.compile(r"(?i)hip(\d+)")
 
-TARGET_PRIORITY_QUEUE_SCHEMA_VERSION = "target_priority_queue_v2"
+TARGET_PRIORITY_QUEUE_SCHEMA_VERSION = "target_priority_queue_v3"
 TARGET_PRIORITY_QUEUE_DISCLAIMER = (
     "Target priority queues are metadata-first scheduling aids for local search "
     "planning. They are not detections, discovery claims, expert review, external "
@@ -51,6 +51,7 @@ TARGET_PRIORITY_QUEUE_FIELDS = [
     "catalog_ids",
     "ra_deg",
     "dec_deg",
+    "galactic_latitude_deg",
     "data_products_available",
     "estimated_download_gb",
     "search_category",
@@ -133,7 +134,12 @@ def _float_or_none(value: str | None) -> float | None:
 
 
 def _format_score(value: float) -> str:
-    return f"{value:.3f}".rstrip("0").rstrip(".")
+    # 6 decimal places, not 3: target_selection_score is the real ranking key
+    # over thousands of candidates, and 3-decimal rounding collapses distinct
+    # candidates into large tie groups, discarding real per-target
+    # differentiation (e.g. from galactic_latitude_deg) before it ever reaches
+    # selection.
+    return f"{value:.6f}".rstrip("0").rstrip(".")
 
 
 def _format_coord(value: str | None) -> str:
@@ -141,6 +147,23 @@ def _format_coord(value: str | None) -> str:
     if number is None:
         return ""
     return f"{number:.6f}".rstrip("0").rstrip(".")
+
+
+def _galactic_latitude_deg(ra_deg: float, dec_deg: float) -> float:
+    """Real, exact galactic latitude from equatorial coordinates.
+
+    Not a fabricated value: it is a deterministic astrometric transform of the
+    row's own real RA/Dec, always computable, unlike distance/spectral type
+    (which are absent for SIMBAD-identity-only rows and must stay blank rather
+    than be guessed). Low |latitude| means denser Galactic synchrotron
+    background/source confusion, a standard radio-SETI scheduling
+    consideration independent of any per-source catalog metadata.
+    """
+    from astropy import units as u
+    from astropy.coordinates import SkyCoord
+
+    coord = SkyCoord(ra=ra_deg * u.deg, dec=dec_deg * u.deg, frame="icrs")
+    return float(coord.galactic.b.deg)
 
 
 def _load_seed_targets(path: Path) -> list[dict[str, str]]:
@@ -268,7 +291,11 @@ def _publication_value(row: dict[str, str]) -> float:
     return min(score, 3.0)
 
 
-def _data_quality(row: dict[str, str], data_products_available: str) -> float:
+def _data_quality(
+    row: dict[str, str],
+    data_products_available: str,
+    galactic_latitude_deg: float | None = None,
+) -> float:
     score = 0.0
     if _float_or_none(row.get("ra_deg") or row.get("RAJ2000")) is not None:
         score += 0.75
@@ -286,7 +313,18 @@ def _data_quality(row: dict[str, str], data_products_available: str) -> float:
         score += 0.5
     elif data_products_available == "requires_product_metadata_discovery":
         score += 0.25
-    return min(score, 3.0)
+    if galactic_latitude_deg is not None:
+        # Real, per-target observability differentiator: always computable from
+        # RA/Dec, unlike distance/spectral type. Scaled by the true 0-90 degree
+        # range (not a smaller cutoff) so it does not saturate for the roughly
+        # half of the sky beyond a lower threshold -- that would just move the
+        # tie problem, not fix it.
+        score += (abs(galactic_latitude_deg) / 90.0) * 0.5
+    # Cap is 3.5, not 3.0: the pre-existing four terms above (RA/Dec presence,
+    # distance, spectral type, data-product state) alone already reach 3.0 for
+    # a fully-populated row, which would silently clip the galactic-latitude
+    # term to zero effect for exactly the rows with the most other metadata.
+    return min(score, 3.5)
 
 
 def _classification_for_aliases(
@@ -440,7 +478,14 @@ def _queue_row(
     ) = _classification_for_aliases(aliases, coverage)
     prior_significance = _prior_significance(row)
     followup_leverage = 0.0
-    data_quality = _data_quality(row, data_products_available)
+    ra_deg_value = _float_or_none(row.get("ra_deg") or row.get("RAJ2000"))
+    dec_deg_value = _float_or_none(row.get("dec_deg") or row.get("DEJ2000"))
+    galactic_latitude_deg = (
+        _galactic_latitude_deg(ra_deg_value, dec_deg_value)
+        if ra_deg_value is not None and dec_deg_value is not None
+        else None
+    )
+    data_quality = _data_quality(row, data_products_available, galactic_latitude_deg)
     method_advantage = (
         2.5
         if status
@@ -466,7 +511,7 @@ def _queue_row(
         source_id=DEFAULT_SOURCE,
         followup_value=followup_leverage / 3.0,
         novelty_score=scientific_novelty / 3.0,
-        data_quality_score=data_quality / 3.0,
+        data_quality_score=data_quality / 3.5,
         observability_score=publication_value / 3.0,
         false_positive_probability=0.0,
         blocking_issue_count=0 if status != "metadata_discovery_required" else 1,
@@ -523,6 +568,11 @@ def _queue_row(
         "catalog_ids": _catalog_ids_for_row(row),
         "ra_deg": _format_coord(row.get("ra_deg") or row.get("RAJ2000")),
         "dec_deg": _format_coord(row.get("dec_deg") or row.get("DEJ2000")),
+        "galactic_latitude_deg": (
+            _format_coord(str(galactic_latitude_deg))
+            if galactic_latitude_deg is not None
+            else ""
+        ),
         "data_products_available": data_products_available,
         "estimated_download_gb": estimated_download_gb,
         "search_category": search_category,

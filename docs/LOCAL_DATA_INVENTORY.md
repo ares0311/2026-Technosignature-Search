@@ -56,14 +56,16 @@ depending on local-only state:
 | `data/bl_archive_resolved_stellar_seed_targets.csv` | `scripts/build_archive_resolved_stellar_seed.py` | Real SIMBAD-object-type-confirmed stellar seed rows, merged into the queue via `extra_seed_csv_paths` | Committed metadata map |
 | `data_selection/data_role_registry.yaml` | Data-selection policy workflow | Role separation for live-search metadata and local-cache status | Committed policy artifact |
 
-As of version 1.2.53, the target-priority queue contains 6,879 unique target
+As of version 1.2.56, the target-priority queue contains 6,879 unique target
 IDs: the original 1,703-row HPRC-seed queue plus the 5,458-row deduplicated
 stellar-candidate bridge (`data/bl_archive_resolved_stellar_seed_targets.csv`,
 built from real SIMBAD identity + object-type resolution over the 12,086-row
 public archive-label namespace). After the HPRC-seed rounds
 (`top25`, `next25`, `batch3`-`batch14_bulk`) and the stellar-bridge discovery +
-size-preflight round, 4,835 targets are `raw_download_approval_required`, up
-from the original 358. `HIP75676` appears in the extended-corpus status
+size-preflight round, 4,825 targets are `raw_download_approval_required`, up
+from the original 358 (a real 10-target batch has since been genuinely
+acquired and moved to `already_acquired_local_cache`). `HIP75676` appears in
+the extended-corpus status
 manifest but not in the full HPRC seed CSV, so it is documented as a
 source-list limitation rather than forced into the queue.
 
