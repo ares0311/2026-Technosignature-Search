@@ -484,6 +484,19 @@ requirements:
    closes the remaining real gap in the "New targets" required
    business-validation scenario -- see `docs/PRODUCTION_READINESS.md` for the
    full evidence trail.
+
+   **`create_search` best-available-N fix, 2026-07-25:** an audit of this
+   same required-business-validation checklist found `create_search()`
+   directly violated "do not fail a normal top-N request... return fewer
+   than N only when fewer than N valid candidates actually exist" -- it
+   raised and created nothing whenever the eligible pool was short of the
+   request. Fixed to return the best available N with an honest
+   `selection.shortfall` report (including a real `expansion_headroom_count`
+   for `new` mode); zero eligible candidates still fails closed. Verified
+   live: `Create-New-Search --targets 5000 --mode new` against the real
+   4,835-eligible queue returned all 4,835 with
+   `expansion_headroom_count: 1237`, not an outright failure. See
+   `docs/PRODUCTION_READINESS.md` for the full write-up.
 2. **External-coverage gap (real, but needs research before building):**
    a stronger "nobody has looked here" claim would require cross-referencing
    against other surveys' published target lists (not just this project's
