@@ -29319,6 +29319,22 @@
         }
       ],
       "total": 60
+    },
+    {
+      "attempt_id": "target_priority_size_preflight__2026-07-25T13:37:49.873522+00:00",
+      "checksum_header_count": 0,
+      "disclaimer": "Target priority queues are metadata-first scheduling aids for local search planning. They are not detections, discovery claims, expert review, external validation, or authorization for external submission.",
+      "ok": true,
+      "ok_target_count": 15,
+      "output_path": "data_selection/batch_manifests/hunter_adaptive_expansion_batch1_size_preflight_report.json",
+      "raw_download_authorized": false,
+      "recorded_at_utc": "2026-07-25T13:37:49.873522+00:00",
+      "schema_version": "target_priority_size_preflight_v1",
+      "script": "target_priority_size_preflight",
+      "sized_target_count": 15,
+      "source_manifest_path": "data_selection/batch_manifests/hunter_adaptive_expansion_batch1_preflight_manifest.json",
+      "target_count": 15,
+      "total_content_length_gb": 102.106685
     }
   ],
   "disclaimer": "This manifest records real local data-collection run outcomes (counts of items found/downloaded/skipped/failed) for compact progress review. It is not a detection, discovery, external validation, or external-submission claim.",
@@ -32533,14 +32549,14 @@
     "target_priority_size_preflight": {
       "checksum_header_count": 0,
       "disclaimer": "Target priority queues are metadata-first scheduling aids for local search planning. They are not detections, discovery claims, expert review, external validation, or authorization for external submission.",
-      "last_run_utc": "2026-07-25T13:29:15.071251+00:00",
+      "last_run_utc": "2026-07-25T13:37:49.873522+00:00",
       "ok": true,
       "ok_target_count": 15,
-      "output_path": "tmp/hunter_audit/preflight_report.json",
+      "output_path": "data_selection/batch_manifests/hunter_adaptive_expansion_batch1_size_preflight_report.json",
       "raw_download_authorized": false,
       "schema_version": "target_priority_size_preflight_v1",
       "sized_target_count": 15,
-      "source_manifest_path": "tmp/hunter_audit/preflight_manifest.json",
+      "source_manifest_path": "data_selection/batch_manifests/hunter_adaptive_expansion_batch1_preflight_manifest.json",
       "target_count": 15,
       "total_content_length_gb": 102.106685
     },
