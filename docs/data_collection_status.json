@@ -29619,6 +29619,29 @@
       "script": "hunter_search__SEARCH-20260726T011409Z-39A09771",
       "targets_attempted": 1,
       "total_targets_in_manifest": 1
+    },
+    {
+      "acquisition_mode": "metadata_only_discovery",
+      "acquisition_role": "live_search_bootstrap_cache",
+      "attempt_id": "download_bl_extended_corpus_discovery__2026-07-26T01:50:21.125059+00:00",
+      "available": 1,
+      "available_targets": [
+        {
+          "target": "KIC8462852",
+          "url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_67/holding/spliced_blc2021222324252627_guppi_57895_36299_DIAG_KIC8462852_0002.gpuspec.0002.h5"
+        }
+      ],
+      "checked": 1,
+      "downloaded": 0,
+      "mode": "discover_only",
+      "ok": true,
+      "raw_retention_policy": "public_raw_archive_cache_not_pinned",
+      "recorded_at_utc": "2026-07-26T01:50:21.125059+00:00",
+      "reused": 0,
+      "script": "download_bl_extended_corpus_discovery",
+      "skipped": 0,
+      "skipped_targets": [],
+      "total": 1
     }
   ],
   "disclaimer": "This manifest records real local data-collection run outcomes (counts of items found/downloaded/skipped/failed) for compact progress review. It is not a detection, discovery, external validation, or external-submission claim.",
@@ -29785,22 +29808,22 @@
     "download_bl_extended_corpus_discovery": {
       "acquisition_mode": "metadata_only_discovery",
       "acquisition_role": "live_search_bootstrap_cache",
-      "available": 0,
-      "available_targets": [],
+      "available": 1,
+      "available_targets": [
+        {
+          "target": "KIC8462852",
+          "url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_67/holding/spliced_blc2021222324252627_guppi_57895_36299_DIAG_KIC8462852_0002.gpuspec.0002.h5"
+        }
+      ],
       "checked": 1,
       "downloaded": 0,
-      "last_run_utc": "2026-07-26T01:13:41.986525+00:00",
+      "last_run_utc": "2026-07-26T01:50:21.125059+00:00",
       "mode": "discover_only",
       "ok": true,
       "raw_retention_policy": "public_raw_archive_cache_not_pinned",
       "reused": 0,
-      "skipped": 1,
-      "skipped_targets": [
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "LHS288_R"
-        }
-      ],
+      "skipped": 0,
+      "skipped_targets": [],
       "total": 1
     },
     "enrich_bl_archive_candidate_identity__20260724T065209534194Z": {

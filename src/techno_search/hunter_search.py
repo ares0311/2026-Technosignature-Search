@@ -23,6 +23,7 @@ from techno_search.hunter_constraints import (
     normalize_constraints,
     target_matches_constraints,
 )
+from techno_search.hunter_follow_up_discovery import cadence_as_gbt_manifest
 from techno_search.prod_scan_queue import ScanHistoryRecord, append_scan_record, load_scan_history
 from techno_search.production_run_outcomes import (
     LEGACY_PRODUCTION_FOLLOW_UPS_SCHEMA_VERSIONS,
@@ -66,6 +67,9 @@ ProductionRunner = Callable[..., ProductionScanResult]
 AdaptiveDiscovery = Callable[
     [Path, int, str, Mapping[str, Any]], tuple[Path, dict[str, Any]]
 ]
+FollowUpDiscovery = Callable[
+    [Sequence[Mapping[str, Any]]], tuple[list[dict[str, Any]], dict[str, Any]]
+]
 
 
 def make_search_id(*, now: datetime | None = None, token: str | None = None) -> str:
@@ -91,6 +95,7 @@ def create_search(
     search_id: str | None = None,
     created_at_utc: str | None = None,
     adaptive_discovery: AdaptiveDiscovery | None = None,
+    follow_up_discovery: FollowUpDiscovery | None = None,
     constraints: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Freeze an exact pending search without acquiring or processing data."""
@@ -137,6 +142,10 @@ def create_search(
         ]
         selected = constrained_follow_ups[:target_count]
         viable_count = len(constrained_follow_ups)
+        if follow_up_discovery is not None:
+            selected, follow_up_discovery_report = follow_up_discovery(selected)
+        else:
+            follow_up_discovery_report = None
 
     shortfall = _selection_shortfall(
         mode=mode,
@@ -196,6 +205,9 @@ def create_search(
             "partial_selection_allowed": shortfall is not None,
             "shortfall": shortfall,
             "adaptive_discovery": adaptive_report,
+            "follow_up_discovery": (
+                follow_up_discovery_report if mode == "follow-up" else None
+            ),
             "constraints": active_constraints,
             "quality": _selection_quality(selected, mode=mode),
         },
@@ -346,12 +358,7 @@ def run_search(
     if loaded["status"] == "completed":
         raise SearchLifecycleError(f"search is already complete: {resolved_id}")
     targets = list(manifest.get("targets", []))
-    raw_required = [
-        target
-        for target in targets
-        if target.get("source_hdf5_url")
-        and not _target_has_local_dat(Path("data/extended_corpus"), str(target["hip"]))
-    ]
+    raw_required = [target for target in targets if _target_requires_raw(target)]
     if raw_required and not approve_acquisition:
         projected_gb = sum(
             float(target.get("estimated_download_gb") or 0.0) for target in raw_required
@@ -373,13 +380,19 @@ def run_search(
         if previous_attempt is not None
         else make_production_run_id(run_type="hunter-search")
     )
+    initial_attempt = _first_attempt_event(list(loaded["events"]))
+    attempt_at = (
+        str(initial_attempt["at_utc"])
+        if initial_attempt is not None
+        else _utc_now()
+    )
     _append_event(
         events_path,
         {
             "event": "run_resumed" if previous_attempt else "run_started",
             "search_id": resolved_id,
             "run_id": run_id,
-            "at_utc": _utc_now(),
+            "at_utc": attempt_at,
             "manifest_sha256": _sha256(search_dir / "manifest.json"),
             "app_version": __version__,
             "code_commit": git_commit(),
@@ -431,6 +444,48 @@ def run_search(
         str(search_dir / "acquisition.log"),
     ]
     runner = command_runner or _run_command
+    cadence_commands = _prepare_follow_up_cadence_commands(
+        manifest=manifest,
+        search_dir=search_dir,
+        approved_at_utc=attempt_at,
+    )
+    for cadence_command in cadence_commands:
+        try:
+            cadence_exit_code = runner(cadence_command)
+        except Exception as exc:
+            _append_event(
+                events_path,
+                {
+                    "event": "run_failed",
+                    "search_id": resolved_id,
+                    "run_id": run_id,
+                    "at_utc": _utc_now(),
+                    "stage": "follow_up_cadence_runner_launch",
+                    "error": f"{type(exc).__name__}: {exc}",
+                    "resumable": True,
+                },
+            )
+            raise SearchLifecycleError(
+                f"search {resolved_id} follow-up cadence runner could not start; "
+                "the exact search remains resumable"
+            ) from exc
+        if cadence_exit_code != 0:
+            _append_event(
+                events_path,
+                {
+                    "event": "run_failed",
+                    "search_id": resolved_id,
+                    "run_id": run_id,
+                    "at_utc": _utc_now(),
+                    "stage": "follow_up_cadence_acquisition_preprocessing",
+                    "exit_code": cadence_exit_code,
+                    "resumable": True,
+                },
+            )
+            raise SearchLifecycleError(
+                "approved later-epoch cadence acquisition/processing failed "
+                f"with exit code {cadence_exit_code}; the exact search remains resumable"
+            )
     try:
         exit_code = runner(command)
     except Exception as exc:
@@ -514,9 +569,9 @@ def run_search(
         "app_version": __version__,
         "candidate_report_config_versions": config_versions,
         "execution_kind_counts": manifest["selection"]["execution_kind_counts"],
-        "follow_up_observation_fulfilled_count": manifest["selection"][
-            "follow_up_observation_fulfilled_count"
-        ],
+        "follow_up_observation_fulfilled_count": sum(
+            item["fulfilled"] for item in follow_up_dispositions
+        ),
         "follow_up_dispositions": follow_up_dispositions,
         "follow_up_completed_count": sum(
             item["state"] == "completed" for item in follow_up_dispositions
@@ -753,6 +808,8 @@ def _with_execution_contract(target: Mapping[str, Any], *, mode: str) -> dict[st
     """State what data this search can process without overstating follow-up work."""
     if mode == "new":
         execution_kind = "novel_target_archive_processing"
+    elif isinstance(target.get("follow_up_cadence"), Mapping):
+        execution_kind = "follow_up_later_epoch_cadence"
     elif str(target.get("source_hdf5_url", "")).strip():
         execution_kind = "follow_up_archive_data_processing"
     else:
@@ -760,10 +817,110 @@ def _with_execution_contract(target: Mapping[str, Any], *, mode: str) -> dict[st
     return {
         **target,
         "execution_kind": execution_kind,
-        # The current catalog does not prove that any archive URL is a later-epoch
-        # observation satisfying the recommended follow-up. Never infer that it is.
+        "follow_up_observation_scheduled": (
+            execution_kind == "follow_up_later_epoch_cadence"
+        ),
+        # Scheduling a qualifying cadence is not evidence that it ran successfully.
+        # Completion is derived only from the post-run cadence provenance artifact.
         "follow_up_observation_fulfilled": False,
     }
+
+
+def _target_requires_raw(target: Mapping[str, Any]) -> bool:
+    cadence = target.get("follow_up_cadence")
+    if isinstance(cadence, Mapping):
+        fulfilled, _ = _verified_follow_up_cadence_artifact(target)
+        return not fulfilled
+    return bool(target.get("source_hdf5_url")) and not _target_has_local_dat(
+        Path("data/extended_corpus"), str(target["hip"])
+    )
+
+
+def _prepare_follow_up_cadence_commands(
+    *,
+    manifest: Mapping[str, Any],
+    search_dir: Path,
+    approved_at_utc: str,
+) -> list[list[str]]:
+    commands: list[list[str]] = []
+    execution_dir = search_dir / "execution_inputs"
+    for target in manifest.get("targets", []):
+        cadence = target.get("follow_up_cadence")
+        if not isinstance(cadence, Mapping):
+            continue
+        fulfilled, _ = _verified_follow_up_cadence_artifact(target)
+        if fulfilled:
+            continue
+        approved_manifest = cadence_as_gbt_manifest(
+            cadence, approved_at_utc=approved_at_utc
+        )
+        cadence_id = str(approved_manifest["cadence_id"])
+        execution_path = execution_dir / f"{cadence_id}.json"
+        if execution_path.is_file():
+            if _load_json(execution_path) != approved_manifest:
+                raise SearchLifecycleError(
+                    f"resume cadence manifest does not match frozen search: {execution_path}"
+                )
+        else:
+            execution_dir.mkdir(parents=True, exist_ok=True)
+            _write_new_json(execution_path, approved_manifest)
+        commands.append(
+            [
+                str(Path(".venv/bin/python")),
+                "scripts/ingest_gbt_cadence.py",
+                "--manifest",
+                str(execution_path),
+                "--data-root",
+                "data/extended_corpus/hunter_follow_ups",
+                "--evict-raw-after-processing",
+            ]
+        )
+    return commands
+
+
+def _verified_follow_up_cadence_artifact(
+    target: Mapping[str, Any],
+) -> tuple[bool, str]:
+    cadence = target.get("follow_up_cadence")
+    if not isinstance(cadence, Mapping):
+        return False, "target has no frozen follow-up cadence"
+    if cadence.get("validity_state") != "valid":
+        return False, "frozen follow-up cadence is not valid"
+    prior_max_mjd = float(cadence.get("prior_observation_max_mjd", 0.0))
+    follow_up_min_mjd = float(cadence.get("follow_up_observation_min_mjd", 0.0))
+    if prior_max_mjd <= 0.0 or follow_up_min_mjd <= prior_max_mjd:
+        return False, "frozen cadence is not proven to be a later epoch"
+    source_path = Path(str(target.get("source_data_path", "")))
+    sidecar_path = source_path.with_name(source_path.name + ".provenance.json")
+    if not source_path.is_file() or not sidecar_path.is_file():
+        return False, "later-epoch cadence artifact or provenance is missing"
+    try:
+        provenance = _load_json(sidecar_path)
+    except (OSError, json.JSONDecodeError):
+        return False, "later-epoch cadence provenance is unreadable"
+    if provenance.get("classification") != "derived_real_observation_cadence":
+        return False, "derived artifact has the wrong scientific classification"
+    if provenance.get("cadence_id") != cadence.get("cadence_id"):
+        return False, "derived artifact cadence identity does not match the search"
+    if provenance.get("target_id") != target.get("hip"):
+        return False, "derived artifact target identity does not match the search"
+    if int(provenance.get("scan_count", 0)) != 6:
+        return False, "derived artifact does not contain all six cadence scans"
+    if provenance.get("sha256") != _sha256(source_path):
+        return False, "derived artifact checksum does not match its provenance"
+    expected_sources = {
+        str(scan.get("filename", "")).removesuffix(".h5") + ".dat"
+        for scan in cadence.get("scans", [])
+        if isinstance(scan, Mapping)
+    }
+    actual_sources = {
+        str(item.get("artifact_filename", ""))
+        for item in provenance.get("source_artifacts", [])
+        if isinstance(item, Mapping)
+    }
+    if len(expected_sources) != 6 or actual_sources != expected_sources:
+        return False, "derived artifact source scans do not match the frozen cadence"
+    return True, "verified six-scan later-epoch cadence artifact and provenance"
 
 
 def _selection_quality(
@@ -1046,16 +1203,12 @@ def _evaluate_follow_up_dispositions(
                 else "cross-target RFI resolution was not explicitly completed"
             )
         elif "later epoch" in action or "on/off cadence" in action:
-            fulfilled = any(
-                bool(entry.get("later_epoch_cadence_completed"))
-                or bool(entry.get("follow_up_observation_fulfilled"))
-                for entry in entries
-            )
-            reason = (
-                "new run explicitly completed a later-epoch cadence"
-                if fulfilled
-                else "no explicit later-epoch cadence evidence was produced"
-            )
+            fulfilled, reason = _verified_follow_up_cadence_artifact(target)
+            if not fulfilled:
+                reason = (
+                    "no explicit later-epoch cadence evidence was produced: "
+                    f"{reason}"
+                )
         dispositions.append(
             {
                 "target_id": target_id,
@@ -1098,6 +1251,13 @@ def _target_has_local_dat(out_dir: Path, target_id: str) -> bool:
 def _latest_attempt_event(events: list[dict[str, Any]]) -> dict[str, Any] | None:
     for event in reversed(events):
         if event.get("event") in {"run_started", "run_resumed", "run_failed"}:
+            return event
+    return None
+
+
+def _first_attempt_event(events: list[dict[str, Any]]) -> dict[str, Any] | None:
+    for event in events:
+        if event.get("event") in {"run_started", "run_resumed"}:
             return event
     return None
 
