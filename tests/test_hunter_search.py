@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
+from collections.abc import Callable
 from datetime import UTC, datetime
 from io import StringIO
 from pathlib import Path
@@ -11,7 +12,7 @@ from typing import Any
 import pytest
 
 import techno_search.hunter_search as hunter_search_module
-from techno_search.hunter_cli import create_new_search, show_follow_ups
+from techno_search.hunter_cli import create_new_search, run_new_search, show_follow_ups
 from techno_search.hunter_search import (
     SearchApprovalRequired,
     SearchLifecycleError,
@@ -46,13 +47,15 @@ def _write_queue_with_statuses(
     statuses: list[str],
     *,
     include_source_url: bool = True,
+    target_id_fn: Callable[[int], str] | None = None,
 ) -> None:
+    resolve_target_id = target_id_fn or (lambda index: f"HIP{990000 + index}")
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=TARGET_PRIORITY_QUEUE_FIELDS)
         writer.writeheader()
         for index, status in enumerate(statuses):
-            target_id = f"HIP{990000 + index}"
+            target_id = resolve_target_id(index)
             row = dict.fromkeys(TARGET_PRIORITY_QUEUE_FIELDS, "")
             row.update(
                 {
@@ -157,6 +160,33 @@ def test_create_new_search_freezes_exact_ranked_targets(tmp_path: Path) -> None:
     assert [event["event"] for event in loaded["events"]] == ["created"]
 
 
+def test_create_search_applies_optional_scientific_constraints(tmp_path: Path) -> None:
+    queue = tmp_path / "queue.csv"
+    _write_queue_with_statuses(
+        queue,
+        ["raw_download_approval_required"] * 3,
+        target_id_fn=lambda index: ("TIC100", "HIP200", "TIC300")[index],
+    )
+
+    manifest = create_search(
+        target_count=2,
+        mode="new",
+        queue_path=queue,
+        searches_dir=tmp_path / "searches",
+        search_id="SEARCH-20260719T123000Z-A1B2C3D4",
+        constraints={
+            "target_prefixes": ("TIC",),
+            "min_dec_deg": -1,
+            "max_dec_deg": 0,
+            "max_estimated_download_gb": 0.5,
+        },
+    )
+
+    assert [target["hip"] for target in manifest["targets"]] == ["TIC100"]
+    assert manifest["selection"]["constraints"]["target_prefixes"] == ["TIC"]
+    assert manifest["selection"]["shortfall"]["returned_count"] == 1
+
+
 def test_create_search_returns_best_available_n_with_shortfall_report(
     tmp_path: Path,
 ) -> None:
@@ -191,6 +221,40 @@ def test_create_search_returns_best_available_n_with_shortfall_report(
     assert (searches / manifest["search_id"] / "manifest.json").is_file()
 
 
+def test_zero_valid_candidates_returns_durable_completed_empty_search(
+    tmp_path: Path,
+) -> None:
+    queue = tmp_path / "queue.csv"
+    searches = tmp_path / "searches"
+    _write_queue(queue, 1, status="metadata_discovery_required")
+    manifest = create_search(
+        target_count=2,
+        mode="new",
+        queue_path=queue,
+        searches_dir=searches,
+        search_id="SEARCH-20260719T123000Z-A1B2C3D4",
+        adaptive_discovery=lambda path, _count, _search_id, _constraints: (
+            path,
+            {
+                "sufficient": True,
+                "universe_exhausted": True,
+                "round_count": 0,
+            },
+        ),
+    )
+
+    assert manifest["targets"] == []
+    assert manifest["selection"]["shortfall"]["returned_count"] == 0
+    result = run_search(
+        searches_dir=searches,
+        search_id=manifest["search_id"],
+        stdout=StringIO(),
+        command_runner=lambda _command: (_ for _ in ()).throw(AssertionError()),
+    )
+    assert result["no_valid_targets"] is True
+    assert load_search(searches, manifest["search_id"])["status"] == "completed"
+
+
 def test_create_search_shortfall_reports_real_expansion_headroom(
     tmp_path: Path,
 ) -> None:
@@ -213,24 +277,7 @@ def test_create_search_shortfall_reports_real_expansion_headroom(
     shortfall = manifest["selection"]["shortfall"]
     assert shortfall["returned_count"] == 1
     assert shortfall["shortfall_count"] == 4
-    assert shortfall["expansion_headroom_count"] == 5
-
-
-def test_create_search_zero_eligible_targets_still_fails_closed(tmp_path: Path) -> None:
-    """Zero real candidates means there is nothing to freeze -- a hard failure remains correct."""
-    queue = tmp_path / "queue.csv"
-    searches = tmp_path / "searches"
-    _write_queue(queue, 1, status="metadata_discovery_required")
-
-    with pytest.raises(SearchLifecycleError, match="no eligible new targets are available"):
-        create_search(
-            target_count=2,
-            mode="new",
-            queue_path=queue,
-            searches_dir=searches,
-        )
-
-    assert not searches.exists()
+    assert shortfall["expansion_headroom_count"] == 2
 
 
 def test_create_follow_up_search_returns_best_available_n_with_shortfall_report(
@@ -436,6 +483,71 @@ def test_run_search_replays_manifest_and_appends_completion_history(tmp_path: Pa
     assert history_entry["parent_run_id"] == manifest["search_id"]
 
 
+def test_run_search_completes_for_non_hip_named_target(tmp_path: Path) -> None:
+    """Real live discovery expansion surfaces non-HIP target IDs (e.g. TESS
+    TIC-named rows -- 44 already exist in the real production queue), and a
+    HIP-only canonicalization pattern silently could never match them,
+    durably failing run_search's history-append stage after real
+    acquisition/processing had already succeeded. Target-name matching must
+    work for any real target-naming scheme, not just HIP<digits>.
+    """
+    queue = tmp_path / "queue.csv"
+    searches = tmp_path / "searches"
+    history = tmp_path / "history.ndjson"
+    _write_queue_with_statuses(
+        queue,
+        ["raw_download_approval_required"],
+        target_id_fn=lambda _index: "TIC281731203",
+    )
+    manifest = create_search(
+        target_count=1,
+        mode="new",
+        queue_path=queue,
+        searches_dir=searches,
+        search_id="SEARCH-20260719T123000Z-A1B2C3D4",
+    )
+    assert manifest["targets"][0]["hip"] == "TIC281731203"
+
+    def production_runner(**kwargs: Any) -> ProductionScanResult:
+        run_id = str(kwargs["run_id"])
+        run_dir = Path(kwargs["scans_dir"]) / run_id
+        run_dir.mkdir(parents=True)
+        (run_dir / f"{run_id}_target_status.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": PRODUCTION_TARGET_STATUS_SCHEMA_VERSION,
+                    "run_id": run_id,
+                    "entries": [
+                        {
+                            "target_name": "capture_TIC281731203_0001",
+                            "composite_score": 0.4,
+                            "top_pathway": "known_object_annotation",
+                            "source_data_path": (
+                                "data/extended_corpus/TIC281731203/capture.dat"
+                            ),
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        return ProductionScanResult(run_id, run_dir, 1, 0, 0, False)
+
+    result = run_search(
+        searches_dir=searches,
+        search_id=manifest["search_id"],
+        approve_acquisition=True,
+        history_path=history,
+        stdout=StringIO(),
+        command_runner=lambda _command: 0,
+        production_runner=production_runner,
+    )
+
+    assert result["event"] == "run_completed"
+    events = load_search(searches, manifest["search_id"])
+    assert events["status"] == "completed"
+
+
 def test_failed_run_is_loud_and_resumable(tmp_path: Path) -> None:
     queue = tmp_path / "queue.csv"
     searches = tmp_path / "searches"
@@ -460,6 +572,158 @@ def test_failed_run_is_loud_and_resumable(tmp_path: Path) -> None:
     loaded = load_search(searches, manifest["search_id"])
     assert loaded["status"] == "failed_resumable"
     assert loaded["events"][-1]["exit_code"] == 9
+
+
+def test_run_search_resume_reuses_run_id_and_appends_history_once(
+    tmp_path: Path,
+) -> None:
+    """The HUNTER PROD DIRECTIVE requires verifying restart/resume does not
+    corrupt or lose state. ``run_resumed`` had zero test coverage before this
+    -- this exercises a real failure followed by a real successful resume of
+    the *same* search and confirms the run_id stays stable across the
+    failure/resume boundary and history is appended exactly once, not
+    duplicated.
+    """
+    queue = tmp_path / "queue.csv"
+    searches = tmp_path / "searches"
+    history = tmp_path / "history.ndjson"
+    _write_queue(queue, 1)
+    manifest = create_search(
+        target_count=1,
+        mode="new",
+        queue_path=queue,
+        searches_dir=searches,
+        search_id="SEARCH-20260719T123000Z-A1B2C3D4",
+    )
+    attempts = {"count": 0}
+
+    def production_runner(**kwargs: Any) -> ProductionScanResult:
+        attempts["count"] += 1
+        if attempts["count"] == 1:
+            raise RuntimeError("simulated transient failure")
+        run_id = str(kwargs["run_id"])
+        run_dir = Path(kwargs["scans_dir"]) / run_id
+        run_dir.mkdir(parents=True)
+        (run_dir / f"{run_id}_target_status.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": PRODUCTION_TARGET_STATUS_SCHEMA_VERSION,
+                    "run_id": run_id,
+                    "entries": [
+                        {
+                            "target_name": "capture_HIP990000_0001",
+                            "composite_score": 0.4,
+                            "top_pathway": "known_object_annotation",
+                            "source_data_path": "data/extended_corpus/HIP990000/capture.dat",
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        return ProductionScanResult(run_id, run_dir, 1, 0, 0, False)
+
+    with pytest.raises(RuntimeError, match="simulated transient failure"):
+        run_search(
+            searches_dir=searches,
+            search_id=manifest["search_id"],
+            approve_acquisition=True,
+            history_path=history,
+            stdout=StringIO(),
+            command_runner=lambda _command: 0,
+            production_runner=production_runner,
+        )
+    failed_run_id = load_search(searches, manifest["search_id"])["events"][-1]["run_id"]
+
+    result = run_search(
+        searches_dir=searches,
+        search_id=manifest["search_id"],
+        approve_acquisition=True,
+        history_path=history,
+        stdout=StringIO(),
+        command_runner=lambda _command: 0,
+        production_runner=production_runner,
+    )
+
+    assert result["run_id"] == failed_run_id
+    loaded = load_search(searches, manifest["search_id"])
+    assert loaded["status"] == "completed"
+    assert [event["event"] for event in loaded["events"]] == [
+        "created",
+        "run_started",
+        "run_failed",
+        "run_resumed",
+        "run_completed",
+    ]
+    assert loaded["events"][3]["run_id"] == failed_run_id
+    history_lines = history.read_text(encoding="utf-8").strip().splitlines()
+    assert len(history_lines) == 1
+
+
+def test_run_search_refuses_to_rerun_a_completed_search(tmp_path: Path) -> None:
+    """A completed search must never be silently re-executed -- that would
+    risk duplicated history/follow-up records or overwriting a durable
+    result. Part of the same restart/resume-safety business validation as
+    test_run_search_resume_reuses_run_id_and_appends_history_once.
+    """
+    queue = tmp_path / "queue.csv"
+    searches = tmp_path / "searches"
+    history = tmp_path / "history.ndjson"
+    _write_queue(queue, 1)
+    manifest = create_search(
+        target_count=1,
+        mode="new",
+        queue_path=queue,
+        searches_dir=searches,
+        search_id="SEARCH-20260719T123000Z-A1B2C3D4",
+    )
+
+    def production_runner(**kwargs: Any) -> ProductionScanResult:
+        run_id = str(kwargs["run_id"])
+        run_dir = Path(kwargs["scans_dir"]) / run_id
+        run_dir.mkdir(parents=True)
+        (run_dir / f"{run_id}_target_status.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": PRODUCTION_TARGET_STATUS_SCHEMA_VERSION,
+                    "run_id": run_id,
+                    "entries": [
+                        {
+                            "target_name": "capture_HIP990000_0001",
+                            "composite_score": 0.4,
+                            "top_pathway": "known_object_annotation",
+                            "source_data_path": "data/extended_corpus/HIP990000/capture.dat",
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        return ProductionScanResult(run_id, run_dir, 1, 0, 0, False)
+
+    run_search(
+        searches_dir=searches,
+        search_id=manifest["search_id"],
+        approve_acquisition=True,
+        history_path=history,
+        stdout=StringIO(),
+        command_runner=lambda _command: 0,
+        production_runner=production_runner,
+    )
+
+    with pytest.raises(SearchLifecycleError, match="already complete"):
+        run_search(
+            searches_dir=searches,
+            search_id=manifest["search_id"],
+            approve_acquisition=True,
+            history_path=history,
+            stdout=StringIO(),
+            command_runner=lambda _command: 0,
+            production_runner=production_runner,
+        )
+
+    history_lines = history.read_text(encoding="utf-8").strip().splitlines()
+    assert len(history_lines) == 1
 
 
 def test_run_rejects_incomplete_output_coverage_before_history_append(tmp_path: Path) -> None:
@@ -536,6 +800,36 @@ def test_follow_up_registry_resolves_identity_and_recommends_action(tmp_path: Pa
     assert entry["prior_search_provenance"][0]["run_id"].startswith("RUN-")
 
 
+def test_follow_up_registry_resolves_non_hip_named_target_identity(
+    tmp_path: Path,
+) -> None:
+    """Same non-HIP gap as test_run_search_completes_for_non_hip_named_target,
+    but for follow-up matching: a HIP-only pattern would silently count a
+    real TIC-named follow-up ledger entry as unresolved identity forever.
+    """
+    queue = tmp_path / "queue.csv"
+    scans = tmp_path / "scans"
+    _write_queue_with_statuses(
+        queue,
+        ["already_acquired_local_cache"],
+        target_id_fn=lambda _index: "TIC281731203",
+    )
+    _write_follow_up_ledger(
+        scans,
+        "capture_TIC281731203_0001",
+        rfi=True,
+        source_data_path="/data/cadence_TIC281731203.csv",
+    )
+
+    registry = follow_up_registry(scans_dirs=(scans,), queue_path=queue)
+
+    assert registry["unresolved_identity_count"] == 0
+    assert registry["eligible_count"] == 1
+    entry = registry["eligible_entries"][0]
+    assert entry["hip"] == "TIC281731203"
+    assert entry["source_data_path"] == "/data/cadence_TIC281731203.csv"
+
+
 def test_follow_up_search_marks_existing_data_as_reanalysis_not_new_observation(
     tmp_path: Path,
 ) -> None:
@@ -564,6 +858,78 @@ def test_follow_up_search_marks_existing_data_as_reanalysis_not_new_observation(
         "existing_data_reanalysis": 1
     }
     assert manifest["selection"]["follow_up_observation_fulfilled_count"] == 0
+
+
+def test_follow_up_lifecycle_schedules_then_defers_unfulfilled_evidence(
+    tmp_path: Path,
+) -> None:
+    queue = tmp_path / "queue.csv"
+    scans = tmp_path / "scans"
+    searches = tmp_path / "searches"
+    history = tmp_path / "history.ndjson"
+    _write_queue(
+        queue,
+        1,
+        status="already_acquired_local_cache",
+        include_source_url=False,
+    )
+    _write_follow_up_ledger(scans, "capture_HIP990000_0001")
+    manifest = create_search(
+        target_count=1,
+        mode="follow-up",
+        queue_path=queue,
+        scans_dir=scans,
+        searches_dir=searches,
+        search_id="SEARCH-20260719T123000Z-A1B2C3D4",
+    )
+
+    scheduled = follow_up_registry(
+        scans_dirs=(scans, searches), queue_path=queue
+    )
+    assert scheduled["eligible_count"] == 0
+    assert scheduled["scheduled_count"] == 1
+
+    def production_runner(**kwargs: Any) -> ProductionScanResult:
+        run_id = str(kwargs["run_id"])
+        run_dir = Path(kwargs["scans_dir"]) / run_id
+        run_dir.mkdir(parents=True)
+        (run_dir / f"{run_id}_target_status.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": PRODUCTION_TARGET_STATUS_SCHEMA_VERSION,
+                    "run_id": run_id,
+                    "entries": [
+                        {
+                            "target_name": "capture_HIP990000_0001",
+                            "composite_score": 0.4,
+                            "top_pathway": "known_object_annotation",
+                            "source_data_path": "data/HIP990000/capture.dat",
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        return ProductionScanResult(run_id, run_dir, 1, 0, 0, False)
+
+    result = run_search(
+        searches_dir=searches,
+        search_id=manifest["search_id"],
+        history_path=history,
+        stdout=StringIO(),
+        command_runner=lambda _command: 0,
+        production_runner=production_runner,
+    )
+
+    assert result["follow_up_completed_count"] == 0
+    assert result["follow_up_deferred_count"] == 1
+    assert result["follow_up_dispositions"][0]["state"] == "deferred"
+    assert "later-epoch cadence" in result["follow_up_dispositions"][0]["reason"]
+    deferred = follow_up_registry(
+        scans_dirs=(scans, searches), queue_path=queue
+    )
+    assert deferred["eligible_count"] == 0
+    assert deferred["deferred_count"] == 1
 
 
 def test_follow_up_registry_reads_legacy_v1_ledgers(tmp_path: Path) -> None:
@@ -652,6 +1018,27 @@ def test_required_cli_entrypoints_invoke_real_dispatch_paths(
         ]
     ) == 0
     assert "actionable follow-up target" in capsys.readouterr().out
+
+
+def test_run_new_search_json_output_is_not_polluted_by_pipeline_progress(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    def fake_run_search(**kwargs: Any) -> dict[str, Any]:
+        assert kwargs["command_runner"] is not None
+        kwargs["stdout"].write("pipeline progress that must stay out of JSON\n")
+        return {
+            "event": "run_completed",
+            "search_id": "SEARCH-TEST",
+            "run_id": "RUN-TEST",
+            "target_count": 1,
+            "follow_up_required_count": 0,
+        }
+
+    monkeypatch.setattr("techno_search.hunter_cli.run_search", fake_run_search)
+
+    assert run_new_search(["--search-id", "SEARCH-TEST", "--json"]) == 0
+    assert json.loads(capsys.readouterr().out)["event"] == "run_completed"
 
 
 def test_cli_prints_visible_shortfall_line_when_returning_fewer_than_requested(

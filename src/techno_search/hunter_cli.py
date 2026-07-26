@@ -4,11 +4,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 from collections.abc import Sequence
+from io import StringIO
 from pathlib import Path
 from typing import Any, TextIO
 
+from techno_search.hunter_adaptive_discovery import prepare_production_new_target_queue
 from techno_search.hunter_search import (
     SearchApprovalRequired,
     SearchLifecycleError,
@@ -38,6 +41,18 @@ def create_new_search(argv: Sequence[str] | None = None) -> int:
         "--manifest-dir", type=Path, default=Path("results/search_manifests")
     )
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--min-ra-deg", type=float)
+    parser.add_argument("--max-ra-deg", type=float)
+    parser.add_argument("--min-dec-deg", type=float)
+    parser.add_argument("--max-dec-deg", type=float)
+    parser.add_argument("--min-abs-galactic-latitude-deg", type=float)
+    parser.add_argument("--max-estimated-download-gb", type=float)
+    parser.add_argument(
+        "--target-prefix",
+        action="append",
+        dest="target_prefixes",
+        help="Restrict selection to one or more catalog-ID prefixes (repeatable).",
+    )
     args = parser.parse_args(argv)
     try:
         manifest = create_search(
@@ -48,6 +63,29 @@ def create_new_search(argv: Sequence[str] | None = None) -> int:
             scans_dir=args.scans_dir,
             searches_dir=args.searches_dir,
             manifest_dir=args.manifest_dir,
+            adaptive_discovery=(
+                lambda queue_path, target_count, search_id, constraints: (
+                    prepare_production_new_target_queue(
+                        queue_path,
+                        target_count=target_count,
+                        search_id=search_id,
+                        constraints=constraints,
+                    )
+                )
+            )
+            if args.mode == "new"
+            else None,
+            constraints={
+                "min_ra_deg": args.min_ra_deg,
+                "max_ra_deg": args.max_ra_deg,
+                "min_dec_deg": args.min_dec_deg,
+                "max_dec_deg": args.max_dec_deg,
+                "min_abs_galactic_latitude_deg": (
+                    args.min_abs_galactic_latitude_deg
+                ),
+                "max_estimated_download_gb": args.max_estimated_download_gb,
+                "target_prefixes": args.target_prefixes or (),
+            },
         )
     except (SearchLifecycleError, ValueError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
@@ -82,8 +120,9 @@ def run_new_search(argv: Sequence[str] | None = None) -> int:
             chunk_size=args.chunk_size,
             pipeline_workers=args.pipeline_workers,
             history_path=args.history_file,
-            stdout=sys.stdout,
+            stdout=StringIO() if args.json else sys.stdout,
             use_rich=not args.no_rich and not args.json,
+            command_runner=_quiet_command_runner if args.json else None,
         )
     except SearchApprovalRequired as exc:
         print(f"APPROVAL REQUIRED: {exc}", file=sys.stderr)
@@ -206,3 +245,14 @@ def _print_follow_ups(registry: dict[str, Any], out: TextIO) -> None:
             ),
             file=out,
         )
+
+
+def _quiet_command_runner(command: Sequence[str]) -> int:
+    """Keep a machine-readable run clean; the batch runner writes its own log."""
+    completed = subprocess.run(
+        list(command),
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return completed.returncode

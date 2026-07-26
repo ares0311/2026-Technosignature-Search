@@ -160,7 +160,7 @@ acquisition is permanently outside project scope.
 | Track B known/unknown resolution | ✅ Implemented and proven through the installed `Create-New-Search`/`Run-New-Search` entry points on real cadence-complete evidence (HIP99427): `unknown` is reachable without anomaly calibration, identity/evidence survive the full lifecycle, and a real result correctly still withholds expert-review eligibility on an open drift blocking issue. |
 | Semisupervised anomaly/OOD calibration | ❌ Unavailable for probability/threshold claims; ranking-only and not a blocker for known/unknown resolution |
 | Operator UI hardening | ✅ Hunter lifecycle surface verified with a real approval-gated `Run-New-Search`: compact create/follow-up tables, visible acquisition progress, scriptable JSON where useful, loud non-zero failure, same-search resume, and actionable follow-up recommendation. Existing broader production surfaces remain as documented in Step 2. |
-| Detection-optimized target selection algorithm | ⚠️ 3a ranks by the real config-driven `target_selection_score`, including production-scan history; the policy sum remains auditable but is no longer the selector. `Create-New-Search` durably freezes exact selections, while follow-up mode ranks resolved real ledger evidence separately. Metadata discovery/size preflight cover the full 1,703-target HPRC queue. Successful batch-3 resume records bring completed controls to 805, leaving 358 sized URL-available targets (89.274678 GB) and 540 completed no-product results. The live archive namespace adds 12,086 durable candidate labels; exact queue-alias resolution yields 1,184 identities, and a second independent real-identity source (SIMBAD name resolution) resolves 6,007 more real positions. Version 1.2.50 bridges the 5,458 SIMBAD-confirmed-stellar subset of those into real target selection (`data/bl_archive_resolved_stellar_seed_targets.csv`, merged via `extra_seed_csv_paths`), bringing the real queue to 6,879 unique target IDs. Version 1.2.53 then completed real file-metadata (HDF5 URL/size) enrichment for the HIP-numbered subset of that bridge, bringing the real ranking-eligible pool to 4,835 (up from 357); 4,894 labels remain genuinely unresolved and are not guessed into viability. A real 10-target acquisition batch (version 1.2.55) and a scoring-diversity fix (version 1.2.57) leave **4,825** currently ranking-eligible. This is an inventory, not raw-download approval. See Step 3a. |
+| Detection-optimized target selection algorithm | ⚠️ 3a ranks by the real config-driven `target_selection_score`, including production-scan history; the policy sum remains auditable but is no longer the selector. `Create-New-Search` durably freezes exact selections, while follow-up mode ranks resolved real ledger evidence separately. Metadata discovery/size preflight cover the full 1,703-target HPRC queue. Successful batch-3 resume records bring completed controls to 805, leaving 358 sized URL-available targets (89.274678 GB) and 540 completed no-product results. The live archive namespace adds 12,086 durable candidate labels; exact queue-alias resolution yields 1,184 identities, and a second independent real-identity source (SIMBAD name resolution) resolves 6,007 more real positions. Version 1.2.50 bridges the 5,458 SIMBAD-confirmed-stellar subset of those into real target selection (`data/bl_archive_resolved_stellar_seed_targets.csv`, merged via `extra_seed_csv_paths`), bringing the real queue to 6,879 unique target IDs. Version 1.2.53 then completed real file-metadata (HDF5 URL/size) enrichment for the HIP-numbered subset of that bridge, bringing the real ranking-eligible pool to 4,835 (up from 357); 4,894 labels remain genuinely unresolved and are not guessed into viability. A real 10-target acquisition batch (version 1.2.55) and a scoring-diversity fix (version 1.2.57) left 4,825 ranking-eligible; a real live adaptive-discovery-expansion round (version 1.2.58, `hunter_adaptive_expansion_batch1`) then added 15 real TESS TIC-named candidates, closing the directive's "high-value candidate outside the initial discovery sample can still be found through adaptive expansion" required scenario and surfacing/fixing a real HIP-only target-naming bug in the process (target-name matching now resolves against each caller's real known target-ID set, not a hardcoded HIP pattern). **4,840** are currently ranking-eligible. This is an inventory, not raw-download approval. See Step 3a. |
 | Extended-corpus completion | ✅ Complete — corrected v1.2.1 six-shard rerun finished 198/198 targets with zero download-task duplication. The full 215-target local corpus is at 10 Hz/s; ingestion removes 3,134 exact duplicate hit rows from 8,988 raw rows, leaving 5,854 unique triage rows and zero follow-up/escalation-ready candidates. See Step 0 completion below. |
 
 ---
@@ -364,6 +364,15 @@ penalty, never-reviewed boost). **The gap is not the scoring formula — it's
 wiring real data into the inputs that formula already expects.**
 
 ### 3a. Novel-target selection ("places nobody has looked")
+
+**Current v1.2.61 state:** implemented in the installed product path.
+`Create-New-Search` rebuilds decision inputs with valid sibling history,
+filters optional scientific constraints, ranks the eligible universe, and
+automatically performs metadata discovery/HEAD preflight only while an
+unresolved candidate can still displace the current Nth result. Each round is
+durable and hashed. There is no absolute score threshold: weak candidates are
+returned when they are the best valid matches. Earlier manually orchestrated
+discovery rounds below are historical evidence, not the canonical mechanism.
 
 Local-coverage target selection is now initialized. It still improves after
 Step 0 widens the local corpus, but the first metadata-first queue exists and
@@ -598,8 +607,17 @@ requirements:
 
 ### 3b. Follow-up-target selection ("candidates needing follow-on checks")
 
-**Corrected 2026-07-05 — do not treat this as "buildable now" the way 3a
-is.** The original version of this section assumed a real backlog of
+**Current v1.2.61 state supersedes the 2026-07-05 gate below:** retained real
+production ledgers now provide a non-empty backlog. The installed follow-up
+mode ranks those real entries, binds selected source evidence to a consuming
+search, marks it scheduled, and records completed only when the new evidence
+explicitly fulfills the requested action; otherwise it records deferred with
+the exact reason. Archive reanalysis is never represented as a later-epoch
+observation. `Show-Follow-Ups` reports open, scheduled, completed, deferred,
+and unresolved-identity counts. The older design-only paragraph is retained as
+historical context and no longer controls implementation.
+
+**Historical correction, 2026-07-05:** The original version of this section assumed a real backlog of
 partial candidates to drive follow-up scoring from. That assumption does
 not hold: the current real local corpus is 17 zero-hit non-detections and
 1 hit-bearing target (Voyager, a known human signal, not an unresolved
@@ -661,10 +679,11 @@ Step 1 (permanently fail-closed learned calibration)
 Step 2 (UI hardening)
   -> precedes Step 3 per explicit user sequencing direction
 Step 3a (novel-target selection: real metadata-first queue exists)
-  -> future raw acquisition remains explicit-approval and storage-policy gated
+  -> adaptive sufficiency is integrated; raw acquisition remains explicit-approval
+     and storage-policy gated
 Step 3b (follow-up-target selection)
-  -> design only; implementation waits on a real qualifying candidate existing —
-     do not build/merge scoring code against a backlog that doesn't exist yet
+  -> durable open/scheduled/completed/deferred lifecycle is integrated;
+     later-epoch fulfillment still requires real later-epoch evidence
 ```
 
 Steps 0 and 1 are terminal states, not active work. Step 2 is substantively

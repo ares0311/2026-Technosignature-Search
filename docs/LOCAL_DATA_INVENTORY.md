@@ -53,18 +53,21 @@ depending on local-only state:
 | `data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json` / `local_coverage_next25_size_preflight_report.json` | `techno-search target-priority-size-preflight` | Per-round HEAD-only content-length and header preflight for URL-discovered HDF5 files | Committed scheduling artifact |
 | `data_selection/batch_manifests/local_coverage_raw_download_approval_manifest.json` | `techno-search build-target-priority-manifest --include-status raw_download_approval_required` | Consolidated human-review input for the HDF5 rows promoted across all completed rounds; inventory only, not raw-download approval | Committed scheduling artifact |
 | `data_selection/batch_manifests/stellar_bridge_*` | `scripts/download_bl_extended_corpus.sh --discover-only`, `techno-search target-priority-size-preflight --workers 6` | Metadata discovery + size preflight for the 5,363 HIP-numbered new stellar candidates from the SIMBAD-resolved archive-identity bridge | Committed scheduling artifact |
+| `data_selection/batch_manifests/hunter_adaptive_expansion_batch1_*` | `scripts/download_bl_extended_corpus.sh --discover-only`, `techno-search target-priority-size-preflight` | Real live adaptive-discovery-expansion round (60 previously-undiscovered queue rows checked, 15 real TESS TIC-named HDF5 URLs found and preflighted) closing the HUNTER PROD DIRECTIVE's "candidate outside the initial discovery sample found through adaptive expansion" required scenario | Committed scheduling artifact |
 | `data/bl_archive_resolved_stellar_seed_targets.csv` | `scripts/build_archive_resolved_stellar_seed.py` | Real SIMBAD-object-type-confirmed stellar seed rows, merged into the queue via `extra_seed_csv_paths` | Committed metadata map |
 | `data_selection/data_role_registry.yaml` | Data-selection policy workflow | Role separation for live-search metadata and local-cache status | Committed policy artifact |
 
-As of version 1.2.56, the target-priority queue contains 6,879 unique target
+As of version 1.2.58, the target-priority queue contains 6,879 unique target
 IDs: the original 1,703-row HPRC-seed queue plus the 5,458-row deduplicated
 stellar-candidate bridge (`data/bl_archive_resolved_stellar_seed_targets.csv`,
 built from real SIMBAD identity + object-type resolution over the 12,086-row
 public archive-label namespace). After the HPRC-seed rounds
-(`top25`, `next25`, `batch3`-`batch14_bulk`) and the stellar-bridge discovery +
-size-preflight round, 4,825 targets are `raw_download_approval_required`, up
-from the original 358 (a real 10-target batch has since been genuinely
-acquired and moved to `already_acquired_local_cache`). `HIP75676` appears in
+(`top25`, `next25`, `batch3`-`batch14_bulk`), the stellar-bridge discovery +
+size-preflight round, and the `hunter_adaptive_expansion_batch1` round,
+4,840 targets are `raw_download_approval_required`, up from the original 358
+(a real 10-target batch has since been genuinely acquired and moved to
+`already_acquired_local_cache`, and 15 real TESS TIC-named candidates were
+promoted by the adaptive-expansion round). `HIP75676` appears in
 the extended-corpus status
 manifest but not in the full HPRC seed CSV, so it is documented as a
 source-list limitation rather than forced into the queue.
@@ -145,7 +148,7 @@ The user ran the System-Directive-compliant download command:
 
 ```bash
 git pull origin main
-caffeinate -i bash scripts/download_bl_extended_corpus.sh --manifest data/target_sample_manifest.json 2>&1 | tee /tmp/bl_extended_corpus_download.log
+caffeinate -i bash scripts/download_bl_extended_corpus.sh --calibration-corpus --manifest data/target_sample_manifest.json 2>&1 | tee /tmp/bl_extended_corpus_download.log
 ```
 
 Measured result from pasted terminal output:

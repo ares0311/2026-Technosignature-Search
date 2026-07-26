@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import subprocess
@@ -15,6 +16,42 @@ SCRIPT_PATH = Path(__file__).resolve().parents[1] / "scripts" / (
 
 def _script_text() -> str:
     return SCRIPT_PATH.read_text(encoding="utf-8")
+
+
+def _write_durable_search(
+    root: Path,
+    targets: list[dict[str, object]],
+    *,
+    search_id: str = "SEARCH-20260725T120000Z-TEST0001",
+) -> Path:
+    search_dir = root / "searches" / search_id
+    search_dir.mkdir(parents=True)
+    manifest_path = search_dir / "manifest.json"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "hunter_search_manifest_v3",
+                "artifact_kind": "hunter_search_manifest",
+                "search_id": search_id,
+                "targets": targets,
+            }
+        ),
+        encoding="utf-8",
+    )
+    digest = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+    (search_dir / "events.ndjson").write_text(
+        json.dumps(
+            {
+                "schema_version": "hunter_search_event_v2",
+                "event": "created",
+                "search_id": search_id,
+                "manifest_sha256": digest,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return manifest_path
 
 
 def test_post_processing_is_scoped_to_each_chunk_target() -> None:
@@ -84,20 +121,15 @@ def test_explicit_hunter_status_key_keeps_real_acquisition_visible() -> None:
 
 
 def test_local_dat_only_manifest_executes_real_dry_run_dispatch(tmp_path: Path) -> None:
-    manifest = tmp_path / "manifest.json"
-    manifest.write_text(
-        json.dumps(
+    manifest = _write_durable_search(
+        tmp_path,
+        [
             {
-                "targets": [
-                    {
-                        "hip": "HIP123",
-                        "source_hdf5_url": "",
-                        "estimated_download_gb": None,
-                    }
-                ]
+                "hip": "HIP123",
+                "source_hdf5_url": "",
+                "estimated_download_gb": None,
             }
-        ),
-        encoding="utf-8",
+        ],
     )
 
     result = subprocess.run(
@@ -124,21 +156,104 @@ def test_local_dat_only_manifest_executes_real_dry_run_dispatch(tmp_path: Path) 
     assert "Would process 1 targets" in result.stdout
 
 
-def test_completed_local_evidence_is_not_reported_as_raw_eviction(tmp_path: Path) -> None:
+def test_rejects_a_manually_built_non_hunter_manifest(tmp_path: Path) -> None:
+    """Real acquisition must originate from a durable Create-New-Search
+    selection, never a manually built target-priority-manifest fed directly
+    to this script -- that shadow path bypassed the approval gate, event
+    ledger, shortfall accounting, and follow-up-registry linkage entirely.
+    A manifest missing (or with the wrong) schema_version must be refused,
+    not silently executed.
+    """
     manifest = tmp_path / "manifest.json"
     manifest.write_text(
         json.dumps(
             {
+                "schema_version": "target_priority_manifest_v2",
                 "targets": [
                     {
                         "hip": "HIP123",
                         "source_hdf5_url": "",
                         "estimated_download_gb": None,
                     }
-                ]
+                ],
             }
         ),
         encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            "bash",
+            str(SCRIPT_PATH),
+            "--manifest",
+            str(manifest),
+            "--out-dir",
+            str(tmp_path / "data"),
+            "--results-dir",
+            str(tmp_path / "results"),
+            "--log-file",
+            str(tmp_path / "run.log"),
+            "--dry-run",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "TECHNO_STREAM_PROCESS_PYTHON": sys.executable},
+    )
+
+    assert result.returncode != 0
+    assert "durable Hunter search manifest" in result.stdout + result.stderr
+    assert "Create-New-Search" in result.stdout + result.stderr
+
+
+def test_rejects_schema_spoof_without_creation_event(tmp_path: Path) -> None:
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "schema_version": "hunter_search_manifest_v3",
+                "artifact_kind": "hunter_search_manifest",
+                "search_id": "SEARCH-20260725T120000Z-SPOOF001",
+                "targets": [{"hip": "HIP123"}],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            "bash",
+            str(SCRIPT_PATH),
+            "--manifest",
+            str(manifest),
+            "--out-dir",
+            str(tmp_path / "data"),
+            "--results-dir",
+            str(tmp_path / "results"),
+            "--log-file",
+            str(tmp_path / "run.log"),
+            "--dry-run",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "TECHNO_STREAM_PROCESS_PYTHON": sys.executable},
+    )
+
+    assert result.returncode != 0
+    assert "durable Hunter search manifest" in result.stdout + result.stderr
+
+
+def test_completed_local_evidence_is_not_reported_as_raw_eviction(tmp_path: Path) -> None:
+    manifest = _write_durable_search(
+        tmp_path,
+        [
+            {
+                "hip": "HIP123",
+                "source_hdf5_url": "",
+                "estimated_download_gb": None,
+            }
+        ],
     )
     target_dir = tmp_path / "data" / "HIP123"
     target_dir.mkdir(parents=True)

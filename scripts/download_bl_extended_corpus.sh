@@ -14,7 +14,7 @@
 #
 # Usage:
 #   caffeinate -i bash scripts/download_bl_extended_corpus.sh \
-#       --manifest data/target_sample_manifest.json
+#       --calibration-corpus --manifest data/target_sample_manifest.json
 #   bash scripts/download_bl_extended_corpus.sh --dry-run
 #   bash scripts/download_bl_extended_corpus.sh --discover-only \
 #       --manifest data/target_sample_manifest.json
@@ -64,6 +64,7 @@ ACQUISITION_MODE="targeted_batch_pull"
 RAW_RETENTION_POLICY="public_raw_archive_cache_not_pinned"
 DRY_RUN=0
 DISCOVER_ONLY=0
+CALIBRATION_CORPUS=0
 AVAILABILITY_OUTPUT=""
 DISCOVERY_RESULT_OUTPUT=""
 
@@ -75,6 +76,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --discover-only|--availability-report)
       DISCOVER_ONLY=1
+      shift
+      ;;
+    --calibration-corpus)
+      CALIBRATION_CORPUS=1
       shift
       ;;
     --manifest)
@@ -91,7 +96,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     -h|--help)
       cat <<'EOF'
-Usage: bash scripts/download_bl_extended_corpus.sh [--manifest PATH] [--dry-run] [--discover-only] [--availability-output PATH] [--discovery-result-output PATH]
+Usage: bash scripts/download_bl_extended_corpus.sh [--manifest PATH] [--dry-run] [--discover-only] [--calibration-corpus] [--availability-output PATH] [--discovery-result-output PATH]
 
 Downloads current Breakthrough Open Data HDF5 evidence inputs into:
   data/extended_corpus/<target>/
@@ -137,6 +142,11 @@ Options:
   --dry-run        Enumerate manifest targets without network access.
   --discover-only  Query BL search pages and print target<TAB>URL rows for
                    URL-available HDF5 records without downloading payloads.
+  --calibration-corpus
+                   Explicitly identify a raw download as non-production
+                   calibration/generalisation acquisition. Hunter production
+                   acquisition is accepted only through Create-New-Search
+                   followed by Run-New-Search --approve-acquisition.
   --availability-output PATH
                    Write URL-available target<TAB>URL rows to PATH. Use with
                    --discover-only for a durable, verified availability map.
@@ -171,9 +181,22 @@ EOF
   esac
 done
 
+if [[ "${DISCOVER_ONLY}" -eq 0 && "${DRY_RUN}" -eq 0 && "${CALIBRATION_CORPUS}" -eq 0 ]]; then
+  echo "[ERROR] Direct raw downloads are not a Hunter production entry point." >&2
+  echo "[ERROR] Use Create-New-Search followed by Run-New-Search --approve-acquisition." >&2
+  echo "[ERROR] For a genuinely non-production Track A calibration corpus only, pass --calibration-corpus." >&2
+  exit 2
+fi
+if [[ "${DISCOVER_ONLY}" -eq 1 ]]; then
+  ACQUISITION_MODE="metadata_only_discovery"
+elif [[ "${CALIBRATION_CORPUS}" -eq 1 ]]; then
+  ACQUISITION_ROLE="calibration_generalisation_cache"
+  ACQUISITION_MODE="targeted_calibration_batch_pull"
+fi
+
 # ---------------------------------------------------------------------------
 # Fallback target list: pre-DECISION-143 non-Cygnus GBT cadences from the BL
-# Open Data Archive. Production runs should use the stratified manifest.
+# Open Data Archive. Hunter production runs use Create-New-Search/Run-New-Search.
 # ---------------------------------------------------------------------------
 
 TARGETS=(

@@ -105,7 +105,7 @@ available, acquire one or more DECISION-133 streams:
 
 ```bash
 git pull origin main
-caffeinate -i bash scripts/download_bl_extended_corpus.sh
+caffeinate -i bash scripts/download_bl_extended_corpus.sh --calibration-corpus
 ```
 
 The extended-corpus downloader discovers current `bldata.berkeley.edu` HDF5

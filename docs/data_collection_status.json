@@ -29335,6 +29335,290 @@
       "source_manifest_path": "data_selection/batch_manifests/hunter_adaptive_expansion_batch1_preflight_manifest.json",
       "target_count": 15,
       "total_content_length_gb": 102.106685
+    },
+    {
+      "acquisition_mode": "metadata_only_discovery",
+      "acquisition_role": "live_search_bootstrap_cache",
+      "attempt_id": "download_bl_extended_corpus_discovery__2026-07-26T00:59:24.370455+00:00",
+      "available": 4,
+      "available_targets": [
+        {
+          "target": "TIC288185138",
+          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc40414243444546o7o0515253545556o7o0616263646566o7o071727374757677_guppi_58803_13885_TIC288185138_0029.gpuspec.0002.h5"
+        },
+        {
+          "target": "TIC159510109",
+          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc40414243444546o7o0515253545556o7o0616263646566o7o071727374757677_guppi_58803_17948_TIC159510109_0042.gpuspec.0002.h5"
+        },
+        {
+          "target": "TIC320525204",
+          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc10111213141516o7o0212223242526o7o0313233343536o7o051525354555657_guppi_58860_50878_TIC320525204_0048.gpuspec.0002.h5"
+        },
+        {
+          "target": "TIC154840461",
+          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc40414243444546o7o0515253545556o7o0616263646566o7o071727374757677_guppi_58803_10036_TIC154840461_0017.gpuspec.0002.h5"
+        }
+      ],
+      "checked": 4,
+      "downloaded": 0,
+      "mode": "discover_only",
+      "ok": true,
+      "raw_retention_policy": "public_raw_archive_cache_not_pinned",
+      "recorded_at_utc": "2026-07-26T00:59:24.370455+00:00",
+      "reused": 0,
+      "script": "download_bl_extended_corpus_discovery",
+      "skipped": 0,
+      "skipped_targets": [],
+      "total": 4
+    },
+    {
+      "acquisition_mode": "stream_process_evict",
+      "already_processed_count": 0,
+      "already_processed_targets": [],
+      "app_version": "1.2.61",
+      "attempt_id": "hunter_search__SEARCH-20260726T010212Z-69817987__2026-07-26T01:02:23.405000+00:00",
+      "candidate_report_manifests_total": 1,
+      "completed_count": 1,
+      "dat_files_total": 817,
+      "downloaded_count": 0,
+      "downloaded_gb": 0.0,
+      "downloaded_targets": [],
+      "evicted_count": 0,
+      "evicted_targets": [],
+      "failed_count": 0,
+      "failed_targets": [],
+      "local_dat_reuse_count": 1,
+      "local_dat_reuse_targets": [
+        "HIP99427"
+      ],
+      "manifest": "results/searches/SEARCH-20260726T010212Z-69817987/manifest.json",
+      "newly_processed_count": 1,
+      "newly_processed_targets": [
+        "HIP99427"
+      ],
+      "ok": true,
+      "raw_retention_policy": "evicted_after_candidate_report_generation",
+      "recorded_at_utc": "2026-07-26T01:02:23.405000+00:00",
+      "script": "hunter_search__SEARCH-20260726T010212Z-69817987",
+      "targets_attempted": 1,
+      "total_targets_in_manifest": 1
+    },
+    {
+      "acquisition_mode": "metadata_only_discovery",
+      "acquisition_role": "live_search_bootstrap_cache",
+      "attempt_id": "download_bl_extended_corpus_discovery__2026-07-26T01:05:22.308354+00:00",
+      "available": 9,
+      "available_targets": [
+        {
+          "target": "TIC233087860",
+          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc00010203040506o7o0111213141516o7o021222324252627_guppi_58810_08326_TIC233087860_0017.gpuspec.0002.h5"
+        },
+        {
+          "target": "TIC359496368",
+          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc10111213141516o7o0212223242526o7o0313233343536o7o051525354555657_guppi_58860_46812_TIC359496368_0035.gpuspec.0002.h5"
+        },
+        {
+          "target": "TIC287196418",
+          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc10111213141516o7o0212223242526o7o0313233343536o7o051525354555657_guppi_58860_42941_TIC287196418_0023.gpuspec.0002.h5"
+        },
+        {
+          "target": "TIC284450803",
+          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc10111213141516o7o0212223242526o7o0313233343536o7o051525354555657_guppi_58860_44877_TIC284450803_0029.gpuspec.0002.h5"
+        },
+        {
+          "target": "TIC267489265",
+          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc10111213141516o7o0212223242526o7o0313233343536o7o051525354555657_guppi_58860_41020_TIC267489265_0017.gpuspec.0002.h5"
+        },
+        {
+          "target": "TIC294176967",
+          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc10111213141516o7o0212223242526o7o0313233343536o7o051525354555657_guppi_58860_39080_TIC294176967_0011.gpuspec.0002.h5"
+        },
+        {
+          "target": "TIC267694283",
+          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc30313233343536o7o0414243444546o7o0515253545556o7o061626364656667_guppi_58918_74192_TIC267694283_0011.rawspec.0000.h5"
+        },
+        {
+          "target": "TIC470315428",
+          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc30313233343536o7o0414243444546o7o0515253545556o7o061626364656667_guppi_58918_76135_TIC470315428_0017.rawspec.0000.h5"
+        },
+        {
+          "target": "TIC266500992",
+          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc30313233343536o7o0414243444546o7o0515253545556o7o061626364656667_guppi_58919_20525_TIC266500992_0118.rawspec.0000.h5"
+        }
+      ],
+      "checked": 21,
+      "downloaded": 0,
+      "mode": "discover_only",
+      "ok": true,
+      "raw_retention_policy": "public_raw_archive_cache_not_pinned",
+      "recorded_at_utc": "2026-07-26T01:05:22.308354+00:00",
+      "reused": 0,
+      "script": "download_bl_extended_corpus_discovery",
+      "skipped": 12,
+      "skipped_targets": [
+        {
+          "reason": "no_hdf5_url_discovered",
+          "target": "TIC449050247"
+        },
+        {
+          "reason": "no_hdf5_url_discovered",
+          "target": "TIC449050248"
+        },
+        {
+          "reason": "no_hdf5_url_discovered",
+          "target": "TIC43647325"
+        },
+        {
+          "reason": "no_hdf5_url_discovered",
+          "target": "TIC452808876"
+        },
+        {
+          "reason": "no_hdf5_url_discovered",
+          "target": "TIC434234955"
+        },
+        {
+          "reason": "no_hdf5_url_discovered",
+          "target": "TIC66561343"
+        },
+        {
+          "reason": "no_hdf5_url_discovered",
+          "target": "TIC427352241"
+        },
+        {
+          "reason": "no_hdf5_url_discovered",
+          "target": "TIC50618703"
+        },
+        {
+          "reason": "no_hdf5_url_discovered",
+          "target": "TIC427348923"
+        },
+        {
+          "reason": "no_hdf5_url_discovered",
+          "target": "TIC237185205"
+        },
+        {
+          "reason": "no_hdf5_url_discovered",
+          "target": "TIC237184773"
+        },
+        {
+          "reason": "no_hdf5_url_discovered",
+          "target": "TIC159107668"
+        }
+      ],
+      "total": 21
+    },
+    {
+      "acquisition_mode": "metadata_only_discovery",
+      "acquisition_role": "live_search_bootstrap_cache",
+      "attempt_id": "download_bl_extended_corpus_discovery__2026-07-26T01:06:48.324962+00:00",
+      "available": 0,
+      "available_targets": [],
+      "checked": 4,
+      "downloaded": 0,
+      "mode": "discover_only",
+      "ok": true,
+      "raw_retention_policy": "public_raw_archive_cache_not_pinned",
+      "recorded_at_utc": "2026-07-26T01:06:48.324962+00:00",
+      "reused": 0,
+      "script": "download_bl_extended_corpus_discovery",
+      "skipped": 4,
+      "skipped_targets": [
+        {
+          "reason": "no_hdf5_url_discovered",
+          "target": "HD_20477"
+        },
+        {
+          "reason": "no_hdf5_url_discovered",
+          "target": "HD_284145"
+        },
+        {
+          "reason": "no_hdf5_url_discovered",
+          "target": "HD_53532"
+        },
+        {
+          "reason": "no_hdf5_url_discovered",
+          "target": "HD_152956"
+        }
+      ],
+      "total": 4
+    },
+    {
+      "acquisition_mode": "metadata_only_discovery",
+      "acquisition_role": "live_search_bootstrap_cache",
+      "attempt_id": "download_bl_extended_corpus_discovery__2026-07-26T01:10:13.551700+00:00",
+      "available": 0,
+      "available_targets": [],
+      "checked": 1,
+      "downloaded": 0,
+      "mode": "discover_only",
+      "ok": true,
+      "raw_retention_policy": "public_raw_archive_cache_not_pinned",
+      "recorded_at_utc": "2026-07-26T01:10:13.551700+00:00",
+      "reused": 0,
+      "script": "download_bl_extended_corpus_discovery",
+      "skipped": 1,
+      "skipped_targets": [
+        {
+          "reason": "no_hdf5_url_discovered",
+          "target": "BD+18_487"
+        }
+      ],
+      "total": 1
+    },
+    {
+      "acquisition_mode": "metadata_only_discovery",
+      "acquisition_role": "live_search_bootstrap_cache",
+      "attempt_id": "download_bl_extended_corpus_discovery__2026-07-26T01:13:41.986525+00:00",
+      "available": 0,
+      "available_targets": [],
+      "checked": 1,
+      "downloaded": 0,
+      "mode": "discover_only",
+      "ok": true,
+      "raw_retention_policy": "public_raw_archive_cache_not_pinned",
+      "recorded_at_utc": "2026-07-26T01:13:41.986525+00:00",
+      "reused": 0,
+      "script": "download_bl_extended_corpus_discovery",
+      "skipped": 1,
+      "skipped_targets": [
+        {
+          "reason": "no_hdf5_url_discovered",
+          "target": "LHS288_R"
+        }
+      ],
+      "total": 1
+    },
+    {
+      "acquisition_mode": "stream_process_evict",
+      "already_processed_count": 0,
+      "already_processed_targets": [],
+      "app_version": "1.2.61",
+      "attempt_id": "hunter_search__SEARCH-20260726T011409Z-39A09771__2026-07-26T01:14:23.171167+00:00",
+      "candidate_report_manifests_total": 1,
+      "completed_count": 1,
+      "dat_files_total": 817,
+      "downloaded_count": 0,
+      "downloaded_gb": 0.0,
+      "downloaded_targets": [],
+      "evicted_count": 0,
+      "evicted_targets": [],
+      "failed_count": 0,
+      "failed_targets": [],
+      "local_dat_reuse_count": 1,
+      "local_dat_reuse_targets": [
+        "HIP99427"
+      ],
+      "manifest": "results/searches/SEARCH-20260726T011409Z-39A09771/manifest.json",
+      "newly_processed_count": 1,
+      "newly_processed_targets": [
+        "HIP99427"
+      ],
+      "ok": true,
+      "raw_retention_policy": "evicted_after_candidate_report_generation",
+      "recorded_at_utc": "2026-07-26T01:14:23.171167+00:00",
+      "script": "hunter_search__SEARCH-20260726T011409Z-39A09771",
+      "targets_attempted": 1,
+      "total_targets_in_manifest": 1
     }
   ],
   "disclaimer": "This manifest records real local data-collection run outcomes (counts of items found/downloaded/skipped/failed) for compact progress review. It is not a detection, discovery, external validation, or external-submission claim.",
@@ -29501,260 +29785,23 @@
     "download_bl_extended_corpus_discovery": {
       "acquisition_mode": "metadata_only_discovery",
       "acquisition_role": "live_search_bootstrap_cache",
-      "available": 15,
-      "available_targets": [
-        {
-          "target": "TIC341544930",
-          "url": "https://bldata.berkeley.edu/bl_tess/l_band/spliced_blc4041424344454647_guppi_58844_32145_TIC341544930_0094.gpuspec.0002.h5"
-        },
-        {
-          "target": "TIC281731203",
-          "url": "https://bldata.berkeley.edu/bl_tess/s_band/spliced_blc0001020304050607_guppi_58811_54951_TIC281731203_0029.gpuspec.0002.h5"
-        },
-        {
-          "target": "TIC232976128",
-          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc00010203040506o7o0111213141516o7o0212223242526o7o031323334353637_guppi_58936_56056_TIC232976128_0121.rawspec.0000.h5"
-        },
-        {
-          "target": "TIC35009898",
-          "url": "https://bldata.berkeley.edu/bl_tess/l_band/spliced_blc5051525354555657_guppi_58892_34148_TIC35009898_0022.rawspec.0000.h5"
-        },
-        {
-          "target": "TIC154089169",
-          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc10111213141516o7o0212223242526o7o0313233343536o7o051525354555657_guppi_58860_62784_TIC154089169_0085.gpuspec.0002.h5"
-        },
-        {
-          "target": "TIC232967666",
-          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc10111213141516o7o0212223242526o7o0313233343536o7o051525354555657_guppi_58860_64712_TIC232967666_0091.gpuspec.0002.h5"
-        },
-        {
-          "target": "TIC458478250",
-          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc10111213141516o7o0212223242526o7o0313233343536o7o051525354555657_guppi_58860_60826_TIC458478250_0079.gpuspec.0002.h5"
-        },
-        {
-          "target": "TIC198213332",
-          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc10111213141516o7o0212223242526o7o0313233343536o7o051525354555657_guppi_58860_56725_TIC198213332_0066.gpuspec.0002.h5"
-        },
-        {
-          "target": "TIC160268701",
-          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc40414243444546o7o0515253545556o7o0616263646566o7o071727374757677_guppi_58744_17480_TIC160268701_0088.gpuspec.0002.h5"
-        },
-        {
-          "target": "TIC289539327",
-          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc10111213141516o7o0212223242526o7o0313233343536o7o051525354555657_guppi_58860_54782_TIC289539327_0060.gpuspec.0002.h5"
-        },
-        {
-          "target": "TIC230088370",
-          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc10111213141516o7o0212223242526o7o0313233343536o7o051525354555657_guppi_58860_58676_TIC230088370_0072.gpuspec.0002.h5"
-        },
-        {
-          "target": "TIC459970307",
-          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc10111213141516o7o0212223242526o7o0313233343536o7o051525354555657_guppi_58860_52841_TIC459970307_0054.gpuspec.0002.h5"
-        },
-        {
-          "target": "TIC302518439",
-          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc40414243444546o7o0515253545556o7o0616263646566o7o071727374757677_guppi_58744_13593_TIC302518439_0076.gpuspec.0002.h5"
-        },
-        {
-          "target": "TIC372757221",
-          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc40414243444546o7o0515253545556o7o0616263646566o7o071727374757677_guppi_58803_08110_TIC372757221_0011.gpuspec.0002.h5"
-        },
-        {
-          "target": "TIC158002130",
-          "url": "https://bldata.berkeley.edu/bl_tess/c_band/spliced_blc40414243444546o7o0515253545556o7o0616263646566o7o071727374757677_guppi_58803_15802_TIC158002130_0035.gpuspec.0002.h5"
-        }
-      ],
-      "checked": 60,
+      "available": 0,
+      "available_targets": [],
+      "checked": 1,
       "downloaded": 0,
-      "last_run_utc": "2026-07-25T13:37:30.122683+00:00",
+      "last_run_utc": "2026-07-26T01:13:41.986525+00:00",
       "mode": "discover_only",
       "ok": true,
       "raw_retention_policy": "public_raw_archive_cache_not_pinned",
       "reused": 0,
-      "skipped": 45,
+      "skipped": 1,
       "skipped_targets": [
         {
           "reason": "no_hdf5_url_discovered",
-          "target": "GJ887"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "HIP15510"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "GJ1061"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "LHS138_R"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "LHS1140"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "GJ832"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "GJ1005_R"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "GJ1_R"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "GJ65_R"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "HIP102409"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "GJ887_R"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "TYC3010-1024-1"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "HD_224448"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "HIP99825"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "HD_109376"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "HIP56528"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "HR_222"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "GJ866_R"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "HD_115153"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "LP944-020_R"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "GJ1061_R"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "HD_117004"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "HIP47103"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "LTT_8911"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "TYC2037-1484-1"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "HIP29295"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "GJ845A_R"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "HIP10337"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "GJ832_R"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "GJ825_R"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "HIP12961"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "HD_81563"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "HIP10138"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "HIP7978"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "HIP86057"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "TIC67772767"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "TIC311183180"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "GJ674"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "HIP86214"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "GJ682"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "GJ191_R"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "HIP12653"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "HIP47780"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "TIC459942762"
-        },
-        {
-          "reason": "no_hdf5_url_discovered",
-          "target": "TIC468880077"
+          "target": "LHS288_R"
         }
       ],
-      "total": 60
+      "total": 1
     },
     "enrich_bl_archive_candidate_identity__20260724T065209534194Z": {
       "error": "IdentityEnrichmentError: Unexpected SIMBAD response shape: '::script::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\\n\\nformat object form1 \"%IDLIST(1) | %COO(d;A) | %COO(d;D)\"\\nquery id G15.17-6.06\\nquery id G15.28+6.26\\nquery id G15.28-3.4'",
@@ -30164,6 +30211,66 @@
       "raw_retention_policy": "evicted_after_candidate_report_generation",
       "targets_attempted": 10,
       "total_targets_in_manifest": 10
+    },
+    "hunter_search__SEARCH-20260726T010212Z-69817987": {
+      "acquisition_mode": "stream_process_evict",
+      "already_processed_count": 0,
+      "already_processed_targets": [],
+      "app_version": "1.2.61",
+      "candidate_report_manifests_total": 1,
+      "completed_count": 1,
+      "dat_files_total": 817,
+      "downloaded_count": 0,
+      "downloaded_gb": 0.0,
+      "downloaded_targets": [],
+      "evicted_count": 0,
+      "evicted_targets": [],
+      "failed_count": 0,
+      "failed_targets": [],
+      "last_run_utc": "2026-07-26T01:02:23.405000+00:00",
+      "local_dat_reuse_count": 1,
+      "local_dat_reuse_targets": [
+        "HIP99427"
+      ],
+      "manifest": "results/searches/SEARCH-20260726T010212Z-69817987/manifest.json",
+      "newly_processed_count": 1,
+      "newly_processed_targets": [
+        "HIP99427"
+      ],
+      "ok": true,
+      "raw_retention_policy": "evicted_after_candidate_report_generation",
+      "targets_attempted": 1,
+      "total_targets_in_manifest": 1
+    },
+    "hunter_search__SEARCH-20260726T011409Z-39A09771": {
+      "acquisition_mode": "stream_process_evict",
+      "already_processed_count": 0,
+      "already_processed_targets": [],
+      "app_version": "1.2.61",
+      "candidate_report_manifests_total": 1,
+      "completed_count": 1,
+      "dat_files_total": 817,
+      "downloaded_count": 0,
+      "downloaded_gb": 0.0,
+      "downloaded_targets": [],
+      "evicted_count": 0,
+      "evicted_targets": [],
+      "failed_count": 0,
+      "failed_targets": [],
+      "last_run_utc": "2026-07-26T01:14:23.171167+00:00",
+      "local_dat_reuse_count": 1,
+      "local_dat_reuse_targets": [
+        "HIP99427"
+      ],
+      "manifest": "results/searches/SEARCH-20260726T011409Z-39A09771/manifest.json",
+      "newly_processed_count": 1,
+      "newly_processed_targets": [
+        "HIP99427"
+      ],
+      "ok": true,
+      "raw_retention_policy": "evicted_after_candidate_report_generation",
+      "targets_attempted": 1,
+      "total_targets_in_manifest": 1
     },
     "stream_process_evict_batch": {
       "acquisition_mode": "stream_process_evict",
