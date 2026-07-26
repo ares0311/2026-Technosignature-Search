@@ -43,10 +43,10 @@ evidence open.
 
 | Required business behavior | Current evidence | State required to close |
 |---|---|---|
-| Adaptive new-target discovery finds a displacing candidate outside the initial discovery sample | **Closed for v1.2.62 metadata selection:** installed search `SEARCH-20260726T015015Z-68C72F41` began with KIC8462852 unresolved, ran one real archive-discovery/HEAD-preflight round, then selected it as the sole best valid KIC target | Preserve the immutable round artifacts through final validation; execute this exact new-target search after approval |
+| Adaptive new-target discovery finds a displacing candidate outside the initial discovery sample | **Closed for v1.2.62 metadata selection:** clean-commit installed search `SEARCH-20260726T015515Z-5C71AC51` began with KIC8462852 unresolved, ran one real archive-discovery/HEAD-preflight round, then selected it as the sole best valid KIC target | Preserve the immutable round artifacts through final validation; execute this exact new-target search after approval |
 | Weak absolute quality still returns best-available N | Real shortfall/exhaustion runs and low-score regression coverage | Closed unless the final real runs contradict it |
 | Positive-count new-target lifecycle | Historical v1.2.55 ten-target acquisition; no positive-count v1.2.61+ run | Current-release installed create -> approved acquisition -> preprocessing -> scoring/interpretation -> durable result/history -> changed future eligibility |
-| Follow-up selection and execution | v1.2.62 installed search `SEARCH-20260726T014640Z-7B76737E` froze an exact six-scan GBT cadence 132.375912 days after the prior evidence; execution is approval-gated | Execute the frozen cadence, verify its six source checksums/derived provenance, and observe the source follow-up transition to completed exactly once |
+| Follow-up selection and execution | v1.2.62 clean-commit installed search `SEARCH-20260726T015438Z-1881A999` froze an exact six-scan GBT cadence 132.375912 days after the prior evidence; execution is approval-gated | Execute the frozen cadence, verify its six source checksums/derived provenance, and observe the source follow-up transition to completed exactly once |
 | Restart/resume integrity | **Implementation proof for v1.2.62:** controlled cadence failure at exit 7 resumes the same search/run and byte-identical derived execution manifest, then completes with exactly one history/lifecycle transition | Repeat through the real bounded acquisition or leave the test-scoped limitation explicit if no safe deterministic real fault point exists |
 | Validation/provenance/identity/history | v1.2.61 manifest authentication, source hashing, validity states, alias resolver, real EXO import | Closed unless live acceptance exposes a contradiction |
 | No production bypass | Stream runner and direct downloader fail-closed tests | Re-audit every raw-acquisition command after final changes; all production commands must consume an authenticated durable search |
@@ -104,13 +104,17 @@ Release 1.2.62 metadata and implementation evidence as of
   `--approve-acquisition`, executes it before the canonical scorer, and marks
   completion only after the exact six frozen inputs appear in a checksum-bound
   derived cadence artifact. Reanalysis remains deferred.
-- **Real follow-up selection:** `SEARCH-20260726T014640Z-7B76737E` selected
+- **Clean implementation identity:** both approval-pending manifests name
+  version `1.2.62` and code commit `de143ef`; no raw execution will use the
+  earlier dirty-tree provisional searches, which were moved intact to a
+  recoverable `/tmp` quarantine.
+- **Real follow-up selection:** `SEARCH-20260726T015438Z-1881A999` selected
   HIP99427 at follow-up priority `0.992456` and froze GBT archive products in
   ABACAD order from MJD `57885.3570` through `57885.3763`. The prior retained
   cadence ends at MJD `57752.981088`; the new epoch begins `132.375912` days
   later. Exact projected acquisition is `1,449,661,910` bytes (`1.449662 GB`).
 - **Real adaptive new-target selection:**
-  `SEARCH-20260726T015015Z-68C72F41` constrained the request to KIC targets.
+  `SEARCH-20260726T015515Z-5C71AC51` constrained the request to KIC targets.
   KIC8462852 was outside the initially eligible sample, so the installed
   command executed one discovery round, found and HEAD-preflighted the current
   `.gpuspec.0002.h5` product, exhausted the constrained universe, and selected
@@ -139,8 +143,8 @@ Exact pending bounded approval scope:
 
 | Search | Purpose | Files | Bytes | GiB (bytes / 2^30) |
 |---|---|---:|---:|---:|
-| `SEARCH-20260726T015015Z-68C72F41` | new KIC8462852 search | 1 | 242,170,450 | 0.226 |
-| `SEARCH-20260726T014640Z-7B76737E` | HIP99427 later-epoch ABACAD follow-up | 6 | 1,449,661,910 | 1.350 |
+| `SEARCH-20260726T015515Z-5C71AC51` | new KIC8462852 search | 1 | 242,170,450 | 0.226 |
+| `SEARCH-20260726T015438Z-1881A999` | HIP99427 later-epoch ABACAD follow-up | 6 | 1,449,661,910 | 1.350 |
 | **Total** | current-release positive-count acceptance | **7** | **1,691,832,360** | **1.576** |
 
 The next loop action is the irreducible human gate: explicit approval (or
