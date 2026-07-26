@@ -10,15 +10,19 @@ import csv
 import hashlib
 import json
 import os
-import re
 import secrets
+import statistics
 import subprocess
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, TextIO
 
 from techno_search import __version__
+from techno_search.hunter_constraints import (
+    normalize_constraints,
+    target_matches_constraints,
+)
 from techno_search.prod_scan_queue import ScanHistoryRecord, append_scan_record, load_scan_history
 from techno_search.production_run_outcomes import (
     LEGACY_PRODUCTION_FOLLOW_UPS_SCHEMA_VERSIONS,
@@ -28,6 +32,7 @@ from techno_search.production_run_outcomes import (
 )
 from techno_search.production_scan import ProductionScanResult, run_production_scan
 from techno_search.provenance import git_commit
+from techno_search.target_alias import TargetAliasResolver
 from techno_search.target_priority_queue import (
     TARGET_PRIORITY_QUEUE_SCHEMA_VERSION,
     build_target_priority_manifest,
@@ -46,7 +51,6 @@ SEARCH_DISCLAIMER = (
     "They do not constitute a detection, discovery, expert review, external validation, "
     "or authorization for external submission."
 )
-_HIP_PATTERN = re.compile(r"(?i)hip(\d+)")
 
 
 class SearchLifecycleError(RuntimeError):
@@ -59,6 +63,9 @@ class SearchApprovalRequired(SearchLifecycleError):
 
 CommandRunner = Callable[[Sequence[str]], int]
 ProductionRunner = Callable[..., ProductionScanResult]
+AdaptiveDiscovery = Callable[
+    [Path, int, str, Mapping[str, Any]], tuple[Path, dict[str, Any]]
+]
 
 
 def make_search_id(*, now: datetime | None = None, token: str | None = None) -> str:
@@ -83,6 +90,8 @@ def create_search(
     manifest_dir: Path = Path("results/search_manifests"),
     search_id: str | None = None,
     created_at_utc: str | None = None,
+    adaptive_discovery: AdaptiveDiscovery | None = None,
+    constraints: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Freeze an exact pending search without acquiring or processing data."""
     if target_count <= 0:
@@ -92,10 +101,20 @@ def create_search(
     if not queue_path.is_file():
         raise SearchLifecycleError(f"eligibility queue not found: {queue_path}")
 
-    queue_rows = _validated_queue_rows(queue_path)
-    candidate_catalog = _candidate_catalog_summary(candidate_catalog_path)
     generated_at = created_at_utc or _utc_now()
     resolved_id = search_id or make_search_id()
+    active_constraints = normalize_constraints(constraints)
+    adaptive_report: dict[str, Any] | None = None
+    if mode == "new" and adaptive_discovery is not None:
+        queue_path, adaptive_report = adaptive_discovery(
+            queue_path, target_count, resolved_id, active_constraints
+        )
+        if not adaptive_report.get("sufficient"):
+            raise SearchLifecycleError(
+                "adaptive discovery did not establish top-N selection sufficiency"
+            )
+    queue_rows = _validated_queue_rows(queue_path)
+    candidate_catalog = _candidate_catalog_summary(candidate_catalog_path)
     search_dir = searches_dir / resolved_id
     manifest_path = search_dir / "manifest.json"
     events_path = search_dir / "events.ndjson"
@@ -103,19 +122,31 @@ def create_search(
         raise SearchLifecycleError(f"search already exists: {resolved_id}")
 
     if mode == "new":
-        selected, viable_count = _select_new_targets(queue_path, target_count)
+        selected, viable_count = _select_new_targets(
+            queue_path, target_count, active_constraints
+        )
         registry_summary: dict[str, Any] | None = None
     else:
         registry_summary = follow_up_registry(
             scans_dirs=(scans_dir, searches_dir), queue_path=queue_path
         )
-        selected = list(registry_summary["eligible_entries"])[:target_count]
-        viable_count = int(registry_summary["eligible_count"])
+        constrained_follow_ups = [
+            entry
+            for entry in registry_summary["eligible_entries"]
+            if target_matches_constraints(entry, active_constraints)
+        ]
+        selected = constrained_follow_ups[:target_count]
+        viable_count = len(constrained_follow_ups)
 
-    if not selected:
-        raise SearchLifecycleError(f"no eligible {mode} targets are available")
     shortfall = _selection_shortfall(
-        mode=mode, requested_count=target_count, selected_count=len(selected), queue_rows=queue_rows
+        mode=mode,
+        requested_count=target_count,
+        selected_count=len(selected),
+        queue_rows=queue_rows,
+        constraints=active_constraints,
+        universe_exhausted=bool(
+            adaptive_report and adaptive_report.get("universe_exhausted")
+        ),
     )
     selected = [_with_execution_contract(target, mode=mode) for target in selected]
     execution_kind_counts: dict[str, int] = {}
@@ -164,6 +195,9 @@ def create_search(
             ),
             "partial_selection_allowed": shortfall is not None,
             "shortfall": shortfall,
+            "adaptive_discovery": adaptive_report,
+            "constraints": active_constraints,
+            "quality": _selection_quality(selected, mode=mode),
         },
         "pipeline": {
             "acquisition": "scripts/run_stream_process_evict_batch.sh",
@@ -223,6 +257,10 @@ def load_search(searches_dir: Path, search_id: str) -> dict[str, Any]:
         *LEGACY_SEARCH_MANIFEST_SCHEMA_VERSIONS,
     }:
         raise SearchLifecycleError(f"unsupported search manifest schema: {manifest_path}")
+    if manifest.get("artifact_kind") != "hunter_search_manifest":
+        raise SearchLifecycleError(
+            f"search manifest artifact kind is not Hunter-owned: {manifest_path}"
+        )
     if manifest.get("search_id") != search_id:
         raise SearchLifecycleError(f"search ID/path mismatch: {manifest_path}")
     events = _load_events(events_path, search_id)
@@ -232,6 +270,34 @@ def load_search(searches_dir: Path, search_id: str) -> dict[str, Any]:
             f"immutable search manifest hash does not match its creation event: {manifest_path}"
         )
     return {"manifest": manifest, "events": events, "status": _event_status(events)}
+
+
+def validate_search_manifest_path(manifest_path: Path) -> dict[str, Any]:
+    """Authenticate a manifest as a Hunter-created durable search artifact.
+
+    A schema-shaped JSON file is not authority to acquire data. Production
+    acquisition accepts only the canonical ``results/searches/<search_id>/
+    manifest.json`` topology with a matching append-only creation event and
+    immutable manifest digest.
+    """
+    resolved_path = manifest_path.resolve()
+    if resolved_path.name != "manifest.json":
+        raise SearchLifecycleError(
+            f"durable Hunter search manifest must be named manifest.json: {manifest_path}"
+        )
+    search_dir = resolved_path.parent
+    search_id = search_dir.name
+    if not search_id.startswith("SEARCH-"):
+        raise SearchLifecycleError(
+            f"durable Hunter search manifest has invalid search directory: {manifest_path}"
+        )
+    loaded = load_search(search_dir.parent, search_id)
+    canonical_path = (search_dir.parent / search_id / "manifest.json").resolve()
+    if canonical_path != resolved_path:
+        raise SearchLifecycleError(
+            f"search manifest does not resolve to its canonical durable path: {manifest_path}"
+        )
+    return loaded
 
 
 def latest_pending_search_id(searches_dir: Path) -> str:
@@ -325,6 +391,27 @@ def run_search(
             ],
         },
     )
+    if not targets:
+        completion = {
+            "event": "run_completed",
+            "search_id": resolved_id,
+            "run_id": run_id,
+            "run_dir": "",
+            "at_utc": _utc_now(),
+            "target_count": 0,
+            "follow_up_required_count": 0,
+            "history_records_appended": 0,
+            "app_version": __version__,
+            "candidate_report_config_versions": [],
+            "execution_kind_counts": {},
+            "follow_up_observation_fulfilled_count": 0,
+            "follow_up_dispositions": [],
+            "follow_up_completed_count": 0,
+            "follow_up_deferred_count": 0,
+            "no_valid_targets": True,
+        }
+        _append_event(events_path, completion)
+        return completion
     command = [
         "bash",
         "scripts/run_stream_process_evict_batch.sh",
@@ -395,6 +482,10 @@ def run_search(
             search_id=resolved_id,
         )
         config_versions = _candidate_report_config_versions(results_dir)
+        follow_up_dispositions = _evaluate_follow_up_dispositions(
+            manifest=manifest,
+            result=production_result,
+        )
     except Exception as exc:
         _append_event(
             events_path,
@@ -426,6 +517,13 @@ def run_search(
         "follow_up_observation_fulfilled_count": manifest["selection"][
             "follow_up_observation_fulfilled_count"
         ],
+        "follow_up_dispositions": follow_up_dispositions,
+        "follow_up_completed_count": sum(
+            item["state"] == "completed" for item in follow_up_dispositions
+        ),
+        "follow_up_deferred_count": sum(
+            item["state"] == "deferred" for item in follow_up_dispositions
+        ),
     }
     _append_event(events_path, completion)
     return completion
@@ -438,6 +536,8 @@ def follow_up_registry(
 ) -> dict[str, Any]:
     """Aggregate immutable run ledgers into an actionable follow-up view."""
     queue = {row["target_id"]: row for row in _validated_queue_rows(queue_path)}
+    resolver = TargetAliasResolver.build(queue)
+    lifecycle = _follow_up_lifecycle(scans_dirs)
     ledger_paths: set[Path] = set()
     for scans_dir in scans_dirs:
         if scans_dir.is_dir():
@@ -460,9 +560,16 @@ def follow_up_registry(
             if not isinstance(raw_entry, Mapping):
                 raise SearchLifecycleError(f"invalid follow-up entry in {path}")
             source_entries += 1
-            target_id = _canonical_target_id(str(raw_entry.get("target_name", "")))
+            target_id = resolver.resolve(str(raw_entry.get("target_name", "")))
             if target_id is None or target_id not in queue:
                 unresolved += 1
+                continue
+            lifecycle_key = (
+                str(path.resolve()),
+                str(raw_entry.get("follow_up_id", "")),
+            )
+            disposition = lifecycle.get(lifecycle_key)
+            if disposition is not None:
                 continue
             priority = _follow_up_priority(raw_entry)
             provenance = {
@@ -488,6 +595,9 @@ def follow_up_registry(
                     "mode": "follow-up",
                     "ra_deg": _optional_float(row.get("ra_deg")),
                     "dec_deg": _optional_float(row.get("dec_deg")),
+                    "galactic_latitude_deg": _optional_float(
+                        row.get("galactic_latitude_deg")
+                    ),
                     "estimated_download_gb": _optional_float(
                         row.get("estimated_download_gb")
                     ),
@@ -519,24 +629,41 @@ def follow_up_registry(
         "source_entry_count": source_entries,
         "eligible_count": len(eligible),
         "unresolved_identity_count": unresolved,
+        "scheduled_count": sum(
+            item["state"] == "scheduled" for item in lifecycle.values()
+        ),
+        "completed_count": sum(
+            item["state"] == "completed" for item in lifecycle.values()
+        ),
+        "deferred_count": sum(
+            item["state"] == "deferred" for item in lifecycle.values()
+        ),
         "eligible_entries": eligible,
         "detection_claimed": False,
         "external_submission_allowed": False,
     }
 
 
-def _select_new_targets(queue_path: Path, target_count: int) -> tuple[list[dict[str, Any]], int]:
+def _select_new_targets(
+    queue_path: Path,
+    target_count: int,
+    constraints: Mapping[str, Any],
+) -> tuple[list[dict[str, Any]], int]:
     manifest = build_target_priority_manifest(
         queue_path=queue_path,
-        max_targets=target_count,
+        max_targets=max(target_count, len(read_target_priority_queue(queue_path))),
         include_statuses=("raw_download_approval_required",),
     )
     all_rows = read_target_priority_queue(queue_path)
     viable_count = sum(
-        row.get("status") == "raw_download_approval_required" for row in all_rows
+        row.get("status") == "raw_download_approval_required"
+        and target_matches_constraints(row, constraints)
+        for row in all_rows
     )
     selected = []
     for target in manifest["targets"]:
+        if not target_matches_constraints(target, constraints):
+            continue
         selected.append(
             {
                 **target,
@@ -548,11 +675,13 @@ def _select_new_targets(queue_path: Path, target_count: int) -> tuple[list[dict[
                 "prior_search_provenance": [],
             }
         )
+        if len(selected) >= target_count:
+            break
     return selected, viable_count
 
 
 _EXPANSION_HEADROOM_STATUSES = frozenset(
-    {"metadata_discovery_required", "queued_metadata_discovery"}
+    {"queued_metadata_discovery", "size_preflight_required"}
 )
 
 
@@ -562,6 +691,8 @@ def _selection_shortfall(
     requested_count: int,
     selected_count: int,
     queue_rows: Sequence[Mapping[str, str]],
+    constraints: Mapping[str, Any],
+    universe_exhausted: bool,
 ) -> dict[str, Any] | None:
     """Report, never hide, a best-available-N result short of the request.
 
@@ -576,16 +707,26 @@ def _selection_shortfall(
         return None
     if mode == "new":
         headroom = sum(
-            row.get("status") in _EXPANSION_HEADROOM_STATUSES for row in queue_rows
+            row.get("status") in _EXPANSION_HEADROOM_STATUSES
+            and target_matches_constraints(
+                row, constraints, allow_unknown_download_size=True
+            )
+            for row in queue_rows
         )
-        reason = (
-            f"only {selected_count} of {requested_count} requested new targets are "
-            "currently eligible (status raw_download_approval_required) in the target "
-            f"priority queue; {headroom} additional candidate(s) have a known identity "
-            "but have not yet completed HDF5 discovery/size preflight and may become "
-            "eligible after running 'techno-search build-target-priority-queue' with "
-            "fresh discovery/preflight evidence"
-        )
+        if universe_exhausted:
+            reason = (
+                f"only {selected_count} of {requested_count} requested new targets are "
+                "valid after exhausting the reasonably accessible constrained "
+                "candidate universe"
+            )
+        else:
+            reason = (
+                f"only {selected_count} of {requested_count} requested new targets are "
+                "currently eligible (status raw_download_approval_required) in the "
+                f"target priority queue; {headroom} additional candidate(s) have a "
+                "known identity but have not yet completed HDF5 discovery/size "
+                "preflight"
+            )
         return {
             "requested_count": requested_count,
             "returned_count": selected_count,
@@ -622,6 +763,23 @@ def _with_execution_contract(target: Mapping[str, Any], *, mode: str) -> dict[st
         # The current catalog does not prove that any archive URL is a later-epoch
         # observation satisfying the recommended follow-up. Never infer that it is.
         "follow_up_observation_fulfilled": False,
+    }
+
+
+def _selection_quality(
+    targets: Sequence[Mapping[str, Any]], *, mode: str
+) -> dict[str, Any]:
+    key = "target_selection_score" if mode == "new" else "follow_up_priority"
+    scores = [float(target.get(key, 0.0)) for target in targets]
+    return {
+        "score_field": key,
+        "interpretation": (
+            "deterministic relative ranking score; not a calibrated probability "
+            "or absolute eligibility threshold"
+        ),
+        "minimum": min(scores) if scores else None,
+        "median": statistics.median(scores) if scores else None,
+        "maximum": max(scores) if scores else None,
     }
 
 
@@ -704,13 +862,14 @@ def _record_run_history(
         )
     entries = list(target_status.get("entries", []))
     selected = {str(target["hip"]) for target in manifest.get("targets", [])}
+    resolver = TargetAliasResolver.build(selected)
     resolved_entries: list[tuple[Mapping[str, Any], str, str]] = []
     resolved_targets: set[str] = set()
     for entry in entries:
         if not isinstance(entry, Mapping):
             raise SearchLifecycleError("target-status ledger contains a non-object entry")
         target_name = str(entry.get("target_name", ""))
-        target_id = _canonical_target_id(target_name)
+        target_id = resolver.resolve(target_name)
         if target_id is None or target_id not in selected:
             raise SearchLifecycleError(
                 f"run output target is not in immutable search manifest: {target_name}"
@@ -788,9 +947,147 @@ def _follow_up_evidence(entry: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-def _canonical_target_id(value: str) -> str | None:
-    match = _HIP_PATTERN.search(value)
-    return f"HIP{match.group(1)}" if match else None
+def _follow_up_lifecycle(
+    roots: Sequence[Path],
+) -> dict[tuple[str, str], dict[str, str]]:
+    """Resolve consumed follow-up evidence from durable search manifests/events."""
+    lifecycle: dict[tuple[str, str], dict[str, str]] = {}
+    manifest_paths: set[Path] = set()
+    for root in roots:
+        if root.is_dir():
+            manifest_paths.update(root.glob("**/SEARCH-*/manifest.json"))
+            manifest_paths.update(root.glob("SEARCH-*/manifest.json"))
+    for manifest_path in sorted(manifest_paths):
+        manifest = _load_json(manifest_path)
+        if manifest.get("mode") != "follow-up":
+            continue
+        search_id = str(manifest.get("search_id", ""))
+        loaded = load_search(manifest_path.parent.parent, search_id)
+        completed = (
+            loaded["events"][-1]
+            if loaded["status"] == "completed"
+            else None
+        )
+        dispositions = {
+            str(item.get("target_id", "")): item
+            for item in (completed or {}).get("follow_up_dispositions", [])
+        }
+        for target in manifest.get("targets", []):
+            target_id = str(target.get("hip", ""))
+            disposition = dispositions.get(target_id, {})
+            if disposition:
+                state = str(disposition.get("state", "deferred"))
+            elif completed is not None:
+                state = (
+                    "completed"
+                    if bool(target.get("follow_up_observation_fulfilled"))
+                    else "deferred"
+                )
+            else:
+                state = "scheduled"
+            for evidence in target.get("prior_search_provenance", []):
+                ledger_path = str(evidence.get("ledger_path", "")).strip()
+                follow_up_id = str(evidence.get("follow_up_id", "")).strip()
+                if not ledger_path or not follow_up_id:
+                    continue
+                lifecycle[(str(Path(ledger_path).resolve()), follow_up_id)] = {
+                    "state": state,
+                    "search_id": search_id,
+                    "reason": str(disposition.get("reason", "")),
+                }
+    return lifecycle
+
+
+def _evaluate_follow_up_dispositions(
+    *,
+    manifest: Mapping[str, Any],
+    result: ProductionScanResult,
+) -> list[dict[str, Any]]:
+    if manifest.get("mode") != "follow-up":
+        return []
+    target_ids = [str(target.get("hip", "")) for target in manifest.get("targets", [])]
+    resolver = TargetAliasResolver.build(target_ids)
+    current_entries: dict[str, list[Mapping[str, Any]]] = {
+        target_id: [] for target_id in target_ids
+    }
+    for path in result.run_dir.glob("*_follow_ups.json"):
+        ledger = _load_json(path)
+        for entry in ledger.get("entries", []):
+            if not isinstance(entry, Mapping):
+                continue
+            target_id = resolver.resolve(str(entry.get("target_name", "")))
+            if target_id is not None:
+                current_entries[target_id].append(entry)
+
+    dispositions: list[dict[str, Any]] = []
+    for target in manifest.get("targets", []):
+        target_id = str(target.get("hip", ""))
+        action = str(target.get("recommended_next_action", "")).lower()
+        entries = current_entries.get(target_id, [])
+        fulfilled = False
+        reason = "new evidence did not explicitly satisfy the scheduled action"
+        if "recover drift-rate evidence" in action:
+            fulfilled = any(
+                bool(entry.get("drift_evidence_available")) for entry in entries
+            )
+            reason = (
+                "new run contains explicit drift-rate evidence"
+                if fulfilled
+                else "new run did not produce explicit drift-rate evidence"
+            )
+        elif "cross-target rfi" in action:
+            fulfilled = any(
+                bool(entry.get("cross_target_rfi_resolution_complete"))
+                for entry in entries
+            )
+            reason = (
+                "new run explicitly completed cross-target RFI resolution"
+                if fulfilled
+                else "cross-target RFI resolution was not explicitly completed"
+            )
+        elif "later epoch" in action or "on/off cadence" in action:
+            fulfilled = any(
+                bool(entry.get("later_epoch_cadence_completed"))
+                or bool(entry.get("follow_up_observation_fulfilled"))
+                for entry in entries
+            )
+            reason = (
+                "new run explicitly completed a later-epoch cadence"
+                if fulfilled
+                else "no explicit later-epoch cadence evidence was produced"
+            )
+        dispositions.append(
+            {
+                "target_id": target_id,
+                "state": "completed" if fulfilled else "deferred",
+                "fulfilled": fulfilled,
+                "reason": reason,
+                "consumed_follow_up_ids": sorted(
+                    {
+                        str(item.get("follow_up_id", ""))
+                        for item in target.get("prior_search_provenance", [])
+                        if item.get("follow_up_id")
+                    }
+                ),
+            }
+        )
+    return dispositions
+
+
+def _canonical_target_id(value: str, known_target_ids: Iterable[str]) -> str | None:
+    """Resolve a raw observation/target name back to a real target_id.
+
+    Matches against the caller's own known target-ID set (the manifest's
+    selected targets, or the queue's real target_id column) instead of a
+    HIP-only pattern, so any real target-naming scheme (HIP, GJ, TIC, LHS,
+    ...) resolves correctly -- a live discovery expansion surfaced 44 real
+    TIC-named (TESS) queue rows that a HIP-only pattern silently could never
+    match, durably failing run_search at the history-append stage after real
+    acquisition/processing had already succeeded. Longest IDs are checked
+    first and matches are anchored so a short ID cannot spuriously match
+    inside a longer one (e.g. "HIP1" inside "HIP12345").
+    """
+    return TargetAliasResolver.build(known_target_ids).resolve(value)
 
 
 def _target_has_local_dat(out_dir: Path, target_id: str) -> bool:

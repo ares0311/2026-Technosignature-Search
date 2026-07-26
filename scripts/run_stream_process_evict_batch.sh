@@ -181,10 +181,23 @@ _on_interrupt() {
 trap _on_interrupt INT TERM
 trap 'release_processing_slot; rm -f "${TARGET_ROWS_FILE}"' EXIT
 "${VENV_PYTHON}" -c '
-import json
 import sys
+from pathlib import Path
 
-manifest = json.loads(open(sys.argv[1], encoding="utf-8").read())
+sys.path.insert(0, "'"${REPO_ROOT}"'/src")
+from techno_search.hunter_search import SearchLifecycleError, validate_search_manifest_path
+
+try:
+    loaded = validate_search_manifest_path(Path(sys.argv[1]))
+except SearchLifecycleError as exc:
+    print(
+        f"[ERROR] {exc}. Real acquisition must originate from a frozen "
+        "Create-New-Search selection. Run Create-New-Search --targets N --mode new "
+        "(or --mode follow-up), then Run-New-Search --approve-acquisition.",
+        file=sys.stderr,
+    )
+    sys.exit(2)
+manifest = loaded["manifest"]
 limit = int(sys.argv[2])
 rows = manifest.get("targets", [])
 if limit > 0:

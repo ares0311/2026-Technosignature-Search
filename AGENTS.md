@@ -777,18 +777,24 @@ same standard as `target_priority_score`/`target_selection_score` in
 The 2026-07-19 selection-key gap is closed: new-target selection uses the
 config-driven `target_selection_score`, including production-scan history,
 while follow-up mode ranks durable follow-up evidence separately. The current
-public-archive namespace contains 12,086 labels; as of version 1.2.56, 7,191
+public-archive namespace contains 12,086 labels; as of version 1.2.58, 7,191
 identities are resolved (6,007 via real SIMBAD lookup, 1,184 via existing
-queue alias) and 4,825 have viable, preflighted acquisition products
+queue alias) and 4,840 have viable, preflighted acquisition products
 (`raw_download_approval_required` in `data_selection/target_priority_queue.csv`),
 up from the original 358 (a real 10-target batch has since been genuinely
-acquired and moved to `already_acquired_local_cache`, not lost). The
-remaining 4,894 archive labels have no resolved
-identity (no SIMBAD match, no queue alias) and 95 resolved-stellar candidates
-are non-HIP-named (GJ/HD/BD-designated), out of scope for the current
-HIP-keyed discovery tooling. Treat both as explicit, real science-coverage
-limitations; never fabricate coordinates or eligibility for the unresolved
-labels merely to reach a larger viable-target count.
+acquired and moved to `already_acquired_local_cache`, not lost; a real live
+adaptive-discovery-expansion round, `hunter_adaptive_expansion_batch1`, then
+added 15 more real TESS TIC-named candidates -- see the 2026-07-25 HUNTER
+PROD CLOSURE LOOP entry below). The remaining 4,894 archive labels have no
+resolved identity (no SIMBAD match, no queue alias); this is an explicit,
+real science-coverage limitation, never closed by fabricating coordinates or
+eligibility. Target-name matching (search-history novelty scoring, follow-up
+ledger resolution, run-completion history append) is no longer HIP-only: it
+resolves against each caller's real known target-ID set, so GJ/HD/BD/TIC and
+any other real BL archive naming scheme works the same as HIP. 95
+resolved-stellar candidates remain non-HIP-numbered and are not yet in the
+HPRC-keyed discovery-tooling's live-URL-search sweep, a narrower and now
+accurate scope limitation than the old blanket "HIP-keyed" framing.
 
 ### Required CLI (operational contract)
 
@@ -1238,7 +1244,7 @@ any `bash scripts/run_pipeline*.sh` call, full test-suite runs, and any `python`
 invocation expected to run longer than ~30 seconds.
 
 ```bash
-caffeinate -i bash scripts/download_bl_extended_corpus.sh
+caffeinate -i bash scripts/download_bl_extended_corpus.sh --calibration-corpus
 caffeinate -i bash scripts/run_pipeline_on_bl_data.sh
 caffeinate -i .venv/bin/python scripts/run_parallel_validation.py
 ```

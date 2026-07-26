@@ -58,6 +58,21 @@ def test_extended_corpus_downloader_has_non_networked_inspection_mode() -> None:
     assert "Dry run complete; no network download attempted" in script
 
 
+def test_extended_corpus_downloader_demotes_direct_raw_acquisition(tmp_path: Path) -> None:
+    result = subprocess.run(
+        ["bash", str(SCRIPT_PATH), "--manifest", str(tmp_path / "missing.json")],
+        check=False,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "TECHNO_EXTENDED_CORPUS_PYTHON": sys.executable},
+    )
+
+    assert result.returncode == 2
+    assert "not a Hunter production entry point" in result.stderr
+    assert "Run-New-Search --approve-acquisition" in result.stderr
+    assert "--calibration-corpus" in result.stderr
+
+
 def test_extended_corpus_downloader_has_discovery_only_availability_mode() -> None:
     script = _script_text()
 
@@ -93,7 +108,7 @@ def test_extended_corpus_downloader_keeps_legacy_targets_as_fallback_only() -> N
     script = _script_text()
 
     assert "Falling back to legacy 5-target list" in script
-    assert "Production runs should use the stratified manifest" in script
+    assert "Hunter production runs use Create-New-Search/Run-New-Search" in script
 
 
 def test_extended_corpus_downloader_preserves_scientific_guardrails() -> None:
@@ -109,6 +124,8 @@ def test_extended_corpus_downloader_enforces_data_storage_policy() -> None:
 
     assert "ACQUISITION_ROLE=\"live_search_bootstrap_cache\"" in script
     assert "ACQUISITION_MODE=\"targeted_batch_pull\"" in script
+    assert "ACQUISITION_ROLE=\"calibration_generalisation_cache\"" in script
+    assert "ACQUISITION_MODE=\"targeted_calibration_batch_pull\"" in script
     assert "RAW_RETENTION_POLICY=\"public_raw_archive_cache_not_pinned\"" in script
     assert "TECHNO_EXTENDED_CORPUS_FREE_SPACE_RESERVE_GB" in script
     assert "ensure_projected_free_space" in script
@@ -505,6 +522,7 @@ printf 'downloaded %s\n' "${url}" > "${out_path}"
             str(SCRIPT_PATH),
             "--manifest",
             str(manifest),
+            "--calibration-corpus",
         ],
         check=True,
         env=env,
@@ -607,6 +625,7 @@ exit 46
             str(SCRIPT_PATH),
             "--manifest",
             str(manifest),
+            "--calibration-corpus",
         ],
         check=False,
         env=env,

@@ -21,6 +21,7 @@ htmlcov/
 # Use data/* (not data/) so that specific file exceptions below can work.
 data/*
 data_cache/
+tmp/
 tmp_training/
 tmp_features/
 data/raw/

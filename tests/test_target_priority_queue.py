@@ -178,7 +178,7 @@ def test_write_target_priority_queue_summary_counts_statuses(tmp_path: Path) -> 
 
     assert output_path.exists()
     assert b"\r\n" not in output_path.read_bytes()
-    assert result["schema_version"] == "target_priority_queue_v3"
+    assert result["schema_version"] == "target_priority_queue_v4"
     assert result["target_count"] == 3
     assert result["by_status"] == {
         "already_acquired_local_cache": 1,
@@ -289,6 +289,102 @@ def test_build_target_priority_queue_uses_selection_score_as_real_rank_key(
     )
     assert rows_by_id["HIP2"]["prior_review_adjustment"] == "-0.12"
     assert rows_by_id["HIP2"]["priority_config_version"] == "background_priority_v0"
+
+
+def test_build_target_priority_queue_applies_prior_review_adjustment_to_non_hip_target(
+    tmp_path: Path,
+) -> None:
+    """A HIP-only alias pattern silently never applies the novelty adjustment
+    to a real non-HIP-named seed row (e.g. GJ99427, or a live-discovered
+    TIC-named TESS row -- 44 already exist in the real production queue),
+    even when real scan history clearly shows it was already reviewed.
+    """
+    seed_path = tmp_path / "seed.csv"
+    status_path = tmp_path / "status.json"
+    history_path = tmp_path / "scan_history.ndjson"
+    _write_seed_csv(seed_path)
+    _write_status_json(status_path)
+    history_path.write_text(
+        "".join(
+            json.dumps(
+                {
+                    "schema_version": "prod_scan_history_v1",
+                    "target_stem": f"observation_{index}_GJ99427_0001",
+                }
+            )
+            + "\n"
+            for index in range(3)
+        ),
+        encoding="utf-8",
+    )
+
+    rows = build_target_priority_queue(
+        seed_csv_path=seed_path,
+        data_status_path=status_path,
+        scan_history_path=history_path,
+    )
+    rows_by_id = {row["target_id"]: row for row in rows}
+
+    assert float(rows_by_id["GJ99427"]["prior_review_adjustment"]) < 0.0
+
+
+def test_build_target_priority_queue_folds_in_cross_project_history(
+    tmp_path: Path,
+) -> None:
+    """A real, operator-copied sibling-Hunter search-history export (e.g. from
+    2026 Exoplanet Research) must give a matched target the same novelty
+    adjustment as one this project already scanned, plus a visible
+    cross_project_prior_search audit column -- closing the HUNTER PROD
+    DIRECTIVE's cross-project-knowledge audit requirement.
+    """
+    seed_path = tmp_path / "seed.csv"
+    status_path = tmp_path / "status.json"
+    cross_project_path = tmp_path / "exo_hunter_history.json"
+    _write_seed_csv(seed_path)
+    _write_status_json(status_path)
+    cross_project_path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "sources": [
+                        {
+                            "search_id": "historical-discovery-run-001",
+                            "started_at": "2026-06-28T09:00:00Z",
+                            "completed_at": "2026-06-28T09:10:00Z",
+                            "searched_by": "EXO-Hunter",
+                            "source_project": "2026 Exoplanet Research",
+                            "source_path": "logs/discovery_run_001.json",
+                            "source_sha256": "0" * 64,
+                            "provenance_uri": (
+                                "local-artifact:logs/discovery_run_001.json"
+                            ),
+                        "entries": [
+                            {
+                                "target_id": "HIP71681",
+                                "canonical_id": "HIP 71681",
+                                "status": "no_signal",
+                                "searched_at": "2026-06-28T09:05:36Z",
+                            }
+                        ],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    rows = build_target_priority_queue(
+        seed_csv_path=seed_path,
+        data_status_path=status_path,
+        cross_project_history_paths=(cross_project_path,),
+    )
+    rows_by_id = {row["target_id"]: row for row in rows}
+
+    assert float(rows_by_id["HIP71681"]["prior_review_adjustment"]) < 0.0
+    assert rows_by_id["HIP71681"]["cross_project_prior_search"] == (
+        "2026 Exoplanet Research:no_signal"
+    )
+    assert rows_by_id["HIP2"]["cross_project_prior_search"] == ""
 
 
 def test_build_target_priority_queue_fails_loudly_on_invalid_scan_history(
@@ -804,6 +900,58 @@ def test_build_target_priority_queue_promotes_sized_urls_to_download_approval(
     assert hip2["local_coverage_status"] == "not_searched_size_preflight_ok"
     assert hip2["source_hdf5_url"].endswith("HIP2.h5")
     assert "explicit operator approval" in hip2["notes"]
+
+
+def test_failed_size_preflight_is_refresh_required_not_expandable(
+    tmp_path: Path,
+) -> None:
+    seed_path = tmp_path / "seed.csv"
+    status_path = tmp_path / "status.json"
+    preflight_path = tmp_path / "size_preflight_report.json"
+    _write_seed_csv(seed_path)
+    status_path.write_text(
+        json.dumps(
+            {
+                "runs": {
+                    "download_bl_extended_corpus_discovery": {
+                        "available_targets": [
+                            {
+                                "target": "HIP2",
+                                "url": "https://example.test/stale.h5",
+                            }
+                        ]
+                    }
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    preflight_path.write_text(
+        json.dumps(
+            {
+                "targets": [
+                    {
+                        "target_id": "HIP2",
+                        "url": "https://example.test/stale.h5",
+                        "ok": False,
+                        "error": "HTTP Error 404: Not Found",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    rows = build_target_priority_queue(
+        seed_csv_path=seed_path,
+        data_status_path=status_path,
+        size_preflight_report_path=preflight_path,
+    )
+    hip2 = {row["target_id"]: row for row in rows}["HIP2"]
+
+    assert hip2["status"] == "metadata_refresh_required"
+    assert "refresh_required:HTTP Error 404" in hip2["data_products_available"]
+    assert hip2["source_hdf5_url"] == ""
 
 
 def test_build_target_priority_queue_merges_multiple_size_preflight_reports(

@@ -56,6 +56,7 @@ from techno_search.curated_dataset_intake import curated_dataset_intake_summary
 from techno_search.feature_importance import feature_importance_summary
 from techno_search.feature_normalization import feature_normalization_summary
 from techno_search.follow_up_request import follow_up_request_summary
+from techno_search.hunter_cross_project_history import CROSS_PROJECT_ROOT_NAMES
 from techno_search.injection_recovery import false_negative_summary, injection_recovery_summary
 from techno_search.live_data import (
     CatalogCache,
@@ -93,6 +94,7 @@ from techno_search.signal_registry import (
     signal_registry_track_summary,
 )
 from techno_search.target_priority_queue import (
+    default_target_priority_queue_inputs,
     target_priority_queue_summary,
     write_target_priority_manifest,
     write_target_priority_queue,
@@ -2259,33 +2261,15 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         # raw_download_approval_required targets from a freshly rebuilt
         # queue). A caller who wants only the auto-globbed set can still get
         # it by passing no --extra-*-path flags at all.
-        batch_manifest_dir = Path("data_selection/batch_manifests")
-        extra_size_preflight_report_paths = sorted(
-            {
-                *(
-                    path
-                    for path in batch_manifest_dir.glob("*_size_preflight_report.json")
-                    if path != args.size_preflight_report_path
-                ),
-                *(args.extra_size_preflight_report_path or []),
-            }
-        )
-        extra_discovery_result_paths = sorted(
-            {
-                *batch_manifest_dir.glob("*_discovery_result.json"),
-                *(args.extra_discovery_result_path or []),
-            }
-        )
-        seed_dir = Path("data")
-        extra_seed_csv_paths = sorted(
-            {
-                *(
-                    path
-                    for path in seed_dir.glob("*_resolved_stellar_seed_targets.csv")
-                    if path != args.seed_csv_path
-                ),
-                *(args.extra_seed_csv_path or []),
-            }
+        default_inputs = default_target_priority_queue_inputs(
+            seed_csv_path=args.seed_csv_path,
+            size_preflight_report_path=args.size_preflight_report_path,
+            extra_size_preflight_report_paths=args.extra_size_preflight_report_path
+            or (),
+            extra_discovery_result_paths=args.extra_discovery_result_path or (),
+            extra_seed_csv_paths=args.extra_seed_csv_path or (),
+            cross_project_history_paths=args.cross_project_history_path or (),
+            cross_project_siblings=args.cross_project_sibling or (),
         )
         print(
             json.dumps(
@@ -2294,10 +2278,17 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
                     seed_csv_path=args.seed_csv_path,
                     data_status_path=args.data_status_path,
                     size_preflight_report_path=args.size_preflight_report_path,
-                    extra_size_preflight_report_paths=extra_size_preflight_report_paths,
-                    extra_discovery_result_paths=extra_discovery_result_paths,
-                    extra_seed_csv_paths=extra_seed_csv_paths,
+                    extra_size_preflight_report_paths=default_inputs[
+                        "extra_size_preflight_report_paths"
+                    ],
+                    extra_discovery_result_paths=default_inputs[
+                        "extra_discovery_result_paths"
+                    ],
+                    extra_seed_csv_paths=default_inputs["extra_seed_csv_paths"],
                     scan_history_path=args.scan_history_path,
+                    cross_project_history_paths=default_inputs[
+                        "cross_project_history_paths"
+                    ],
                 ),
                 indent=2,
                 sort_keys=True,
@@ -2356,6 +2347,27 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         )
         print(json.dumps(result, indent=2, sort_keys=True), file=out)
         return 0 if result["ok"] else 1
+
+    if args.command == "export-cross-project-history":
+        from techno_search.hunter_cross_project_history import (
+            write_cross_project_history_export,
+        )
+        from techno_search.target_priority_queue import read_target_priority_queue
+
+        known_target_ids = {
+            row["target_id"] for row in read_target_priority_queue(args.queue_path)
+        }
+        try:
+            result = write_cross_project_history_export(
+                args.output_path,
+                scan_history_path=args.scan_history_path,
+                known_target_ids=known_target_ids,
+            )
+        except ValueError as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 1
+        print(json.dumps(result, indent=2, sort_keys=True), file=out)
+        return 0
 
     if args.command == "background-ledger-summary":
         print(
@@ -6206,6 +6218,34 @@ def _build_parser() -> argparse.ArgumentParser:
         default=Path("data_selection/target_priority_queue.csv"),
         help="Output target-priority queue CSV path.",
     )
+    build_target_queue_parser.add_argument(
+        "--cross-project-history-path",
+        type=Path,
+        action="append",
+        default=None,
+        help=(
+            "Real, operator-copied sibling-Hunter hunter_prior_search_history_v1 "
+            "export (see docs/HUNTER_CROSS_PROJECT_INTERFACE.md); repeat for "
+            "multiple sibling repos. A matched target gets the same novelty "
+            "adjustment as one this project already scanned, plus a "
+            "cross_project_prior_search audit column. When omitted, defaults to "
+            "every data_selection/cross_project_imports/*.json file already "
+            "committed."
+        ),
+    )
+    build_target_queue_parser.add_argument(
+        "--cross-project-sibling",
+        action="append",
+        default=None,
+        choices=sorted(CROSS_PROJECT_ROOT_NAMES),
+        help=(
+            "Read a sibling Hunter repo's real, live hunter_prior_search_history_v1 "
+            "export directly by symbolic project name (no operator file copy "
+            "needed) when that sibling repo is checked out as a sibling "
+            "directory. Repeat for multiple siblings; silently skipped if that "
+            "sibling has no export yet."
+        ),
+    )
     target_queue_summary_parser = subparsers.add_parser(
         "target-priority-queue-summary",
         help="Summarize the acquisition-level target-priority queue.",
@@ -6296,6 +6336,35 @@ def _build_parser() -> argparse.ArgumentParser:
             "conservative default, not a verified archive-published limit). "
             "Default 1 (sequential, unchanged prior behavior); a real 4,478-"
             "target run found this matters at scale."
+        ),
+    )
+    export_cross_project_history_parser = subparsers.add_parser(
+        "export-cross-project-history",
+        help=(
+            "Export Techno-Hunter's own portable search-history manifest for "
+            "an operator to copy into a sibling Hunter repo (see "
+            "docs/HUNTER_CROSS_PROJECT_INTERFACE.md)."
+        ),
+    )
+    export_cross_project_history_parser.add_argument(
+        "--scan-history-path",
+        type=Path,
+        default=Path("results/scan_history.ndjson"),
+        help="Real production-scan history (prod_scan_history_v1 ndjson) to export from.",
+    )
+    export_cross_project_history_parser.add_argument(
+        "--queue-path",
+        type=Path,
+        default=Path("data_selection/target_priority_queue.csv"),
+        help="Target-priority queue CSV; supplies the known real target-ID set.",
+    )
+    export_cross_project_history_parser.add_argument(
+        "--output-path",
+        type=Path,
+        default=Path("data_selection/hunter_prior_search_history_v1.json"),
+        help=(
+            "Output path -- matches 2026 Exoplanet Research's own publish path "
+            "exactly so an operator copy needs no renaming."
         ),
     )
     background_ledger_parser = subparsers.add_parser(

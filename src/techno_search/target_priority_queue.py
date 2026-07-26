@@ -5,12 +5,11 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
-import re
 import ssl
 import urllib.error
 import urllib.request
 from collections import Counter
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -25,10 +24,9 @@ from techno_search.background_search import (
     target_selection_score,
 )
 from techno_search.schemas import Track
+from techno_search.target_alias import known_target_alias_pattern
 
-_HIP_ALIAS_PATTERN = re.compile(r"(?i)hip(\d+)")
-
-TARGET_PRIORITY_QUEUE_SCHEMA_VERSION = "target_priority_queue_v3"
+TARGET_PRIORITY_QUEUE_SCHEMA_VERSION = "target_priority_queue_v4"
 TARGET_PRIORITY_QUEUE_DISCLAIMER = (
     "Target priority queues are metadata-first scheduling aids for local search "
     "planning. They are not detections, discovery claims, expert review, external "
@@ -74,6 +72,7 @@ TARGET_PRIORITY_QUEUE_FIELDS = [
     "local_coverage_status",
     "background_target_priority_score",
     "source_hdf5_url",
+    "cross_project_prior_search",
 ]
 
 
@@ -82,6 +81,7 @@ class _CoverageState:
     reused_or_downloaded_targets: frozenset[str]
     discovered_hdf5_urls: dict[str, str]
     size_preflight_targets: dict[str, dict[str, Any]]
+    refresh_required_targets: dict[str, str]
     skipped_targets: dict[str, str]
 
 
@@ -241,6 +241,7 @@ def _load_coverage_state(
             if target and target not in discovered_hdf5_urls:
                 skipped[target] = reason
     size_preflight_targets: dict[str, dict[str, Any]] = {}
+    refresh_required_targets: dict[str, str] = {}
     for report_path in dict.fromkeys(size_preflight_report_paths):
         if report_path is None or not report_path.exists():
             continue
@@ -252,10 +253,18 @@ def _load_coverage_state(
             url = str(item.get("url", "")).strip()
             if target and url and item.get("ok") is True:
                 size_preflight_targets[target] = item
+            elif target:
+                refresh_required_targets[target] = (
+                    str(item.get("error", "")).strip()
+                    or "size_preflight_failed"
+                )
+    for target in size_preflight_targets:
+        refresh_required_targets.pop(target, None)
     return _CoverageState(
         reused_or_downloaded_targets=frozenset(reused | downloaded),
         discovered_hdf5_urls=discovered_hdf5_urls,
         size_preflight_targets=size_preflight_targets,
+        refresh_required_targets=refresh_required_targets,
         skipped_targets=skipped,
     )
 
@@ -362,6 +371,21 @@ def _classification_for_aliases(
             2.75,
             str(preflight.get("url", "")).strip(),
         )
+    refresh_required_aliases = sorted(
+        alias for alias in aliases if alias in coverage.refresh_required_targets
+    )
+    if refresh_required_aliases:
+        reason = coverage.refresh_required_targets[refresh_required_aliases[0]]
+        return (
+            f"refresh_required:{reason}",
+            "",
+            "new_parameter_space",
+            "metadata_refresh_required",
+            "not_searched_refresh_required",
+            2.5,
+            2.0,
+            "",
+        )
     discovered_aliases = sorted(
         alias for alias in aliases if alias in coverage.discovered_hdf5_urls
     )
@@ -403,7 +427,9 @@ def _classification_for_aliases(
     )
 
 
-def _load_prior_review_counts(scan_history_path: Path) -> Counter[str]:
+def _load_prior_review_counts(
+    scan_history_path: Path, known_target_ids: Iterable[str]
+) -> Counter[str]:
     """Count real prior production-scan reviews per target alias.
 
     ``results/scan_history.ndjson`` is this project's real target search
@@ -417,6 +443,12 @@ def _load_prior_review_counts(scan_history_path: Path) -> Counter[str]:
     ``max_prior_review_penalty`` config (`background_search.py`), not a new
     ad hoc constant.
 
+    ``known_target_ids`` (the real target_id values from the seed rows being
+    queued) resolves any real target-naming scheme, not just HIP -- a live
+    discovery expansion surfaced 44 real TIC-named (TESS) queue rows a
+    HIP-only pattern could never recognize, silently denying them this
+    novelty adjustment forever.
+
     Returns an empty ``Counter`` (every target treated as never-reviewed) if
     the history file does not exist yet -- a fresh checkout with no scan
     history is a real "nothing reviewed yet" state, not a failure.
@@ -424,6 +456,9 @@ def _load_prior_review_counts(scan_history_path: Path) -> Counter[str]:
 
     counts: Counter[str] = Counter()
     if not scan_history_path.exists():
+        return counts
+    pattern = known_target_alias_pattern(known_target_ids)
+    if pattern is None:
         return counts
     with scan_history_path.open(encoding="utf-8") as handle:
         for line_number, line in enumerate(handle, start=1):
@@ -447,8 +482,8 @@ def _load_prior_review_counts(scan_history_path: Path) -> Counter[str]:
                     f"Invalid scan-history record at {scan_history_path}:{line_number}: "
                     "target_stem is required"
                 )
-            for match in _HIP_ALIAS_PATTERN.finditer(target_stem):
-                counts[f"HIP{match.group(1)}"] += 1
+            for match in pattern.finditer(target_stem):
+                counts[match.group(1)] += 1
     return counts
 
 
@@ -458,11 +493,25 @@ def _prior_review_count_for_aliases(
     return max((prior_review_counts.get(alias, 0) for alias in aliases), default=0)
 
 
+def _cross_project_summary_for_aliases(
+    aliases: frozenset[str], evidence_by_alias: Mapping[str, list[dict[str, Any]]]
+) -> str:
+    """Compact, deduplicated summary of real cross-project prior searches for a row."""
+    seen: list[str] = []
+    for alias in sorted(aliases):
+        for item in evidence_by_alias.get(alias, []):
+            text = f"{item['source_project']}:{item['status']}"
+            if text not in seen:
+                seen.append(text)
+    return "; ".join(seen)
+
+
 def _queue_row(
     row: dict[str, str],
     coverage: _CoverageState,
     prior_review_counts: Counter[str] | None = None,
     priority_config: BackgroundPriorityConfig | None = None,
+    cross_project_evidence_by_alias: Mapping[str, list[dict[str, Any]]] | None = None,
 ) -> dict[str, str]:
     target_id = _target_id_from_row(row)
     aliases = _aliases_for_row(row)
@@ -551,6 +600,11 @@ def _queue_row(
             "Previous BL extended-corpus discovery did not find an HDF5 URL; retry "
             "metadata discovery before any raw acquisition."
         )
+    elif status == "metadata_refresh_required":
+        notes = (
+            "A discovered archive URL failed current validation; refresh product "
+            "metadata before it can participate in production selection."
+        )
     elif status == "size_preflight_required":
         notes = (
             "Current BL HDF5 URL discovered. Run size/checksum/storage preflight "
@@ -603,6 +657,9 @@ def _queue_row(
             target_priority_score(background_target, config=active_priority_config)
         ),
         "source_hdf5_url": source_hdf5_url,
+        "cross_project_prior_search": _cross_project_summary_for_aliases(
+            aliases, cross_project_evidence_by_alias or {}
+        ),
     }
 
 
@@ -617,8 +674,17 @@ def build_target_priority_queue(
     extra_discovery_result_paths: Sequence[Path] = (),
     extra_seed_csv_paths: Sequence[Path] = (),
     scan_history_path: Path = Path("results/scan_history.ndjson"),
+    cross_project_history_paths: Sequence[Path] = (),
 ) -> list[dict[str, str]]:
     """Build sorted target-priority rows from committed metadata and status.
+
+    ``cross_project_history_paths`` are real, operator-copied sibling-Hunter
+    ``hunter_prior_search_history_v1`` exports (see
+    ``hunter_cross_project_history.py``) -- a target another real Astrometrics
+    Hunter project already searched gets the same novelty adjustment as one
+    this project already scanned itself, plus a human-readable
+    ``cross_project_prior_search`` audit column. Absent by default: a fresh
+    checkout with no copied-in sibling export scores exactly as before.
 
     Every committed size-preflight report is a separate acquisition batch
     (e.g. ``local_coverage_top25_size_preflight_report.json``,
@@ -653,13 +719,44 @@ def build_target_priority_queue(
         ),
         discovery_result_paths=extra_discovery_result_paths,
     )
-    prior_review_counts = _load_prior_review_counts(scan_history_path)
-    priority_config = load_background_priority_config()
-    queue_rows = [
-        _queue_row(row, coverage, prior_review_counts, priority_config)
+    seed_rows = [
+        row
         for seed_path in (seed_csv_path, *extra_seed_csv_paths)
         for row in _load_seed_targets(seed_path)
         if _target_id_from_row(row)
+    ]
+    # The real known target_id set (not a HIP-only pattern) resolves any real
+    # target-naming scheme when matching scan history below -- see
+    # _load_prior_review_counts.
+    known_target_ids = {_target_id_from_row(row) for row in seed_rows}
+    prior_review_counts = _load_prior_review_counts(scan_history_path, known_target_ids)
+    cross_project_evidence_by_alias: dict[str, list[dict[str, Any]]] = {}
+    for history_path in cross_project_history_paths:
+        # Imported lazily: hunter_cross_project_history imports from this
+        # module (target_alias is the shared piece), so a top-level import
+        # here would be circular.
+        from techno_search.hunter_cross_project_history import (
+            cross_project_alias_counts,
+            load_cross_project_history_export,
+        )
+        from techno_search.hunter_cross_project_history import (
+            cross_project_evidence_by_alias as _evidence_by_alias,
+        )
+
+        payload = load_cross_project_history_export(history_path)
+        prior_review_counts += cross_project_alias_counts(payload)
+        for alias, evidence in _evidence_by_alias(payload).items():
+            cross_project_evidence_by_alias.setdefault(alias, []).extend(evidence)
+    priority_config = load_background_priority_config()
+    queue_rows = [
+        _queue_row(
+            row,
+            coverage,
+            prior_review_counts,
+            priority_config,
+            cross_project_evidence_by_alias,
+        )
+        for row in seed_rows
     ]
     rows_by_target: dict[str, dict[str, str]] = {}
     for queue_row in queue_rows:
@@ -692,6 +789,7 @@ def write_target_priority_queue(
     extra_discovery_result_paths: Sequence[Path] = (),
     extra_seed_csv_paths: Sequence[Path] = (),
     scan_history_path: Path = Path("results/scan_history.ndjson"),
+    cross_project_history_paths: Sequence[Path] = (),
 ) -> dict[str, Any]:
     """Write a target-priority queue CSV and return a compact summary."""
 
@@ -703,6 +801,7 @@ def write_target_priority_queue(
         extra_discovery_result_paths=extra_discovery_result_paths,
         extra_seed_csv_paths=extra_seed_csv_paths,
         scan_history_path=scan_history_path,
+        cross_project_history_paths=cross_project_history_paths,
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", newline="", encoding="utf-8") as handle:
@@ -714,6 +813,76 @@ def write_target_priority_queue(
         writer.writeheader()
         writer.writerows(rows)
     return target_priority_queue_summary(output_path)
+
+
+def default_target_priority_queue_inputs(
+    *,
+    seed_csv_path: Path = Path("data/bl_hprc_full_seed_targets.csv"),
+    size_preflight_report_path: Path = Path(
+        "data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json"
+    ),
+    extra_size_preflight_report_paths: Sequence[Path] = (),
+    extra_discovery_result_paths: Sequence[Path] = (),
+    extra_seed_csv_paths: Sequence[Path] = (),
+    cross_project_history_paths: Sequence[Path] = (),
+    cross_project_siblings: Sequence[str] = (),
+) -> dict[str, Any]:
+    """Resolve the canonical additive evidence set for a queue rebuild."""
+    batch_manifest_dir = Path("data_selection/batch_manifests")
+    adaptive_discovery_dir = Path("results/adaptive_discovery")
+    seed_dir = Path("data")
+    cross_project_import_dir = Path("data_selection/cross_project_imports")
+
+    from techno_search.hunter_cross_project_history import (
+        sibling_history_export_path,
+    )
+
+    sibling_paths = (
+        sibling_history_export_path(project) for project in cross_project_siblings
+    )
+    return {
+        "seed_csv_path": seed_csv_path,
+        "size_preflight_report_path": size_preflight_report_path,
+        "extra_size_preflight_report_paths": sorted(
+            {
+                *(
+                    path
+                    for path in batch_manifest_dir.glob(
+                        "*_size_preflight_report.json"
+                    )
+                    if path != size_preflight_report_path
+                ),
+                *adaptive_discovery_dir.glob(
+                    "**/*_size_preflight_report.json"
+                ),
+                *extra_size_preflight_report_paths,
+            }
+        ),
+        "extra_discovery_result_paths": sorted(
+            {
+                *batch_manifest_dir.glob("*_discovery_result.json"),
+                *adaptive_discovery_dir.glob("**/*_discovery_result.json"),
+                *extra_discovery_result_paths,
+            }
+        ),
+        "extra_seed_csv_paths": sorted(
+            {
+                *(
+                    path
+                    for path in seed_dir.glob("*_resolved_stellar_seed_targets.csv")
+                    if path != seed_csv_path
+                ),
+                *extra_seed_csv_paths,
+            }
+        ),
+        "cross_project_history_paths": sorted(
+            {
+                *cross_project_import_dir.glob("*.json"),
+                *cross_project_history_paths,
+                *(path for path in sibling_paths if path.is_file()),
+            }
+        ),
+    }
 
 
 def read_target_priority_queue(path: Path) -> list[dict[str, str]]:
@@ -789,6 +958,11 @@ def build_target_priority_manifest(
                 "name": row["target_id"],
                 "ra_deg": float(row["ra_deg"]) if row["ra_deg"] else None,
                 "dec_deg": float(row["dec_deg"]) if row["dec_deg"] else None,
+                "galactic_latitude_deg": (
+                    float(row["galactic_latitude_deg"])
+                    if row["galactic_latitude_deg"]
+                    else None
+                ),
                 "search_category": row["search_category"],
                 "queue_status": row["status"],
                 "local_coverage_status": row["local_coverage_status"],

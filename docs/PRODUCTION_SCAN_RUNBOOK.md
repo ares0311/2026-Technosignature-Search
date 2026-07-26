@@ -21,6 +21,156 @@ Step 3 for that plan and its explicit distinction from this rule.
 
 ---
 
+## Hunter PROD Remediation Plan — 2026-07-25
+
+**Status:** Implementation complete; exact-commit validation and CI pending.
+Do not call Hunter PROD until the canonical validator and PR checks pass on the
+committed release.
+
+**Current phase advanced:** Phase 1/5 integrated Hunter lifecycle and
+`SYSTEMATIC_SEARCH_PLAN.md` Step 3a detection-optimized target selection. This
+plan closes workflow-integrity gaps in the existing scientific path; it does
+not create labels, alter learned-model promotion, claim a detection, authorize
+external submission, or authorize a large raw download.
+
+### Root causes and remediation loop
+
+1. **Canonical adaptive discovery**
+   - Root cause: `Create-New-Search` ranks only the current queue and reports a
+     manual discovery/preflight command when the queue is short; the prior
+     "adaptive" acceptance manually ran disconnected tools.
+   - Remediation: make the installed new-search command own a bounded,
+     metadata-first discover -> validate -> identity/history resolve -> rank ->
+     sufficiency -> expand loop. Reuse existing discovery, HEAD-only size
+     preflight, queue construction, provenance, rate-limit, and 100GB policies
+     rather than duplicating them. Preserve deterministic ordering and
+     checkpoint every completed expansion round.
+   - Acceptance: a test candidate ranked outside the initial pool enters the
+     final top-N after automatic expansion; a weak-quality pool still returns
+     best-available N; fewer than N is allowed only after the configured
+     reasonably accessible universe is exhausted or no valid expansion
+     headroom remains.
+
+2. **Durable-search acquisition authentication**
+   - Root cause: the stream runner treats a copied Hunter schema string as
+     proof that a manifest came from `Create-New-Search`, while the direct
+     downloader remains a raw-acquisition bypass.
+   - Remediation: validate the immutable manifest against its sibling
+     `events.ndjson` creation record and SHA-256, require the canonical
+     `results/searches/SEARCH-*/manifest.json` topology and artifact contract,
+     and make every raw acquisition route require that validation. Metadata-only
+     discovery remains separately callable; raw download mode does not.
+   - Acceptance: a hand-built manifest with a copied schema is rejected; a
+     modified durable manifest is rejected; a genuine created search is
+     accepted; direct raw-download invocation without a durable search fails
+     non-zero.
+
+3. **Cross-project history validity**
+   - Root cause: every imported sibling entry, including `failed` and
+     incomplete/no-data attempts, currently reduces novelty; timestamps,
+     freshness, source checksums, and validity are not enforced.
+   - Remediation: admit only statuses that constitute applicable completed
+     prior-search evidence, classify each source/entry as `valid`,
+     `stale-but-usable`, `refresh-required`, `invalid`, or `unknown`, require
+     timestamps and provenance fields, verify source hashes where the export
+     contract permits, and fail closed on refresh-required/invalid inputs.
+   - Acceptance: failed attempts never change ranking; stale-but-usable
+     evidence remains visible and auditable; malformed, unknown, invalid, or
+     refresh-required inputs cannot drive selection.
+
+4. **Follow-up lifecycle fulfillment**
+   - Root cause: follow-up execution is currently evidence reanalysis with
+     `follow_up_observation_fulfilled` hard-coded false, yet completion appends
+     another recommendation without a durable open/scheduled/completed/deferred
+     disposition or consuming-search relationship.
+   - Remediation: preserve reanalysis as a distinct action; add deterministic
+     lifecycle state derived from existing ledgers and search events; schedule
+     selected open follow-ups to the consuming search; complete only when the
+     acquired evidence satisfies the recorded observation requirement; defer
+     explicitly when it cannot be fulfilled. Do not imply a new observation
+     from archive reuse.
+   - Acceptance: selecting a follow-up makes it `scheduled`; a failed/resumed
+     run preserves the same consuming search; reanalysis leaves it open or
+     deferred; qualifying later-epoch evidence closes it exactly once and
+     removes it from future open selection.
+
+5. **Scalable identity resolution**
+   - Root cause: every follow-up entry sorts all queue target IDs and compiles
+     one regex per ID, producing superlinear production latency.
+   - Remediation: build one deterministic alias/index structure per queue or
+     manifest, reuse it for every lookup, preserve boundary-safe longest-match
+     semantics, and expose unresolved/ambiguous identities without guessing.
+   - Acceptance: correctness remains pinned for HIP/GJ/HD/BD/TIC names,
+     ambiguity fails closed, and the real 6,879-target/retained-ledger registry
+     completes within a bounded regression budget.
+
+6. **Truthful release state**
+   - Root cause: v1.2.60 completion claims and control-plane additions were
+     written before the product contract was satisfied, and the work was never
+     committed or verified as an exact release.
+   - Remediation: remove unsupported PROD/shadow-closure/adaptive-acceptance
+     claims; do not restore or expand MCP/Claude control-plane scaffolding when
+     the product CLI already supplies the required read-only bridge; keep
+     README, readiness, systematic plan, runbook, and version files consistent.
+   - Acceptance: `git add --dry-run .` is artifact-safe; focused business
+     validations and `caffeinate -i .venv/bin/python
+     scripts/run_parallel_validation.py` pass on a clean commit; CI passes; the
+     PR records objective, decisions, evidence, limitations, and exact next
+     work; the merge is synced back to `main`.
+
+### Execution rule
+
+Execute the list above in highest-business-impact order. After each change,
+rerun the smallest real or realistic acceptance that can falsify it, then
+re-map the canonical path before continuing. A green unit suite is necessary
+but cannot substitute for the new-target, follow-up, provenance, bypass, and
+restart/resume business validations above. Stop only for an explicit
+large-download approval, destructive action, credential failure, protected
+external action, or a scientifically irreducible evidence gap.
+
+### Remediation execution evidence
+
+Current working-tree evidence, to be superseded by the exact commit/CI record:
+
+- **Adaptive selection:** installed `Create-New-Search` automatically examined
+  four initially unresolved TIC candidates, discovered four current archive
+  URLs, HEAD-preflighted them, and selected the best constrained two in
+  `SEARCH-20260726T005918Z-1FC2C8E1`. The round manifest, result, preflight,
+  queue, and SHA-256 values are embedded in the immutable search manifest.
+  A separate durable request, `SEARCH-20260726T011008Z-61459FCA`, explored the
+  complete constrained BD universe, found zero valid products, returned zero
+  of one without an arbitrary threshold failure, and completed durably with
+  `no_valid_targets: true`. A stale discovered URL that returned HTTP 404 is
+  now `metadata_refresh_required`, not endlessly retried or silently accepted.
+- **Weak quality:** adversarial tests use scores `0.01` and `0.001`; both are
+  returned for N=2 and reported as relative, uncalibrated ranking quality.
+- **Acquisition authority:** the stream runner accepts only canonical
+  `SEARCH-*/manifest.json` plus its matching creation event/hash. Both a
+  target-priority manifest and a schema-spoofed Hunter JSON are rejected.
+  The direct downloader exits non-zero for raw mode unless explicitly marked
+  `--calibration-corpus`; that mode is not a Hunter production path.
+- **History validity:** the current real EXO sibling export loads in 0.10
+  seconds with seven verified sources and 608 entries. Exactly 202 completed,
+  hash-valid entries can affect ranking; 406 failed/no-data attempts are
+  classified invalid and excluded. Hash mismatch is refresh-required and
+  fails closed.
+- **Follow-up lifecycle:** `SEARCH-20260726T010212Z-69817987` executed exact
+  retained HIP99427 evidence with zero raw downloads as
+  `RUN-2026-07-26_010219Z-RBTD-hunter-search`. Its source follow-up became
+  scheduled, then deferred exactly once because no explicit later-epoch
+  cadence evidence existed; the completion event preserves the consumed
+  follow-up ID and reason. The live 6,879-target/3,833-entry registry now
+  resolves in 1.3 seconds instead of exceeding 90 seconds.
+- **Validation:** 111 focused Hunter/queue/downloader/docs tests pass; Ruff
+  and mypy pass for every changed Hunter module. The full repo-native
+  six-shard validator also passed on the working tree (1,677 tests passed,
+  seven skipped; Ruff, mypy, app-version gate, and `validate-all` passed).
+  `git add --dry-run .` listed only intended code, docs, tests, queue, and
+  compact evidence manifests. Clean-commit validation marker, CI, and merge
+  remain the final release steps.
+
+---
+
 ## The Five Rules of Correct Production Scan Orchestration
 
 These rules were derived from operational failures observed when running `run_production_scan.sh`.
@@ -271,7 +421,7 @@ Each line in `results/scan_history.ndjson` is one JSON object:
 | Directory | Contents | Source |
 |---|---|---|
 | `data/bl_hits/` | Voyager 1 GBT `.dat` hit table (pipeline calibration) | `scripts/download_bl_hits.sh` |
-| `data/extended_corpus/<TARGET>/` | GBT L-band HDF5 files from the stratified HPRC manifest | `scripts/download_bl_extended_corpus.sh --manifest data/target_sample_manifest.json` |
+| `data/extended_corpus/<TARGET>/` | GBT HDF5/DAT cache selected by a durable Hunter search; separate calibration corpora are explicitly marked | `Create-New-Search` then `Run-New-Search --approve-acquisition`; `download_bl_extended_corpus.sh --calibration-corpus` is non-production only |
 | `data_cache/raw/<SOURCE>/` | Ignored Track A source cache from `docs/technosignature_datasets_agent_brief.md` | Future Track A acquisition CLI |
 | `tmp_training/`, `tmp_features/` | Ignored temporary Track A training/feature workspaces | Future Track A acquisition/training CLI |
 
@@ -387,16 +537,18 @@ The first local-coverage top-25 run verified 15/15 URL headers with content
 lengths, estimated 3.803966 GB total, found no checksum headers, and wrote
 `data_selection/batch_manifests/local_coverage_top25_size_preflight_report.json`.
 
-For a bounded download, the target limit applies to new URL-available downloads,
-not raw manifest position and not already-downloaded HDF5 evidence. This
-prevents resumed runs from stopping on unavailable manifest entries or evidence
-that is already present locally. Only run this after explicit operator approval
-of the bounded raw acquisition:
+For a bounded production download, first create and review the exact immutable
+Hunter search. The standalone downloader is metadata-only or explicitly
+non-production calibration; it is not a production acquisition path. Only run
+the exact search after explicit operator approval of its projected acquisition:
 
 ```bash
 git pull origin main
-TECHNO_EXTENDED_CORPUS_MAX_TARGETS=5 caffeinate -i bash scripts/download_bl_extended_corpus.sh \
-  --manifest data_selection/batch_manifests/local_coverage_top25_raw_download_approval_manifest.json
+SEARCH_ID=$(.venv/bin/Create-New-Search --targets 5 --mode new --json | jq -r '.search_id')
+jq '{search_id, selection, targets}' "results/searches/${SEARCH_ID}/manifest.json"
+caffeinate -i .venv/bin/Run-New-Search \
+  --search-id "$SEARCH_ID" \
+  --approve-acquisition
 ```
 
 ---
