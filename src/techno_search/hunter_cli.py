@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 from collections.abc import Sequence
 from io import StringIO
@@ -121,6 +122,7 @@ def run_new_search(argv: Sequence[str] | None = None) -> int:
             history_path=args.history_file,
             stdout=StringIO() if args.json else sys.stdout,
             use_rich=not args.no_rich and not args.json,
+            command_runner=_quiet_command_runner if args.json else None,
         )
     except SearchApprovalRequired as exc:
         print(f"APPROVAL REQUIRED: {exc}", file=sys.stderr)
@@ -243,3 +245,14 @@ def _print_follow_ups(registry: dict[str, Any], out: TextIO) -> None:
             ),
             file=out,
         )
+
+
+def _quiet_command_runner(command: Sequence[str]) -> int:
+    """Keep a machine-readable run clean; the batch runner writes its own log."""
+    completed = subprocess.run(
+        list(command),
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return completed.returncode

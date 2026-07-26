@@ -29564,6 +29564,61 @@
         }
       ],
       "total": 1
+    },
+    {
+      "acquisition_mode": "metadata_only_discovery",
+      "acquisition_role": "live_search_bootstrap_cache",
+      "attempt_id": "download_bl_extended_corpus_discovery__2026-07-26T01:13:41.986525+00:00",
+      "available": 0,
+      "available_targets": [],
+      "checked": 1,
+      "downloaded": 0,
+      "mode": "discover_only",
+      "ok": true,
+      "raw_retention_policy": "public_raw_archive_cache_not_pinned",
+      "recorded_at_utc": "2026-07-26T01:13:41.986525+00:00",
+      "reused": 0,
+      "script": "download_bl_extended_corpus_discovery",
+      "skipped": 1,
+      "skipped_targets": [
+        {
+          "reason": "no_hdf5_url_discovered",
+          "target": "LHS288_R"
+        }
+      ],
+      "total": 1
+    },
+    {
+      "acquisition_mode": "stream_process_evict",
+      "already_processed_count": 0,
+      "already_processed_targets": [],
+      "app_version": "1.2.61",
+      "attempt_id": "hunter_search__SEARCH-20260726T011409Z-39A09771__2026-07-26T01:14:23.171167+00:00",
+      "candidate_report_manifests_total": 1,
+      "completed_count": 1,
+      "dat_files_total": 817,
+      "downloaded_count": 0,
+      "downloaded_gb": 0.0,
+      "downloaded_targets": [],
+      "evicted_count": 0,
+      "evicted_targets": [],
+      "failed_count": 0,
+      "failed_targets": [],
+      "local_dat_reuse_count": 1,
+      "local_dat_reuse_targets": [
+        "HIP99427"
+      ],
+      "manifest": "results/searches/SEARCH-20260726T011409Z-39A09771/manifest.json",
+      "newly_processed_count": 1,
+      "newly_processed_targets": [
+        "HIP99427"
+      ],
+      "ok": true,
+      "raw_retention_policy": "evicted_after_candidate_report_generation",
+      "recorded_at_utc": "2026-07-26T01:14:23.171167+00:00",
+      "script": "hunter_search__SEARCH-20260726T011409Z-39A09771",
+      "targets_attempted": 1,
+      "total_targets_in_manifest": 1
     }
   ],
   "disclaimer": "This manifest records real local data-collection run outcomes (counts of items found/downloaded/skipped/failed) for compact progress review. It is not a detection, discovery, external validation, or external-submission claim.",
@@ -29734,7 +29789,7 @@
       "available_targets": [],
       "checked": 1,
       "downloaded": 0,
-      "last_run_utc": "2026-07-26T01:10:13.551700+00:00",
+      "last_run_utc": "2026-07-26T01:13:41.986525+00:00",
       "mode": "discover_only",
       "ok": true,
       "raw_retention_policy": "public_raw_archive_cache_not_pinned",
@@ -29743,7 +29798,7 @@
       "skipped_targets": [
         {
           "reason": "no_hdf5_url_discovered",
-          "target": "BD+18_487"
+          "target": "LHS288_R"
         }
       ],
       "total": 1
@@ -30178,6 +30233,36 @@
         "HIP99427"
       ],
       "manifest": "results/searches/SEARCH-20260726T010212Z-69817987/manifest.json",
+      "newly_processed_count": 1,
+      "newly_processed_targets": [
+        "HIP99427"
+      ],
+      "ok": true,
+      "raw_retention_policy": "evicted_after_candidate_report_generation",
+      "targets_attempted": 1,
+      "total_targets_in_manifest": 1
+    },
+    "hunter_search__SEARCH-20260726T011409Z-39A09771": {
+      "acquisition_mode": "stream_process_evict",
+      "already_processed_count": 0,
+      "already_processed_targets": [],
+      "app_version": "1.2.61",
+      "candidate_report_manifests_total": 1,
+      "completed_count": 1,
+      "dat_files_total": 817,
+      "downloaded_count": 0,
+      "downloaded_gb": 0.0,
+      "downloaded_targets": [],
+      "evicted_count": 0,
+      "evicted_targets": [],
+      "failed_count": 0,
+      "failed_targets": [],
+      "last_run_utc": "2026-07-26T01:14:23.171167+00:00",
+      "local_dat_reuse_count": 1,
+      "local_dat_reuse_targets": [
+        "HIP99427"
+      ],
+      "manifest": "results/searches/SEARCH-20260726T011409Z-39A09771/manifest.json",
       "newly_processed_count": 1,
       "newly_processed_targets": [
         "HIP99427"

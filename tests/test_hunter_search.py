@@ -1025,6 +1025,7 @@ def test_run_new_search_json_output_is_not_polluted_by_pipeline_progress(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     def fake_run_search(**kwargs: Any) -> dict[str, Any]:
+        assert kwargs["command_runner"] is not None
         kwargs["stdout"].write("pipeline progress that must stay out of JSON\n")
         return {
             "event": "run_completed",

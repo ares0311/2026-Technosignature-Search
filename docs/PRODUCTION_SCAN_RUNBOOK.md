@@ -137,9 +137,10 @@ Current working-tree evidence, to be superseded by the exact commit/CI record:
   URLs, HEAD-preflighted them, and selected the best constrained two in
   `SEARCH-20260726T005918Z-1FC2C8E1`. The round manifest, result, preflight,
   queue, and SHA-256 values are embedded in the immutable search manifest.
-  A separate durable request, `SEARCH-20260726T011008Z-61459FCA`, explored the
-  complete constrained BD universe, found zero valid products, returned zero
-  of one without an arbitrary threshold failure, and completed durably with
+  On committed code `08bcb39`, durable request
+  `SEARCH-20260726T011336Z-CCA7E409` explored the complete constrained LHS
+  universe, found zero valid products, returned zero of one without an
+  arbitrary threshold failure, and completed durably with
   `no_valid_targets: true`. A stale discovered URL that returned HTTP 404 is
   now `metadata_refresh_required`, not endlessly retried or silently accepted.
 - **Weak quality:** adversarial tests use scores `0.01` and `0.001`; both are
@@ -154,9 +155,10 @@ Current working-tree evidence, to be superseded by the exact commit/CI record:
   hash-valid entries can affect ranking; 406 failed/no-data attempts are
   classified invalid and excluded. Hash mismatch is refresh-required and
   fails closed.
-- **Follow-up lifecycle:** `SEARCH-20260726T010212Z-69817987` executed exact
+- **Follow-up lifecycle:** on committed code `08bcb39`,
+  `SEARCH-20260726T011409Z-39A09771` executed exact
   retained HIP99427 evidence with zero raw downloads as
-  `RUN-2026-07-26_010219Z-RBTD-hunter-search`. Its source follow-up became
+  `RUN-2026-07-26_011410Z-P54N-hunter-search`. Its source follow-up became
   scheduled, then deferred exactly once because no explicit later-epoch
   cadence evidence existed; the completion event preserves the consumed
   follow-up ID and reason. The live 6,879-target/3,833-entry registry now
