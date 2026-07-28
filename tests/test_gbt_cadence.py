@@ -19,7 +19,10 @@ from techno_search.gbt_cadence import (
     verify_archive_file,
     write_hit_provenance,
 )
-from techno_search.observation_artifact import assess_observation_artifact
+from techno_search.observation_artifact import (
+    assess_observation_artifact,
+    provenance_path_for,
+)
 from techno_search.radio.hit_table_reader import hit_table_to_radio_hit_dicts
 
 MANIFEST = Path("configs/gbt_hip99427_cadence_v1.json")
@@ -272,6 +275,26 @@ def test_provenance_approves_derived_real_hit_table(tmp_path: Path) -> None:
     provenance = json.loads(assessment.provenance_path.read_text(encoding="utf-8"))
     assert provenance["scan_role"] == "on"
     assert provenance["external_submission_authorized"] is False
+
+
+def test_provenance_accepts_archive_discovered_cadence_without_legacy_summary_url(
+    tmp_path: Path,
+) -> None:
+    manifest = load_cadence_manifest(MANIFEST)
+    manifest.pop("observation_summary_url")
+    scan = manifest["scans"][0]
+    hdf5 = tmp_path / scan["filename"]
+    hdf5.write_bytes(b"real archive-discovered observation fixture")
+    dat = _write_dat(tmp_path / "HIP99427.dat", "HIP99427")
+
+    write_hit_provenance(dat, hdf5, manifest, scan, turbo_seti_version="2.3.2")
+    provenance = json.loads(
+        provenance_path_for(dat).read_text(encoding="utf-8")
+    )
+
+    assert provenance["archive_search_url"] == manifest["archive_search_url"]
+    assert "observation_summary_url" not in provenance
+    assert assess_observation_artifact(dat).approved_for_pipeline is True
 
 
 def test_cadence_csv_preserves_on_off_roles(tmp_path: Path) -> None:
