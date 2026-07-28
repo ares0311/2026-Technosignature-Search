@@ -264,3 +264,24 @@ sum. The regenerated queue has 805 already-acquired targets and 358 remaining
 `raw_download_approval_required` targets; the consolidated approval manifest is
 89.274678 GB. This is corrected inventory state, not authorization to download
 the remaining queue and not a candidate claim.
+
+**Hunter adaptive non-HIP expansion preserved — 2026-07-28:** seven real
+metadata-only adaptive-discovery rounds checked 54 additional resolved stellar
+targets. The committed `hunter_adaptive_2026*` discovery results preserve 26
+current HDF5 URLs and 28 explicit no-current-HDF5 outcomes. Five corresponding
+HEAD-only preflight reports contain 27 attempts (one target was retried), with
+25 successful size measurements totaling 233.719328 GB, one target requiring a
+metadata refresh, and no raw payload download. Of the 25 successfully sized
+targets, KIC8462852 was already searched; the other 24 expand the reproducible
+new-target pool. These files were promoted from ignored per-search runtime
+artifacts because queue reconstruction intentionally consumes every committed
+`*_discovery_result.json` and `*_size_preflight_report.json`; leaving the only
+copy under `results/adaptive_discovery/` would make a fresh checkout silently
+lose the expansion evidence. The latest constrained manifest selected 39
+currently viable non-HIP targets and reported the remaining 30-target shortfall
+explicitly. Its projected 335.583840 GB is planning evidence only and does not
+authorize raw acquisition; the pending search has not been executed.
+The consolidated
+`local_coverage_raw_download_approval_manifest.json` was regenerated from the
+same queue with 4,862 eligible rows totaling 2378.690755 GB; it is inventory,
+not approval or a feasible single download batch.
