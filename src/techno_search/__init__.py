@@ -1,6 +1,6 @@
 """Technosignature-interest candidate search tools."""
 
-__version__ = "1.2.64"
+__version__ = "1.2.65"
 
 from techno_search.ai_hardening_gate import (
     AI_HARDENING_GATE_DISCLAIMER,
@@ -235,7 +235,7 @@ from techno_search.plotting import (
     PLOT_ARTIFACT_DISCLAIMER,
     PlotArtifact,
     plot_artifact_summary,
-    write_synthetic_plot_artifacts,
+    write_evidence_plot_artifacts,
 )
 from techno_search.radio_corpus_cleanup import (
     RADIO_CORPUS_CLEANUP_DISCLAIMER,

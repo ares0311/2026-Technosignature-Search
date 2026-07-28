@@ -137,7 +137,7 @@ def test_write_candidate_reports_uses_safe_filenames(tmp_path) -> None:
     assert paths.json_path == tmp_path / "radio-report-with-spaces.json"
     assert paths.manifest_path == tmp_path / "radio-report-with-spaces.manifest.json"
     assert paths.plot_artifact_paths == (
-        tmp_path / "radio-report-with-spaces-radio-waterfall.svg",
+        tmp_path / "radio-report-with-spaces-radio-feature-summary.svg",
     )
     assert paths.markdown_path.exists()
     assert paths.json_path.exists()
@@ -145,9 +145,9 @@ def test_write_candidate_reports_uses_safe_filenames(tmp_path) -> None:
     assert paths.plot_artifact_paths[0].exists()
     markdown = paths.markdown_path.read_text(encoding="utf-8")
     assert REQUIRED_DISCLAIMER in markdown
-    assert "[Synthetic radio waterfall-style diagnostic placeholder.]" in markdown
-    assert "radio-report-with-spaces-radio-waterfall.svg" in markdown
-    assert "Synthetic illustrative diagnostic for review context only" in markdown
+    assert "[Persisted radio candidate feature summary.]" in markdown
+    assert "radio-report-with-spaces-radio-feature-summary.svg" in markdown
+    assert "Deterministic rendering of persisted candidate feature values" in markdown
     assert json.loads(paths.json_path.read_text(encoding="utf-8"))["candidate_id"] == (
         "../radio report/with spaces"
     )
@@ -163,19 +163,18 @@ def test_write_candidate_reports_uses_safe_filenames(tmp_path) -> None:
     ]
     assert manifest["markdown_path"].endswith("radio-report-with-spaces.md")
     assert manifest["json_path"].endswith("radio-report-with-spaces.json")
-    assert manifest["plot_artifacts"][0]["kind"] == "synthetic_radio_waterfall"
-    assert manifest["plot_artifacts"][0]["synthetic"] is True
+    assert manifest["plot_artifacts"][0]["kind"] == "radio_scored_feature_summary"
+    assert manifest["plot_artifacts"][0]["synthetic"] is False
     assert manifest["plot_artifacts"][0]["disclaimer"] == PLOT_ARTIFACT_DISCLAIMER
     assert manifest["generated_at_utc"]
 
 
-def test_candidate_markdown_report_includes_diagnostic_paths() -> None:
+def test_candidate_markdown_report_includes_real_diagnostic_paths() -> None:
     candidate = Candidate(
         candidate_id="diagnostic-report",
         track=Track.RADIO,
         features={
             "waterfall_plot_path": "reports/diagnostic-waterfall.png",
-            "diagnostic_placeholder": "waterfall_not_generated_v0",
         },
     )
     scored = score_candidate(candidate)
@@ -183,7 +182,6 @@ def test_candidate_markdown_report_includes_diagnostic_paths() -> None:
     report = candidate_markdown_report(scored)
 
     assert "`waterfall_plot_path`: reports/diagnostic-waterfall.png" in report
-    assert "`diagnostic_placeholder`: waterfall_not_generated_v0" in report
     assert PLOT_ARTIFACT_DISCLAIMER in report
 
 

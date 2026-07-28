@@ -13,7 +13,7 @@ from techno_search.constants import DEFAULT_SCHEMA_VERSION, DEFAULT_SCORING_CONF
 from techno_search.plotting import (
     PLOT_ARTIFACT_DISCLAIMER,
     PlotArtifact,
-    write_synthetic_plot_artifacts,
+    write_evidence_plot_artifacts,
 )
 from techno_search.provenance import candidate_provenance_record, git_commit
 from techno_search.schemas import Pathway, ScoredCandidate
@@ -117,7 +117,7 @@ def write_candidate_reports(
         destination / f"{stem}.adversarial.json" if adversarial_review is not None else None
     )
     plot_artifacts = (
-        write_synthetic_plot_artifacts(scored, destination, filename_prefix=stem)
+        write_evidence_plot_artifacts(scored, destination, filename_prefix=stem)
         if include_plot_artifacts
         else ()
     )

@@ -1,4 +1,4 @@
-"""Dependency-free synthetic diagnostic plot artifact helpers."""
+"""Dependency-free candidate evidence visualization helpers."""
 
 from __future__ import annotations
 
@@ -13,9 +13,59 @@ from typing import Any
 from techno_search.schemas import ScoredCandidate, Track
 
 PLOT_ARTIFACT_DISCLAIMER = (
-    "Synthetic illustrative diagnostic for review context only; not evidence of a "
-    "confirmed technosignature."
+    "Deterministic rendering of persisted candidate feature values for review context "
+    "only; not evidence of a confirmed technosignature."
 )
+
+_FEATURE_KEYS_BY_TRACK = {
+    Track.RADIO: (
+        "snr",
+        "drift_rate_hz_per_sec",
+        "normalized_drift_hz_s_per_ghz",
+        "abacab_cadence_score",
+        "on_off_consistency_score",
+        "rfi_band_overlap_score",
+        "instrumental_artifact_score",
+        "frequency_persistence_score",
+        "semisupervised_anomaly_score",
+    ),
+    Track.INFRARED: (
+        "ir_excess_significance",
+        "source_confusion_score",
+        "agn_color_score",
+        "data_quality_score",
+        "metadata_completeness_score",
+        "provenance_completeness_score",
+    ),
+    Track.ANOMALY: (
+        "crossmatch_confidence",
+        "artifact_score",
+        "data_quality_score",
+        "metadata_completeness_score",
+        "provenance_completeness_score",
+    ),
+}
+
+_ARTIFACT_CONFIG_BY_TRACK = {
+    Track.RADIO: (
+        "radio-feature-summary",
+        "radio_scored_feature_summary",
+        "Radio Scored Feature Summary",
+        "Persisted radio candidate feature summary.",
+    ),
+    Track.INFRARED: (
+        "infrared-feature-summary",
+        "infrared_scored_feature_summary",
+        "Infrared Scored Feature Summary",
+        "Persisted infrared candidate feature summary.",
+    ),
+    Track.ANOMALY: (
+        "anomaly-feature-summary",
+        "anomaly_scored_feature_summary",
+        "Anomaly Scored Feature Summary",
+        "Persisted anomaly candidate feature summary.",
+    ),
+}
 
 
 @dataclass(frozen=True)
@@ -27,7 +77,7 @@ class PlotArtifact:
     track: str
     media_type: str
     description: str
-    synthetic: bool = True
+    synthetic: bool = False
 
     def as_manifest_entry(self) -> dict[str, object]:
         """Return a JSON-serializable manifest entry."""
@@ -43,55 +93,34 @@ class PlotArtifact:
         }
 
 
-def write_synthetic_plot_artifacts(
+def write_evidence_plot_artifacts(
     scored: ScoredCandidate,
     output_dir: Path | str,
     *,
     filename_prefix: str,
 ) -> tuple[PlotArtifact, ...]:
-    """Write lightweight SVG diagnostics for the candidate track."""
+    """Write an SVG summary using only persisted numeric candidate features."""
 
     destination = Path(output_dir)
     destination.mkdir(parents=True, exist_ok=True)
 
     track = scored.candidate.track
-    if track == Track.RADIO:
-        path = destination / f"{filename_prefix}-radio-waterfall.svg"
-        path.write_text(_radio_waterfall_svg(scored), encoding="utf-8")
-        return (
-            PlotArtifact(
-                path=path,
-                kind="synthetic_radio_waterfall",
-                track=track.value,
-                media_type="image/svg+xml",
-                description="Synthetic radio waterfall-style diagnostic placeholder.",
-            ),
-        )
-    if track == Track.INFRARED:
-        path = destination / f"{filename_prefix}-infrared-sed.svg"
-        path.write_text(_infrared_sed_svg(scored), encoding="utf-8")
-        return (
-            PlotArtifact(
-                path=path,
-                kind="synthetic_infrared_sed",
-                track=track.value,
-                media_type="image/svg+xml",
-                description="Synthetic infrared SED-style diagnostic placeholder.",
-            ),
-        )
-    if track == Track.ANOMALY:
-        path = destination / f"{filename_prefix}-anomaly-crossmatch.svg"
-        path.write_text(_anomaly_crossmatch_svg(scored), encoding="utf-8")
-        return (
-            PlotArtifact(
-                path=path,
-                kind="synthetic_anomaly_crossmatch",
-                track=track.value,
-                media_type="image/svg+xml",
-                description="Synthetic archival crossmatch diagnostic placeholder.",
-            ),
-        )
-    return ()
+    artifact_config = _ARTIFACT_CONFIG_BY_TRACK.get(track)
+    feature_rows = _persisted_feature_rows(scored)
+    if artifact_config is None or not feature_rows:
+        return ()
+    suffix, kind, title, description = artifact_config
+    path = destination / f"{filename_prefix}-{suffix}.svg"
+    path.write_text(_feature_summary_svg(title, feature_rows), encoding="utf-8")
+    return (
+        PlotArtifact(
+            path=path,
+            kind=kind,
+            track=track.value,
+            media_type="image/svg+xml",
+            description=description,
+        ),
+    )
 
 
 def plot_artifact_summary(report_dir: Path | str) -> dict[str, object]:
@@ -136,73 +165,37 @@ def plot_artifact_summary(report_dir: Path | str) -> dict[str, object]:
     }
 
 
-def _radio_waterfall_svg(scored: ScoredCandidate) -> str:
+def _persisted_feature_rows(scored: ScoredCandidate) -> tuple[tuple[str, float], ...]:
     features = scored.candidate.features
-    snr = _float_feature(features, "snr", 12.0)
-    drift = _float_feature(features, "drift_rate_hz_per_sec", 0.0)
-    intensity = min(max(snr / 50.0, 0.12), 1.0)
-    line_end = 260 + max(min(drift * 18.0, 80.0), -80.0)
-    return _svg(
-        title="Synthetic Radio Waterfall Diagnostic",
-        body=f"""
-  <rect x="40" y="52" width="320" height="180" fill="#101820"/>
-  {_waterfall_rows(intensity)}
-  <line x1="120" y1="210" x2="{line_end:.1f}" y2="76" stroke="#f6c85f" stroke-width="5"/>
-  <text x="48" y="258" class="small">SNR proxy: {snr:.2f}</text>
-  <text x="210" y="258" class="small">Drift proxy: {drift:.2f} Hz/s</text>
-""",
-    )
+    preferred_keys = _FEATURE_KEYS_BY_TRACK.get(scored.candidate.track, ())
+    rows: list[tuple[str, float]] = []
+    for key in preferred_keys:
+        value = features.get(key)
+        if isinstance(value, bool) or not isinstance(value, int | float):
+            continue
+        rows.append((key, float(value)))
+    return tuple(rows[:7])
 
 
-def _infrared_sed_svg(scored: ScoredCandidate) -> str:
-    features = scored.candidate.features
-    excess = _float_feature(features, "ir_excess_significance", 1.0)
-    confusion = _float_feature(features, "source_confusion_score", 0.0)
-    points = (
-        (70, 204 - min(excess * 8.0, 90.0)),
-        (130, 172 - min(excess * 5.0, 70.0)),
-        (190, 145 - min(excess * 2.0, 45.0)),
-        (250, 118 - min(excess * 4.0, 65.0)),
-        (310, 94 - min(excess * 6.0, 85.0)),
-    )
-    polyline = " ".join(f"{x:.1f},{y:.1f}" for x, y in points)
-    markers = "\n  ".join(
-        f'<circle cx="{x:.1f}" cy="{y:.1f}" r="6" fill="#3b82f6"/>' for x, y in points
-    )
-    return _svg(
-        title="Synthetic Infrared SED Diagnostic",
-        body=f"""
-  <line x1="48" y1="228" x2="352" y2="228" stroke="#334155" stroke-width="2"/>
-  <line x1="48" y1="44" x2="48" y2="228" stroke="#334155" stroke-width="2"/>
-  <polyline points="{polyline}" fill="none" stroke="#3b82f6" stroke-width="4"/>
-  {markers}
-  <text x="58" y="258" class="small">IR excess proxy: {excess:.2f}</text>
-  <text x="220" y="258" class="small">Confusion proxy: {confusion:.2f}</text>
-""",
-    )
-
-
-def _anomaly_crossmatch_svg(scored: ScoredCandidate) -> str:
-    features = scored.candidate.features
-    confidence = _float_feature(features, "crossmatch_confidence", 0.5)
-    artifact = _float_feature(features, "artifact_score", 0.2)
-    offset = max(min((1.0 - confidence) * 90.0, 90.0), 8.0)
-    modern_x = 150 + offset
-    modern_y = 132 - offset / 3
-    return _svg(
-        title="Synthetic Archival Crossmatch Diagnostic",
-        body=f"""
-  <circle cx="150" cy="132" r="42" fill="none" stroke="#64748b" stroke-width="3"/>
-  <circle cx="{modern_x:.1f}" cy="{modern_y:.1f}" r="28" fill="none"
-    stroke="#14b8a6" stroke-width="4"/>
-  <line x1="150" y1="132" x2="{modern_x:.1f}" y2="{modern_y:.1f}"
-    stroke="#f97316" stroke-dasharray="5 5" stroke-width="3"/>
-  <text x="72" y="222" class="small">Historical source</text>
-  <text x="220" y="222" class="small">Modern match</text>
-  <text x="58" y="258" class="small">Crossmatch confidence: {confidence:.2f}</text>
-  <text x="250" y="258" class="small">Artifact proxy: {artifact:.2f}</text>
-""",
-    )
+def _feature_summary_svg(title: str, rows: tuple[tuple[str, float], ...]) -> str:
+    body_rows: list[str] = []
+    for index, (key, value) in enumerate(rows):
+        y = 66 + index * 27
+        fill = "#e2e8f0" if index % 2 == 0 else "#f1f5f9"
+        body_rows.extend(
+            (
+                f'  <rect x="30" y="{y - 18}" width="340" height="25" fill="{fill}"/>',
+                (
+                    f'  <text x="42" y="{y}" class="small">'
+                    f"{html.escape(key)}</text>"
+                ),
+                (
+                    f'  <text x="350" y="{y}" text-anchor="end" class="value">'
+                    f"{html.escape(format(value, '.8g'))}</text>"
+                ),
+            )
+        )
+    return _svg(title=title, body="\n".join(body_rows))
 
 
 def _svg(*, title: str, body: str) -> str:
@@ -215,6 +208,7 @@ def _svg(*, title: str, body: str) -> str:
   <style>
     .title {{ font: 700 17px sans-serif; fill: #0f172a; }}
     .small {{ font: 12px sans-serif; fill: #334155; }}
+    .value {{ font: 600 12px monospace; fill: #0f172a; }}
     .note {{ font: 11px sans-serif; fill: #475569; }}
   </style>
   <rect x="0" y="0" width="400" height="300" fill="#f8fafc"/>
@@ -223,19 +217,6 @@ def _svg(*, title: str, body: str) -> str:
   <text x="24" y="284" class="note">{escaped_disclaimer}</text>
 </svg>
 """
-
-
-def _waterfall_rows(intensity: float) -> str:
-    rows = []
-    for index in range(9):
-        shade = int(35 + 120 * intensity + index * 4)
-        rows.append(
-            f'<rect x="48" y="{62 + index * 18}" width="304" height="10" '
-            f'fill="rgb(20,{shade},180)" opacity="0.72"/>'
-        )
-    return "\n  ".join(rows)
-
-
 def _artifact_entries(manifest: Mapping[str, Any]) -> tuple[Mapping[str, Any], ...]:
     artifacts = manifest.get("plot_artifacts", [])
     if not isinstance(artifacts, list):
@@ -245,10 +226,3 @@ def _artifact_entries(manifest: Mapping[str, Any]) -> tuple[Mapping[str, Any], .
 
 def _counter_to_dict(counter: Counter[str]) -> dict[str, int]:
     return dict(sorted(counter.items()))
-
-
-def _float_feature(features: Mapping[str, Any], key: str, default: float) -> float:
-    value = features.get(key, default)
-    if isinstance(value, int | float):
-        return float(value)
-    return default

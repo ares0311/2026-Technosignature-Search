@@ -10,7 +10,6 @@
   "features": {
     "bandwidth_hz": 1.5,
     "data_quality_score": 0.92,
-    "diagnostic_placeholder": "waterfall_not_generated_v0",
     "drift_rate_hz_per_sec": 2.0,
     "frequency_persistence_score": 0.05,
     "injection_recovery_score": 0.85,

@@ -1,7 +1,7 @@
 # Techno-Hunter
 
 ![Status](https://img.shields.io/badge/Hunter%20workflow-NOT%20PROD-red)
-![Version](https://img.shields.io/badge/version-1.2.64-blue)
+![Version](https://img.shields.io/badge/version-1.2.65-blue)
 ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 ![Focus](https://img.shields.io/badge/focus-multimodal%20technosignature%20search-purple)
 
@@ -21,12 +21,15 @@ installed `Create-New-Search`/`Run-New-Search` entry points -- a real 6-scan
 HIP99427 cadence reached `unknown` there too, with its adversarial dossier
 correctly still withholding expert-review eligibility on an open Earth-drift
 blocking issue. Hunter remains NOT PROD while 4,894 archive labels still lack
-resolvable identity/evidence and exact v1.2.64 acceptance execution remains
-open. The approved v1.2.63 new-target run completed, while the approved
-follow-up run failed loudly after its first scan exposed a provenance-schema
-defect. Version 1.2.64 fixes that defect; the failed run remains durable and
-resumable, but a new immutable current-release search and exact acquisition
-approval are required before live execution continues. The product returns
+resolvable identity/evidence and exact v1.2.65 acceptance execution remains
+open. The approved v1.2.64 HIP60759 new-target run and six-scan HIP99427
+follow-up both completed, with the follow-up resolving `known` from its failed
+ON/OFF cadence check. That live run also exposed a candidate-report defect:
+production packets still emitted synthetic placeholder illustrations. Version
+1.2.65 replaces them with deterministic summaries of persisted numeric
+features and omits the artifact when supporting values are absent. A fresh
+immutable current-release acceptance run and exact acquisition approval are
+required before live execution continues. The product returns
 best-available N independently of absolute score; it does not use the older
 10,000-target aspiration as a quality veto. Outputs are local triage evidence
 and documented null results—not detections, discoveries, expert review,

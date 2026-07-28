@@ -1,29 +1,29 @@
 {
   "adversarial_review_path": null,
   "candidate_id": "example-infrared-clean",
-  "code_commit": "275d9ac",
+  "code_commit": "4e9b68d",
   "config_version": "scoring_v0",
-  "generated_at_utc": "2026-07-22T02:03:13.497897+00:00",
+  "generated_at_utc": "2026-07-28T04:23:23.505119+00:00",
   "json_path": "examples/batch_reports/example-infrared-clean.json",
   "known_explanation_path": null,
   "known_explanation_state": null,
   "markdown_path": "examples/batch_reports/example-infrared-clean.md",
   "plot_artifacts": [
     {
-      "description": "Synthetic infrared SED-style diagnostic placeholder.",
-      "disclaimer": "Synthetic illustrative diagnostic for review context only; not evidence of a confirmed technosignature.",
-      "kind": "synthetic_infrared_sed",
+      "description": "Persisted infrared candidate feature summary.",
+      "disclaimer": "Deterministic rendering of persisted candidate feature values for review context only; not evidence of a confirmed technosignature.",
+      "kind": "infrared_scored_feature_summary",
       "media_type": "image/svg+xml",
-      "path": "examples/batch_reports/example-infrared-clean-infrared-sed.svg",
-      "synthetic": true,
+      "path": "examples/batch_reports/example-infrared-clean-infrared-feature-summary.svg",
+      "synthetic": false,
       "track": "infrared"
     }
   ],
   "provenance_summary": {
     "cache_key": null,
-    "code_commit": "275d9ac",
+    "code_commit": "4e9b68d",
     "config_version": "scoring_v0",
-    "generated_at_utc": "2026-07-22T02:03:13.497913+00:00",
+    "generated_at_utc": "2026-07-28T04:23:23.505140+00:00",
     "input_path": null,
     "provider_name": null,
     "query_parameters": {},

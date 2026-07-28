@@ -97,7 +97,7 @@ def test_radio_candidate_flags_earth_drift_consistent_signal() -> None:
     assert candidate.features["is_earth_drift_consistent"] is True
 
 
-def test_radio_candidate_accepts_diagnostic_placeholders() -> None:
+def test_radio_candidate_preserves_real_diagnostic_paths() -> None:
     candidate = build_radio_candidate(
         "radio-diagnostics",
         [
@@ -120,7 +120,7 @@ def test_radio_candidate_accepts_diagnostic_placeholders() -> None:
         "reports/radio-diagnostics-waterfall.png"
     )
     assert candidate.features["hit_table_path"] == "reports/radio-diagnostics-hits.json"
-    assert candidate.features["diagnostic_placeholder"] == "waterfall_not_generated_v0"
+    assert "diagnostic_placeholder" not in candidate.features
 
 
 def test_radio_candidate_uses_track_config_feature_defaults() -> None:

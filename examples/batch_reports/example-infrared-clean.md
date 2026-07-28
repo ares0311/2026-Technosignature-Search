@@ -82,9 +82,9 @@ The configured scorer is uncalibrated. Numeric class weights and derived routing
 
 ## Plot Artifact Note
 
-Synthetic illustrative diagnostic for review context only; not evidence of a confirmed technosignature.
+Deterministic rendering of persisted candidate feature values for review context only; not evidence of a confirmed technosignature.
 
-- [Synthetic infrared SED-style diagnostic placeholder.](examples/batch_reports/example-infrared-clean-infrared-sed.svg) `synthetic_infrared_sed` `image/svg+xml`
+- [Persisted infrared candidate feature summary.](examples/batch_reports/example-infrared-clean-infrared-feature-summary.svg) `infrared_scored_feature_summary` `image/svg+xml`
 
 ## Source IDs
 
