@@ -26,12 +26,29 @@ verifies the corrected implementation by reusing three retained DAT
 artifacts with zero downloads. All three targets were routed to local
 deterministic follow-up triage; no candidate promotion, detection, or
 external-submission permission was produced. The remaining Hunter acceptance
-gate is execution of the exact approval-pending current-release new and
-later-epoch searches recorded in `docs/PRODUCTION_SCAN_RUNBOOK.md`. The durable
+gate is creation, exact approval, and execution of replacement v1.2.64
+new-target and later-epoch searches recorded in
+`docs/PRODUCTION_SCAN_RUNBOOK.md`. The durable
 public-archive namespace now exceeds 10,000, and the real target priority
 queue now covers 6,879 unique target IDs (up from 1,703), of which 4,840
 currently carry real HDF5 URL/size evidence and are ranking-eligible.
-**Current app version:** 1.2.63
+**Current app version:** 1.2.64
+
+**Live acceptance exposed and fixed an archive-discovery provenance defect —
+2026-07-27:** the approved v1.2.63 new-target search
+`SEARCH-20260728T035648Z-A9FE6463` completed through the installed Hunter
+entry point and durably registered KIC8462852 as `unresolved` with a required
+cadence follow-up. The approved follow-up search
+`SEARCH-20260728T035656Z-F3762970` then failed loudly and resumably after
+processing its first GJ699 scan because the provenance writer unconditionally
+required the legacy `observation_summary_url` field even though the validated
+archive-discovery manifest schema supplies `archive_search_url` instead.
+Version 1.2.64 makes the legacy field genuinely optional, preserves the
+archive discovery URL, and adds a regression test for the exact manifest
+shape. The v1.2.63 failure remains durable and must not be relabeled complete
+or resumed with changed release logic. Hunter remains **NOT PROD** pending a
+new immutable v1.2.64 acceptance search, exact acquisition approval, execution,
+and final-release validation.
 
 **Persistent TechnoHunter shell closes the required interactive-CLI gap —
 2026-07-27:** version 1.2.63 adds the installed `TechnoHunter` terminal
@@ -45,8 +62,8 @@ Semantic color, readable command tables, and a signal-spectrum animation are
 TTY-only and disable for redirected output, no-color, reduced-motion, CI, and
 explicit automation flags. This closes an operator-surface gap without adding
 a shadow selector, runner, or persistence path. Hunter remains **NOT PROD**
-until the exact approval-pending new-target and later-epoch searches recorded
-in `docs/PRODUCTION_SCAN_RUNBOOK.md` complete and the remaining coverage
+until the replacement current-release new-target and later-epoch searches
+recorded in `docs/PRODUCTION_SCAN_RUNBOOK.md` complete and the remaining coverage
 limitations are resolved or bounded with current evidence.
 
 Live 1.2.63 preflight also exposed and closed a canonical follow-up selection

@@ -43,14 +43,14 @@ evidence open.
 
 | Required business behavior | Current evidence | State required to close |
 |---|---|---|
-| Adaptive new-target discovery finds a displacing candidate outside the initial discovery sample | **Closed for v1.2.62 metadata selection:** clean-commit installed search `SEARCH-20260726T015515Z-5C71AC51` began with KIC8462852 unresolved, ran one real archive-discovery/HEAD-preflight round, then selected it as the sole best valid KIC target | Preserve the immutable round artifacts through final validation; execute this exact new-target search after approval |
+| Adaptive new-target discovery finds a displacing candidate outside the initial discovery sample | **Live lifecycle proof on v1.2.63:** installed search `SEARCH-20260728T035648Z-A9FE6463` selected and executed KIC8462852 from real archive evidence | Repeat on the exact final release only if release-specific acceptance requires it; preserve the v1.2.63 result as immutable historical evidence |
 | Weak absolute quality still returns best-available N | Real shortfall/exhaustion runs and low-score regression coverage | Closed unless the final real runs contradict it |
-| Positive-count new-target lifecycle | Historical v1.2.55 ten-target acquisition; no positive-count v1.2.61+ run | Current-release installed create -> approved acquisition -> preprocessing -> scoring/interpretation -> durable result/history -> changed future eligibility |
-| Follow-up selection and execution | v1.2.62 clean-commit installed search `SEARCH-20260726T015438Z-1881A999` froze an exact six-scan GBT cadence 132.375912 days after the prior evidence; execution is approval-gated | Execute the frozen cadence, verify its six source checksums/derived provenance, and observe the source follow-up transition to completed exactly once |
+| Positive-count new-target lifecycle | **Closed for v1.2.63:** search `SEARCH-20260728T035648Z-A9FE6463`, run `RUN-2026-07-28_040023Z-ZKN8-hunter-search`, completed installed create -> approved acquisition -> preprocessing -> scoring/interpretation -> durable result/history -> follow-up registration | Repeat on v1.2.64 if required for exact-final-release closure; never rewrite the v1.2.63 evidence |
+| Follow-up selection and execution | **Failed loudly on v1.2.63:** search `SEARCH-20260728T035656Z-F3762970`, run `RUN-2026-07-28_040147Z-DFBQ-hunter-search`, selected GJ699 and failed after the first scan exposed an optional-provenance-field bug | Validate and merge the v1.2.64 root fix, create a new immutable current-release search, obtain exact approval, execute all six scans, and observe one completed lifecycle transition |
 | Restart/resume integrity | **Implementation proof for v1.2.62:** controlled cadence failure at exit 7 resumes the same search/run and byte-identical derived execution manifest, then completes with exactly one history/lifecycle transition | Repeat through the real bounded acquisition or leave the test-scoped limitation explicit if no safe deterministic real fault point exists |
 | Validation/provenance/identity/history | v1.2.61 manifest authentication, source hashing, validity states, alias resolver, real EXO import | Closed unless live acceptance exposes a contradiction |
 | No production bypass | Stream runner and direct downloader fail-closed tests | Re-audit every raw-acquisition command after final changes; all production commands must consume an authenticated durable search |
-| Exact release verification | v1.2.61 full validator and CI passed | Re-run on the exact final closure commit, merge through green CI, sync `main`, and pass the post-merge freshness gate |
+| Exact release verification | v1.2.63 validator passed before live execution; live execution then exposed a defect | Run the canonical validator on v1.2.64, merge through green CI, create and execute exact-release acceptance searches, then validate and sync the final closure commit |
 
 ### Execution loop
 
@@ -91,7 +91,40 @@ evidence open.
 - No labeling, external scientific contact/submission, destructive cleanup, or
   fabricated identity/evidence is authorized by this loop.
 
-### Current-release execution evidence and approval checkpoint
+### v1.2.63 live execution result and v1.2.64 approval checkpoint
+
+The operator approved exactly the two v1.2.63 searches below. That approval
+did not authorize replacement manifests or a broader acquisition:
+
+- `SEARCH-20260728T035648Z-A9FE6463` completed as
+  `RUN-2026-07-28_040023Z-ZKN8-hunter-search`. It downloaded the exact
+  242,170,450-byte KIC8462852 product, ran turboSETI 2.3.2, persisted scorer
+  and interpretation provenance, evicted the raw HDF5, appended search history
+  once, and registered a deterministic follow-up. The result is `unresolved`
+  because complete ON/OFF cadence evidence is absent; it is not a detection,
+  positive label, or external-submission authorization.
+- `SEARCH-20260728T035656Z-F3762970` started as
+  `RUN-2026-07-28_040147Z-DFBQ-hunter-search`. It selected the current
+  deterministic best follow-up, GJ699, downloaded and processed the first
+  ABACAD scan, then exited non-zero in
+  `follow_up_cadence_acquisition_preprocessing` with
+  `KeyError: 'observation_summary_url'`. The run is durably `failed` and
+  resumable; it was not marked complete and produced no follow-up completion.
+  The raw first scan remains locally available for verified reuse.
+- Root cause: archive-discovered cadence manifests validly carry
+  `archive_search_url` but not the legacy static-manifest-only
+  `observation_summary_url`; the provenance writer indexed the latter
+  unconditionally. Version 1.2.64 treats both source URLs according to the
+  validated schema and preserves whichever evidence is present.
+
+Because this fix changes release logic and the failed manifest pins v1.2.63
+and commit `15f7702`, the old failed search must not be resumed under v1.2.64.
+After v1.2.64 merges and passes canonical validation, the next action is to
+create a new immutable follow-up search (and, if exact-final-release closure
+requires it, a smallest valid new-target search), perform URL/size/storage
+preflight, and request exact approval for those replacement products.
+
+### Historical v1.2.62 pre-execution checkpoint
 
 Release 1.2.62 metadata and implementation evidence as of
 2026-07-26T01:51Z:

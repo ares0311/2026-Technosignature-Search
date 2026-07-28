@@ -231,6 +231,10 @@ def write_hit_provenance(
     turbo_seti_version: str,
 ) -> Path:
     analysis = _mapping(manifest["analysis"])
+    archive_search_url = str(manifest.get("archive_search_url", "")).strip()
+    observation_summary_url = str(
+        manifest.get("observation_summary_url", "")
+    ).strip()
     payload = {
         "schema_version": OBSERVATION_ARTIFACT_SCHEMA_VERSION,
         "artifact_filename": dat_path.name,
@@ -270,8 +274,11 @@ def write_hit_provenance(
         },
         "data_license": str(manifest["data_license"]),
         "data_use_url": str(manifest["data_use_url"]),
-        "observation_summary_url": str(manifest["observation_summary_url"]),
     }
+    if archive_search_url:
+        payload["archive_search_url"] = archive_search_url
+    if observation_summary_url:
+        payload["observation_summary_url"] = observation_summary_url
     destination = provenance_path_for(dat_path)
     destination.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return destination
