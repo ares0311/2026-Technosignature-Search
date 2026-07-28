@@ -1,7 +1,7 @@
 # Techno-Hunter
 
 ![Status](https://img.shields.io/badge/Hunter%20workflow-NOT%20PROD-red)
-![Version](https://img.shields.io/badge/version-1.2.65-blue)
+![Version](https://img.shields.io/badge/version-1.2.66-blue)
 ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 ![Focus](https://img.shields.io/badge/focus-multimodal%20technosignature%20search-purple)
 
@@ -20,16 +20,17 @@ The retained real corpus now verifies all three branches through the
 installed `Create-New-Search`/`Run-New-Search` entry points -- a real 6-scan
 HIP99427 cadence reached `unknown` there too, with its adversarial dossier
 correctly still withholding expert-review eligibility on an open Earth-drift
-blocking issue. Hunter remains NOT PROD while 4,894 archive labels still lack
-resolvable identity/evidence and exact v1.2.65 acceptance execution remains
-open. The approved v1.2.64 HIP60759 new-target run and six-scan HIP99427
-follow-up both completed, with the follow-up resolving `known` from its failed
-ON/OFF cadence check. That live run also exposed a candidate-report defect:
-production packets still emitted synthetic placeholder illustrations. Version
-1.2.65 replaces them with deterministic summaries of persisted numeric
-features and omits the artifact when supporting values are absent. A fresh
-immutable current-release acceptance run and exact acquisition approval are
-required before live execution continues. The product returns
+blocking issue. Exact v1.2.65 installed-entry-point acceptance is now
+machine-readably preserved in
+`docs/evidence/hunter_v1_2_65_acceptance.json`: the HIP61099 new-target run
+registered a required follow-up without synthetic output, and the six-scan
+GJ699 follow-up resolved `known` from cadence failure and consumed its
+originating follow-up. Version 1.2.66 now carries real source-provided object
+type, distance, spectral type, exoplanet-host state, prior SETI coverage, and
+prior-search provenance through the durable candidate queue and immutable
+search manifest. Hunter remains NOT PROD while 4,894 archive labels still
+lack resolvable identity/evidence and exact v1.2.66 acceptance remains open.
+The product returns
 best-available N independently of absolute score; it does not use the older
 10,000-target aspiration as a quality veto. Outputs are local triage evidence
 and documented null results—not detections, discoveries, expert review,
@@ -104,7 +105,7 @@ Hunter entry points.
 
 | Area | Current state |
 |---|---|
-| Hunter lifecycle | `TechnoHunter` is the persistent terminal surface over the canonical functions; the one-shot entry points remain available for automation. `Create-New-Search` owns adaptive metadata discovery and score-bound sufficiency checking before it freezes exact targets. `Run-New-Search` authenticates the canonical manifest, creation event, and SHA-256 before acquisition; a copied schema is rejected. Follow-up evidence moves through open, scheduled, completed, or deferred disposition without claiming that archive reanalysis is a new observation. Restart/resume and the real HIP99427 known/unknown/adversarial path remain covered. Hunter stays NOT PROD until the remaining unresolved archive identity/coverage limitation and current exact-release acceptance are closed. |
+| Hunter lifecycle | `TechnoHunter` is the persistent terminal surface over the canonical functions; the one-shot entry points remain available for automation. `Create-New-Search` owns adaptive metadata discovery and score-bound sufficiency checking before it freezes exact targets. Its candidate table and immutable manifest preserve real object type, distance, spectral type, exoplanet-host state, prior SETI coverage reference, and same/cross-project search provenance; missing evidence stays explicitly unknown. `Run-New-Search` authenticates the canonical manifest, creation event, and SHA-256 before acquisition; a copied schema is rejected. Follow-up evidence moves through open, scheduled, completed, or deferred disposition without claiming that archive reanalysis is a new observation. Restart/resume and the real HIP99427 known/unknown/adversarial path remain covered. Hunter stays NOT PROD until the remaining unresolved archive identity/coverage limitation and current exact-release acceptance are closed. |
 | Candidate universe | 12,086 unique Breakthrough Listen archive labels are durable. Exact evidence resolves 1,184 identities. A second, independent real-identity source (SIMBAD name resolution, documented BL cadence-suffix convention only, no guessing) resolves 6,007 more archive labels' real sky positions; real SIMBAD object-type evidence (not guessed) confirms 5,774 of those are stellar, not calibrators. Version 1.2.50 bridges the 5,458-row deduplicated stellar subset into real target selection (`data/bl_archive_resolved_stellar_seed_targets.csv`), bringing the real queue to 6,879 unique target IDs. A real metadata-only discovery + size-preflight pass then found HDF5 URLs for 4,480 of those 5,363 HIP-numbered new candidates; 4,862 are currently ranking-eligible (up from 357; 10 of the original 4,835 were really acquired and moved to `already_acquired_local_cache`, `hunter_adaptive_expansion_batch1` added 15 real TESS TIC-named candidates, and the preserved non-HIP adaptive rounds added 24 more size-verified targets while later live searches moved two targets out of eligibility), totaling approximately 2378.691 GB by preflight. Target-name matching (search-history novelty scoring, follow-up resolution, run-completion history) is no longer HIP-only -- it resolves against each caller's real known target-ID set, so GJ/HD/BD/TIC and any other real BL archive naming scheme works the same as HIP; before this fix, non-HIP targets like these TIC rows would have durably failed `Run-New-Search` after real acquisition already completed. 4,894 archive labels remain genuinely unresolved. Unresolved identities are excluded rather than guessed. |
 | Cross-project knowledge (Hunter family) | The canonical new-target path reads EXO-Hunter's sibling export when the repos are side-by-side, with the copied-file path retained as fallback. Direct sources are SHA-256 verified; copied sources are marked `stale-but-usable`; failed, cancelled, no-data, unknown, malformed, or refresh-required entries cannot change selection. The current real EXO export contains 608 entries: 202 completed decision-valid entries and 406 invalid attempts excluded from ranking. NEO-Hunter remains identity-disjoint. |
 | Radio | Real GBT/MeerKAT ingest, turboSETI preprocessing, ABACAB cadence checks, known-explanation checks, drift analysis, cross-target recurrence, and frequency-family diagnostics are implemented. |

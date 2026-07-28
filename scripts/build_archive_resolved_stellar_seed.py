@@ -7,7 +7,7 @@ queue-alias path could not resolve, and (since 1.2.49) each resolved row's
 real SIMBAD ``object_type`` classification. This script does the one thing
 that evidence enables and nothing more: filter to the subset SIMBAD itself
 classifies as a stellar object, and write it in
-``data/bl_hprc_full_seed_targets.csv``'s exact schema so
+``data/bl_hprc_full_seed_targets.csv``'s compatible schema so
 ``target_priority_queue.build_target_priority_queue()`` can rank it through
 its existing ``extra_seed_csv_paths`` merge -- no scoring logic changes, no
 new selection formula, no fabricated distance/spectral-type/exoplanet fields
@@ -56,6 +56,7 @@ SEED_FIELDS = (
     "gal_lat",
     "exoplanet",
     "bl_paper",
+    "object_type",
 )
 RESOLVED_STATUS = "resolved_via_simbad_name_lookup"
 
@@ -187,6 +188,7 @@ def build_stellar_seed_rows(catalog_rows: list[dict[str, str]]) -> list[dict[str
                 "gal_lat": "",
                 "exoplanet": "",
                 "bl_paper": "",
+                "object_type": row["object_type"],
             }
         )
     return rows

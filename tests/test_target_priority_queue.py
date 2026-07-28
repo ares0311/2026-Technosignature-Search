@@ -178,7 +178,7 @@ def test_write_target_priority_queue_summary_counts_statuses(tmp_path: Path) -> 
 
     assert output_path.exists()
     assert b"\r\n" not in output_path.read_bytes()
-    assert result["schema_version"] == "target_priority_queue_v4"
+    assert result["schema_version"] == "target_priority_queue_v5"
     assert result["target_count"] == 3
     assert result["by_status"] == {
         "already_acquired_local_cache": 1,
@@ -186,6 +186,54 @@ def test_write_target_priority_queue_summary_counts_statuses(tmp_path: Path) -> 
         "queued_metadata_discovery": 1,
     }
     assert result["top_targets"][0]["target_id"] == "HIP2"
+
+
+def test_queue_preserves_domain_specific_candidate_metadata(tmp_path: Path) -> None:
+    seed_path = tmp_path / "seed.csv"
+    status_path = tmp_path / "status.json"
+    _write_seed_csv(seed_path)
+    _write_status_json(status_path)
+
+    rows = build_target_priority_queue(
+        seed_csv_path=seed_path,
+        data_status_path=status_path,
+    )
+    rows_by_id = {row["target_id"]: row for row in rows}
+    hip2 = rows_by_id["HIP2"]
+
+    assert hip2["object_type"] == "Star"
+    assert float(hip2["distance_light_years"]) == pytest.approx(148.727308)
+    assert hip2["spectral_type"] == "K3V"
+    assert hip2["exoplanet_host"] == "false"
+    assert hip2["prior_seti_coverage_reference"] == "E17"
+    assert hip2["prior_search_count"] == "0"
+    assert hip2["prior_search_provenance_summary"] == ""
+
+
+def test_manifest_preserves_domain_specific_candidate_metadata(tmp_path: Path) -> None:
+    seed_path = tmp_path / "seed.csv"
+    status_path = tmp_path / "status.json"
+    queue_path = tmp_path / "queue.csv"
+    _write_seed_csv(seed_path)
+    _write_status_json(status_path)
+    write_target_priority_queue(
+        queue_path,
+        seed_csv_path=seed_path,
+        data_status_path=status_path,
+    )
+
+    manifest = build_target_priority_manifest(
+        queue_path=queue_path,
+        max_targets=1,
+    )
+    target = manifest["targets"][0]
+
+    assert target["object_type"] == "Star"
+    assert target["distance_light_years"] == pytest.approx(148.727308)
+    assert target["spectral_type"] == "K3V"
+    assert target["exoplanet_host"] == "false"
+    assert target["prior_seti_coverage_reference"] == "E17"
+    assert target["prior_search_count"] == 0
 
 
 def test_build_target_priority_queue_recognizes_stream_process_evict_completions(

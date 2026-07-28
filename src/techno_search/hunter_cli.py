@@ -204,7 +204,11 @@ def _print_created_search(
     if len(targets) > 100:
         print(f"Review CSV: {manifest_dir / f'{search_id}.csv'}", file=out)
         return
-    print("Rank | Target | Score | GB | Execution | Selection reason", file=out)
+    print(
+        "Rank | Target | Type | Distance ly | Spectral | Exoplanet | "
+        "Prior searches | Prior provenance | Score | GB | Execution | Selection reason",
+        file=out,
+    )
     for rank, target in enumerate(targets, 1):
         score = (
             target.get("follow_up_priority", 0.0)
@@ -216,6 +220,31 @@ def _print_created_search(
                 [
                     str(rank),
                     str(target.get("hip", "")),
+                    str(target.get("object_type", "") or "unknown"),
+                    (
+                        f"{float(target['distance_light_years']):.2f}"
+                        if target.get("distance_light_years") is not None
+                        else "unknown"
+                    ),
+                    str(target.get("spectral_type", "") or "unknown"),
+                    str(target.get("exoplanet_host", "unknown")),
+                    str(target.get("prior_search_count", 0)),
+                    "; ".join(
+                        value
+                        for value in (
+                            str(
+                                target.get("prior_search_provenance_summary", "")
+                            ).strip(),
+                            (
+                                str(target.get("prior_search_provenance", "")).strip()
+                                if target.get("prior_search_provenance")
+                                else ""
+                            ),
+                            str(target.get("cross_project_prior_search", "")).strip(),
+                        )
+                        if value
+                    )
+                    or "none",
                     f"{float(score):.3f}",
                     f"{float(target.get('estimated_download_gb') or 0.0):.3f}",
                     str(target.get("execution_kind", "")),
