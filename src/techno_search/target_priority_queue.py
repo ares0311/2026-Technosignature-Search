@@ -26,7 +26,7 @@ from techno_search.background_search import (
 from techno_search.schemas import Track
 from techno_search.target_alias import known_target_alias_pattern
 
-TARGET_PRIORITY_QUEUE_SCHEMA_VERSION = "target_priority_queue_v4"
+TARGET_PRIORITY_QUEUE_SCHEMA_VERSION = "target_priority_queue_v5"
 TARGET_PRIORITY_QUEUE_DISCLAIMER = (
     "Target priority queues are metadata-first scheduling aids for local search "
     "planning. They are not detections, discovery claims, expert review, external "
@@ -50,6 +50,11 @@ TARGET_PRIORITY_QUEUE_FIELDS = [
     "ra_deg",
     "dec_deg",
     "galactic_latitude_deg",
+    "object_type",
+    "distance_light_years",
+    "spectral_type",
+    "exoplanet_host",
+    "prior_seti_coverage_reference",
     "data_products_available",
     "estimated_download_gb",
     "search_category",
@@ -72,6 +77,8 @@ TARGET_PRIORITY_QUEUE_FIELDS = [
     "local_coverage_status",
     "background_target_priority_score",
     "source_hdf5_url",
+    "prior_search_count",
+    "prior_search_provenance_summary",
     "cross_project_prior_search",
 ]
 
@@ -147,6 +154,26 @@ def _format_coord(value: str | None) -> str:
     if number is None:
         return ""
     return f"{number:.6f}".rstrip("0").rstrip(".")
+
+
+def _distance_light_years(dist_pc: str | None) -> str:
+    """Convert a real source distance in parsecs without filling missing values."""
+    parsecs = _float_or_none(dist_pc)
+    if parsecs is None:
+        return ""
+    from astropy import units as u
+
+    return _format_coord(str((parsecs * u.pc).to_value(u.lyr)))
+
+
+def _exoplanet_host(value: str | None) -> str:
+    """Preserve the seed catalog's explicit yes/no state and keep blanks unknown."""
+    normalized = str(value or "").strip().casefold()
+    if normalized in {"1", "true", "yes"}:
+        return "true"
+    if normalized in {"0", "false", "no"}:
+        return "false"
+    return "unknown"
 
 
 def _galactic_latitude_deg(ra_deg: float, dec_deg: float) -> float:
@@ -627,6 +654,14 @@ def _queue_row(
             if galactic_latitude_deg is not None
             else ""
         ),
+        "object_type": (
+            str(row.get("object_type") or "").strip()
+            or ("Star" if str(row.get("spec_type") or "").strip() else "")
+        ),
+        "distance_light_years": _distance_light_years(row.get("dist_pc")),
+        "spectral_type": str(row.get("spec_type") or "").strip(),
+        "exoplanet_host": _exoplanet_host(row.get("exoplanet")),
+        "prior_seti_coverage_reference": str(row.get("bl_paper") or "").strip(),
         "data_products_available": data_products_available,
         "estimated_download_gb": estimated_download_gb,
         "search_category": search_category,
@@ -657,6 +692,10 @@ def _queue_row(
             target_priority_score(background_target, config=active_priority_config)
         ),
         "source_hdf5_url": source_hdf5_url,
+        "prior_search_count": str(prior_review_count),
+        "prior_search_provenance_summary": (
+            f"Techno-Hunter:{prior_review_count}" if prior_review_count else ""
+        ),
         "cross_project_prior_search": _cross_project_summary_for_aliases(
             aliases, cross_project_evidence_by_alias or {}
         ),
@@ -963,6 +1002,17 @@ def build_target_priority_manifest(
                     if row["galactic_latitude_deg"]
                     else None
                 ),
+                "object_type": row.get("object_type", ""),
+                "distance_light_years": (
+                    float(row["distance_light_years"])
+                    if row.get("distance_light_years")
+                    else None
+                ),
+                "spectral_type": row.get("spectral_type", ""),
+                "exoplanet_host": row.get("exoplanet_host", "unknown"),
+                "prior_seti_coverage_reference": row.get(
+                    "prior_seti_coverage_reference", ""
+                ),
                 "search_category": row["search_category"],
                 "queue_status": row["status"],
                 "local_coverage_status": row["local_coverage_status"],
@@ -977,6 +1027,13 @@ def build_target_priority_manifest(
                 if row.get("estimated_download_gb")
                 else None,
                 "source_hdf5_url": row.get("source_hdf5_url", ""),
+                "prior_search_count": int(row.get("prior_search_count") or 0),
+                "prior_search_provenance_summary": row.get(
+                    "prior_search_provenance_summary", ""
+                ),
+                "cross_project_prior_search": row.get(
+                    "cross_project_prior_search", ""
+                ),
                 "notes": row["notes"],
             }
             for row in selected

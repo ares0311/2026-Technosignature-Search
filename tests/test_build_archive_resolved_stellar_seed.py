@@ -97,6 +97,7 @@ def test_build_stellar_seed_rows_excludes_unresolved_ambiguous_and_non_stellar()
     assert seed_rows[0]["hip"] == "1"
     assert seed_rows[0]["dist_pc"] == ""
     assert seed_rows[0]["spec_type"] == ""
+    assert seed_rows[0]["object_type"] == "Star"
 
 
 def test_build_stellar_seed_rows_deduplicates_cadence_role_suffix_variants() -> None:
@@ -152,3 +153,4 @@ def test_build_seed_file_writes_real_schema_and_summary(tmp_path: Path) -> None:
         out_rows = list(csv.DictReader(handle))
     assert list(out_rows[0]) == list(build_seed.SEED_FIELDS)
     assert out_rows[0]["name"] == "HIP1"
+    assert out_rows[0]["object_type"] == "Star"

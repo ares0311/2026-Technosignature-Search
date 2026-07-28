@@ -1,6 +1,6 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-07-27
+**Last updated:** 2026-07-28
 **Current phase:** Phase 0 complete; Phase 1/5 Hunter acceptance closure is active.
 The real cadence-complete `unknown`/adversarial acceptance branch is proven
 through the installed `Create-New-Search`/`Run-New-Search` Hunter entry
@@ -25,14 +25,32 @@ defects that run exposed and search `SEARCH-20260721T173605Z-0F6693E8`
 verifies the corrected implementation by reusing three retained DAT
 artifacts with zero downloads. All three targets were routed to local
 deterministic follow-up triage; no candidate promotion, detection, or
-external-submission permission was produced. The remaining Hunter acceptance
-gate is creation, exact approval, and execution of replacement v1.2.65
-new-target and later-epoch searches recorded in
-`docs/PRODUCTION_SCAN_RUNBOOK.md`. The durable
+external-submission permission was produced. The v1.2.65 installed-entry-point
+acceptance gate is now durably closed by
+`docs/evidence/hunter_v1_2_65_acceptance.json` and its CI contract test.
+Version 1.2.66 preserves real candidate-table context that the source catalogs
+already supplied but the durable queue previously discarded: object type,
+distance, spectral type, exoplanet-host state, prior SETI coverage reference,
+and prior-search provenance. The durable
 public-archive namespace now exceeds 10,000, and the real target priority
-queue now covers 6,879 unique target IDs (up from 1,703), of which 4,840
+queue now covers 6,879 unique target IDs (up from 1,703), of which 4,862
 currently carry real HDF5 URL/size evidence and are ranking-eligible.
-**Current app version:** 1.2.65
+Hunter remains **NOT PROD** until the exact v1.2.66 installed release passes
+the bounded new/follow-up acceptance and post-merge freshness gates.
+**Current app version:** 1.2.66
+
+**Exact v1.2.65 installed-entry-point acceptance closed — 2026-07-28:**
+new-target search `SEARCH-20260728T042942Z-7572B240` completed as
+`RUN-2026-07-28_043711Z-YJGV-hunter-search` for HIP61099, appended one
+history record, registered one follow-up, emitted only non-synthetic evidence,
+and remained correctly `unresolved` because one scan cannot supply the
+required cadence. Follow-up search `SEARCH-20260728T042946Z-5988937F`
+completed as `RUN-2026-07-28_043903Z-OPNJ-hunter-search` for a real six-scan
+GJ699 cadence, appended history once, consumed the originating follow-up, and
+resolved `known` from cadence failure without emitting a replacement
+follow-up. The committed acceptance artifact records twelve immutable runtime
+hashes and explicitly makes no detection, discovery, expert-review,
+external-validation, or submission claim.
 
 **Live v1.2.64 lifecycle closed and production placeholder output removed —
 2026-07-27:** approved new-target search
@@ -54,8 +72,9 @@ reports visualize only numeric feature values actually persisted on the
 candidate, mark the artifact non-synthetic, and emit no plot when the evidence
 is absent. Radio candidate construction no longer injects a
 `waterfall_not_generated_v0` placeholder. Historical v1.2.64 outputs remain
-immutable. Hunter remains **NOT PROD** pending a fresh installed-entry-point
-v1.2.65 acceptance run and exact-final-release validation.
+immutable. The replacement v1.2.65 acceptance is complete as recorded above.
+Hunter remains **NOT PROD** pending exact-final-release validation after
+v1.2.66.
 
 **Live acceptance exposed and fixed an archive-discovery provenance defect —
 2026-07-27:** the approved v1.2.63 new-target search
@@ -84,9 +103,8 @@ Semantic color, readable command tables, and a signal-spectrum animation are
 TTY-only and disable for redirected output, no-color, reduced-motion, CI, and
 explicit automation flags. This closes an operator-surface gap without adding
 a shadow selector, runner, or persistence path. Hunter remains **NOT PROD**
-until replacement v1.2.65 installed-entry-point acceptance recorded in
-`docs/PRODUCTION_SCAN_RUNBOOK.md` completes and the remaining coverage
-limitations are resolved or bounded with current evidence.
+until exact v1.2.66 installed-entry-point acceptance completes; the remaining
+coverage limitation is explicitly bounded with current evidence.
 
 Live 1.2.63 preflight also exposed and closed a canonical follow-up selection
 gap: after HIP99427 became scheduled, the next ranked target (GJ699) had

@@ -1218,7 +1218,12 @@ def test_required_cli_entrypoints_invoke_real_dispatch_paths(
             str(searches),
         ]
     ) == 0
-    assert "Created pending new search" in capsys.readouterr().out
+    new_search_output = capsys.readouterr().out
+    assert "Created pending new search" in new_search_output
+    assert (
+        "Type | Distance ly | Spectral | Exoplanet | Prior searches | Prior provenance"
+        in new_search_output
+    )
     monkeypatch.setattr(
         "techno_search.hunter_cli.discover_follow_up_targets",
         lambda targets, *, target_count: (
