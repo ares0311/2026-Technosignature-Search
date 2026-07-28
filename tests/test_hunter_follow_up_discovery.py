@@ -167,3 +167,109 @@ def test_discovery_freezes_latest_complete_later_epoch_cadence(
     assert approved["hunter_acquisition_approval"]["method"].startswith(
         "Run-New-Search"
     )
+
+
+def test_discovery_uses_authenticated_history_when_cadence_path_is_empty(
+    tmp_path: Path,
+) -> None:
+    candidate_id = (
+        "spliced_blc02030405_2bit_guppi_57457_48006_GJ699_0003.gpuspec.0002"
+    )
+    ledger_path = tmp_path / "follow_ups.json"
+    ledger_path.write_text(
+        json.dumps(
+            {
+                "run_id": "RUN-GJ699",
+                "entries": [
+                    {
+                        "candidate_id": candidate_id,
+                        "follow_up_id": "FU-GJ699",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    session_rows = [
+        _product_row(2, "GJ699", 57885.3570, seconds=30844),
+        _product_row(3, "HIP100670", 57885.3608, seconds=31177),
+        _product_row(4, "GJ699", 57885.3647, seconds=31509),
+        _product_row(5, "HIP99560", 57885.3686, seconds=31845),
+        _product_row(6, "GJ699", 57885.3725, seconds=32181),
+        _product_row(7, "HIP99759", 57885.3763, seconds=32517),
+    ]
+
+    def fetcher(parameters: dict[str, str]) -> str:
+        if "target" in parameters:
+            return f"<table>{session_rows[0]}{session_rows[2]}{session_rows[4]}</table>"
+        return f"<table>{''.join(session_rows)}</table>"
+
+    targets, report = discover_follow_up_targets(
+        [
+            {
+                "hip": "GJ699",
+                "recommended_next_action": (
+                    "repeat an ON/OFF cadence at a later epoch and compare persistence"
+                ),
+                "source_data_path": "",
+                "prior_search_provenance": [
+                    {
+                        "candidate_id": candidate_id,
+                        "follow_up_id": "FU-GJ699",
+                        "ledger_path": str(ledger_path),
+                        "run_id": "RUN-GJ699",
+                    }
+                ],
+            }
+        ],
+        target_count=1,
+        fetcher=fetcher,
+        retrieved_at_utc="2026-07-27T00:00:00Z",
+    )
+
+    assert targets[0]["hip"] == "GJ699"
+    assert targets[0]["follow_up_cadence"]["prior_observation_max_mjd"] > 57457
+    assert report["examined_target_count"] == 1
+    assert report["unavailable_candidates"] == []
+
+
+def test_discovery_expands_past_candidate_with_invalid_prior_history(
+    tmp_path: Path,
+) -> None:
+    prior_path = _prior_cadence(tmp_path)
+    session_rows = [
+        _product_row(2, "HIP99427", 57885.3570, seconds=30844),
+        _product_row(3, "HIP100670", 57885.3608, seconds=31177),
+        _product_row(4, "HIP99427", 57885.3647, seconds=31509),
+        _product_row(5, "HIP99560", 57885.3686, seconds=31845),
+        _product_row(6, "HIP99427", 57885.3725, seconds=32181),
+        _product_row(7, "HIP99759", 57885.3763, seconds=32517),
+    ]
+
+    def fetcher(parameters: dict[str, str]) -> str:
+        if "target" in parameters:
+            return f"<table>{session_rows[0]}{session_rows[2]}{session_rows[4]}</table>"
+        return f"<table>{''.join(session_rows)}</table>"
+
+    targets, report = discover_follow_up_targets(
+        [
+            {
+                "hip": "INVALID",
+                "recommended_next_action": "repeat at a later epoch",
+                "source_data_path": "",
+                "prior_search_provenance": [],
+            },
+            {
+                "hip": "HIP99427",
+                "recommended_next_action": "repeat at a later epoch",
+                "source_data_path": str(prior_path),
+            },
+        ],
+        target_count=1,
+        fetcher=fetcher,
+        retrieved_at_utc="2026-07-27T00:00:00Z",
+    )
+
+    assert [target["hip"] for target in targets] == ["HIP99427"]
+    assert report["examined_target_count"] == 2
+    assert report["unavailable_candidates"][0]["target_id"] == "INVALID"

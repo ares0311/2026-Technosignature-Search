@@ -19,6 +19,7 @@ import certifi
 ARCHIVE_SEARCH_URL = "https://breakthroughinitiatives.org/opendatasearch"
 DATA_USE_URL = "https://seti.berkeley.edu/lband2017/downloads.html"
 FOLLOW_UP_CADENCE_SCHEMA_VERSION = "hunter_follow_up_cadence_v1"
+FOLLOW_UP_DISCOVERY_REPORT_SCHEMA_VERSION = "hunter_follow_up_discovery_report_v2"
 EXPECTED_ROLES = ("on", "off", "on", "off", "on", "off")
 _FILENAME_RE = re.compile(
     r"_guppi_(?P<mjd_day>\d+)_(?P<seconds>\d+)_.*_(?P<sequence>\d{4})"
@@ -28,6 +29,10 @@ _FILENAME_RE = re.compile(
 
 class FollowUpDiscoveryError(RuntimeError):
     """Raised when current archive evidence cannot support an exact follow-up."""
+
+
+class FollowUpCandidateUnavailable(FollowUpDiscoveryError):
+    """Raised when one candidate lacks enough valid evidence for execution."""
 
 
 @dataclass(frozen=True)
@@ -177,16 +182,25 @@ def fetch_archive_products(
 def discover_follow_up_targets(
     targets: Sequence[Mapping[str, Any]],
     *,
+    target_count: int | None = None,
     fetcher: ArchiveFetcher = fetch_archive_products,
     retrieved_at_utc: str | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    """Attach current exact cadence products to later-epoch follow-up targets."""
+    """Return the highest-ranked follow-ups with current executable evidence."""
+    requested_count = target_count if target_count is not None else len(targets)
+    if requested_count <= 0:
+        raise ValueError("target_count must be positive")
     retrieved_at = retrieved_at_utc or datetime.now(UTC).isoformat().replace(
         "+00:00", "Z"
     )
     enriched: list[dict[str, Any]] = []
     discoveries: list[dict[str, Any]] = []
+    unavailable: list[dict[str, str]] = []
+    examined_count = 0
     for raw_target in targets:
+        if len(enriched) >= requested_count:
+            break
+        examined_count += 1
         target = dict(raw_target)
         action = str(target.get("recommended_next_action", "")).lower()
         if "later epoch" not in action and "on/off cadence" not in action:
@@ -194,16 +208,31 @@ def discover_follow_up_targets(
             continue
         target_name = str(target.get("hip", "")).strip()
         if not target_name:
-            raise FollowUpDiscoveryError(
-                "follow-up target lacks a canonical target identifier"
+            unavailable.append(
+                {
+                    "target_id": "<missing>",
+                    "validity_state": "invalid",
+                    "reason": "follow-up target lacks a canonical target identifier",
+                }
             )
-        prior_max_mjd = _prior_observation_max_mjd(target)
-        cadence = _discover_later_cadence(
-            target_name=target_name,
-            prior_max_mjd=prior_max_mjd,
-            fetcher=fetcher,
-            retrieved_at_utc=retrieved_at,
-        )
+            continue
+        try:
+            prior_max_mjd = _prior_observation_max_mjd(target)
+            cadence = _discover_later_cadence(
+                target_name=target_name,
+                prior_max_mjd=prior_max_mjd,
+                fetcher=fetcher,
+                retrieved_at_utc=retrieved_at,
+            )
+        except FollowUpCandidateUnavailable as exc:
+            unavailable.append(
+                {
+                    "target_id": target_name,
+                    "validity_state": "refresh-required",
+                    "reason": str(exc),
+                }
+            )
+            continue
         output_path = (
             Path("data/extended_corpus/hunter_follow_ups/bl_hits")
             / f"{cadence['cadence_id']}.csv"
@@ -234,12 +263,18 @@ def discover_follow_up_targets(
     return (
         enriched,
         {
-            "schema_version": "hunter_follow_up_discovery_report_v1",
+            "schema_version": FOLLOW_UP_DISCOVERY_REPORT_SCHEMA_VERSION,
             "source": ARCHIVE_SEARCH_URL,
             "retrieved_at_utc": retrieved_at,
-            "requested_target_count": len(targets),
+            "requested_target_count": requested_count,
+            "eligible_candidate_count": len(targets),
+            "examined_target_count": examined_count,
             "cadence_discovery_count": len(discoveries),
             "discoveries": discoveries,
+            "unavailable_candidates": unavailable,
+            "sufficient": len(enriched) >= requested_count
+            or examined_count == len(targets),
+            "universe_exhausted": examined_count == len(targets),
         },
     )
 
@@ -304,7 +339,7 @@ def _discover_later_cadence(
             prior_max_mjd=prior_max_mjd,
             retrieved_at_utc=retrieved_at_utc,
         )
-    raise FollowUpDiscoveryError(
+    raise FollowUpCandidateUnavailable(
         f"no provenance-complete later-epoch ABACAD cadence was found for {target_name}"
     )
 
@@ -364,20 +399,23 @@ def _cadence_payload(
 
 
 def _prior_observation_max_mjd(target: Mapping[str, Any]) -> float:
-    source_path = Path(str(target.get("source_data_path", "")))
-    sidecar_path = source_path.with_name(source_path.name + ".provenance.json")
+    source_value = str(target.get("source_data_path", "")).strip()
+    if not source_value:
+        return _prior_observation_max_mjd_from_history(target)
+    source_path = Path(source_value)
+    sidecar_path = source_path.with_name(f"{source_path.name}.provenance.json")
     if not source_path.is_file() or not sidecar_path.is_file():
-        raise FollowUpDiscoveryError(
+        raise FollowUpCandidateUnavailable(
             f"prior follow-up evidence lacks a readable cadence artifact: {source_path}"
         )
     try:
         provenance = json.loads(sidecar_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        raise FollowUpDiscoveryError(
+        raise FollowUpCandidateUnavailable(
             f"prior cadence provenance is unreadable: {sidecar_path}"
         ) from exc
     if provenance.get("classification") != "derived_real_observation_cadence":
-        raise FollowUpDiscoveryError(
+        raise FollowUpCandidateUnavailable(
             f"prior evidence is not a validated observation cadence: {sidecar_path}"
         )
     values: list[float] = []
@@ -393,8 +431,62 @@ def _prior_observation_max_mjd(target: Mapping[str, Any]) -> float:
             + float(match.group("seconds")) / 86_400.0
         )
     if not values:
-        raise FollowUpDiscoveryError(
+        raise FollowUpCandidateUnavailable(
             f"prior cadence provenance has no parseable observation times: {sidecar_path}"
+        )
+    return max(values)
+
+
+def _prior_observation_max_mjd_from_history(target: Mapping[str, Any]) -> float:
+    """Resolve prior observation time from authenticated follow-up ledgers."""
+    values: list[float] = []
+    for raw_provenance in target.get("prior_search_provenance", []):
+        if not isinstance(raw_provenance, Mapping):
+            continue
+        ledger_value = str(raw_provenance.get("ledger_path", "")).strip()
+        candidate_id = str(raw_provenance.get("candidate_id", "")).strip()
+        follow_up_id = str(raw_provenance.get("follow_up_id", "")).strip()
+        if not ledger_value or not candidate_id or not follow_up_id:
+            continue
+        ledger_path = Path(ledger_value)
+        try:
+            ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if str(ledger.get("run_id", "")) != str(
+            raw_provenance.get("run_id", "")
+        ):
+            continue
+        entries = ledger.get("entries", [])
+        if not isinstance(entries, list):
+            continue
+        matching_entry = next(
+            (
+                entry
+                for entry in entries
+                if isinstance(entry, Mapping)
+                and str(entry.get("candidate_id", "")) == candidate_id
+                and str(entry.get("follow_up_id", "")) == follow_up_id
+            ),
+            None,
+        )
+        if matching_entry is None:
+            continue
+        filename = candidate_id
+        if not filename.endswith(".h5"):
+            filename = f"{filename}.h5"
+        match = _FILENAME_RE.search(filename)
+        if match is None:
+            continue
+        values.append(
+            float(match.group("mjd_day"))
+            + float(match.group("seconds")) / 86_400.0
+        )
+    if not values:
+        target_name = str(target.get("hip", "")).strip() or "<unknown>"
+        raise FollowUpCandidateUnavailable(
+            f"prior follow-up history has no authenticated observation time for "
+            f"{target_name}"
         )
     return max(values)
 

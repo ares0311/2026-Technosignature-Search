@@ -27,7 +27,33 @@ git pull origin main
 
 ## Hunter Search Lifecycle
 
-The three top-level Hunter commands bind ranked selection to the exact data
+`TechnoHunter` is the persistent terminal application. It binds slash commands
+to the same canonical functions as the three one-shot Hunter executables; it
+does not contain its own selector, runner, or persistence path.
+
+```bash
+git pull origin main
+.venv/bin/TechnoHunter
+```
+
+Typing `/` and pressing Tab exposes `/New-Search <N>`,
+`/Follow-Up-Search <N>`, `/Run-Search`, `/Show-Follow-Ups`, `/Help`, and
+`/Exit`. Command history is persisted under ignored `artifacts/`. The
+technosignature signal-spectrum animation is interactive-terminal-only and
+degrades cleanly for redirected output, `NO_COLOR`, reduced-motion/CI
+environments, `TERM=dumb`, `--no-animation`, and `--no-color`.
+
+Scripted slash commands use the same return codes as their one-shot
+equivalents:
+
+```bash
+git pull origin main
+.venv/bin/TechnoHunter --no-animation \
+  --command "/New-Search 10 --target-prefix HIP" \
+  --command "/Exit"
+```
+
+The three top-level one-shot commands bind ranked selection to the exact data
 acquisition, processing, scoring, interpretation, provenance, and follow-up
 path. JSON under `results/searches/SEARCH-*/manifest.json` is the immutable
 system of record; the CSV emitted for searches over 100 targets is an operator

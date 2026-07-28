@@ -93,11 +93,22 @@ def test_readme_documents_the_installed_hunter_lifecycle() -> None:
     readme = Path("README.md").read_text(encoding="utf-8")
     pyproject = Path("pyproject.toml").read_text(encoding="utf-8")
 
-    for command in ("Create-New-Search", "Run-New-Search", "Show-Follow-Ups"):
+    for command in (
+        "TechnoHunter",
+        "Create-New-Search",
+        "Run-New-Search",
+        "Show-Follow-Ups",
+    ):
         assert f"{command} =" in pyproject
         assert f".venv/bin/{command}" in readme
 
     required_contract = (
+        "/New-Search <N>",
+        "/Follow-Up-Search <N>",
+        "/Run-Search",
+        "/Show-Follow-Ups",
+        "/Help",
+        "/Exit",
         "Creation performs selection only. It does not download or process raw data.",
         "executes that exact search without regenerating its targets",
         "exits with status 2 before downloading anything",

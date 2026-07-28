@@ -68,7 +68,7 @@ AdaptiveDiscovery = Callable[
     [Path, int, str, Mapping[str, Any]], tuple[Path, dict[str, Any]]
 ]
 FollowUpDiscovery = Callable[
-    [Sequence[Mapping[str, Any]]], tuple[list[dict[str, Any]], dict[str, Any]]
+    [Sequence[Mapping[str, Any]], int], tuple[list[dict[str, Any]], dict[str, Any]]
 ]
 
 
@@ -143,7 +143,9 @@ def create_search(
         selected = constrained_follow_ups[:target_count]
         viable_count = len(constrained_follow_ups)
         if follow_up_discovery is not None:
-            selected, follow_up_discovery_report = follow_up_discovery(selected)
+            selected, follow_up_discovery_report = follow_up_discovery(
+                constrained_follow_ups, target_count
+            )
         else:
             follow_up_discovery_report = None
 

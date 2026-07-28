@@ -955,7 +955,10 @@ def test_follow_up_lifecycle_completes_only_after_verified_later_epoch_cadence(
         for index in range(2, 8)
     ]
 
-    def discover(targets: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    def discover(
+        targets: list[dict[str, Any]], target_count: int
+    ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+        assert target_count == 1
         target = dict(targets[0])
         target.update(
             {
@@ -1001,7 +1004,7 @@ def test_follow_up_lifecycle_completes_only_after_verified_later_epoch_cadence(
                 },
             }
         )
-        return [target], {"schema_version": "hunter_follow_up_discovery_report_v1"}
+        return [target], {"schema_version": "hunter_follow_up_discovery_report_v2"}
 
     manifest = create_search(
         target_count=1,
@@ -1185,10 +1188,10 @@ def test_required_cli_entrypoints_invoke_real_dispatch_paths(
     assert "Created pending new search" in capsys.readouterr().out
     monkeypatch.setattr(
         "techno_search.hunter_cli.discover_follow_up_targets",
-        lambda targets: (
-            [dict(target) for target in targets],
+        lambda targets, *, target_count: (
+            [dict(target) for target in targets[:target_count]],
             {
-                "schema_version": "hunter_follow_up_discovery_report_v1",
+                "schema_version": "hunter_follow_up_discovery_report_v2",
                 "cadence_discovery_count": 0,
             },
         ),
