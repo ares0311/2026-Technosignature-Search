@@ -80,7 +80,9 @@ def create_new_search(argv: Sequence[str] | None = None) -> int:
             if args.mode == "new"
             else None,
             follow_up_discovery=(
-                lambda targets: discover_follow_up_targets(targets)
+                lambda targets, target_count: discover_follow_up_targets(
+                    targets, target_count=target_count
+                )
             )
             if args.mode == "follow-up"
             else None,

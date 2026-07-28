@@ -1,6 +1,6 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-07-26
+**Last updated:** 2026-07-27
 **Current phase:** Phase 0 complete; Phase 1/5 Hunter acceptance closure is active.
 The real cadence-complete `unknown`/adversarial acceptance branch is proven
 through the installed `Create-New-Search`/`Run-New-Search` Hunter entry
@@ -31,7 +31,36 @@ later-epoch searches recorded in `docs/PRODUCTION_SCAN_RUNBOOK.md`. The durable
 public-archive namespace now exceeds 10,000, and the real target priority
 queue now covers 6,879 unique target IDs (up from 1,703), of which 4,840
 currently carry real HDF5 URL/size evidence and are ranking-eligible.
-**Current app version:** 1.2.62
+**Current app version:** 1.2.63
+
+**Persistent TechnoHunter shell closes the required interactive-CLI gap —
+2026-07-27:** version 1.2.63 adds the installed `TechnoHunter` terminal
+application as a thin dispatcher over the existing canonical
+`create_new_search`, `run_new_search`, and `show_follow_ups` entry points. It
+stays active until `/Exit`; typing `/` exposes autocomplete for `/New-Search`,
+`/Follow-Up-Search`, `/Run-Search`, `/Show-Follow-Ups`, `/Help`, and `/Exit`;
+and repeatable `--command` arguments preserve non-interactive automation.
+Command history is written only under the already-ignored `artifacts/` tree.
+Semantic color, readable command tables, and a signal-spectrum animation are
+TTY-only and disable for redirected output, no-color, reduced-motion, CI, and
+explicit automation flags. This closes an operator-surface gap without adding
+a shadow selector, runner, or persistence path. Hunter remains **NOT PROD**
+until the exact approval-pending new-target and later-epoch searches recorded
+in `docs/PRODUCTION_SCAN_RUNBOOK.md` complete and the remaining coverage
+limitations are resolved or bounded with current evidence.
+
+Live 1.2.63 preflight also exposed and closed a canonical follow-up selection
+gap: after HIP99427 became scheduled, the next ranked target (GJ699) had
+durable originating-search evidence but no local cadence path, and discovery
+crashed on `Path("")`. Follow-up discovery now authenticates the prior
+observation time against its exact durable ledger entry, walks the ranked
+eligible registry until it has the best available requested count or exhausts
+the universe, and records examined and refresh-required candidates in
+`hunter_follow_up_discovery_report_v2`. Archive retrieval and malformed-source
+failures remain loud; unavailable candidate evidence is never silently treated
+as a valid negative. Pending searches from an incompatible app version are now
+classified `refresh-required` and cannot suppress currently eligible
+follow-ups; completed historical evidence remains durable.
 
 **Version 1.2.61 supersession notice:** the v1.2.58-v1.2.60 development
 record below is retained as history, not current authority. Its manual

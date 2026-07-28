@@ -258,6 +258,24 @@ candidate-manifest state using `operator_review_dashboard_v1`, including
 follow-up-required counts, pathway-specific action items, cross-target RFI flag
 counts, and top follow-up targets.
 
+**Persistent installed shell, 2026-07-27:** version 1.2.63 closes the product
+surface left outside the earlier one-shot command hardening. `TechnoHunter`
+stays active until `/Exit`, provides slash-command autocomplete/history/help,
+and delegates `/New-Search`, `/Follow-Up-Search`, `/Run-Search`, and
+`/Show-Follow-Ups` to the canonical Hunter entry points. Its signal-spectrum
+animation is tied to real command execution and disabled for redirected,
+no-color, reduced-motion, CI, and explicitly non-animated operation. No
+scientific selector, scorer, runner, or durable state path is duplicated.
+Live preflight then found that a ranked follow-up can have authenticated
+search-ledger evidence without a local cadence-path artifact. The canonical
+follow-up optimizer now resolves that exact prior observation from its durable
+originating ledger and expands through ranked candidates until N executable
+follow-ups are supported or the eligible universe is exhausted; one
+refresh-required candidate can no longer abort or arbitrarily narrow the
+best-available-N search. An unexecutable pending search from an older app
+version is itself refresh-required and cannot mark its evidence scheduled in
+the current optimizer.
+
 **Real gap found and fixed, 2026-07-09:** a workflow audit against a real
 local production run (`RUN-2026-07-02_130330Z-3ZNT-prod-scan`) found that
 `review-dashboard` — despite being documented above as a hardened operator

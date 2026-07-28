@@ -932,6 +932,39 @@ def test_follow_up_lifecycle_schedules_then_defers_unfulfilled_evidence(
     assert deferred["deferred_count"] == 1
 
 
+def test_stale_pending_search_cannot_suppress_current_follow_up(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    queue = tmp_path / "queue.csv"
+    scans = tmp_path / "scans"
+    searches = tmp_path / "searches"
+    _write_queue(
+        queue,
+        1,
+        status="already_acquired_local_cache",
+        include_source_url=False,
+    )
+    _write_follow_up_ledger(scans, "capture_HIP990000_0001")
+    create_search(
+        target_count=1,
+        mode="follow-up",
+        queue_path=queue,
+        scans_dir=scans,
+        searches_dir=searches,
+        search_id="SEARCH-20260719T123000Z-A1B2C3D4",
+    )
+    monkeypatch.setattr(hunter_search_module, "__version__", "9.9.9")
+
+    registry = follow_up_registry(
+        scans_dirs=(scans, searches), queue_path=queue
+    )
+
+    assert registry["eligible_count"] == 1
+    assert registry["eligible_entries"][0]["hip"] == "HIP990000"
+    assert registry["scheduled_count"] == 0
+    assert registry["refresh_required_count"] == 1
+
+
 def test_follow_up_lifecycle_completes_only_after_verified_later_epoch_cadence(
     tmp_path: Path,
 ) -> None:
@@ -955,7 +988,10 @@ def test_follow_up_lifecycle_completes_only_after_verified_later_epoch_cadence(
         for index in range(2, 8)
     ]
 
-    def discover(targets: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    def discover(
+        targets: list[dict[str, Any]], target_count: int
+    ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+        assert target_count == 1
         target = dict(targets[0])
         target.update(
             {
@@ -1001,7 +1037,7 @@ def test_follow_up_lifecycle_completes_only_after_verified_later_epoch_cadence(
                 },
             }
         )
-        return [target], {"schema_version": "hunter_follow_up_discovery_report_v1"}
+        return [target], {"schema_version": "hunter_follow_up_discovery_report_v2"}
 
     manifest = create_search(
         target_count=1,
@@ -1185,10 +1221,10 @@ def test_required_cli_entrypoints_invoke_real_dispatch_paths(
     assert "Created pending new search" in capsys.readouterr().out
     monkeypatch.setattr(
         "techno_search.hunter_cli.discover_follow_up_targets",
-        lambda targets: (
-            [dict(target) for target in targets],
+        lambda targets, *, target_count: (
+            [dict(target) for target in targets[:target_count]],
             {
-                "schema_version": "hunter_follow_up_discovery_report_v1",
+                "schema_version": "hunter_follow_up_discovery_report_v2",
                 "cadence_discovery_count": 0,
             },
         ),
