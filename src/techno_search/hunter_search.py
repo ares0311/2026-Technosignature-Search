@@ -626,7 +626,7 @@ def follow_up_registry(
                 str(raw_entry.get("follow_up_id", "")),
             )
             disposition = lifecycle.get(lifecycle_key)
-            if disposition is not None:
+            if disposition is not None and disposition["state"] != "refresh-required":
                 continue
             priority = _follow_up_priority(raw_entry)
             provenance = {
@@ -694,6 +694,9 @@ def follow_up_registry(
         ),
         "deferred_count": sum(
             item["state"] == "deferred" for item in lifecycle.values()
+        ),
+        "refresh_required_count": sum(
+            item["state"] == "refresh-required" for item in lifecycle.values()
         ),
         "eligible_entries": eligible,
         "detection_claimed": False,
@@ -1127,6 +1130,10 @@ def _follow_up_lifecycle(
             if loaded["status"] == "completed"
             else None
         )
+        stale_pending = (
+            completed is None
+            and str(manifest.get("app_version", "")).strip() != __version__
+        )
         dispositions = {
             str(item.get("target_id", "")): item
             for item in (completed or {}).get("follow_up_dispositions", [])
@@ -1142,6 +1149,8 @@ def _follow_up_lifecycle(
                     if bool(target.get("follow_up_observation_fulfilled"))
                     else "deferred"
                 )
+            elif stale_pending:
+                state = "refresh-required"
             else:
                 state = "scheduled"
             for evidence in target.get("prior_search_provenance", []):

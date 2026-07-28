@@ -58,7 +58,9 @@ eligible registry until it has the best available requested count or exhausts
 the universe, and records examined and refresh-required candidates in
 `hunter_follow_up_discovery_report_v2`. Archive retrieval and malformed-source
 failures remain loud; unavailable candidate evidence is never silently treated
-as a valid negative.
+as a valid negative. Pending searches from an incompatible app version are now
+classified `refresh-required` and cannot suppress currently eligible
+follow-ups; completed historical evidence remains durable.
 
 **Version 1.2.61 supersession notice:** the v1.2.58-v1.2.60 development
 record below is retained as history, not current authority. Its manual
