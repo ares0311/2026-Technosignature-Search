@@ -1,0 +1,157 @@
+{
+  "schema_version": "hunter_live_acceptance_v1",
+  "artifact_kind": "installed_hunter_live_acceptance_evidence",
+  "recorded_at_utc": "2026-07-28T05:08:31Z",
+  "release": {
+    "app_version": "1.2.65",
+    "code_commit": "65b3eb0"
+  },
+  "scope": {
+    "installed_entry_points": [
+      "Create-New-Search",
+      "Run-New-Search"
+    ],
+    "modes": [
+      "new",
+      "follow-up"
+    ],
+    "production_promotion_scope": "local_production_triage_only",
+    "detection_claimed": false,
+    "discovery_claimed": false,
+    "expert_review_claimed": false,
+    "external_validation_claimed": false,
+    "external_submission_allowed": false
+  },
+  "post_merge_validation": {
+    "commit": "1a3b56853529909030df1ac0b8f1c60bae4588eb",
+    "completed_at_utc": "2026-07-28T05:08:31Z",
+    "canonical_validation_passed": true,
+    "verification_freshness_passed": true
+  },
+  "candidate_pool": {
+    "archive_catalog_labels": 12086,
+    "durable_queue_targets": 6879,
+    "ranking_eligible_targets": 4862,
+    "unresolved_archive_labels": 4894,
+    "selection_policy": "rank the best scientifically viable pool available without guessing unresolved identities"
+  },
+  "searches": [
+    {
+      "mode": "new",
+      "search_id": "SEARCH-20260728T042942Z-7572B240",
+      "run_id": "RUN-2026-07-28_043711Z-YJGV-hunter-search",
+      "target_ids": [
+        "HIP61099"
+      ],
+      "target_count": 1,
+      "known_explanation_state_counts": {
+        "known": 0,
+        "unknown": 0,
+        "unresolved": 1
+      },
+      "history_records_appended": 1,
+      "follow_up_required_count": 1,
+      "follow_up_observation_fulfilled_count": 0,
+      "candidate_count": 1,
+      "follow_up_count": 1,
+      "source_scan_count": 1,
+      "plot_artifacts_synthetic": [
+        false
+      ],
+      "final_pathway": "human_review_queue",
+      "artifacts": [
+        {
+          "role": "search_manifest",
+          "path": "results/searches/SEARCH-20260728T042942Z-7572B240/manifest.json",
+          "sha256": "6c851ac3c97feabddac55586132e7d3640db564652e9065cc322af40f3ab9ef0"
+        },
+        {
+          "role": "event_ledger",
+          "path": "results/searches/SEARCH-20260728T042942Z-7572B240/events.ndjson",
+          "sha256": "db5c90977203bb6003e7cc7117d3f8582641bc7f1ecce65f4a8f65005e341bf9"
+        },
+        {
+          "role": "run_manifest",
+          "path": "results/searches/SEARCH-20260728T042942Z-7572B240/runs/RUN-2026-07-28_043711Z-YJGV-hunter-search/RUN-2026-07-28_043711Z-YJGV-hunter-search_manifest.json",
+          "sha256": "97b3e2adc0b23e34c011c1ecec5c701d6591685b906dfa6724678337620746c1"
+        },
+        {
+          "role": "candidate_manifest",
+          "path": "results/searches/SEARCH-20260728T042942Z-7572B240/pipeline_results/spliced_blc0001020304050607_guppi_57522_19859_HIP61099_0027.gpuspec.0002/spliced_blc0001020304050607_guppi_57522_19859_HIP61099_0027.gpuspec.0002.manifest.json",
+          "sha256": "57a303a50efbedd33da0da9c368509173473290b62e6477569fd338a078c59e0"
+        },
+        {
+          "role": "candidate_packet",
+          "path": "results/searches/SEARCH-20260728T042942Z-7572B240/pipeline_results/spliced_blc0001020304050607_guppi_57522_19859_HIP61099_0027.gpuspec.0002/spliced_blc0001020304050607_guppi_57522_19859_HIP61099_0027.gpuspec.0002.json",
+          "sha256": "3682882e1ec48bb9c66148a49f82dd080093ea0fe2279a38a71c3f76a1e0bc94"
+        },
+        {
+          "role": "known_explanation_record",
+          "path": "results/searches/SEARCH-20260728T042942Z-7572B240/pipeline_results/spliced_blc0001020304050607_guppi_57522_19859_HIP61099_0027.gpuspec.0002/spliced_blc0001020304050607_guppi_57522_19859_HIP61099_0027.gpuspec.0002.known-explanation.json",
+          "sha256": "10e1a92fe4abe2edcaa86397616939f55e61776478fad981e2bac42b69030e60"
+        }
+      ]
+    },
+    {
+      "mode": "follow-up",
+      "search_id": "SEARCH-20260728T042946Z-5988937F",
+      "run_id": "RUN-2026-07-28_043903Z-OPNJ-hunter-search",
+      "target_ids": [
+        "GJ699"
+      ],
+      "target_count": 1,
+      "known_explanation_state_counts": {
+        "known": 1,
+        "unknown": 0,
+        "unresolved": 0
+      },
+      "history_records_appended": 1,
+      "follow_up_required_count": 0,
+      "follow_up_observation_fulfilled_count": 1,
+      "candidate_count": 1,
+      "follow_up_count": 0,
+      "source_scan_count": 6,
+      "plot_artifacts_synthetic": [
+        false
+      ],
+      "final_pathway": "do_not_submit_false_positive",
+      "artifacts": [
+        {
+          "role": "search_manifest",
+          "path": "results/searches/SEARCH-20260728T042946Z-5988937F/manifest.json",
+          "sha256": "ec5c2d9070698a42e99693954849346ee18cafb0c869b2d149e5e8b68f465222"
+        },
+        {
+          "role": "event_ledger",
+          "path": "results/searches/SEARCH-20260728T042946Z-5988937F/events.ndjson",
+          "sha256": "a6eaf9871b223e079234b3369050958ca106a9926e1e04ac627cef139eb93a68"
+        },
+        {
+          "role": "run_manifest",
+          "path": "results/searches/SEARCH-20260728T042946Z-5988937F/runs/RUN-2026-07-28_043903Z-OPNJ-hunter-search/RUN-2026-07-28_043903Z-OPNJ-hunter-search_manifest.json",
+          "sha256": "a7f1341259c35e08f5067350a9268c2e3a742a03bdc2180e3e3cfb5351ea36a3"
+        },
+        {
+          "role": "candidate_manifest",
+          "path": "results/searches/SEARCH-20260728T042946Z-5988937F/pipeline_results/GBT_GJ699_2016-10-28_ABACAD/GBT_GJ699_2016-10-28_ABACAD.manifest.json",
+          "sha256": "c02c7602cb9d3af9fa9d8135f332379a98520fddeedf3f6f57efcd03d1faee13"
+        },
+        {
+          "role": "candidate_packet",
+          "path": "results/searches/SEARCH-20260728T042946Z-5988937F/pipeline_results/GBT_GJ699_2016-10-28_ABACAD/GBT_GJ699_2016-10-28_ABACAD.json",
+          "sha256": "aed67311f634f77bc310602aaf72206e617b2e4d0b672eca794f81bfd0b24545"
+        },
+        {
+          "role": "known_explanation_record",
+          "path": "results/searches/SEARCH-20260728T042946Z-5988937F/pipeline_results/GBT_GJ699_2016-10-28_ABACAD/GBT_GJ699_2016-10-28_ABACAD.known-explanation.json",
+          "sha256": "485854cf093678180a428b6c9990730d92a588a669c33734e9deb13139e1c442"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "This evidence covers the smallest exact-release positive-count new and follow-up lifecycle cases, not a broad statistical performance claim.",
+    "The new-target run is unresolved because a single scan cannot satisfy the required cadence check.",
+    "No output is a confirmed technosignature label, detection, discovery, expert review, external validation, or submission authorization."
+  ]
+}
