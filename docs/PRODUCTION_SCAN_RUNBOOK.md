@@ -21,11 +21,144 @@ Step 3 for that plan and its explicit distinction from this rule.
 
 ---
 
+## Hunter PROD Acceptance Closure Loop — 2026-07-26
+
+**Status:** Active. Hunter is **NOT PROD**. Completing an implementation PR,
+passing unit tests, or exhausting currently authorized work is not a terminal
+condition. This loop closes only when every required business scenario below
+has current, real, installed-entry-point evidence and the exact final release
+passes canonical validation and CI.
+
+**Current open phase:** Phase 1/5 integrated Hunter acceptance and
+`SYSTEMATIC_SEARCH_PLAN.md` Step 3a/3b. Learned anomaly-score calibration is
+ranking context, not a prerequisite for deterministic `known` / `unknown` /
+`unresolved` routing or best-available-N selection.
+
+**Root cause of the premature stop:** release-remediation completion was
+incorrectly treated as product completion even though PR #316 explicitly left
+the positive-count current-release new-target run and qualifying follow-up
+evidence open.
+
+### Closure matrix
+
+| Required business behavior | Current evidence | State required to close |
+|---|---|---|
+| Adaptive new-target discovery finds a displacing candidate outside the initial discovery sample | **Closed for v1.2.62 metadata selection:** clean-commit installed search `SEARCH-20260726T015515Z-5C71AC51` began with KIC8462852 unresolved, ran one real archive-discovery/HEAD-preflight round, then selected it as the sole best valid KIC target | Preserve the immutable round artifacts through final validation; execute this exact new-target search after approval |
+| Weak absolute quality still returns best-available N | Real shortfall/exhaustion runs and low-score regression coverage | Closed unless the final real runs contradict it |
+| Positive-count new-target lifecycle | Historical v1.2.55 ten-target acquisition; no positive-count v1.2.61+ run | Current-release installed create -> approved acquisition -> preprocessing -> scoring/interpretation -> durable result/history -> changed future eligibility |
+| Follow-up selection and execution | v1.2.62 clean-commit installed search `SEARCH-20260726T015438Z-1881A999` froze an exact six-scan GBT cadence 132.375912 days after the prior evidence; execution is approval-gated | Execute the frozen cadence, verify its six source checksums/derived provenance, and observe the source follow-up transition to completed exactly once |
+| Restart/resume integrity | **Implementation proof for v1.2.62:** controlled cadence failure at exit 7 resumes the same search/run and byte-identical derived execution manifest, then completes with exactly one history/lifecycle transition | Repeat through the real bounded acquisition or leave the test-scoped limitation explicit if no safe deterministic real fault point exists |
+| Validation/provenance/identity/history | v1.2.61 manifest authentication, source hashing, validity states, alias resolver, real EXO import | Closed unless live acceptance exposes a contradiction |
+| No production bypass | Stream runner and direct downloader fail-closed tests | Re-audit every raw-acquisition command after final changes; all production commands must consume an authenticated durable search |
+| Exact release verification | v1.2.61 full validator and CI passed | Re-run on the exact final closure commit, merge through green CI, sync `main`, and pass the post-merge freshness gate |
+
+### Execution loop
+
+1. **Prepare without raw-data authority.** Rebuild current decision inputs,
+   inspect durable history/status, run adaptive metadata discovery and HEAD
+   preflight, identify the smallest scientifically valid new and follow-up
+   acceptance searches, and record exact targets, products, roles, byte totals,
+   storage headroom, and eviction rules.
+2. **Request only the irreducible approval.** If raw data are required, pause
+   only long enough to request approval for the exact bounded manifests. An
+   approval pause leaves this loop active and Hunter NOT PROD; it is not a
+   completion handoff.
+3. **Execute exact durable searches.** Use installed `Create-New-Search` and
+   `Run-New-Search`; never substitute a direct pipeline call. Preserve every
+   selected target, acquisition attempt, transformation, score,
+   interpretation, result, and history/follow-up transition.
+4. **Exercise recovery.** Interrupt or fault-inject one bounded current-release
+   attempt at a safe resumable boundary, resume the same durable search/run,
+   and prove history/results are appended exactly once.
+5. **Falsify after every result.** Compare the artifact to this matrix, find
+   the highest-impact remaining gap, fix its root cause, run focused tests, and
+   repeat. Do not broaden into labels, speculative model work, operational
+   scaffolding, or external submission.
+6. **Close only on exact evidence.** Run the repo-native parallel validator on
+   the clean final commit, merge via green PR, sync the agent branch to
+   `origin/main`, pass `check_verification_freshness.py`, and update this matrix
+   with immutable search/run IDs and artifact hashes. Declare PROD only when
+   every row is green.
+
+### Approval and safety boundaries
+
+- Metadata/catalog discovery, HEAD size preflight, durable search creation,
+  focused tests, failure injection that does not corrupt evidence, and
+  read-only sibling-history validation proceed autonomously.
+- Raw public-archive acquisition requires explicit approval of the exact
+  bounded manifest. `stream_process_evict` is mandatory under the permanent
+  100GB project cap; projected free space must remain at least 10GB.
+- No labeling, external scientific contact/submission, destructive cleanup, or
+  fabricated identity/evidence is authorized by this loop.
+
+### Current-release execution evidence and approval checkpoint
+
+Release 1.2.62 metadata and implementation evidence as of
+2026-07-26T01:51Z:
+
+- **Unreachable follow-up completion fixed at the root.** The old manifest
+  hard-coded `follow_up_observation_fulfilled: false`, while no production
+  component emitted either completion field checked by the lifecycle resolver.
+  Follow-up creation now discovers a provenance-complete later epoch; the
+  installed runner derives an approved execution input only after
+  `--approve-acquisition`, executes it before the canonical scorer, and marks
+  completion only after the exact six frozen inputs appear in a checksum-bound
+  derived cadence artifact. Reanalysis remains deferred.
+- **Clean implementation identity:** both approval-pending manifests name
+  version `1.2.62` and code commit `de143ef`; no raw execution will use the
+  earlier dirty-tree provisional searches, which were moved intact to a
+  recoverable `/tmp` quarantine.
+- **Real follow-up selection:** `SEARCH-20260726T015438Z-1881A999` selected
+  HIP99427 at follow-up priority `0.992456` and froze GBT archive products in
+  ABACAD order from MJD `57885.3570` through `57885.3763`. The prior retained
+  cadence ends at MJD `57752.981088`; the new epoch begins `132.375912` days
+  later. Exact projected acquisition is `1,449,661,910` bytes (`1.449662 GB`).
+- **Real adaptive new-target selection:**
+  `SEARCH-20260726T015515Z-5C71AC51` constrained the request to KIC targets.
+  KIC8462852 was outside the initially eligible sample, so the installed
+  command executed one discovery round, found and HEAD-preflighted the current
+  `.gpuspec.0002.h5` product, exhausted the constrained universe, and selected
+  it as best available. Exact projected acquisition is `242,170,450` bytes
+  (`0.242170 GB`).
+- **Freshness/storage preflight:** all seven frozen URLs returned HTTP 200 and
+  exact matching `Content-Length` values at 2026-07-26T01:51Z. The workspace
+  filesystem had `325 GiB` available; tracked/ignored project science payload
+  classes occupied about `10.8 GiB`, leaving ample headroom under both the
+  permanent 100GB project cap and 10GB free-space reserve. Both runs use
+  `stream_process_evict`.
+- **Approval gate proved:** invoking installed `Run-New-Search` for either
+  search without `--approve-acquisition` exited `2` before downloading raw
+  bytes. No raw payload has been acquired for either acceptance search.
+- **Focused verification:** 46 Hunter/follow-up/cadence tests pass; Ruff passes
+  for every changed implementation/test file; mypy passes for the changed
+  packaged Hunter modules. The controlled failure/resume regression preserves
+  the byte-identical derived cadence manifest and reaches one completed
+  disposition only after verified cadence provenance exists. The repo-native
+  six-shard validator also passes on this working tree: 1,680 passed, seven
+  skipped; Ruff, mypy, app-version gate, and `validate-all` passed. Because the
+  tree is not yet committed, the exact-commit freshness marker and CI remain
+  open.
+
+Exact pending bounded approval scope:
+
+| Search | Purpose | Files | Bytes | GiB (bytes / 2^30) |
+|---|---|---:|---:|---:|
+| `SEARCH-20260726T015515Z-5C71AC51` | new KIC8462852 search | 1 | 242,170,450 | 0.226 |
+| `SEARCH-20260726T015438Z-1881A999` | HIP99427 later-epoch ABACAD follow-up | 6 | 1,449,661,910 | 1.350 |
+| **Total** | current-release positive-count acceptance | **7** | **1,691,832,360** | **1.576** |
+
+The next loop action is the irreducible human gate: explicit approval (or
+denial) of those two immutable searches. Approval authorizes only their seven
+listed public archive products and does not authorize labels, external
+submission, broader acquisition, or retained raw hoarding.
+
+---
+
 ## Hunter PROD Remediation Plan — 2026-07-25
 
-**Status:** Implementation complete; exact-commit validation and CI pending.
-Do not call Hunter PROD until the canonical validator and PR checks pass on the
-committed release.
+**Status:** Implementation merged in PR #316 and verified on release 1.2.61.
+This is implementation evidence only. It does not supersede the active PROD
+acceptance closure matrix above.
 
 **Current phase advanced:** Phase 1/5 integrated Hunter lifecycle and
 `SYSTEMATIC_SEARCH_PLAN.md` Step 3a detection-optimized target selection. This
@@ -130,7 +263,7 @@ external action, or a scientifically irreducible evidence gap.
 
 ### Remediation execution evidence
 
-Current working-tree evidence, to be superseded by the exact commit/CI record:
+Release 1.2.61 implementation evidence:
 
 - **Adaptive selection:** installed `Create-New-Search` automatically examined
   four initially unresolved TIC candidates, discovered four current archive
@@ -163,13 +296,12 @@ Current working-tree evidence, to be superseded by the exact commit/CI record:
   cadence evidence existed; the completion event preserves the consumed
   follow-up ID and reason. The live 6,879-target/3,833-entry registry now
   resolves in 1.3 seconds instead of exceeding 90 seconds.
-- **Validation:** 111 focused Hunter/queue/downloader/docs tests pass; Ruff
-  and mypy pass for every changed Hunter module. The full repo-native
-  six-shard validator also passed on the working tree (1,677 tests passed,
+- **Validation:** 111 focused Hunter/queue/downloader/docs tests passed; Ruff
+  and mypy passed for every changed Hunter module. The full repo-native
+  six-shard validator passed on the exact release tree (1,677 tests passed,
   seven skipped; Ruff, mypy, app-version gate, and `validate-all` passed).
-  `git add --dry-run .` listed only intended code, docs, tests, queue, and
-  compact evidence manifests. Clean-commit validation marker, CI, and merge
-  remain the final release steps.
+  PR #316 merged through green CI as commit `b20bd82908c9a7e9c142361a7eec045b3d3d00c8`;
+  the post-merge freshness marker names the same commit.
 
 ---
 

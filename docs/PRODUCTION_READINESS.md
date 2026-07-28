@@ -1,20 +1,23 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-07-25
-**Current phase:** Phase 0 complete; Phase 1/5 code integration is implemented.
+**Last updated:** 2026-07-26
+**Current phase:** Phase 0 complete; Phase 1/5 Hunter acceptance closure is active.
 The real cadence-complete `unknown`/adversarial acceptance branch is proven
 through the installed `Create-New-Search`/`Run-New-Search` Hunter entry
 points, not just a direct `run-pipeline` call. Hunter is **not PROD**. Version
-1.2.61 integrates adaptive discovery and sufficiency into the installed
-new-search path, authenticates acquisition against the immutable creation
-event/hash, validates sibling history before it can alter ranking, and gives
-follow-ups durable scheduled/completed/deferred disposition. The current
+1.2.62 adds archive-backed exact later-epoch cadence discovery and execution
+to the installed follow-up path, while retaining provenance-gated completion
+and failure/resume semantics. Version 1.2.61 integrates adaptive discovery
+and sufficiency into the installed new-search path, authenticates acquisition
+against the immutable creation event/hash, validates sibling history before it
+can alter ranking, and gives follow-ups durable
+scheduled/completed/deferred disposition. The current
 science-coverage limitation is 4,894 archive labels without sufficient
 resolved identity/evidence; the older 10,000-target aspiration is not an
 absolute-quality threshold and does not suppress a best-available-N result.
 The durable lifecycle has completed an approval-gated new-target raw
 acquisition, processing, scoring, interpretation, durable outcome, and
-follow-up recommendation with a real failure/resume cycle -- now including a
+follow-up recommendation with a real failure/resume cycle -- including a
 real, tested resume-after-failure demonstration (same `run_id` reused,
 history appended exactly once) and a real refusal to re-run an
 already-completed search. Version 1.2.42 closes the science/provenance
@@ -22,12 +25,13 @@ defects that run exposed and search `SEARCH-20260721T173605Z-0F6693E8`
 verifies the corrected implementation by reusing three retained DAT
 artifacts with zero downloads. All three targets were routed to local
 deterministic follow-up triage; no candidate promotion, detection, or
-external-submission permission was produced. A later-epoch observation is
-recommended scientific work, not a missing lifecycle stage. The durable
+external-submission permission was produced. The remaining Hunter acceptance
+gate is execution of the exact approval-pending current-release new and
+later-epoch searches recorded in `docs/PRODUCTION_SCAN_RUNBOOK.md`. The durable
 public-archive namespace now exceeds 10,000, and the real target priority
 queue now covers 6,879 unique target IDs (up from 1,703), of which 4,840
 currently carry real HDF5 URL/size evidence and are ranking-eligible.
-**Current app version:** 1.2.61
+**Current app version:** 1.2.62
 
 **Version 1.2.61 supersession notice:** the v1.2.58-v1.2.60 development
 record below is retained as history, not current authority. Its manual

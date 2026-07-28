@@ -16,11 +16,15 @@ import sys
 import types
 import urllib.request
 import warnings
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import certifi
 
+from techno_search.data_collection_status import (
+    record_and_publish_data_collection_status,
+)
 from techno_search.gbt_cadence import (
     apply_turboseti_numpy_compatibility,
     build_cadence_csv,
@@ -196,6 +200,11 @@ def main() -> int:
         type=Path,
         default=Path.home() / "technosignature-data",
     )
+    parser.add_argument(
+        "--evict-raw-after-processing",
+        action="store_true",
+        help="Delete each verified raw HDF5 after its durable hit table/provenance exists.",
+    )
     args = parser.parse_args()
 
     manifest = load_cadence_manifest(args.manifest)
@@ -205,26 +214,83 @@ def main() -> int:
     hit_dir.mkdir(parents=True, exist_ok=True)
     dat_paths: list[Path] = []
 
-    for scan in manifest["scans"]:
-        hdf5_path = download_archive_file(scan, raw_dir / scan["filename"])
-        dat_path, version = _run_turboseti(hdf5_path, hit_dir, manifest["analysis"])
-        write_hit_provenance(
-            dat_path,
-            hdf5_path,
-            manifest,
-            scan,
-            turbo_seti_version=version,
-        )
-        dat_paths.append(dat_path)
-
-    cadence_csv = hit_dir / f"{cadence_id}.csv"
-    result = build_cadence_csv(
-        dat_paths,
-        cadence_csv,
-        cadence_id=cadence_id,
-        target_name=str(manifest["target_name"]),
+    status_key = (
+        "ingest_gbt_cadence__"
+        f"{cadence_id}__{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}"
     )
-    result["source_dat_files"] = [str(path) for path in dat_paths]
+    processed_scans: list[dict[str, Any]] = []
+    try:
+        for scan in manifest["scans"]:
+            hdf5_path = download_archive_file(scan, raw_dir / scan["filename"])
+            dat_path, version = _run_turboseti(
+                hdf5_path, hit_dir, manifest["analysis"]
+            )
+            provenance_path = write_hit_provenance(
+                dat_path,
+                hdf5_path,
+                manifest,
+                scan,
+                turbo_seti_version=version,
+            )
+            if args.evict_raw_after_processing:
+                hdf5_path.unlink()
+            dat_paths.append(dat_path)
+            processed_scans.append(
+                {
+                    "sequence_index": int(scan["sequence_index"]),
+                    "scan_role": str(scan["scan_role"]),
+                    "source_name": str(scan["source_name"]),
+                    "source_url": str(scan["url"]),
+                    "archive_md5": str(scan["md5"]),
+                    "archive_size_bytes": int(scan["size_bytes"]),
+                    "hit_table": str(dat_path),
+                    "provenance": str(provenance_path),
+                    "raw_evicted": args.evict_raw_after_processing,
+                }
+            )
+
+        cadence_csv = hit_dir / f"{cadence_id}.csv"
+        result = build_cadence_csv(
+            dat_paths,
+            cadence_csv,
+            cadence_id=cadence_id,
+            target_name=str(manifest["target_name"]),
+        )
+        result["source_dat_files"] = [str(path) for path in dat_paths]
+        status_summary = {
+            "ok": True,
+            "cadence_id": cadence_id,
+            "target_name": str(manifest["target_name"]),
+            "scan_count": len(processed_scans),
+            "cadence_csv": str(cadence_csv),
+            "raw_retention_policy": (
+                "stream_process_evict"
+                if args.evict_raw_after_processing
+                else "retained"
+            ),
+            "processed_scans": processed_scans,
+        }
+        record_and_publish_data_collection_status(
+            REPO_ROOT, status_key, status_summary
+        )
+    except Exception as exc:
+        failure = {
+            "ok": False,
+            "cadence_id": cadence_id,
+            "target_name": str(manifest["target_name"]),
+            "error": f"{type(exc).__name__}: {exc}",
+            "processed_scans": processed_scans,
+        }
+        try:
+            record_and_publish_data_collection_status(
+                REPO_ROOT, status_key, failure
+            )
+        except Exception as status_exc:  # noqa: BLE001 - report both failures
+            print(
+                f"[ERROR] Cadence failure status recording also failed: {status_exc}",
+                file=sys.stderr,
+            )
+        raise
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0
 

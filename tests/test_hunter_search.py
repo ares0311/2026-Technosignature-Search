@@ -932,6 +932,197 @@ def test_follow_up_lifecycle_schedules_then_defers_unfulfilled_evidence(
     assert deferred["deferred_count"] == 1
 
 
+def test_follow_up_lifecycle_completes_only_after_verified_later_epoch_cadence(
+    tmp_path: Path,
+) -> None:
+    queue = tmp_path / "queue.csv"
+    scans = tmp_path / "scans"
+    searches = tmp_path / "searches"
+    history = tmp_path / "history.ndjson"
+    output = tmp_path / "GBT_HIP990000_2017-05-12_ABACAD.csv"
+    _write_queue(
+        queue,
+        1,
+        status="already_acquired_local_cache",
+        include_source_url=False,
+    )
+    _write_follow_up_ledger(scans, "capture_HIP990000_0001")
+    scan_filenames = [
+        (
+            "spliced_blc3031323334353637_guppi_57885_"
+            f"{30000 + index * 300}_HIP990000_{index:04d}.gpuspec.0002.h5"
+        )
+        for index in range(2, 8)
+    ]
+
+    def discover(targets: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+        target = dict(targets[0])
+        target.update(
+            {
+                "source_hdf5_url": "",
+                "source_data_path": str(output),
+                "estimated_download_gb": 1.44,
+                "follow_up_cadence": {
+                    "schema_version": "hunter_follow_up_cadence_v1",
+                    "cadence_id": "GBT_HIP990000_2017-05-12_ABACAD",
+                    "target_name": "HIP990000",
+                    "instrument": "Green Bank Telescope",
+                    "receiver": "L band",
+                    "source_archive": "Breakthrough Listen Open Data Archive",
+                    "archive_search_url": "https://example.test/search",
+                    "data_use_url": "https://example.test/data-use",
+                    "data_license": "CC BY 4.0",
+                    "validity_state": "valid",
+                    "prior_observation_max_mjd": 57752.98,
+                    "follow_up_observation_min_mjd": 57885.35,
+                    "later_epoch_days": 132.37,
+                    "human_approval_status": "pending",
+                    "approved_for_local_real_data": False,
+                    "external_submission_authorized": False,
+                    "analysis": {
+                        "max_drift_hz_per_sec": 10.0,
+                        "min_drift_hz_per_sec": 0.0001,
+                        "snr_threshold": 10.0,
+                    },
+                    "scans": [
+                        {
+                            "sequence_index": index,
+                            "scan_role": "on" if index % 2 else "off",
+                            "source_name": "HIP990000",
+                            "utc_start": "2017-05-12T00:00:00Z",
+                            "mjd": 57885.35 + index / 1000,
+                            "filename": filename,
+                            "size_bytes": 240_000_000,
+                            "md5": f"{index:032x}",
+                            "url": f"https://example.test/{filename}",
+                        }
+                        for index, filename in enumerate(scan_filenames, 1)
+                    ],
+                },
+            }
+        )
+        return [target], {"schema_version": "hunter_follow_up_discovery_report_v1"}
+
+    manifest = create_search(
+        target_count=1,
+        mode="follow-up",
+        queue_path=queue,
+        scans_dir=scans,
+        searches_dir=searches,
+        search_id="SEARCH-20260719T123000Z-A1B2C3D4",
+        follow_up_discovery=discover,
+    )
+    assert manifest["targets"][0]["follow_up_observation_scheduled"] is True
+    assert manifest["targets"][0]["follow_up_observation_fulfilled"] is False
+
+    commands: list[list[str]] = []
+    cadence_attempts = 0
+
+    def command_runner(command: list[str]) -> int:
+        nonlocal cadence_attempts
+        commands.append(command)
+        if any(item.endswith("ingest_gbt_cadence.py") for item in command):
+            cadence_attempts += 1
+            if cadence_attempts == 1:
+                return 7
+            output.write_text("Corrected_Frequency,SNR\n", encoding="utf-8")
+            output.with_name(output.name + ".provenance.json").write_text(
+                json.dumps(
+                    {
+                        "classification": "derived_real_observation_cadence",
+                        "cadence_id": "GBT_HIP990000_2017-05-12_ABACAD",
+                        "target_id": "HIP990000",
+                        "scan_count": 6,
+                        "sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
+                        "source_artifacts": [
+                            {
+                                "artifact_filename": (
+                                    filename.removesuffix(".h5") + ".dat"
+                                )
+                            }
+                            for filename in scan_filenames
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+        return 0
+
+    def production_runner(**kwargs: Any) -> ProductionScanResult:
+        run_id = str(kwargs["run_id"])
+        run_dir = Path(kwargs["scans_dir"]) / run_id
+        run_dir.mkdir(parents=True)
+        (run_dir / f"{run_id}_target_status.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": PRODUCTION_TARGET_STATUS_SCHEMA_VERSION,
+                    "run_id": run_id,
+                    "entries": [
+                        {
+                            "target_name": "capture_HIP990000_0001",
+                            "composite_score": 0.4,
+                            "top_pathway": "known_object_annotation",
+                            "source_data_path": str(output),
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        return ProductionScanResult(run_id, run_dir, 1, 0, 0, False)
+
+    with pytest.raises(
+        SearchLifecycleError,
+        match="cadence acquisition/processing failed with exit code 7",
+    ):
+        run_search(
+            searches_dir=searches,
+            search_id=manifest["search_id"],
+            approve_acquisition=True,
+            history_path=history,
+            stdout=StringIO(),
+            command_runner=command_runner,
+            production_runner=production_runner,
+        )
+    failed = load_search(searches, manifest["search_id"])
+    assert failed["status"] == "failed_resumable"
+    assert failed["events"][-1]["stage"] == (
+        "follow_up_cadence_acquisition_preprocessing"
+    )
+    execution_manifest = next(
+        (searches / manifest["search_id"] / "execution_inputs").glob("*.json")
+    )
+    frozen_execution_manifest = execution_manifest.read_bytes()
+
+    result = run_search(
+        searches_dir=searches,
+        search_id=manifest["search_id"],
+        approve_acquisition=True,
+        history_path=history,
+        stdout=StringIO(),
+        command_runner=command_runner,
+        production_runner=production_runner,
+    )
+
+    assert execution_manifest.read_bytes() == frozen_execution_manifest
+    assert len(commands) == 3
+    assert any(item.endswith("ingest_gbt_cadence.py") for item in commands[0])
+    assert any(item.endswith("ingest_gbt_cadence.py") for item in commands[1])
+    assert any(
+        item.endswith("run_stream_process_evict_batch.sh") for item in commands[2]
+    )
+    assert result["follow_up_completed_count"] == 1
+    assert result["follow_up_dispositions"][0]["state"] == "completed"
+    assert "verified six-scan later-epoch cadence" in result[
+        "follow_up_dispositions"
+    ][0]["reason"]
+    completed = follow_up_registry(
+        scans_dirs=(scans, searches), queue_path=queue
+    )
+    assert completed["completed_count"] == 1
+    assert completed["eligible_count"] == 0
+
+
 def test_follow_up_registry_reads_legacy_v1_ledgers(tmp_path: Path) -> None:
     queue = tmp_path / "queue.csv"
     scans = tmp_path / "scans"
@@ -992,6 +1183,16 @@ def test_required_cli_entrypoints_invoke_real_dispatch_paths(
         ]
     ) == 0
     assert "Created pending new search" in capsys.readouterr().out
+    monkeypatch.setattr(
+        "techno_search.hunter_cli.discover_follow_up_targets",
+        lambda targets: (
+            [dict(target) for target in targets],
+            {
+                "schema_version": "hunter_follow_up_discovery_report_v1",
+                "cadence_discovery_count": 0,
+            },
+        ),
+    )
     assert create_new_search(
         [
             "--targets",

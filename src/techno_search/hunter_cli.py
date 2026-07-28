@@ -12,6 +12,10 @@ from pathlib import Path
 from typing import Any, TextIO
 
 from techno_search.hunter_adaptive_discovery import prepare_production_new_target_queue
+from techno_search.hunter_follow_up_discovery import (
+    FollowUpDiscoveryError,
+    discover_follow_up_targets,
+)
 from techno_search.hunter_search import (
     SearchApprovalRequired,
     SearchLifecycleError,
@@ -75,6 +79,11 @@ def create_new_search(argv: Sequence[str] | None = None) -> int:
             )
             if args.mode == "new"
             else None,
+            follow_up_discovery=(
+                lambda targets: discover_follow_up_targets(targets)
+            )
+            if args.mode == "follow-up"
+            else None,
             constraints={
                 "min_ra_deg": args.min_ra_deg,
                 "max_ra_deg": args.max_ra_deg,
@@ -87,7 +96,7 @@ def create_new_search(argv: Sequence[str] | None = None) -> int:
                 "target_prefixes": args.target_prefixes or (),
             },
         )
-    except (SearchLifecycleError, ValueError) as exc:
+    except (FollowUpDiscoveryError, SearchLifecycleError, ValueError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
     if args.json:
