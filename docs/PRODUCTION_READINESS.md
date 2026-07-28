@@ -26,13 +26,36 @@ verifies the corrected implementation by reusing three retained DAT
 artifacts with zero downloads. All three targets were routed to local
 deterministic follow-up triage; no candidate promotion, detection, or
 external-submission permission was produced. The remaining Hunter acceptance
-gate is creation, exact approval, and execution of replacement v1.2.64
+gate is creation, exact approval, and execution of replacement v1.2.65
 new-target and later-epoch searches recorded in
 `docs/PRODUCTION_SCAN_RUNBOOK.md`. The durable
 public-archive namespace now exceeds 10,000, and the real target priority
 queue now covers 6,879 unique target IDs (up from 1,703), of which 4,840
 currently carry real HDF5 URL/size evidence and are ranking-eligible.
-**Current app version:** 1.2.64
+**Current app version:** 1.2.65
+
+**Live v1.2.64 lifecycle closed and production placeholder output removed —
+2026-07-27:** approved new-target search
+`SEARCH-20260728T041138Z-807379F8` completed as
+`RUN-2026-07-28_041452Z-BL8R-hunter-search`; HIP60759 resolved
+`unresolved` only because a single scan cannot supply complete ON/OFF cadence
+evidence, appended history once, registered one follow-up, and evicted its raw
+HDF5. Approved follow-up search `SEARCH-20260728T041142Z-9D498DFF`
+completed as `RUN-2026-07-28_041604Z-RNMS-hunter-search`; all six later-epoch
+HIP99427 scans were checksum/provenance verified, raw HDF5 files were evicted,
+the candidate resolved `known` because it failed the cadence condition, the
+originating follow-up was consumed exactly once and marked completed, and no
+new follow-up was emitted. Re-running either completed search fails non-zero,
+and each search has exactly one history entry and one completed event.
+
+Falsification of those packets then exposed that the production report path
+still emitted synthetic placeholder SVGs. Version 1.2.65 removes that path:
+reports visualize only numeric feature values actually persisted on the
+candidate, mark the artifact non-synthetic, and emit no plot when the evidence
+is absent. Radio candidate construction no longer injects a
+`waterfall_not_generated_v0` placeholder. Historical v1.2.64 outputs remain
+immutable. Hunter remains **NOT PROD** pending a fresh installed-entry-point
+v1.2.65 acceptance run and exact-final-release validation.
 
 **Live acceptance exposed and fixed an archive-discovery provenance defect —
 2026-07-27:** the approved v1.2.63 new-target search
@@ -45,10 +68,9 @@ required the legacy `observation_summary_url` field even though the validated
 archive-discovery manifest schema supplies `archive_search_url` instead.
 Version 1.2.64 makes the legacy field genuinely optional, preserves the
 archive discovery URL, and adds a regression test for the exact manifest
-shape. The v1.2.63 failure remains durable and must not be relabeled complete
-or resumed with changed release logic. Hunter remains **NOT PROD** pending a
-new immutable v1.2.64 acceptance search, exact acquisition approval, execution,
-and final-release validation.
+shape. The v1.2.63 failure remains durable and was not relabeled complete or
+resumed with changed release logic. Its replacement v1.2.64 acceptance
+searches completed as recorded above.
 
 **Persistent TechnoHunter shell closes the required interactive-CLI gap —
 2026-07-27:** version 1.2.63 adds the installed `TechnoHunter` terminal
@@ -62,8 +84,8 @@ Semantic color, readable command tables, and a signal-spectrum animation are
 TTY-only and disable for redirected output, no-color, reduced-motion, CI, and
 explicit automation flags. This closes an operator-surface gap without adding
 a shadow selector, runner, or persistence path. Hunter remains **NOT PROD**
-until the replacement current-release new-target and later-epoch searches
-recorded in `docs/PRODUCTION_SCAN_RUNBOOK.md` complete and the remaining coverage
+until replacement v1.2.65 installed-entry-point acceptance recorded in
+`docs/PRODUCTION_SCAN_RUNBOOK.md` completes and the remaining coverage
 limitations are resolved or bounded with current evidence.
 
 Live 1.2.63 preflight also exposed and closed a canonical follow-up selection

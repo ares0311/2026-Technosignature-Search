@@ -82,9 +82,9 @@ The configured scorer is uncalibrated. Numeric class weights and derived routing
 
 ## Plot Artifact Note
 
-Synthetic illustrative diagnostic for review context only; not evidence of a confirmed technosignature.
+Deterministic rendering of persisted candidate feature values for review context only; not evidence of a confirmed technosignature.
 
-- [Synthetic archival crossmatch diagnostic placeholder.](examples/batch_reports/example-anomaly-clean-anomaly-crossmatch.svg) `synthetic_anomaly_crossmatch` `image/svg+xml`
+- [Persisted anomaly candidate feature summary.](examples/batch_reports/example-anomaly-clean-anomaly-feature-summary.svg) `anomaly_scored_feature_summary` `image/svg+xml`
 
 ## Source IDs
 

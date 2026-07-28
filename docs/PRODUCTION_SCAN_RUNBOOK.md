@@ -43,14 +43,14 @@ evidence open.
 
 | Required business behavior | Current evidence | State required to close |
 |---|---|---|
-| Adaptive new-target discovery finds a displacing candidate outside the initial discovery sample | **Live lifecycle proof on v1.2.63:** installed search `SEARCH-20260728T035648Z-A9FE6463` selected and executed KIC8462852 from real archive evidence | Repeat on the exact final release only if release-specific acceptance requires it; preserve the v1.2.63 result as immutable historical evidence |
+| Adaptive new-target discovery finds a displacing candidate outside the initial discovery sample | **Live lifecycle proof through v1.2.64:** installed searches selected and executed KIC8462852, then HIP60759 from real archive evidence | Repeat on v1.2.65 because the live v1.2.64 packet exposed a production placeholder artifact |
 | Weak absolute quality still returns best-available N | Real shortfall/exhaustion runs and low-score regression coverage | Closed unless the final real runs contradict it |
-| Positive-count new-target lifecycle | **Closed for v1.2.63:** search `SEARCH-20260728T035648Z-A9FE6463`, run `RUN-2026-07-28_040023Z-ZKN8-hunter-search`, completed installed create -> approved acquisition -> preprocessing -> scoring/interpretation -> durable result/history -> follow-up registration | Repeat on v1.2.64 if required for exact-final-release closure; never rewrite the v1.2.63 evidence |
-| Follow-up selection and execution | **Failed loudly on v1.2.63:** search `SEARCH-20260728T035656Z-F3762970`, run `RUN-2026-07-28_040147Z-DFBQ-hunter-search`, selected GJ699 and failed after the first scan exposed an optional-provenance-field bug | Validate and merge the v1.2.64 root fix, create a new immutable current-release search, obtain exact approval, execute all six scans, and observe one completed lifecycle transition |
+| Positive-count new-target lifecycle | **Closed for v1.2.64:** search `SEARCH-20260728T041138Z-807379F8`, run `RUN-2026-07-28_041452Z-BL8R-hunter-search`, completed installed create -> approved acquisition -> preprocessing -> scoring/interpretation -> one durable history row and follow-up registration | Repeat on v1.2.65 after removing the production placeholder artifact; never rewrite historical evidence |
+| Follow-up selection and execution | **Closed for v1.2.64:** search `SEARCH-20260728T041142Z-9D498DFF`, run `RUN-2026-07-28_041604Z-RNMS-hunter-search`, verified a six-scan later-epoch HIP99427 cadence, classified it `known` from cadence failure, consumed one originating follow-up, appended history once, and emitted no new follow-up | Repeat the smallest valid follow-up on v1.2.65 so the final packet contains no synthetic placeholder output |
 | Restart/resume integrity | **Implementation proof for v1.2.62:** controlled cadence failure at exit 7 resumes the same search/run and byte-identical derived execution manifest, then completes with exactly one history/lifecycle transition | Repeat through the real bounded acquisition or leave the test-scoped limitation explicit if no safe deterministic real fault point exists |
 | Validation/provenance/identity/history | v1.2.61 manifest authentication, source hashing, validity states, alias resolver, real EXO import | Closed unless live acceptance exposes a contradiction |
 | No production bypass | Stream runner and direct downloader fail-closed tests | Re-audit every raw-acquisition command after final changes; all production commands must consume an authenticated durable search |
-| Exact release verification | v1.2.63 validator passed before live execution; live execution then exposed a defect | Run the canonical validator on v1.2.64, merge through green CI, create and execute exact-release acceptance searches, then validate and sync the final closure commit |
+| Exact release verification | v1.2.64 merged validation and live lifecycle passed, but packet falsification exposed a synthetic placeholder artifact | Validate and merge v1.2.65, create and execute exact-release acceptance searches, falsify their packets, then run the post-merge freshness gate |
 
 ### Execution loop
 
@@ -91,7 +91,35 @@ evidence open.
 - No labeling, external scientific contact/submission, destructive cleanup, or
   fabricated identity/evidence is authorized by this loop.
 
-### v1.2.63 live execution result and v1.2.64 approval checkpoint
+### v1.2.64 live execution result and v1.2.65 checkpoint
+
+The operator approved exactly the two v1.2.64 searches below:
+
+- `SEARCH-20260728T041138Z-807379F8` completed as
+  `RUN-2026-07-28_041452Z-BL8R-hunter-search`. HIP60759 produced an
+  `unresolved` result because the single scan lacks complete ON/OFF cadence,
+  appended history once, registered one follow-up, and evicted the raw HDF5.
+- `SEARCH-20260728T041142Z-9D498DFF` completed as
+  `RUN-2026-07-28_041604Z-RNMS-hunter-search`. Six checksum/provenance-bound
+  HIP99427 later-epoch scans resolved `known` from the failed cadence
+  condition, consumed `FU-2026-07-26_011410Z-P54N-001` exactly once, appended
+  one history row, emitted no replacement follow-up, and evicted all six raw
+  HDF5 files.
+- Both immutable searches contain one created, one started, and one completed
+  event with no failure; attempting to rerun either exits non-zero. The
+  registry reports one completed follow-up and neither target remains eligible
+  or scheduled.
+- Falsification found a separate release defect: candidate reports still
+  generated and labeled synthetic placeholder SVGs. Version 1.2.65 removes
+  those fake visualizations and the radio candidate placeholder field. It
+  renders only persisted numeric feature evidence and omits unsupported plots.
+
+The v1.2.64 outputs remain immutable. After v1.2.65 merges and passes canonical
+validation, create fresh immutable installed-entry-point searches, preflight
+their exact products, obtain exact approval, and repeat the acceptance
+lifecycle before closing Hunter PROD.
+
+### Historical v1.2.63 execution result and v1.2.64 approval checkpoint
 
 The operator approved exactly the two v1.2.63 searches below. That approval
 did not authorize replacement manifests or a broader acquisition:

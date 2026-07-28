@@ -258,7 +258,8 @@ def test_schema_required_fields_match_example_artifacts() -> None:
     assert packet["schema_version"] == "techno_search_packet_v1"
     assert manifest["schema_version"] == "techno_search_packet_v1"
     assert manifest["provenance_summary"]["source_dataset"] == "synthetic-example"
-    assert manifest["plot_artifacts"][0]["synthetic"] is True
+    assert manifest["plot_artifacts"][0]["synthetic"] is False
+    assert manifest["plot_artifacts"][0]["kind"] == "radio_scored_feature_summary"
     assert "service_url" in manifest["provenance_summary"]
     assert "cache_key" in manifest["provenance_summary"]
     assert batch["schema_version"] == "techno_search_packet_v1"

@@ -16,8 +16,7 @@
     "repeat_observation_score": 0.0,
     "metadata_completeness_score": 0.95,
     "data_quality_score": 0.92,
-    "provenance_completeness_score": 0.9,
-    "diagnostic_placeholder": "waterfall_not_generated_v0"
+    "provenance_completeness_score": 0.9
   },
   "provenance": {
     "source_dataset": "synthetic-example",

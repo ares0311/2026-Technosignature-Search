@@ -1,29 +1,29 @@
 {
   "adversarial_review_path": null,
   "candidate_id": "example-anomaly-clean",
-  "code_commit": "275d9ac",
+  "code_commit": "4e9b68d",
   "config_version": "scoring_v0",
-  "generated_at_utc": "2026-07-22T02:03:13.484473+00:00",
+  "generated_at_utc": "2026-07-28T04:23:23.491081+00:00",
   "json_path": "examples/batch_reports/example-anomaly-clean.json",
   "known_explanation_path": null,
   "known_explanation_state": null,
   "markdown_path": "examples/batch_reports/example-anomaly-clean.md",
   "plot_artifacts": [
     {
-      "description": "Synthetic archival crossmatch diagnostic placeholder.",
-      "disclaimer": "Synthetic illustrative diagnostic for review context only; not evidence of a confirmed technosignature.",
-      "kind": "synthetic_anomaly_crossmatch",
+      "description": "Persisted anomaly candidate feature summary.",
+      "disclaimer": "Deterministic rendering of persisted candidate feature values for review context only; not evidence of a confirmed technosignature.",
+      "kind": "anomaly_scored_feature_summary",
       "media_type": "image/svg+xml",
-      "path": "examples/batch_reports/example-anomaly-clean-anomaly-crossmatch.svg",
-      "synthetic": true,
+      "path": "examples/batch_reports/example-anomaly-clean-anomaly-feature-summary.svg",
+      "synthetic": false,
       "track": "anomaly"
     }
   ],
   "provenance_summary": {
     "cache_key": null,
-    "code_commit": "275d9ac",
+    "code_commit": "4e9b68d",
     "config_version": "scoring_v0",
-    "generated_at_utc": "2026-07-22T02:03:13.484487+00:00",
+    "generated_at_utc": "2026-07-28T04:23:23.491093+00:00",
     "input_path": null,
     "provider_name": null,
     "query_parameters": {},

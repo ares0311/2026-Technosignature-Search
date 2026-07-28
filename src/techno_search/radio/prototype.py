@@ -1,9 +1,4 @@
-"""Synthetic radio hit-table prototype.
-
-This module deliberately handles only small, in-memory synthetic hit tables. It
-extracts conservative v0 features for the shared scorer without claiming signal
-confirmation.
-"""
+"""Deterministic radio hit-table feature extraction."""
 
 from __future__ import annotations
 
@@ -30,7 +25,7 @@ class RfiBand:
 
 @dataclass(frozen=True)
 class RadioHit:
-    """Normalized synthetic radio hit row."""
+    """Normalized radio hit row."""
 
     frequency_hz: float
     drift_rate_hz_per_sec: float
@@ -47,17 +42,15 @@ class RadioHit:
 
 @dataclass(frozen=True)
 class RadioDiagnosticPaths:
-    """Optional diagnostic artifacts for a radio candidate."""
+    """Paths to real diagnostic artifacts available for a radio candidate."""
 
     waterfall_plot_path: str | None = None
     hit_table_path: str | None = None
-    diagnostic_placeholder: str = "waterfall_not_generated_v0"
 
     def as_features(self) -> dict[str, FeatureValue]:
         return {
             "waterfall_plot_path": self.waterfall_plot_path,
             "hit_table_path": self.hit_table_path,
-            "diagnostic_placeholder": self.diagnostic_placeholder,
         }
 
 
@@ -74,7 +67,7 @@ def parse_hit_table(
     *,
     track_config: TrackConfig | None = None,
 ) -> tuple[RadioHit, ...]:
-    """Parse synthetic hit-table rows into normalized radio hits."""
+    """Parse hit-table rows into normalized radio hits."""
 
     defaults = _feature_defaults(track_config)
     return tuple(_parse_hit(row, defaults) for row in rows)
@@ -100,7 +93,7 @@ def build_radio_candidate(
     diagnostics: RadioDiagnosticPaths | None = None,
     track_config: TrackConfig | None = None,
 ) -> Candidate:
-    """Build a shared candidate from synthetic radio hit rows."""
+    """Build a shared candidate from radio hit rows."""
 
     defaults = _feature_defaults(track_config)
     hits = parse_hit_table(rows, track_config=track_config)

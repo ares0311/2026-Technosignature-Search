@@ -4,12 +4,12 @@ from techno_search import (
     plot_artifact_summary,
     score_candidate,
     write_candidate_reports,
-    write_synthetic_plot_artifacts,
+    write_evidence_plot_artifacts,
 )
 from techno_search.plotting import PLOT_ARTIFACT_DISCLAIMER
 
 
-def test_radio_plot_artifact_writes_synthetic_waterfall_svg(tmp_path) -> None:
+def test_radio_plot_artifact_writes_persisted_feature_summary_svg(tmp_path) -> None:
     scored = score_candidate(
         Candidate(
             candidate_id="radio-plot",
@@ -18,17 +18,22 @@ def test_radio_plot_artifact_writes_synthetic_waterfall_svg(tmp_path) -> None:
         )
     )
 
-    artifacts = write_synthetic_plot_artifacts(scored, tmp_path, filename_prefix="radio-plot")
+    artifacts = write_evidence_plot_artifacts(scored, tmp_path, filename_prefix="radio-plot")
 
     assert len(artifacts) == 1
-    assert artifacts[0].kind == "synthetic_radio_waterfall"
-    assert artifacts[0].path.name == "radio-plot-radio-waterfall.svg"
+    assert artifacts[0].kind == "radio_scored_feature_summary"
+    assert artifacts[0].path.name == "radio-plot-radio-feature-summary.svg"
+    assert artifacts[0].synthetic is False
     svg = artifacts[0].path.read_text(encoding="utf-8")
-    assert "Synthetic Radio Waterfall Diagnostic" in svg
+    assert "Radio Scored Feature Summary" in svg
+    assert "snr" in svg
+    assert "30" in svg
+    assert "drift_rate_hz_per_sec" in svg
+    assert "2" in svg
     assert PLOT_ARTIFACT_DISCLAIMER in svg
 
 
-def test_infrared_plot_artifact_writes_synthetic_sed_svg(tmp_path) -> None:
+def test_infrared_plot_artifact_writes_persisted_feature_summary_svg(tmp_path) -> None:
     scored = score_candidate(
         Candidate(
             candidate_id="infrared-plot",
@@ -37,20 +42,20 @@ def test_infrared_plot_artifact_writes_synthetic_sed_svg(tmp_path) -> None:
         )
     )
 
-    artifacts = write_synthetic_plot_artifacts(
+    artifacts = write_evidence_plot_artifacts(
         scored,
         tmp_path,
         filename_prefix="infrared-plot",
     )
 
-    assert artifacts[0].kind == "synthetic_infrared_sed"
-    assert artifacts[0].path.name == "infrared-plot-infrared-sed.svg"
-    assert "Synthetic Infrared SED Diagnostic" in artifacts[0].path.read_text(
+    assert artifacts[0].kind == "infrared_scored_feature_summary"
+    assert artifacts[0].path.name == "infrared-plot-infrared-feature-summary.svg"
+    assert "Infrared Scored Feature Summary" in artifacts[0].path.read_text(
         encoding="utf-8"
     )
 
 
-def test_anomaly_plot_artifact_writes_synthetic_crossmatch_svg(tmp_path) -> None:
+def test_anomaly_plot_artifact_writes_persisted_feature_summary_svg(tmp_path) -> None:
     scored = score_candidate(
         Candidate(
             candidate_id="anomaly-plot",
@@ -59,17 +64,36 @@ def test_anomaly_plot_artifact_writes_synthetic_crossmatch_svg(tmp_path) -> None
         )
     )
 
-    artifacts = write_synthetic_plot_artifacts(
+    artifacts = write_evidence_plot_artifacts(
         scored,
         tmp_path,
         filename_prefix="anomaly-plot",
     )
 
-    assert artifacts[0].kind == "synthetic_anomaly_crossmatch"
-    assert artifacts[0].path.name == "anomaly-plot-anomaly-crossmatch.svg"
-    assert "Synthetic Archival Crossmatch Diagnostic" in artifacts[0].path.read_text(
+    assert artifacts[0].kind == "anomaly_scored_feature_summary"
+    assert artifacts[0].path.name == "anomaly-plot-anomaly-feature-summary.svg"
+    assert "Anomaly Scored Feature Summary" in artifacts[0].path.read_text(
         encoding="utf-8"
     )
+
+
+def test_plot_artifact_is_omitted_without_persisted_numeric_evidence(tmp_path) -> None:
+    scored = score_candidate(
+        Candidate(
+            candidate_id="radio-no-evidence",
+            track=Track.RADIO,
+            features={"catalog_status": "unavailable"},
+        )
+    )
+
+    artifacts = write_evidence_plot_artifacts(
+        scored,
+        tmp_path,
+        filename_prefix="radio-no-evidence",
+    )
+
+    assert artifacts == ()
+    assert list(tmp_path.iterdir()) == []
 
 
 def test_plot_artifact_summary_counts_manifest_entries_by_track_and_kind(tmp_path) -> None:
@@ -77,7 +101,7 @@ def test_plot_artifact_summary_counts_manifest_entries_by_track_and_kind(tmp_pat
         (
             Candidate(candidate_id="radio-plot", track=Track.RADIO, features={"snr": 30.0}),
             "radio",
-            "synthetic_radio_waterfall",
+            "radio_scored_feature_summary",
         ),
         (
             Candidate(
@@ -86,7 +110,7 @@ def test_plot_artifact_summary_counts_manifest_entries_by_track_and_kind(tmp_pat
                 features={"ir_excess_significance": 4.0},
             ),
             "infrared",
-            "synthetic_infrared_sed",
+            "infrared_scored_feature_summary",
         ),
         (
             Candidate(
@@ -95,7 +119,7 @@ def test_plot_artifact_summary_counts_manifest_entries_by_track_and_kind(tmp_pat
                 features={"crossmatch_confidence": 0.75},
             ),
             "anomaly",
-            "synthetic_anomaly_crossmatch",
+            "anomaly_scored_feature_summary",
         ),
     )
 
@@ -109,10 +133,10 @@ def test_plot_artifact_summary_counts_manifest_entries_by_track_and_kind(tmp_pat
     assert summary["plot_artifact_count"] == 3
     assert summary["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 1}
     assert summary["by_kind"] == {
-        "synthetic_anomaly_crossmatch": 1,
-        "synthetic_infrared_sed": 1,
-        "synthetic_radio_waterfall": 1,
+        "anomaly_scored_feature_summary": 1,
+        "infrared_scored_feature_summary": 1,
+        "radio_scored_feature_summary": 1,
     }
     assert summary["media_types"] == ["image/svg+xml"]
-    assert summary["synthetic_count"] == 3
+    assert summary["synthetic_count"] == 0
     assert summary["missing_path_count"] == 0

@@ -490,9 +490,9 @@ def test_cli_writes_reports(tmp_path) -> None:
     assert (output_dir / "cli-radio.md").exists()
     assert (output_dir / "cli-radio.json").exists()
     assert (output_dir / "cli-radio.manifest.json").exists()
-    assert (output_dir / "cli-radio-radio-waterfall.svg").exists()
+    assert (output_dir / "cli-radio-radio-feature-summary.svg").exists()
     assert "cli-radio.md" in stdout.getvalue()
-    assert "cli-radio-radio-waterfall.svg" in stdout.getvalue()
+    assert "cli-radio-radio-feature-summary.svg" in stdout.getvalue()
 
 
 def test_cli_can_skip_report_plot_artifacts(tmp_path) -> None:
@@ -517,7 +517,7 @@ def test_cli_can_skip_report_plot_artifacts(tmp_path) -> None:
 
     assert exit_code == 0
     assert manifest["plot_artifacts"] == []
-    assert not (output_dir / "cli-radio-radio-waterfall.svg").exists()
+    assert not (output_dir / "cli-radio-radio-feature-summary.svg").exists()
 
 
 def test_cli_scores_batch_directory(tmp_path) -> None:
@@ -1886,10 +1886,11 @@ def test_cli_plot_artifact_summary_outputs_example_counts() -> None:
     assert result["plot_artifact_count"] == 3
     assert result["by_track"] == {"anomaly": 1, "infrared": 1, "radio": 1}
     assert result["by_kind"] == {
-        "synthetic_anomaly_crossmatch": 1,
-        "synthetic_infrared_sed": 1,
-        "synthetic_radio_waterfall": 1,
+        "anomaly_scored_feature_summary": 1,
+        "infrared_scored_feature_summary": 1,
+        "radio_scored_feature_summary": 1,
     }
+    assert result["synthetic_count"] == 0
     assert result["missing_path_count"] == 0
 
 

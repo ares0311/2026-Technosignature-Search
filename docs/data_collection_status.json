@@ -29709,6 +29709,151 @@
       "recorded_at_utc": "2026-07-28T04:02:23.716291+00:00",
       "script": "ingest_gbt_cadence__GBT_GJ699_2016-10-28_ABACAD__20260728T040148Z",
       "target_name": "GJ699"
+    },
+    {
+      "acquisition_mode": "stream_process_evict",
+      "already_processed_count": 0,
+      "already_processed_targets": [],
+      "app_version": "1.2.64",
+      "attempt_id": "hunter_search__SEARCH-20260728T041138Z-807379F8__2026-07-28T04:15:41.005015+00:00",
+      "candidate_report_manifests_total": 1,
+      "completed_count": 1,
+      "dat_files_total": 819,
+      "downloaded_count": 1,
+      "downloaded_gb": 0.241324,
+      "downloaded_targets": [
+        "HIP60759"
+      ],
+      "evicted_count": 1,
+      "evicted_targets": [
+        "HIP60759"
+      ],
+      "failed_count": 0,
+      "failed_targets": [],
+      "local_dat_reuse_count": 0,
+      "local_dat_reuse_targets": [],
+      "manifest": "results/searches/SEARCH-20260728T041138Z-807379F8/manifest.json",
+      "newly_processed_count": 1,
+      "newly_processed_targets": [
+        "HIP60759"
+      ],
+      "ok": true,
+      "raw_retention_policy": "evicted_after_candidate_report_generation",
+      "recorded_at_utc": "2026-07-28T04:15:41.005015+00:00",
+      "script": "hunter_search__SEARCH-20260728T041138Z-807379F8",
+      "targets_attempted": 1,
+      "total_targets_in_manifest": 1
+    },
+    {
+      "attempt_id": "ingest_gbt_cadence__GBT_HIP99427_2017-05-12_ABACAD__20260728T041604Z__2026-07-28T04:18:21.560324+00:00",
+      "cadence_csv": "data/extended_corpus/hunter_follow_ups/bl_hits/GBT_HIP99427_2017-05-12_ABACAD.csv",
+      "cadence_id": "GBT_HIP99427_2017-05-12_ABACAD",
+      "ok": true,
+      "processed_scans": [
+        {
+          "archive_md5": "717d4d8918ab089d970a3a34f1e9b630",
+          "archive_size_bytes": 241333723,
+          "hit_table": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_30844_HIP99427_0002.gpuspec.0002.dat",
+          "provenance": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_30844_HIP99427_0002.gpuspec.0002.dat.provenance.json",
+          "raw_evicted": true,
+          "scan_role": "on",
+          "sequence_index": 1,
+          "source_name": "HIP99427",
+          "source_url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_64/holding/spliced_blc3031323334353637_guppi_57885_30844_HIP99427_0002.gpuspec.0002.h5"
+        },
+        {
+          "archive_md5": "e35b10d4a5a63b8cef881e0e2066f566",
+          "archive_size_bytes": 241917974,
+          "hit_table": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_31177_HIP100670_0003.gpuspec.0002.dat",
+          "provenance": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_31177_HIP100670_0003.gpuspec.0002.dat.provenance.json",
+          "raw_evicted": true,
+          "scan_role": "off",
+          "sequence_index": 2,
+          "source_name": "HIP100670",
+          "source_url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_64/holding/spliced_blc3031323334353637_guppi_57885_31177_HIP100670_0003.gpuspec.0002.h5"
+        },
+        {
+          "archive_md5": "8968a0bf51cf69f5e1a5020d6a20b43e",
+          "archive_size_bytes": 241497561,
+          "hit_table": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_31509_HIP99427_0004.gpuspec.0002.dat",
+          "provenance": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_31509_HIP99427_0004.gpuspec.0002.dat.provenance.json",
+          "raw_evicted": true,
+          "scan_role": "on",
+          "sequence_index": 3,
+          "source_name": "HIP99427",
+          "source_url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_64/holding/spliced_blc3031323334353637_guppi_57885_31509_HIP99427_0004.gpuspec.0002.h5"
+        },
+        {
+          "archive_md5": "a5c066c263d7faacb88b7327abd932a0",
+          "archive_size_bytes": 241540048,
+          "hit_table": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_31845_HIP99560_0005.gpuspec.0002.dat",
+          "provenance": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_31845_HIP99560_0005.gpuspec.0002.dat.provenance.json",
+          "raw_evicted": true,
+          "scan_role": "off",
+          "sequence_index": 4,
+          "source_name": "HIP99560",
+          "source_url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_64/holding/spliced_blc3031323334353637_guppi_57885_31845_HIP99560_0005.gpuspec.0002.h5"
+        },
+        {
+          "archive_md5": "ab7ee8e58ccfc75670eea30b76370f92",
+          "archive_size_bytes": 241592319,
+          "hit_table": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_32181_HIP99427_0006.gpuspec.0002.dat",
+          "provenance": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_32181_HIP99427_0006.gpuspec.0002.dat.provenance.json",
+          "raw_evicted": true,
+          "scan_role": "on",
+          "sequence_index": 5,
+          "source_name": "HIP99427",
+          "source_url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_64/holding/spliced_blc3031323334353637_guppi_57885_32181_HIP99427_0006.gpuspec.0002.h5"
+        },
+        {
+          "archive_md5": "ce02852088f7bfd3fe9ea13e732f49a7",
+          "archive_size_bytes": 241780285,
+          "hit_table": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_32517_HIP99759_0007.gpuspec.0002.dat",
+          "provenance": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_32517_HIP99759_0007.gpuspec.0002.dat.provenance.json",
+          "raw_evicted": true,
+          "scan_role": "off",
+          "sequence_index": 6,
+          "source_name": "HIP99759",
+          "source_url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_64/holding/spliced_blc3031323334353637_guppi_57885_32517_HIP99759_0007.gpuspec.0002.h5"
+        }
+      ],
+      "raw_retention_policy": "stream_process_evict",
+      "recorded_at_utc": "2026-07-28T04:18:21.560324+00:00",
+      "scan_count": 6,
+      "script": "ingest_gbt_cadence__GBT_HIP99427_2017-05-12_ABACAD__20260728T041604Z",
+      "target_name": "HIP99427"
+    },
+    {
+      "acquisition_mode": "stream_process_evict",
+      "already_processed_count": 0,
+      "already_processed_targets": [],
+      "app_version": "1.2.64",
+      "attempt_id": "hunter_search__SEARCH-20260728T041142Z-9D498DFF__2026-07-28T04:18:24.706017+00:00",
+      "candidate_report_manifests_total": 1,
+      "completed_count": 1,
+      "dat_files_total": 819,
+      "downloaded_count": 0,
+      "downloaded_gb": 0.0,
+      "downloaded_targets": [],
+      "evicted_count": 0,
+      "evicted_targets": [],
+      "failed_count": 0,
+      "failed_targets": [],
+      "local_dat_reuse_count": 1,
+      "local_dat_reuse_targets": [
+        "HIP99427"
+      ],
+      "manifest": "results/searches/SEARCH-20260728T041142Z-9D498DFF/manifest.json",
+      "newly_processed_count": 1,
+      "newly_processed_targets": [
+        "HIP99427"
+      ],
+      "ok": true,
+      "raw_retention_policy": "evicted_after_candidate_report_generation",
+      "recorded_at_utc": "2026-07-28T04:18:24.706017+00:00",
+      "script": "hunter_search__SEARCH-20260728T041142Z-9D498DFF",
+      "targets_attempted": 1,
+      "total_targets_in_manifest": 1
     }
   ],
   "disclaimer": "This manifest records real local data-collection run outcomes (counts of items found/downloaded/skipped/failed) for compact progress review. It is not a detection, discovery, external validation, or external-submission claim.",
@@ -30394,6 +30539,68 @@
       "targets_attempted": 1,
       "total_targets_in_manifest": 1
     },
+    "hunter_search__SEARCH-20260728T041138Z-807379F8": {
+      "acquisition_mode": "stream_process_evict",
+      "already_processed_count": 0,
+      "already_processed_targets": [],
+      "app_version": "1.2.64",
+      "candidate_report_manifests_total": 1,
+      "completed_count": 1,
+      "dat_files_total": 819,
+      "downloaded_count": 1,
+      "downloaded_gb": 0.241324,
+      "downloaded_targets": [
+        "HIP60759"
+      ],
+      "evicted_count": 1,
+      "evicted_targets": [
+        "HIP60759"
+      ],
+      "failed_count": 0,
+      "failed_targets": [],
+      "last_run_utc": "2026-07-28T04:15:41.005015+00:00",
+      "local_dat_reuse_count": 0,
+      "local_dat_reuse_targets": [],
+      "manifest": "results/searches/SEARCH-20260728T041138Z-807379F8/manifest.json",
+      "newly_processed_count": 1,
+      "newly_processed_targets": [
+        "HIP60759"
+      ],
+      "ok": true,
+      "raw_retention_policy": "evicted_after_candidate_report_generation",
+      "targets_attempted": 1,
+      "total_targets_in_manifest": 1
+    },
+    "hunter_search__SEARCH-20260728T041142Z-9D498DFF": {
+      "acquisition_mode": "stream_process_evict",
+      "already_processed_count": 0,
+      "already_processed_targets": [],
+      "app_version": "1.2.64",
+      "candidate_report_manifests_total": 1,
+      "completed_count": 1,
+      "dat_files_total": 819,
+      "downloaded_count": 0,
+      "downloaded_gb": 0.0,
+      "downloaded_targets": [],
+      "evicted_count": 0,
+      "evicted_targets": [],
+      "failed_count": 0,
+      "failed_targets": [],
+      "last_run_utc": "2026-07-28T04:18:24.706017+00:00",
+      "local_dat_reuse_count": 1,
+      "local_dat_reuse_targets": [
+        "HIP99427"
+      ],
+      "manifest": "results/searches/SEARCH-20260728T041142Z-9D498DFF/manifest.json",
+      "newly_processed_count": 1,
+      "newly_processed_targets": [
+        "HIP99427"
+      ],
+      "ok": true,
+      "raw_retention_policy": "evicted_after_candidate_report_generation",
+      "targets_attempted": 1,
+      "total_targets_in_manifest": 1
+    },
     "ingest_gbt_cadence__GBT_GJ699_2016-10-28_ABACAD__20260728T040148Z": {
       "cadence_id": "GBT_GJ699_2016-10-28_ABACAD",
       "error": "KeyError: 'observation_summary_url'",
@@ -30401,6 +30608,83 @@
       "ok": false,
       "processed_scans": [],
       "target_name": "GJ699"
+    },
+    "ingest_gbt_cadence__GBT_HIP99427_2017-05-12_ABACAD__20260728T041604Z": {
+      "cadence_csv": "data/extended_corpus/hunter_follow_ups/bl_hits/GBT_HIP99427_2017-05-12_ABACAD.csv",
+      "cadence_id": "GBT_HIP99427_2017-05-12_ABACAD",
+      "last_run_utc": "2026-07-28T04:18:21.560324+00:00",
+      "ok": true,
+      "processed_scans": [
+        {
+          "archive_md5": "717d4d8918ab089d970a3a34f1e9b630",
+          "archive_size_bytes": 241333723,
+          "hit_table": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_30844_HIP99427_0002.gpuspec.0002.dat",
+          "provenance": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_30844_HIP99427_0002.gpuspec.0002.dat.provenance.json",
+          "raw_evicted": true,
+          "scan_role": "on",
+          "sequence_index": 1,
+          "source_name": "HIP99427",
+          "source_url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_64/holding/spliced_blc3031323334353637_guppi_57885_30844_HIP99427_0002.gpuspec.0002.h5"
+        },
+        {
+          "archive_md5": "e35b10d4a5a63b8cef881e0e2066f566",
+          "archive_size_bytes": 241917974,
+          "hit_table": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_31177_HIP100670_0003.gpuspec.0002.dat",
+          "provenance": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_31177_HIP100670_0003.gpuspec.0002.dat.provenance.json",
+          "raw_evicted": true,
+          "scan_role": "off",
+          "sequence_index": 2,
+          "source_name": "HIP100670",
+          "source_url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_64/holding/spliced_blc3031323334353637_guppi_57885_31177_HIP100670_0003.gpuspec.0002.h5"
+        },
+        {
+          "archive_md5": "8968a0bf51cf69f5e1a5020d6a20b43e",
+          "archive_size_bytes": 241497561,
+          "hit_table": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_31509_HIP99427_0004.gpuspec.0002.dat",
+          "provenance": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_31509_HIP99427_0004.gpuspec.0002.dat.provenance.json",
+          "raw_evicted": true,
+          "scan_role": "on",
+          "sequence_index": 3,
+          "source_name": "HIP99427",
+          "source_url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_64/holding/spliced_blc3031323334353637_guppi_57885_31509_HIP99427_0004.gpuspec.0002.h5"
+        },
+        {
+          "archive_md5": "a5c066c263d7faacb88b7327abd932a0",
+          "archive_size_bytes": 241540048,
+          "hit_table": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_31845_HIP99560_0005.gpuspec.0002.dat",
+          "provenance": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_31845_HIP99560_0005.gpuspec.0002.dat.provenance.json",
+          "raw_evicted": true,
+          "scan_role": "off",
+          "sequence_index": 4,
+          "source_name": "HIP99560",
+          "source_url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_64/holding/spliced_blc3031323334353637_guppi_57885_31845_HIP99560_0005.gpuspec.0002.h5"
+        },
+        {
+          "archive_md5": "ab7ee8e58ccfc75670eea30b76370f92",
+          "archive_size_bytes": 241592319,
+          "hit_table": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_32181_HIP99427_0006.gpuspec.0002.dat",
+          "provenance": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_32181_HIP99427_0006.gpuspec.0002.dat.provenance.json",
+          "raw_evicted": true,
+          "scan_role": "on",
+          "sequence_index": 5,
+          "source_name": "HIP99427",
+          "source_url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_64/holding/spliced_blc3031323334353637_guppi_57885_32181_HIP99427_0006.gpuspec.0002.h5"
+        },
+        {
+          "archive_md5": "ce02852088f7bfd3fe9ea13e732f49a7",
+          "archive_size_bytes": 241780285,
+          "hit_table": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_32517_HIP99759_0007.gpuspec.0002.dat",
+          "provenance": "data/extended_corpus/hunter_follow_ups/bl_hits/spliced_blc3031323334353637_guppi_57885_32517_HIP99759_0007.gpuspec.0002.dat.provenance.json",
+          "raw_evicted": true,
+          "scan_role": "off",
+          "sequence_index": 6,
+          "source_name": "HIP99759",
+          "source_url": "https://bldata.berkeley.edu/pipeline/AGBT17A_999_64/holding/spliced_blc3031323334353637_guppi_57885_32517_HIP99759_0007.gpuspec.0002.h5"
+        }
+      ],
+      "raw_retention_policy": "stream_process_evict",
+      "scan_count": 6,
+      "target_name": "HIP99427"
     },
     "stream_process_evict_batch": {
       "acquisition_mode": "stream_process_evict",

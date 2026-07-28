@@ -80,13 +80,13 @@ The configured scorer is uncalibrated. Numeric class weights and derived routing
 
 ## Diagnostics
 
-- `diagnostic_placeholder`: waterfall_not_generated_v0
+- None recorded
 
 ## Plot Artifact Note
 
-Synthetic illustrative diagnostic for review context only; not evidence of a confirmed technosignature.
+Deterministic rendering of persisted candidate feature values for review context only; not evidence of a confirmed technosignature.
 
-- [Synthetic radio waterfall-style diagnostic placeholder.](examples/batch_reports/example-radio-clean-radio-waterfall.svg) `synthetic_radio_waterfall` `image/svg+xml`
+- [Persisted radio candidate feature summary.](examples/batch_reports/example-radio-clean-radio-feature-summary.svg) `radio_scored_feature_summary` `image/svg+xml`
 
 ## Source IDs
 
@@ -96,7 +96,6 @@ Synthetic illustrative diagnostic for review context only; not evidence of a con
 
 - `bandwidth_hz`: 1.5
 - `data_quality_score`: 0.92
-- `diagnostic_placeholder`: waterfall_not_generated_v0
 - `drift_rate_hz_per_sec`: 2.0
 - `frequency_persistence_score`: 0.05
 - `injection_recovery_score`: 0.85
