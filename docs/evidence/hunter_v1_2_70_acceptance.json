@@ -1,0 +1,216 @@
+{
+  "schema_version": "hunter_live_acceptance_v2",
+  "artifact_kind": "installed_hunter_prod_threshold_evidence",
+  "recorded_at_utc": "2026-07-29T06:08:07Z",
+  "release": {
+    "science_acceptance_app_version": "1.2.69",
+    "science_acceptance_code_commit": "1da324c",
+    "closure_app_version": "1.2.70",
+    "closure_code_commit": "e359546fc41d9ec62eaeee8c2b684a0152096300",
+    "closure_delta": "production terminal-summary scope terminology only; selection, acquisition, scoring, interpretation, persistence, and follow-up logic are unchanged"
+  },
+  "scope": {
+    "installed_entry_point": "Techno-Hunter",
+    "canonical_commands": [
+      "/Create-New-Search --targets 1 --mode new",
+      "/Create-New-Search --targets 1 --mode follow-up",
+      "/Run-New-Search",
+      "/Show-Follow-Ups"
+    ],
+    "modes": [
+      "new",
+      "follow-up"
+    ],
+    "production_promotion_scope": "local_production_triage_only",
+    "detection_claimed": false,
+    "discovery_claimed": false,
+    "expert_review_claimed": false,
+    "external_validation_claimed": false,
+    "external_submission_allowed": false
+  },
+  "candidate_pool": {
+    "archive_catalog_labels": 12086,
+    "durable_queue_targets": 6879,
+    "ranking_eligible_targets": 4862,
+    "selection_policy": "deterministic best-available-N ranking over the scientifically viable pool; ranking scores are not calibrated probabilities"
+  },
+  "lifecycle_falsification": {
+    "completed_search_rerun_exit_code": 1,
+    "event_counts_unchanged": true,
+    "history_count_before": 696,
+    "history_count_after": 696,
+    "raw_hdf5_retained_count": 0,
+    "raw_retention_policy": "stream_process_evict",
+    "storage_cap_gb": 100,
+    "free_space_gib_after": 341
+  },
+  "searches": [
+    {
+      "mode": "new",
+      "search_id": "SEARCH-20260729T055045Z-125D2215",
+      "run_id": "RUN-2026-07-29_055553Z-YI5F-hunter-search",
+      "target_ids": [
+        "HIP3419"
+      ],
+      "target_count": 1,
+      "candidate_pool_count": 6879,
+      "viable_candidate_count": 4862,
+      "projected_download_gb": 0.237996,
+      "downloaded_count": 1,
+      "evicted_count": 1,
+      "known_explanation_state_counts": {
+        "known": 0,
+        "unknown": 0,
+        "unresolved": 1
+      },
+      "unresolved_reason": "complete ON/OFF cadence evidence is unavailable for the single scan",
+      "history_records_appended": 1,
+      "follow_up_required_count": 1,
+      "follow_up_observation_fulfilled_count": 0,
+      "candidate_count": 1,
+      "follow_up_count": 1,
+      "source_scan_count": 1,
+      "event_sequence": [
+        "created",
+        "run_started",
+        "run_completed"
+      ],
+      "plot_artifacts_synthetic": [
+        false
+      ],
+      "final_pathway": "human_review_queue",
+      "artifacts": [
+        {
+          "role": "search_manifest",
+          "path": "results/searches/SEARCH-20260729T055045Z-125D2215/manifest.json",
+          "sha256": "dd27306bc1f705e70e337403558b59de636cad040e307dfb6bbe68da1e92a947"
+        },
+        {
+          "role": "event_ledger",
+          "path": "results/searches/SEARCH-20260729T055045Z-125D2215/events.ndjson",
+          "sha256": "38633e0dacdebfea650dff41008c1c1c508984d4c65c55272c83fd3fb976d97a"
+        },
+        {
+          "role": "run_manifest",
+          "path": "results/searches/SEARCH-20260729T055045Z-125D2215/runs/RUN-2026-07-29_055553Z-YI5F-hunter-search/RUN-2026-07-29_055553Z-YI5F-hunter-search_manifest.json",
+          "sha256": "7d0feb16daaa34d3feed3d4479a9b5d1533303e97061cf099ba876e347d4afd0"
+        },
+        {
+          "role": "candidate_manifest",
+          "path": "results/searches/SEARCH-20260729T055045Z-125D2215/pipeline_results/spliced_blc0001020304050607_guppi_57585_37304_Hip3419_0003.gpuspec.0002/spliced_blc0001020304050607_guppi_57585_37304_Hip3419_0003.gpuspec.0002.manifest.json",
+          "sha256": "142b1c95f2a29642ce049dd18cc34536ca95ebd6836cbd0d5b86a7872c38f699"
+        },
+        {
+          "role": "candidate_packet",
+          "path": "results/searches/SEARCH-20260729T055045Z-125D2215/pipeline_results/spliced_blc0001020304050607_guppi_57585_37304_Hip3419_0003.gpuspec.0002/spliced_blc0001020304050607_guppi_57585_37304_Hip3419_0003.gpuspec.0002.json",
+          "sha256": "2609078dcd6520537089fba831a4dafd600908d580c76113fd6e54fa49335735"
+        },
+        {
+          "role": "known_explanation_record",
+          "path": "results/searches/SEARCH-20260729T055045Z-125D2215/pipeline_results/spliced_blc0001020304050607_guppi_57585_37304_Hip3419_0003.gpuspec.0002/spliced_blc0001020304050607_guppi_57585_37304_Hip3419_0003.gpuspec.0002.known-explanation.json",
+          "sha256": "1f1c62bf134b4bfe47ef8e2210e89b37759dc4464e730e6de3c4161b8b71d1e7"
+        }
+      ]
+    },
+    {
+      "mode": "follow-up",
+      "search_id": "SEARCH-20260729T055057Z-7321B0CB",
+      "run_id": "RUN-2026-07-29_055650Z-G60U-hunter-search",
+      "target_ids": [
+        "HIP103039"
+      ],
+      "target_count": 1,
+      "prior_search_count": 8,
+      "consumed_follow_up_count": 8,
+      "projected_download_gb": 1.455569,
+      "downloaded_scan_count": 6,
+      "evicted_scan_count": 6,
+      "known_explanation_state_counts": {
+        "known": 0,
+        "unknown": 1,
+        "unresolved": 0
+      },
+      "required_known_explanation_condition_count": 10,
+      "required_known_explanation_satisfied_count": 10,
+      "automatic_adversarial_review_count": 1,
+      "adversarial_blocking_issue_count": 1,
+      "adversarial_refutation_count": 0,
+      "adversarial_review_concern_count": 3,
+      "requires_human_expert_review": false,
+      "ranking_probability_interpretation_allowed": false,
+      "history_records_appended": 1,
+      "follow_up_required_count": 1,
+      "follow_up_observation_fulfilled_count": 1,
+      "candidate_count": 1,
+      "follow_up_count": 1,
+      "source_scan_count": 6,
+      "cadence_hit_row_count": 72,
+      "on_scan_distinct_source_count": 3,
+      "off_scan_distinct_source_count": 0,
+      "cadence_survivor_group_count": 1,
+      "event_sequence": [
+        "created",
+        "run_started",
+        "run_completed"
+      ],
+      "plot_artifacts_synthetic": [
+        false
+      ],
+      "final_pathway": "human_review_queue",
+      "artifacts": [
+        {
+          "role": "search_manifest",
+          "path": "results/searches/SEARCH-20260729T055057Z-7321B0CB/manifest.json",
+          "sha256": "54a32f487ab3d05ea132db2e595fc307c8266174fa445725ca6477da22adddad"
+        },
+        {
+          "role": "event_ledger",
+          "path": "results/searches/SEARCH-20260729T055057Z-7321B0CB/events.ndjson",
+          "sha256": "3572a4a7173cb87d858d44d661b152a7fe7b9ac946b4d0fb5acdecc240d7eda3"
+        },
+        {
+          "role": "run_manifest",
+          "path": "results/searches/SEARCH-20260729T055057Z-7321B0CB/runs/RUN-2026-07-29_055650Z-G60U-hunter-search/RUN-2026-07-29_055650Z-G60U-hunter-search_manifest.json",
+          "sha256": "7251d87c3144bf1c65ed1e4d73a2263c8ca640a12047c3f505da2ec3d2e55e71"
+        },
+        {
+          "role": "candidate_manifest",
+          "path": "results/searches/SEARCH-20260729T055057Z-7321B0CB/pipeline_results/GBT_HIP103039_2017-06-25_ABACAD/GBT_HIP103039_2017-06-25_ABACAD.manifest.json",
+          "sha256": "bb673af943dab45916529b0b86e3449b8d99c4c992100fb9b48898c222945788"
+        },
+        {
+          "role": "candidate_packet",
+          "path": "results/searches/SEARCH-20260729T055057Z-7321B0CB/pipeline_results/GBT_HIP103039_2017-06-25_ABACAD/GBT_HIP103039_2017-06-25_ABACAD.json",
+          "sha256": "5867d551fab9ba011f0e3aeefa673ff4ee262b3b95f9b42a02a8cb20e1766da0"
+        },
+        {
+          "role": "known_explanation_record",
+          "path": "results/searches/SEARCH-20260729T055057Z-7321B0CB/pipeline_results/GBT_HIP103039_2017-06-25_ABACAD/GBT_HIP103039_2017-06-25_ABACAD.known-explanation.json",
+          "sha256": "3a0ca6d88cc27cbe01e125f21cdefab6f1e87ac24d2edd5362306acd8ade7a3a"
+        },
+        {
+          "role": "adversarial_dossier",
+          "path": "results/searches/SEARCH-20260729T055057Z-7321B0CB/pipeline_results/GBT_HIP103039_2017-06-25_ABACAD/GBT_HIP103039_2017-06-25_ABACAD.adversarial.json",
+          "sha256": "43cf520fb76dcda729ae42cbbdf0585c3c40a96d3b85c5389aa386b6010b5f81"
+        },
+        {
+          "role": "cadence_hit_table",
+          "path": "data/extended_corpus/hunter_follow_ups/bl_hits/GBT_HIP103039_2017-06-25_ABACAD.csv",
+          "sha256": "5863f7d7aa3e4d149eb6fd8eecf112eb9b27163f14dd72a60c1a2932624800f7"
+        },
+        {
+          "role": "cadence_provenance",
+          "path": "data/extended_corpus/hunter_follow_ups/bl_hits/GBT_HIP103039_2017-06-25_ABACAD.csv.provenance.json",
+          "sha256": "ad88d1eb9779f46d9ce7fe51f74985ca8b5d586ac2f126b42164a24d156a4697"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "This evidence covers bounded one-target new and follow-up lifecycle cases, not a broad statistical performance claim.",
+    "The new-target run remains unresolved because one scan cannot satisfy the complete cadence check.",
+    "The follow-up unknown state is an exhausted-known-checks triage state, not a positive label, detection, or discovery.",
+    "The follow-up adversarial dossier contains an Earth-drift blocking issue and does not authorize human expert review or external submission.",
+    "The v1.2.70 closure delta corrects one terminal-summary scope string discovered by the v1.2.69 live run; no scientific or lifecycle code changed after the immutable searches."
+  ]
+}

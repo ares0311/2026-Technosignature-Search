@@ -161,6 +161,21 @@ def test_readme_status_matches_current_version_and_candidate_inventory() -> None
     assert f"approximately {eligible_gb:.3f} GB" in readme
 
 
+def test_readme_prod_status_is_bound_to_current_acceptance_evidence() -> None:
+    readme = Path("README.md").read_text(encoding="utf-8")
+    readiness = Path("docs/PRODUCTION_READINESS.md").read_text(encoding="utf-8")
+    runbook = Path("docs/PRODUCTION_SCAN_RUNBOOK.md").read_text(encoding="utf-8")
+    evidence_path = "docs/evidence/hunter_v1_2_70_acceptance.json"
+
+    assert "Hunter%20workflow-PROD-green" in readme
+    assert "standalone Hunter workflow is PROD" in readme
+    assert evidence_path in readme
+    assert evidence_path in readiness
+    assert evidence_path in runbook
+    assert "4,894 archive labels" in readme
+    assert "science-coverage limitation" in readme
+
+
 def test_publishing_docs_reference_current_validation_commands() -> None:
     doc = Path("docs/PUBLISHING.md").read_text(encoding="utf-8")
 

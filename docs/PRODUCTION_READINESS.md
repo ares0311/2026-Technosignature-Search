@@ -1,51 +1,49 @@
 # Production Readiness Assessment
 
-**Last updated:** 2026-07-28
-**Current phase:** Phase 0 complete; Phase 1/5 Hunter acceptance closure is active.
-The real cadence-complete `unknown`/adversarial acceptance branch is proven
-through the installed `Create-New-Search`/`Run-New-Search` Hunter entry
-points, not just a direct `run-pipeline` call. Hunter is **not PROD**. Version
-1.2.62 adds archive-backed exact later-epoch cadence discovery and execution
-to the installed follow-up path, while retaining provenance-gated completion
-and failure/resume semantics. Version 1.2.61 integrates adaptive discovery
-and sufficiency into the installed new-search path, authenticates acquisition
-against the immutable creation event/hash, validates sibling history before it
-can alter ranking, and gives follow-ups durable
-scheduled/completed/deferred disposition. The current
-science-coverage limitation is 4,894 archive labels without sufficient
-resolved identity/evidence; the older 10,000-target aspiration is not an
-absolute-quality threshold and does not suppress a best-available-N result.
-The durable lifecycle has completed an approval-gated new-target raw
-acquisition, processing, scoring, interpretation, durable outcome, and
-follow-up recommendation with a real failure/resume cycle -- including a
-real, tested resume-after-failure demonstration (same `run_id` reused,
-history appended exactly once) and a real refusal to re-run an
-already-completed search. Version 1.2.42 closes the science/provenance
-defects that run exposed and search `SEARCH-20260721T173605Z-0F6693E8`
-verifies the corrected implementation by reusing three retained DAT
-artifacts with zero downloads. All three targets were routed to local
-deterministic follow-up triage; no candidate promotion, detection, or
-external-submission permission was produced. The v1.2.65 installed-entry-point
-acceptance gate is now durably closed by
-`docs/evidence/hunter_v1_2_65_acceptance.json` and its CI contract test.
-Version 1.2.66 preserves real candidate-table context that the source catalogs
-already supplied but the durable queue previously discarded: object type,
-distance, spectral type, exoplanet-host state, prior SETI coverage reference,
-and prior-search provenance. Its first installed follow-up manifest then
-exposed that the registry did not carry those fields into follow-up rows and
-the renderer dumped raw provenance dictionaries while reporting zero prior
-searches. Version 1.2.67 fixes that acceptance defect. Version 1.2.68 installs
-the mission-required `Techno-Hunter` executable name while retaining
-`TechnoHunter` as a compatibility alias. Version 1.2.69 adds the required
-canonical `/Create-New-Search --targets N --mode new|follow-up` and
-`/Run-New-Search` slash commands while retaining the shorter convenience
-aliases. The durable
-public-archive namespace now exceeds 10,000, and the real target priority
-queue now covers 6,879 unique target IDs (up from 1,703), of which 4,862
-currently carry real HDF5 URL/size evidence and are ranking-eligible.
-Hunter remains **NOT PROD** until the exact v1.2.69 installed release passes
-the bounded new/follow-up acceptance and post-merge freshness gates.
-**Current app version:** 1.2.69
+**Last updated:** 2026-07-29
+**Current phase:** Phase 0 complete; the bounded Phase 1/5 Hunter PROD
+acceptance gate is complete. The wider scientific roadmap remains active.
+
+The standalone `Techno-Hunter` workflow is **PROD** for deterministic local
+production triage. Exact canonical-command acceptance executed new search
+`SEARCH-20260729T055045Z-125D2215` and follow-up search
+`SEARCH-20260729T055057Z-7321B0CB` under v1.2.69. HIP3419 completed
+selection, approval-gated acquisition, preprocessing, scoring,
+interpretation, durable history, and follow-up registration, and correctly
+remained `unresolved` because one scan cannot satisfy the cadence contract.
+HIP103039 completed a real six-scan later-epoch cadence, satisfied all ten
+known-explanation checks, reached local `unknown`, automatically persisted an
+adversarial dossier, consumed eight originating follow-ups, appended history
+once, and remained in local deterministic triage because Earth-drift
+inconsistency is a blocking issue. Re-running either completed search exited
+non-zero without changing its three-event ledger or the 696-row history.
+All seven raw HDF5 inputs were evicted after derived evidence and provenance
+were durable.
+
+Falsification found one stale terminal-summary string that still described the
+project as citizen science. Version 1.2.70 corrects that production-scope
+terminology and adds a regression test; selection, acquisition, scoring,
+interpretation, persistence, and follow-up logic are unchanged from the exact
+live acceptance. The immutable hashes and contract are preserved in
+`docs/evidence/hunter_v1_2_70_acceptance.json`.
+
+The durable public-archive namespace contains 12,086 labels; the real target
+priority queue contains 6,879 unique IDs and 4,862 currently carry sufficient
+real identity and HDF5 URL/size evidence to rank. The remaining 4,894
+unresolved labels are an explicit science-coverage limitation, not a silent
+fallback, an absolute-quality threshold, or a reason to suppress a
+best-available-N result. No output makes a positive technosignature label,
+detection, discovery, expert-review, external-validation, or
+external-submission claim.
+**Current app version:** 1.2.70
+
+**Exact v1.2.69 science acceptance and v1.2.70 closure — 2026-07-29:**
+`docs/evidence/hunter_v1_2_70_acceptance.json` records fifteen immutable
+runtime hashes, candidate-pool counts, exact lifecycle transitions, raw
+eviction, idempotent completed-search refusal, the single-scan `unresolved`
+state, the cadence-complete `unknown` state, automatic adversarial review, and
+fail-closed expert/submission flags. The closure release changes only the
+terminal-summary scope wording exposed by that run.
 
 **Exact v1.2.65 installed-entry-point acceptance closed — 2026-07-28:**
 new-target search `SEARCH-20260728T042942Z-7572B240` completed as
@@ -81,8 +79,8 @@ candidate, mark the artifact non-synthetic, and emit no plot when the evidence
 is absent. Radio candidate construction no longer injects a
 `waterfall_not_generated_v0` placeholder. Historical v1.2.64 outputs remain
 immutable. The replacement v1.2.65 acceptance is complete as recorded above.
-Hunter remains **NOT PROD** pending exact-final-release validation after
-v1.2.69.
+That historical exact-final-release gap is closed by the v1.2.69/v1.2.70
+acceptance recorded at the top of this document.
 
 **Live acceptance exposed and fixed an archive-discovery provenance defect —
 2026-07-27:** the approved v1.2.63 new-target search
@@ -114,8 +112,8 @@ explicit automation flags. This closes an operator-surface gap without adding
 a shadow selector, runner, or persistence path. Version 1.2.68 adds the exact
 mission-required `Techno-Hunter` installed name. Version 1.2.69 also exposes
 the mission-required canonical create/run slash syntax through that persistent
-shell without forking lifecycle logic. Hunter remains **NOT PROD**; exact
-v1.2.69 installed-entry-point acceptance remains open, and the remaining
+shell without forking lifecycle logic. The exact v1.2.69 installed-entry-point
+acceptance and v1.2.70 terminology closure are now complete; the remaining
 coverage limitation is explicitly bounded with current evidence.
 
 Live 1.2.63 preflight also exposed and closed a canonical follow-up selection

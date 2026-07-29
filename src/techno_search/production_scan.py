@@ -132,8 +132,8 @@ except ImportError:  # pragma: no cover - deterministic fallback tested instead.
 
 PRODUCTION_SCAN_SUMMARY_SCHEMA_VERSION = "production_scan_summary_v1"
 PRODUCTION_SCAN_DISCLAIMER = (
-    "Production scan terminal summaries are local citizen-science operations "
-    "aids only. They do not constitute detections, discoveries, expert review, "
+    "Production scan terminal summaries are local production-triage records "
+    "only. They do not constitute detections, discoveries, expert review, "
     "external validation, or authorization for external submission."
 )
 
