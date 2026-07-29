@@ -235,11 +235,6 @@ def _print_created_search(
                             str(
                                 target.get("prior_search_provenance_summary", "")
                             ).strip(),
-                            (
-                                str(target.get("prior_search_provenance", "")).strip()
-                                if target.get("prior_search_provenance")
-                                else ""
-                            ),
                             str(target.get("cross_project_prior_search", "")).strip(),
                         )
                         if value

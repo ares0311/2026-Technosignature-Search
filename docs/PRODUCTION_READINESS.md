@@ -31,13 +31,16 @@ acceptance gate is now durably closed by
 Version 1.2.66 preserves real candidate-table context that the source catalogs
 already supplied but the durable queue previously discarded: object type,
 distance, spectral type, exoplanet-host state, prior SETI coverage reference,
-and prior-search provenance. The durable
+and prior-search provenance. Its first installed follow-up manifest then
+exposed that the registry did not carry those fields into follow-up rows and
+the renderer dumped raw provenance dictionaries while reporting zero prior
+searches. Version 1.2.67 fixes that acceptance defect. The durable
 public-archive namespace now exceeds 10,000, and the real target priority
 queue now covers 6,879 unique target IDs (up from 1,703), of which 4,862
 currently carry real HDF5 URL/size evidence and are ranking-eligible.
-Hunter remains **NOT PROD** until the exact v1.2.66 installed release passes
+Hunter remains **NOT PROD** until the exact v1.2.67 installed release passes
 the bounded new/follow-up acceptance and post-merge freshness gates.
-**Current app version:** 1.2.66
+**Current app version:** 1.2.67
 
 **Exact v1.2.65 installed-entry-point acceptance closed — 2026-07-28:**
 new-target search `SEARCH-20260728T042942Z-7572B240` completed as
@@ -74,7 +77,7 @@ is absent. Radio candidate construction no longer injects a
 `waterfall_not_generated_v0` placeholder. Historical v1.2.64 outputs remain
 immutable. The replacement v1.2.65 acceptance is complete as recorded above.
 Hunter remains **NOT PROD** pending exact-final-release validation after
-v1.2.66.
+v1.2.67.
 
 **Live acceptance exposed and fixed an archive-discovery provenance defect —
 2026-07-27:** the approved v1.2.63 new-target search
@@ -103,7 +106,7 @@ Semantic color, readable command tables, and a signal-spectrum animation are
 TTY-only and disable for redirected output, no-color, reduced-motion, CI, and
 explicit automation flags. This closes an operator-surface gap without adding
 a shadow selector, runner, or persistence path. Hunter remains **NOT PROD**
-until exact v1.2.66 installed-entry-point acceptance completes; the remaining
+until exact v1.2.67 installed-entry-point acceptance completes; the remaining
 coverage limitation is explicitly bounded with current evidence.
 
 Live 1.2.63 preflight also exposed and closed a canonical follow-up selection
