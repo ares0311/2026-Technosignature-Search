@@ -115,7 +115,7 @@ target-status ledger, history, and follow-up registry remain the only Hunter
 persistence path.
 
 **Closure state:** closed locally for v1.2.71. The installed command passed on
-clean implementation commit `30f4103` and wrote
+clean implementation commit `55a5d2d` and wrote
 `docs/evidence/hunter_v1_2_71_controlled_acceptance.json`. Both modes selected
 `OUTSIDE`; new emitted `created`, `run_started`, `run_completed`; follow-up
 emitted `created`, `run_started`, `run_failed`, `run_resumed`,
@@ -126,7 +126,7 @@ HDF5 remained.
 Focused acceptance/provenance tests passed (10 tests), the combined Hunter,
 archive, documentation, and historical-evidence slice passed (153 tests), and
 `caffeinate -i .venv/bin/python scripts/run_parallel_validation.py` passed
-with 1,679 tests, seven skips, Ruff, mypy, app-version, `validate-all`,
+with 1,680 tests, seven skips, Ruff, mypy, app-version, `validate-all`,
 directive-parity, and no-fake-completion green. PR CI and merge remain the
 release gate; this closure is effective on green merge to `main`.
 

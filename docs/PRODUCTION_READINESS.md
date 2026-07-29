@@ -43,13 +43,13 @@ process. The disconnected duplicate `CandidateStore` persistence surface is
 removed. See `docs/PRODUCTION_SCAN_RUNBOOK.md` for the findings and closure
 plan.
 
-The installed v1.2.71 command passed on clean implementation commit `30f4103`.
+The installed v1.2.71 command passed on clean implementation commit `55a5d2d`.
 Its portable evidence bundle is
 `docs/evidence/hunter_v1_2_71_controlled_acceptance.json`: all 14 assertions
 passed, both modes selected the expected target, the follow-up resumed the same
 run after injected exit 9, exactly two history rows were written, controlled
 raw HDF5 was evicted, and every claim/external-action flag remained false.
-Full local validation passed with 1,679 tests and seven skips plus all
+Full local validation passed with 1,680 tests and seven skips plus all
 app-version, Ruff, mypy, `validate-all`, directive-parity, and
 no-fake-completion gates. Green PR CI and merge are the release gate for this
 statement.
