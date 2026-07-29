@@ -26,6 +26,7 @@ import concurrent.futures
 import glob
 import importlib.metadata
 import importlib.util
+import inspect
 import json
 import logging
 import os
@@ -637,6 +638,35 @@ def ensure_drift_indexes() -> None:
         urllib.request.urlretrieve(f"{base}/{fname}", os.path.join(drift_dir, fname))
 
 
+def _patched_turboseti_search_source(source: str) -> tuple[str, bool]:
+    """Normalize turboSETI's one-element hit counter before integer formatting."""
+    vulnerable = "% max_val.total_n_hits)"
+    corrected = "% max_val.total_n_hits[0])"
+    if corrected in source:
+        return source, False
+    if vulnerable not in source:
+        raise RuntimeError(
+            "unsupported turboSETI search_coarse_channel implementation: "
+            "cannot verify the total_n_hits compatibility correction"
+        )
+    return source.replace(vulnerable, corrected, 1), True
+
+
+def apply_turboseti_total_hit_compatibility() -> bool:
+    """Apply the upstream turboSETI 2.3.2 scalar-format correction in memory."""
+    from turbo_seti.find_doppler import find_doppler
+
+    source = inspect.getsource(find_doppler.search_coarse_channel)
+    patched, changed = _patched_turboseti_search_source(source)
+    if not changed:
+        return False
+    exec(
+        compile(patched, inspect.getsourcefile(find_doppler) or "<turbo_seti>", "exec"),
+        find_doppler.__dict__,
+    )
+    return True
+
+
 # ---------------------------------------------------------------------------
 # turboSETI runner
 # ---------------------------------------------------------------------------
@@ -702,6 +732,7 @@ def run_turboseti(
     configure_matplotlib_cache()
     apply_pkg_resources_shim()
     ensure_drift_indexes()
+    apply_turboseti_total_hit_compatibility()
 
     from turbo_seti.find_doppler.find_doppler import FindDoppler  # type: ignore[import]
 

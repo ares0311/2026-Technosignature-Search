@@ -419,6 +419,37 @@ def test_build_synthetic_h5_deterministic(tmp_path: Path) -> None:
         np.testing.assert_array_equal(fa["data"][:], fb["data"][:])
 
 
+def test_turboseti_total_hit_compatibility_corrects_vulnerable_source() -> None:
+    source = (
+        "def search_coarse_channel():\n"
+        '    logger.debug("hits: %i" % max_val.total_n_hits)\n'
+    )
+
+    patched, changed = bl_fetch._patched_turboseti_search_source(source)
+
+    assert changed is True
+    assert "% max_val.total_n_hits[0])" in patched
+
+
+def test_turboseti_total_hit_compatibility_is_idempotent() -> None:
+    source = (
+        "def search_coarse_channel():\n"
+        '    logger.debug("hits: %i" % max_val.total_n_hits[0])\n'
+    )
+
+    patched, changed = bl_fetch._patched_turboseti_search_source(source)
+
+    assert changed is False
+    assert patched == source
+
+
+def test_turboseti_total_hit_compatibility_rejects_unknown_source() -> None:
+    with pytest.raises(RuntimeError, match="unsupported turboSETI"):
+        bl_fetch._patched_turboseti_search_source(
+            "def search_coarse_channel():\n    pass\n"
+        )
+
+
 def _write_coarse_resolution_h5(path: Path) -> None:
     h5py = pytest.importorskip("h5py")
     import numpy as np

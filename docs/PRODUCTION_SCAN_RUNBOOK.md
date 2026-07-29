@@ -108,6 +108,22 @@ and restart reads. The follow-up runner returns exit 9 once, then resumes the
 same search and run. The external archive is the only replacement: a bounded
 loopback HTTP server supplies the controlled HDF5.
 
+The first Linux/Python 3.11 CI execution exposed one additional production
+defect before closure: the pinned turboSETI 2.3.2 implementation formats its
+one-element `total_n_hits` array as an integer and raises `TypeError` after the
+search. A developer environment had an untracked one-character site-package
+correction, so Python 3.14 local acceptance did not expose the defect. Worse,
+the stream runner continued from the partial zero-row `.dat`, produced a
+zero-hit manifest, evicted the raw HDF5, and counted the target complete.
+
+The v1.2.71 remediation now applies the exact scalar-index correction in
+memory, fails closed if the pinned dependency source is neither the known
+vulnerable nor corrected form, and treats any turboSETI or candidate-pipeline
+failure as a failed target. Partial `.dat` output is removed, raw HDF5 is
+retained, collection status records the failure, and the batch returns
+non-zero. This closes the hidden-environment and partial-success paths without
+changing scientific thresholds or treating a controlled injection as a label.
+
 `src/techno_search/candidate_store.py` and the
 `candidate-store-init`/`candidate-store-summary`/`candidate-store-list`
 commands are removed. The canonical search manifest, append-only event ledger,

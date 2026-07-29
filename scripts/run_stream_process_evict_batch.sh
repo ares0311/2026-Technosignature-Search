@@ -239,8 +239,27 @@ ALREADY_PROCESSED_NAMES=()
 FAILED_COUNT=0
 FAILED_NAMES=()
 FAILED_REASONS=()
+PROCESSING_FAILED_NAMES=()
 DAT_PRODUCED_COUNT=0
 REPORT_COUNT=0
+
+record_processing_failure() {
+  local hip="$1" reason="$2"
+  FAILED_COUNT=$((FAILED_COUNT + 1))
+  FAILED_NAMES+=("${hip}")
+  FAILED_REASONS+=("${reason}")
+  PROCESSING_FAILED_NAMES+=("${hip}")
+}
+
+processing_failed() {
+  local expected="$1" failed
+  for failed in "${PROCESSING_FAILED_NAMES[@]:-}"; do
+    if [[ "${failed}" == "${expected}" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
 
 target_has_completed_evidence() {
   local hip="$1"
@@ -429,7 +448,8 @@ print(next((str(row.get("source_data_path", "")) for row in manifest.get("target
       if ! "${TECHNO_SEARCH_BIN}" run-pipeline \
         "${source_data_path}" --track radio \
         --output-dir "${RESULTS_DIR}/${source_stem}"; then
-        log "[WARN] ${hip}: preserved local evidence pipeline failed"
+        log "[ERROR] ${hip}: preserved local evidence pipeline failed"
+        record_processing_failure "${hip}" "pipeline_failed"
       fi
       continue
     fi
@@ -440,16 +460,24 @@ print(next((str(row.get("source_data_path", "")) for row in manifest.get("target
     fi
     if ! bash "${REPO_ROOT}/scripts/run_turboseti_on_extended_corpus.sh" \
       "${turboseti_args[@]}"; then
-      log "[WARN] ${hip}: turboSETI reported a failure; continuing to pipeline/eviction for whatever succeeded"
+      log "[ERROR] ${hip}: turboSETI failed; partial hit tables will not be scored"
+      find "${OUT_DIR}/${hip}" -maxdepth 1 \
+        \( -name '*.dat' -o -name '*.dat.provenance.json' \) -delete
+      record_processing_failure "${hip}" "turboseti_failed"
+      continue
     fi
     log "[CHUNK] ${hip}: running isolated pipeline (${PIPELINE_WORKERS} workers)"
     if ! bash "${REPO_ROOT}/scripts/run_pipeline_on_bl_data.sh" \
       --dat-dir "${OUT_DIR}/${hip}" --results-dir "${RESULTS_DIR}" \
       --workers "${PIPELINE_WORKERS}"; then
-      log "[WARN] ${hip}: pipeline reported a failure; continuing to eviction check"
+      log "[ERROR] ${hip}: pipeline failed; raw payload will be retained"
+      record_processing_failure "${hip}" "pipeline_failed"
     fi
   done
   for hip in "${names_ref[@]}"; do
+    if processing_failed "${hip}"; then
+      continue
+    fi
     source_data_path=$("${VENV_PYTHON}" -c '
 import json, sys
 manifest = json.load(open(sys.argv[1], encoding="utf-8"))
