@@ -3,7 +3,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from techno_search.observation_artifact import (
+    CONTROLLED_ACCEPTANCE_CLASSIFICATION,
+    CONTROLLED_ACCEPTANCE_ENV,
     OBSERVATION_ARTIFACT_SCHEMA_VERSION,
     approved_observation_artifacts,
     assess_observation_artifact,
@@ -50,6 +54,27 @@ def _write_approved_provenance(path: Path) -> None:
     )
 
 
+def _write_controlled_acceptance_provenance(path: Path) -> None:
+    provenance_path_for(path).write_text(
+        json.dumps(
+            {
+                "schema_version": OBSERVATION_ARTIFACT_SCHEMA_VERSION,
+                "artifact_filename": path.name,
+                "sha256": sha256_file(path),
+                "classification": CONTROLLED_ACCEPTANCE_CLASSIFICATION,
+                "controlled_acceptance_only": True,
+                "source_archive": "Hunter controlled loopback archive",
+                "source_url": "http://127.0.0.1:8765/fixture.h5",
+                "instrument": "controlled_test_instrument",
+                "downloaded_utc": "2026-07-29T12:00:00Z",
+                "approved_for_local_real_data": False,
+                "external_submission_authorized": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
 def test_synthetic_marker_blocks_artifact(tmp_path: Path) -> None:
     artifact = _write_dat(tmp_path / "synth_hits.dat", source="SYNTH_TEST")
 
@@ -57,6 +82,33 @@ def test_synthetic_marker_blocks_artifact(tmp_path: Path) -> None:
 
     assert result.classification == "synthetic"
     assert result.approved_for_pipeline is False
+
+
+def test_controlled_acceptance_fixture_is_fail_closed_by_default(
+    tmp_path: Path,
+) -> None:
+    artifact = _write_dat(tmp_path / "fixture_hits.dat", source="SYNTH_TEST")
+    _write_controlled_acceptance_provenance(artifact)
+
+    result = assess_observation_artifact(artifact)
+
+    assert result.classification == CONTROLLED_ACCEPTANCE_CLASSIFICATION
+    assert result.approved_for_pipeline is False
+    assert any("not admitted outside" in issue for issue in result.issues)
+
+
+def test_controlled_acceptance_fixture_is_scoped_and_never_real_data(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    artifact = _write_dat(tmp_path / "fixture_hits.dat", source="SYNTH_TEST")
+    _write_controlled_acceptance_provenance(artifact)
+    monkeypatch.setenv(CONTROLLED_ACCEPTANCE_ENV, "1")
+
+    result = assess_observation_artifact(artifact)
+
+    assert result.classification == CONTROLLED_ACCEPTANCE_CLASSIFICATION
+    assert result.approved_for_pipeline is True
+    assert result.issues == ()
 
 
 def test_invalid_download_is_rejected(tmp_path: Path) -> None:

@@ -130,7 +130,9 @@ while IFS= read -r -d '' h5_file; do
     fi
 
     provenance_args=()
-    if [[ "${APPROVED_REAL_DATA}" == "true" ]]; then
+    if [[ "${TECHNO_CONTROLLED_ACCEPTANCE:-0}" == "1" ]]; then
+        provenance_args+=(--controlled-acceptance --source-url "${SOURCE_URL}")
+    elif [[ "${APPROVED_REAL_DATA}" == "true" ]]; then
         provenance_args+=(--approved-real-data --source-url "${SOURCE_URL}")
     fi
     if "${VENV}" "${BL_FETCH}" run-turboseti "${h5_file}" "${target_dir}" \

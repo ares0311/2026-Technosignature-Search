@@ -676,6 +676,7 @@ def run_turboseti(
     snr_threshold: float = DEFAULT_SNR_THRESHOLD,
     source_url: str | None = None,
     approved_real_data: bool = False,
+    controlled_acceptance: bool = False,
 ) -> None:
     """
     Run turboSETI FindDoppler on h5_path, writing .dat hit table to out_dir.
@@ -713,9 +714,9 @@ def run_turboseti(
         log_level_int=30,
     )
     fd.search()
-    if approved_real_data:
+    if approved_real_data or controlled_acceptance:
         if not source_url:
-            raise ValueError("approved real-data processing requires source_url")
+            raise ValueError("provenance-bearing processing requires source_url")
         dat_path = Path(out_dir) / f"{Path(h5_path).stem}.dat"
         if not dat_path.is_file():
             raise FileNotFoundError(
@@ -728,6 +729,7 @@ def run_turboseti(
             max_drift_hz_s=max_drift_hz_s,
             min_drift_hz_s=min_drift_hz_s,
             snr_threshold=snr_threshold,
+            controlled_acceptance=controlled_acceptance,
         )
 
 
@@ -739,6 +741,7 @@ def write_real_observation_provenance(
     max_drift_hz_s: float,
     min_drift_hz_s: float,
     snr_threshold: float,
+    controlled_acceptance: bool = False,
 ) -> Path:
     """Persist the acquisition-to-DAT chain before disposable HDF5 eviction."""
 
@@ -759,15 +762,36 @@ def write_real_observation_provenance(
             "schema_version": OBSERVATION_ARTIFACT_SCHEMA_VERSION,
             "artifact_filename": dat_path.name,
             "sha256": sha256_file(dat_path),
-            "classification": "real_observation",
-            "source_archive": "Breakthrough Listen Open Data Archive",
+            "classification": (
+                "controlled_acceptance_fixture"
+                if controlled_acceptance
+                else "real_observation"
+            ),
+            "controlled_acceptance_only": controlled_acceptance,
+            "source_archive": (
+                "Hunter controlled loopback archive"
+                if controlled_acceptance
+                else "Breakthrough Listen Open Data Archive"
+            ),
             "source_url": source_url,
             "instrument": "GBT" if telescope_id == 6 else f"telescope_id_{telescope_id}",
             "downloaded_utc": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-            "data_use_review_status": "approved",
-            "provenance_review_status": "approved",
-            "human_approval_status": "approved",
-            "approved_for_local_real_data": True,
+            "data_use_review_status": (
+                "not_applicable_controlled_acceptance"
+                if controlled_acceptance
+                else "approved"
+            ),
+            "provenance_review_status": (
+                "controlled_acceptance"
+                if controlled_acceptance
+                else "approved"
+            ),
+            "human_approval_status": (
+                "not_applicable_controlled_acceptance"
+                if controlled_acceptance
+                else "approved"
+            ),
+            "approved_for_local_real_data": not controlled_acceptance,
             "external_submission_authorized": False,
             "target_id": source_name,
             "source_name": source_name,
@@ -1084,6 +1108,14 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Persist an approved real-observation provenance sidecar before eviction.",
     )
+    p_ts.add_argument(
+        "--controlled-acceptance",
+        action="store_true",
+        help=(
+            "Persist an acceptance-only fixture sidecar. This never authorizes "
+            "real-data or scientific use."
+        ),
+    )
 
     # run-pipeline
     p_rp = sub.add_parser(
@@ -1139,6 +1171,7 @@ def main(argv: list[str] | None = None) -> int:
             snr_threshold=args.snr,
             source_url=args.source_url,
             approved_real_data=args.approved_real_data,
+            controlled_acceptance=args.controlled_acceptance,
         )
         return 0
 

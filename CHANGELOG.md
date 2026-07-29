@@ -10,6 +10,17 @@ or authorizes external submission.
 
 ## [Unreleased]
 
+### Added
+- Exact installed `Techno-Hunter` fresh-state controlled acceptance harness
+  covering adaptive new-target selection, follow-up selection, real
+  turboSETI/pipeline execution, durable restart/resume, exact-target execution,
+  history/follow-up persistence, and a portable embedded evidence bundle.
+
+### Removed
+- Disconnected SQLite `CandidateStore` and its three CLI commands. The store
+  was not used by the canonical Hunter lifecycle, duplicated durable candidate
+  state, and leaked SQLite connections under Python 3.14.
+
 ---
 
 ## [v1.2.0] — 2026-07-05 (Multi-Modal Phases 1-5 Catch-Up Release)

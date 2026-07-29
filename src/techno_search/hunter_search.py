@@ -339,6 +339,7 @@ def run_search(
     chunk_size: int = 25,
     pipeline_workers: int = 12,
     history_path: Path = Path("results/scan_history.ndjson"),
+    data_dir: Path = Path("data/extended_corpus"),
     stdout: TextIO,
     use_rich: bool = True,
     command_runner: CommandRunner | None = None,
@@ -360,7 +361,9 @@ def run_search(
     if loaded["status"] == "completed":
         raise SearchLifecycleError(f"search is already complete: {resolved_id}")
     targets = list(manifest.get("targets", []))
-    raw_required = [target for target in targets if _target_requires_raw(target)]
+    raw_required = [
+        target for target in targets if _target_requires_raw(target, data_dir=data_dir)
+    ]
     if raw_required and not approve_acquisition:
         projected_gb = sum(
             float(target.get("estimated_download_gb") or 0.0) for target in raw_required
@@ -375,7 +378,7 @@ def run_search(
     events_path = search_dir / "events.ndjson"
     results_dir = search_dir / "pipeline_results"
     scans_dir = search_dir / "runs"
-    out_dir = Path("data/extended_corpus")
+    out_dir = data_dir
     previous_attempt = _latest_attempt_event(list(loaded["events"]))
     run_id = (
         str(previous_attempt["run_id"])
@@ -850,13 +853,15 @@ def _with_execution_contract(target: Mapping[str, Any], *, mode: str) -> dict[st
     }
 
 
-def _target_requires_raw(target: Mapping[str, Any]) -> bool:
+def _target_requires_raw(
+    target: Mapping[str, Any], *, data_dir: Path = Path("data/extended_corpus")
+) -> bool:
     cadence = target.get("follow_up_cadence")
     if isinstance(cadence, Mapping):
         fulfilled, _ = _verified_follow_up_cadence_artifact(target)
         return not fulfilled
     return bool(target.get("source_hdf5_url")) and not _target_has_local_dat(
-        Path("data/extended_corpus"), str(target["hip"])
+        data_dir, str(target["hip"])
     )
 
 

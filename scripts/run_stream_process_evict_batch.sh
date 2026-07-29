@@ -43,6 +43,7 @@ LOG_FILE=""
 LOCAL_STORAGE_CAP_GB="${TECHNO_LOCAL_STORAGE_CAP_GB:-100}"
 LOCAL_STORAGE_USAGE_DIRS="${TECHNO_LOCAL_STORAGE_USAGE_DIRS:-${REPO_ROOT}/data ${REPO_ROOT}/models ${REPO_ROOT}/artifacts}"
 FREE_SPACE_RESERVE_GB="${TECHNO_EXTENDED_CORPUS_FREE_SPACE_RESERVE_GB:-10}"
+DOWNLOAD_PROGRESS_INTERVAL_SECONDS="${TECHNO_DOWNLOAD_PROGRESS_INTERVAL_SECONDS:-20}"
 PROCESSING_SLOT_DIR="${TECHNO_STREAM_PROCESS_SLOT_DIR:-}"
 PROCESSING_SLOT_COUNT="${TECHNO_STREAM_PROCESS_SLOT_COUNT:-0}"
 ACTIVE_PROCESSING_SLOT=""
@@ -326,7 +327,7 @@ download_target() {
   dl_start_epoch=$(date +%s)
   dl_expected_bytes=$("${VENV_PYTHON}" -c "print(int(${gb} * 1024 * 1024 * 1024))")
   while kill -0 "${curl_pid}" 2>/dev/null; do
-    sleep 20
+    sleep "${DOWNLOAD_PROGRESS_INTERVAL_SECONDS}"
     kill -0 "${curl_pid}" 2>/dev/null || break
     local cur_bytes elapsed pct rate_bps eta_seconds eta_min
     cur_bytes=$(stat -f%z "${out_path}" 2>/dev/null || stat -c%s "${out_path}" 2>/dev/null || echo 0)

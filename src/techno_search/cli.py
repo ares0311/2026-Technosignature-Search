@@ -1792,56 +1792,6 @@ def main(argv: list[str] | None = None, stdout: TextIO | None = None) -> int:
         print(json.dumps(summary, indent=2, sort_keys=True), file=out)
         return 0
 
-    if args.command == "candidate-store-init":
-        from techno_search.candidate_store import CandidateStore, default_store_path
-
-        db_path = Path(args.db_path) if args.db_path else default_store_path()
-        store = CandidateStore(db_path)
-        store.init_schema()
-        print(json.dumps({"ok": True, "db_path": str(db_path)}, indent=2), file=out)
-        return 0
-
-    if args.command == "candidate-store-summary":
-        from techno_search.candidate_store import CandidateStore, default_store_path
-
-        db_path = Path(args.db_path) if args.db_path else default_store_path()
-        if not db_path.exists():
-            _err = f"Store not found at {db_path}. Run candidate-store-init first."
-            print(json.dumps({"ok": False, "error": _err}), file=out)
-            return 1
-        store = CandidateStore(db_path)
-        print(json.dumps(store.summary(), indent=2, sort_keys=True), file=out)
-        return 0
-
-    if args.command == "candidate-store-list":
-        from techno_search.candidate_store import CandidateStore, default_store_path
-
-        db_path = Path(args.db_path) if args.db_path else default_store_path()
-        if not db_path.exists():
-            _err = f"Store not found at {db_path}. Run candidate-store-init first."
-            print(json.dumps({"ok": False, "error": _err}), file=out)
-            return 1
-        store = CandidateStore(db_path)
-        pathway = getattr(args, "pathway", None)
-        track = getattr(args, "track", None)
-        if pathway:
-            entries = store.list_by_pathway(pathway)
-        elif track:
-            entries = store.list_by_track(track)
-        else:
-            entries = store.list_all()
-        limit = getattr(args, "limit", None) or 50
-        entries = entries[:limit]
-        print(
-            json.dumps(
-                {"entries": [e.as_dict() for e in entries], "count": len(entries)},
-                indent=2,
-                sort_keys=True,
-            ),
-            file=out,
-        )
-        return 0
-
     if args.command == "data-release-snapshot-summary":
         result = {
             "schema_version": "data_release_snapshot_stub_v1",
@@ -9197,34 +9147,6 @@ def _build_parser() -> argparse.ArgumentParser:
         type=float,
         default=1000.0,
         help="Frequency grouping tolerance in Hz (default: 1000).",
-    )
-
-    _db_path_help = (
-        "Path to the SQLite candidate store database "
-        "(default: $TECHNO_SEARCH_CANDIDATE_STORE_PATH or data/candidates.db)."
-    )
-
-    cs_init_parser = subparsers.add_parser(
-        "candidate-store-init",
-        help="Initialize the SQLite candidate store schema.",
-    )
-    cs_init_parser.add_argument("--db-path", default=None, help=_db_path_help)
-
-    cs_summary_parser = subparsers.add_parser(
-        "candidate-store-summary",
-        help="Print a summary of the candidate store.",
-    )
-    cs_summary_parser.add_argument("--db-path", default=None, help=_db_path_help)
-
-    cs_list_parser = subparsers.add_parser(
-        "candidate-store-list",
-        help="List scored candidates in the store.",
-    )
-    cs_list_parser.add_argument("--db-path", default=None, help=_db_path_help)
-    cs_list_parser.add_argument("--pathway", default=None, help="Filter by pathway.")
-    cs_list_parser.add_argument("--track", default=None, help="Filter by track.")
-    cs_list_parser.add_argument(
-        "--limit", type=int, default=50, help="Maximum number of entries to return (default: 50)."
     )
 
     data_release_snapshot_parser = subparsers.add_parser(
