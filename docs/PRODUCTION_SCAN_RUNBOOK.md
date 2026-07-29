@@ -139,10 +139,12 @@ emitted `created`, `run_started`, `run_failed`, `run_resumed`,
 two completed searches appended exactly two history rows, and no controlled
 HDF5 remained.
 
-Focused acceptance/provenance tests passed (10 tests), the combined Hunter,
-archive, documentation, and historical-evidence slice passed (153 tests), and
+Focused archive/fail-closed tests passed (94 tests), the combined Hunter
+lifecycle/archive slice passed (125 tests), and the documentation/directive
+slice passed (40 tests). The exact installed acceptance also passed under the
+CI-matching Python 3.11 dependency set. Finally,
 `caffeinate -i .venv/bin/python scripts/run_parallel_validation.py` passed
-with 1,680 tests, seven skips, Ruff, mypy, app-version, `validate-all`,
+with 1,684 tests, seven skips, Ruff, mypy, app-version, `validate-all`,
 directive-parity, and no-fake-completion green. PR CI and merge remain the
 release gate; this closure is effective on green merge to `main`.
 
@@ -349,7 +351,7 @@ Release 1.2.62 metadata and implementation evidence as of
   packaged Hunter modules. The controlled failure/resume regression preserves
   the byte-identical derived cadence manifest and reaches one completed
   disposition only after verified cadence provenance exists. The repo-native
-  six-shard validator also passes on this working tree: 1,680 passed, seven
+  six-shard validator also passes on this working tree: 1,684 passed, seven
   skipped; Ruff, mypy, app-version gate, and `validate-all` passed. Because the
   tree is not yet committed, the exact-commit freshness marker and CI remain
   open.

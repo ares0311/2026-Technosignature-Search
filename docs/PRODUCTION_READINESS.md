@@ -49,7 +49,7 @@ Its portable evidence bundle is
 passed, both modes selected the expected target, the follow-up resumed the same
 run after injected exit 9, exactly two history rows were written, controlled
 raw HDF5 was evicted, and every claim/external-action flag remained false.
-Full local validation passed with 1,680 tests and seven skips plus all
+Full local validation passed with 1,684 tests and seven skips plus all
 app-version, Ruff, mypy, `validate-all`, directive-parity, and
 no-fake-completion gates. Green PR CI and merge are the release gate for this
 statement.
