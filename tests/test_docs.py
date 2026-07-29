@@ -105,6 +105,8 @@ def test_readme_documents_the_installed_hunter_lifecycle() -> None:
         assert f".venv/bin/{command}" in readme
 
     required_contract = (
+        "/Create-New-Search --targets <N> --mode <new|follow-up>",
+        "/Run-New-Search --search-id <SEARCH-ID>",
         "/New-Search <N>",
         "/Follow-Up-Search <N>",
         "/Run-Search",

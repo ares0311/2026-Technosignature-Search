@@ -36,13 +36,16 @@ exposed that the registry did not carry those fields into follow-up rows and
 the renderer dumped raw provenance dictionaries while reporting zero prior
 searches. Version 1.2.67 fixes that acceptance defect. Version 1.2.68 installs
 the mission-required `Techno-Hunter` executable name while retaining
-`TechnoHunter` as a compatibility alias. The durable
+`TechnoHunter` as a compatibility alias. Version 1.2.69 adds the required
+canonical `/Create-New-Search --targets N --mode new|follow-up` and
+`/Run-New-Search` slash commands while retaining the shorter convenience
+aliases. The durable
 public-archive namespace now exceeds 10,000, and the real target priority
 queue now covers 6,879 unique target IDs (up from 1,703), of which 4,862
 currently carry real HDF5 URL/size evidence and are ranking-eligible.
-Hunter remains **NOT PROD** until the exact v1.2.68 installed release passes
+Hunter remains **NOT PROD** until the exact v1.2.69 installed release passes
 the bounded new/follow-up acceptance and post-merge freshness gates.
-**Current app version:** 1.2.68
+**Current app version:** 1.2.69
 
 **Exact v1.2.65 installed-entry-point acceptance closed — 2026-07-28:**
 new-target search `SEARCH-20260728T042942Z-7572B240` completed as
@@ -79,7 +82,7 @@ is absent. Radio candidate construction no longer injects a
 `waterfall_not_generated_v0` placeholder. Historical v1.2.64 outputs remain
 immutable. The replacement v1.2.65 acceptance is complete as recorded above.
 Hunter remains **NOT PROD** pending exact-final-release validation after
-v1.2.68.
+v1.2.69.
 
 **Live acceptance exposed and fixed an archive-discovery provenance defect —
 2026-07-27:** the approved v1.2.63 new-target search
@@ -100,16 +103,19 @@ searches completed as recorded above.
 2026-07-27:** version 1.2.63 adds the installed `TechnoHunter` terminal
 application as a thin dispatcher over the existing canonical
 `create_new_search`, `run_new_search`, and `show_follow_ups` entry points. It
-stays active until `/Exit`; typing `/` exposes autocomplete for `/New-Search`,
-`/Follow-Up-Search`, `/Run-Search`, `/Show-Follow-Ups`, `/Help`, and `/Exit`;
+stays active until `/Exit`; typing `/` exposes autocomplete for canonical
+`/Create-New-Search`, `/Run-New-Search`, and `/Show-Follow-Ups` plus the
+shorter create/run aliases, `/Help`, and `/Exit`;
 and repeatable `--command` arguments preserve non-interactive automation.
 Command history is written only under the already-ignored `artifacts/` tree.
 Semantic color, readable command tables, and a signal-spectrum animation are
 TTY-only and disable for redirected output, no-color, reduced-motion, CI, and
 explicit automation flags. This closes an operator-surface gap without adding
 a shadow selector, runner, or persistence path. Version 1.2.68 adds the exact
-mission-required `Techno-Hunter` installed name. Hunter remains **NOT PROD**
-until exact v1.2.68 installed-entry-point acceptance completes; the remaining
+mission-required `Techno-Hunter` installed name. Version 1.2.69 also exposes
+the mission-required canonical create/run slash syntax through that persistent
+shell without forking lifecycle logic. Hunter remains **NOT PROD**; exact
+v1.2.69 installed-entry-point acceptance remains open, and the remaining
 coverage limitation is explicitly bounded with current evidence.
 
 Live 1.2.63 preflight also exposed and closed a canonical follow-up selection

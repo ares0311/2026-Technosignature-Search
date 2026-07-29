@@ -1,7 +1,7 @@
 # Techno-Hunter
 
 ![Status](https://img.shields.io/badge/Hunter%20workflow-NOT%20PROD-red)
-![Version](https://img.shields.io/badge/version-1.2.68-blue)
+![Version](https://img.shields.io/badge/version-1.2.69-blue)
 ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 ![Focus](https://img.shields.io/badge/focus-multimodal%20technosignature%20search-purple)
 
@@ -32,8 +32,11 @@ search manifest. Version 1.2.67 applies the same fields to follow-up rows and
 summarizes prior provenance instead of dumping raw ledger dictionaries.
 Version 1.2.68 installs the canonical `Techno-Hunter` launch command while
 retaining `TechnoHunter` as a compatibility alias.
+Version 1.2.69 exposes the required canonical `/Create-New-Search` and
+`/Run-New-Search` slash commands while retaining the shorter convenience
+commands.
 Hunter remains NOT PROD while 4,894 archive labels still lack resolvable
-identity/evidence and exact v1.2.68 acceptance remains open.
+identity/evidence and exact v1.2.69 acceptance remains open.
 The product returns
 best-available N independently of absolute score; it does not use the older
 10,000-target aspiration as a quality veto. Outputs are local triage evidence
@@ -57,12 +60,13 @@ candidate universe
   -> recommended next action
 ```
 
-The persistent `TechnoHunter` terminal application operates that lifecycle
+The persistent `Techno-Hunter` terminal application operates that lifecycle
 through discoverable slash commands. The three one-shot executables remain
 scriptable equivalents and call the same canonical functions:
 
-- `TechnoHunter` stays active until `/Exit` and exposes `/New-Search`,
-  `/Follow-Up-Search`, `/Run-Search`, `/Show-Follow-Ups`, and `/Help`.
+- `Techno-Hunter` stays active until `/Exit` and exposes canonical
+  `/Create-New-Search`, `/Run-New-Search`, and `/Show-Follow-Ups` commands plus
+  shorter convenience aliases and `/Help`.
 - `Create-New-Search` ranks targets and creates an immutable pending search.
 - `Run-New-Search` executes that exact search without regenerating its targets.
 - `Show-Follow-Ups` displays the durable, actionable follow-up registry.
@@ -170,10 +174,12 @@ At `TechnoHunter>`, type `/` and press Tab to discover commands, or enter
 `/Help`. The required workflow is:
 
 ```text
-/New-Search <N> [options]
-/Follow-Up-Search <N> [options]
-/Run-Search [SEARCH-ID] [options]
+/Create-New-Search --targets <N> --mode <new|follow-up> [options]
+/Run-New-Search --search-id <SEARCH-ID> [options]
 /Show-Follow-Ups [options]
+/New-Search <N> [options]                   # convenience
+/Follow-Up-Search <N> [options]             # convenience
+/Run-Search [SEARCH-ID] [options]           # convenience
 /Help
 /Exit
 ```
