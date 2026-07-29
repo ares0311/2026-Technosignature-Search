@@ -30,8 +30,8 @@ step that's already blocked on an earlier one.
 
 ## Current honest state (updated 2026-07-29; originally recorded 2026-07-05)
 
-**Hunter PROD acceptance under exact-release revalidation; scientific
-expansion remains active:** canonical v1.2.69 `Techno-Hunter` searches
+**Hunter PROD acceptance complete for v1.2.71; scientific expansion remains
+active:** canonical v1.2.69 `Techno-Hunter` searches
 `SEARCH-20260729T055045Z-125D2215` and
 `SEARCH-20260729T055057Z-7321B0CB` close the bounded new/follow-up production
 threshold. HIP3419 completed the exact new-target lifecycle and correctly
@@ -56,7 +56,12 @@ duplicate `CandidateStore` persistence path. The controlled fixture remains
 explicitly non-real and fails closed outside the acceptance process. Until the
 v1.2.71 evidence, full validator, and CI pass, the full-contract PROD claim is
 withheld; this revalidation directly closes the bounded Step 3a/3b production
-mechanics gap and does not reorder the wider science steps.
+mechanics gap and does not reorder the wider science steps. The installed
+v1.2.71 acceptance passed all 14 assertions on clean implementation commit
+`30f4103`; its portable evidence is
+`docs/evidence/hunter_v1_2_71_controlled_acceptance.json`. Full local
+validation passed 1,679 tests with seven skips and all secondary gates. Green
+PR CI and merge remain the release gate.
 
 The remaining 4,894 unresolved archive labels, learned-score calibration
 limits, and modality/corpus expansion are honest science-coverage work, not

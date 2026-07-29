@@ -15,6 +15,8 @@ or authorizes external submission.
   covering adaptive new-target selection, follow-up selection, real
   turboSETI/pipeline execution, durable restart/resume, exact-target execution,
   history/follow-up persistence, and a portable embedded evidence bundle.
+- Portable v1.2.71 acceptance evidence with 14 passing assertions at
+  `docs/evidence/hunter_v1_2_71_controlled_acceptance.json`.
 
 ### Removed
 - Disconnected SQLite `CandidateStore` and its three CLI commands. The store

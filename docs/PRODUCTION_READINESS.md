@@ -1,14 +1,13 @@
 # Production Readiness Assessment
 
 **Last updated:** 2026-07-29
-**Current phase:** Phase 0 complete; bounded Phase 1/5 Hunter acceptance is
-under exact-release revalidation for v1.2.71. The wider scientific roadmap
-remains active.
+**Current phase:** Phase 0 complete; bounded Phase 1/5 Hunter PROD acceptance
+is complete for v1.2.71. The wider scientific roadmap remains active.
 
-The standalone `Techno-Hunter` workflow is not presently claimed **PROD** under
-the full closure directive while v1.2.71 exact-release evidence, full
-validation, and CI are pending. The prior live canonical-command acceptance
-remains valid evidence: it executed new search
+The standalone `Techno-Hunter` workflow is **PROD** for deterministic local
+production triage under the full closure directive. The prior live
+canonical-command acceptance remains valid bounded-source evidence: it
+executed new search
 `SEARCH-20260729T055045Z-125D2215` and follow-up search
 `SEARCH-20260729T055057Z-7321B0CB` under v1.2.69. HIP3419 completed
 selection, approval-gated acquisition, preprocessing, scoring,
@@ -43,6 +42,17 @@ non-label, non-scientific evidence and fails closed outside that dedicated
 process. The disconnected duplicate `CandidateStore` persistence surface is
 removed. See `docs/PRODUCTION_SCAN_RUNBOOK.md` for the findings and closure
 plan.
+
+The installed v1.2.71 command passed on clean implementation commit `30f4103`.
+Its portable evidence bundle is
+`docs/evidence/hunter_v1_2_71_controlled_acceptance.json`: all 14 assertions
+passed, both modes selected the expected target, the follow-up resumed the same
+run after injected exit 9, exactly two history rows were written, controlled
+raw HDF5 was evicted, and every claim/external-action flag remained false.
+Full local validation passed with 1,679 tests and seven skips plus all
+app-version, Ruff, mypy, `validate-all`, directive-parity, and
+no-fake-completion gates. Green PR CI and merge are the release gate for this
+statement.
 
 The durable public-archive namespace contains 12,086 labels; the real target
 priority queue contains 6,879 unique IDs and 4,862 currently carry sufficient

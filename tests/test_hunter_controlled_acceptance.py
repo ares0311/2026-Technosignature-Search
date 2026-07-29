@@ -9,6 +9,10 @@ from pathlib import Path
 from techno_search import __version__
 from techno_search.hunter_acceptance import CONTROLLED_ACCEPTANCE_SCHEMA_VERSION
 
+COMMITTED_EVIDENCE = Path(
+    "docs/evidence/hunter_v1_2_71_controlled_acceptance.json"
+)
+
 
 def test_installed_hunter_controlled_prod_acceptance_is_fresh_and_complete(
     tmp_path: Path,
@@ -107,3 +111,28 @@ def test_retired_duplicate_candidate_store_surface_is_absent() -> None:
         "candidate-store-list",
     ):
         assert command not in cli
+
+
+def test_committed_v1_2_71_evidence_is_portable_and_bound_to_clean_code() -> None:
+    evidence = json.loads(COMMITTED_EVIDENCE.read_text(encoding="utf-8"))
+
+    assert evidence["schema_version"] == CONTROLLED_ACCEPTANCE_SCHEMA_VERSION
+    assert evidence["release"]["app_version"] == __version__
+    assert evidence["release"]["code_commit"] == "30f4103"
+    assert all(item["passed"] for item in evidence["assertion_results"])
+    assert len(evidence["assertion_results"]) == 14
+    assert evidence["selected_targets"] == {
+        "new": ["OUTSIDE"],
+        "follow_up": ["OUTSIDE"],
+    }
+    assert evidence["search_runs"]["follow_up"]["event_sequence"] == [
+        "created",
+        "run_started",
+        "run_failed",
+        "run_resumed",
+        "run_completed",
+    ]
+    serialized = json.dumps(evidence)
+    assert "$ACCEPTANCE_WORK_DIR" in serialized
+    assert "/tmp/techno-hunter-v1-2-71-30f4103" not in serialized
+    assert "/private/var/folders" not in serialized
