@@ -37,10 +37,12 @@ SHELL_DISCLAIMER = (
     "external-validation, or submission claim."
 )
 REQUIRED_COMMANDS = (
+    "/Create-New-Search",
+    "/Run-New-Search",
+    "/Show-Follow-Ups",
     "/New-Search",
     "/Follow-Up-Search",
     "/Run-Search",
-    "/Show-Follow-Ups",
     "/Help",
     "/Exit",
 )
@@ -50,7 +52,7 @@ _COMMAND_ALIASES = {
     "/exit": "/exit",
     "/quit": "/exit",
     "/new-search": "/new-search",
-    "/create-new-search": "/new-search",
+    "/create-new-search": "/create-new-search",
     "/follow-up-search": "/follow-up-search",
     "/run-search": "/run-search",
     "/run-new-search": "/run-search",
@@ -244,6 +246,8 @@ class HunterShell:
         if command == "/exit":
             self.console.print("Array idle. Durable searches remain on disk.", style="dim")
             return DispatchResult(0, exit_requested=True)
+        if command == "/create-new-search":
+            return DispatchResult(self._dispatch_canonical_create(tokens[1:]))
         if command == "/new-search":
             return DispatchResult(self._dispatch_create(tokens[1:], mode="new"))
         if command == "/follow-up-search":
@@ -296,6 +300,11 @@ class HunterShell:
             sweep.event(label)
             return self.handlers.create(command_args)
 
+    def _dispatch_canonical_create(self, args: list[str]) -> int:
+        with SignalSweep(self.console, enabled=self.animation_enabled) as sweep:
+            sweep.event("Candidate pool → deterministic ranking → immutable manifest")
+            return self.handlers.create(list(args))
+
     def _dispatch_run(self, args: list[str]) -> int:
         command_args = list(args)
         if command_args and not command_args[0].startswith("-"):
@@ -328,16 +337,27 @@ class HunterShell:
         table = Table(title="TechnoHunter commands", show_header=True)
         table.add_column("Command", style="bold cyan", no_wrap=True)
         table.add_column("Purpose", overflow="fold")
-        table.add_row("/New-Search <N> [options]", "Adaptively select and freeze new targets.")
+        table.add_row(
+            "/Create-New-Search --targets N --mode new|follow-up [options]",
+            "Canonical selection command; freeze the exact ranked targets.",
+        )
+        table.add_row(
+            "/Run-New-Search --search-id SEARCH-ID [options]",
+            "Canonical execution command; run the exact pending search.",
+        )
+        table.add_row("/Show-Follow-Ups [options]", "Show actionable durable follow-ups.")
+        table.add_row(
+            "/New-Search <N> [options]",
+            "Convenience alias for a canonical new-target search.",
+        )
         table.add_row(
             "/Follow-Up-Search <N> [options]",
-            "Rank durable follow-up evidence and freeze exact targets.",
+            "Convenience alias for a canonical follow-up search.",
         )
         table.add_row(
             "/Run-Search [SEARCH-ID] [options]",
-            "Execute the exact pending search; never regenerate targets.",
+            "Convenience alias for canonical exact-search execution.",
         )
-        table.add_row("/Show-Follow-Ups [options]", "Show actionable durable follow-ups.")
         table.add_row("/Help", "Show this command table.")
         table.add_row("/Exit", "Exit without changing durable search state.")
         self.console.print(table)

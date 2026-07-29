@@ -65,6 +65,33 @@ def test_new_and_follow_up_commands_delegate_to_canonical_create(
     ]
 
 
+def test_canonical_create_command_preserves_exact_cli_contract(tmp_path: Path) -> None:
+    shell, create, *_ = _shell(tmp_path)
+
+    assert (
+        shell.dispatch("/Create-New-Search --targets 12 --mode new --json").exit_code
+        == 0
+    )
+    assert (
+        shell.dispatch(
+            "/Create-New-Search --targets 3 --mode follow-up --target-prefix HIP"
+        ).exit_code
+        == 0
+    )
+
+    assert create.calls == [
+        ["--targets", "12", "--mode", "new", "--json"],
+        [
+            "--targets",
+            "3",
+            "--mode",
+            "follow-up",
+            "--target-prefix",
+            "HIP",
+        ],
+    ]
+
+
 def test_run_and_follow_up_view_delegate_without_regenerating_targets(
     tmp_path: Path,
 ) -> None:
@@ -86,6 +113,19 @@ def test_run_and_follow_up_view_delegate_without_regenerating_targets(
         ]
     ]
     assert show.calls == [["--json"]]
+
+
+def test_canonical_run_command_preserves_exact_cli_contract(tmp_path: Path) -> None:
+    shell, _create, run, *_ = _shell(tmp_path)
+
+    assert (
+        shell.dispatch(
+            "/Run-New-Search --search-id SEARCH-20260727T120000Z-ABCDEF12"
+        ).exit_code
+        == 0
+    )
+
+    assert run.calls == [["--search-id", "SEARCH-20260727T120000Z-ABCDEF12"]]
 
 
 def test_help_and_bare_slash_are_discoverable(tmp_path: Path) -> None:
