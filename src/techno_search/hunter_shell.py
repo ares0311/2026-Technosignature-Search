@@ -379,7 +379,7 @@ def main(
     stderr: TextIO = sys.stderr,
 ) -> int:
     """Launch the persistent shell or execute scriptable slash commands."""
-    parser = argparse.ArgumentParser(prog="TechnoHunter")
+    parser = argparse.ArgumentParser(prog="Techno-Hunter")
     parser.add_argument(
         "--command",
         action="append",

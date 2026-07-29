@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "techno-search"
-version = "1.2.67"
+version = "1.2.68"
 description = "Conservative, reproducible technosignature-interest candidate search tooling."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -21,6 +21,7 @@ dependencies = [
 [project.scripts]
 techno-search = "techno_search.cli:main"
 TechnoHunter = "techno_search.hunter_shell:main"
+Techno-Hunter = "techno_search.hunter_shell:main"
 Create-New-Search = "techno_search.hunter_cli:create_new_search"
 Run-New-Search = "techno_search.hunter_cli:run_new_search"
 Show-Follow-Ups = "techno_search.hunter_cli:show_follow_ups"
