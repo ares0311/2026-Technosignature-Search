@@ -45,7 +45,7 @@ queue now covers 6,879 unique target IDs (up from 1,703), of which 4,862
 currently carry real HDF5 URL/size evidence and are ranking-eligible.
 Hunter remains **NOT PROD** until the exact v1.2.69 installed release passes
 the bounded new/follow-up acceptance and post-merge freshness gates.
-**Current app version:** 1.2.69
+**Current app version:** 1.2.70
 
 **Exact v1.2.65 installed-entry-point acceptance closed — 2026-07-28:**
 new-target search `SEARCH-20260728T042942Z-7572B240` completed as

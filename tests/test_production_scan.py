@@ -7,6 +7,7 @@ from pathlib import Path
 from techno_search.production_scan import (
     EmptyProductionScanError,
     ProductionConsole,
+    PRODUCTION_SCAN_DISCLAIMER,
     production_diagnostics,
     review_dashboard_summary,
     run_production_scan,
@@ -139,6 +140,13 @@ def test_run_production_scan_writes_artifacts_and_compact_output(tmp_path: Path)
     assert dashboard["needs_attention"] is True
     assert dashboard["follow_up_required_count"] == 1
     assert dashboard["top_follow_up_targets"][0]["target_name"] == "HIP99427"
+
+
+def test_production_scan_disclaimer_uses_current_production_triage_scope() -> None:
+    assert "local production-triage records" in PRODUCTION_SCAN_DISCLAIMER
+    assert "citizen-science" not in PRODUCTION_SCAN_DISCLAIMER
+    assert "detections" in PRODUCTION_SCAN_DISCLAIMER
+    assert "external submission" in PRODUCTION_SCAN_DISCLAIMER
 
 
 def test_run_production_scan_sanitizes_project_paths_in_artifacts(tmp_path: Path) -> None:
