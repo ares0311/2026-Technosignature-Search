@@ -32,6 +32,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VENV_PYTHON="${TECHNO_STREAM_PROCESS_PYTHON:-${REPO_ROOT}/.venv/bin/python}"
+TECHNO_SEARCH_BIN="${TECHNO_STREAM_PROCESS_SEARCH_BIN:-${REPO_ROOT}/.venv/bin/techno-search}"
 OUT_DIR="${REPO_ROOT}/data/extended_corpus"
 RESULTS_DIR="${REPO_ROOT}/results"
 MANIFEST=""
@@ -43,6 +44,7 @@ LOG_FILE=""
 LOCAL_STORAGE_CAP_GB="${TECHNO_LOCAL_STORAGE_CAP_GB:-100}"
 LOCAL_STORAGE_USAGE_DIRS="${TECHNO_LOCAL_STORAGE_USAGE_DIRS:-${REPO_ROOT}/data ${REPO_ROOT}/models ${REPO_ROOT}/artifacts}"
 FREE_SPACE_RESERVE_GB="${TECHNO_EXTENDED_CORPUS_FREE_SPACE_RESERVE_GB:-10}"
+DOWNLOAD_PROGRESS_INTERVAL_SECONDS="${TECHNO_DOWNLOAD_PROGRESS_INTERVAL_SECONDS:-20}"
 PROCESSING_SLOT_DIR="${TECHNO_STREAM_PROCESS_SLOT_DIR:-}"
 PROCESSING_SLOT_COUNT="${TECHNO_STREAM_PROCESS_SLOT_COUNT:-0}"
 ACTIVE_PROCESSING_SLOT=""
@@ -237,8 +239,27 @@ ALREADY_PROCESSED_NAMES=()
 FAILED_COUNT=0
 FAILED_NAMES=()
 FAILED_REASONS=()
+PROCESSING_FAILED_NAMES=()
 DAT_PRODUCED_COUNT=0
 REPORT_COUNT=0
+
+record_processing_failure() {
+  local hip="$1" reason="$2"
+  FAILED_COUNT=$((FAILED_COUNT + 1))
+  FAILED_NAMES+=("${hip}")
+  FAILED_REASONS+=("${reason}")
+  PROCESSING_FAILED_NAMES+=("${hip}")
+}
+
+processing_failed() {
+  local expected="$1" failed
+  for failed in "${PROCESSING_FAILED_NAMES[@]:-}"; do
+    if [[ "${failed}" == "${expected}" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
 
 target_has_completed_evidence() {
   local hip="$1"
@@ -326,7 +347,7 @@ download_target() {
   dl_start_epoch=$(date +%s)
   dl_expected_bytes=$("${VENV_PYTHON}" -c "print(int(${gb} * 1024 * 1024 * 1024))")
   while kill -0 "${curl_pid}" 2>/dev/null; do
-    sleep 20
+    sleep "${DOWNLOAD_PROGRESS_INTERVAL_SECONDS}"
     kill -0 "${curl_pid}" 2>/dev/null || break
     local cur_bytes elapsed pct rate_bps eta_seconds eta_min
     cur_bytes=$(stat -f%z "${out_path}" 2>/dev/null || stat -c%s "${out_path}" 2>/dev/null || echo 0)
@@ -424,10 +445,11 @@ print(next((str(row.get("source_data_path", "")) for row in manifest.get("target
       source_stem="$(basename "${source_data_path}")"
       source_stem="${source_stem%.*}"
       log "[CHUNK] ${hip}: scoring preserved local evidence ${source_stem}"
-      if ! "${REPO_ROOT}/.venv/bin/techno-search" run-pipeline \
+      if ! "${TECHNO_SEARCH_BIN}" run-pipeline \
         "${source_data_path}" --track radio \
         --output-dir "${RESULTS_DIR}/${source_stem}"; then
-        log "[WARN] ${hip}: preserved local evidence pipeline failed"
+        log "[ERROR] ${hip}: preserved local evidence pipeline failed"
+        record_processing_failure "${hip}" "pipeline_failed"
       fi
       continue
     fi
@@ -438,16 +460,24 @@ print(next((str(row.get("source_data_path", "")) for row in manifest.get("target
     fi
     if ! bash "${REPO_ROOT}/scripts/run_turboseti_on_extended_corpus.sh" \
       "${turboseti_args[@]}"; then
-      log "[WARN] ${hip}: turboSETI reported a failure; continuing to pipeline/eviction for whatever succeeded"
+      log "[ERROR] ${hip}: turboSETI failed; partial hit tables will not be scored"
+      find "${OUT_DIR}/${hip}" -maxdepth 1 \
+        \( -name '*.dat' -o -name '*.dat.provenance.json' \) -delete
+      record_processing_failure "${hip}" "turboseti_failed"
+      continue
     fi
     log "[CHUNK] ${hip}: running isolated pipeline (${PIPELINE_WORKERS} workers)"
     if ! bash "${REPO_ROOT}/scripts/run_pipeline_on_bl_data.sh" \
       --dat-dir "${OUT_DIR}/${hip}" --results-dir "${RESULTS_DIR}" \
       --workers "${PIPELINE_WORKERS}"; then
-      log "[WARN] ${hip}: pipeline reported a failure; continuing to eviction check"
+      log "[ERROR] ${hip}: pipeline failed; raw payload will be retained"
+      record_processing_failure "${hip}" "pipeline_failed"
     fi
   done
   for hip in "${names_ref[@]}"; do
+    if processing_failed "${hip}"; then
+      continue
+    fi
     source_data_path=$("${VENV_PYTHON}" -c '
 import json, sys
 manifest = json.load(open(sys.argv[1], encoding="utf-8"))
@@ -607,7 +637,6 @@ if [[ -n "${STATUS_KEY:-}" ]]; then
   RECORD_STATUS=1
 fi
 
-TECHNO_SEARCH_BIN="${REPO_ROOT}/.venv/bin/techno-search"
 if [[ "${RECORD_STATUS}" -eq 0 ]]; then
   log "[INFO]  Manifest is not under data_selection/batch_manifests/ -- skipping status-manifest record (scratch/test run)."
 elif [[ -x "${TECHNO_SEARCH_BIN}" ]]; then

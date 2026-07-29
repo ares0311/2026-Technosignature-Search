@@ -413,7 +413,33 @@ def main(
         type=Path,
         default=Path("artifacts/techno_hunter_history"),
     )
+    parser.add_argument(
+        "--acceptance-work-dir",
+        type=Path,
+        help=(
+            "Run the fresh-state controlled PROD acceptance harness in this "
+            "directory instead of opening the operator shell."
+        ),
+    )
+    parser.add_argument(
+        "--acceptance-evidence",
+        type=Path,
+        help="Write the portable controlled PROD acceptance evidence bundle here.",
+    )
     args = parser.parse_args(argv)
+    if bool(args.acceptance_work_dir) != bool(args.acceptance_evidence):
+        parser.error(
+            "--acceptance-work-dir and --acceptance-evidence must be supplied together"
+        )
+    if args.acceptance_work_dir is not None:
+        from techno_search.hunter_acceptance import run_controlled_prod_acceptance
+
+        return run_controlled_prod_acceptance(
+            work_dir=args.acceptance_work_dir,
+            evidence_path=args.acceptance_evidence,
+            stdout=stdout,
+            stderr=stderr,
+        )
     shell = HunterShell(
         stdin=stdin,
         stdout=stdout,

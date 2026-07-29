@@ -1,0 +1,1557 @@
+{
+  "assertion_results": [
+    {
+      "assertion": "real_persistent_cli_routing",
+      "passed": true
+    },
+    {
+      "assertion": "adaptive_expansion_found_displacing_target",
+      "passed": true
+    },
+    {
+      "assertion": "weak_best_available_not_threshold_blocked",
+      "passed": true
+    },
+    {
+      "assertion": "invalid_and_stale_candidates_excluded",
+      "passed": true
+    },
+    {
+      "assertion": "prior_search_excluded_from_new",
+      "passed": true
+    },
+    {
+      "assertion": "alias_resolved_to_one_physical_target",
+      "passed": true
+    },
+    {
+      "assertion": "manifested_targets_exactly_executed",
+      "passed": true
+    },
+    {
+      "assertion": "real_preprocessing_and_scoring_executed",
+      "passed": true
+    },
+    {
+      "assertion": "controlled_fixture_provenance_is_explicit",
+      "passed": true
+    },
+    {
+      "assertion": "identical_versioned_inputs_reproduce_ranking",
+      "passed": true
+    },
+    {
+      "assertion": "partial_failure_resumed_same_run",
+      "passed": true
+    },
+    {
+      "assertion": "history_exactly_once_per_completed_search",
+      "passed": true
+    },
+    {
+      "assertion": "restart_reloaded_durable_state",
+      "passed": true
+    },
+    {
+      "assertion": "no_detection_or_external_action_claim",
+      "passed": true
+    }
+  ],
+  "detection_claimed": false,
+  "discovery_claimed": false,
+  "discovery_coverage": {
+    "accessible_universe_exhausted": true,
+    "expansion_report": {
+      "candidate_count": 5,
+      "constraints": {},
+      "eligible_count": 2,
+      "expandable_count": 0,
+      "highest_unresolved_score": null,
+      "requested_count": 1,
+      "round_count": 1,
+      "rounds": [
+        {
+          "adapter": "loopback_archive_metadata_v1",
+          "examined_count": 1,
+          "examined_target_ids": [
+            "OUTSIDE"
+          ],
+          "minimum_examined_score": 0.009,
+          "promoted_target_ids": [
+            "OUTSIDE"
+          ],
+          "queue_sha256": "b5c7c88e219e29f137c2eda64469660776bed6f675e79e2ede2346fefa2ac115",
+          "round": 1,
+          "validity_state": "valid"
+        }
+      ],
+      "selection_cutoff_score": 0.009,
+      "strategy": "adaptive_score_bound_v1",
+      "sufficient": true,
+      "universe_exhausted": true
+    },
+    "initial_candidate_count": 5,
+    "initial_eligible_target_ids": [
+      "WEAK"
+    ]
+  },
+  "embedded_artifacts": {
+    "data_collection_status": {
+      "attempts": [
+        {
+          "acquisition_mode": "stream_process_evict",
+          "already_processed_count": 0,
+          "already_processed_targets": [],
+          "app_version": "1.2.71",
+          "attempt_id": "hunter_search__SEARCH-20260729T120000Z-ACCEPT01__2026-07-29T10:01:45.823058+00:00",
+          "candidate_report_manifests_total": 1,
+          "completed_count": 1,
+          "dat_files_total": 1,
+          "downloaded_count": 1,
+          "downloaded_gb": 0.004,
+          "downloaded_targets": [
+            "OUTSIDE"
+          ],
+          "evicted_count": 1,
+          "evicted_targets": [
+            "OUTSIDE"
+          ],
+          "failed_count": 0,
+          "failed_targets": [],
+          "local_dat_reuse_count": 0,
+          "local_dat_reuse_targets": [],
+          "manifest": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/manifest.json",
+          "newly_processed_count": 1,
+          "newly_processed_targets": [
+            "OUTSIDE"
+          ],
+          "ok": true,
+          "raw_retention_policy": "evicted_after_candidate_report_generation",
+          "recorded_at_utc": "2026-07-29T10:01:45.823058+00:00",
+          "script": "hunter_search__SEARCH-20260729T120000Z-ACCEPT01",
+          "targets_attempted": 1,
+          "total_targets_in_manifest": 1
+        },
+        {
+          "acquisition_mode": "stream_process_evict",
+          "already_processed_count": 0,
+          "already_processed_targets": [],
+          "app_version": "1.2.71",
+          "attempt_id": "hunter_search__SEARCH-20260729T120100Z-ACCEPT02__2026-07-29T10:01:48.409981+00:00",
+          "candidate_report_manifests_total": 1,
+          "completed_count": 1,
+          "dat_files_total": 1,
+          "downloaded_count": 0,
+          "downloaded_gb": 0.0,
+          "downloaded_targets": [],
+          "evicted_count": 0,
+          "evicted_targets": [],
+          "failed_count": 0,
+          "failed_targets": [],
+          "local_dat_reuse_count": 1,
+          "local_dat_reuse_targets": [
+            "OUTSIDE"
+          ],
+          "manifest": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120100Z-ACCEPT02/manifest.json",
+          "newly_processed_count": 1,
+          "newly_processed_targets": [
+            "OUTSIDE"
+          ],
+          "ok": true,
+          "raw_retention_policy": "evicted_after_candidate_report_generation",
+          "recorded_at_utc": "2026-07-29T10:01:48.409981+00:00",
+          "script": "hunter_search__SEARCH-20260729T120100Z-ACCEPT02",
+          "targets_attempted": 1,
+          "total_targets_in_manifest": 1
+        }
+      ],
+      "disclaimer": "This manifest records real local data-collection run outcomes (counts of items found/downloaded/skipped/failed) for compact progress review. It is not a detection, discovery, external validation, or external-submission claim.",
+      "runs": {
+        "hunter_search__SEARCH-20260729T120000Z-ACCEPT01": {
+          "acquisition_mode": "stream_process_evict",
+          "already_processed_count": 0,
+          "already_processed_targets": [],
+          "app_version": "1.2.71",
+          "candidate_report_manifests_total": 1,
+          "completed_count": 1,
+          "dat_files_total": 1,
+          "downloaded_count": 1,
+          "downloaded_gb": 0.004,
+          "downloaded_targets": [
+            "OUTSIDE"
+          ],
+          "evicted_count": 1,
+          "evicted_targets": [
+            "OUTSIDE"
+          ],
+          "failed_count": 0,
+          "failed_targets": [],
+          "last_run_utc": "2026-07-29T10:01:45.823058+00:00",
+          "local_dat_reuse_count": 0,
+          "local_dat_reuse_targets": [],
+          "manifest": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/manifest.json",
+          "newly_processed_count": 1,
+          "newly_processed_targets": [
+            "OUTSIDE"
+          ],
+          "ok": true,
+          "raw_retention_policy": "evicted_after_candidate_report_generation",
+          "targets_attempted": 1,
+          "total_targets_in_manifest": 1
+        },
+        "hunter_search__SEARCH-20260729T120100Z-ACCEPT02": {
+          "acquisition_mode": "stream_process_evict",
+          "already_processed_count": 0,
+          "already_processed_targets": [],
+          "app_version": "1.2.71",
+          "candidate_report_manifests_total": 1,
+          "completed_count": 1,
+          "dat_files_total": 1,
+          "downloaded_count": 0,
+          "downloaded_gb": 0.0,
+          "downloaded_targets": [],
+          "evicted_count": 0,
+          "evicted_targets": [],
+          "failed_count": 0,
+          "failed_targets": [],
+          "last_run_utc": "2026-07-29T10:01:48.409981+00:00",
+          "local_dat_reuse_count": 1,
+          "local_dat_reuse_targets": [
+            "OUTSIDE"
+          ],
+          "manifest": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120100Z-ACCEPT02/manifest.json",
+          "newly_processed_count": 1,
+          "newly_processed_targets": [
+            "OUTSIDE"
+          ],
+          "ok": true,
+          "raw_retention_policy": "evicted_after_candidate_report_generation",
+          "targets_attempted": 1,
+          "total_targets_in_manifest": 1
+        }
+      },
+      "schema_version": "data_collection_status_v2"
+    },
+    "follow_up_candidate_interpretation": {
+      "blocking_issues": [
+        "A complete ON/OFF cadence was not observed; OFF-target absence is unresolved."
+      ],
+      "candidate_id": "capture_outside_0001",
+      "config_version": "scoring_v0",
+      "disclaimer": "This is an unconfirmed candidate/anomaly generated by a publication-grade technosignature search pipeline. It is not evidence of a confirmed technosignature. Further review and independent validation are required.",
+      "false_positive_discussion": "The configured scorer is uncalibrated. Numeric class weights and derived routing indices are deterministic ranking aids, not probabilities, false-positive estimates, or promotion evidence. The false-positive routing index is 0.047; it must not be reported as a false-positive probability. The packet records 3 negative evidence item(s) and 1 blocking issue(s).",
+      "features": {
+        "abacab_cadence_score": 0.5,
+        "bandwidth_hz": 2.79,
+        "cadence_candidate_selection_applied": false,
+        "cadence_survivor_group_count": 0,
+        "data_quality_score": 1.0,
+        "dec_deg": 12.4038,
+        "drift_rate_hz_per_sec": -0.387762,
+        "frequency_hz": 8421295004.0,
+        "frequency_persistence_score": 0.0,
+        "hit_count": 1,
+        "injection_recovery_score": 0.5,
+        "instrumental_artifact_score": 0.0,
+        "is_earth_drift_consistent": true,
+        "metadata_completeness_score": 1.0,
+        "nearby_target_recurrence_score": 0.0,
+        "normalized_drift_hz_s_per_ghz": -0.046045412233607586,
+        "observation_mjd": 59046.9263,
+        "observation_time_utc": "2020-07-16T22:13:52Z",
+        "observer_elevation_m": 807.43,
+        "observer_lat_deg": 38.43312111111111,
+        "observer_lon_deg": -79.839835,
+        "off_hit_count": 0,
+        "off_scan_distinct_source_count": 0,
+        "off_target_presence_score": 0.0,
+        "on_hit_count": 1,
+        "on_off_consistency_score": 0.0,
+        "on_scan_distinct_source_count": 1,
+        "on_target_presence_score": 1.0,
+        "provenance_completeness_score": 1.0,
+        "ra_deg": 258.16799999999995,
+        "relative_snr": 1.0,
+        "repeat_observation_score": 0.0,
+        "rfi_band_overlap_score": 0.0,
+        "rfi_database_match_count": 0,
+        "rfi_database_match_ids": "",
+        "rfi_database_overlap_score": 0.0,
+        "rfi_database_record_count": 5,
+        "rfi_database_reviewed_count": 3,
+        "rfi_database_schema_version": "rfi_database_v1",
+        "rfi_database_source_classes": "",
+        "rfi_database_validation_ok": true,
+        "semisupervised_anomaly_score": 0.05801322299852596,
+        "semisupervised_mean_anomaly_score": 0.05801322299852596,
+        "semisupervised_model_used": true,
+        "semisupervised_scored_hit_count": 1,
+        "snr": 351.721191
+      },
+      "known_explanation_resolution": {
+        "adversarial_review_required": false,
+        "candidate_id": "capture_outside_0001",
+        "classification_reason": "required_known_explanation_evidence_or_checks_unavailable",
+        "classification_state": "unresolved",
+        "detection_claimed": false,
+        "disclaimer": "This deterministic state records whether implemented known-explanation checks explained the observation. unknown means every required check completed and none matched; it is not a positive technosignature label, detection, or discovery.",
+        "eligible_for_unknown_candidate": false,
+        "external_submission_allowed": false,
+        "gate_result": {
+          "candidate_id": "capture_outside_0001",
+          "classification_state": "unresolved",
+          "condition_count": 10,
+          "conditions": [
+            {
+              "condition_id": "not_confidently_pulsar",
+              "description": "Track A catalog cross-match does not classify as known_pulsar",
+              "evidence": {
+                "crossmatch_classification": "no_known_match"
+              },
+              "satisfied": true
+            },
+            {
+              "condition_id": "not_confidently_frb",
+              "description": "Track A catalog cross-match does not classify as known_frb",
+              "evidence": {
+                "crossmatch_classification": "no_known_match"
+              },
+              "satisfied": true
+            },
+            {
+              "condition_id": "not_known_blazar_agn_or_gamma",
+              "description": "Track A catalog cross-match does not classify as blazar_agn/gamma_ray_source",
+              "evidence": {
+                "crossmatch_classification": "no_known_match"
+              },
+              "satisfied": true
+            },
+            {
+              "condition_id": "not_known_satellite_transmitter",
+              "description": "Event is not explained by a known satellite transmitter",
+              "evidence": {
+                "satellite_match_classification": "no_known_match"
+              },
+              "satisfied": true
+            },
+            {
+              "condition_id": "not_locally_identified_known_object",
+              "description": "Local provenance does not identify a known calibration object",
+              "evidence": {
+                "known_object_score": 0.0,
+                "reason": null
+              },
+              "satisfied": true
+            },
+            {
+              "condition_id": "not_known_rfi_region",
+              "description": "Event frequency does not overlap a known RFI band/database entry",
+              "evidence": {
+                "max_allowed": 0.5,
+                "rfi_band_overlap_score": 0.0
+              },
+              "satisfied": true
+            },
+            {
+              "condition_id": "not_instrument_artifact",
+              "description": "Event is not a known instrument/band-edge/notch artifact",
+              "evidence": {
+                "instrumental_artifact_score": 0.0,
+                "max_allowed": 0.3
+              },
+              "satisfied": true
+            },
+            {
+              "condition_id": "passes_cadence_checks",
+              "description": "Event passes ABACAB ON/OFF cadence rejection",
+              "evidence": {
+                "abacab_cadence_score": 0.5
+              },
+              "satisfied": null
+            },
+            {
+              "condition_id": "not_below_search_threshold",
+              "description": "Event is above the provenance-stamped detector search threshold",
+              "evidence": {
+                "processing_snr_threshold": 10.0,
+                "snr": 351.721191
+              },
+              "satisfied": true
+            },
+            {
+              "condition_id": "has_preserved_provenance",
+              "description": "Event has preserved source provenance and a reproducible extraction path",
+              "evidence": {
+                "provenance_field_count": 25,
+                "source_id_count": 1
+              },
+              "satisfied": true
+            }
+          ],
+          "disclaimer": "This is a Track B known-explanation gate evaluation, not a detection or discovery claim. unknown_candidate is a local triage queue state only: it means every implemented known-source, RFI, instrument-artifact, and cadence check failed to explain the event, not that the event has been confirmed as anomalous or technosignature-relevant. No condition here authorizes external submission or expert review.",
+          "eligible_for_unknown_candidate": false,
+          "failed_count": 0,
+          "known_explanation_count": 0,
+          "known_explanations": [],
+          "ranking_evidence": {
+            "affects_classification_state": false,
+            "calibrated_threshold_applied": false,
+            "semisupervised_anomaly_score": 0.05801322299852596
+          },
+          "satisfied_count": 9,
+          "schema_version": "track_b_unknown_candidate_gate_v2",
+          "unresolved_count": 1
+        },
+        "known_explanations": [],
+        "ranking_evidence": {
+          "affects_classification_state": false,
+          "calibrated_threshold_applied": false,
+          "semisupervised_anomaly_score": 0.05801322299852596
+        },
+        "satellite_match": {
+          "catalogs_missing": [],
+          "classification": "no_known_match",
+          "confirmed_matches": [],
+          "disclaimer": "Track A satellite/transmitter matching is a deterministic known-source check only. No match does not confirm technosignature interest, and a match does not require confirmation from any other Track A check. This is not a claim about candidate anomaly status.",
+          "frequency_matches": [],
+          "schema_version": "track_a_satellite_match_v1"
+        },
+        "schema_version": "known_explanation_resolution_v1",
+        "track_a_crossmatch": {
+          "all_matches": [],
+          "best_match": null,
+          "catalogs_missing": [],
+          "catalogs_requested": [
+            "atnf",
+            "chime_frb",
+            "romabzcat",
+            "fermi_4fgl"
+          ],
+          "classification": "no_known_match",
+          "dec_deg": 12.4038,
+          "disclaimer": "Track A catalog cross-match is a deterministic known-source lookup only. No match does not confirm technosignature interest; it means no loaded catalog explains the position within the search radius. A `low_confidence` classification means one or more reference catalogs were not available locally, not that the candidate has been cleared of known explanations.",
+          "match_count": 0,
+          "ra_deg": 258.16799999999995,
+          "radius_arcsec": 30.0,
+          "schema_version": "track_a_crossmatch_v1"
+        },
+        "unresolved_count": 1
+      },
+      "known_explanation_state": "unresolved",
+      "negative_evidence": [
+        "Drift is zero or too small to help reject local interference.",
+        "Independent repeat or injection-recovery support is not strong.",
+        "No strong repeat observation support is present."
+      ],
+      "operator_review": {
+        "detection_claimed": false,
+        "external_submission_allowed": false,
+        "follow_up_required": true,
+        "operator_action": "local_deterministic_follow_up_triage",
+        "pathway": "human_review_queue",
+        "pathway_basis": "Derived from the scoring model's recommended_pathway."
+      },
+      "positive_evidence": [
+        "High SNR supports signal reality but does not establish source attribution.",
+        "Signal morphology is narrowband.",
+        "Signal appears in ON-target scans."
+      ],
+      "posterior": {
+        "catalog_or_processing_error": 0.006978,
+        "human_interference": 0.014595,
+        "instrumental_artifact": 0.006978,
+        "known_object": 0.004026,
+        "natural_source": 0.008522,
+        "noise_or_low_confidence": 0.006006,
+        "technosignature_interest": 0.952896
+      },
+      "provenance": {
+        "classification": "derived_real_observation_hit_table",
+        "dec_deg": 12.4038,
+        "external_submission_authorized": false,
+        "input_sha256": "607b5eb688922b9afd697719d7a1a984105ef987f76e12b13ad7bf080e978caf",
+        "instrument": "GBT",
+        "observation_mjd": 59046.9263,
+        "observation_time_utc": "2020-07-16T22:13:52Z",
+        "observer_elevation_m": 807.43,
+        "observer_lat_deg": 38.43312111111111,
+        "observer_location_source": "https://greenbankobservatory.org/portal/gbt/instruments/",
+        "observer_lon_deg": -79.839835,
+        "processing_snr_threshold": 10.0,
+        "processing_tool": "turboSETI",
+        "processing_tool_version": "2.3.2",
+        "provenance_limitation": "",
+        "ra_deg": 258.16799999999995,
+        "reader_type": "turboSETI_csv",
+        "semisupervised_model_path": "/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Technosignatures/data/meerkat_hits/semisupervised_scorer.joblib",
+        "semisupervised_score_policy": "max_hit_score_local_triage_only",
+        "semisupervised_scored_hit_count": 1,
+        "source_dataset": "Hunter controlled loopback archive",
+        "source_file": "$ACCEPTANCE_WORK_DIR/data/OUTSIDE/capture_outside_0001.dat",
+        "source_hdf5_filename": "capture_outside_0001.h5",
+        "source_hdf5_sha256": "c42efd341ed889b4fc7b0fef4cbd8e40fdc7b2b515e602d4d45cf882856f4784",
+        "source_url": "http://127.0.0.1:56101/capture_outside_0001.h5"
+      },
+      "recommended_pathway": "human_review_queue",
+      "schema_version": "techno_search_packet_v1",
+      "score_calibration": {
+        "calibration_dataset_id": null,
+        "limitation": "Normalized heuristic routing weights are not calibrated probabilities and must not be interpreted as false-positive, signal-reality, or technosignature probabilities.",
+        "probability_interpretation_allowed": false,
+        "schema_version": "score_calibration_v1",
+        "status": "uncalibrated"
+      },
+      "scores": {
+        "false_positive_probability": 0.047104,
+        "followup_value": 0.96476,
+        "novelty_score": 0.985405,
+        "review_readiness": 0.993587,
+        "signal_reality_confidence": 0.974346
+      },
+      "source_ids": [
+        "capture_outside_0001.dat"
+      ],
+      "track": "radio"
+    },
+    "follow_up_candidate_manifest": {
+      "adversarial_review_path": null,
+      "candidate_id": "capture_outside_0001",
+      "code_commit": "edb6e66",
+      "config_version": "scoring_v0",
+      "generated_at_utc": "2026-07-29T10:01:47.945354+00:00",
+      "json_path": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120100Z-ACCEPT02/pipeline_results/capture_outside_0001/capture_outside_0001.json",
+      "known_explanation_path": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120100Z-ACCEPT02/pipeline_results/capture_outside_0001/capture_outside_0001.known-explanation.json",
+      "known_explanation_state": "unresolved",
+      "markdown_path": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120100Z-ACCEPT02/pipeline_results/capture_outside_0001/capture_outside_0001.md",
+      "plot_artifacts": [
+        {
+          "description": "Persisted radio candidate feature summary.",
+          "disclaimer": "Deterministic rendering of persisted candidate feature values for review context only; not evidence of a confirmed technosignature.",
+          "kind": "radio_scored_feature_summary",
+          "media_type": "image/svg+xml",
+          "path": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120100Z-ACCEPT02/pipeline_results/capture_outside_0001/capture_outside_0001-radio-feature-summary.svg",
+          "synthetic": false,
+          "track": "radio"
+        }
+      ],
+      "provenance_summary": {
+        "cache_key": null,
+        "code_commit": "edb6e66",
+        "config_version": "scoring_v0",
+        "generated_at_utc": "2026-07-29T10:01:47.945368+00:00",
+        "input_path": null,
+        "provider_name": null,
+        "query_parameters": {},
+        "schema_version": "techno_search_packet_v1",
+        "service_url": null,
+        "source_dataset": "Hunter controlled loopback archive",
+        "source_ids": [
+          "capture_outside_0001.dat"
+        ]
+      },
+      "recommended_pathway": "human_review_queue",
+      "schema_version": "techno_search_packet_v1",
+      "track": "radio"
+    },
+    "follow_up_search_events": [
+      {
+        "at_utc": "2026-07-29T12:01:00Z",
+        "event": "created",
+        "manifest_sha256": "54b1b157eab23d68b95746e76db706cd3b089f6eb99464aafaacf664b49ae68a",
+        "mode": "follow-up",
+        "schema_version": "hunter_search_event_v2",
+        "search_id": "SEARCH-20260729T120100Z-ACCEPT02",
+        "target_count": 1
+      },
+      {
+        "app_version": "1.2.71",
+        "at_utc": "2026-07-29T10:01:45.904374Z",
+        "chunk_size": 1,
+        "code_commit": "edb6e66",
+        "event": "run_started",
+        "execution_kind_counts": {
+          "follow_up_archive_data_processing": 1
+        },
+        "follow_up_observation_fulfilled_count": 0,
+        "manifest_sha256": "54b1b157eab23d68b95746e76db706cd3b089f6eb99464aafaacf664b49ae68a",
+        "pipeline_workers": 1,
+        "run_id": "RUN-2026-07-29_100145Z-O4M5-hunter-search",
+        "schema_version": "hunter_search_event_v2",
+        "search_id": "SEARCH-20260729T120100Z-ACCEPT02"
+      },
+      {
+        "at_utc": "2026-07-29T10:01:45.912672Z",
+        "event": "run_failed",
+        "exit_code": 9,
+        "resumable": true,
+        "run_id": "RUN-2026-07-29_100145Z-O4M5-hunter-search",
+        "schema_version": "hunter_search_event_v2",
+        "search_id": "SEARCH-20260729T120100Z-ACCEPT02",
+        "stage": "acquisition_preprocessing_scoring"
+      },
+      {
+        "app_version": "1.2.71",
+        "at_utc": "2026-07-29T10:01:45.904374Z",
+        "chunk_size": 1,
+        "code_commit": "edb6e66",
+        "event": "run_resumed",
+        "execution_kind_counts": {
+          "follow_up_archive_data_processing": 1
+        },
+        "follow_up_observation_fulfilled_count": 0,
+        "manifest_sha256": "54b1b157eab23d68b95746e76db706cd3b089f6eb99464aafaacf664b49ae68a",
+        "pipeline_workers": 1,
+        "run_id": "RUN-2026-07-29_100145Z-O4M5-hunter-search",
+        "schema_version": "hunter_search_event_v2",
+        "search_id": "SEARCH-20260729T120100Z-ACCEPT02"
+      },
+      {
+        "app_version": "1.2.71",
+        "at_utc": "2026-07-29T10:01:48.459707Z",
+        "candidate_report_config_versions": [
+          "scoring_v0"
+        ],
+        "event": "run_completed",
+        "execution_kind_counts": {
+          "follow_up_archive_data_processing": 1
+        },
+        "follow_up_completed_count": 0,
+        "follow_up_deferred_count": 1,
+        "follow_up_dispositions": [
+          {
+            "consumed_follow_up_ids": [
+              "FU-2026-07-29_100127Z-1FFZ-001",
+              "FU-CONTROLLED-001"
+            ],
+            "fulfilled": false,
+            "reason": "new evidence did not explicitly satisfy the scheduled action",
+            "state": "deferred",
+            "target_id": "OUTSIDE"
+          }
+        ],
+        "follow_up_observation_fulfilled_count": 0,
+        "follow_up_required_count": 1,
+        "history_records_appended": 1,
+        "run_dir": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120100Z-ACCEPT02/runs/RUN-2026-07-29_100145Z-O4M5-hunter-search",
+        "run_id": "RUN-2026-07-29_100145Z-O4M5-hunter-search",
+        "schema_version": "hunter_search_event_v2",
+        "search_id": "SEARCH-20260729T120100Z-ACCEPT02",
+        "target_count": 1
+      }
+    ],
+    "follow_up_search_manifest": {
+      "app_version": "1.2.71",
+      "artifact_kind": "hunter_search_manifest",
+      "candidate_catalog": {
+        "candidate_count": 5,
+        "identity_resolved_count": 5,
+        "path": "$ACCEPTANCE_WORK_DIR/candidate_catalog.csv",
+        "ranking_eligible_count": 2,
+        "schema_version": "bl_archive_candidate_catalog_v1",
+        "sha256": "f809bc3ffa19d2fd9227da8f91a012de12e9dfa0e08aa40da5cdd5fc687beba1"
+      },
+      "code_commit": "edb6e66",
+      "created_at_utc": "2026-07-29T12:01:00Z",
+      "created_by_project": "Techno-Hunter",
+      "detection_claimed": false,
+      "disclaimer": "Hunter searches and follow-up records are local scientific workflow artifacts. They do not constitute a detection, discovery, expert review, external validation, or authorization for external submission.",
+      "eligibility_queue": {
+        "candidate_count": 5,
+        "path": "$ACCEPTANCE_WORK_DIR/adaptive_discovery/SEARCH-20260729T120000Z-ACCEPT01/queue_round_001.csv",
+        "schema_version": "target_priority_queue_v5",
+        "sha256": "b5c7c88e219e29f137c2eda64469660776bed6f675e79e2ede2346fefa2ac115",
+        "viable_candidate_count": 1
+      },
+      "external_submission_allowed": false,
+      "follow_up_registry": {
+        "schema_version": "hunter_follow_up_registry_v1",
+        "source_ledger_count": 2,
+        "unresolved_identity_count": 0
+      },
+      "initial_status": "pending",
+      "mode": "follow-up",
+      "pipeline": {
+        "acquisition": "scripts/run_stream_process_evict_batch.sh",
+        "interpretation": "techno_search.production_scan.run_production_scan",
+        "preprocessing": "scripts/run_turboseti_on_extended_corpus.sh",
+        "raw_retention_policy": "stream_process_evict",
+        "scoring": "scripts/run_pipeline_on_bl_data.sh",
+        "turbo_seti_parameters": {
+          "max_drift_hz_per_sec": 10.0,
+          "min_drift_hz_per_sec": 0.0001,
+          "snr_threshold": 10.0
+        }
+      },
+      "schema_version": "hunter_search_manifest_v3",
+      "search_id": "SEARCH-20260729T120100Z-ACCEPT02",
+      "selection": {
+        "adaptive_discovery": null,
+        "constraints": {},
+        "deterministic_tie_breaker": "canonical_target_id",
+        "execution_kind_counts": {
+          "follow_up_archive_data_processing": 1
+        },
+        "follow_up_discovery": {
+          "adapter": "controlled_existing_evidence_v1",
+          "cadence_discovery_count": 0,
+          "examined_count": 1,
+          "schema_version": "hunter_follow_up_discovery_report_v2",
+          "selected_count": 1,
+          "validity_state": "valid"
+        },
+        "follow_up_observation_fulfilled_count": 0,
+        "partial_selection_allowed": false,
+        "projected_download_gb": 0.004,
+        "quality": {
+          "interpretation": "deterministic relative ranking score; not a calibrated probability or absolute eligibility threshold",
+          "maximum": 0.96476,
+          "median": 0.96476,
+          "minimum": 0.96476,
+          "score_field": "follow_up_priority"
+        },
+        "ranking_key": "follow_up_priority",
+        "requested_count": 1,
+        "selected_count": 1,
+        "shortfall": null
+      },
+      "targets": [
+        {
+          "dec_deg": 20.0,
+          "distance_light_years": null,
+          "estimated_download_gb": 0.004,
+          "evidence": {
+            "candidate_id": "capture_outside_0001",
+            "cross_target_rfi_flagged": false,
+            "drift_evidence_available": true,
+            "drift_rate_hz_per_sec": -0.387762,
+            "frequency_hz": 8421295004.0,
+            "pathway": "human_review_queue",
+            "score": 0.96476,
+            "snr": 351.721191
+          },
+          "execution_kind": "follow_up_archive_data_processing",
+          "exoplanet_host": "",
+          "follow_up_observation_fulfilled": false,
+          "follow_up_observation_scheduled": false,
+          "follow_up_priority": 0.96476,
+          "galactic_latitude_deg": null,
+          "hip": "OUTSIDE",
+          "mode": "follow-up",
+          "name": "OUTSIDE",
+          "object_type": "Star",
+          "prior_search_count": 2,
+          "prior_search_provenance": [
+            {
+              "candidate_id": "capture_outside_0001",
+              "follow_up_id": "FU-2026-07-29_100127Z-1FFZ-001",
+              "ledger_path": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/runs/RUN-2026-07-29_100127Z-1FFZ-hunter-search/RUN-2026-07-29_100127Z-1FFZ-hunter-search_follow_ups.json",
+              "pathway": "human_review_queue",
+              "project": "Techno-Hunter",
+              "relationship": "this_project_search",
+              "run_id": "RUN-2026-07-29_100127Z-1FFZ-hunter-search",
+              "score": 0.96476
+            },
+            {
+              "candidate_id": "capture_outside_0001",
+              "follow_up_id": "FU-CONTROLLED-001",
+              "ledger_path": "$ACCEPTANCE_WORK_DIR/seed_scans/RUN-2026-07-29_115900Z-SEED-hunter-search/RUN-2026-07-29_115900Z-SEED-hunter-search_follow_ups.json",
+              "pathway": "human_review_queue",
+              "project": "Techno-Hunter",
+              "relationship": "this_project_search",
+              "run_id": "RUN-2026-07-29_115900Z-SEED-hunter-search",
+              "score": 0.8
+            }
+          ],
+          "prior_search_provenance_summary": "Techno-Hunter:2",
+          "prior_seti_coverage_reference": "",
+          "queue_status": "raw_download_approval_required",
+          "ra_deg": 10.0,
+          "recommended_next_action": "complete the unresolved known-explanation checks before candidate promotion",
+          "selection_reason": "complete the unresolved known-explanation checks before candidate promotion",
+          "source_data_path": "$ACCEPTANCE_WORK_DIR/data/OUTSIDE/capture_outside_0001.dat",
+          "source_hdf5_url": "http://127.0.0.1:56101/capture_outside_0001.h5",
+          "spectral_type": "",
+          "target_selection_score": 0.009
+        }
+      ]
+    },
+    "follow_up_target_status": {
+      "artifact_kind": "production_target_status",
+      "classification_limitation": "Single-star, binary, and massive-body labels are inferred only when local target names or candidate metadata make that conservative. Unknowns should be resolved by a future committed target taxonomy.",
+      "classification_reliability": "best_effort_from_local_metadata",
+      "detection_claimed": false,
+      "disclaimer": "Production run outcome files are local production-triage ledgers only. They do not constitute detection, discovery, expert review, peer review, external validation, or authorization for external submission.",
+      "entries": [
+        {
+          "candidate_count": 1,
+          "composite_score": 0.96476,
+          "cross_target_rfi_flagged": false,
+          "cross_target_rfi_match_count": 0,
+          "cross_target_rfi_matched_targets": [],
+          "descriptive_name": "capture_outside_0001 (radio sky target)",
+          "detection_claimed": false,
+          "drift_evidence_available": true,
+          "drift_evidence_limitation": "",
+          "drift_rate_hz_per_sec": -0.387762,
+          "external_submission_allowed": false,
+          "follow_up_required": true,
+          "index_id": "FU-2026-07-29_100145Z-O4M5-001",
+          "is_earth_drift_consistent": true,
+          "known_explanation_state": "unresolved",
+          "normalized_drift_hz_s_per_ghz": -0.046045412233607586,
+          "observation_count": 1,
+          "score_basis": "pipeline_score",
+          "target_kind": "radio sky target",
+          "target_kind_confidence": "low",
+          "target_kind_limitation": "Local metadata does not identify the astrophysical object class.",
+          "target_name": "capture_outside_0001",
+          "top_candidate_id": "capture_outside_0001",
+          "top_pathway": "human_review_queue",
+          "track": "radio"
+        }
+      ],
+      "external_submission_allowed": false,
+      "follow_up_required_count": 1,
+      "run_id": "RUN-2026-07-29_100145Z-O4M5-hunter-search",
+      "schema_version": "production_target_status_v1",
+      "target_count": 1
+    },
+    "history": [
+      {
+        "dat_file": "",
+        "parent_run_id": "SEARCH-20260729T120000Z-ACCEPT01",
+        "pathway": "human_review_queue",
+        "run_id": "RUN-2026-07-29_100127Z-1FFZ-hunter-search",
+        "scanned_at_utc": "2026-07-29T10:01:45.871118Z",
+        "schema_version": "prod_scan_history_v1",
+        "score": 0.96476,
+        "target_stem": "capture_outside_0001"
+      },
+      {
+        "dat_file": "",
+        "parent_run_id": "SEARCH-20260729T120100Z-ACCEPT02",
+        "pathway": "human_review_queue",
+        "run_id": "RUN-2026-07-29_100145Z-O4M5-hunter-search",
+        "scanned_at_utc": "2026-07-29T10:01:48.456831Z",
+        "schema_version": "prod_scan_history_v1",
+        "score": 0.96476,
+        "target_stem": "capture_outside_0001"
+      }
+    ],
+    "new_candidate_interpretation": {
+      "blocking_issues": [
+        "A complete ON/OFF cadence was not observed; OFF-target absence is unresolved."
+      ],
+      "candidate_id": "capture_outside_0001",
+      "config_version": "scoring_v0",
+      "disclaimer": "This is an unconfirmed candidate/anomaly generated by a publication-grade technosignature search pipeline. It is not evidence of a confirmed technosignature. Further review and independent validation are required.",
+      "false_positive_discussion": "The configured scorer is uncalibrated. Numeric class weights and derived routing indices are deterministic ranking aids, not probabilities, false-positive estimates, or promotion evidence. The false-positive routing index is 0.047; it must not be reported as a false-positive probability. The packet records 3 negative evidence item(s) and 1 blocking issue(s).",
+      "features": {
+        "abacab_cadence_score": 0.5,
+        "bandwidth_hz": 2.79,
+        "cadence_candidate_selection_applied": false,
+        "cadence_survivor_group_count": 0,
+        "data_quality_score": 1.0,
+        "dec_deg": 12.4038,
+        "drift_rate_hz_per_sec": -0.387762,
+        "frequency_hz": 8421295004.0,
+        "frequency_persistence_score": 0.0,
+        "hit_count": 1,
+        "injection_recovery_score": 0.5,
+        "instrumental_artifact_score": 0.0,
+        "is_earth_drift_consistent": true,
+        "metadata_completeness_score": 1.0,
+        "nearby_target_recurrence_score": 0.0,
+        "normalized_drift_hz_s_per_ghz": -0.046045412233607586,
+        "observation_mjd": 59046.9263,
+        "observation_time_utc": "2020-07-16T22:13:52Z",
+        "observer_elevation_m": 807.43,
+        "observer_lat_deg": 38.43312111111111,
+        "observer_lon_deg": -79.839835,
+        "off_hit_count": 0,
+        "off_scan_distinct_source_count": 0,
+        "off_target_presence_score": 0.0,
+        "on_hit_count": 1,
+        "on_off_consistency_score": 0.0,
+        "on_scan_distinct_source_count": 1,
+        "on_target_presence_score": 1.0,
+        "provenance_completeness_score": 1.0,
+        "ra_deg": 258.16799999999995,
+        "relative_snr": 1.0,
+        "repeat_observation_score": 0.0,
+        "rfi_band_overlap_score": 0.0,
+        "rfi_database_match_count": 0,
+        "rfi_database_match_ids": "",
+        "rfi_database_overlap_score": 0.0,
+        "rfi_database_record_count": 5,
+        "rfi_database_reviewed_count": 3,
+        "rfi_database_schema_version": "rfi_database_v1",
+        "rfi_database_source_classes": "",
+        "rfi_database_validation_ok": true,
+        "semisupervised_anomaly_score": 0.05801322299852596,
+        "semisupervised_mean_anomaly_score": 0.05801322299852596,
+        "semisupervised_model_used": true,
+        "semisupervised_scored_hit_count": 1,
+        "snr": 351.721191
+      },
+      "known_explanation_resolution": {
+        "adversarial_review_required": false,
+        "candidate_id": "capture_outside_0001",
+        "classification_reason": "required_known_explanation_evidence_or_checks_unavailable",
+        "classification_state": "unresolved",
+        "detection_claimed": false,
+        "disclaimer": "This deterministic state records whether implemented known-explanation checks explained the observation. unknown means every required check completed and none matched; it is not a positive technosignature label, detection, or discovery.",
+        "eligible_for_unknown_candidate": false,
+        "external_submission_allowed": false,
+        "gate_result": {
+          "candidate_id": "capture_outside_0001",
+          "classification_state": "unresolved",
+          "condition_count": 10,
+          "conditions": [
+            {
+              "condition_id": "not_confidently_pulsar",
+              "description": "Track A catalog cross-match does not classify as known_pulsar",
+              "evidence": {
+                "crossmatch_classification": "no_known_match"
+              },
+              "satisfied": true
+            },
+            {
+              "condition_id": "not_confidently_frb",
+              "description": "Track A catalog cross-match does not classify as known_frb",
+              "evidence": {
+                "crossmatch_classification": "no_known_match"
+              },
+              "satisfied": true
+            },
+            {
+              "condition_id": "not_known_blazar_agn_or_gamma",
+              "description": "Track A catalog cross-match does not classify as blazar_agn/gamma_ray_source",
+              "evidence": {
+                "crossmatch_classification": "no_known_match"
+              },
+              "satisfied": true
+            },
+            {
+              "condition_id": "not_known_satellite_transmitter",
+              "description": "Event is not explained by a known satellite transmitter",
+              "evidence": {
+                "satellite_match_classification": "no_known_match"
+              },
+              "satisfied": true
+            },
+            {
+              "condition_id": "not_locally_identified_known_object",
+              "description": "Local provenance does not identify a known calibration object",
+              "evidence": {
+                "known_object_score": 0.0,
+                "reason": null
+              },
+              "satisfied": true
+            },
+            {
+              "condition_id": "not_known_rfi_region",
+              "description": "Event frequency does not overlap a known RFI band/database entry",
+              "evidence": {
+                "max_allowed": 0.5,
+                "rfi_band_overlap_score": 0.0
+              },
+              "satisfied": true
+            },
+            {
+              "condition_id": "not_instrument_artifact",
+              "description": "Event is not a known instrument/band-edge/notch artifact",
+              "evidence": {
+                "instrumental_artifact_score": 0.0,
+                "max_allowed": 0.3
+              },
+              "satisfied": true
+            },
+            {
+              "condition_id": "passes_cadence_checks",
+              "description": "Event passes ABACAB ON/OFF cadence rejection",
+              "evidence": {
+                "abacab_cadence_score": 0.5
+              },
+              "satisfied": null
+            },
+            {
+              "condition_id": "not_below_search_threshold",
+              "description": "Event is above the provenance-stamped detector search threshold",
+              "evidence": {
+                "processing_snr_threshold": 10.0,
+                "snr": 351.721191
+              },
+              "satisfied": true
+            },
+            {
+              "condition_id": "has_preserved_provenance",
+              "description": "Event has preserved source provenance and a reproducible extraction path",
+              "evidence": {
+                "provenance_field_count": 25,
+                "source_id_count": 1
+              },
+              "satisfied": true
+            }
+          ],
+          "disclaimer": "This is a Track B known-explanation gate evaluation, not a detection or discovery claim. unknown_candidate is a local triage queue state only: it means every implemented known-source, RFI, instrument-artifact, and cadence check failed to explain the event, not that the event has been confirmed as anomalous or technosignature-relevant. No condition here authorizes external submission or expert review.",
+          "eligible_for_unknown_candidate": false,
+          "failed_count": 0,
+          "known_explanation_count": 0,
+          "known_explanations": [],
+          "ranking_evidence": {
+            "affects_classification_state": false,
+            "calibrated_threshold_applied": false,
+            "semisupervised_anomaly_score": 0.05801322299852596
+          },
+          "satisfied_count": 9,
+          "schema_version": "track_b_unknown_candidate_gate_v2",
+          "unresolved_count": 1
+        },
+        "known_explanations": [],
+        "ranking_evidence": {
+          "affects_classification_state": false,
+          "calibrated_threshold_applied": false,
+          "semisupervised_anomaly_score": 0.05801322299852596
+        },
+        "satellite_match": {
+          "catalogs_missing": [],
+          "classification": "no_known_match",
+          "confirmed_matches": [],
+          "disclaimer": "Track A satellite/transmitter matching is a deterministic known-source check only. No match does not confirm technosignature interest, and a match does not require confirmation from any other Track A check. This is not a claim about candidate anomaly status.",
+          "frequency_matches": [],
+          "schema_version": "track_a_satellite_match_v1"
+        },
+        "schema_version": "known_explanation_resolution_v1",
+        "track_a_crossmatch": {
+          "all_matches": [],
+          "best_match": null,
+          "catalogs_missing": [],
+          "catalogs_requested": [
+            "atnf",
+            "chime_frb",
+            "romabzcat",
+            "fermi_4fgl"
+          ],
+          "classification": "no_known_match",
+          "dec_deg": 12.4038,
+          "disclaimer": "Track A catalog cross-match is a deterministic known-source lookup only. No match does not confirm technosignature interest; it means no loaded catalog explains the position within the search radius. A `low_confidence` classification means one or more reference catalogs were not available locally, not that the candidate has been cleared of known explanations.",
+          "match_count": 0,
+          "ra_deg": 258.16799999999995,
+          "radius_arcsec": 30.0,
+          "schema_version": "track_a_crossmatch_v1"
+        },
+        "unresolved_count": 1
+      },
+      "known_explanation_state": "unresolved",
+      "negative_evidence": [
+        "Drift is zero or too small to help reject local interference.",
+        "Independent repeat or injection-recovery support is not strong.",
+        "No strong repeat observation support is present."
+      ],
+      "operator_review": {
+        "detection_claimed": false,
+        "external_submission_allowed": false,
+        "follow_up_required": true,
+        "operator_action": "local_deterministic_follow_up_triage",
+        "pathway": "human_review_queue",
+        "pathway_basis": "Derived from the scoring model's recommended_pathway."
+      },
+      "positive_evidence": [
+        "High SNR supports signal reality but does not establish source attribution.",
+        "Signal morphology is narrowband.",
+        "Signal appears in ON-target scans."
+      ],
+      "posterior": {
+        "catalog_or_processing_error": 0.006978,
+        "human_interference": 0.014595,
+        "instrumental_artifact": 0.006978,
+        "known_object": 0.004026,
+        "natural_source": 0.008522,
+        "noise_or_low_confidence": 0.006006,
+        "technosignature_interest": 0.952896
+      },
+      "provenance": {
+        "classification": "derived_real_observation_hit_table",
+        "dec_deg": 12.4038,
+        "external_submission_authorized": false,
+        "input_sha256": "607b5eb688922b9afd697719d7a1a984105ef987f76e12b13ad7bf080e978caf",
+        "instrument": "GBT",
+        "observation_mjd": 59046.9263,
+        "observation_time_utc": "2020-07-16T22:13:52Z",
+        "observer_elevation_m": 807.43,
+        "observer_lat_deg": 38.43312111111111,
+        "observer_location_source": "https://greenbankobservatory.org/portal/gbt/instruments/",
+        "observer_lon_deg": -79.839835,
+        "processing_snr_threshold": 10.0,
+        "processing_tool": "turboSETI",
+        "processing_tool_version": "2.3.2",
+        "provenance_limitation": "",
+        "ra_deg": 258.16799999999995,
+        "reader_type": "turboSETI_csv",
+        "semisupervised_model_path": "/Users/Rome/Library/CloudStorage/Dropbox/Rome's Stuff/Doc.Root/Personal Docs/Astrometrics/2026 Technosignatures/data/meerkat_hits/semisupervised_scorer.joblib",
+        "semisupervised_score_policy": "max_hit_score_local_triage_only",
+        "semisupervised_scored_hit_count": 1,
+        "source_dataset": "Hunter controlled loopback archive",
+        "source_file": "$ACCEPTANCE_WORK_DIR/data/OUTSIDE/capture_outside_0001.dat",
+        "source_hdf5_filename": "capture_outside_0001.h5",
+        "source_hdf5_sha256": "c42efd341ed889b4fc7b0fef4cbd8e40fdc7b2b515e602d4d45cf882856f4784",
+        "source_url": "http://127.0.0.1:56101/capture_outside_0001.h5"
+      },
+      "recommended_pathway": "human_review_queue",
+      "schema_version": "techno_search_packet_v1",
+      "score_calibration": {
+        "calibration_dataset_id": null,
+        "limitation": "Normalized heuristic routing weights are not calibrated probabilities and must not be interpreted as false-positive, signal-reality, or technosignature probabilities.",
+        "probability_interpretation_allowed": false,
+        "schema_version": "score_calibration_v1",
+        "status": "uncalibrated"
+      },
+      "scores": {
+        "false_positive_probability": 0.047104,
+        "followup_value": 0.96476,
+        "novelty_score": 0.985405,
+        "review_readiness": 0.993587,
+        "signal_reality_confidence": 0.974346
+      },
+      "source_ids": [
+        "capture_outside_0001.dat"
+      ],
+      "track": "radio"
+    },
+    "new_candidate_manifest": {
+      "adversarial_review_path": null,
+      "candidate_id": "capture_outside_0001",
+      "code_commit": "edb6e66",
+      "config_version": "scoring_v0",
+      "generated_at_utc": "2026-07-29T10:01:45.317702+00:00",
+      "json_path": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/pipeline_results/capture_outside_0001/capture_outside_0001.json",
+      "known_explanation_path": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/pipeline_results/capture_outside_0001/capture_outside_0001.known-explanation.json",
+      "known_explanation_state": "unresolved",
+      "markdown_path": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/pipeline_results/capture_outside_0001/capture_outside_0001.md",
+      "plot_artifacts": [
+        {
+          "description": "Persisted radio candidate feature summary.",
+          "disclaimer": "Deterministic rendering of persisted candidate feature values for review context only; not evidence of a confirmed technosignature.",
+          "kind": "radio_scored_feature_summary",
+          "media_type": "image/svg+xml",
+          "path": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/pipeline_results/capture_outside_0001/capture_outside_0001-radio-feature-summary.svg",
+          "synthetic": false,
+          "track": "radio"
+        }
+      ],
+      "provenance_summary": {
+        "cache_key": null,
+        "code_commit": "edb6e66",
+        "config_version": "scoring_v0",
+        "generated_at_utc": "2026-07-29T10:01:45.317719+00:00",
+        "input_path": null,
+        "provider_name": null,
+        "query_parameters": {},
+        "schema_version": "techno_search_packet_v1",
+        "service_url": null,
+        "source_dataset": "Hunter controlled loopback archive",
+        "source_ids": [
+          "capture_outside_0001.dat"
+        ]
+      },
+      "recommended_pathway": "human_review_queue",
+      "schema_version": "techno_search_packet_v1",
+      "track": "radio"
+    },
+    "new_search_events": [
+      {
+        "at_utc": "2026-07-29T12:00:00Z",
+        "event": "created",
+        "manifest_sha256": "4aa6e1ba9a2260347fb37908901b7736a645bea71b9e08231eb31376e34cbd2e",
+        "mode": "new",
+        "schema_version": "hunter_search_event_v2",
+        "search_id": "SEARCH-20260729T120000Z-ACCEPT01",
+        "target_count": 1
+      },
+      {
+        "app_version": "1.2.71",
+        "at_utc": "2026-07-29T10:01:27.857096Z",
+        "chunk_size": 1,
+        "code_commit": "edb6e66",
+        "event": "run_started",
+        "execution_kind_counts": {
+          "novel_target_archive_processing": 1
+        },
+        "follow_up_observation_fulfilled_count": 0,
+        "manifest_sha256": "4aa6e1ba9a2260347fb37908901b7736a645bea71b9e08231eb31376e34cbd2e",
+        "pipeline_workers": 1,
+        "run_id": "RUN-2026-07-29_100127Z-1FFZ-hunter-search",
+        "schema_version": "hunter_search_event_v2",
+        "search_id": "SEARCH-20260729T120000Z-ACCEPT01"
+      },
+      {
+        "app_version": "1.2.71",
+        "at_utc": "2026-07-29T10:01:45.871527Z",
+        "candidate_report_config_versions": [
+          "scoring_v0"
+        ],
+        "event": "run_completed",
+        "execution_kind_counts": {
+          "novel_target_archive_processing": 1
+        },
+        "follow_up_completed_count": 0,
+        "follow_up_deferred_count": 0,
+        "follow_up_dispositions": [],
+        "follow_up_observation_fulfilled_count": 0,
+        "follow_up_required_count": 1,
+        "history_records_appended": 1,
+        "run_dir": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/runs/RUN-2026-07-29_100127Z-1FFZ-hunter-search",
+        "run_id": "RUN-2026-07-29_100127Z-1FFZ-hunter-search",
+        "schema_version": "hunter_search_event_v2",
+        "search_id": "SEARCH-20260729T120000Z-ACCEPT01",
+        "target_count": 1
+      }
+    ],
+    "new_search_manifest": {
+      "app_version": "1.2.71",
+      "artifact_kind": "hunter_search_manifest",
+      "candidate_catalog": {
+        "candidate_count": 5,
+        "identity_resolved_count": 5,
+        "path": "$ACCEPTANCE_WORK_DIR/candidate_catalog.csv",
+        "ranking_eligible_count": 2,
+        "schema_version": "bl_archive_candidate_catalog_v1",
+        "sha256": "f809bc3ffa19d2fd9227da8f91a012de12e9dfa0e08aa40da5cdd5fc687beba1"
+      },
+      "code_commit": "edb6e66",
+      "created_at_utc": "2026-07-29T12:00:00Z",
+      "created_by_project": "Techno-Hunter",
+      "detection_claimed": false,
+      "disclaimer": "Hunter searches and follow-up records are local scientific workflow artifacts. They do not constitute a detection, discovery, expert review, external validation, or authorization for external submission.",
+      "eligibility_queue": {
+        "candidate_count": 5,
+        "path": "$ACCEPTANCE_WORK_DIR/adaptive_discovery/SEARCH-20260729T120000Z-ACCEPT01/queue_round_001.csv",
+        "schema_version": "target_priority_queue_v5",
+        "sha256": "b5c7c88e219e29f137c2eda64469660776bed6f675e79e2ede2346fefa2ac115",
+        "viable_candidate_count": 2
+      },
+      "external_submission_allowed": false,
+      "follow_up_registry": null,
+      "initial_status": "pending",
+      "mode": "new",
+      "pipeline": {
+        "acquisition": "scripts/run_stream_process_evict_batch.sh",
+        "interpretation": "techno_search.production_scan.run_production_scan",
+        "preprocessing": "scripts/run_turboseti_on_extended_corpus.sh",
+        "raw_retention_policy": "stream_process_evict",
+        "scoring": "scripts/run_pipeline_on_bl_data.sh",
+        "turbo_seti_parameters": {
+          "max_drift_hz_per_sec": 10.0,
+          "min_drift_hz_per_sec": 0.0001,
+          "snr_threshold": 10.0
+        }
+      },
+      "schema_version": "hunter_search_manifest_v3",
+      "search_id": "SEARCH-20260729T120000Z-ACCEPT01",
+      "selection": {
+        "adaptive_discovery": {
+          "candidate_count": 5,
+          "constraints": {},
+          "eligible_count": 2,
+          "expandable_count": 0,
+          "highest_unresolved_score": null,
+          "requested_count": 1,
+          "round_count": 1,
+          "rounds": [
+            {
+              "adapter": "loopback_archive_metadata_v1",
+              "examined_count": 1,
+              "examined_target_ids": [
+                "OUTSIDE"
+              ],
+              "minimum_examined_score": 0.009,
+              "promoted_target_ids": [
+                "OUTSIDE"
+              ],
+              "queue_sha256": "b5c7c88e219e29f137c2eda64469660776bed6f675e79e2ede2346fefa2ac115",
+              "round": 1,
+              "validity_state": "valid"
+            }
+          ],
+          "selection_cutoff_score": 0.009,
+          "strategy": "adaptive_score_bound_v1",
+          "sufficient": true,
+          "universe_exhausted": true
+        },
+        "constraints": {},
+        "deterministic_tie_breaker": "canonical_target_id",
+        "execution_kind_counts": {
+          "novel_target_archive_processing": 1
+        },
+        "follow_up_discovery": null,
+        "follow_up_observation_fulfilled_count": 0,
+        "partial_selection_allowed": false,
+        "projected_download_gb": 0.004,
+        "quality": {
+          "interpretation": "deterministic relative ranking score; not a calibrated probability or absolute eligibility threshold",
+          "maximum": 0.009,
+          "median": 0.009,
+          "minimum": 0.009,
+          "score_field": "target_selection_score"
+        },
+        "ranking_key": "target_selection_score",
+        "requested_count": 1,
+        "selected_count": 1,
+        "shortfall": null
+      },
+      "targets": [
+        {
+          "background_target_priority_score": 0.009,
+          "cross_project_prior_search": "",
+          "data_products_available": "hdf5_size_preflight_ok",
+          "dec_deg": 20.0,
+          "distance_light_years": null,
+          "estimated_download_gb": 0.004,
+          "execution_kind": "novel_target_archive_processing",
+          "exoplanet_host": "",
+          "follow_up_observation_fulfilled": false,
+          "follow_up_observation_scheduled": false,
+          "galactic_latitude_deg": null,
+          "hip": "OUTSIDE",
+          "local_coverage_status": "not_searched_size_preflight_ok",
+          "mode": "new",
+          "name": "OUTSIDE",
+          "notes": "controlled pipeline smoke fixture; not training data, a scientific label, or real-world performance evidence",
+          "object_type": "Star",
+          "prior_search_count": 0,
+          "prior_search_provenance": [],
+          "prior_search_provenance_summary": "",
+          "prior_seti_coverage_reference": "",
+          "priority_config_version": "background_priority_v0",
+          "queue_status": "raw_download_approval_required",
+          "ra_deg": 10.0,
+          "search_category": "controlled_pipeline_acceptance",
+          "selection_reason": "highest deterministic target_selection_score among eligible, size-preflighted targets not previously searched by this project",
+          "source_hdf5_url": "http://127.0.0.1:56101/capture_outside_0001.h5",
+          "spectral_type": "",
+          "target_selection_score": 0.009,
+          "total_priority": 0.009
+        }
+      ]
+    },
+    "new_target_status": {
+      "artifact_kind": "production_target_status",
+      "classification_limitation": "Single-star, binary, and massive-body labels are inferred only when local target names or candidate metadata make that conservative. Unknowns should be resolved by a future committed target taxonomy.",
+      "classification_reliability": "best_effort_from_local_metadata",
+      "detection_claimed": false,
+      "disclaimer": "Production run outcome files are local production-triage ledgers only. They do not constitute detection, discovery, expert review, peer review, external validation, or authorization for external submission.",
+      "entries": [
+        {
+          "candidate_count": 1,
+          "composite_score": 0.96476,
+          "cross_target_rfi_flagged": false,
+          "cross_target_rfi_match_count": 0,
+          "cross_target_rfi_matched_targets": [],
+          "descriptive_name": "capture_outside_0001 (radio sky target)",
+          "detection_claimed": false,
+          "drift_evidence_available": true,
+          "drift_evidence_limitation": "",
+          "drift_rate_hz_per_sec": -0.387762,
+          "external_submission_allowed": false,
+          "follow_up_required": true,
+          "index_id": "FU-2026-07-29_100127Z-1FFZ-001",
+          "is_earth_drift_consistent": true,
+          "known_explanation_state": "unresolved",
+          "normalized_drift_hz_s_per_ghz": -0.046045412233607586,
+          "observation_count": 1,
+          "score_basis": "pipeline_score",
+          "target_kind": "radio sky target",
+          "target_kind_confidence": "low",
+          "target_kind_limitation": "Local metadata does not identify the astrophysical object class.",
+          "target_name": "capture_outside_0001",
+          "top_candidate_id": "capture_outside_0001",
+          "top_pathway": "human_review_queue",
+          "track": "radio"
+        }
+      ],
+      "external_submission_allowed": false,
+      "follow_up_required_count": 1,
+      "run_id": "RUN-2026-07-29_100127Z-1FFZ-hunter-search",
+      "schema_version": "production_target_status_v1",
+      "target_count": 1
+    },
+    "observation_provenance": {
+      "approved_for_local_real_data": false,
+      "artifact_filename": "capture_outside_0001.dat",
+      "classification": "controlled_acceptance_fixture",
+      "controlled_acceptance_only": true,
+      "data_use_review_status": "not_applicable_controlled_acceptance",
+      "downloaded_utc": "2026-07-29T10:01:43.249051Z",
+      "external_submission_authorized": false,
+      "human_approval_status": "not_applicable_controlled_acceptance",
+      "instrument": "GBT",
+      "observation_mjd": 59046.9263,
+      "processing_parameters": {
+        "max_drift_hz_per_sec": 10.0,
+        "min_drift_hz_per_sec": 0.0001,
+        "snr_threshold": 10.0
+      },
+      "processing_tool": "turboSETI",
+      "processing_tool_version": "2.3.2",
+      "provenance_review_status": "controlled_acceptance",
+      "raw_retention_policy": "stream_process_evict",
+      "schema_version": "observation_artifact_provenance_v1",
+      "sha256": "607b5eb688922b9afd697719d7a1a984105ef987f76e12b13ad7bf080e978caf",
+      "source_archive": "Hunter controlled loopback archive",
+      "source_hdf5_filename": "capture_outside_0001.h5",
+      "source_hdf5_sha256": "c42efd341ed889b4fc7b0fef4cbd8e40fdc7b2b515e602d4d45cf882856f4784",
+      "source_hdf5_size_bytes": 4200792,
+      "source_name": "SYNTH_BL_TIER1",
+      "source_url": "http://127.0.0.1:56101/capture_outside_0001.h5",
+      "target_id": "SYNTH_BL_TIER1"
+    }
+  },
+  "expert_review_claimed": false,
+  "external_submission_allowed": false,
+  "external_validation_claimed": false,
+  "follow_up_state": {
+    "final_disposition": [
+      {
+        "consumed_follow_up_ids": [
+          "FU-2026-07-29_100127Z-1FFZ-001",
+          "FU-CONTROLLED-001"
+        ],
+        "fulfilled": false,
+        "reason": "new evidence did not explicitly satisfy the scheduled action",
+        "state": "deferred",
+        "target_id": "OUTSIDE"
+      }
+    ],
+    "history_record_count": 2,
+    "source_evidence_consumed": true
+  },
+  "limitations": [
+    "controlled pipeline smoke fixture; not training data, a scientific label, or real-world performance evidence",
+    "External archive transport is replaced by a loopback HTTP source.",
+    "Repository-wide validation is executed separately by the canonical validator.",
+    "The bounded live-source smoke remains the immutable v1.2.69 evidence."
+  ],
+  "provenance_trace": {
+    "candidate_catalog_sha256": "f809bc3ffa19d2fd9227da8f91a012de12e9dfa0e08aa40da5cdd5fc687beba1",
+    "data_collection_status_sha256": "a974706ba4fc99163d0152d9a1157c96e3565aa2c18de897cfcfce26db706ce6",
+    "follow_up_candidate_manifest_sha256": "e1ef5ee556cd09090253ef5846a6b9b509a969067aba70bbf2d1070575bbea6e",
+    "follow_up_manifest_sha256": "54b1b157eab23d68b95746e76db706cd3b089f6eb99464aafaacf664b49ae68a",
+    "initial_queue_sha256": "719a84e551c7aaff5070dfcf03cf57f98177b39de6b66a9946e904f73ea50f72",
+    "new_candidate_manifest_sha256": "611fd534aa928f36e9778ce375fcce7da2cabeb83c21dc3414ea3b83c7bfdad1",
+    "new_manifest_sha256": "4aa6e1ba9a2260347fb37908901b7736a645bea71b9e08231eb31376e34cbd2e",
+    "observation_artifact_sha256": "607b5eb688922b9afd697719d7a1a984105ef987f76e12b13ad7bf080e978caf",
+    "selected_target_trace": {
+      "candidate_catalog_source": {
+        "candidate_count": 5,
+        "identity_resolved_count": 5,
+        "path": "$ACCEPTANCE_WORK_DIR/candidate_catalog.csv",
+        "ranking_eligible_count": 2,
+        "schema_version": "bl_archive_candidate_catalog_v1",
+        "sha256": "f809bc3ffa19d2fd9227da8f91a012de12e9dfa0e08aa40da5cdd5fc687beba1"
+      },
+      "eligibility_queue_source": {
+        "candidate_count": 5,
+        "path": "$ACCEPTANCE_WORK_DIR/adaptive_discovery/SEARCH-20260729T120000Z-ACCEPT01/queue_round_001.csv",
+        "schema_version": "target_priority_queue_v5",
+        "sha256": "b5c7c88e219e29f137c2eda64469660776bed6f675e79e2ede2346fefa2ac115",
+        "viable_candidate_count": 2
+      },
+      "execution_target_name": "capture_outside_0001",
+      "follow_up_interpretation_candidate_id": "capture_outside_0001",
+      "history_parent_searches": [
+        "SEARCH-20260729T120000Z-ACCEPT01",
+        "SEARCH-20260729T120100Z-ACCEPT02"
+      ],
+      "identity_resolution": "resolved_existing_queue_alias",
+      "new_interpretation_candidate_id": "capture_outside_0001",
+      "observation_provenance_classification": "controlled_acceptance_fixture",
+      "ranking_contribution": 0.009,
+      "selection_reason": "highest deterministic target_selection_score among eligible, size-preflighted targets not previously searched by this project",
+      "target_id": "OUTSIDE",
+      "validity_state": "valid"
+    },
+    "source_fixture_sha256": "c42efd341ed889b4fc7b0fef4cbd8e40fdc7b2b515e602d4d45cf882856f4784",
+    "transformations": [
+      "loopback HTTP archive adapter",
+      "real stream_process_evict runner",
+      "real turboSETI 2.3.2 preprocessing",
+      "real radio candidate pipeline and known-explanation resolution",
+      "real production composite interpretation"
+    ]
+  },
+  "ranking_evidence": {
+    "absolute_probability_interpretation_allowed": false,
+    "initial_cutoff_score": 0.001,
+    "initial_cutoff_target_id": "WEAK",
+    "selected_score": 0.009,
+    "selected_target_id": "OUTSIDE"
+  },
+  "release": {
+    "app_version": "1.2.71",
+    "code_commit": "edb6e66",
+    "fixture_classification": "controlled pipeline smoke fixture; not training data, a scientific label, or real-world performance evidence",
+    "installed_entry_point": "Techno-Hunter"
+  },
+  "request": {
+    "follow_up": {
+      "mode": "follow-up",
+      "target_count": 1
+    },
+    "new": {
+      "mode": "new",
+      "target_count": 1
+    }
+  },
+  "schema_version": "hunter_controlled_prod_acceptance_v1",
+  "search_runs": {
+    "follow_up": {
+      "event_sequence": [
+        "created",
+        "run_started",
+        "run_failed",
+        "run_resumed",
+        "run_completed"
+      ],
+      "executed_target_ids": [
+        "OUTSIDE"
+      ],
+      "fault_injected_exit_code": 9,
+      "resumed_run_id": "RUN-2026-07-29_100145Z-O4M5-hunter-search",
+      "search_id": "SEARCH-20260729T120100Z-ACCEPT02"
+    },
+    "new": {
+      "event_sequence": [
+        "created",
+        "run_started",
+        "run_completed"
+      ],
+      "executed_target_ids": [
+        "OUTSIDE"
+      ],
+      "search_id": "SEARCH-20260729T120000Z-ACCEPT01"
+    }
+  },
+  "selected_targets": {
+    "follow_up": [
+      "OUTSIDE"
+    ],
+    "new": [
+      "OUTSIDE"
+    ]
+  },
+  "transcript": {
+    "stderr": "ERROR: search SEARCH-20260729T120100Z-ACCEPT02 failed during acquisition/processing with exit code 9; the exact search remains resumable\n",
+    "stdout": "... Candidate pool \u2192 deterministic ranking \u2192 immutable manifest\n{\n  \"app_version\": \"1.2.71\",\n  \"artifact_kind\": \"hunter_search_manifest\",\n  \"candidate_catalog\": {\n    \"candidate_count\": 5,\n    \"identity_resolved_count\": 5,\n    \"path\": \"$ACCEPTANCE_WORK_DIR/candidate_catalog.csv\",\n    \"ranking_eligible_count\": 2,\n    \"schema_version\": \"bl_archive_candidate_catalog_v1\",\n    \"sha256\": \"f809bc3ffa19d2fd9227da8f91a012de12e9dfa0e08aa40da5cdd5fc687beba1\"\n  },\n  \"code_commit\": \"edb6e66\",\n  \"created_at_utc\": \"2026-07-29T12:00:00Z\",\n  \"created_by_project\": \"Techno-Hunter\",\n  \"detection_claimed\": false,\n  \"disclaimer\": \"Hunter searches and follow-up records are local scientific workflow artifacts. They do not constitute a detection, discovery, expert review, external validation, or authorization for external submission.\",\n  \"eligibility_queue\": {\n    \"candidate_count\": 5,\n    \"path\": \"$ACCEPTANCE_WORK_DIR/adaptive_discovery/SEARCH-20260729T120000Z-ACCEPT01/queue_round_001.csv\",\n    \"schema_version\": \"target_priority_queue_v5\",\n    \"sha256\": \"b5c7c88e219e29f137c2eda64469660776bed6f675e79e2ede2346fefa2ac115\",\n    \"viable_candidate_count\": 2\n  },\n  \"external_submission_allowed\": false,\n  \"follow_up_registry\": null,\n  \"initial_status\": \"pending\",\n  \"mode\": \"new\",\n  \"pipeline\": {\n    \"acquisition\": \"scripts/run_stream_process_evict_batch.sh\",\n    \"interpretation\": \"techno_search.production_scan.run_production_scan\",\n    \"preprocessing\": \"scripts/run_turboseti_on_extended_corpus.sh\",\n    \"raw_retention_policy\": \"stream_process_evict\",\n    \"scoring\": \"scripts/run_pipeline_on_bl_data.sh\",\n    \"turbo_seti_parameters\": {\n      \"max_drift_hz_per_sec\": 10.0,\n      \"min_drift_hz_per_sec\": 0.0001,\n      \"snr_threshold\": 10.0\n    }\n  },\n  \"schema_version\": \"hunter_search_manifest_v3\",\n  \"search_id\": \"SEARCH-20260729T120000Z-ACCEPT01\",\n  \"selection\": {\n    \"adaptive_discovery\": {\n      \"candidate_count\": 5,\n      \"constraints\": {},\n      \"eligible_count\": 2,\n      \"expandable_count\": 0,\n      \"highest_unresolved_score\": null,\n      \"requested_count\": 1,\n      \"round_count\": 1,\n      \"rounds\": [\n        {\n          \"adapter\": \"loopback_archive_metadata_v1\",\n          \"examined_count\": 1,\n          \"examined_target_ids\": [\n            \"OUTSIDE\"\n          ],\n          \"minimum_examined_score\": 0.009,\n          \"promoted_target_ids\": [\n            \"OUTSIDE\"\n          ],\n          \"queue_sha256\": \"b5c7c88e219e29f137c2eda64469660776bed6f675e79e2ede2346fefa2ac115\",\n          \"round\": 1,\n          \"validity_state\": \"valid\"\n        }\n      ],\n      \"selection_cutoff_score\": 0.009,\n      \"strategy\": \"adaptive_score_bound_v1\",\n      \"sufficient\": true,\n      \"universe_exhausted\": true\n    },\n    \"constraints\": {},\n    \"deterministic_tie_breaker\": \"canonical_target_id\",\n    \"execution_kind_counts\": {\n      \"novel_target_archive_processing\": 1\n    },\n    \"follow_up_discovery\": null,\n    \"follow_up_observation_fulfilled_count\": 0,\n    \"partial_selection_allowed\": false,\n    \"projected_download_gb\": 0.004,\n    \"quality\": {\n      \"interpretation\": \"deterministic relative ranking score; not a calibrated probability or absolute eligibility threshold\",\n      \"maximum\": 0.009,\n      \"median\": 0.009,\n      \"minimum\": 0.009,\n      \"score_field\": \"target_selection_score\"\n    },\n    \"ranking_key\": \"target_selection_score\",\n    \"requested_count\": 1,\n    \"selected_count\": 1,\n    \"shortfall\": null\n  },\n  \"targets\": [\n    {\n      \"background_target_priority_score\": 0.009,\n      \"cross_project_prior_search\": \"\",\n      \"data_products_available\": \"hdf5_size_preflight_ok\",\n      \"dec_deg\": 20.0,\n      \"distance_light_years\": null,\n      \"estimated_download_gb\": 0.004,\n      \"execution_kind\": \"novel_target_archive_processing\",\n      \"exoplanet_host\": \"\",\n      \"follow_up_observation_fulfilled\": false,\n      \"follow_up_observation_scheduled\": false,\n      \"galactic_latitude_deg\": null,\n      \"hip\": \"OUTSIDE\",\n      \"local_coverage_status\": \"not_searched_size_preflight_ok\",\n      \"mode\": \"new\",\n      \"name\": \"OUTSIDE\",\n      \"notes\": \"controlled pipeline smoke fixture; not training data, a scientific label, or real-world performance evidence\",\n      \"object_type\": \"Star\",\n      \"prior_search_count\": 0,\n      \"prior_search_provenance\": [],\n      \"prior_search_provenance_summary\": \"\",\n      \"prior_seti_coverage_reference\": \"\",\n      \"priority_config_version\": \"background_priority_v0\",\n      \"queue_status\": \"raw_download_approval_required\",\n      \"ra_deg\": 10.0,\n      \"search_category\": \"controlled_pipeline_acceptance\",\n      \"selection_reason\": \"highest deterministic target_selection_score among eligible, size-preflighted targets not previously searched by this project\",\n      \"source_hdf5_url\": \"http://127.0.0.1:56101/capture_outside_0001.h5\",\n      \"spectral_type\": \"\",\n      \"target_selection_score\": 0.009,\n      \"total_priority\": 0.009\n    }\n  ]\n}\n{\n  \"app_version\": \"1.2.71\",\n  \"at_utc\": \"2026-07-29T10:01:45.871527Z\",\n  \"candidate_report_config_versions\": [\n    \"scoring_v0\"\n  ],\n  \"event\": \"run_completed\",\n  \"execution_kind_counts\": {\n    \"novel_target_archive_processing\": 1\n  },\n  \"follow_up_completed_count\": 0,\n  \"follow_up_deferred_count\": 0,\n  \"follow_up_dispositions\": [],\n  \"follow_up_observation_fulfilled_count\": 0,\n  \"follow_up_required_count\": 1,\n  \"history_records_appended\": 1,\n  \"run_dir\": \"$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/runs/RUN-2026-07-29_100127Z-1FFZ-hunter-search\",\n  \"run_id\": \"RUN-2026-07-29_100127Z-1FFZ-hunter-search\",\n  \"search_id\": \"SEARCH-20260729T120000Z-ACCEPT01\",\n  \"target_count\": 1\n}\n... Candidate pool \u2192 deterministic ranking \u2192 immutable manifest\n{\n  \"app_version\": \"1.2.71\",\n  \"artifact_kind\": \"hunter_search_manifest\",\n  \"candidate_catalog\": {\n    \"candidate_count\": 5,\n    \"identity_resolved_count\": 5,\n    \"path\": \"$ACCEPTANCE_WORK_DIR/candidate_catalog.csv\",\n    \"ranking_eligible_count\": 2,\n    \"schema_version\": \"bl_archive_candidate_catalog_v1\",\n    \"sha256\": \"f809bc3ffa19d2fd9227da8f91a012de12e9dfa0e08aa40da5cdd5fc687beba1\"\n  },\n  \"code_commit\": \"edb6e66\",\n  \"created_at_utc\": \"2026-07-29T12:01:00Z\",\n  \"created_by_project\": \"Techno-Hunter\",\n  \"detection_claimed\": false,\n  \"disclaimer\": \"Hunter searches and follow-up records are local scientific workflow artifacts. They do not constitute a detection, discovery, expert review, external validation, or authorization for external submission.\",\n  \"eligibility_queue\": {\n    \"candidate_count\": 5,\n    \"path\": \"$ACCEPTANCE_WORK_DIR/adaptive_discovery/SEARCH-20260729T120000Z-ACCEPT01/queue_round_001.csv\",\n    \"schema_version\": \"target_priority_queue_v5\",\n    \"sha256\": \"b5c7c88e219e29f137c2eda64469660776bed6f675e79e2ede2346fefa2ac115\",\n    \"viable_candidate_count\": 1\n  },\n  \"external_submission_allowed\": false,\n  \"follow_up_registry\": {\n    \"schema_version\": \"hunter_follow_up_registry_v1\",\n    \"source_ledger_count\": 2,\n    \"unresolved_identity_count\": 0\n  },\n  \"initial_status\": \"pending\",\n  \"mode\": \"follow-up\",\n  \"pipeline\": {\n    \"acquisition\": \"scripts/run_stream_process_evict_batch.sh\",\n    \"interpretation\": \"techno_search.production_scan.run_production_scan\",\n    \"preprocessing\": \"scripts/run_turboseti_on_extended_corpus.sh\",\n    \"raw_retention_policy\": \"stream_process_evict\",\n    \"scoring\": \"scripts/run_pipeline_on_bl_data.sh\",\n    \"turbo_seti_parameters\": {\n      \"max_drift_hz_per_sec\": 10.0,\n      \"min_drift_hz_per_sec\": 0.0001,\n      \"snr_threshold\": 10.0\n    }\n  },\n  \"schema_version\": \"hunter_search_manifest_v3\",\n  \"search_id\": \"SEARCH-20260729T120100Z-ACCEPT02\",\n  \"selection\": {\n    \"adaptive_discovery\": null,\n    \"constraints\": {},\n    \"deterministic_tie_breaker\": \"canonical_target_id\",\n    \"execution_kind_counts\": {\n      \"follow_up_archive_data_processing\": 1\n    },\n    \"follow_up_discovery\": {\n      \"adapter\": \"controlled_existing_evidence_v1\",\n      \"cadence_discovery_count\": 0,\n      \"examined_count\": 1,\n      \"schema_version\": \"hunter_follow_up_discovery_report_v2\",\n      \"selected_count\": 1,\n      \"validity_state\": \"valid\"\n    },\n    \"follow_up_observation_fulfilled_count\": 0,\n    \"partial_selection_allowed\": false,\n    \"projected_download_gb\": 0.004,\n    \"quality\": {\n      \"interpretation\": \"deterministic relative ranking score; not a calibrated probability or absolute eligibility threshold\",\n      \"maximum\": 0.96476,\n      \"median\": 0.96476,\n      \"minimum\": 0.96476,\n      \"score_field\": \"follow_up_priority\"\n    },\n    \"ranking_key\": \"follow_up_priority\",\n    \"requested_count\": 1,\n    \"selected_count\": 1,\n    \"shortfall\": null\n  },\n  \"targets\": [\n    {\n      \"dec_deg\": 20.0,\n      \"distance_light_years\": null,\n      \"estimated_download_gb\": 0.004,\n      \"evidence\": {\n        \"candidate_id\": \"capture_outside_0001\",\n        \"cross_target_rfi_flagged\": false,\n        \"drift_evidence_available\": true,\n        \"drift_rate_hz_per_sec\": -0.387762,\n        \"frequency_hz\": 8421295004.0,\n        \"pathway\": \"human_review_queue\",\n        \"score\": 0.96476,\n        \"snr\": 351.721191\n      },\n      \"execution_kind\": \"follow_up_archive_data_processing\",\n      \"exoplanet_host\": \"\",\n      \"follow_up_observation_fulfilled\": false,\n      \"follow_up_observation_scheduled\": false,\n      \"follow_up_priority\": 0.96476,\n      \"galactic_latitude_deg\": null,\n      \"hip\": \"OUTSIDE\",\n      \"mode\": \"follow-up\",\n      \"name\": \"OUTSIDE\",\n      \"object_type\": \"Star\",\n      \"prior_search_count\": 2,\n      \"prior_search_provenance\": [\n        {\n          \"candidate_id\": \"capture_outside_0001\",\n          \"follow_up_id\": \"FU-2026-07-29_100127Z-1FFZ-001\",\n          \"ledger_path\": \"$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/runs/RUN-2026-07-29_100127Z-1FFZ-hunter-search/RUN-2026-07-29_100127Z-1FFZ-hunter-search_follow_ups.json\",\n          \"pathway\": \"human_review_queue\",\n          \"project\": \"Techno-Hunter\",\n          \"relationship\": \"this_project_search\",\n          \"run_id\": \"RUN-2026-07-29_100127Z-1FFZ-hunter-search\",\n          \"score\": 0.96476\n        },\n        {\n          \"candidate_id\": \"capture_outside_0001\",\n          \"follow_up_id\": \"FU-CONTROLLED-001\",\n          \"ledger_path\": \"$ACCEPTANCE_WORK_DIR/seed_scans/RUN-2026-07-29_115900Z-SEED-hunter-search/RUN-2026-07-29_115900Z-SEED-hunter-search_follow_ups.json\",\n          \"pathway\": \"human_review_queue\",\n          \"project\": \"Techno-Hunter\",\n          \"relationship\": \"this_project_search\",\n          \"run_id\": \"RUN-2026-07-29_115900Z-SEED-hunter-search\",\n          \"score\": 0.8\n        }\n      ],\n      \"prior_search_provenance_summary\": \"Techno-Hunter:2\",\n      \"prior_seti_coverage_reference\": \"\",\n      \"queue_status\": \"raw_download_approval_required\",\n      \"ra_deg\": 10.0,\n      \"recommended_next_action\": \"complete the unresolved known-explanation checks before candidate promotion\",\n      \"selection_reason\": \"complete the unresolved known-explanation checks before candidate promotion\",\n      \"source_data_path\": \"$ACCEPTANCE_WORK_DIR/data/OUTSIDE/capture_outside_0001.dat\",\n      \"source_hdf5_url\": \"http://127.0.0.1:56101/capture_outside_0001.h5\",\n      \"spectral_type\": \"\",\n      \"target_selection_score\": 0.009\n    }\n  ]\n}\n{\n  \"app_version\": \"1.2.71\",\n  \"at_utc\": \"2026-07-29T10:01:48.459707Z\",\n  \"candidate_report_config_versions\": [\n    \"scoring_v0\"\n  ],\n  \"event\": \"run_completed\",\n  \"execution_kind_counts\": {\n    \"follow_up_archive_data_processing\": 1\n  },\n  \"follow_up_completed_count\": 0,\n  \"follow_up_deferred_count\": 1,\n  \"follow_up_dispositions\": [\n    {\n      \"consumed_follow_up_ids\": [\n        \"FU-2026-07-29_100127Z-1FFZ-001\",\n        \"FU-CONTROLLED-001\"\n      ],\n      \"fulfilled\": false,\n      \"reason\": \"new evidence did not explicitly satisfy the scheduled action\",\n      \"state\": \"deferred\",\n      \"target_id\": \"OUTSIDE\"\n    }\n  ],\n  \"follow_up_observation_fulfilled_count\": 0,\n  \"follow_up_required_count\": 1,\n  \"history_records_appended\": 1,\n  \"run_dir\": \"$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120100Z-ACCEPT02/runs/RUN-2026-07-29_100145Z-O4M5-hunter-search\",\n  \"run_id\": \"RUN-2026-07-29_100145Z-O4M5-hunter-search\",\n  \"search_id\": \"SEARCH-20260729T120100Z-ACCEPT02\",\n  \"target_count\": 1\n}\n{\n  \"completed_count\": 0,\n  \"deferred_count\": 2,\n  \"detection_claimed\": false,\n  \"disclaimer\": \"Hunter searches and follow-up records are local scientific workflow artifacts. They do not constitute a detection, discovery, expert review, external validation, or authorization for external submission.\",\n  \"eligible_count\": 1,\n  \"eligible_entries\": [\n    {\n      \"dec_deg\": 20.0,\n      \"distance_light_years\": null,\n      \"estimated_download_gb\": 0.004,\n      \"evidence\": {\n        \"candidate_id\": \"capture_outside_0001\",\n        \"cross_target_rfi_flagged\": false,\n        \"drift_evidence_available\": true,\n        \"drift_rate_hz_per_sec\": -0.387762,\n        \"frequency_hz\": 8421295004.0,\n        \"pathway\": \"human_review_queue\",\n        \"score\": 0.96476,\n        \"snr\": 351.721191\n      },\n      \"exoplanet_host\": \"\",\n      \"follow_up_priority\": 0.96476,\n      \"galactic_latitude_deg\": null,\n      \"hip\": \"OUTSIDE\",\n      \"mode\": \"follow-up\",\n      \"name\": \"OUTSIDE\",\n      \"object_type\": \"Star\",\n      \"prior_search_count\": 1,\n      \"prior_search_provenance\": [\n        {\n          \"candidate_id\": \"capture_outside_0001\",\n          \"follow_up_id\": \"FU-2026-07-29_100145Z-O4M5-001\",\n          \"ledger_path\": \"$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120100Z-ACCEPT02/runs/RUN-2026-07-29_100145Z-O4M5-hunter-search/RUN-2026-07-29_100145Z-O4M5-hunter-search_follow_ups.json\",\n          \"pathway\": \"human_review_queue\",\n          \"project\": \"Techno-Hunter\",\n          \"relationship\": \"this_project_search\",\n          \"run_id\": \"RUN-2026-07-29_100145Z-O4M5-hunter-search\",\n          \"score\": 0.96476\n        }\n      ],\n      \"prior_search_provenance_summary\": \"Techno-Hunter:1\",\n      \"prior_seti_coverage_reference\": \"\",\n      \"queue_status\": \"raw_download_approval_required\",\n      \"ra_deg\": 10.0,\n      \"recommended_next_action\": \"complete the unresolved known-explanation checks before candidate promotion\",\n      \"selection_reason\": \"complete the unresolved known-explanation checks before candidate promotion\",\n      \"source_data_path\": \"$ACCEPTANCE_WORK_DIR/data/OUTSIDE/capture_outside_0001.dat\",\n      \"source_hdf5_url\": \"http://127.0.0.1:56101/capture_outside_0001.h5\",\n      \"spectral_type\": \"\",\n      \"target_selection_score\": 0.009\n    }\n  ],\n  \"external_submission_allowed\": false,\n  \"refresh_required_count\": 0,\n  \"scheduled_count\": 0,\n  \"schema_version\": \"hunter_follow_up_registry_v1\",\n  \"source_entry_count\": 3,\n  \"source_ledger_count\": 3,\n  \"unresolved_identity_count\": 0\n}\n"
+  },
+  "validity_report": {
+    "excluded": {
+      "INVALID": "invalid",
+      "PRIOR": "ineligible_new_due_to_prior_search",
+      "STALE": "refresh-required"
+    },
+    "valid_selected_target_ids": [
+      "OUTSIDE"
+    ]
+  }
+}

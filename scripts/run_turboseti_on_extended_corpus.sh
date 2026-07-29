@@ -30,7 +30,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-VENV="${REPO_ROOT}/.venv/bin/python"
+VENV="${TECHNO_TURBOSETI_PYTHON:-${REPO_ROOT}/.venv/bin/python}"
 BL_FETCH="${SCRIPT_DIR}/bl_fetch.py"
 
 CORPUS_DIR="${REPO_ROOT}/data/extended_corpus"
@@ -130,7 +130,9 @@ while IFS= read -r -d '' h5_file; do
     fi
 
     provenance_args=()
-    if [[ "${APPROVED_REAL_DATA}" == "true" ]]; then
+    if [[ "${TECHNO_CONTROLLED_ACCEPTANCE:-0}" == "1" ]]; then
+        provenance_args+=(--controlled-acceptance --source-url "${SOURCE_URL}")
+    elif [[ "${APPROVED_REAL_DATA}" == "true" ]]; then
         provenance_args+=(--approved-real-data --source-url "${SOURCE_URL}")
     fi
     if "${VENV}" "${BL_FETCH}" run-turboseti "${h5_file}" "${target_dir}" \

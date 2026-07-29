@@ -6,7 +6,7 @@ import argparse
 import json
 import subprocess
 import sys
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from io import StringIO
 from pathlib import Path
 from typing import Any, TextIO
@@ -25,7 +25,24 @@ from techno_search.hunter_search import (
 )
 
 
-def create_new_search(argv: Sequence[str] | None = None) -> int:
+def create_new_search(
+    argv: Sequence[str] | None = None,
+    *,
+    create_search_func: Callable[..., dict[str, Any]] | None = None,
+    adaptive_discovery_func: (
+        Callable[..., tuple[Path, dict[str, Any]]] | None
+    ) = None,
+    follow_up_discovery_func: (
+        Callable[..., tuple[list[dict[str, Any]], dict[str, Any]]] | None
+    ) = None,
+) -> int:
+    create_search_impl = create_search_func or create_search
+    adaptive_discovery_impl = (
+        adaptive_discovery_func or prepare_production_new_target_queue
+    )
+    follow_up_discovery_impl = (
+        follow_up_discovery_func or discover_follow_up_targets
+    )
     parser = argparse.ArgumentParser(prog="Create-New-Search")
     parser.add_argument("--targets", type=int, required=True)
     parser.add_argument("--mode", choices=("new", "follow-up"), required=True)
@@ -59,7 +76,7 @@ def create_new_search(argv: Sequence[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
     try:
-        manifest = create_search(
+        manifest = create_search_impl(
             target_count=args.targets,
             mode=args.mode,
             candidate_catalog_path=args.candidate_catalog,
@@ -69,7 +86,7 @@ def create_new_search(argv: Sequence[str] | None = None) -> int:
             manifest_dir=args.manifest_dir,
             adaptive_discovery=(
                 lambda queue_path, target_count, search_id, constraints: (
-                    prepare_production_new_target_queue(
+                    adaptive_discovery_impl(
                         queue_path,
                         target_count=target_count,
                         search_id=search_id,
@@ -80,7 +97,7 @@ def create_new_search(argv: Sequence[str] | None = None) -> int:
             if args.mode == "new"
             else None,
             follow_up_discovery=(
-                lambda targets, target_count: discover_follow_up_targets(
+                lambda targets, target_count: follow_up_discovery_impl(
                     targets, target_count=target_count
                 )
             )
@@ -108,7 +125,12 @@ def create_new_search(argv: Sequence[str] | None = None) -> int:
     return 0
 
 
-def run_new_search(argv: Sequence[str] | None = None) -> int:
+def run_new_search(
+    argv: Sequence[str] | None = None,
+    *,
+    run_search_func: Callable[..., dict[str, Any]] | None = None,
+) -> int:
+    run_search_impl = run_search_func or run_search
     parser = argparse.ArgumentParser(prog="Run-New-Search")
     parser.add_argument("--search-id")
     parser.add_argument("--searches-dir", type=Path, default=Path("results/searches"))
@@ -124,7 +146,7 @@ def run_new_search(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
     try:
-        result = run_search(
+        result = run_search_impl(
             searches_dir=args.searches_dir,
             search_id=args.search_id,
             approve_acquisition=args.approve_acquisition,

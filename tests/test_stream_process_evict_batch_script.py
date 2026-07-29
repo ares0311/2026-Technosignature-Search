@@ -285,3 +285,53 @@ def test_completed_local_evidence_is_not_reported_as_raw_eviction(tmp_path: Path
     assert "Newly processed: 0" in result.stdout
     assert "Evicted (raw payload deleted after processing): 0" in result.stdout
     assert "Already processed (download skipped): 1" in result.stdout
+
+
+def test_preserved_pipeline_failure_is_loud_and_incomplete(tmp_path: Path) -> None:
+    source_dat = tmp_path / "source" / "capture.dat"
+    source_dat.parent.mkdir()
+    source_dat.write_text("# controlled hit table\n", encoding="utf-8")
+    manifest = _write_durable_search(
+        tmp_path,
+        [
+            {
+                "hip": "HIP123",
+                "source_hdf5_url": "",
+                "source_data_path": str(source_dat),
+                "estimated_download_gb": None,
+            }
+        ],
+    )
+    failing_search = tmp_path / "failing-techno-search"
+    failing_search.write_text("#!/usr/bin/env bash\nexit 17\n", encoding="utf-8")
+    failing_search.chmod(0o755)
+
+    result = subprocess.run(
+        [
+            "bash",
+            str(SCRIPT_PATH),
+            "--manifest",
+            str(manifest),
+            "--out-dir",
+            str(tmp_path / "data"),
+            "--results-dir",
+            str(tmp_path / "results"),
+            "--log-file",
+            str(tmp_path / "run.log"),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env={
+            **os.environ,
+            "TECHNO_STREAM_PROCESS_PYTHON": sys.executable,
+            "TECHNO_STREAM_PROCESS_SEARCH_BIN": str(failing_search),
+        },
+    )
+
+    assert result.returncode != 0
+    assert "[ERROR] HIP123: preserved local evidence pipeline failed" in result.stdout
+    assert "Newly processed: 0" in result.stdout
+    assert "Failed: 1" in result.stdout
+    assert source_dat.is_file()
+    assert not list((tmp_path / "results").glob("**/*.manifest.json"))

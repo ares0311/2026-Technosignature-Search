@@ -21,6 +21,133 @@ Step 3 for that plan and its explicit distinction from this rule.
 
 ---
 
+## Adversarial PROD-contract audit and v1.2.71 remediation — 2026-07-29
+
+**Pre-remediation verdict:** not PROD under the full Hunter PROD-closure
+directive supplied for this audit. The v1.2.69 live new/follow-up searches
+remain valid scientific and lifecycle evidence, and the v1.2.70 terminology
+delta remains correctly described. They did not, however, constitute one
+fresh-state deterministic acceptance run through the installed persistent
+Hunter that proved every required business branch on the exact current
+implementation.
+
+### Findings
+
+1. The controlled acceptance evidence was fragmented across helper-level and
+   fake-backed tests. No single installed `Techno-Hunter` invocation exercised
+   slash-command routing, adaptive expansion, validation, exact selection,
+   immutable execution, scoring, persistence, restart, and follow-up state.
+2. The exact v1.2.70 release had not executed the scientific path. Its evidence
+   combined v1.2.69 live searches with a terminology-only hash closure. That is
+   useful compatibility evidence, but it is not exact-release end-to-end
+   execution.
+3. The v1.2.70 evidence contract was not self-contained. Its test deliberately
+   ignored absent runtime artifacts, so it could pass in a fresh checkout
+   without re-verifying the named search state.
+4. No fresh-state installed-CLI acceptance run faulted and resumed the exact
+   same pending follow-up search while proving no duplicate result, history, or
+   lifecycle transition.
+5. `CandidateStore` and its three CLI commands were a disconnected duplicate
+   persistence path outside the canonical Hunter lifecycle. Its SQLite
+   connections were not durably closed by callers and emitted 67
+   `ResourceWarning`s under Python 3.14 during full validation.
+
+These findings revoke reliance on the earlier bounded PROD declaration until
+the remediation evidence below is generated and passes. They do not invalidate
+the immutable v1.2.69 live-source smoke or authorize another raw download.
+
+### Remediation plan
+
+1. Add one deterministic, fresh-state acceptance mode to the installed
+   persistent `Techno-Hunter` entry point.
+2. Route it through the production CLI parsers, adaptive selector, immutable
+   search lifecycle, stream/process/evict runner, turboSETI, candidate
+   pipeline, production interpretation, history, follow-up lifecycle, and
+   restart reads. Replace only the external archive transport with a loopback
+   controlled adapter.
+3. Make controlled fixture provenance explicit and fail-closed outside the
+   dedicated acceptance process. Never represent controlled bytes as real
+   observations, labels, or scientific performance evidence.
+4. Seed the contract cases in one controlled universe: a best target beyond the
+   initial partition, a weak best-available target, invalid and
+   refresh-required exclusions, an alias, a prior-search exclusion, an exact
+   manifested/executed target, and a follow-up whose first execution fails and
+   resumes.
+5. Emit one portable JSON evidence bundle containing the request, discovery
+   coverage, validity report, provenance chain, ranking evidence, exact
+   selections, search events, follow-up state, assertions, embedded durable
+   records, release identity, and no-claim flags.
+6. Delete the disconnected `CandidateStore` implementation and CLI surface.
+7. Run focused regression tests, the installed acceptance command, the
+   repo-native full validator, then require green PR CI before restoring the
+   exact-release PROD statement.
+
+### Implemented v1.2.71 closure path
+
+The implementation is complete locally. The installed command is:
+
+```bash
+.venv/bin/Techno-Hunter \
+  --acceptance-work-dir /tmp/techno-hunter-v1-2-71 \
+  --acceptance-evidence docs/evidence/hunter_v1_2_71_controlled_acceptance.json
+```
+
+The command refuses a nonempty work directory and classifies its generated
+radio input as `controlled_acceptance_fixture`. That classification is admitted
+only while `TECHNO_CONTROLLED_ACCEPTANCE=1` is scoped inside the dedicated
+acceptance process; it is rejected by default, cannot authorize real-data use,
+and cannot authorize external submission. The normal real-observation
+admission contract remains unchanged.
+
+The acceptance executes one new and one follow-up search through the real
+persistent slash-command router. It uses real adaptive score-bound expansion,
+real immutable manifests/events, the real stream/process/evict shell runner,
+turboSETI 2.3.2, the real radio pipeline and known-explanation resolution, the
+production composite interpreter, append-only history, follow-up dispositions,
+and restart reads. The follow-up runner returns exit 9 once, then resumes the
+same search and run. The external archive is the only replacement: a bounded
+loopback HTTP server supplies the controlled HDF5.
+
+The first Linux/Python 3.11 CI execution exposed one additional production
+defect before closure: the pinned turboSETI 2.3.2 implementation formats its
+one-element `total_n_hits` array as an integer and raises `TypeError` after the
+search. A developer environment had an untracked one-character site-package
+correction, so Python 3.14 local acceptance did not expose the defect. Worse,
+the stream runner continued from the partial zero-row `.dat`, produced a
+zero-hit manifest, evicted the raw HDF5, and counted the target complete.
+
+The v1.2.71 remediation now applies the exact scalar-index correction in
+memory, fails closed if the pinned dependency source is neither the known
+vulnerable nor corrected form, and treats any turboSETI or candidate-pipeline
+failure as a failed target. Partial `.dat` output is removed, raw HDF5 is
+retained, collection status records the failure, and the batch returns
+non-zero. This closes the hidden-environment and partial-success paths without
+changing scientific thresholds or treating a controlled injection as a label.
+
+`src/techno_search/candidate_store.py` and the
+`candidate-store-init`/`candidate-store-summary`/`candidate-store-list`
+commands are removed. The canonical search manifest, append-only event ledger,
+target-status ledger, history, and follow-up registry remain the only Hunter
+persistence path.
+
+**Closure state:** closed locally for v1.2.71. The installed command passed on
+clean implementation commit `edb6e66` and wrote
+`docs/evidence/hunter_v1_2_71_controlled_acceptance.json`. Both modes selected
+`OUTSIDE`; new emitted `created`, `run_started`, `run_completed`; follow-up
+emitted `created`, `run_started`, `run_failed`, `run_resumed`,
+`run_completed` with one unchanged run ID. All 14 contract assertions passed,
+two completed searches appended exactly two history rows, and no controlled
+HDF5 remained.
+
+Focused archive/fail-closed tests passed (94 tests), the combined Hunter
+lifecycle/archive slice passed (125 tests), and the documentation/directive
+slice passed (40 tests). The exact installed acceptance also passed under the
+CI-matching Python 3.11 dependency set. Finally,
+`caffeinate -i .venv/bin/python scripts/run_parallel_validation.py` passed
+with 1,684 tests, seven skips, Ruff, mypy, app-version, `validate-all`,
+directive-parity, and no-fake-completion green. PR CI and merge remain the
+release gate; this closure is effective on green merge to `main`.
+
 ## Hunter PROD Acceptance Closure Loop — 2026-07-26
 
 **Status:** Closed for the bounded Hunter PROD threshold on 2026-07-29.
@@ -224,7 +351,7 @@ Release 1.2.62 metadata and implementation evidence as of
   packaged Hunter modules. The controlled failure/resume regression preserves
   the byte-identical derived cadence manifest and reaches one completed
   disposition only after verified cadence provenance exists. The repo-native
-  six-shard validator also passes on this working tree: 1,680 passed, seven
+  six-shard validator also passes on this working tree: 1,684 passed, seven
   skipped; Ruff, mypy, app-version gate, and `validate-all` passed. Because the
   tree is not yet committed, the exact-commit freshness marker and CI remain
   open.

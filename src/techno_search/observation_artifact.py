@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -13,6 +14,8 @@ OBSERVATION_ARTIFACT_SCHEMA_VERSION = "observation_artifact_provenance_v1"
 
 SYNTHETIC_MARKERS = ("synth", "synthetic", "injected", "fixture")
 APPROVED_REVIEW_STATUS = "approved"
+CONTROLLED_ACCEPTANCE_CLASSIFICATION = "controlled_acceptance_fixture"
+CONTROLLED_ACCEPTANCE_ENV = "TECHNO_CONTROLLED_ACCEPTANCE"
 
 
 @dataclass(frozen=True)
@@ -95,10 +98,11 @@ def assess_observation_artifact(path: Path) -> ObservationArtifactAssessment:
 
     digest = sha256_file(path)
     content = _read_prefix(path)
+    synthetic_marker = _looks_synthetic(path, content)
     if not _looks_like_turboseti_dat(content):
         issues.append("Artifact is not a recognizable turboSETI hit table.")
         classification = "invalid"
-    elif _looks_synthetic(path, content):
+    elif synthetic_marker:
         issues.append("Artifact contains an explicit synthetic-data marker.")
         classification = "synthetic"
     else:
@@ -111,9 +115,40 @@ def assess_observation_artifact(path: Path) -> ObservationArtifactAssessment:
         warnings.append("No provenance sidecar is present; human approval is required.")
     else:
         declared_classification = str(provenance.get("classification", ""))
+        controlled_acceptance = (
+            declared_classification == CONTROLLED_ACCEPTANCE_CLASSIFICATION
+        )
+        controlled_acceptance_enabled = (
+            os.environ.get(CONTROLLED_ACCEPTANCE_ENV) == "1"
+        )
         if declared_classification == "synthetic":
             classification = "synthetic"
             issues.append("Provenance sidecar declares the artifact synthetic.")
+        elif controlled_acceptance and controlled_acceptance_enabled:
+            classification = CONTROLLED_ACCEPTANCE_CLASSIFICATION
+            issues = [
+                issue
+                for issue in issues
+                if issue != "Artifact contains an explicit synthetic-data marker."
+            ]
+            if provenance.get("controlled_acceptance_only") is not True:
+                issues.append(
+                    "Controlled acceptance provenance must be acceptance-only."
+                )
+            if provenance.get("approved_for_local_real_data") is not False:
+                issues.append(
+                    "Controlled acceptance provenance cannot authorize real-data use."
+                )
+            if provenance.get("external_submission_authorized") is not False:
+                issues.append(
+                    "Controlled acceptance provenance cannot authorize submission."
+                )
+        elif controlled_acceptance:
+            classification = CONTROLLED_ACCEPTANCE_CLASSIFICATION
+            issues.append(
+                "Controlled acceptance fixtures are not admitted outside the "
+                "dedicated Hunter acceptance process."
+            )
         elif declared_classification != "real_observation":
             issues.append("Provenance classification must be 'real_observation'.")
 
@@ -126,7 +161,15 @@ def assess_observation_artifact(path: Path) -> ObservationArtifactAssessment:
 
         source_url = str(provenance.get("source_url", ""))
         parsed_url = urlparse(source_url)
-        if parsed_url.scheme != "https" or not parsed_url.netloc:
+        if controlled_acceptance and controlled_acceptance_enabled:
+            if parsed_url.scheme != "http" or parsed_url.hostname not in {
+                "127.0.0.1",
+                "localhost",
+            }:
+                issues.append(
+                    "Controlled acceptance source_url must use the loopback host."
+                )
+        elif parsed_url.scheme != "https" or not parsed_url.netloc:
             issues.append("Provenance source_url must be a complete HTTPS URL.")
         if not str(provenance.get("source_archive", "")).strip():
             issues.append("Provenance source_archive is required.")
@@ -134,22 +177,27 @@ def assess_observation_artifact(path: Path) -> ObservationArtifactAssessment:
             issues.append("Provenance instrument is required.")
         if not str(provenance.get("downloaded_utc", "")).strip():
             issues.append("Provenance downloaded_utc is required.")
-        if provenance.get("data_use_review_status") != APPROVED_REVIEW_STATUS:
-            issues.append("Data-use review has not been approved.")
-        if provenance.get("provenance_review_status") != APPROVED_REVIEW_STATUS:
-            issues.append("Provenance review has not been approved.")
-        if provenance.get("human_approval_status") != APPROVED_REVIEW_STATUS:
-            issues.append("Human approval has not been granted.")
-        if provenance.get("approved_for_local_real_data") is not True:
-            issues.append("Local real-data use is not explicitly authorized.")
+        if not controlled_acceptance:
+            if provenance.get("data_use_review_status") != APPROVED_REVIEW_STATUS:
+                issues.append("Data-use review has not been approved.")
+            if provenance.get("provenance_review_status") != APPROVED_REVIEW_STATUS:
+                issues.append("Provenance review has not been approved.")
+            if provenance.get("human_approval_status") != APPROVED_REVIEW_STATUS:
+                issues.append("Human approval has not been granted.")
+            if provenance.get("approved_for_local_real_data") is not True:
+                issues.append("Local real-data use is not explicitly authorized.")
 
         if not issues and classification == "unverified_real_observation":
             classification = "approved_real_observation"
 
+    approved_classifications = {
+        "approved_real_observation",
+        CONTROLLED_ACCEPTANCE_CLASSIFICATION,
+    }
     return ObservationArtifactAssessment(
         path=path,
         classification=classification,
-        approved_for_pipeline=classification == "approved_real_observation",
+        approved_for_pipeline=not issues and classification in approved_classifications,
         sha256=digest,
         provenance_path=provenance_path,
         issues=tuple(issues),

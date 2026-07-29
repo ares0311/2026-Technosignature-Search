@@ -30,8 +30,8 @@ step that's already blocked on an earlier one.
 
 ## Current honest state (updated 2026-07-29; originally recorded 2026-07-05)
 
-**Hunter PROD acceptance complete; scientific expansion remains active:**
-canonical v1.2.69 `Techno-Hunter` searches
+**Hunter PROD acceptance complete for v1.2.71; scientific expansion remains
+active:** canonical v1.2.69 `Techno-Hunter` searches
 `SEARCH-20260729T055045Z-125D2215` and
 `SEARCH-20260729T055057Z-7321B0CB` close the bounded new/follow-up production
 threshold. HIP3419 completed the exact new-target lifecycle and correctly
@@ -43,8 +43,25 @@ Earth-drift inconsistency. Both runs append history exactly once, refuse a
 completed rerun, preserve provenance, evict all seven raw HDF5 files, and make
 no detection or external-submission claim. Version 1.2.70 repairs the one
 stale production-scope string exposed by falsification without changing
-scientific or lifecycle logic. Immutable evidence is in
+scientific or lifecycle logic. Immutable live-source evidence is in
 `docs/evidence/hunter_v1_2_70_acceptance.json`.
+
+The 2026-07-29 adversarial audit found that the old evidence was not a
+self-contained fresh-checkout proof and that its exact v1.2.70 delta did not
+execute the scientific path. Version 1.2.71 therefore adds a fresh-state
+installed-CLI controlled acceptance covering adaptive new selection,
+follow-up selection, immutable exact execution, real preprocessing/scoring,
+durable restart, and an injected resumable failure. It removes the disconnected
+duplicate `CandidateStore` persistence path. The controlled fixture remains
+explicitly non-real and fails closed outside the acceptance process. Until the
+v1.2.71 evidence, full validator, and CI pass, the full-contract PROD claim is
+withheld; this revalidation directly closes the bounded Step 3a/3b production
+mechanics gap and does not reorder the wider science steps. The installed
+v1.2.71 acceptance passed all 14 assertions on clean implementation commit
+`edb6e66`; its portable evidence is
+`docs/evidence/hunter_v1_2_71_controlled_acceptance.json`. Full local
+validation passed 1,684 tests with seven skips and all secondary gates. Green
+PR CI and merge remain the release gate.
 
 The remaining 4,894 unresolved archive labels, learned-score calibration
 limits, and modality/corpus expansion are honest science-coverage work, not

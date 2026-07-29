@@ -1,7 +1,7 @@
 # Techno-Hunter
 
 ![Status](https://img.shields.io/badge/Hunter%20workflow-PROD-green)
-![Version](https://img.shields.io/badge/version-1.2.70-blue)
+![Version](https://img.shields.io/badge/version-1.2.71-blue)
 ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 ![Focus](https://img.shields.io/badge/focus-multimodal%20technosignature%20search-purple)
 
@@ -45,6 +45,14 @@ blocked from expert escalation. Version 1.2.70 corrects the one stale
 citizen-science scope string that falsification found; it does not change
 selection, acquisition, scoring, interpretation, persistence, or follow-up
 logic.
+Version 1.2.71 adds a portable fresh-state acceptance mode to the installed
+`Techno-Hunter` entry point. It proves adaptive best-available new selection,
+follow-up selection, exact immutable execution, turboSETI and production
+scoring, failure/resume, restart persistence, and no-claim controls in one
+deterministic run. Its fixture provenance is explicitly controlled and is
+rejected outside that acceptance process; it is not real-observation,
+training, or scientific-performance evidence. The disconnected duplicate
+`CandidateStore` CLI and persistence path are removed.
 The 4,894 archive labels without resolvable identity/evidence remain an
 explicit science-coverage limitation, not a hidden workflow bridge or an
 absolute-quality veto.
@@ -117,7 +125,9 @@ science plan is in
 
 ## Current status
 
-Phase 0 is complete. The bounded Hunter PROD acceptance gate is also complete.
+Phase 0 is complete. The bounded Hunter PROD acceptance gate is also complete,
+with exact v1.2.71 controlled contract evidence and the retained v1.2.69
+live-source smoke serving distinct roles.
 A real cadence-complete HIP103039 observation exercised the automatic
 `unknown` and adversarial branch through the installed canonical
 `Techno-Hunter` commands. The wider scientific roadmap remains active and all

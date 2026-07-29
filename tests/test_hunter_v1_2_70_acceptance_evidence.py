@@ -5,7 +5,6 @@ import json
 import re
 from pathlib import Path
 
-from techno_search import __version__
 from techno_search.production_scan import PRODUCTION_SCAN_DISCLAIMER
 
 EVIDENCE_PATH = Path("docs/evidence/hunter_v1_2_70_acceptance.json")
@@ -37,7 +36,7 @@ def test_v1_2_70_evidence_closes_both_canonical_hunter_modes() -> None:
             "logic are unchanged"
         ),
     }
-    assert __version__ == evidence["release"]["closure_app_version"]
+    assert evidence["release"]["closure_app_version"] == "1.2.70"
     assert set(searches) == {"new", "follow-up"}
     assert evidence["scope"]["installed_entry_point"] == "Techno-Hunter"
     assert evidence["scope"]["canonical_commands"] == [
