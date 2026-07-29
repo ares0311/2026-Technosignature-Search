@@ -93,8 +93,10 @@ def test_readme_documents_the_installed_hunter_lifecycle() -> None:
     readme = Path("README.md").read_text(encoding="utf-8")
     pyproject = Path("pyproject.toml").read_text(encoding="utf-8")
 
+    assert "uv pip install --python .venv/bin/python" in readme
     for command in (
         "TechnoHunter",
+        "Techno-Hunter",
         "Create-New-Search",
         "Run-New-Search",
         "Show-Follow-Ups",

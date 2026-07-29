@@ -1,7 +1,7 @@
 # Techno-Hunter
 
 ![Status](https://img.shields.io/badge/Hunter%20workflow-NOT%20PROD-red)
-![Version](https://img.shields.io/badge/version-1.2.67-blue)
+![Version](https://img.shields.io/badge/version-1.2.68-blue)
 ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 ![Focus](https://img.shields.io/badge/focus-multimodal%20technosignature%20search-purple)
 
@@ -30,8 +30,10 @@ type, distance, spectral type, exoplanet-host state, prior SETI coverage, and
 prior-search provenance through the durable candidate queue and immutable
 search manifest. Version 1.2.67 applies the same fields to follow-up rows and
 summarizes prior provenance instead of dumping raw ledger dictionaries.
+Version 1.2.68 installs the canonical `Techno-Hunter` launch command while
+retaining `TechnoHunter` as a compatibility alias.
 Hunter remains NOT PROD while 4,894 archive labels still lack resolvable
-identity/evidence and exact v1.2.67 acceptance remains open.
+identity/evidence and exact v1.2.68 acceptance remains open.
 The product returns
 best-available N independently of absolute score; it does not use the older
 10,000-target aspiration as a quality veto. Outputs are local triage evidence
@@ -123,7 +125,7 @@ external submission.
 
 ## Environment
 
-Prerequisites are Git, Python 3.14.3, and `jq`. The documented long-running
+Prerequisites are Git, uv, Python 3.14.3, and `jq`. The documented long-running
 commands use macOS `caffeinate`; omit that wrapper on systems that do not
 provide it.
 
@@ -135,7 +137,8 @@ validation:
 
 ```bash
 git pull origin main
-.venv/bin/python -m pip install -e ".[dev,radio,science,ml,track_a,photometry]"
+UV_CACHE_DIR=.uv-cache uv pip install --python .venv/bin/python \
+  -e ".[dev,radio,science,ml,track_a,photometry]"
 bash scripts/patch_turbo_seti_numpy2_compat.sh
 ```
 
@@ -148,6 +151,7 @@ Verify the installed entry points:
 ```bash
 git pull origin main
 .venv/bin/TechnoHunter --help
+.venv/bin/Techno-Hunter --help
 .venv/bin/Create-New-Search --help
 .venv/bin/Run-New-Search --help
 .venv/bin/Show-Follow-Ups --help
@@ -159,7 +163,7 @@ git pull origin main
 
 ```bash
 git pull origin main
-.venv/bin/TechnoHunter
+.venv/bin/Techno-Hunter
 ```
 
 At `TechnoHunter>`, type `/` and press Tab to discover commands, or enter
@@ -185,7 +189,7 @@ and canonical lifecycle rules apply:
 
 ```bash
 git pull origin main
-.venv/bin/TechnoHunter --no-animation \
+.venv/bin/Techno-Hunter --no-animation \
   --command "/Show-Follow-Ups --json" \
   --command "/Exit"
 ```
