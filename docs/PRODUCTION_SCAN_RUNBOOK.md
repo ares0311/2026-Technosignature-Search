@@ -131,7 +131,7 @@ target-status ledger, history, and follow-up registry remain the only Hunter
 persistence path.
 
 **Closure state:** closed locally for v1.2.71. The installed command passed on
-clean implementation commit `55a5d2d` and wrote
+clean implementation commit `edb6e66` and wrote
 `docs/evidence/hunter_v1_2_71_controlled_acceptance.json`. Both modes selected
 `OUTSIDE`; new emitted `created`, `run_started`, `run_completed`; follow-up
 emitted `created`, `run_started`, `run_failed`, `run_resumed`,

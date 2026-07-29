@@ -58,7 +58,7 @@ v1.2.71 evidence, full validator, and CI pass, the full-contract PROD claim is
 withheld; this revalidation directly closes the bounded Step 3a/3b production
 mechanics gap and does not reorder the wider science steps. The installed
 v1.2.71 acceptance passed all 14 assertions on clean implementation commit
-`55a5d2d`; its portable evidence is
+`edb6e66`; its portable evidence is
 `docs/evidence/hunter_v1_2_71_controlled_acceptance.json`. Full local
 validation passed 1,680 tests with seven skips and all secondary gates. Green
 PR CI and merge remain the release gate.

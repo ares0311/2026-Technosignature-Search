@@ -80,7 +80,7 @@
           "promoted_target_ids": [
             "OUTSIDE"
           ],
-          "queue_sha256": "ab2b2271df58ad520c249bbe5d59ae9cc288a3c82e46431c8c4d09364b49f843",
+          "queue_sha256": "b5c7c88e219e29f137c2eda64469660776bed6f675e79e2ede2346fefa2ac115",
           "round": 1,
           "validity_state": "valid"
         }
@@ -103,7 +103,7 @@
           "already_processed_count": 0,
           "already_processed_targets": [],
           "app_version": "1.2.71",
-          "attempt_id": "hunter_search__SEARCH-20260729T120000Z-ACCEPT01__2026-07-29T09:19:58.431601+00:00",
+          "attempt_id": "hunter_search__SEARCH-20260729T120000Z-ACCEPT01__2026-07-29T10:01:45.823058+00:00",
           "candidate_report_manifests_total": 1,
           "completed_count": 1,
           "dat_files_total": 1,
@@ -127,7 +127,7 @@
           ],
           "ok": true,
           "raw_retention_policy": "evicted_after_candidate_report_generation",
-          "recorded_at_utc": "2026-07-29T09:19:58.431601+00:00",
+          "recorded_at_utc": "2026-07-29T10:01:45.823058+00:00",
           "script": "hunter_search__SEARCH-20260729T120000Z-ACCEPT01",
           "targets_attempted": 1,
           "total_targets_in_manifest": 1
@@ -137,7 +137,7 @@
           "already_processed_count": 0,
           "already_processed_targets": [],
           "app_version": "1.2.71",
-          "attempt_id": "hunter_search__SEARCH-20260729T120100Z-ACCEPT02__2026-07-29T09:20:00.911252+00:00",
+          "attempt_id": "hunter_search__SEARCH-20260729T120100Z-ACCEPT02__2026-07-29T10:01:48.409981+00:00",
           "candidate_report_manifests_total": 1,
           "completed_count": 1,
           "dat_files_total": 1,
@@ -159,7 +159,7 @@
           ],
           "ok": true,
           "raw_retention_policy": "evicted_after_candidate_report_generation",
-          "recorded_at_utc": "2026-07-29T09:20:00.911252+00:00",
+          "recorded_at_utc": "2026-07-29T10:01:48.409981+00:00",
           "script": "hunter_search__SEARCH-20260729T120100Z-ACCEPT02",
           "targets_attempted": 1,
           "total_targets_in_manifest": 1
@@ -186,7 +186,7 @@
           ],
           "failed_count": 0,
           "failed_targets": [],
-          "last_run_utc": "2026-07-29T09:19:58.431601+00:00",
+          "last_run_utc": "2026-07-29T10:01:45.823058+00:00",
           "local_dat_reuse_count": 0,
           "local_dat_reuse_targets": [],
           "manifest": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/manifest.json",
@@ -214,7 +214,7 @@
           "evicted_targets": [],
           "failed_count": 0,
           "failed_targets": [],
-          "last_run_utc": "2026-07-29T09:20:00.911252+00:00",
+          "last_run_utc": "2026-07-29T10:01:48.409981+00:00",
           "local_dat_reuse_count": 1,
           "local_dat_reuse_targets": [
             "OUTSIDE"
@@ -489,8 +489,8 @@
         "source_dataset": "Hunter controlled loopback archive",
         "source_file": "$ACCEPTANCE_WORK_DIR/data/OUTSIDE/capture_outside_0001.dat",
         "source_hdf5_filename": "capture_outside_0001.h5",
-        "source_hdf5_sha256": "4c2d2d9428829c63c3671fa91f409748e2f52c5bc373abece509491aff93f258",
-        "source_url": "http://127.0.0.1:53095/capture_outside_0001.h5"
+        "source_hdf5_sha256": "c42efd341ed889b4fc7b0fef4cbd8e40fdc7b2b515e602d4d45cf882856f4784",
+        "source_url": "http://127.0.0.1:56101/capture_outside_0001.h5"
       },
       "recommended_pathway": "human_review_queue",
       "schema_version": "techno_search_packet_v1",
@@ -516,9 +516,9 @@
     "follow_up_candidate_manifest": {
       "adversarial_review_path": null,
       "candidate_id": "capture_outside_0001",
-      "code_commit": "55a5d2d",
+      "code_commit": "edb6e66",
       "config_version": "scoring_v0",
-      "generated_at_utc": "2026-07-29T09:20:00.465996+00:00",
+      "generated_at_utc": "2026-07-29T10:01:47.945354+00:00",
       "json_path": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120100Z-ACCEPT02/pipeline_results/capture_outside_0001/capture_outside_0001.json",
       "known_explanation_path": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120100Z-ACCEPT02/pipeline_results/capture_outside_0001/capture_outside_0001.known-explanation.json",
       "known_explanation_state": "unresolved",
@@ -536,9 +536,9 @@
       ],
       "provenance_summary": {
         "cache_key": null,
-        "code_commit": "55a5d2d",
+        "code_commit": "edb6e66",
         "config_version": "scoring_v0",
-        "generated_at_utc": "2026-07-29T09:20:00.466010+00:00",
+        "generated_at_utc": "2026-07-29T10:01:47.945368+00:00",
         "input_path": null,
         "provider_name": null,
         "query_parameters": {},
@@ -557,7 +557,7 @@
       {
         "at_utc": "2026-07-29T12:01:00Z",
         "event": "created",
-        "manifest_sha256": "cff45347b3e3141e54948ace3bb1a2406f657492e51e022b422b1e1b3665b5ec",
+        "manifest_sha256": "54b1b157eab23d68b95746e76db706cd3b089f6eb99464aafaacf664b49ae68a",
         "mode": "follow-up",
         "schema_version": "hunter_search_event_v2",
         "search_id": "SEARCH-20260729T120100Z-ACCEPT02",
@@ -565,49 +565,49 @@
       },
       {
         "app_version": "1.2.71",
-        "at_utc": "2026-07-29T09:19:58.495562Z",
+        "at_utc": "2026-07-29T10:01:45.904374Z",
         "chunk_size": 1,
-        "code_commit": "55a5d2d",
+        "code_commit": "edb6e66",
         "event": "run_started",
         "execution_kind_counts": {
           "follow_up_archive_data_processing": 1
         },
         "follow_up_observation_fulfilled_count": 0,
-        "manifest_sha256": "cff45347b3e3141e54948ace3bb1a2406f657492e51e022b422b1e1b3665b5ec",
+        "manifest_sha256": "54b1b157eab23d68b95746e76db706cd3b089f6eb99464aafaacf664b49ae68a",
         "pipeline_workers": 1,
-        "run_id": "RUN-2026-07-29_091958Z-X0DF-hunter-search",
+        "run_id": "RUN-2026-07-29_100145Z-O4M5-hunter-search",
         "schema_version": "hunter_search_event_v2",
         "search_id": "SEARCH-20260729T120100Z-ACCEPT02"
       },
       {
-        "at_utc": "2026-07-29T09:19:58.502489Z",
+        "at_utc": "2026-07-29T10:01:45.912672Z",
         "event": "run_failed",
         "exit_code": 9,
         "resumable": true,
-        "run_id": "RUN-2026-07-29_091958Z-X0DF-hunter-search",
+        "run_id": "RUN-2026-07-29_100145Z-O4M5-hunter-search",
         "schema_version": "hunter_search_event_v2",
         "search_id": "SEARCH-20260729T120100Z-ACCEPT02",
         "stage": "acquisition_preprocessing_scoring"
       },
       {
         "app_version": "1.2.71",
-        "at_utc": "2026-07-29T09:19:58.495562Z",
+        "at_utc": "2026-07-29T10:01:45.904374Z",
         "chunk_size": 1,
-        "code_commit": "55a5d2d",
+        "code_commit": "edb6e66",
         "event": "run_resumed",
         "execution_kind_counts": {
           "follow_up_archive_data_processing": 1
         },
         "follow_up_observation_fulfilled_count": 0,
-        "manifest_sha256": "cff45347b3e3141e54948ace3bb1a2406f657492e51e022b422b1e1b3665b5ec",
+        "manifest_sha256": "54b1b157eab23d68b95746e76db706cd3b089f6eb99464aafaacf664b49ae68a",
         "pipeline_workers": 1,
-        "run_id": "RUN-2026-07-29_091958Z-X0DF-hunter-search",
+        "run_id": "RUN-2026-07-29_100145Z-O4M5-hunter-search",
         "schema_version": "hunter_search_event_v2",
         "search_id": "SEARCH-20260729T120100Z-ACCEPT02"
       },
       {
         "app_version": "1.2.71",
-        "at_utc": "2026-07-29T09:20:00.953251Z",
+        "at_utc": "2026-07-29T10:01:48.459707Z",
         "candidate_report_config_versions": [
           "scoring_v0"
         ],
@@ -620,7 +620,7 @@
         "follow_up_dispositions": [
           {
             "consumed_follow_up_ids": [
-              "FU-2026-07-29_091943Z-38V7-001",
+              "FU-2026-07-29_100127Z-1FFZ-001",
               "FU-CONTROLLED-001"
             ],
             "fulfilled": false,
@@ -632,8 +632,8 @@
         "follow_up_observation_fulfilled_count": 0,
         "follow_up_required_count": 1,
         "history_records_appended": 1,
-        "run_dir": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120100Z-ACCEPT02/runs/RUN-2026-07-29_091958Z-X0DF-hunter-search",
-        "run_id": "RUN-2026-07-29_091958Z-X0DF-hunter-search",
+        "run_dir": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120100Z-ACCEPT02/runs/RUN-2026-07-29_100145Z-O4M5-hunter-search",
+        "run_id": "RUN-2026-07-29_100145Z-O4M5-hunter-search",
         "schema_version": "hunter_search_event_v2",
         "search_id": "SEARCH-20260729T120100Z-ACCEPT02",
         "target_count": 1
@@ -650,7 +650,7 @@
         "schema_version": "bl_archive_candidate_catalog_v1",
         "sha256": "f809bc3ffa19d2fd9227da8f91a012de12e9dfa0e08aa40da5cdd5fc687beba1"
       },
-      "code_commit": "55a5d2d",
+      "code_commit": "edb6e66",
       "created_at_utc": "2026-07-29T12:01:00Z",
       "created_by_project": "Techno-Hunter",
       "detection_claimed": false,
@@ -659,7 +659,7 @@
         "candidate_count": 5,
         "path": "$ACCEPTANCE_WORK_DIR/adaptive_discovery/SEARCH-20260729T120000Z-ACCEPT01/queue_round_001.csv",
         "schema_version": "target_priority_queue_v5",
-        "sha256": "ab2b2271df58ad520c249bbe5d59ae9cc288a3c82e46431c8c4d09364b49f843",
+        "sha256": "b5c7c88e219e29f137c2eda64469660776bed6f675e79e2ede2346fefa2ac115",
         "viable_candidate_count": 1
       },
       "external_submission_allowed": false,
@@ -743,12 +743,12 @@
           "prior_search_provenance": [
             {
               "candidate_id": "capture_outside_0001",
-              "follow_up_id": "FU-2026-07-29_091943Z-38V7-001",
-              "ledger_path": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/runs/RUN-2026-07-29_091943Z-38V7-hunter-search/RUN-2026-07-29_091943Z-38V7-hunter-search_follow_ups.json",
+              "follow_up_id": "FU-2026-07-29_100127Z-1FFZ-001",
+              "ledger_path": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/runs/RUN-2026-07-29_100127Z-1FFZ-hunter-search/RUN-2026-07-29_100127Z-1FFZ-hunter-search_follow_ups.json",
               "pathway": "human_review_queue",
               "project": "Techno-Hunter",
               "relationship": "this_project_search",
-              "run_id": "RUN-2026-07-29_091943Z-38V7-hunter-search",
+              "run_id": "RUN-2026-07-29_100127Z-1FFZ-hunter-search",
               "score": 0.96476
             },
             {
@@ -769,7 +769,7 @@
           "recommended_next_action": "complete the unresolved known-explanation checks before candidate promotion",
           "selection_reason": "complete the unresolved known-explanation checks before candidate promotion",
           "source_data_path": "$ACCEPTANCE_WORK_DIR/data/OUTSIDE/capture_outside_0001.dat",
-          "source_hdf5_url": "http://127.0.0.1:53095/capture_outside_0001.h5",
+          "source_hdf5_url": "http://127.0.0.1:56101/capture_outside_0001.h5",
           "spectral_type": "",
           "target_selection_score": 0.009
         }
@@ -795,7 +795,7 @@
           "drift_rate_hz_per_sec": -0.387762,
           "external_submission_allowed": false,
           "follow_up_required": true,
-          "index_id": "FU-2026-07-29_091958Z-X0DF-001",
+          "index_id": "FU-2026-07-29_100145Z-O4M5-001",
           "is_earth_drift_consistent": true,
           "known_explanation_state": "unresolved",
           "normalized_drift_hz_s_per_ghz": -0.046045412233607586,
@@ -812,7 +812,7 @@
       ],
       "external_submission_allowed": false,
       "follow_up_required_count": 1,
-      "run_id": "RUN-2026-07-29_091958Z-X0DF-hunter-search",
+      "run_id": "RUN-2026-07-29_100145Z-O4M5-hunter-search",
       "schema_version": "production_target_status_v1",
       "target_count": 1
     },
@@ -821,8 +821,8 @@
         "dat_file": "",
         "parent_run_id": "SEARCH-20260729T120000Z-ACCEPT01",
         "pathway": "human_review_queue",
-        "run_id": "RUN-2026-07-29_091943Z-38V7-hunter-search",
-        "scanned_at_utc": "2026-07-29T09:19:58.469807Z",
+        "run_id": "RUN-2026-07-29_100127Z-1FFZ-hunter-search",
+        "scanned_at_utc": "2026-07-29T10:01:45.871118Z",
         "schema_version": "prod_scan_history_v1",
         "score": 0.96476,
         "target_stem": "capture_outside_0001"
@@ -831,8 +831,8 @@
         "dat_file": "",
         "parent_run_id": "SEARCH-20260729T120100Z-ACCEPT02",
         "pathway": "human_review_queue",
-        "run_id": "RUN-2026-07-29_091958Z-X0DF-hunter-search",
-        "scanned_at_utc": "2026-07-29T09:20:00.950233Z",
+        "run_id": "RUN-2026-07-29_100145Z-O4M5-hunter-search",
+        "scanned_at_utc": "2026-07-29T10:01:48.456831Z",
         "schema_version": "prod_scan_history_v1",
         "score": 0.96476,
         "target_stem": "capture_outside_0001"
@@ -1095,8 +1095,8 @@
         "source_dataset": "Hunter controlled loopback archive",
         "source_file": "$ACCEPTANCE_WORK_DIR/data/OUTSIDE/capture_outside_0001.dat",
         "source_hdf5_filename": "capture_outside_0001.h5",
-        "source_hdf5_sha256": "4c2d2d9428829c63c3671fa91f409748e2f52c5bc373abece509491aff93f258",
-        "source_url": "http://127.0.0.1:53095/capture_outside_0001.h5"
+        "source_hdf5_sha256": "c42efd341ed889b4fc7b0fef4cbd8e40fdc7b2b515e602d4d45cf882856f4784",
+        "source_url": "http://127.0.0.1:56101/capture_outside_0001.h5"
       },
       "recommended_pathway": "human_review_queue",
       "schema_version": "techno_search_packet_v1",
@@ -1122,9 +1122,9 @@
     "new_candidate_manifest": {
       "adversarial_review_path": null,
       "candidate_id": "capture_outside_0001",
-      "code_commit": "55a5d2d",
+      "code_commit": "edb6e66",
       "config_version": "scoring_v0",
-      "generated_at_utc": "2026-07-29T09:19:57.926334+00:00",
+      "generated_at_utc": "2026-07-29T10:01:45.317702+00:00",
       "json_path": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/pipeline_results/capture_outside_0001/capture_outside_0001.json",
       "known_explanation_path": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/pipeline_results/capture_outside_0001/capture_outside_0001.known-explanation.json",
       "known_explanation_state": "unresolved",
@@ -1142,9 +1142,9 @@
       ],
       "provenance_summary": {
         "cache_key": null,
-        "code_commit": "55a5d2d",
+        "code_commit": "edb6e66",
         "config_version": "scoring_v0",
-        "generated_at_utc": "2026-07-29T09:19:57.926353+00:00",
+        "generated_at_utc": "2026-07-29T10:01:45.317719+00:00",
         "input_path": null,
         "provider_name": null,
         "query_parameters": {},
@@ -1163,7 +1163,7 @@
       {
         "at_utc": "2026-07-29T12:00:00Z",
         "event": "created",
-        "manifest_sha256": "e34f3081975251ea769718fb724f2cf74e789048f4fb4809f378c7bc115d2cfe",
+        "manifest_sha256": "4aa6e1ba9a2260347fb37908901b7736a645bea71b9e08231eb31376e34cbd2e",
         "mode": "new",
         "schema_version": "hunter_search_event_v2",
         "search_id": "SEARCH-20260729T120000Z-ACCEPT01",
@@ -1171,23 +1171,23 @@
       },
       {
         "app_version": "1.2.71",
-        "at_utc": "2026-07-29T09:19:43.367100Z",
+        "at_utc": "2026-07-29T10:01:27.857096Z",
         "chunk_size": 1,
-        "code_commit": "55a5d2d",
+        "code_commit": "edb6e66",
         "event": "run_started",
         "execution_kind_counts": {
           "novel_target_archive_processing": 1
         },
         "follow_up_observation_fulfilled_count": 0,
-        "manifest_sha256": "e34f3081975251ea769718fb724f2cf74e789048f4fb4809f378c7bc115d2cfe",
+        "manifest_sha256": "4aa6e1ba9a2260347fb37908901b7736a645bea71b9e08231eb31376e34cbd2e",
         "pipeline_workers": 1,
-        "run_id": "RUN-2026-07-29_091943Z-38V7-hunter-search",
+        "run_id": "RUN-2026-07-29_100127Z-1FFZ-hunter-search",
         "schema_version": "hunter_search_event_v2",
         "search_id": "SEARCH-20260729T120000Z-ACCEPT01"
       },
       {
         "app_version": "1.2.71",
-        "at_utc": "2026-07-29T09:19:58.470178Z",
+        "at_utc": "2026-07-29T10:01:45.871527Z",
         "candidate_report_config_versions": [
           "scoring_v0"
         ],
@@ -1201,8 +1201,8 @@
         "follow_up_observation_fulfilled_count": 0,
         "follow_up_required_count": 1,
         "history_records_appended": 1,
-        "run_dir": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/runs/RUN-2026-07-29_091943Z-38V7-hunter-search",
-        "run_id": "RUN-2026-07-29_091943Z-38V7-hunter-search",
+        "run_dir": "$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/runs/RUN-2026-07-29_100127Z-1FFZ-hunter-search",
+        "run_id": "RUN-2026-07-29_100127Z-1FFZ-hunter-search",
         "schema_version": "hunter_search_event_v2",
         "search_id": "SEARCH-20260729T120000Z-ACCEPT01",
         "target_count": 1
@@ -1219,7 +1219,7 @@
         "schema_version": "bl_archive_candidate_catalog_v1",
         "sha256": "f809bc3ffa19d2fd9227da8f91a012de12e9dfa0e08aa40da5cdd5fc687beba1"
       },
-      "code_commit": "55a5d2d",
+      "code_commit": "edb6e66",
       "created_at_utc": "2026-07-29T12:00:00Z",
       "created_by_project": "Techno-Hunter",
       "detection_claimed": false,
@@ -1228,7 +1228,7 @@
         "candidate_count": 5,
         "path": "$ACCEPTANCE_WORK_DIR/adaptive_discovery/SEARCH-20260729T120000Z-ACCEPT01/queue_round_001.csv",
         "schema_version": "target_priority_queue_v5",
-        "sha256": "ab2b2271df58ad520c249bbe5d59ae9cc288a3c82e46431c8c4d09364b49f843",
+        "sha256": "b5c7c88e219e29f137c2eda64469660776bed6f675e79e2ede2346fefa2ac115",
         "viable_candidate_count": 2
       },
       "external_submission_allowed": false,
@@ -1269,7 +1269,7 @@
               "promoted_target_ids": [
                 "OUTSIDE"
               ],
-              "queue_sha256": "ab2b2271df58ad520c249bbe5d59ae9cc288a3c82e46431c8c4d09364b49f843",
+              "queue_sha256": "b5c7c88e219e29f137c2eda64469660776bed6f675e79e2ede2346fefa2ac115",
               "round": 1,
               "validity_state": "valid"
             }
@@ -1328,7 +1328,7 @@
           "ra_deg": 10.0,
           "search_category": "controlled_pipeline_acceptance",
           "selection_reason": "highest deterministic target_selection_score among eligible, size-preflighted targets not previously searched by this project",
-          "source_hdf5_url": "http://127.0.0.1:53095/capture_outside_0001.h5",
+          "source_hdf5_url": "http://127.0.0.1:56101/capture_outside_0001.h5",
           "spectral_type": "",
           "target_selection_score": 0.009,
           "total_priority": 0.009
@@ -1355,7 +1355,7 @@
           "drift_rate_hz_per_sec": -0.387762,
           "external_submission_allowed": false,
           "follow_up_required": true,
-          "index_id": "FU-2026-07-29_091943Z-38V7-001",
+          "index_id": "FU-2026-07-29_100127Z-1FFZ-001",
           "is_earth_drift_consistent": true,
           "known_explanation_state": "unresolved",
           "normalized_drift_hz_s_per_ghz": -0.046045412233607586,
@@ -1372,7 +1372,7 @@
       ],
       "external_submission_allowed": false,
       "follow_up_required_count": 1,
-      "run_id": "RUN-2026-07-29_091943Z-38V7-hunter-search",
+      "run_id": "RUN-2026-07-29_100127Z-1FFZ-hunter-search",
       "schema_version": "production_target_status_v1",
       "target_count": 1
     },
@@ -1382,7 +1382,7 @@
       "classification": "controlled_acceptance_fixture",
       "controlled_acceptance_only": true,
       "data_use_review_status": "not_applicable_controlled_acceptance",
-      "downloaded_utc": "2026-07-29T09:19:55.883593Z",
+      "downloaded_utc": "2026-07-29T10:01:43.249051Z",
       "external_submission_authorized": false,
       "human_approval_status": "not_applicable_controlled_acceptance",
       "instrument": "GBT",
@@ -1400,10 +1400,10 @@
       "sha256": "607b5eb688922b9afd697719d7a1a984105ef987f76e12b13ad7bf080e978caf",
       "source_archive": "Hunter controlled loopback archive",
       "source_hdf5_filename": "capture_outside_0001.h5",
-      "source_hdf5_sha256": "4c2d2d9428829c63c3671fa91f409748e2f52c5bc373abece509491aff93f258",
-      "source_hdf5_size_bytes": 4200794,
+      "source_hdf5_sha256": "c42efd341ed889b4fc7b0fef4cbd8e40fdc7b2b515e602d4d45cf882856f4784",
+      "source_hdf5_size_bytes": 4200792,
       "source_name": "SYNTH_BL_TIER1",
-      "source_url": "http://127.0.0.1:53095/capture_outside_0001.h5",
+      "source_url": "http://127.0.0.1:56101/capture_outside_0001.h5",
       "target_id": "SYNTH_BL_TIER1"
     }
   },
@@ -1414,7 +1414,7 @@
     "final_disposition": [
       {
         "consumed_follow_up_ids": [
-          "FU-2026-07-29_091943Z-38V7-001",
+          "FU-2026-07-29_100127Z-1FFZ-001",
           "FU-CONTROLLED-001"
         ],
         "fulfilled": false,
@@ -1434,12 +1434,12 @@
   ],
   "provenance_trace": {
     "candidate_catalog_sha256": "f809bc3ffa19d2fd9227da8f91a012de12e9dfa0e08aa40da5cdd5fc687beba1",
-    "data_collection_status_sha256": "7c097de320b39fb8d28f73691bd2df98e01e2a2550497e49981c9d92eb77ee90",
-    "follow_up_candidate_manifest_sha256": "1f3227da44322782dcd1723da9afcce7724eb9b00ffc1bf474c8ae8b5686448b",
-    "follow_up_manifest_sha256": "cff45347b3e3141e54948ace3bb1a2406f657492e51e022b422b1e1b3665b5ec",
-    "initial_queue_sha256": "fd8f183d90df5639a040ec248b78650766b7a019422cdb809d687ae1e63eda32",
-    "new_candidate_manifest_sha256": "309aa4ed231d845e79176911e25a23187326c4958ef4b7da93239fcfae2c504e",
-    "new_manifest_sha256": "e34f3081975251ea769718fb724f2cf74e789048f4fb4809f378c7bc115d2cfe",
+    "data_collection_status_sha256": "a974706ba4fc99163d0152d9a1157c96e3565aa2c18de897cfcfce26db706ce6",
+    "follow_up_candidate_manifest_sha256": "e1ef5ee556cd09090253ef5846a6b9b509a969067aba70bbf2d1070575bbea6e",
+    "follow_up_manifest_sha256": "54b1b157eab23d68b95746e76db706cd3b089f6eb99464aafaacf664b49ae68a",
+    "initial_queue_sha256": "719a84e551c7aaff5070dfcf03cf57f98177b39de6b66a9946e904f73ea50f72",
+    "new_candidate_manifest_sha256": "611fd534aa928f36e9778ce375fcce7da2cabeb83c21dc3414ea3b83c7bfdad1",
+    "new_manifest_sha256": "4aa6e1ba9a2260347fb37908901b7736a645bea71b9e08231eb31376e34cbd2e",
     "observation_artifact_sha256": "607b5eb688922b9afd697719d7a1a984105ef987f76e12b13ad7bf080e978caf",
     "selected_target_trace": {
       "candidate_catalog_source": {
@@ -1454,7 +1454,7 @@
         "candidate_count": 5,
         "path": "$ACCEPTANCE_WORK_DIR/adaptive_discovery/SEARCH-20260729T120000Z-ACCEPT01/queue_round_001.csv",
         "schema_version": "target_priority_queue_v5",
-        "sha256": "ab2b2271df58ad520c249bbe5d59ae9cc288a3c82e46431c8c4d09364b49f843",
+        "sha256": "b5c7c88e219e29f137c2eda64469660776bed6f675e79e2ede2346fefa2ac115",
         "viable_candidate_count": 2
       },
       "execution_target_name": "capture_outside_0001",
@@ -1471,7 +1471,7 @@
       "target_id": "OUTSIDE",
       "validity_state": "valid"
     },
-    "source_fixture_sha256": "4c2d2d9428829c63c3671fa91f409748e2f52c5bc373abece509491aff93f258",
+    "source_fixture_sha256": "c42efd341ed889b4fc7b0fef4cbd8e40fdc7b2b515e602d4d45cf882856f4784",
     "transformations": [
       "loopback HTTP archive adapter",
       "real stream_process_evict runner",
@@ -1489,7 +1489,7 @@
   },
   "release": {
     "app_version": "1.2.71",
-    "code_commit": "55a5d2d",
+    "code_commit": "edb6e66",
     "fixture_classification": "controlled pipeline smoke fixture; not training data, a scientific label, or real-world performance evidence",
     "installed_entry_point": "Techno-Hunter"
   },
@@ -1517,7 +1517,7 @@
         "OUTSIDE"
       ],
       "fault_injected_exit_code": 9,
-      "resumed_run_id": "RUN-2026-07-29_091958Z-X0DF-hunter-search",
+      "resumed_run_id": "RUN-2026-07-29_100145Z-O4M5-hunter-search",
       "search_id": "SEARCH-20260729T120100Z-ACCEPT02"
     },
     "new": {
@@ -1542,7 +1542,7 @@
   },
   "transcript": {
     "stderr": "ERROR: search SEARCH-20260729T120100Z-ACCEPT02 failed during acquisition/processing with exit code 9; the exact search remains resumable\n",
-    "stdout": "... Candidate pool \u2192 deterministic ranking \u2192 immutable manifest\n{\n  \"app_version\": \"1.2.71\",\n  \"artifact_kind\": \"hunter_search_manifest\",\n  \"candidate_catalog\": {\n    \"candidate_count\": 5,\n    \"identity_resolved_count\": 5,\n    \"path\": \"$ACCEPTANCE_WORK_DIR/candidate_catalog.csv\",\n    \"ranking_eligible_count\": 2,\n    \"schema_version\": \"bl_archive_candidate_catalog_v1\",\n    \"sha256\": \"f809bc3ffa19d2fd9227da8f91a012de12e9dfa0e08aa40da5cdd5fc687beba1\"\n  },\n  \"code_commit\": \"55a5d2d\",\n  \"created_at_utc\": \"2026-07-29T12:00:00Z\",\n  \"created_by_project\": \"Techno-Hunter\",\n  \"detection_claimed\": false,\n  \"disclaimer\": \"Hunter searches and follow-up records are local scientific workflow artifacts. They do not constitute a detection, discovery, expert review, external validation, or authorization for external submission.\",\n  \"eligibility_queue\": {\n    \"candidate_count\": 5,\n    \"path\": \"$ACCEPTANCE_WORK_DIR/adaptive_discovery/SEARCH-20260729T120000Z-ACCEPT01/queue_round_001.csv\",\n    \"schema_version\": \"target_priority_queue_v5\",\n    \"sha256\": \"ab2b2271df58ad520c249bbe5d59ae9cc288a3c82e46431c8c4d09364b49f843\",\n    \"viable_candidate_count\": 2\n  },\n  \"external_submission_allowed\": false,\n  \"follow_up_registry\": null,\n  \"initial_status\": \"pending\",\n  \"mode\": \"new\",\n  \"pipeline\": {\n    \"acquisition\": \"scripts/run_stream_process_evict_batch.sh\",\n    \"interpretation\": \"techno_search.production_scan.run_production_scan\",\n    \"preprocessing\": \"scripts/run_turboseti_on_extended_corpus.sh\",\n    \"raw_retention_policy\": \"stream_process_evict\",\n    \"scoring\": \"scripts/run_pipeline_on_bl_data.sh\",\n    \"turbo_seti_parameters\": {\n      \"max_drift_hz_per_sec\": 10.0,\n      \"min_drift_hz_per_sec\": 0.0001,\n      \"snr_threshold\": 10.0\n    }\n  },\n  \"schema_version\": \"hunter_search_manifest_v3\",\n  \"search_id\": \"SEARCH-20260729T120000Z-ACCEPT01\",\n  \"selection\": {\n    \"adaptive_discovery\": {\n      \"candidate_count\": 5,\n      \"constraints\": {},\n      \"eligible_count\": 2,\n      \"expandable_count\": 0,\n      \"highest_unresolved_score\": null,\n      \"requested_count\": 1,\n      \"round_count\": 1,\n      \"rounds\": [\n        {\n          \"adapter\": \"loopback_archive_metadata_v1\",\n          \"examined_count\": 1,\n          \"examined_target_ids\": [\n            \"OUTSIDE\"\n          ],\n          \"minimum_examined_score\": 0.009,\n          \"promoted_target_ids\": [\n            \"OUTSIDE\"\n          ],\n          \"queue_sha256\": \"ab2b2271df58ad520c249bbe5d59ae9cc288a3c82e46431c8c4d09364b49f843\",\n          \"round\": 1,\n          \"validity_state\": \"valid\"\n        }\n      ],\n      \"selection_cutoff_score\": 0.009,\n      \"strategy\": \"adaptive_score_bound_v1\",\n      \"sufficient\": true,\n      \"universe_exhausted\": true\n    },\n    \"constraints\": {},\n    \"deterministic_tie_breaker\": \"canonical_target_id\",\n    \"execution_kind_counts\": {\n      \"novel_target_archive_processing\": 1\n    },\n    \"follow_up_discovery\": null,\n    \"follow_up_observation_fulfilled_count\": 0,\n    \"partial_selection_allowed\": false,\n    \"projected_download_gb\": 0.004,\n    \"quality\": {\n      \"interpretation\": \"deterministic relative ranking score; not a calibrated probability or absolute eligibility threshold\",\n      \"maximum\": 0.009,\n      \"median\": 0.009,\n      \"minimum\": 0.009,\n      \"score_field\": \"target_selection_score\"\n    },\n    \"ranking_key\": \"target_selection_score\",\n    \"requested_count\": 1,\n    \"selected_count\": 1,\n    \"shortfall\": null\n  },\n  \"targets\": [\n    {\n      \"background_target_priority_score\": 0.009,\n      \"cross_project_prior_search\": \"\",\n      \"data_products_available\": \"hdf5_size_preflight_ok\",\n      \"dec_deg\": 20.0,\n      \"distance_light_years\": null,\n      \"estimated_download_gb\": 0.004,\n      \"execution_kind\": \"novel_target_archive_processing\",\n      \"exoplanet_host\": \"\",\n      \"follow_up_observation_fulfilled\": false,\n      \"follow_up_observation_scheduled\": false,\n      \"galactic_latitude_deg\": null,\n      \"hip\": \"OUTSIDE\",\n      \"local_coverage_status\": \"not_searched_size_preflight_ok\",\n      \"mode\": \"new\",\n      \"name\": \"OUTSIDE\",\n      \"notes\": \"controlled pipeline smoke fixture; not training data, a scientific label, or real-world performance evidence\",\n      \"object_type\": \"Star\",\n      \"prior_search_count\": 0,\n      \"prior_search_provenance\": [],\n      \"prior_search_provenance_summary\": \"\",\n      \"prior_seti_coverage_reference\": \"\",\n      \"priority_config_version\": \"background_priority_v0\",\n      \"queue_status\": \"raw_download_approval_required\",\n      \"ra_deg\": 10.0,\n      \"search_category\": \"controlled_pipeline_acceptance\",\n      \"selection_reason\": \"highest deterministic target_selection_score among eligible, size-preflighted targets not previously searched by this project\",\n      \"source_hdf5_url\": \"http://127.0.0.1:53095/capture_outside_0001.h5\",\n      \"spectral_type\": \"\",\n      \"target_selection_score\": 0.009,\n      \"total_priority\": 0.009\n    }\n  ]\n}\n{\n  \"app_version\": \"1.2.71\",\n  \"at_utc\": \"2026-07-29T09:19:58.470178Z\",\n  \"candidate_report_config_versions\": [\n    \"scoring_v0\"\n  ],\n  \"event\": \"run_completed\",\n  \"execution_kind_counts\": {\n    \"novel_target_archive_processing\": 1\n  },\n  \"follow_up_completed_count\": 0,\n  \"follow_up_deferred_count\": 0,\n  \"follow_up_dispositions\": [],\n  \"follow_up_observation_fulfilled_count\": 0,\n  \"follow_up_required_count\": 1,\n  \"history_records_appended\": 1,\n  \"run_dir\": \"$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/runs/RUN-2026-07-29_091943Z-38V7-hunter-search\",\n  \"run_id\": \"RUN-2026-07-29_091943Z-38V7-hunter-search\",\n  \"search_id\": \"SEARCH-20260729T120000Z-ACCEPT01\",\n  \"target_count\": 1\n}\n... Candidate pool \u2192 deterministic ranking \u2192 immutable manifest\n{\n  \"app_version\": \"1.2.71\",\n  \"artifact_kind\": \"hunter_search_manifest\",\n  \"candidate_catalog\": {\n    \"candidate_count\": 5,\n    \"identity_resolved_count\": 5,\n    \"path\": \"$ACCEPTANCE_WORK_DIR/candidate_catalog.csv\",\n    \"ranking_eligible_count\": 2,\n    \"schema_version\": \"bl_archive_candidate_catalog_v1\",\n    \"sha256\": \"f809bc3ffa19d2fd9227da8f91a012de12e9dfa0e08aa40da5cdd5fc687beba1\"\n  },\n  \"code_commit\": \"55a5d2d\",\n  \"created_at_utc\": \"2026-07-29T12:01:00Z\",\n  \"created_by_project\": \"Techno-Hunter\",\n  \"detection_claimed\": false,\n  \"disclaimer\": \"Hunter searches and follow-up records are local scientific workflow artifacts. They do not constitute a detection, discovery, expert review, external validation, or authorization for external submission.\",\n  \"eligibility_queue\": {\n    \"candidate_count\": 5,\n    \"path\": \"$ACCEPTANCE_WORK_DIR/adaptive_discovery/SEARCH-20260729T120000Z-ACCEPT01/queue_round_001.csv\",\n    \"schema_version\": \"target_priority_queue_v5\",\n    \"sha256\": \"ab2b2271df58ad520c249bbe5d59ae9cc288a3c82e46431c8c4d09364b49f843\",\n    \"viable_candidate_count\": 1\n  },\n  \"external_submission_allowed\": false,\n  \"follow_up_registry\": {\n    \"schema_version\": \"hunter_follow_up_registry_v1\",\n    \"source_ledger_count\": 2,\n    \"unresolved_identity_count\": 0\n  },\n  \"initial_status\": \"pending\",\n  \"mode\": \"follow-up\",\n  \"pipeline\": {\n    \"acquisition\": \"scripts/run_stream_process_evict_batch.sh\",\n    \"interpretation\": \"techno_search.production_scan.run_production_scan\",\n    \"preprocessing\": \"scripts/run_turboseti_on_extended_corpus.sh\",\n    \"raw_retention_policy\": \"stream_process_evict\",\n    \"scoring\": \"scripts/run_pipeline_on_bl_data.sh\",\n    \"turbo_seti_parameters\": {\n      \"max_drift_hz_per_sec\": 10.0,\n      \"min_drift_hz_per_sec\": 0.0001,\n      \"snr_threshold\": 10.0\n    }\n  },\n  \"schema_version\": \"hunter_search_manifest_v3\",\n  \"search_id\": \"SEARCH-20260729T120100Z-ACCEPT02\",\n  \"selection\": {\n    \"adaptive_discovery\": null,\n    \"constraints\": {},\n    \"deterministic_tie_breaker\": \"canonical_target_id\",\n    \"execution_kind_counts\": {\n      \"follow_up_archive_data_processing\": 1\n    },\n    \"follow_up_discovery\": {\n      \"adapter\": \"controlled_existing_evidence_v1\",\n      \"cadence_discovery_count\": 0,\n      \"examined_count\": 1,\n      \"schema_version\": \"hunter_follow_up_discovery_report_v2\",\n      \"selected_count\": 1,\n      \"validity_state\": \"valid\"\n    },\n    \"follow_up_observation_fulfilled_count\": 0,\n    \"partial_selection_allowed\": false,\n    \"projected_download_gb\": 0.004,\n    \"quality\": {\n      \"interpretation\": \"deterministic relative ranking score; not a calibrated probability or absolute eligibility threshold\",\n      \"maximum\": 0.96476,\n      \"median\": 0.96476,\n      \"minimum\": 0.96476,\n      \"score_field\": \"follow_up_priority\"\n    },\n    \"ranking_key\": \"follow_up_priority\",\n    \"requested_count\": 1,\n    \"selected_count\": 1,\n    \"shortfall\": null\n  },\n  \"targets\": [\n    {\n      \"dec_deg\": 20.0,\n      \"distance_light_years\": null,\n      \"estimated_download_gb\": 0.004,\n      \"evidence\": {\n        \"candidate_id\": \"capture_outside_0001\",\n        \"cross_target_rfi_flagged\": false,\n        \"drift_evidence_available\": true,\n        \"drift_rate_hz_per_sec\": -0.387762,\n        \"frequency_hz\": 8421295004.0,\n        \"pathway\": \"human_review_queue\",\n        \"score\": 0.96476,\n        \"snr\": 351.721191\n      },\n      \"execution_kind\": \"follow_up_archive_data_processing\",\n      \"exoplanet_host\": \"\",\n      \"follow_up_observation_fulfilled\": false,\n      \"follow_up_observation_scheduled\": false,\n      \"follow_up_priority\": 0.96476,\n      \"galactic_latitude_deg\": null,\n      \"hip\": \"OUTSIDE\",\n      \"mode\": \"follow-up\",\n      \"name\": \"OUTSIDE\",\n      \"object_type\": \"Star\",\n      \"prior_search_count\": 2,\n      \"prior_search_provenance\": [\n        {\n          \"candidate_id\": \"capture_outside_0001\",\n          \"follow_up_id\": \"FU-2026-07-29_091943Z-38V7-001\",\n          \"ledger_path\": \"$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/runs/RUN-2026-07-29_091943Z-38V7-hunter-search/RUN-2026-07-29_091943Z-38V7-hunter-search_follow_ups.json\",\n          \"pathway\": \"human_review_queue\",\n          \"project\": \"Techno-Hunter\",\n          \"relationship\": \"this_project_search\",\n          \"run_id\": \"RUN-2026-07-29_091943Z-38V7-hunter-search\",\n          \"score\": 0.96476\n        },\n        {\n          \"candidate_id\": \"capture_outside_0001\",\n          \"follow_up_id\": \"FU-CONTROLLED-001\",\n          \"ledger_path\": \"$ACCEPTANCE_WORK_DIR/seed_scans/RUN-2026-07-29_115900Z-SEED-hunter-search/RUN-2026-07-29_115900Z-SEED-hunter-search_follow_ups.json\",\n          \"pathway\": \"human_review_queue\",\n          \"project\": \"Techno-Hunter\",\n          \"relationship\": \"this_project_search\",\n          \"run_id\": \"RUN-2026-07-29_115900Z-SEED-hunter-search\",\n          \"score\": 0.8\n        }\n      ],\n      \"prior_search_provenance_summary\": \"Techno-Hunter:2\",\n      \"prior_seti_coverage_reference\": \"\",\n      \"queue_status\": \"raw_download_approval_required\",\n      \"ra_deg\": 10.0,\n      \"recommended_next_action\": \"complete the unresolved known-explanation checks before candidate promotion\",\n      \"selection_reason\": \"complete the unresolved known-explanation checks before candidate promotion\",\n      \"source_data_path\": \"$ACCEPTANCE_WORK_DIR/data/OUTSIDE/capture_outside_0001.dat\",\n      \"source_hdf5_url\": \"http://127.0.0.1:53095/capture_outside_0001.h5\",\n      \"spectral_type\": \"\",\n      \"target_selection_score\": 0.009\n    }\n  ]\n}\n{\n  \"app_version\": \"1.2.71\",\n  \"at_utc\": \"2026-07-29T09:20:00.953251Z\",\n  \"candidate_report_config_versions\": [\n    \"scoring_v0\"\n  ],\n  \"event\": \"run_completed\",\n  \"execution_kind_counts\": {\n    \"follow_up_archive_data_processing\": 1\n  },\n  \"follow_up_completed_count\": 0,\n  \"follow_up_deferred_count\": 1,\n  \"follow_up_dispositions\": [\n    {\n      \"consumed_follow_up_ids\": [\n        \"FU-2026-07-29_091943Z-38V7-001\",\n        \"FU-CONTROLLED-001\"\n      ],\n      \"fulfilled\": false,\n      \"reason\": \"new evidence did not explicitly satisfy the scheduled action\",\n      \"state\": \"deferred\",\n      \"target_id\": \"OUTSIDE\"\n    }\n  ],\n  \"follow_up_observation_fulfilled_count\": 0,\n  \"follow_up_required_count\": 1,\n  \"history_records_appended\": 1,\n  \"run_dir\": \"$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120100Z-ACCEPT02/runs/RUN-2026-07-29_091958Z-X0DF-hunter-search\",\n  \"run_id\": \"RUN-2026-07-29_091958Z-X0DF-hunter-search\",\n  \"search_id\": \"SEARCH-20260729T120100Z-ACCEPT02\",\n  \"target_count\": 1\n}\n{\n  \"completed_count\": 0,\n  \"deferred_count\": 2,\n  \"detection_claimed\": false,\n  \"disclaimer\": \"Hunter searches and follow-up records are local scientific workflow artifacts. They do not constitute a detection, discovery, expert review, external validation, or authorization for external submission.\",\n  \"eligible_count\": 1,\n  \"eligible_entries\": [\n    {\n      \"dec_deg\": 20.0,\n      \"distance_light_years\": null,\n      \"estimated_download_gb\": 0.004,\n      \"evidence\": {\n        \"candidate_id\": \"capture_outside_0001\",\n        \"cross_target_rfi_flagged\": false,\n        \"drift_evidence_available\": true,\n        \"drift_rate_hz_per_sec\": -0.387762,\n        \"frequency_hz\": 8421295004.0,\n        \"pathway\": \"human_review_queue\",\n        \"score\": 0.96476,\n        \"snr\": 351.721191\n      },\n      \"exoplanet_host\": \"\",\n      \"follow_up_priority\": 0.96476,\n      \"galactic_latitude_deg\": null,\n      \"hip\": \"OUTSIDE\",\n      \"mode\": \"follow-up\",\n      \"name\": \"OUTSIDE\",\n      \"object_type\": \"Star\",\n      \"prior_search_count\": 1,\n      \"prior_search_provenance\": [\n        {\n          \"candidate_id\": \"capture_outside_0001\",\n          \"follow_up_id\": \"FU-2026-07-29_091958Z-X0DF-001\",\n          \"ledger_path\": \"$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120100Z-ACCEPT02/runs/RUN-2026-07-29_091958Z-X0DF-hunter-search/RUN-2026-07-29_091958Z-X0DF-hunter-search_follow_ups.json\",\n          \"pathway\": \"human_review_queue\",\n          \"project\": \"Techno-Hunter\",\n          \"relationship\": \"this_project_search\",\n          \"run_id\": \"RUN-2026-07-29_091958Z-X0DF-hunter-search\",\n          \"score\": 0.96476\n        }\n      ],\n      \"prior_search_provenance_summary\": \"Techno-Hunter:1\",\n      \"prior_seti_coverage_reference\": \"\",\n      \"queue_status\": \"raw_download_approval_required\",\n      \"ra_deg\": 10.0,\n      \"recommended_next_action\": \"complete the unresolved known-explanation checks before candidate promotion\",\n      \"selection_reason\": \"complete the unresolved known-explanation checks before candidate promotion\",\n      \"source_data_path\": \"$ACCEPTANCE_WORK_DIR/data/OUTSIDE/capture_outside_0001.dat\",\n      \"source_hdf5_url\": \"http://127.0.0.1:53095/capture_outside_0001.h5\",\n      \"spectral_type\": \"\",\n      \"target_selection_score\": 0.009\n    }\n  ],\n  \"external_submission_allowed\": false,\n  \"refresh_required_count\": 0,\n  \"scheduled_count\": 0,\n  \"schema_version\": \"hunter_follow_up_registry_v1\",\n  \"source_entry_count\": 3,\n  \"source_ledger_count\": 3,\n  \"unresolved_identity_count\": 0\n}\n"
+    "stdout": "... Candidate pool \u2192 deterministic ranking \u2192 immutable manifest\n{\n  \"app_version\": \"1.2.71\",\n  \"artifact_kind\": \"hunter_search_manifest\",\n  \"candidate_catalog\": {\n    \"candidate_count\": 5,\n    \"identity_resolved_count\": 5,\n    \"path\": \"$ACCEPTANCE_WORK_DIR/candidate_catalog.csv\",\n    \"ranking_eligible_count\": 2,\n    \"schema_version\": \"bl_archive_candidate_catalog_v1\",\n    \"sha256\": \"f809bc3ffa19d2fd9227da8f91a012de12e9dfa0e08aa40da5cdd5fc687beba1\"\n  },\n  \"code_commit\": \"edb6e66\",\n  \"created_at_utc\": \"2026-07-29T12:00:00Z\",\n  \"created_by_project\": \"Techno-Hunter\",\n  \"detection_claimed\": false,\n  \"disclaimer\": \"Hunter searches and follow-up records are local scientific workflow artifacts. They do not constitute a detection, discovery, expert review, external validation, or authorization for external submission.\",\n  \"eligibility_queue\": {\n    \"candidate_count\": 5,\n    \"path\": \"$ACCEPTANCE_WORK_DIR/adaptive_discovery/SEARCH-20260729T120000Z-ACCEPT01/queue_round_001.csv\",\n    \"schema_version\": \"target_priority_queue_v5\",\n    \"sha256\": \"b5c7c88e219e29f137c2eda64469660776bed6f675e79e2ede2346fefa2ac115\",\n    \"viable_candidate_count\": 2\n  },\n  \"external_submission_allowed\": false,\n  \"follow_up_registry\": null,\n  \"initial_status\": \"pending\",\n  \"mode\": \"new\",\n  \"pipeline\": {\n    \"acquisition\": \"scripts/run_stream_process_evict_batch.sh\",\n    \"interpretation\": \"techno_search.production_scan.run_production_scan\",\n    \"preprocessing\": \"scripts/run_turboseti_on_extended_corpus.sh\",\n    \"raw_retention_policy\": \"stream_process_evict\",\n    \"scoring\": \"scripts/run_pipeline_on_bl_data.sh\",\n    \"turbo_seti_parameters\": {\n      \"max_drift_hz_per_sec\": 10.0,\n      \"min_drift_hz_per_sec\": 0.0001,\n      \"snr_threshold\": 10.0\n    }\n  },\n  \"schema_version\": \"hunter_search_manifest_v3\",\n  \"search_id\": \"SEARCH-20260729T120000Z-ACCEPT01\",\n  \"selection\": {\n    \"adaptive_discovery\": {\n      \"candidate_count\": 5,\n      \"constraints\": {},\n      \"eligible_count\": 2,\n      \"expandable_count\": 0,\n      \"highest_unresolved_score\": null,\n      \"requested_count\": 1,\n      \"round_count\": 1,\n      \"rounds\": [\n        {\n          \"adapter\": \"loopback_archive_metadata_v1\",\n          \"examined_count\": 1,\n          \"examined_target_ids\": [\n            \"OUTSIDE\"\n          ],\n          \"minimum_examined_score\": 0.009,\n          \"promoted_target_ids\": [\n            \"OUTSIDE\"\n          ],\n          \"queue_sha256\": \"b5c7c88e219e29f137c2eda64469660776bed6f675e79e2ede2346fefa2ac115\",\n          \"round\": 1,\n          \"validity_state\": \"valid\"\n        }\n      ],\n      \"selection_cutoff_score\": 0.009,\n      \"strategy\": \"adaptive_score_bound_v1\",\n      \"sufficient\": true,\n      \"universe_exhausted\": true\n    },\n    \"constraints\": {},\n    \"deterministic_tie_breaker\": \"canonical_target_id\",\n    \"execution_kind_counts\": {\n      \"novel_target_archive_processing\": 1\n    },\n    \"follow_up_discovery\": null,\n    \"follow_up_observation_fulfilled_count\": 0,\n    \"partial_selection_allowed\": false,\n    \"projected_download_gb\": 0.004,\n    \"quality\": {\n      \"interpretation\": \"deterministic relative ranking score; not a calibrated probability or absolute eligibility threshold\",\n      \"maximum\": 0.009,\n      \"median\": 0.009,\n      \"minimum\": 0.009,\n      \"score_field\": \"target_selection_score\"\n    },\n    \"ranking_key\": \"target_selection_score\",\n    \"requested_count\": 1,\n    \"selected_count\": 1,\n    \"shortfall\": null\n  },\n  \"targets\": [\n    {\n      \"background_target_priority_score\": 0.009,\n      \"cross_project_prior_search\": \"\",\n      \"data_products_available\": \"hdf5_size_preflight_ok\",\n      \"dec_deg\": 20.0,\n      \"distance_light_years\": null,\n      \"estimated_download_gb\": 0.004,\n      \"execution_kind\": \"novel_target_archive_processing\",\n      \"exoplanet_host\": \"\",\n      \"follow_up_observation_fulfilled\": false,\n      \"follow_up_observation_scheduled\": false,\n      \"galactic_latitude_deg\": null,\n      \"hip\": \"OUTSIDE\",\n      \"local_coverage_status\": \"not_searched_size_preflight_ok\",\n      \"mode\": \"new\",\n      \"name\": \"OUTSIDE\",\n      \"notes\": \"controlled pipeline smoke fixture; not training data, a scientific label, or real-world performance evidence\",\n      \"object_type\": \"Star\",\n      \"prior_search_count\": 0,\n      \"prior_search_provenance\": [],\n      \"prior_search_provenance_summary\": \"\",\n      \"prior_seti_coverage_reference\": \"\",\n      \"priority_config_version\": \"background_priority_v0\",\n      \"queue_status\": \"raw_download_approval_required\",\n      \"ra_deg\": 10.0,\n      \"search_category\": \"controlled_pipeline_acceptance\",\n      \"selection_reason\": \"highest deterministic target_selection_score among eligible, size-preflighted targets not previously searched by this project\",\n      \"source_hdf5_url\": \"http://127.0.0.1:56101/capture_outside_0001.h5\",\n      \"spectral_type\": \"\",\n      \"target_selection_score\": 0.009,\n      \"total_priority\": 0.009\n    }\n  ]\n}\n{\n  \"app_version\": \"1.2.71\",\n  \"at_utc\": \"2026-07-29T10:01:45.871527Z\",\n  \"candidate_report_config_versions\": [\n    \"scoring_v0\"\n  ],\n  \"event\": \"run_completed\",\n  \"execution_kind_counts\": {\n    \"novel_target_archive_processing\": 1\n  },\n  \"follow_up_completed_count\": 0,\n  \"follow_up_deferred_count\": 0,\n  \"follow_up_dispositions\": [],\n  \"follow_up_observation_fulfilled_count\": 0,\n  \"follow_up_required_count\": 1,\n  \"history_records_appended\": 1,\n  \"run_dir\": \"$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/runs/RUN-2026-07-29_100127Z-1FFZ-hunter-search\",\n  \"run_id\": \"RUN-2026-07-29_100127Z-1FFZ-hunter-search\",\n  \"search_id\": \"SEARCH-20260729T120000Z-ACCEPT01\",\n  \"target_count\": 1\n}\n... Candidate pool \u2192 deterministic ranking \u2192 immutable manifest\n{\n  \"app_version\": \"1.2.71\",\n  \"artifact_kind\": \"hunter_search_manifest\",\n  \"candidate_catalog\": {\n    \"candidate_count\": 5,\n    \"identity_resolved_count\": 5,\n    \"path\": \"$ACCEPTANCE_WORK_DIR/candidate_catalog.csv\",\n    \"ranking_eligible_count\": 2,\n    \"schema_version\": \"bl_archive_candidate_catalog_v1\",\n    \"sha256\": \"f809bc3ffa19d2fd9227da8f91a012de12e9dfa0e08aa40da5cdd5fc687beba1\"\n  },\n  \"code_commit\": \"edb6e66\",\n  \"created_at_utc\": \"2026-07-29T12:01:00Z\",\n  \"created_by_project\": \"Techno-Hunter\",\n  \"detection_claimed\": false,\n  \"disclaimer\": \"Hunter searches and follow-up records are local scientific workflow artifacts. They do not constitute a detection, discovery, expert review, external validation, or authorization for external submission.\",\n  \"eligibility_queue\": {\n    \"candidate_count\": 5,\n    \"path\": \"$ACCEPTANCE_WORK_DIR/adaptive_discovery/SEARCH-20260729T120000Z-ACCEPT01/queue_round_001.csv\",\n    \"schema_version\": \"target_priority_queue_v5\",\n    \"sha256\": \"b5c7c88e219e29f137c2eda64469660776bed6f675e79e2ede2346fefa2ac115\",\n    \"viable_candidate_count\": 1\n  },\n  \"external_submission_allowed\": false,\n  \"follow_up_registry\": {\n    \"schema_version\": \"hunter_follow_up_registry_v1\",\n    \"source_ledger_count\": 2,\n    \"unresolved_identity_count\": 0\n  },\n  \"initial_status\": \"pending\",\n  \"mode\": \"follow-up\",\n  \"pipeline\": {\n    \"acquisition\": \"scripts/run_stream_process_evict_batch.sh\",\n    \"interpretation\": \"techno_search.production_scan.run_production_scan\",\n    \"preprocessing\": \"scripts/run_turboseti_on_extended_corpus.sh\",\n    \"raw_retention_policy\": \"stream_process_evict\",\n    \"scoring\": \"scripts/run_pipeline_on_bl_data.sh\",\n    \"turbo_seti_parameters\": {\n      \"max_drift_hz_per_sec\": 10.0,\n      \"min_drift_hz_per_sec\": 0.0001,\n      \"snr_threshold\": 10.0\n    }\n  },\n  \"schema_version\": \"hunter_search_manifest_v3\",\n  \"search_id\": \"SEARCH-20260729T120100Z-ACCEPT02\",\n  \"selection\": {\n    \"adaptive_discovery\": null,\n    \"constraints\": {},\n    \"deterministic_tie_breaker\": \"canonical_target_id\",\n    \"execution_kind_counts\": {\n      \"follow_up_archive_data_processing\": 1\n    },\n    \"follow_up_discovery\": {\n      \"adapter\": \"controlled_existing_evidence_v1\",\n      \"cadence_discovery_count\": 0,\n      \"examined_count\": 1,\n      \"schema_version\": \"hunter_follow_up_discovery_report_v2\",\n      \"selected_count\": 1,\n      \"validity_state\": \"valid\"\n    },\n    \"follow_up_observation_fulfilled_count\": 0,\n    \"partial_selection_allowed\": false,\n    \"projected_download_gb\": 0.004,\n    \"quality\": {\n      \"interpretation\": \"deterministic relative ranking score; not a calibrated probability or absolute eligibility threshold\",\n      \"maximum\": 0.96476,\n      \"median\": 0.96476,\n      \"minimum\": 0.96476,\n      \"score_field\": \"follow_up_priority\"\n    },\n    \"ranking_key\": \"follow_up_priority\",\n    \"requested_count\": 1,\n    \"selected_count\": 1,\n    \"shortfall\": null\n  },\n  \"targets\": [\n    {\n      \"dec_deg\": 20.0,\n      \"distance_light_years\": null,\n      \"estimated_download_gb\": 0.004,\n      \"evidence\": {\n        \"candidate_id\": \"capture_outside_0001\",\n        \"cross_target_rfi_flagged\": false,\n        \"drift_evidence_available\": true,\n        \"drift_rate_hz_per_sec\": -0.387762,\n        \"frequency_hz\": 8421295004.0,\n        \"pathway\": \"human_review_queue\",\n        \"score\": 0.96476,\n        \"snr\": 351.721191\n      },\n      \"execution_kind\": \"follow_up_archive_data_processing\",\n      \"exoplanet_host\": \"\",\n      \"follow_up_observation_fulfilled\": false,\n      \"follow_up_observation_scheduled\": false,\n      \"follow_up_priority\": 0.96476,\n      \"galactic_latitude_deg\": null,\n      \"hip\": \"OUTSIDE\",\n      \"mode\": \"follow-up\",\n      \"name\": \"OUTSIDE\",\n      \"object_type\": \"Star\",\n      \"prior_search_count\": 2,\n      \"prior_search_provenance\": [\n        {\n          \"candidate_id\": \"capture_outside_0001\",\n          \"follow_up_id\": \"FU-2026-07-29_100127Z-1FFZ-001\",\n          \"ledger_path\": \"$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120000Z-ACCEPT01/runs/RUN-2026-07-29_100127Z-1FFZ-hunter-search/RUN-2026-07-29_100127Z-1FFZ-hunter-search_follow_ups.json\",\n          \"pathway\": \"human_review_queue\",\n          \"project\": \"Techno-Hunter\",\n          \"relationship\": \"this_project_search\",\n          \"run_id\": \"RUN-2026-07-29_100127Z-1FFZ-hunter-search\",\n          \"score\": 0.96476\n        },\n        {\n          \"candidate_id\": \"capture_outside_0001\",\n          \"follow_up_id\": \"FU-CONTROLLED-001\",\n          \"ledger_path\": \"$ACCEPTANCE_WORK_DIR/seed_scans/RUN-2026-07-29_115900Z-SEED-hunter-search/RUN-2026-07-29_115900Z-SEED-hunter-search_follow_ups.json\",\n          \"pathway\": \"human_review_queue\",\n          \"project\": \"Techno-Hunter\",\n          \"relationship\": \"this_project_search\",\n          \"run_id\": \"RUN-2026-07-29_115900Z-SEED-hunter-search\",\n          \"score\": 0.8\n        }\n      ],\n      \"prior_search_provenance_summary\": \"Techno-Hunter:2\",\n      \"prior_seti_coverage_reference\": \"\",\n      \"queue_status\": \"raw_download_approval_required\",\n      \"ra_deg\": 10.0,\n      \"recommended_next_action\": \"complete the unresolved known-explanation checks before candidate promotion\",\n      \"selection_reason\": \"complete the unresolved known-explanation checks before candidate promotion\",\n      \"source_data_path\": \"$ACCEPTANCE_WORK_DIR/data/OUTSIDE/capture_outside_0001.dat\",\n      \"source_hdf5_url\": \"http://127.0.0.1:56101/capture_outside_0001.h5\",\n      \"spectral_type\": \"\",\n      \"target_selection_score\": 0.009\n    }\n  ]\n}\n{\n  \"app_version\": \"1.2.71\",\n  \"at_utc\": \"2026-07-29T10:01:48.459707Z\",\n  \"candidate_report_config_versions\": [\n    \"scoring_v0\"\n  ],\n  \"event\": \"run_completed\",\n  \"execution_kind_counts\": {\n    \"follow_up_archive_data_processing\": 1\n  },\n  \"follow_up_completed_count\": 0,\n  \"follow_up_deferred_count\": 1,\n  \"follow_up_dispositions\": [\n    {\n      \"consumed_follow_up_ids\": [\n        \"FU-2026-07-29_100127Z-1FFZ-001\",\n        \"FU-CONTROLLED-001\"\n      ],\n      \"fulfilled\": false,\n      \"reason\": \"new evidence did not explicitly satisfy the scheduled action\",\n      \"state\": \"deferred\",\n      \"target_id\": \"OUTSIDE\"\n    }\n  ],\n  \"follow_up_observation_fulfilled_count\": 0,\n  \"follow_up_required_count\": 1,\n  \"history_records_appended\": 1,\n  \"run_dir\": \"$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120100Z-ACCEPT02/runs/RUN-2026-07-29_100145Z-O4M5-hunter-search\",\n  \"run_id\": \"RUN-2026-07-29_100145Z-O4M5-hunter-search\",\n  \"search_id\": \"SEARCH-20260729T120100Z-ACCEPT02\",\n  \"target_count\": 1\n}\n{\n  \"completed_count\": 0,\n  \"deferred_count\": 2,\n  \"detection_claimed\": false,\n  \"disclaimer\": \"Hunter searches and follow-up records are local scientific workflow artifacts. They do not constitute a detection, discovery, expert review, external validation, or authorization for external submission.\",\n  \"eligible_count\": 1,\n  \"eligible_entries\": [\n    {\n      \"dec_deg\": 20.0,\n      \"distance_light_years\": null,\n      \"estimated_download_gb\": 0.004,\n      \"evidence\": {\n        \"candidate_id\": \"capture_outside_0001\",\n        \"cross_target_rfi_flagged\": false,\n        \"drift_evidence_available\": true,\n        \"drift_rate_hz_per_sec\": -0.387762,\n        \"frequency_hz\": 8421295004.0,\n        \"pathway\": \"human_review_queue\",\n        \"score\": 0.96476,\n        \"snr\": 351.721191\n      },\n      \"exoplanet_host\": \"\",\n      \"follow_up_priority\": 0.96476,\n      \"galactic_latitude_deg\": null,\n      \"hip\": \"OUTSIDE\",\n      \"mode\": \"follow-up\",\n      \"name\": \"OUTSIDE\",\n      \"object_type\": \"Star\",\n      \"prior_search_count\": 1,\n      \"prior_search_provenance\": [\n        {\n          \"candidate_id\": \"capture_outside_0001\",\n          \"follow_up_id\": \"FU-2026-07-29_100145Z-O4M5-001\",\n          \"ledger_path\": \"$ACCEPTANCE_WORK_DIR/searches/SEARCH-20260729T120100Z-ACCEPT02/runs/RUN-2026-07-29_100145Z-O4M5-hunter-search/RUN-2026-07-29_100145Z-O4M5-hunter-search_follow_ups.json\",\n          \"pathway\": \"human_review_queue\",\n          \"project\": \"Techno-Hunter\",\n          \"relationship\": \"this_project_search\",\n          \"run_id\": \"RUN-2026-07-29_100145Z-O4M5-hunter-search\",\n          \"score\": 0.96476\n        }\n      ],\n      \"prior_search_provenance_summary\": \"Techno-Hunter:1\",\n      \"prior_seti_coverage_reference\": \"\",\n      \"queue_status\": \"raw_download_approval_required\",\n      \"ra_deg\": 10.0,\n      \"recommended_next_action\": \"complete the unresolved known-explanation checks before candidate promotion\",\n      \"selection_reason\": \"complete the unresolved known-explanation checks before candidate promotion\",\n      \"source_data_path\": \"$ACCEPTANCE_WORK_DIR/data/OUTSIDE/capture_outside_0001.dat\",\n      \"source_hdf5_url\": \"http://127.0.0.1:56101/capture_outside_0001.h5\",\n      \"spectral_type\": \"\",\n      \"target_selection_score\": 0.009\n    }\n  ],\n  \"external_submission_allowed\": false,\n  \"refresh_required_count\": 0,\n  \"scheduled_count\": 0,\n  \"schema_version\": \"hunter_follow_up_registry_v1\",\n  \"source_entry_count\": 3,\n  \"source_ledger_count\": 3,\n  \"unresolved_identity_count\": 0\n}\n"
   },
   "validity_report": {
     "excluded": {

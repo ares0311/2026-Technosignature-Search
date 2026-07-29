@@ -43,7 +43,7 @@ process. The disconnected duplicate `CandidateStore` persistence surface is
 removed. See `docs/PRODUCTION_SCAN_RUNBOOK.md` for the findings and closure
 plan.
 
-The installed v1.2.71 command passed on clean implementation commit `55a5d2d`.
+The installed v1.2.71 command passed on clean implementation commit `edb6e66`.
 Its portable evidence bundle is
 `docs/evidence/hunter_v1_2_71_controlled_acceptance.json`: all 14 assertions
 passed, both modes selected the expected target, the follow-up resumed the same

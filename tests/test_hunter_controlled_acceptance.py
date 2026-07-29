@@ -122,7 +122,7 @@ def test_committed_v1_2_71_evidence_is_portable_and_bound_to_clean_code() -> Non
 
     assert evidence["schema_version"] == CONTROLLED_ACCEPTANCE_SCHEMA_VERSION
     assert evidence["release"]["app_version"] == __version__
-    assert evidence["release"]["code_commit"] == "55a5d2d"
+    assert evidence["release"]["code_commit"] == "edb6e66"
     assert all(item["passed"] for item in evidence["assertion_results"])
     assert len(evidence["assertion_results"]) == 14
     assert evidence["selected_targets"] == {
@@ -138,5 +138,5 @@ def test_committed_v1_2_71_evidence_is_portable_and_bound_to_clean_code() -> Non
     ]
     serialized = json.dumps(evidence)
     assert "$ACCEPTANCE_WORK_DIR" in serialized
-    assert "/tmp/techno-hunter-v1-2-71-55a5d2d" not in serialized
+    assert "/tmp/techno-hunter-v1-2-71-edb6e66" not in serialized
     assert "/private/var/folders" not in serialized
