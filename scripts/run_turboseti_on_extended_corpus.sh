@@ -30,7 +30,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-VENV="${REPO_ROOT}/.venv/bin/python"
+VENV="${TECHNO_TURBOSETI_PYTHON:-${REPO_ROOT}/.venv/bin/python}"
 BL_FETCH="${SCRIPT_DIR}/bl_fetch.py"
 
 CORPUS_DIR="${REPO_ROOT}/data/extended_corpus"

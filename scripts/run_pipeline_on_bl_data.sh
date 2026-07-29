@@ -26,9 +26,9 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-VENV="$REPO_ROOT/.venv/bin/python"
+VENV="${TECHNO_PIPELINE_PYTHON:-$REPO_ROOT/.venv/bin/python}"
 BL_FETCH="$REPO_ROOT/scripts/bl_fetch.py"
-TECHNO_SEARCH="$REPO_ROOT/.venv/bin/techno-search"
+TECHNO_SEARCH="${TECHNO_PIPELINE_SEARCH_BIN:-$REPO_ROOT/.venv/bin/techno-search}"
 DATA_DIR="$REPO_ROOT/data/bl_hits"
 RESULTS_DIR="$REPO_ROOT/results"
 WORKERS=12

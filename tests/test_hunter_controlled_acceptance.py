@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -19,7 +20,10 @@ def test_installed_hunter_controlled_prod_acceptance_is_fresh_and_complete(
 ) -> None:
     work_dir = tmp_path / "fresh_state"
     evidence_path = tmp_path / "acceptance.json"
-    executable = Path(".venv/bin/Techno-Hunter")
+    executable = Path(
+        shutil.which("Techno-Hunter")
+        or ".venv/bin/Techno-Hunter"
+    )
 
     completed = subprocess.run(
         [

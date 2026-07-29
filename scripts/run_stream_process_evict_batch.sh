@@ -32,6 +32,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VENV_PYTHON="${TECHNO_STREAM_PROCESS_PYTHON:-${REPO_ROOT}/.venv/bin/python}"
+TECHNO_SEARCH_BIN="${TECHNO_STREAM_PROCESS_SEARCH_BIN:-${REPO_ROOT}/.venv/bin/techno-search}"
 OUT_DIR="${REPO_ROOT}/data/extended_corpus"
 RESULTS_DIR="${REPO_ROOT}/results"
 MANIFEST=""
@@ -425,7 +426,7 @@ print(next((str(row.get("source_data_path", "")) for row in manifest.get("target
       source_stem="$(basename "${source_data_path}")"
       source_stem="${source_stem%.*}"
       log "[CHUNK] ${hip}: scoring preserved local evidence ${source_stem}"
-      if ! "${REPO_ROOT}/.venv/bin/techno-search" run-pipeline \
+      if ! "${TECHNO_SEARCH_BIN}" run-pipeline \
         "${source_data_path}" --track radio \
         --output-dir "${RESULTS_DIR}/${source_stem}"; then
         log "[WARN] ${hip}: preserved local evidence pipeline failed"
@@ -608,7 +609,6 @@ if [[ -n "${STATUS_KEY:-}" ]]; then
   RECORD_STATUS=1
 fi
 
-TECHNO_SEARCH_BIN="${REPO_ROOT}/.venv/bin/techno-search"
 if [[ "${RECORD_STATUS}" -eq 0 ]]; then
   log "[INFO]  Manifest is not under data_selection/batch_manifests/ -- skipping status-manifest record (scratch/test run)."
 elif [[ -x "${TECHNO_SEARCH_BIN}" ]]; then

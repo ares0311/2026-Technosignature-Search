@@ -17,6 +17,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import threading
 from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager, redirect_stderr, redirect_stdout
@@ -92,6 +93,10 @@ def _execute_controlled_acceptance(*, work_dir: Path) -> dict[str, Any]:
         )
     work_dir.mkdir(parents=True, exist_ok=True)
     repo_root = Path(__file__).resolve().parents[2]
+    techno_search_bin = Path(
+        shutil.which("techno-search")
+        or repo_root / ".venv/bin/techno-search"
+    )
     source_dir = work_dir / "archive_source"
     data_dir = work_dir / "data"
     searches_dir = work_dir / "searches"
@@ -106,7 +111,7 @@ def _execute_controlled_acceptance(*, work_dir: Path) -> dict[str, Any]:
 
     _run_checked(
         [
-            str(repo_root / ".venv/bin/python"),
+            sys.executable,
             str(repo_root / "scripts/bl_fetch.py"),
             "synthetic-h5",
             str(source_h5),
@@ -262,6 +267,11 @@ def _execute_controlled_acceptance(*, work_dir: Path) -> dict[str, Any]:
             "TECHNO_EXTENDED_CORPUS_FREE_SPACE_RESERVE_GB": "0",
             "TECHNO_DOWNLOAD_PROGRESS_INTERVAL_SECONDS": "1",
             "TECHNO_CONTROLLED_ACCEPTANCE": "1",
+            "TECHNO_STREAM_PROCESS_PYTHON": sys.executable,
+            "TECHNO_TURBOSETI_PYTHON": sys.executable,
+            "TECHNO_PIPELINE_PYTHON": sys.executable,
+            "TECHNO_STREAM_PROCESS_SEARCH_BIN": str(techno_search_bin),
+            "TECHNO_PIPELINE_SEARCH_BIN": str(techno_search_bin),
             "MPLCONFIGDIR": str(work_dir / "matplotlib"),
         }
         with _temporary_environment(env), redirect_stdout(transcript), redirect_stderr(
