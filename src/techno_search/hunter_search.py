@@ -655,6 +655,15 @@ def follow_up_registry(
                     "galactic_latitude_deg": _optional_float(
                         row.get("galactic_latitude_deg")
                     ),
+                    "object_type": row.get("object_type", ""),
+                    "distance_light_years": _optional_float(
+                        row.get("distance_light_years")
+                    ),
+                    "spectral_type": row.get("spectral_type", ""),
+                    "exoplanet_host": row.get("exoplanet_host", "unknown"),
+                    "prior_seti_coverage_reference": row.get(
+                        "prior_seti_coverage_reference", ""
+                    ),
                     "estimated_download_gb": _optional_float(
                         row.get("estimated_download_gb")
                     ),
@@ -679,6 +688,16 @@ def follow_up_registry(
         by_target.values(),
         key=lambda entry: (-float(entry["follow_up_priority"]), str(entry["hip"])),
     )
+    for entry in eligible:
+        provenance = entry["prior_search_provenance"]
+        entry["prior_search_count"] = len(provenance)
+        project_counts: dict[str, int] = {}
+        for item in provenance:
+            project = str(item["project"])
+            project_counts[project] = project_counts.get(project, 0) + 1
+        entry["prior_search_provenance_summary"] = "; ".join(
+            f"{project}:{count}" for project, count in sorted(project_counts.items())
+        )
     return {
         "schema_version": FOLLOW_UP_REGISTRY_SCHEMA_VERSION,
         "disclaimer": SEARCH_DISCLAIMER,

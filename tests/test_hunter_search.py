@@ -36,9 +36,13 @@ def _write_queue(
     *,
     status: str = "raw_download_approval_required",
     include_source_url: bool = True,
+    row_overrides: dict[str, str] | None = None,
 ) -> None:
     _write_queue_with_statuses(
-        path, [status] * count, include_source_url=include_source_url
+        path,
+        [status] * count,
+        include_source_url=include_source_url,
+        row_overrides=row_overrides,
     )
 
 
@@ -48,6 +52,7 @@ def _write_queue_with_statuses(
     *,
     include_source_url: bool = True,
     target_id_fn: Callable[[int], str] | None = None,
+    row_overrides: dict[str, str] | None = None,
 ) -> None:
     resolve_target_id = target_id_fn or (lambda index: f"HIP{990000 + index}")
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -86,6 +91,7 @@ def _write_queue_with_statuses(
                     "notes": "test row",
                 }
             )
+            row.update(row_overrides or {})
             writer.writerow(row)
 
 
@@ -1175,7 +1181,18 @@ def test_follow_up_registry_reads_legacy_v1_ledgers(tmp_path: Path) -> None:
 def test_follow_up_registry_carries_evidence_from_winning_priority(tmp_path: Path) -> None:
     queue = tmp_path / "queue.csv"
     scans = tmp_path / "scans"
-    _write_queue(queue, 1, status="already_acquired_local_cache")
+    _write_queue(
+        queue,
+        1,
+        status="already_acquired_local_cache",
+        row_overrides={
+            "object_type": "Star",
+            "distance_light_years": "19.42",
+            "spectral_type": "K2V",
+            "exoplanet_host": "true",
+            "prior_seti_coverage_reference": "Enriquez et al. 2017",
+        },
+    )
     _write_follow_up_ledger(
         scans,
         "capture_HIP990000_0001",
@@ -1195,6 +1212,13 @@ def test_follow_up_registry_carries_evidence_from_winning_priority(tmp_path: Pat
     assert entry["follow_up_priority"] == 0.9
     assert entry["evidence"]["score"] == 0.9
     assert len(entry["prior_search_provenance"]) == 2
+    assert entry["prior_search_count"] == 2
+    assert entry["prior_search_provenance_summary"] == "Techno-Hunter:2"
+    assert entry["object_type"] == "Star"
+    assert entry["distance_light_years"] == 19.42
+    assert entry["spectral_type"] == "K2V"
+    assert entry["exoplanet_host"] == "true"
+    assert entry["prior_seti_coverage_reference"] == "Enriquez et al. 2017"
 
 
 def test_required_cli_entrypoints_invoke_real_dispatch_paths(
@@ -1248,7 +1272,10 @@ def test_required_cli_entrypoints_invoke_real_dispatch_paths(
             str(tmp_path / "follow-up-searches"),
         ]
     ) == 0
-    assert "| 0.900 |" in capsys.readouterr().out
+    follow_up_output = capsys.readouterr().out
+    assert "| 0.900 |" in follow_up_output
+    assert "Techno-Hunter:1" in follow_up_output
+    assert "ledger_path" not in follow_up_output
     assert show_follow_ups(
         [
             "--priority-queue",

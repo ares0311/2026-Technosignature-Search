@@ -1,7 +1,7 @@
 # Techno-Hunter
 
 ![Status](https://img.shields.io/badge/Hunter%20workflow-NOT%20PROD-red)
-![Version](https://img.shields.io/badge/version-1.2.66-blue)
+![Version](https://img.shields.io/badge/version-1.2.67-blue)
 ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 ![Focus](https://img.shields.io/badge/focus-multimodal%20technosignature%20search-purple)
 
@@ -28,8 +28,10 @@ GJ699 follow-up resolved `known` from cadence failure and consumed its
 originating follow-up. Version 1.2.66 now carries real source-provided object
 type, distance, spectral type, exoplanet-host state, prior SETI coverage, and
 prior-search provenance through the durable candidate queue and immutable
-search manifest. Hunter remains NOT PROD while 4,894 archive labels still
-lack resolvable identity/evidence and exact v1.2.66 acceptance remains open.
+search manifest. Version 1.2.67 applies the same fields to follow-up rows and
+summarizes prior provenance instead of dumping raw ledger dictionaries.
+Hunter remains NOT PROD while 4,894 archive labels still lack resolvable
+identity/evidence and exact v1.2.67 acceptance remains open.
 The product returns
 best-available N independently of absolute score; it does not use the older
 10,000-target aspiration as a quality veto. Outputs are local triage evidence
