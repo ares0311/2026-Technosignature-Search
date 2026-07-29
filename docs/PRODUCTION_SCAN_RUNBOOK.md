@@ -23,16 +23,17 @@ Step 3 for that plan and its explicit distinction from this rule.
 
 ## Hunter PROD Acceptance Closure Loop — 2026-07-26
 
-**Status:** Active. Hunter is **NOT PROD**. Completing an implementation PR,
-passing unit tests, or exhausting currently authorized work is not a terminal
-condition. This loop closes only when every required business scenario below
-has current, real, installed-entry-point evidence and the exact final release
-passes canonical validation and CI.
+**Status:** Closed for the bounded Hunter PROD threshold on 2026-07-29.
+Every required business scenario below has current, real,
+installed-entry-point evidence. The wider scientific search loop remains
+active and does not authorize labels, detection claims, expert contact, or
+external submission.
 
-**Current open phase:** Phase 1/5 integrated Hunter acceptance and
-`SYSTEMATIC_SEARCH_PLAN.md` Step 3a/3b. Learned anomaly-score calibration is
-ranking context, not a prerequisite for deterministic `known` / `unknown` /
-`unresolved` routing or best-available-N selection.
+**Closed phase:** Phase 1/5 integrated Hunter acceptance and
+`SYSTEMATIC_SEARCH_PLAN.md` Step 3a/3b production mechanics. Learned
+anomaly-score calibration remains ranking context, not a prerequisite for
+deterministic `known` / `unknown` / `unresolved` routing or best-available-N
+selection.
 
 **Root cause of the premature stop:** release-remediation completion was
 incorrectly treated as product completion even though PR #316 explicitly left
@@ -45,12 +46,12 @@ evidence open.
 |---|---|---|
 | Adaptive new-target discovery finds a displacing candidate outside the initial discovery sample | **Closed for v1.2.65:** installed search `SEARCH-20260728T042942Z-7572B240` selected and executed HIP61099 from real archive evidence with no synthetic output | Reconfirm on the exact final release only if selection/execution behavior changes |
 | Weak absolute quality still returns best-available N | Real shortfall/exhaustion runs and low-score regression coverage | Closed unless the final real runs contradict it |
-| Positive-count new-target lifecycle | **Closed for v1.2.65:** search `SEARCH-20260728T042942Z-7572B240`, run `RUN-2026-07-28_043711Z-YJGV-hunter-search`, completed installed create -> approved acquisition -> preprocessing -> scoring/interpretation -> one durable history row and follow-up registration | Reconfirm on v1.2.69 because the durable candidate-manifest schema and installed command contract changed; never rewrite historical evidence |
-| Follow-up selection and execution | **Closed for v1.2.65:** search `SEARCH-20260728T042946Z-5988937F`, run `RUN-2026-07-28_043903Z-OPNJ-hunter-search`, verified a six-scan later-epoch GJ699 cadence, classified it `known` from cadence failure, consumed one originating follow-up, appended history once, and emitted no new follow-up | Reconfirm the smallest valid follow-up on v1.2.69 after the v1.2.66 table falsification fix |
+| Positive-count new-target lifecycle | **Closed:** canonical v1.2.69 search `SEARCH-20260729T055045Z-125D2215`, run `RUN-2026-07-29_055553Z-YI5F-hunter-search`, selected HIP3419 from 4,862 viable candidates, completed approved acquisition -> preprocessing -> scoring/interpretation -> one durable history row and follow-up registration, and evicted raw HDF5 | Preserve the immutable evidence and keep single-scan cadence absence loudly `unresolved` |
+| Follow-up selection and execution | **Closed:** canonical v1.2.69 search `SEARCH-20260729T055057Z-7321B0CB`, run `RUN-2026-07-29_055650Z-G60U-hunter-search`, verified a six-scan later-epoch HIP103039 cadence, completed 10/10 known-explanation checks, reached local `unknown`, wrote the adversarial dossier, consumed eight originating follow-ups, appended history once, registered the next local action, and evicted all raw HDF5 files | Preserve `unknown` as a local exhausted-known-checks state and keep the Earth-drift blocker fail-closed |
 | Restart/resume integrity | **Implementation proof for v1.2.62:** controlled cadence failure at exit 7 resumes the same search/run and byte-identical derived execution manifest, then completes with exactly one history/lifecycle transition | Repeat through the real bounded acquisition or leave the test-scoped limitation explicit if no safe deterministic real fault point exists |
 | Validation/provenance/identity/history | v1.2.61 manifest authentication, source hashing, validity states, alias resolver, real EXO import | Closed unless live acceptance exposes a contradiction |
 | No production bypass | Stream runner and direct downloader fail-closed tests | Re-audit every raw-acquisition command after final changes; all production commands must consume an authenticated durable search |
-| Exact release verification | **v1.2.65 closed:** committed evidence at `docs/evidence/hunter_v1_2_65_acceptance.json`, contract tests, green CI, and post-merge freshness at `ee9067e`; v1.2.66 creation falsification exposed a follow-up table/provenance defect, post-merge v1.2.67 launch verification exposed the missing canonical `Techno-Hunter` executable name, and v1.2.68 command audit exposed missing canonical slash syntax | Validate and merge v1.2.69, execute the smallest exact-release acceptance searches through canonical slash commands, falsify their packets, then run the post-merge freshness gate |
+| Exact release verification | **Closed:** `docs/evidence/hunter_v1_2_70_acceptance.json` binds fifteen runtime hashes, exact lifecycle counts, collection status, raw eviction, idempotent completed-search refusal, the real `unresolved` and `unknown` branches, automatic adversarial review, and no-claim flags. v1.2.70 changes only the stale terminal-summary scope wording exposed by the exact v1.2.69 run. | Keep the evidence contract in CI and rerun bounded live acceptance only when selection/execution science changes |
 
 ### Execution loop
 
@@ -59,10 +60,12 @@ evidence open.
    preflight, identify the smallest scientifically valid new and follow-up
    acceptance searches, and record exact targets, products, roles, byte totals,
    storage headroom, and eviction rules.
-2. **Request only the irreducible approval.** If raw data are required, pause
+2. **Request only the irreducible approval.** If a later release changes
+   selection/execution science and reopens bounded acceptance, and raw data are
+   required, pause
    only long enough to request approval for the exact bounded manifests. An
-   approval pause leaves this loop active and Hunter NOT PROD; it is not a
-   completion handoff.
+   approval pause leaves that reacceptance loop active; it is not a completion
+   handoff.
 3. **Execute exact durable searches.** Use installed `Create-New-Search` and
    `Run-New-Search`; never substitute a direct pipeline call. Preserve every
    selected target, acquisition attempt, transformation, score,
@@ -79,6 +82,32 @@ evidence open.
    `origin/main`, pass `check_verification_freshness.py`, and update this matrix
    with immutable search/run IDs and artifact hashes. Declare PROD only when
    every row is green.
+
+### v1.2.69 exact execution and v1.2.70 closure
+
+- New search `SEARCH-20260729T055045Z-125D2215` selected HIP3419 from
+  6,879 queued and 4,862 viable candidates, downloaded the exact
+  237,996,056-byte product, processed it with turboSETI 2.3.2, persisted one
+  result/history/follow-up, and evicted the raw HDF5. The result is
+  `unresolved` because its single scan cannot establish OFF-target absence.
+- Follow-up search `SEARCH-20260729T055057Z-7321B0CB` selected HIP103039 with
+  eight prior project searches, acquired the exact six-scan ABACAD cadence
+  (1,455,568,892 bytes), preserved archive MD5 and per-scan provenance,
+  produced a 72-row derived cadence table, and evicted all six raw files. The
+  strongest surviving frequency/drift group appears in all three ON scans and
+  zero OFF scans. All ten known-explanation checks completed, so the local
+  state is `unknown`; its automatically generated adversarial dossier still
+  blocks expert escalation on Earth-drift inconsistency.
+- Both searches contain exactly `created`, `run_started`, and `run_completed`
+  events and exactly one history append. Re-running either returns non-zero
+  and leaves event and history counts unchanged.
+- `Show-Follow-Ups` resolves HIP3419 and HIP103039, preserves prior provenance,
+  and reports distinct actionable next steps. No output authorizes detection,
+  discovery, expert review, external validation, or submission.
+- Falsification found one stale citizen-science phrase in the terminal summary.
+  Version 1.2.70 changes it to local production-triage scope and locks the
+  correction with a regression test; scientific and lifecycle logic are
+  unchanged.
 
 ### Approval and safety boundaries
 
@@ -540,6 +569,8 @@ persist the state and exact evidence, and automatically write an adversarial
 dossier for `unknown`. Running sidecar CLI commands manually is not an
 acceptable bridge. Until dispatch-level and installed-Hunter acceptance tests
 prove this behavior, the Hunter workflow is not PROD.
+The v1.2.69/v1.2.70 evidence recorded at the top of this runbook now satisfies
+that condition.
 
 Track A acquisition work must follow the brief's source order and disk cap. Raw
 downloads and temporary extraction products stay local in ignored paths:

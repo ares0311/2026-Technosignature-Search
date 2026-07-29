@@ -28,9 +28,30 @@ step that's already blocked on an earlier one.
 
 ---
 
-## Current honest state (updated 2026-07-21; originally recorded 2026-07-05)
+## Current honest state (updated 2026-07-29; originally recorded 2026-07-05)
 
-**Current open phase — real unknown/adversarial acceptance:** a code-path audit
+**Hunter PROD acceptance complete; scientific expansion remains active:**
+canonical v1.2.69 `Techno-Hunter` searches
+`SEARCH-20260729T055045Z-125D2215` and
+`SEARCH-20260729T055057Z-7321B0CB` close the bounded new/follow-up production
+threshold. HIP3419 completed the exact new-target lifecycle and correctly
+remained `unresolved` without complete cadence evidence. A real six-scan
+HIP103039 follow-up completed all ten known-explanation checks, reached local
+`unknown`, automatically persisted its adversarial dossier, consumed the eight
+originating follow-ups, and remained blocked from expert escalation on
+Earth-drift inconsistency. Both runs append history exactly once, refuse a
+completed rerun, preserve provenance, evict all seven raw HDF5 files, and make
+no detection or external-submission claim. Version 1.2.70 repairs the one
+stale production-scope string exposed by falsification without changing
+scientific or lifecycle logic. Immutable evidence is in
+`docs/evidence/hunter_v1_2_70_acceptance.json`.
+
+The remaining 4,894 unresolved archive labels, learned-score calibration
+limits, and modality/corpus expansion are honest science-coverage work, not
+hidden workflow bridges or reasons to suppress best-available-N selection.
+Steps 1-5 continue under their existing fail-closed boundaries.
+
+**Historical unknown/adversarial acceptance gap (closed above):** a code-path audit
 found that `run_pipeline` scored radio candidates
 without calling the implemented Track A catalog resolver, satellite matcher,
 Track B gate, or adversarial dossier. In addition, the pre-1.2.44 Track B gate
@@ -41,9 +62,9 @@ all known explanations failed. Version 1.2.44 repairs the integrated code path:
 it durably emits `known`, `unknown`, or `unresolved`, and automatically creates
 an adversarial dossier for `unknown`. Real retained Voyager and HIP107788 data
 verify `known` and `unresolved`; unit and dispatch tests verify `unknown` and its
-dossier. The retained corpus has no real cadence-complete observation that can
-reach `unknown`. Do not call Hunter PROD before an installed-entry-point run on
-real complete evidence proves that remaining branch.
+dossier. At that point, the retained corpus had no real cadence-complete
+observation that could reach `unknown`; the canonical live evidence recorded
+above now proves that branch.
 Retained-data follow-up `SEARCH-20260722T012732Z-759A1D93` from code commit
 `10dfb9e` now proves the
 installed entry points propagate HIP103096's `unresolved` state and exact
