@@ -5,9 +5,9 @@ from io import StringIO
 from pathlib import Path
 
 from techno_search.production_scan import (
+    PRODUCTION_SCAN_DISCLAIMER,
     EmptyProductionScanError,
     ProductionConsole,
-    PRODUCTION_SCAN_DISCLAIMER,
     production_diagnostics,
     review_dashboard_summary,
     run_production_scan,
