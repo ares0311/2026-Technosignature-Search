@@ -62,7 +62,18 @@ fallback, an absolute-quality threshold, or a reason to suppress a
 best-available-N result. No output makes a positive technosignature label,
 detection, discovery, expert-review, external-validation, or
 external-submission claim.
-**Current app version:** 1.2.71
+Version 1.2.72 gates New eligibility on decision-grade cross-project history
+from all three Hunters. `cross_project_history_validity()` previously consulted
+only this repository's own export, so it established "not searched by this
+project" and reported that as novelty. `cross_project_history_federation_validity()`
+now reads both siblings read-only through repository-relative discovery,
+validates each by identical rules, and degrades to the weakest project. A
+sibling that has not published resolves to `unknown` and fails closed
+(IDENT-03). Frozen targets persist the resulting validity state and a source
+naming all three projects (IDENT-04). No scientific threshold, scorer,
+selection formula, or claim boundary changed.
+
+**Current app version:** 1.2.72
 
 **Exact v1.2.69 science acceptance and v1.2.70 closure — 2026-07-29:**
 `docs/evidence/hunter_v1_2_70_acceptance.json` records fifteen immutable
