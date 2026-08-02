@@ -13,6 +13,7 @@ import pytest
 
 import techno_search.hunter_search as hunter_search_module
 from techno_search.hunter_cli import create_new_search, run_new_search, show_follow_ups
+from techno_search.hunter_cross_project_history import CROSS_PROJECT_DECISION_STATES
 from techno_search.hunter_search import (
     SearchApprovalRequired,
     SearchLifecycleError,
@@ -133,6 +134,46 @@ def _write_follow_up_ledger(
     )
 
 
+@pytest.fixture(autouse=True)
+def _decision_grade_cross_project_history(
+    tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Make cross-project history hermetic for every test in this module.
+
+    New-mode selection now requires decision-grade history from all three
+    Astrometrics Hunter projects (own + EXO-Hunter + NEO-Hunter). Without this
+    fixture these tests would pass or fail according to whether the sibling
+    repos happen to be checked out beside this one and whether they have
+    published an export -- a real hermeticity bug, surfaced (not caused) by
+    closing that gap.
+
+    Sibling exports are staged in a tmp directory and discovery is redirected
+    there, so the suite never reads and never writes a real sibling repository
+    (WS-01). The fail-closed negative controls deliberately do NOT rely on this
+    fixture; they live in test_hunter_new_eligibility_fails_closed.py.
+    """
+    fixture = (
+        Path(__file__).parent
+        / "fixtures"
+        / "cross_project"
+        / "hunter_prior_search_history_v1.json"
+    )
+    monkeypatch.setenv(hunter_search_module.CROSS_PROJECT_HISTORY_PATH_ENV, str(fixture))
+
+    root = tmp_path_factory.mktemp("cross_project_history")
+    staged: dict[str, Path] = {}
+    for project in hunter_search_module.CROSS_PROJECT_ROOT_NAMES:
+        export = root / project / "data_selection" / "hunter_prior_search_history_v1.json"
+        export.parent.mkdir(parents=True, exist_ok=True)
+        export.write_text(fixture.read_text(encoding="utf-8"), encoding="utf-8")
+        staged[project] = export
+    monkeypatch.setattr(
+        hunter_search_module,
+        "sibling_history_export_path",
+        lambda project: staged[project],
+    )
+
+
 def test_make_search_id_is_stable_and_human_readable() -> None:
     assert make_search_id(
         now=datetime(2026, 7, 19, 12, 30, tzinfo=UTC), token="A1B2C3D4"
@@ -164,6 +205,50 @@ def test_create_new_search_freezes_exact_ranked_targets(tmp_path: Path) -> None:
     loaded = load_search(tmp_path / "searches", manifest["search_id"])
     assert loaded["status"] == "pending"
     assert [event["event"] for event in loaded["events"]] == ["created"]
+
+
+def test_frozen_targets_record_cross_project_history_evidence(tmp_path: Path) -> None:
+    """IDENT-04: an inclusion must be auditable after the fact.
+
+    Every frozen target carries the history validity state its novelty claim
+    rested on, plus the source detail naming all three projects -- so a later
+    audit can tell whether the claim was backed by fresh or merely usable
+    history, and which project supplied it.
+    """
+    queue = tmp_path / "queue.csv"
+    _write_queue(queue, 3)
+
+    manifest = create_search(
+        target_count=2,
+        mode="new",
+        queue_path=queue,
+        searches_dir=tmp_path / "searches",
+        search_id="SEARCH-20260719T123000Z-EVID0001",
+        created_at_utc="2026-07-19T12:30:00Z",
+    )
+
+    assert manifest["targets"]
+    for target in manifest["targets"]:
+        state = target["cross_project_history_validity"]
+        source = target["cross_project_history_source"]
+        # The recorded state must itself be decision-grade -- persisting
+        # "unknown" alongside an inclusion would be recording the audit trail
+        # of a decision that should never have been made.
+        assert state in CROSS_PROJECT_DECISION_STATES, state
+        # The source names every project consulted, not just this one.
+        for project in ("techno_hunter", "exo_hunter", "neo_hunter"):
+            assert project in source, source
+
+    # The evidence survives the freeze, not just the in-memory return value.
+    frozen = json.loads(
+        (tmp_path / "searches" / manifest["search_id"] / "manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert frozen["targets"][0]["cross_project_history_validity"] in (
+        CROSS_PROJECT_DECISION_STATES
+    )
+    assert "neo_hunter" in frozen["targets"][0]["cross_project_history_source"]
 
 
 def test_create_search_applies_optional_scientific_constraints(tmp_path: Path) -> None:
@@ -1244,10 +1329,13 @@ def test_required_cli_entrypoints_invoke_real_dispatch_paths(
     ) == 0
     new_search_output = capsys.readouterr().out
     assert "Created pending new search" in new_search_output
-    assert (
-        "Type | Distance ly | Spectral | Exoplanet | Prior searches | Prior provenance"
-        in new_search_output
-    )
+    # The selection surface is now a width-aware table (UX-TABLE-01) rather than
+    # a pipe-delimited line. Assert the decision-critical columns and the
+    # pointer to the separate detail view (UX-TABLE-02).
+    for column in ("Target", "Score", "GB"):
+        assert column in new_search_output, f"missing decision column {column!r}"
+    assert "Inspect-Target" in new_search_output
+    assert "frozen target(s)" in new_search_output
     monkeypatch.setattr(
         "techno_search.hunter_cli.discover_follow_up_targets",
         lambda targets, *, target_count: (
@@ -1273,8 +1361,24 @@ def test_required_cli_entrypoints_invoke_real_dispatch_paths(
         ]
     ) == 0
     follow_up_output = capsys.readouterr().out
-    assert "| 0.900 |" in follow_up_output
-    assert "Techno-Hunter:1" in follow_up_output
+    # The score itself, not the table glyphs: the results table renders with
+    # Rich box-drawing borders, so asserting ASCII pipes tested the renderer
+    # rather than the ranking.
+    assert "0.900000" in follow_up_output
+    # UX-TABLE-01/02: the width-aware summary carries the prior-search count;
+    # the full "Techno-Hunter:<n>" provenance string belongs to the detail
+    # view, so assert it where it is actually persisted and surfaced.
+    assert "Prior" in follow_up_output
+    follow_up_manifest = json.loads(
+        next(
+            (tmp_path / "follow-up-searches").glob("SEARCH-*/manifest.json")
+        ).read_text(encoding="utf-8")
+    )
+    frozen = follow_up_manifest["targets"]
+    assert any(
+        "Techno-Hunter:1" in str(entry.get("prior_search_provenance_summary", ""))
+        for entry in frozen
+    ), "prior-search provenance must survive into the frozen manifest"
     assert "ledger_path" not in follow_up_output
     assert show_follow_ups(
         [

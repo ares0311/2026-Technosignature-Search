@@ -23,6 +23,12 @@ from techno_search.hunter_constraints import (
     normalize_constraints,
     target_matches_constraints,
 )
+from techno_search.hunter_cross_project_history import (
+    CROSS_PROJECT_DECISION_STATES,
+    CROSS_PROJECT_ROOT_NAMES,
+    load_cross_project_history_export,
+    sibling_history_export_path,
+)
 from techno_search.hunter_follow_up_discovery import cadence_as_gbt_manifest
 from techno_search.prod_scan_queue import ScanHistoryRecord, append_scan_record, load_scan_history
 from techno_search.production_run_outcomes import (
@@ -726,11 +732,151 @@ def follow_up_registry(
     }
 
 
+#: Points cross-project history discovery at an explicit export path.
+CROSS_PROJECT_HISTORY_PATH_ENV = "TECHNO_HUNTER_CROSS_PROJECT_HISTORY"
+
+
+def cross_project_history_validity(
+    history_path: Path | None = None,
+) -> tuple[str, str, dict[str, Any] | None]:
+    """Resolve the decision-grade validity of consumable cross-project history.
+
+    Returns ``(state, detail, payload)``. IDENT-03 permits only ``valid`` and
+    ``stale-but-usable`` to justify a novelty decision; every other state must
+    fail closed. An absent export is ``unknown`` — never silently ``valid``.
+    """
+    # An explicit override lets an operator point at a real export held
+    # outside the default location, and lets tests supply one. It changes
+    # WHERE the export is read from, never WHETHER it must be decision-grade:
+    # the file it names is validated exactly the same way.
+    override = os.environ.get(CROSS_PROJECT_HISTORY_PATH_ENV)
+    path = history_path or (
+        Path(override)
+        if override
+        else Path(__file__).resolve().parents[2]
+        / "data_selection"
+        / "hunter_prior_search_history_v1.json"
+    )
+    if not path.is_file():
+        return "unknown", f"absent: {path}", None
+    try:
+        payload = load_cross_project_history_export(path)
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        return "invalid", f"{path}: {exc}", None
+    # load_cross_project_history_export stamps validity per source; there is no
+    # top-level field. The export is only as trustworthy as its weakest source,
+    # so a single non-decision-grade source degrades the whole export.
+    sources = payload.get("sources") or []
+    states = [str(source.get("validity_state", "unknown")) for source in sources]
+    if not states:
+        return "unknown", f"{path}: no sources", payload
+    degraded = [state for state in states if state not in CROSS_PROJECT_DECISION_STATES]
+    if degraded:
+        return degraded[0], f"{path}: {degraded[0]} source(s)", payload
+    state = "stale-but-usable" if "stale-but-usable" in states else "valid"
+    return state, f"{path}: {state} across {len(states)} source(s)", payload
+
+
+#: Ranked weakest-first. Ordering decides only which state gets *reported* as
+#: the blocking one; any single non-decision-grade project closes the gate.
+_HISTORY_STATE_RANK = (
+    "invalid",
+    "refresh-required",
+    "unknown",
+    "stale-but-usable",
+    "valid",
+)
+
+#: This project's own key in the federation map. Sibling keys come from
+#: CROSS_PROJECT_ROOT_NAMES so the two never drift apart.
+OWN_PROJECT_KEY = "techno_hunter"
+
+
+def cross_project_history_federation_validity(
+    history_path: Path | None = None,
+) -> tuple[str, str, dict[str, tuple[str, str]]]:
+    """Resolve history validity across THIS project *and* both siblings.
+
+    ``cross_project_history_validity`` answers only "has *this* project already
+    searched the target". Novelty is a claim about every Astrometrics Hunter
+    project, so a New search must consult all three. A sibling that is not
+    checked out, has never published, or published something malformed resolves
+    to ``unknown`` — never silently skipped, and never read as evidence of
+    novelty (IDENT-03; absence of a label is not evidence).
+
+    Sibling exports are read strictly read-only at a path computed relative to
+    this repo's own location by ``sibling_history_export_path`` — no symlink,
+    no copy inward, no hardcoded absolute path, no runtime import from a
+    sibling (WS-03). A sibling that is simply not checked out degrades the
+    federation to ``unknown`` instead of raising.
+
+    Returns ``(weakest_state, detail, per_project)``.
+    """
+    per_project: dict[str, tuple[str, str]] = {}
+    own_state, own_detail, _ = cross_project_history_validity(history_path)
+    per_project[OWN_PROJECT_KEY] = (own_state, own_detail)
+
+    for project in sorted(CROSS_PROJECT_ROOT_NAMES):
+        try:
+            sibling_path = sibling_history_export_path(project)
+        except ValueError as exc:  # unknown project name — never assume novelty
+            per_project[project] = ("unknown", f"unresolvable sibling: {exc}")
+            continue
+        # Validated by exactly the same rules as our own export: a sibling is
+        # trusted neither more nor less for being remote.
+        state, detail, _ = cross_project_history_validity(sibling_path)
+        per_project[project] = (state, detail)
+
+    weakest = min(
+        (state for state, _ in per_project.values()),
+        key=lambda state: (
+            _HISTORY_STATE_RANK.index(state) if state in _HISTORY_STATE_RANK else 0
+        ),
+    )
+    detail = "; ".join(
+        f"{project}={state} ({project_detail})"
+        for project, (state, project_detail) in sorted(per_project.items())
+    )
+    return weakest, detail, per_project
+
+
+def _require_decision_grade_history(history_path: Path | None = None) -> tuple[str, str]:
+    """Fail closed unless cross-project history can justify a novelty decision.
+
+    Without this, ``_select_new_targets`` returned ``prior_search_count=0`` and
+    a selection_reason asserting the target was "not previously searched",
+    while never consulting sibling history at all — the same class of defect
+    recorded for EXO-Hunter as EXO-FIELD-01.
+
+    Consulting only this project's *own* export was a narrower instance of the
+    same defect: it established "not searched by this project", then reported
+    it as novelty. The gate now requires all three projects.
+    """
+    state, detail, per_project = cross_project_history_federation_validity(history_path)
+    if state not in CROSS_PROJECT_DECISION_STATES:
+        blocking = sorted(
+            project
+            for project, (project_state, _) in per_project.items()
+            if project_state not in CROSS_PROJECT_DECISION_STATES
+        )
+        raise SearchLifecycleError(
+            "New eligibility requires decision-grade cross-project history from "
+            f"all {len(per_project)} Astrometrics Hunter projects; weakest "
+            f"validity is {state!r} from {', '.join(blocking)}. {detail}. "
+            "Publish or refresh the blocking project's export "
+            "(data_selection/hunter_prior_search_history_v1.json), or run a "
+            "follow-up search instead. New selection fails closed rather than "
+            "assuming novelty (IDENT-03)."
+        )
+    return state, detail
+
+
 def _select_new_targets(
     queue_path: Path,
     target_count: int,
     constraints: Mapping[str, Any],
 ) -> tuple[list[dict[str, Any]], int]:
+    history_state, history_detail = _require_decision_grade_history()
     manifest = build_target_priority_manifest(
         queue_path=queue_path,
         max_targets=max(target_count, len(read_target_priority_queue(queue_path))),
@@ -752,9 +898,14 @@ def _select_new_targets(
                 "mode": "new",
                 "selection_reason": (
                     "highest deterministic target_selection_score among eligible, "
-                    "size-preflighted targets not previously searched by this project"
+                    "size-preflighted targets not previously searched by any "
+                    "Astrometrics Hunter project (own + EXO-Hunter + NEO-Hunter "
+                    "history, all decision-grade at selection time)"
                 ),
                 "prior_search_provenance": [],
+                # IDENT-04: persist the history evidence the inclusion rests on.
+                "cross_project_history_validity": history_state,
+                "cross_project_history_source": history_detail,
             }
         )
         if len(selected) >= target_count:
